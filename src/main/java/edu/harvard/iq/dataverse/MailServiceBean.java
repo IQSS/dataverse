@@ -569,8 +569,20 @@ public class MailServiceBean implements java.io.Serializable {
             case STATUSUPDATED:
                 version =  (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.status.change");
-                String[] paramArrayStatus = {version.getDataset().getDisplayName(), (version.getExternalStatusLabel()==null) ? "<none>" : DatasetUtil.getLocaleExternalStatus(version.getExternalStatusLabel())};
+                CurationStatus status = version.getCurationStatusAsOfDate(userNotification.getSendDateTimestamp());
+                String curationLabel = DatasetUtil.getLocaleCurationStatusLabel(status);
+                if(curationLabel == null) {
+                    curationLabel = BundleUtil.getStringFromBundle("dataset.curationstatus.none");
+                }
+                String[] paramArrayStatus = {
+                        version.getDataset().getDisplayName(),
+                        getDatasetLink(version.getDataset()),
+                        version.getDataset().getOwner().getDisplayName(),
+                        getDataverseLink(version.getDataset().getOwner()),
+                        curationLabel
+                    };
                 messageText += MessageFormat.format(pattern, paramArrayStatus);
+                  
                 return messageText;
             case PIDRECONCILED:
                 version =  (DatasetVersion) targetObject;

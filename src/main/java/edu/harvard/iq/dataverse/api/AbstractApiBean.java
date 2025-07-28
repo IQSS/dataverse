@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.*;
@@ -27,6 +28,7 @@ import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
@@ -51,6 +53,7 @@ import jakarta.ws.rs.core.Response.Status;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -377,11 +380,21 @@ public abstract class AbstractApiBean {
     protected Dataset findDatasetOrDie(String id, boolean deep) throws WrappedResponse {
         Long datasetId;
         Dataset dataset;
-        if (id.equals(PERSISTENT_ID_KEY)) {
-            String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
-            if (persistentId == null) {
+        if (isNumeric(id)) {
+            try {
+                datasetId = Long.parseLong(id);
+            } catch (NumberFormatException nfe) {
                 throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(id))));
+            }
+        } else {
+            String persistentId = id;
+            if (id.equals(PERSISTENT_ID_KEY)) {
+                persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
+                if (persistentId == null) {
+                    throw new WrappedResponse(
+                            badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+                }
             }
             GlobalId globalId;
             try {
@@ -397,13 +410,6 @@ public abstract class AbstractApiBean {
             if (datasetId == null) {
                 throw new WrappedResponse(
                     notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
-            }
-        } else {
-            try {
-                datasetId = Long.parseLong(id);
-            } catch (NumberFormatException nfe) {
-                throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(id))));
             }
         }
         if (deep) {
@@ -443,10 +449,22 @@ public abstract class AbstractApiBean {
         return dsv;
     }
 
-    protected void validateInternalVersionNumberIsNotOutdated(Dataset dataset, int internalVersion) throws WrappedResponse {
-        if (dataset.getLatestVersion().getVersion() > internalVersion) {
+    protected void validateInternalTimestampIsNotOutdated(DvObject dvObject, String sourceLastUpdateTime) throws WrappedResponse {
+        Date date = sourceLastUpdateTime != null ? DateUtil.parseDate(sourceLastUpdateTime, "yyyy-MM-dd'T'HH:mm:ss'Z'") : null;
+        if (date == null) {
             throw new WrappedResponse(
-                    badRequest(BundleUtil.getStringFromBundle("abstractApiBean.error.datasetInternalVersionNumberIsOutdated", Collections.singletonList(Integer.toString(internalVersion))))
+                    badRequest(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date", Collections.singletonList(sourceLastUpdateTime)))
+            );
+        }
+        Instant instant = date.toInstant();
+        Instant updateTimestamp =
+                (dvObject instanceof DataFile) ? ((DataFile) dvObject).getFileMetadata().getDatasetVersion().getLastUpdateTime().toInstant() :
+                (dvObject instanceof Dataset) ? ((Dataset) dvObject).getLatestVersion().getLastUpdateTime().toInstant() :
+                instant;
+        // granularity is to the second since the json output only returns dates in this format to the second
+        if (updateTimestamp.getEpochSecond() != instant.getEpochSecond()) {
+            throw new WrappedResponse(
+                    badRequest(BundleUtil.getStringFromBundle("abstractApiBean.error.internalVersionTimestampIsOutdated", Collections.singletonList(sourceLastUpdateTime)))
             );
         }
     }
@@ -573,6 +591,54 @@ public abstract class AbstractApiBean {
             return findDatasetOrDie(id);
         }
         return d;
+    }
+
+    /**
+     *
+     * @param dvIdtf
+     * @param type
+     * @return DvObject if type matches or throw exception
+     * @throws WrappedResponse
+     */
+    @NotNull
+    protected DvObject findDvoByIdAndFeaturedItemTypeOrDie(@NotNull final String dvIdtf, String type) throws WrappedResponse {
+        try {
+            DataverseFeaturedItem.TYPES dvType = DataverseFeaturedItem.getDvType(type);
+            DvObject dvObject = null;
+            if (isNumeric(dvIdtf)) {
+                try {
+                    dvObject = findDvo(Long.valueOf(dvIdtf));
+                } catch (Exception e) {
+                    throw new WrappedResponse(error(Response.Status.BAD_REQUEST,BundleUtil.getStringFromBundle("find.dvo.error.dvObjectNotFound", Arrays.asList(dvIdtf))));
+                }
+            }
+            if (dvObject == null) {
+                List<DataverseFeaturedItem.TYPES> types = new ArrayList<>();
+                types.addAll(List.of(DataverseFeaturedItem.TYPES.values()));
+                types.remove(dvType);
+                types.add(0, dvType); // put the requested type first for speed of lookup
+                for (DataverseFeaturedItem.TYPES t : types) {
+                    try {
+                        if (DataverseFeaturedItem.TYPES.DATAVERSE == t) {
+                            dvObject = findDataverseOrDie(dvIdtf);
+                            break;
+                        } else if (DataverseFeaturedItem.TYPES.DATASET == t) {
+                            dvObject = findDatasetOrDie(dvIdtf);
+                            break;
+                        } else if (DataverseFeaturedItem.TYPES.DATAFILE == t) {
+                            dvObject = findDataFileOrDie(dvIdtf);
+                            break;
+                        }
+                    } catch (WrappedResponse e) {
+                        // ignore errors to allow other find*OrDie to be called
+                    }
+                }
+            }
+            DataverseFeaturedItem.validateTypeAndDvObject(dvIdtf, dvObject, dvType);
+            return dvObject;
+        } catch (IllegalArgumentException e) {
+            throw new WrappedResponse(error(Response.Status.BAD_REQUEST, e.getMessage()));
+        }
     }
 
     protected <T> T failIfNull( T t, String errorMessage ) throws WrappedResponse {
