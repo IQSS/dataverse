@@ -8,6 +8,10 @@ import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import static edu.harvard.iq.dataverse.UserNotification.Type.ASSIGNROLE;
+import static edu.harvard.iq.dataverse.UserNotification.Type.CREATEACC;
+import static edu.harvard.iq.dataverse.UserNotification.Type.GRANTFILEACCESS;
+import static edu.harvard.iq.dataverse.UserNotification.Type.REJECTFILEACCESS;
+import static edu.harvard.iq.dataverse.UserNotification.Type.REQUESTEDFILEACCESS;
 import static edu.harvard.iq.dataverse.UserNotification.Type.REQUESTFILEACCESS;
 import static edu.harvard.iq.dataverse.UserNotification.Type.SUBMITTEDDS;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
@@ -89,6 +93,10 @@ public class Notifications extends AbstractApiBean {
                     notificationObjectBuilder.add("installationBrandName", BrandingUtil.getInstallationBrandName());
                     notificationObjectBuilder.add("userGuideUrl", systemConfig.getGuidesBaseUrl() + "/" + systemConfig.getGuidesVersion());
                 }
+                case CREATEDS -> {
+                }
+                case CREATEDV -> {
+                }
                 case INGESTCOMPLETED -> {
                     Dataset dataset = datasetSvc.find(objectId);
                     if (dataset != null) {
@@ -100,7 +108,21 @@ public class Notifications extends AbstractApiBean {
                         notificationObjectBuilder.add("userGuideTabularIngestUrl", systemConfig.getGuidesBaseUrl() + "/" + systemConfig.getGuidesVersion() + "/user/dataset-management.html#tabular-data-files");
                     }
                 }
+                case INGESTCOMPLETEDWITHERRORS -> {
+                }
                 case PUBLISHEDDS -> {
+                    if (objectId != null) {
+                        DatasetVersion publishedDatasetVersion = datasetVersionSvc.find(notification.getObjectId());
+                        if (publishedDatasetVersion != null) {
+                            // Same fields as RETURNEDDS but no "&version=DRAFT".
+                            notificationObjectBuilder.add("datasetTitle", publishedDatasetVersion.getTitle());
+                            String PID = publishedDatasetVersion.getDataset().getGlobalId().asString();
+                            notificationObjectBuilder.add("datasetRelativeUrlToRootWithSpa", systemConfig.SPA_PREFIX + "/datasets?persistentId=" + PID);
+                            Dataverse parentCollection = publishedDatasetVersion.getDataset().getOwner();
+                            notificationObjectBuilder.add("parentCollectionName", parentCollection.getName());
+                            notificationObjectBuilder.add("parentCollectionRelativeUrlToRootWithSpa", systemConfig.SPA_PREFIX + "/collections/" + parentCollection.getAlias());
+                        }
+                    }
                 }
                 case REQUESTFILEACCESS -> {
                     DataFile requestedFile = fileSvc.find(objectId);
@@ -112,6 +134,12 @@ public class Notifications extends AbstractApiBean {
                     notificationObjectBuilder.add("datasetTitle", datasetTitle);
                     // FIXME: Once the SPA has implemented managing file permission, update this URL (currently, it's a guess).
                     notificationObjectBuilder.add("manageFilePermissionsRelativeUrlToRootWithSpa", systemConfig.SPA_PREFIX + "/permissions-manage-files?Id=" + objectId);
+                }
+                case REQUESTEDFILEACCESS -> {
+                }
+                case GRANTFILEACCESS -> {
+                }
+                case REJECTFILEACCESS -> {
                 }
                 case SUBMITTEDDS -> {
                     if (objectId != null) {
@@ -135,6 +163,7 @@ public class Notifications extends AbstractApiBean {
                     if (objectId != null) {
                         DatasetVersion submittedDatasetVersion = datasetVersionSvc.find(notification.getObjectId());
                         if (submittedDatasetVersion != null) {
+                            // Same fields as PUBLISHEDDS but has "&version=DRAFT".
                             notificationObjectBuilder.add("datasetTitle", submittedDatasetVersion.getTitle());
                             // https://beta.dataverse.org/spa/datasets?persistentId=doi:10.5072/FK2/NC2HAO&version=DRAFT
                             String PID = submittedDatasetVersion.getDataset().getGlobalId().asString();
@@ -146,6 +175,8 @@ public class Notifications extends AbstractApiBean {
                     }
                 }
                 case ASSIGNROLE -> {
+                }
+                case REVOKEROLE -> {
                 }
                 default -> {
                 }

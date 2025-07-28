@@ -445,6 +445,10 @@ public class InReviewWorkflowIT {
         authorsChecksForCommentsPostPublication.prettyPrint();
         authorsChecksForCommentsPostPublication.then().assertThat()
                 .body("data.notifications[0].type", equalTo(PUBLISHEDDS.toString()))
+                .body("data.notifications[0].datasetTitle", equalTo("newTitle"))
+                .body("data.notifications[0].datasetRelativeUrlToRootWithSpa", equalTo("/spa/datasets?persistentId=" + datasetPersistentId))
+                .body("data.notifications[0].parentCollectionName", equalTo(dataverseAlias))
+                .body("data.notifications[0].parentCollectionRelativeUrlToRootWithSpa", equalTo("/spa/collections/" + dataverseAlias))
                 .body("data.notifications[1].type", equalTo(RETURNEDDS.toString()))
                 // .body("data.notifications[1].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 //  .body("data.notifications[1].reasonsForReturn[1].message", equalTo("A README is required."))
@@ -458,7 +462,9 @@ public class InReviewWorkflowIT {
 
         // These println's are here in case you want to log into the GUI to see what notifications look like.
         System.out.println("Curator username/password: " + curatorUsername);
+        System.out.println("Curator API token: " + curatorApiToken);
         System.out.println("Author username/password: " + authorUsername);
+        System.out.println("Author API token: " + authorApiToken);
 
     }
 
