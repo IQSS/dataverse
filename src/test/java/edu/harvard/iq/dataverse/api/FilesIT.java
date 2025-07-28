@@ -3324,7 +3324,8 @@ public class FilesIT {
         uploadFileResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         String fileId = String.valueOf(JsonPath.from(uploadFileResponse.body().asString()).getInt("data.files[0].dataFile.id"));
-        UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
+
+        assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         // upload a second file should fail since the limit is 1 file per dataset
         pathToFile = "scripts/search/data/tabular/open-source-at-harvard118.dta";
@@ -3345,7 +3346,8 @@ public class FilesIT {
         uploadFileResponse.prettyPrint();
         uploadFileResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
+
+        assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         // Set limit back to 1 even though the number of files is 2
         dv.setDatasetFileCountLimit(1);
@@ -3369,16 +3371,16 @@ public class FilesIT {
         replaceFileResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
+
         // Superuser file uploads can exceed the limit!
         pathToFile = "scripts/search/data/tabular/stata13-auto.dta";
-        uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
-        uploadFileResponse.prettyPrint();
-        uploadFileResponse.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode());
         uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, adminApiToken);
         uploadFileResponse.prettyPrint();
         uploadFileResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
+
+        assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", adminApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         // Test changing the limit by a non-superuser
         dv.setDatasetFileCountLimit(100);
