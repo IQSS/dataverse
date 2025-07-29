@@ -322,19 +322,19 @@ public class JsonPrinter {
 
         return bld;
     }
-    public static JsonArrayBuilder json(List<Dataverse> collections, Boolean includeDescription) {
+
+    // For UI drop down list. Only needing display name and identifier
+    public static JsonArrayBuilder jsonArray(List<Dataverse> collections) {
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
         for (Dataverse dataverse : collections) {
             NullSafeJsonBuilder jsonObject = NullSafeJsonBuilder.jsonObjectBuilder();
-            jsonObject.add("name", dataverse.getName());
+            jsonObject.add("name", dataverse.getDisplayName());
             jsonObject.add("alias", dataverse.getAlias());
-            if (includeDescription != null && includeDescription) {
-                jsonObject.add("description", dataverse.getDescription());
-            }
             jsonArrayBuilder.add(jsonObject);
         }
         return jsonArrayBuilder;
     }
+
     public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
         JsonArrayBuilder jsonArrayOfContacts = Json.createArrayBuilder();
         for (DataverseContact dataverseContact : dataverseContacts) {

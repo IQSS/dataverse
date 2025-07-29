@@ -5,6 +5,8 @@ package edu.harvard.iq.dataverse.mydata;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.engine.command.impl.GetUserPermittedCollectionsCommand;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
@@ -23,7 +25,6 @@ import edu.harvard.iq.dataverse.search.SortBy;
 import java.util.*;
 import java.util.logging.Logger;
 
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
 import jakarta.json.*;
@@ -449,10 +450,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path(retrieveDataPartialAPIPath + "/collectionList")
-    @Produces({"application/json"})
-    public String retrieveMyCollectionList(@Context ContainerRequestContext crc, @QueryParam("userIdentifier") String userIdentifier,
-                                           @QueryParam("includeDescriptions") Boolean includeDescriptions) {
-        String noMsgResultsFound = BundleUtil.getStringFromBundle("dataretrieverAPI.noMsgResultsFound");
+    @Produces("application/json")
+    public String retrieveMyCollectionList(@Context ContainerRequestContext crc, @QueryParam("userIdentifier") String userIdentifier) {
         if ((session.getUser() != null) && (session.getUser().isAuthenticated())) {
             authUser = (AuthenticatedUser) session.getUser();
         } else {
@@ -466,89 +465,21 @@ public class DataRetrieverAPI extends AbstractApiBean {
             }
         }
         // If the user is a superuser, see if a userIdentifier has been specified and use that instead
-        AuthenticatedUser searchUser = null;
+        AuthenticatedUser searchUser = authUser;
         if ((authUser.isSuperuser()) && (userIdentifier != null) && (!userIdentifier.isEmpty())) {
             searchUser = getUserFromIdentifier(userIdentifier);
-            if (searchUser != null) {
-                authUser = searchUser;
-            } else {
+            if (searchUser == null) {
                 return this.getJSONErrorString(
                         BundleUtil.getStringFromBundle("dataretrieverAPI.user.not.found", Arrays.asList(userIdentifier)),
                         null);
             }
         }
-        roleList = dataverseRoleService.findAll();
-        rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
-        List<Long> roleIdList = Arrays.asList(1L, 3L, 5L, 7L);
-
-        // ---------------------------------
-        // (1) Initialize filterParams and check for Errors
-        // ---------------------------------
-        DataverseRequest dataverseRequest = createDataverseRequest(authUser);
-
-        MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, Arrays.asList(DvObject.DType.Dataverse), MyDataFilterParams.allPublishedStates, roleIdList, null, null);
-        if (filterParams.hasError()){
-            return this.getJSONErrorString(filterParams.getErrorMessage(), filterParams.getErrorMessage());
-        }
-
-        // ---------------------------------
-        // (2) Initialize MyDataFinder and check for Errors
-        // ---------------------------------
-        myDataFinder = new MyDataFinder(rolePermissionHelper,
-                roleAssigneeService,
-                dvObjectServiceBean,
-                groupService);
-        this.myDataFinder.runFindDataSteps(filterParams);
-        if (myDataFinder.hasError()){
-            return this.getJSONErrorString(myDataFinder.getErrorMessage(), myDataFinder.getErrorMessage());
-        }
-
-        // ---------------------------------
-        // (3) Make Solr Query
-        // ---------------------------------
-        int paginationStart = 0;
-        int totalCount;
-        List<Dataverse> collections = new ArrayList<>();
-
-        List<String> filterQueries = this.myDataFinder.getSolrFilterQueries();
-        if (filterQueries==null){
-            logger.fine("No ids found for this search");
-            return this.getJSONErrorString(noMsgResultsFound, null);
-        }
         try {
-            do {
-                solrQueryResponse = searchService.getDefaultSearchService().search(
-                        dataverseRequest,
-                        null, // subtree, default it to Dataverse for now
-                        filterParams.getSearchTerm(),  //"*", //
-                        filterQueries,//filterQueries,
-                        SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
-                        paginationStart, //paginationStart,
-                        true, // dataRelatedToMe
-                        SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
-                );
-                if (this.solrQueryResponse.getNumResultsFound() == 0) {
-                    return this.getJSONErrorString(noMsgResultsFound, null);
-                }
-                totalCount = solrQueryResponse.getNumResultsFound().intValue();
-
-                for (SolrSearchResult result : solrQueryResponse.getSolrSearchResults()) {
-                    if (result.getEntity() instanceof Dataverse) {
-                        collections.add((Dataverse) result.getEntity());
-                    }
-                    paginationStart++;
-                }
-
-            } while (totalCount > paginationStart);
-
-        } catch (SearchException ex) {
-            solrQueryResponse = null;
-            logger.severe("Solr SearchException: " + ex.getMessage());
+            JsonObjectBuilder jsonObjBuilder = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), searchUser, Permission.AddDataset.name(), true));
+            return jsonObjBuilder.build().toString();
+        } catch (WrappedResponse ex) {
+            return null;
         }
-
-        JsonArrayBuilder jsonArrayBuilder = JsonPrinter.json(collections, includeDescriptions);
-
-        return jsonArrayBuilder.build().toString();
     }
 
     private JsonObjectBuilder getDvObjectTypeCounts(SolrQueryResponse solrResponse) {
