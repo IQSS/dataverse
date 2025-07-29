@@ -111,6 +111,7 @@ public class SolrSearchServiceBean implements SearchService {
      * @param geoRadius e.g. "5"
      * @param addFacets boolean
      * @param addHighlights boolean
+     * @param addCollections boolean
      * @return
      * @throws SearchException
      */
