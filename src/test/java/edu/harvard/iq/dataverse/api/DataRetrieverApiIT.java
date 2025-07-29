@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DvObject;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
@@ -20,7 +19,6 @@ import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DataRetrieverApiIT {
 
