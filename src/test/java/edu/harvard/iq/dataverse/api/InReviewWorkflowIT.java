@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.UserNotification;
+import static edu.harvard.iq.dataverse.UserNotification.Type.ASSIGNROLE;
 import static edu.harvard.iq.dataverse.UserNotification.Type.CREATEACC;
 import static edu.harvard.iq.dataverse.UserNotification.Type.INGESTCOMPLETED;
 import static edu.harvard.iq.dataverse.UserNotification.Type.PUBLISHEDDS;
@@ -444,6 +445,7 @@ public class InReviewWorkflowIT {
         Response authorsChecksForCommentsPostPublication = UtilIT.getNotifications(authorApiToken);
         authorsChecksForCommentsPostPublication.prettyPrint();
         authorsChecksForCommentsPostPublication.then().assertThat()
+                .statusCode(OK.getStatusCode())
                 .body("data.notifications[0].type", equalTo(PUBLISHEDDS.toString()))
                 .body("data.notifications[0].datasetTitle", equalTo("newTitle"))
                 .body("data.notifications[0].datasetRelativeUrlToRootWithSpa", equalTo("/spa/datasets?persistentId=" + datasetPersistentId))
@@ -456,9 +458,21 @@ public class InReviewWorkflowIT {
                 // Yes, it's a little weird that the reason for return on the first "RETURNEDDS" changed. For now we are always showing the most recent reason for return.
                 //  .body("data.notifications[2].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 //.body("data.notifications[2].reasonsForReturn[1].message", equalTo("A README is required."))
-                .body("data.notifications[3].type", equalTo(CREATEACC.toString()))
-                //   .body("data.notifications[3].reasonsForReturn", equalTo(null))
-                .statusCode(OK.getStatusCode());
+                .body("data.notifications[3].type", equalTo(CREATEACC.toString()));
+
+        Response curatorCheckNotificationsPostPublication = UtilIT.getNotifications(curatorApiToken);
+        curatorCheckNotificationsPostPublication.prettyPrint();
+        curatorCheckNotificationsPostPublication.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.notifications[0].type", equalTo(PUBLISHEDDS.toString()))
+                .body("data.notifications[0].datasetTitle", equalTo("newTitle"))
+                .body("data.notifications[0].datasetRelativeUrlToRootWithSpa", equalTo("/spa/datasets?persistentId=" + datasetPersistentId))
+                .body("data.notifications[0].parentCollectionName", equalTo(dataverseAlias))
+                .body("data.notifications[0].parentCollectionRelativeUrlToRootWithSpa", equalTo("/spa/collections/" + dataverseAlias))
+                .body("data.notifications[1].type", equalTo(ASSIGNROLE.toString()))
+                .body("data.notifications[1].role", equalTo("Admin"))
+                .body("data.notifications[1].collectionName", equalTo(dataverseAlias))
+                .body("data.notifications[1].collectionRelativeUrlToRootWithSpa", equalTo("/spa/collections/" + dataverseAlias));
 
         // These println's are here in case you want to log into the GUI to see what notifications look like.
         System.out.println("Curator username/password: " + curatorUsername);

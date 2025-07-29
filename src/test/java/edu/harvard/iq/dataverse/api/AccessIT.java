@@ -561,7 +561,13 @@ public class AccessIT {
         //grant file access
         Response grantFileAccessResponse = UtilIT.grantFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
         assertEquals(200, grantFileAccessResponse.getStatusCode());
-        
+
+        Response getNotificationsRando = UtilIT.getNotifications(apiTokenRando);
+        getNotificationsRando.prettyPrint();
+        getNotificationsRando.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.notifications[0].type", equalTo("PUBLISHEDDS.toString()"));
+
         //if you make a request while you have been granted access you should get a command exception
         requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
         assertEquals(400, requestFileAccessResponse.getStatusCode());

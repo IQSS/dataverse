@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -44,6 +45,7 @@ import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
+import java.util.ArrayList;
 
 /**
  * Your one-stop-shop for deciding which user can do what action on which
@@ -963,5 +965,29 @@ public class PermissionServiceBean {
         }
         return null;
     }
+
+    // Originially from DataverseUserPage (added in 42acebd).
+    public String getRoleStringFromUser(AuthenticatedUser au, DvObject dvObj) {
+        // Find user's role(s) for given dataverse/dataset
+        Set<RoleAssignment> roles = assignmentsFor(au, dvObj);
+        List<String> roleNames = new ArrayList<>();
+
+        // Include roles derived from a user's groups
+        Set<Group> groupsUserBelongsTo = groupService.groupsFor(au, dvObj);
+        for (Group g : groupsUserBelongsTo) {
+            roles.addAll(assignmentsFor(g, dvObj));
+        }
+
+        for (RoleAssignment ra : roles) {
+            roleNames.add(ra.getRole().getName());
+        }
+
+        if (roleNames.isEmpty()) {
+            // TODO: internationalize this
+            return "[Unknown]";
+        }
+        return String.join("/", roleNames);
+    }
+
 }
 

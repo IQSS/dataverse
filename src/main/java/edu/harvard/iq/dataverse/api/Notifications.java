@@ -50,11 +50,14 @@ public class Notifications extends AbstractApiBean {
     private static final String DATASET_TITLE = "datasetTitle";
     private static final String DATASET_RELATIVE_URL_TO_ROOT_WITH_SPA = "datasetRelativeUrlToRootWithSpa";
     private static final String MANAGE_FILE_PERMISSIONS_RELATIVE_URL_TO_ROOT_WITH_SPA = "manageFilePermissionsRelativeUrlToRootWithSpa";
+    private static final String COLLECTION_NAME = "collectionName";
+    private static final String COLLECTION_RELATIVE_URL_TO_ROOT_WITH_SPA = "collectionRelativeUrlToRootWithSpa";
     private static final String PARENT_COLLECTION_NAME = "parentCollectionName";
-    private static final String PARENT_COLLECTION_URL = "parentCollectionRelativeUrlToRootWithSpa";
+    private static final String PARENT_COLLECTION_URL_RELATIVE_URL_TO_ROOT_WITH_SPA = "parentCollectionRelativeUrlToRootWithSpa";
     private static final String REQUESTOR_FIRST_NAME = "requestorFirstName";
     private static final String REQUESTOR_LAST_NAME = "requestorLastName";
     private static final String REQUESTOR_EMAIL = "requestorEmail";
+    private static final String ROLE = "role";
     private static final String USER_GUIDE_URL = "userGuideUrl";
     private static final String USER_GUIDE_TABULAR_INGEST_URL = "userGuideTabularIngestUrl";
 
@@ -142,7 +145,7 @@ public class Notifications extends AbstractApiBean {
                             notificationObjectBuilder.add(DATASET_RELATIVE_URL_TO_ROOT_WITH_SPA, systemConfig.SPA_PREFIX + "/datasets?persistentId=" + PID);
                             Dataverse parentCollection = publishedDatasetVersion.getDataset().getOwner();
                             notificationObjectBuilder.add(PARENT_COLLECTION_NAME, parentCollection.getName());
-                            notificationObjectBuilder.add(PARENT_COLLECTION_URL, systemConfig.SPA_PREFIX + "/collections/" + parentCollection.getAlias());
+                            notificationObjectBuilder.add(PARENT_COLLECTION_URL_RELATIVE_URL_TO_ROOT_WITH_SPA, systemConfig.SPA_PREFIX + "/collections/" + parentCollection.getAlias());
                         }
                     }
                 }
@@ -174,7 +177,7 @@ public class Notifications extends AbstractApiBean {
                             notificationObjectBuilder.add(REQUESTOR_EMAIL, requestor.getEmail());
                             Dataverse parentCollection = submittedDatasetVersion.getDataset().getOwner();
                             notificationObjectBuilder.add(PARENT_COLLECTION_NAME, parentCollection.getName());
-                            notificationObjectBuilder.add(PARENT_COLLECTION_URL, systemConfig.SPA_PREFIX + "/collections/" + parentCollection.getAlias());
+                            notificationObjectBuilder.add(PARENT_COLLECTION_URL_RELATIVE_URL_TO_ROOT_WITH_SPA, systemConfig.SPA_PREFIX + "/collections/" + parentCollection.getAlias());
                         }
                     }
                 }
@@ -187,11 +190,22 @@ public class Notifications extends AbstractApiBean {
                             notificationObjectBuilder.add(DATASET_RELATIVE_URL_TO_ROOT_WITH_SPA, systemConfig.SPA_PREFIX + "/datasets?persistentId=" + PID + "&version=DRAFT");
                             Dataverse parentCollection = submittedDatasetVersion.getDataset().getOwner();
                             notificationObjectBuilder.add(PARENT_COLLECTION_NAME, parentCollection.getName());
-                            notificationObjectBuilder.add(PARENT_COLLECTION_URL, systemConfig.SPA_PREFIX + "/collections/" + parentCollection.getAlias());
+                            notificationObjectBuilder.add(PARENT_COLLECTION_URL_RELATIVE_URL_TO_ROOT_WITH_SPA, systemConfig.SPA_PREFIX + "/collections/" + parentCollection.getAlias());
                         }
                     }
                 }
                 case ASSIGNROLE -> {
+                    if (objectId != null) {
+                        // TODO: handle datasets and files as well. See ASSIGNROLE in dataverseuser.xhtml
+                        Dataverse definitionPoint = dataverseSvc.find(objectId);
+                        if (definitionPoint != null) {
+                            String roleString = permissionSvc.getRoleStringFromUser(authenticatedUser, definitionPoint);
+                            System.out.println("role string: " + roleString);
+                            notificationObjectBuilder.add(ROLE, roleString);
+                            notificationObjectBuilder.add(COLLECTION_NAME, definitionPoint.getName());
+                            notificationObjectBuilder.add(COLLECTION_RELATIVE_URL_TO_ROOT_WITH_SPA, systemConfig.SPA_PREFIX + "/collections/" + definitionPoint.getAlias());
+                        }
+                    }
                 }
                 case REVOKEROLE -> {
                 }

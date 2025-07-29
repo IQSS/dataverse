@@ -454,6 +454,7 @@ public class DataverseUserPage implements java.io.Serializable {
 
     
     private String getRoleStringFromUser(AuthenticatedUser au, DvObject dvObj) {
+        // TODO: call into PermissionServiceBean.getRoleStringFromUser instead
         // Find user's role(s) for given dataverse/dataset
         Set<RoleAssignment> roles = permissionService.assignmentsFor(au, dvObj);
         List<String> roleNames = new ArrayList<>();

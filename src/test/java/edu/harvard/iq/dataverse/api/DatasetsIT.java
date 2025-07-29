@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.DatasetVersion.DEACCESSION_LINK_MAX_LENGTH;
 import static edu.harvard.iq.dataverse.UserNotification.Type.CHECKSUMFAIL;
+import static edu.harvard.iq.dataverse.UserNotification.Type.CREATEACC;
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
@@ -2222,6 +2223,14 @@ public class DatasetsIT {
         giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "fileDownloader", "@" + randomUsername, apiToken);
                 giveRandoPermission.prettyPrint();
         assertEquals(200, giveRandoPermission.getStatusCode());
+
+        //Random user checks notifications but isn't informed they have been granted access (bug?)
+        Response getNotificationsRando = UtilIT.getNotifications(randomUserApiToken);
+        getNotificationsRando.prettyPrint();
+        getNotificationsRando.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.notifications[0].type", equalTo(CREATEACC.toString()))
+                .body("data.notifications[1]", equalTo(null));
 
         //Asserting same role creation is covered
         validateAssignExistingRole(datasetPersistentId,randomUsername,apiToken, "fileDownloader");
