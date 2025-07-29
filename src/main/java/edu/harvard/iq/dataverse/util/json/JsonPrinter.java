@@ -328,6 +328,7 @@ public class JsonPrinter {
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
         for (Dataverse dataverse : collections) {
             NullSafeJsonBuilder jsonObject = NullSafeJsonBuilder.jsonObjectBuilder();
+            jsonObject.add("id", dataverse.getId());
             jsonObject.add("name", dataverse.getDisplayName());
             jsonObject.add("alias", dataverse.getAlias());
             jsonArrayBuilder.add(jsonObject);
