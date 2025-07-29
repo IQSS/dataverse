@@ -71,13 +71,17 @@ public class JsonLDExportIT {
                 .add("description", problematicDescription)
                 .add("label", "test-file-with-csp-tag.tab");
 
+            String pathToFile = "src/test/resources/tab/test.tab";
+
             Response uploadResponse = UtilIT.uploadFileViaNative(
                 datasetId.toString(),
-                "src/test/resources/tab/test.tab",
+                pathToFile,
                 fileMetadata.build(),
                 apiToken
             );
             uploadResponse.then().assertThat().statusCode(200);
+
+            assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
             // Publish dataset
             Response publishResponse = UtilIT.publishDatasetViaNativeApi(
