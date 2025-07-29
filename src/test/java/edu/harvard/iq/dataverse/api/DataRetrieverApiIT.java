@@ -19,6 +19,7 @@ import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DataRetrieverApiIT {
 
@@ -175,9 +176,9 @@ public class DataRetrieverApiIT {
         // Superuser gets the list of Dataverses/Collections it has access to
         retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(superUserApiToken, null);
         retrieveMyCollectionListResponse.prettyPrint();
-        // The count should show the list size to be only Root Dataverse count
+        // The count should show the list size of all Dataverses (including any Dataverses created by other tests)
         items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("items");
-        assertEquals(rootCount, items.size());
+        assertTrue(items.size() >= rootCount + user1DataverseCount + user2DataverseCount);
 
         // Superuser gets the list of Dataverses/Collections User1 has access to
         retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(superUserApiToken, User1Username);
