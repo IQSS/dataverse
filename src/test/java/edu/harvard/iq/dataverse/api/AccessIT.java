@@ -9,6 +9,7 @@ import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.DataFile;
+import static edu.harvard.iq.dataverse.UserNotification.Type.REQUESTEDFILEACCESS;
 import static edu.harvard.iq.dataverse.UserNotification.Type.REQUESTFILEACCESS;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
@@ -688,6 +689,11 @@ public class AccessIT {
         // Request file access for the new user
         Response requestFileAccessResponse = UtilIT.requestFileAccess(dataFileId, newUserApiToken);
         requestFileAccessResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Response getNotifications = UtilIT.getNotifications(newUserApiToken);
+        getNotifications.prettyPrint();
+        getNotifications.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.notifications[0].type", equalTo(REQUESTEDFILEACCESS.toString()));
 
         // Call with new user and requested access file
         getUserFileAccessRequestedResponse = UtilIT.getUserFileAccessRequested(dataFileId, newUserApiToken);
