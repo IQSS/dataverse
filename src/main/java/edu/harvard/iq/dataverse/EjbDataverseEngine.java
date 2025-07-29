@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetFieldsValidator;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -26,7 +27,8 @@ import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SearchServiceFactory;
+
 import java.util.Map;
 import java.util.Set;
 import jakarta.ejb.EJB;
@@ -87,7 +89,7 @@ public class EjbDataverseEngine {
     SolrIndexServiceBean solrIndexService;
 
     @EJB
-    SearchServiceBean searchService;
+    SearchServiceFactory searchServiceFactory;
     
     @EJB
     IngestServiceBean ingestService;
@@ -190,6 +192,9 @@ public class EjbDataverseEngine {
 
     @EJB
     DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
+
+    @EJB
+    LicenseServiceBean licenseServiceBean;
 
     @EJB
     DatasetFieldsValidator datasetFieldsValidator;
@@ -441,8 +446,8 @@ public class EjbDataverseEngine {
                 }
 
                 @Override
-                public SearchServiceBean search() {
-                    return searchService;
+                public SearchServiceFactory search() {
+                    return searchServiceFactory;
                 }
 
                 @Override
@@ -538,6 +543,11 @@ public class EjbDataverseEngine {
                 @Override
                 public DatasetFieldsValidator datasetFieldsValidator() {
                     return datasetFieldsValidator;
+                }
+
+                @Override
+                public LicenseServiceBean licenses() {
+                    return licenseServiceBean;
                 }
 
                 @Override

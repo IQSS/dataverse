@@ -73,10 +73,14 @@ public class JsonPrinter {
 
     @EJB
     static DatasetFieldServiceBean datasetFieldService;
+
+    @EJB
+    static DatasetServiceBean datasetService;
     
-    public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb, DataverseFieldTypeInputLevelServiceBean dfils) {
+    public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb, DataverseFieldTypeInputLevelServiceBean dfils, DatasetServiceBean ds) {
             settingsService = ssb;
             datasetFieldService = dfsb;
+            datasetService = ds;
     }
 
     public JsonPrinter() {
@@ -221,6 +225,14 @@ public class JsonPrinter {
         return arr;
     }
 
+    public static JsonArrayBuilder jsonDataverseRoles(List<DataverseRole> roles) {
+        JsonArrayBuilder jsonArrayOfDataverseRoles = Json.createArrayBuilder();
+        for (DataverseRole role : roles) {
+            jsonArrayOfDataverseRoles.add(json(role));
+        }
+        return jsonArrayOfDataverseRoles;
+    }
+
     public static JsonObjectBuilder json(DataverseRole role) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("alias", role.getAlias())
@@ -306,6 +318,7 @@ public class JsonPrinter {
         if (childCount != null) {
             bld.add("childCount", childCount);
         }
+        addDatasetFileCountLimit(dv, bld);
 
         return bld;
     }
@@ -410,6 +423,8 @@ public class JsonPrinter {
                 .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
                 .add("storageIdentifier", ds.getStorageIdentifier());
+        addDatasetFileCountLimit(ds, bld);
+
         if (DvObjectContainer.isMetadataLanguageSet(ds.getMetadataLanguage())) {
             bld.add("metadataLanguage", ds.getMetadataLanguage());
         }
@@ -418,6 +433,21 @@ public class JsonPrinter {
         }
         bld.add("datasetType", ds.getDatasetType().getName());
         return bld;
+    }
+
+    private static void addDatasetFileCountLimit(DvObjectContainer dvo, JsonObjectBuilder bld) {
+        Integer effectiveDatasetFileCountLimit = dvo.getEffectiveDatasetFileCountLimit();
+        if (dvo.isDatasetFileCountLimitSet(effectiveDatasetFileCountLimit)) {
+            bld.add("effectiveDatasetFileCountLimit", effectiveDatasetFileCountLimit);
+        }
+        Integer datasetFileCountLimit = dvo.getDatasetFileCountLimit();
+        if (dvo.isDatasetFileCountLimitSet(datasetFileCountLimit)) {
+            bld.add("datasetFileCountLimit", datasetFileCountLimit);
+        }
+        if (dvo.isInstanceofDataset() && dvo.isDatasetFileCountLimitSet(effectiveDatasetFileCountLimit)) {
+            int available = effectiveDatasetFileCountLimit - datasetService.getDataFileCountByOwner(dvo.getId());
+            bld.add("datasetFileUploadsAvailable", Math.max(0, available));
+        }
     }
 
     public static JsonObjectBuilder json(FileDetailsHolder ds) {
@@ -444,6 +474,7 @@ public class JsonPrinter {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dataset.getId())
                 .add("datasetPersistentId", dataset.getGlobalId().asString())
+                .add("datasetType", dataset.getDatasetType().getName())
                 .add("storageIdentifier", dataset.getStorageIdentifier())
                 .add("versionNumber", dsv.getVersionNumber())
                 .add("internalVersionNumber", dsv.getVersion())
@@ -462,6 +493,7 @@ public class JsonPrinter {
                 .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
                 .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD())
                 .add("versionNote", dsv.getVersionNote());
+        addDatasetFileCountLimit(dataset, bld);
 
         License license = DatasetUtil.getLicense(dsv);
         if (license != null) {
@@ -723,6 +755,7 @@ public class JsonPrinter {
         fieldsBld.add("description", fld.getDescription());
         fieldsBld.add("multiple", fld.isAllowMultiples());
         fieldsBld.add("isControlledVocabulary", fld.isControlledVocabulary());
+        fieldsBld.add("isAdvancedSearchFieldType", fld.isAdvancedSearchFieldType());
         fieldsBld.add("displayFormat", fld.getDisplayFormat());
         fieldsBld.add("displayOrder", fld.getDisplayOrder());
 
@@ -873,7 +906,8 @@ public class JsonPrinter {
                 .add("tabularData", df.isTabularData())
                 .add("tabularTags", getTabularFileTags(df))
                 .add("creationDate", df.getCreateDateFormattedYYYYMMDD())
-                .add("publicationDate",  df.getPublicationDateFormattedYYYYMMDD());
+                .add("publicationDate",  df.getPublicationDateFormattedYYYYMMDD())
+                .add("lastUpdateTime", format(fileMetadata.getDatasetVersion().getLastUpdateTime()));
         Dataset dfOwner = df.getOwner();
         if (dfOwner != null) {
             builder.add("fileAccessRequest", dfOwner.isFileAccessRequest());
@@ -1493,13 +1527,87 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DataverseFeaturedItem dataverseFeaturedItem) {
-        return jsonObjectBuilder()
+        NullSafeJsonBuilder job = jsonObjectBuilder()
                 .add("id", dataverseFeaturedItem.getId())
                 .add("content", dataverseFeaturedItem.getContent())
                 .add("imageFileName", dataverseFeaturedItem.getImageFileName())
                 .add("imageFileUrl", dataverseFeaturedItem.getImageFileUrl())
                 .add("displayOrder", dataverseFeaturedItem.getDisplayOrder())
-                .add("type", dataverseFeaturedItem.getType())
-                .add("dvObject", (dataverseFeaturedItem.getDvObject() != null) ? dataverseFeaturedItem.getDvObject().getId() : null);
+                .add("type", dataverseFeaturedItem.getType());
+
+        DvObject dvObject = dataverseFeaturedItem.getDvObject();
+        if (dvObject != null) {
+            String identifier = null;
+            String displayName = null;
+    
+            if (dvObject.isInstanceofDataverse()) {
+                identifier = ((Dataverse) dvObject).getAlias();
+                displayName = ((Dataverse) dvObject).getName();
+            } else if (dvObject.isInstanceofDataset()) {
+                identifier = dvObject.getGlobalId() != null ? dvObject.getGlobalId().asString() : String.valueOf(dvObject.getId());
+                displayName = ((Dataset) dvObject).getCurrentName();
+            } else if (dvObject.isInstanceofDataFile()) {
+                identifier = String.valueOf(dvObject.getId());
+                displayName = ((DataFile) dvObject).getDisplayName();
+            }
+    
+            job.add("dvObjectIdentifier", identifier);
+            job.add("dvObjectDisplayName", displayName);
+        }
+        return job;
+    }
+
+    public static JsonArrayBuilder jsonTemplates(List<Template> templates) {
+        JsonArrayBuilder templatesArrayBuilder = Json.createArrayBuilder();
+        for (Template template : templates) {
+            templatesArrayBuilder.add(jsonTemplate(template));
+        }
+        return templatesArrayBuilder;
+    }
+
+    public static JsonObjectBuilder jsonTemplate(Template template) {
+        return jsonObjectBuilder()
+                .add("id", template.getId())
+                .add("name", template.getName())
+                .add("usageCount", template.getUsageCount())
+                .add("createTime", template.getCreateTime().toString())
+                .add("createDate", template.getCreateDate())
+                .add("termsOfUseAndAccess", jsonTermsOfUseAndAccess(template.getTermsOfUseAndAccess()))
+                .add("datasetFields", jsonByBlocks(template.getDatasetFields()))
+                .add("instructions", jsonTemplateInstructions(template.getInstructionsMap()))
+                .add("dataverseAlias", template.getDataverse().getAlias());
+    }
+
+    public static JsonObjectBuilder jsonTermsOfUseAndAccess(TermsOfUseAndAccess termsOfUseAndAccess) {
+        return jsonObjectBuilder()
+                .add("id", termsOfUseAndAccess.getId())
+                .add("license", json(termsOfUseAndAccess.getLicense()))
+                .add("termsOfUse", termsOfUseAndAccess.getTermsOfUse())
+                .add("termsOfAccess", termsOfUseAndAccess.getTermsOfAccess())
+                .add("confidentialityDeclaration", termsOfUseAndAccess.getConfidentialityDeclaration())
+                .add("specialPermissions", termsOfUseAndAccess.getSpecialPermissions())
+                .add("restrictions", termsOfUseAndAccess.getRestrictions())
+                .add("citationRequirements", termsOfUseAndAccess.getCitationRequirements())
+                .add("depositorRequirements", termsOfUseAndAccess.getDepositorRequirements())
+                .add("conditions", termsOfUseAndAccess.getConditions())
+                .add("disclaimer", termsOfUseAndAccess.getDisclaimer())
+                .add("dataAccessPlace", termsOfUseAndAccess.getDataAccessPlace())
+                .add("originalArchive", termsOfUseAndAccess.getOriginalArchive())
+                .add("availabilityStatus", termsOfUseAndAccess.getAvailabilityStatus())
+                .add("sizeOfCollection", termsOfUseAndAccess.getSizeOfCollection())
+                .add("studyCompletion", termsOfUseAndAccess.getStudyCompletion());
+    }
+
+    public static JsonArrayBuilder jsonTemplateInstructions(Map<String, String> templateInstructions) {
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+
+        for (Map.Entry<String, String> entry : templateInstructions.entrySet()) {
+            JsonObjectBuilder instructionObject = Json.createObjectBuilder()
+                    .add("instructionField", entry.getKey())
+                    .add("instructionText", entry.getValue());
+            jsonArrayBuilder.add(instructionObject);
+        }
+
+        return jsonArrayBuilder;
     }
 }

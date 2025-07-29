@@ -37,7 +37,7 @@ Some of the steps in this document are well-served by having their own dedicated
 There are a variety of reasons why a step might deserve its own dedicated issue:
 
 - The step can be done by a team member other than the person doing the release.
-- Stakeholders might be interested in the status of a step (e.g. has the released been deployed to the demo site).
+- Stakeholders might be interested in the status of a step (e.g. has the release been deployed to the demo site).
 
 Steps don't get their own dedicated issue if it would be confusing to have multiple people involved. Too many cooks in the kitchen, as they say. Also, some steps are so small the overhead of an issue isn't worth it.
 
@@ -81,10 +81,11 @@ Developers express the need for an addition to release notes by creating a "rele
 The task at or near release time is to collect these snippets into a single file.
 
 - Find the issue in GitHub that tracks the work of creating release notes for the upcoming release.
-- Create a branch, add a .md file for the release (ex. 5.10.1 Release Notes) in ``/doc/release-notes`` and write the release notes, making sure to pull content from the release note snippets mentioned above. Snippets may not include any issue number or pull request number in the text so be sure copy the number from the filename of the snippet into the final release note.
+- Create a branch, add a .md file for the release (ex. 5.10.1 Release Notes) in ``/doc/release-notes`` and write the release notes, making sure to pull content from the release note snippets mentioned above. Snippets may not include any issue number or pull request number in the text so be sure to copy the number from the filename of the snippet into the final release note.
 - Delete (``git rm``) the release note snippets as the content is added to the main release notes file.
 - Include instructions describing the steps required to upgrade the application from the previous version. These must be customized for release numbers and special circumstances such as changes to metadata blocks and infrastructure.
-- Take the release notes .md through the regular Code Review and QA process. That is, make a pull request. Here's an example: https://github.com/IQSS/dataverse/pull/10866
+- Make a pull request. Here's an example: https://github.com/IQSS/dataverse/pull/11613
+- Note that we won't merge the release notes until after we have confirmed that the upgrade instructions are valid by performing a couple upgrades.
 
 Deploy Release Candidate to Internal
 ------------------------------------
@@ -92,6 +93,8 @@ Deploy Release Candidate to Internal
 |dedicated|
 
 To upgrade internal, go to /doc/release-notes, open the release-notes.md file for the current release and perform all the steps under "Upgrade Instructions".
+
+Note that we haven't bumped the version yet so you won't be able to follow the steps exactly.
 
 Deploy Release Candidate to Demo
 --------------------------------
@@ -115,7 +118,14 @@ This will build the war file, and then automatically deploy it on dataverse-inte
 
 You can scp the war file to the demo server or download it from https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ws/target/
 
-ssh into the demo server and follow the upgrade instructions in the release notes.
+ssh into the demo server and follow the upgrade instructions in the release notes. Again, note that we haven't bumped the version yet.
+
+Merge Release Notes (Once Ready)
+--------------------------------
+
+If the upgrade instructions are perfect, simply merge the release notes.
+
+If the upgrade instructions aren't quite right, work with the authors of the release notes until they are good enough, and then merge.
 
 Prepare Release Branch
 ----------------------
@@ -135,11 +145,11 @@ Make the following changes in the release branch.
 Increment the version number to the milestone (e.g. 5.10.1) in the following two files:
 
 - modules/dataverse-parent/pom.xml -> ``<properties>`` -> ``<revision>`` (e.g. `pom.xml commit <https://github.com/IQSS/dataverse/commit/3943aa0>`_)
-- doc/sphinx-guides/source/conf.py (two places, e.g. `conf.py commit <https://github.com/IQSS/dataverse/commit/18fd296>`_)  
+- doc/sphinx-guides/source/conf.py
 
-Add the version being released to the lists in the following file:
+In the following ``versions.rst`` file:
 
-- doc/sphinx-guides/source/versions.rst (e.g. `versions.rst commit <https://github.com/IQSS/dataverse/commit/0511245>`_)
+- doc/sphinx-guides/source/versions.rst - Below the ``- |version|`` bullet (``|version|`` comes from the ``conf.py`` file you just edited), add a bullet for what is soon to be the previous release.
 
 Return to the parent pom and make the following change, which is necessary for proper tagging of images:
 
@@ -147,9 +157,9 @@ Return to the parent pom and make the following change, which is necessary for p
 
 (Before you make this change the value should be ``${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}``. Later on, after cutting a release, we'll change it back to that value.)
 
-For a regular release, make the changes above in the release branch you created, but hold off for a moment on making a pull requests because Jenkins will fail because it will be testing the previous release.
+For a regular release, make the changes above in the release branch you created, but hold off for a moment on making a pull request because Jenkins will fail because it will be testing the previous release.
 
-In the dataverse-ansible repo make bump the version in `jenkins.yml <https://github.com/gdcc/dataverse-ansible/blob/develop/tests/group_vars/jenkins.yml>`_ and make a pull request such as https://github.com/gdcc/dataverse-ansible/pull/386. Wait for it to be merged. Note that bumping on the Jenkins side like this will mean that all pull requests will show failures in Jenkins until they are updated to the version we are releasing.
+In the dataverse-ansible repo bump the version in `jenkins.yml <https://github.com/gdcc/dataverse-ansible/blob/develop/tests/group_vars/jenkins.yml>`_ and make a pull request such as https://github.com/gdcc/dataverse-ansible/pull/386. Wait for it to be merged. Note that bumping on the Jenkins side like this will mean that all pull requests will show failures in Jenkins until they are updated to the version we are releasing.
 
 Once dataverse-ansible has been merged, return to the branch you created above ("10852-bump-to-6.4" or whatever) and make a pull request. Ensure that all tests are passing and then put the PR through the normal review and QA process.
 
@@ -174,15 +184,13 @@ Check for merged pull requests that have no milestone by going to https://github
 (Optional) Test Docker Images
 -----------------------------
 
-After the "master" branch has been updated and the GitHub Action to build and push Docker images has run (see `PR #9776 <https://github.com/IQSS/dataverse/pull/9776>`_), go to https://hub.docker.com/u/gdcc and make sure the "alpha" tag for the following images has been updated:
+After the "master" branch has been updated and the GitHub Action to build and push Docker images has run (see `PR #9776 <https://github.com/IQSS/dataverse/pull/9776>`_), go to https://hub.docker.com/u/gdcc and make sure the "latest" tag for the following images has been updated:
 
 - https://hub.docker.com/r/gdcc/base
 - https://hub.docker.com/r/gdcc/dataverse
 - https://hub.docker.com/r/gdcc/configbaker
 
-To test these images against our API test suite, go to the "alpha" workflow at https://github.com/gdcc/api-test-runner/actions/workflows/alpha.yml and run it.
-
-Don't be surprised if there are failures. The test runner is a work in progress! Additional dependencies or settings may have been added to the "develop" workflow. Copy them over and try again.
+TODO: Get https://github.com/gdcc/api-test-runner working.
 
 .. _build-guides:
 
@@ -313,9 +321,9 @@ Create a new branch (any name is fine but ``prepare-next-iteration`` is suggeste
 
 - modules/dataverse-parent/pom.xml -> ``<profiles>`` -> profile "ct" -> ``<properties>`` -> Set ``<base.image.version>`` to ``${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}``
 
-Create a pull request and put it through code review, like usual. Give it a milestone of the next release, the one **after** the one we're working on. Once the pull request has been approved, merge it. It should the the first PR merged of the next release.
+Create a pull request and put it through code review, like usual. Give it a milestone of the next release, the one **after** the one we're working on. Once the pull request has been approved, merge it. It should be the first PR merged of the next release.
 
-For more background, see :ref:`base-supported-image-tags`. For an example, see https://github.com/IQSS/dataverse/pull/10896
+For more background, see :ref:`base-image-supported-tags`. For an example, see https://github.com/IQSS/dataverse/pull/10896
 
 Lift the Code Freeze and Encourage Developers to Update Their Branches
 ----------------------------------------------------------------------

@@ -35,11 +35,14 @@ show_relevance   boolean  Whether or not to show details of which fields were ma
 show_facets      boolean  Whether or not to show facets that can be operated on by the "fq" parameter. False by default. See :ref:`advanced search example <advancedsearch-example>`.
 fq               string   A filter query on the search term. Multiple "fq" parameters can be used. See :ref:`advanced search example <advancedsearch-example>`.
 show_entity_ids  boolean  Whether or not to show the database IDs of the search results (for developer use).
-geo_point        string	  Latitude and longitude in the form ``geo_point=42.3,-71.1``. You must supply ``geo_radius`` as well. See also :ref:`geospatial-search`.
-geo_radius       string	  Radial distance in kilometers from ``geo_point`` (which must be supplied as well) such as ``geo_radius=1.5``.
-metadata_fields  string	  Includes the requested fields for each dataset in the response. Multiple "metadata_fields" parameters can be used to include several fields. The value must be in the form "{metadata_block_name}:{field_name}" to include a specific field from a metadata block (see :ref:`example <dynamic-citation-some>`) or "{metadata_field_set_name}:\*" to include all the fields for a metadata block (see :ref:`example <dynamic-citation-all>`). "{field_name}" cannot be a subfield of a compound field. If "{field_name}" is a compound field, all subfields are included.
+show_api_urls    boolean  Whether or not to show API URLs for the search results
+query_entities   boolean  Whether to query entities for extra metadata (slower). Default is true.
+metadata_fields  string   Includes the requested fields for each dataset in the response. Multiple "metadata_fields" parameters can be used to include several fields. The value must be in the form "{metadata_block_name}:{field_name}" to include a specific field from a metadata block (see :ref:`example <dynamic-citation-some>`) or "{metadata_field_set_name}:\*" to include all the fields for a metadata block (see :ref:`example <dynamic-citation-all>`). "{field_name}" cannot be a subfield of a compound field. If "{field_name}" is a compound field, all subfields are included.
+geo_point        string   Latitude and longitude in the form ``geo_point=42.3,-71.1``. You must supply ``geo_radius`` as well. See also :ref:`geospatial-search`.
+geo_radius       string   Radial distance in kilometers from ``geo_point`` (which must be supplied as well) such as ``geo_radius=1.5``.
 show_type_counts boolean  Whether or not to include total_count_per_object_type for types: Dataverse, Dataset, and Files.
 show_collections boolean  Whether or not to include a list of Dataverse collections for each dataset search result.
+search_service   string   The name of the search service to use for this query. If omitted, the default search service will be used. For available search services, see :ref:`discovering-available-search-services`.
 ================ =======  ===========
 
 Basic Search Example
@@ -776,3 +779,58 @@ Output from iteration example
       <span class="label label-success pull-right">
         CORS
       </span>
+
+.. _search-services:
+
+Search Services
+---------------
+
+.. _discovering-available-search-services:
+
+Discovering Available Search Services
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To discover available search services and their capabilities, you can use the Search Services API endpoint.
+Note: Configurable Search Services are an optional, experimental feature than may evolve faster than other parts of Dataverse.
+
+Example API endpoint: https://demo.dataverse.org/api/search/services
+
+This endpoint returns a list of available search services, including their names, and display names. It also indicates the default search service.
+
+Example response:
+
+.. code-block:: json
+
+    {
+        "status": "OK",
+        "data": {
+         "services": [
+            {
+                "name": "solr",
+                "displayName": "Solr Search",
+            },
+            {
+                "name": "externalSearch",
+                "displayName": "External Search for Datasets",
+            }
+        ],
+        "defaultService": "solr"
+    }
+
+You can use the ``name`` values returned by this endpoint in the ``search_service`` parameter of the main search API to specify which search service to use for a particular query.
+
+Using Different Search Services
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To use a specific search service, include the ``search_service`` parameter in your search query and pass the ``name``. For example:
+
+https://demo.dataverse.org/api/search?q=trees&search_service=externalSearch
+
+This query will use the ``externalSearch`` service (assuming it exists) instead of the default search service (``solr``).
+
+.. note:: Other search services may not be complete replacements for the included ``solr`` service. For example, they may not support searching for collections or files (just datasets).
+
+Developing Search Services
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+See :doc:`/developers/search-services` in the Developer Guide.

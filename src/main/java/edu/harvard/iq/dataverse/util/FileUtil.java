@@ -42,6 +42,7 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.file.BagItFileHandler;
 import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import edu.harvard.iq.dataverse.util.file.BagItFileHandlerFactory;
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
 import edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil;
 import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatDoc;
 import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.HTML_H1;
@@ -90,6 +91,8 @@ import jakarta.ejb.EJBException;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+
+import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -683,13 +686,11 @@ public class FileUtil implements java.io.Serializable  {
     private static boolean isGraphMLFile(File file) {
         boolean isGraphML = false;
         logger.fine("begin isGraphMLFile()");
-        FileReader fileReader = null;
-        try{
-            fileReader = new FileReader(file);
-            javax.xml.stream.XMLInputFactory xmlif = javax.xml.stream.XMLInputFactory.newInstance();
-            xmlif.setProperty("javax.xml.stream.isCoalescing", java.lang.Boolean.TRUE);
+        XMLStreamReader xmlr = null;
+        try(FileReader fileReader = new FileReader(file)) {
+            XMLInputFactory xmlif = XmlUtil.getSecureXMLInputFactory();
 
-            XMLStreamReader xmlr = xmlif.createXMLStreamReader(fileReader);
+            xmlr = xmlif.createXMLStreamReader(fileReader);
             for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
                 if (event == XMLStreamConstants.START_ELEMENT) {
                     if (xmlr.getLocalName().equals("graphml")) {
@@ -709,11 +710,11 @@ public class FileUtil implements java.io.Serializable  {
         } catch(IOException e) {
             throw new EJBException(e);
         } finally {
-            if (fileReader != null) {
+            if (xmlr != null) {
                 try {
-                    fileReader.close();
-                } catch (IOException ioex) {
-                    logger.warning("IOException closing file reader in GraphML type checker");
+                    xmlr.close();
+                } catch (XMLStreamException e) {
+                    logger.warning("XMLStreamException closing XMLStreamReader in GraphML type checker");
                 }
             }
         }

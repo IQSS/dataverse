@@ -141,9 +141,9 @@ import jakarta.faces.component.UIInput;
 import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.io.IOUtils;
 import org.primefaces.component.selectonemenu.SelectOneMenu;
@@ -155,7 +155,6 @@ import org.primefaces.event.data.PageEvent;
 import edu.harvard.iq.dataverse.search.FacetLabel;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -223,8 +222,6 @@ public class DatasetPage implements java.io.Serializable {
     DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;
     @EJB
     SettingsServiceBean settingsService;
-    @EJB
-    SearchServiceBean searchService;
     @EJB
     AuthenticationServiceBean authService;
     @EJB
@@ -334,6 +331,7 @@ public class DatasetPage implements java.io.Serializable {
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
     private Dataverse selectedHostDataverse;
+    private boolean hasDataversesToChoose;
 
     public Dataverse getSelectedHostDataverse() {
         return selectedHostDataverse;
@@ -1477,6 +1475,15 @@ public class DatasetPage implements java.io.Serializable {
         return permissionsWrapper.canViewUnpublishedDataset( dvRequestService.getDataverseRequest(), dataset);
     }
 
+    public boolean canSeeCurationStatus() {
+        boolean creatorsCanSeeStatus = JvmSettings.UI_SHOW_CURATION_STATUS_TO_ALL.lookupOptional(Boolean.class).orElse(false);
+        if (creatorsCanSeeStatus) {
+            return canViewUnpublishedDataset();
+        } else {
+            return canPublishDataset();
+        }
+    }
+
     /*
      * 4.2.1 optimization.
      * HOWEVER, this doesn't appear to be saving us anything!
@@ -1764,6 +1771,11 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setDataverseTemplates(List<Template> dataverseTemplates) {
         this.dataverseTemplates = dataverseTemplates;
+    }
+
+    public boolean isHasDataversesToChoose() {
+        this.hasDataversesToChoose = dataverseService.findAll().size() > 1;
+        return this.hasDataversesToChoose;
     }
 
     public Template getDefaultTemplate() {
@@ -4077,7 +4089,16 @@ public class DatasetPage implements java.io.Serializable {
                     // have been created in the dataset.
                     dataset = datasetService.find(dataset.getId());
 
-                    List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getOrCreateEditVersion(), newFiles, null, true);
+                    boolean ignoreUploadFileLimits = this.session.getUser() != null ? this.session.getUser().isSuperuser() : false;
+                    List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getOrCreateEditVersion(), newFiles, null, true, ignoreUploadFileLimits);
+                    if (filesAdded.size() < nNewFiles) {
+                        // Not all files were saved
+                        Integer limit = dataset.getEffectiveDatasetFileCountLimit();
+                        if (limit != null) {
+                            String msg = BundleUtil.getStringFromBundle("file.add.count_exceeds_limit", List.of(limit.toString()));
+                            JsfHelper.addInfoMessage(msg);
+                        }
+                    }
                     newFiles.clear();
 
                     // and another update command:
@@ -6264,28 +6285,28 @@ public class DatasetPage implements java.io.Serializable {
         return fieldService.getFieldLanguage(languages,session.getLocaleCode());
     }
 
-    public void setExternalStatus(String status) {
+    public void setCurationStatus(String status) {
         try {
             dataset = commandEngine.submit(new SetCurationStatusCommand(dvRequestService.getDataverseRequest(), dataset, status));
             workingVersion=dataset.getLatestVersion();
-            if (status == null || status.isEmpty()) {
-                JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.externalstatus.removed"));
+            if (Strings.isBlank(status)) {
+                JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.curationstatus.removed"));
             } else {
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.externalstatus.header"),
-                        BundleUtil.getStringFromBundle("dataset.externalstatus.info",
-                                Arrays.asList(DatasetUtil.getLocaleExternalStatus(status))
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.curationstatus.header"),
+                        BundleUtil.getStringFromBundle("dataset.curationstatus.info",
+                                Arrays.asList(DatasetUtil.getLocaleCurationStatusLabelFromString(status))
                         ));
             }
 
         } catch (CommandException ex) {
-            String msg = BundleUtil.getStringFromBundle("dataset.externalstatus.cantchange");
+            String msg = BundleUtil.getStringFromBundle("dataset.curationstatus.cantchange");
             logger.warning("Unable to change external status to " + status + " for dataset id " + dataset.getId() + ". Message to user: " + msg + " Exception: " + ex);
             JsfHelper.addErrorMessage(msg);
         }
     }
 
-    public List<String> getAllowedExternalStatuses() {
-        return settingsWrapper.getAllowedExternalStatuses(dataset);
+    public List<String> getAllowedCurationStatuses() {
+        return settingsWrapper.getAllowedCurationStatuses(dataset);
     }
 
     public Embargo getSelectionEmbargo() {

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.CurationStatus;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataFileTag;
@@ -54,9 +55,11 @@ import java.io.InputStream;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -93,6 +96,7 @@ import jakarta.persistence.Query;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -230,6 +234,7 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getCreateDate());
         }
+
         /* We don't really have harvested dataverses yet; 
            (I have in fact just removed the isHarvested() method from the Dataverse object) -- L.A.
         if (dataverse.isHarvested()) {
@@ -1050,9 +1055,20 @@ public class IndexServiceBean {
             if (datasetVersion.isInReview()) {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
             }
-            if(datasetVersion.getExternalStatusLabel()!=null) {
-                solrInputDocument.addField(SearchFields.EXTERNAL_STATUS, datasetVersion.getExternalStatusLabel());
+            
+            CurationStatus status = datasetVersion.getCurrentCurationStatus();
+            if(status != null && Strings.isNotBlank(status.getLabel())) {
+                solrInputDocument.addField(SearchFields.CURATION_STATUS, status.getLabel());
             }
+            // Add the creation time of the curation status
+            if (status != null && status.getCreateTime() != null) {
+                // Convert Date to ISO-8601 format for Solr pdate field
+                String isoDateString = status.getCreateTime().toInstant()
+                        .atOffset(ZoneOffset.UTC)
+                        .format(DateTimeFormatter.ISO_INSTANT);
+                solrInputDocument.addField(SearchFields.CURATION_STATUS_CREATE_TIME, isoDateString);
+            }
+
 
             Set<String> langs = settingsService.getConfiguredLanguages();
             Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(true);
@@ -1459,6 +1475,7 @@ public class IndexServiceBean {
             String datasetPersistentURL = dataset.getPersistentURL();
             boolean isHarvested = dataset.isHarvested();
             long startTime = System.currentTimeMillis();
+            LocalDate now = LocalDate.now();
             fileMetadatas.stream().forEach(fileMetadata -> {
                 DataFile datafile = fileMetadata.getDataFile();
                 Embargo emb = datafile.getEmbargo();
@@ -1499,8 +1516,10 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.PERSISTENT_URL, datasetPersistentURL);
                     datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
                     datafileSolrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dvIndexableCategoryName);
+                    boolean embargoed = false;
                     if (end != null) {
                         datafileSolrInputDocument.addField(SearchFields.EMBARGO_END_DATE, end.toEpochDay());
+                        embargoed = end.isAfter(now);
                     }
                     if (start != null) {
                         datafileSolrInputDocument.addField(SearchFields.RETENTION_END_DATE, start.toEpochDay());
@@ -1511,14 +1530,15 @@ public class IndexServiceBean {
                         if (!isHarvested && !datafile.isRestricted()
                                 && !datafile.isFilePackage()
                                 && fileSize != 0 && fileSize <= maxSize
-                                && datafile.getRetention() == null) {
+                                && datafile.getRetention() == null
+                                && !embargoed) {
                             StorageIO<DataFile> accessObject = null;
                             InputStream instream = null;
                             ContentHandler textHandler = null;
                             try {
                                 accessObject = DataAccess.getStorageIO(datafile,
                                         new DataAccessRequest());
-                                if (accessObject != null) {
+                                if (accessObject != null && accessObject.isDataverseAccessible()) {
                                     accessObject.open();
                                     // If the size is >max, we don't use the stream. However, for S3, the stream is
                                     // currently opened in the call above (see
@@ -2104,7 +2124,7 @@ public class IndexServiceBean {
         } catch (Exception ex) {
             logger.info("failed to find dataverseSegments for dataversePaths for " + SearchFields.SUBTREE + ": " + ex);
         }        
-        List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
+        Set<String> dataversePaths = new HashSet<>(getDataversePathsFromSegments(dataverseSegments));
         if (dataversePaths.size() > 0 && dvo.isInstanceofDataverse()) {
             // removing the dataverse's own id from the paths
             // fixes bug where if my parent dv was linked my dv was shown as linked to myself
@@ -2114,7 +2134,7 @@ public class IndexServiceBean {
         add linking paths
         */
         dataversePaths.addAll(findLinkingDataversePaths(findAllLinkingDataverses(dvo)));
-        return dataversePaths;
+        return new ArrayList<>(dataversePaths);
     }
 
     public String delete(Dataverse doomed) {

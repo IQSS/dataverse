@@ -160,7 +160,7 @@ public class MakeDataCountApi extends AbstractApiBean {
                 url = new URI(JvmSettings.DATACITE_REST_API_URL.lookup(pidProvider.getId()) +
                               "/events?doi=" +
                               authorityPlusIdentifier +
-                              "&source=crossref&page[size]=1000").toURL();
+                              "&source=crossref&page[size]=1000&page[cursor]=1").toURL();
             } catch (URISyntaxException e) {
                 //Nominally this means a config error/ bad DATACITE_REST_API_URL for this provider
                 logger.warning("Unable to create URL for " + persistentId + ", pidProvider " + pidProvider.getId());
@@ -175,11 +175,14 @@ public class MakeDataCountApi extends AbstractApiBean {
                 int status = connection.getResponseCode();
                 if (status != 200) {
                     logger.warning("Failed to get citations from " + url.toString());
+                    connection.disconnect();
                     return error(Status.fromStatusCode(status), "Failed to get citations from " + url.toString());
                 }
                 JsonObject report;
                 try (InputStream inStream = connection.getInputStream()) {
                     report = JsonUtil.getJsonObject(inStream);
+                } finally {
+                    connection.disconnect();
                 }
                 JsonObject links = report.getJsonObject("links");
                 JsonArray data = report.getJsonArray("data");
