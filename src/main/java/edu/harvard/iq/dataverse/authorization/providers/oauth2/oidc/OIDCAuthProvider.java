@@ -33,11 +33,11 @@ import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderConfigurationRequest;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
-import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
@@ -47,11 +47,8 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -231,16 +228,34 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * @return the usable user record for processing ing {@link edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2LoginBackingBean}
      */
     public OAuth2UserRecord getUserRecord(UserInfo userInfo) {
+        // Extract Shibboleth attributes if present
+        Object shibUniqueIdObj = userInfo.getClaim(ShibUtil.uniquePersistentIdentifier);
+        Object shibIdpObj = userInfo.getClaim(ShibUtil.shibIdpAttribute);
+
+        String shibUniqueId = (shibUniqueIdObj != null) ? shibUniqueIdObj.toString() : null;
+        String shibIdp = (shibIdpObj != null) ? shibIdpObj.toString() : null;
+
+        // Build display info from user attributes
+        AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
+                userInfo.getGivenName(),
+                userInfo.getFamilyName(),
+                userInfo.getEmailAddress(),
+                "",
+                ""
+        );
+
         return new OAuth2UserRecord(
-            this.getId(),
-            userInfo.getSubject().getValue(),
-            userInfo.getPreferredUsername(),
-            null,
-            new AuthenticatedUserDisplayInfo(userInfo.getGivenName(), userInfo.getFamilyName(), userInfo.getEmailAddress(), "", ""),
-            null
+                this.getId(),
+                userInfo.getSubject().getValue(),
+                userInfo.getPreferredUsername(),
+                shibUniqueId,
+                shibIdp,
+                null,
+                displayInfo,
+                null
         );
     }
-    
+
     /**
      * Retrieve the Access Token from provider. Encapsulate for testing.
      * @param grant
