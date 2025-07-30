@@ -1615,7 +1615,7 @@ public class JsonPrinter {
         return jsonArrayBuilder;
     }
 
-    public static JsonArrayBuilder json(List<UserNotification> notifications) {
+    public static JsonArrayBuilder json(List<UserNotification> notifications, boolean inAppNotificationFormat) {
         JsonArrayBuilder notificationsArray = Json.createArrayBuilder();
 
         for (UserNotification notification : notifications) {
@@ -1627,15 +1627,52 @@ public class JsonPrinter {
             notificationJson.add("displayAsRead", notification.isReadNotification());
             notificationJson.add("sentTimestamp", notification.getSendDateTimestamp());
 
-            Object relatedObject = mailService.getObjectOfNotification(notification);
-            if (relatedObject != null) {
-                String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, relatedObject);
-                String messageText = mailService.getMessageTextBasedOnNotification(
-                        notification, relatedObject, null, notification.getRequestor()
-                );
+            if (inAppNotificationFormat) {
+                switch (type) {
+                    case ASSIGNROLE:
+                    case REVOKEROLE:
+                    case CREATEDV:
+                    case REQUESTFILEACCESS:
+                    case REQUESTEDFILEACCESS:
+                    case GRANTFILEACCESS:
+                    case REJECTFILEACCESS:
+                    case DATASETCREATED:
+                    case CREATEDS:
+                    case SUBMITTEDDS:
+                    case PUBLISHEDDS:
+                    case PUBLISHFAILED_PIDREG:
+                    case RETURNEDDS:
+                    case WORKFLOW_SUCCESS:
+                    case WORKFLOW_FAILURE:
+                    case STATUSUPDATED:
+                    case PIDRECONCILED:
+                    case CREATEACC:
+                    case CHECKSUMFAIL:
+                    case FILESYSTEMIMPORT:
+                    case GLOBUSUPLOADCOMPLETED:
+                    case GLOBUSDOWNLOADCOMPLETED:
+                    case GLOBUSUPLOADCOMPLETEDWITHERRORS:
+                    case GLOBUSUPLOADREMOTEFAILURE:
+                    case GLOBUSUPLOADLOCALFAILURE:
+                    case GLOBUSDOWNLOADCOMPLETEDWITHERRORS:
+                    case CHECKSUMIMPORT:
+                    case CONFIRMEMAIL:
+                    case APIGENERATED:
+                    case INGESTCOMPLETED:
+                    case INGESTCOMPLETEDWITHERRORS:
+                    case DATASETMENTIONED:
+                }
+            } else {
+                Object relatedObject = mailService.getObjectOfNotification(notification);
+                if (relatedObject != null) {
+                    String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, relatedObject);
+                    String messageText = mailService.getMessageTextBasedOnNotification(
+                            notification, relatedObject, null, notification.getRequestor()
+                    );
 
-                notificationJson.add("subjectText", subjectText);
-                notificationJson.add("messageText", messageText);
+                    notificationJson.add("subjectText", subjectText);
+                    notificationJson.add("messageText", messageText);
+                }
             }
 
             notificationsArray.add(notificationJson);

@@ -40,7 +40,7 @@ public class Notifications extends AbstractApiBean {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
             return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
-        return ok(Json.createObjectBuilder().add("notifications", json(userNotificationSvc.findByUser(authenticatedUser.getId()))));
+        return ok(Json.createObjectBuilder().add("notifications", json(userNotificationSvc.findByUser(authenticatedUser.getId()), inAppNotificationFormat)));
     }
 
     @GET
