@@ -1,0 +1,862 @@
+{
+  "@context": {
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "isothes": "http://purl.org/iso25964/skos-thes#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "dct": "http://purl.org/dc/terms/",
+    "dc11": "http://purl.org/dc/elements/1.1/",
+    "uri": "@id",
+    "type": "@type",
+    "lang": "@language",
+    "value": "@value",
+    "graph": "@graph",
+    "label": "rdfs:label",
+    "prefLabel": "skos:prefLabel",
+    "altLabel": "skos:altLabel",
+    "hiddenLabel": "skos:hiddenLabel",
+    "broader": "skos:broader",
+    "narrower": "skos:narrower",
+    "related": "skos:related",
+    "inScheme": "skos:inScheme",
+    "exactMatch": "skos:exactMatch",
+    "closeMatch": "skos:closeMatch",
+    "broadMatch": "skos:broadMatch",
+    "narrowMatch": "skos:narrowMatch",
+    "relatedMatch": "skos:relatedMatch"
+  },
+  "graph": [
+    {
+      "uri": "dct:identifier",
+      "label": {
+        "lang": "en",
+        "value": "URN"
+      }
+    },
+    {
+      "uri": "dct:isVersionOf",
+      "label": {
+        "lang": "en",
+        "value": "Is a version of"
+      }
+    },
+    {
+      "uri": "http://rdf-vocabulary.ddialliance.org/xkos#additionalContentNote",
+      "label": {
+        "lang": "en",
+        "value": "DEFINITION SOURCE"
+      }
+    },
+    {
+      "uri": "owl:priorVersion",
+      "label": {
+        "lang": "en",
+        "value": "Has previous version"
+      }
+    },
+    {
+      "uri": "https://elsst.cessda.eu/id/4/",
+      "type": [
+        "skos:ConceptScheme",
+        "owl:Ontology"
+      ],
+      "prefLabel": [
+        {
+          "lang": "hu",
+          "value": "ELSST Thesaurus"
+        },
+        {
+          "lang": "is",
+          "value": "ELSST Thesaurus"
+        },
+        {
+          "lang": "en",
+          "value": "ELSST Thesaurus"
+        },
+        {
+          "lang": "cs",
+          "value": "ELSST Thesaurus"
+        },
+        {
+          "lang": "da",
+          "value": "ELSST Thesaurus"
+        },
+        {
+          "lang": "de",
+          "value": "ELSST Thesaurus"
+        },
+        {
+          "lang": "el",
+          "value": "ELSST Thesaurus"
+        },
+        {
+          "lang": "es",
+          "value": "ELSST Thesaurus"
+        },
+        {
+          "lang": "fi",
+          "value": "ELSST Thesaurus"
+        },
+        {
+          "lang": "fr",
+          "value": "ELSST Thesaurus"
+        },
+        {
+          "lang": "lt",
+          "value": "ELSST Thesaurus"
+        },
+        {
+          "lang": "nl",
+          "value": "ELSST Thesaurus"
+        },
+        {
+          "lang": "no",
+          "value": "ELSST Thesaurus"
+        },
+        {
+          "lang": "ro",
+          "value": "ELSST Thesaurus"
+        },
+        {
+          "lang": "sl",
+          "value": "ELSST Thesaurus"
+        },
+        {
+          "lang": "sv",
+          "value": "ELSST Thesaurus"
+        }
+      ]
+    },
+    {
+      "uri": "https://elsst.cessda.eu/id/4/269a8d84-0b08-4034-a79c-129072cc1992",
+      "type": "skos:Concept",
+      "prefLabel": [
+        {
+          "lang": "el",
+          "value": "ΕΚΠΑΙΔΕΥΤΙΚΗ ΑΞΙΟΛΟΓΗΣΗ"
+        },
+        {
+          "lang": "no",
+          "value": "VURDERING AV UTDANNING"
+        },
+        {
+          "lang": "de",
+          "value": "BEURTEILUNG (BILDUNG)"
+        },
+        {
+          "lang": "nl",
+          "value": "EDUCATIEVE BEOORDELING"
+        },
+        {
+          "lang": "en",
+          "value": "EDUCATIONAL ASSESSMENT"
+        },
+        {
+          "lang": "es",
+          "value": "EVALUACIÓN EDUCATIVA"
+        },
+        {
+          "lang": "ro",
+          "value": "EVALUARE EDUCAȚIONALĂ"
+        },
+        {
+          "lang": "fr",
+          "value": "ÉVALUATION DES COMPÉTENCES SCOLAIRES"
+        },
+        {
+          "lang": "cs",
+          "value": "HODNOCENÍ ŽÁKŮ A STUDENTŮ"
+        },
+        {
+          "lang": "hu",
+          "value": "ISKOLAI ÉRTÉKELÉS"
+        },
+        {
+          "lang": "sv",
+          "value": "KUNSKAPSBEDÖMNING"
+        },
+        {
+          "lang": "lt",
+          "value": "MOKYMO VERTINIMAS"
+        },
+        {
+          "lang": "is",
+          "value": "NÁMSMAT"
+        },
+        {
+          "lang": "fi",
+          "value": "OPPILASARVIOINTI"
+        },
+        {
+          "lang": "sl",
+          "value": "ŠOLSKA OCENA"
+        },
+        {
+          "lang": "da",
+          "value": "VURDERING AF UDDANNELSER"
+        }
+      ],
+      "related": {
+        "uri": "https://elsst.cessda.eu/id/4/bf0d664a-e89a-4ec3-80d2-04f664b359ab"
+      }
+    },
+    {
+      "uri": "https://elsst.cessda.eu/id/4/32caebf0-7bb4-4cfc-b67b-4bbd1041057f",
+      "type": "skos:Concept",
+      "narrower": {
+        "uri": "https://elsst.cessda.eu/id/4/bf0d664a-e89a-4ec3-80d2-04f664b359ab"
+      },
+      "prefLabel": [
+        {
+          "lang": "el",
+          "value": "ΙΚΑΝΟΤΗΤΑ"
+        },
+        {
+          "lang": "nl",
+          "value": "VERMOGEN"
+        },
+        {
+          "lang": "en",
+          "value": "ABILITY"
+        },
+        {
+          "lang": "es",
+          "value": "CAPACIDAD"
+        },
+        {
+          "lang": "fr",
+          "value": "CAPACITÉ"
+        },
+        {
+          "lang": "ro",
+          "value": "COMPETENȚĂ"
+        },
+        {
+          "lang": "da",
+          "value": "EVNE"
+        },
+        {
+          "lang": "no",
+          "value": "EVNER"
+        },
+        {
+          "lang": "is",
+          "value": "FÆRNI"
+        },
+        {
+          "lang": "de",
+          "value": "FÄHIGKEIT"
+        },
+        {
+          "lang": "sv",
+          "value": "FÖRMÅGA"
+        },
+        {
+          "lang": "lt",
+          "value": "GEBĖJIMAS"
+        },
+        {
+          "lang": "hu",
+          "value": "KÉPESSÉG"
+        },
+        {
+          "lang": "fi",
+          "value": "KYVYKKYYS, LAHJAKKUUS JA TAIDOT"
+        },
+        {
+          "lang": "cs",
+          "value": "SCHOPNOST"
+        },
+        {
+          "lang": "sl",
+          "value": "SPOSOBNOST"
+        }
+      ]
+    },
+    {
+      "uri": "https://elsst.cessda.eu/id/4/4e33f431-f8be-4e8c-b94b-67dcf5f834e1",
+      "type": "skos:Concept",
+      "prefLabel": [
+        {
+          "lang": "el",
+          "value": "ΟΜΑΔΟΠΟΙΗΣΗ ΒΑΣΕΙ ΙΚΑΝΟΤΗΤΩΝ"
+        },
+        {
+          "lang": "fi",
+          "value": "TASORYHMITTELY"
+        },
+        {
+          "lang": "en",
+          "value": "ABILITY GROUPING"
+        },
+        {
+          "lang": "es",
+          "value": "AGRUPAMIENTO POR CAPACIDAD"
+        },
+        {
+          "lang": "nl",
+          "value": "COMPETENTIE-INDELING"
+        },
+        {
+          "lang": "da",
+          "value": "EVNEGRUPPERING"
+        },
+        {
+          "lang": "is",
+          "value": "FÆRNIFLOKKUN"
+        },
+        {
+          "lang": "ro",
+          "value": "GRUPARE DUPĂ COMPETENȚE"
+        },
+        {
+          "lang": "lt",
+          "value": "GRUPAVIMAS PAGAL GABUMUS"
+        },
+        {
+          "lang": "de",
+          "value": "GRUPPIERUNG NACH BEGABUNG"
+        },
+        {
+          "lang": "hu",
+          "value": "KÉPESSÉG SZERINTI CSOPORTOSÍTÁS"
+        },
+        {
+          "lang": "no",
+          "value": "NIVÅGRUPPERING"
+        },
+        {
+          "lang": "sv",
+          "value": "NIVÅGRUPPERING"
+        },
+        {
+          "lang": "sl",
+          "value": "RAZVRŠČANJE PO SPOSOBNOSTIH"
+        },
+        {
+          "lang": "fr",
+          "value": "REGROUPEMENT PAR COMPÉTENCE"
+        },
+        {
+          "lang": "cs",
+          "value": "ROZDĚLENÍ PODLE SCHOPNOSTÍ"
+        }
+      ],
+      "related": {
+        "uri": "https://elsst.cessda.eu/id/4/bf0d664a-e89a-4ec3-80d2-04f664b359ab"
+      }
+    },
+    {
+      "uri": "https://elsst.cessda.eu/id/4/77ae3d1f-2134-429e-bc81-bfd0c20ddce2",
+      "type": "skos:Concept",
+      "prefLabel": [
+        {
+          "lang": "el",
+          "value": "ΕΚΠΑΙΔΕΥΤΙΚΑ ΕΠΙΠΕΔΑ"
+        },
+        {
+          "lang": "no",
+          "value": "UTDANNINGSNIVÅ"
+        },
+        {
+          "lang": "de",
+          "value": "BILDUNGSNIVEAUS"
+        },
+        {
+          "lang": "en",
+          "value": "EDUCATIONAL LEVELS"
+        },
+        {
+          "lang": "sl",
+          "value": "IZOBRAZBENA RAVEN"
+        },
+        {
+          "lang": "fi",
+          "value": "KOULUTUSASTEET"
+        },
+        {
+          "lang": "is",
+          "value": "MENNTUNARSTIG"
+        },
+        {
+          "lang": "fr",
+          "value": "NIVEAUX D'ENSEIGNEMENT"
+        },
+        {
+          "lang": "es",
+          "value": "NIVELES EDUCATIVOS"
+        },
+        {
+          "lang": "ro",
+          "value": "NIVELURI EDUCAȚIONALE"
+        },
+        {
+          "lang": "hu",
+          "value": "OKTATÁSI SZINT"
+        },
+        {
+          "lang": "nl",
+          "value": "ONDERWIJSNIVEAUS"
+        },
+        {
+          "lang": "lt",
+          "value": "ŠVIETIMO LYGIAI"
+        },
+        {
+          "lang": "da",
+          "value": "UDDANNELSESNIVEAU"
+        },
+        {
+          "lang": "cs",
+          "value": "ÚROVNĚ VZDĚLÁVÁNÍ"
+        },
+        {
+          "lang": "sv",
+          "value": "UTBILDNINGSNIVÅ"
+        }
+      ],
+      "related": {
+        "uri": "https://elsst.cessda.eu/id/4/bf0d664a-e89a-4ec3-80d2-04f664b359ab"
+      }
+    },
+    {
+      "uri": "https://elsst.cessda.eu/id/4/b1ab6f66-f3ed-42ec-9af5-2a896bdf119f",
+      "type": "skos:Concept",
+      "prefLabel": [
+        {
+          "lang": "el",
+          "value": "ΟΜΑΔΟΠΟΙΗΣΗ ΣΤΗΝ ΕΚΠΑΙΔΕΥΣΗ"
+        },
+        {
+          "lang": "no",
+          "value": "UTDANNINGSGRUPPER"
+        },
+        {
+          "lang": "es",
+          "value": "AGRUPAMIENTO EDUCATIVO"
+        },
+        {
+          "lang": "en",
+          "value": "EDUCATIONAL GROUPING"
+        },
+        {
+          "lang": "ro",
+          "value": "GRUPARE EDUCAȚIONALĂ"
+        },
+        {
+          "lang": "lt",
+          "value": "GRUPAVIMAS MOKYMO TIKSLAIS"
+        },
+        {
+          "lang": "is",
+          "value": "HÓPASKIPTING Í NÁMI"
+        },
+        {
+          "lang": "hu",
+          "value": "ISKOLAI CSOPORTBONTÁS"
+        },
+        {
+          "lang": "nl",
+          "value": "ONDERWIJSGROEPERING"
+        },
+        {
+          "lang": "fr",
+          "value": "REGROUPEMENT SCOLAIRE"
+        },
+        {
+          "lang": "fi",
+          "value": "RYHMITTELY (KOULUTUS)"
+        },
+        {
+          "lang": "cs",
+          "value": "UČEBNÍ SKUPINY"
+        },
+        {
+          "lang": "sl",
+          "value": "UČNA SKUPINA"
+        },
+        {
+          "lang": "da",
+          "value": "UDDANNELSESGRUPPERING"
+        },
+        {
+          "lang": "de",
+          "value": "UNTERRICHTSGRUPPEN"
+        },
+        {
+          "lang": "sv",
+          "value": "UTBILDNINGSGRUPPERING"
+        }
+      ],
+      "related": {
+        "uri": "https://elsst.cessda.eu/id/4/bf0d664a-e89a-4ec3-80d2-04f664b359ab"
+      }
+    },
+    {
+      "uri": "https://elsst.cessda.eu/id/4/bf0d664a-e89a-4ec3-80d2-04f664b359ab",
+      "type": "skos:Concept",
+      "dct:identifier": [
+        {
+          "lang": "sv",
+          "value": "urn:ddi:int.cessda.elsst:bf0d664a-e89a-4ec3-80d2-04f664b359ab:4"
+        },
+        {
+          "lang": "sl",
+          "value": "urn:ddi:int.cessda.elsst:bf0d664a-e89a-4ec3-80d2-04f664b359ab:4"
+        },
+        {
+          "lang": "ro",
+          "value": "urn:ddi:int.cessda.elsst:bf0d664a-e89a-4ec3-80d2-04f664b359ab:4"
+        },
+        {
+          "lang": "no",
+          "value": "urn:ddi:int.cessda.elsst:bf0d664a-e89a-4ec3-80d2-04f664b359ab:4"
+        },
+        {
+          "lang": "nl",
+          "value": "urn:ddi:int.cessda.elsst:bf0d664a-e89a-4ec3-80d2-04f664b359ab:4"
+        },
+        {
+          "lang": "lt",
+          "value": "urn:ddi:int.cessda.elsst:bf0d664a-e89a-4ec3-80d2-04f664b359ab:4"
+        },
+        {
+          "lang": "is",
+          "value": "urn:ddi:int.cessda.elsst:bf0d664a-e89a-4ec3-80d2-04f664b359ab:4"
+        },
+        {
+          "lang": "hu",
+          "value": "urn:ddi:int.cessda.elsst:bf0d664a-e89a-4ec3-80d2-04f664b359ab:4"
+        },
+        {
+          "lang": "fr",
+          "value": "urn:ddi:int.cessda.elsst:bf0d664a-e89a-4ec3-80d2-04f664b359ab:4"
+        },
+        {
+          "lang": "fi",
+          "value": "urn:ddi:int.cessda.elsst:bf0d664a-e89a-4ec3-80d2-04f664b359ab:4"
+        },
+        {
+          "lang": "es",
+          "value": "urn:ddi:int.cessda.elsst:bf0d664a-e89a-4ec3-80d2-04f664b359ab:4"
+        },
+        {
+          "lang": "en",
+          "value": "urn:ddi:int.cessda.elsst:bf0d664a-e89a-4ec3-80d2-04f664b359ab:4"
+        },
+        {
+          "lang": "el",
+          "value": "urn:ddi:int.cessda.elsst:bf0d664a-e89a-4ec3-80d2-04f664b359ab:4"
+        },
+        {
+          "lang": "de",
+          "value": "urn:ddi:int.cessda.elsst:bf0d664a-e89a-4ec3-80d2-04f664b359ab:4"
+        },
+        {
+          "lang": "da",
+          "value": "urn:ddi:int.cessda.elsst:bf0d664a-e89a-4ec3-80d2-04f664b359ab:4"
+        },
+        {
+          "lang": "cs",
+          "value": "urn:ddi:int.cessda.elsst:bf0d664a-e89a-4ec3-80d2-04f664b359ab:4"
+        }
+      ],
+      "dct:isVersionOf": {
+        "uri": "https://elsst.cessda.eu/id/bf0d664a-e89a-4ec3-80d2-04f664b359ab"
+      },
+      "dct:issued": {
+        "lang": "en",
+        "value": "2023-09-13"
+      },
+      "dct:modified": {
+        "type": "http://www.w3.org/2001/XMLSchema#dateTime",
+        "value": "2022-03-01T10:28:48"
+      },
+      "http://rdf-vocabulary.ddialliance.org/xkos#additionalContentNote": {
+        "lang": "en",
+        "value": "ERIC"
+      },
+      "owl:priorVersion": {
+        "uri": "https://elsst.cessda.eu/id/3/bf0d664a-e89a-4ec3-80d2-04f664b359ab"
+      },
+      "altLabel": [
+        {
+          "lang": "fi",
+          "value": "SUORIUTUMISKYKY (KOULUTUS)"
+        },
+        {
+          "lang": "en",
+          "value": "ACADEMIC APTITUDE"
+        },
+        {
+          "lang": "lt",
+          "value": "AKADEMINIAI GABUMAI"
+        },
+        {
+          "lang": "de",
+          "value": "AKADEMISCHE BEGABUNG"
+        },
+        {
+          "lang": "de",
+          "value": "AKADEMISCHE EIGNUNG"
+        },
+        {
+          "lang": "de",
+          "value": "AKADEMISCHE FAEHIGKEITEN"
+        },
+        {
+          "lang": "de",
+          "value": "AKADEMISCHE FERTIGKEITEN"
+        },
+        {
+          "lang": "sv",
+          "value": "AKADEMISK FÄRDIGHET"
+        },
+        {
+          "lang": "sv",
+          "value": "AKADEMISK SKICKLIGHET"
+        },
+        {
+          "lang": "sv",
+          "value": "AKADEMISKA ANLAG"
+        },
+        {
+          "lang": "no",
+          "value": "AKADEMISKE ANLEGG"
+        },
+        {
+          "lang": "ro",
+          "value": "APTITUDINE ACADEMICĂ"
+        },
+        {
+          "lang": "es",
+          "value": "CAPACIDAD ACADÉMICA"
+        },
+        {
+          "lang": "lt",
+          "value": "MOKSLUMAS"
+        },
+        {
+          "lang": "cs",
+          "value": "OBECNÉ STUDIJNÍ PŘEDPOKLADY"
+        },
+        {
+          "lang": "fi",
+          "value": "OPPIMISKYKY (KOULUTUS)"
+        }
+      ],
+      "broader": {
+        "uri": "https://elsst.cessda.eu/id/4/32caebf0-7bb4-4cfc-b67b-4bbd1041057f"
+      },
+      "skos:definition": [
+        {
+          "lang": "el",
+          "value": "Η ΙΚΑΝΟΤΗΤΑ ΠΡΑΓΜΑΤΩΣΗΣ ΑΚΑΔΗΜΑΪΚΩΝ Ή ΕΚΠΑΙΔΕΥΤΙΚΩΝ ΔΡΑΣΤΗΡΙΟΤΗΤΩΝ˙ Η ΔΥΝΑΤΟΤΗΤΑ ΕΠΙΤΕΥΞΗΣ ΥΨΗΛΩΝ ΑΚΑΔΗΜΑΪΚΩΝ ΣΤΟΧΩΝ"
+        },
+        {
+          "lang": "en",
+          "value": "THE DEGREE OF ACTUAL COMPETENCE TO PERFORM IN SCHOLASTIC OR EDUCATIONAL ACTIVITIES"
+        },
+        {
+          "lang": "fi",
+          "value": "KOULUTUKSELLINEN LAHJAKKUUS ELI KUINKA HYVIN YKSILÖ KYKENEE SUORIUTUMAAN KOULUSSA JA MUISSA OPINNOISSA."
+        },
+        {
+          "lang": "ro",
+          "value": "GRADUL COMPETENȚELOR DE A PARTICIPA LA DIVERSE ACTIVITĂȚI SCOLASTICE SAU EDUCAȚIONALE; POTENȚIAL DE A OBȚINE STANDARDE ACADEMICE ÎNALTE "
+        },
+        {
+          "lang": "no",
+          "value": "GRADEN AV FAKTISK KOMPETANSE TIL Å UTFØRE SKOLE- ELLER UTDANNINGSRELATERTE AKTIVITETER. POTENSIALET TIL Å OPPNÅ HØYE AKADEMISKE STANDARDER"
+        },
+        {
+          "lang": "da",
+          "value": "GRADEN AF KOMPETENCE VED SKOLE- ELLER UNDEVISNINGSAKTIVITETER (ERIC) POTENTIALET FOR AT OPNÅ EN HØJ AKADEMISK STANDARD"
+        },
+        {
+          "lang": "sv",
+          "value": "GRAD AV FAKTISK PRESTATIONSFÖRMÅGA INOM SKOL- OCH UTBILDNINGSAKTIVITETER. POTENTIAL ATT UPPNÅ HÖG AKADEMISK STANDARD."
+        },
+        {
+          "lang": "es",
+          "value": "EL GRADO DE COMPETENCIA REAL PARA REALIZAR ACTIVIDADES ESCOLARES O EDUCATIVAS"
+        },
+        {
+          "lang": "fr",
+          "value": "DEGRÉ DE COMPÉTENCE PERMETTANT DE PRENDRE PART À DES ACTIVITÉS SCOLAIRES OU UNIVERSITAIRES; POTENTIEL D’ATTEINDRE UN NIVEAU ACADÉMIQUE ÉLEVÉ."
+        },
+        {
+          "lang": "nl",
+          "value": "DE MATE WAARIN DE BETROKKENE DAADWERKELIJK BEKWAAM IS OM ONDERWIJS- OF SCHOLINGSACTIVITEITEN UIT TE VOEREN; DE MOGELIJKHEID OM HOGE ACADEMISCHE NORMEN TE BEREIKEN OF VAARDIGHEDEN DIE AANGELEERD WORDEN OP EEN UNIVERSITEIT, OF EEN ANDERSOORTIGE WETENSCHAPPELIJKE INSTELLING."
+        },
+        {
+          "lang": "de",
+          "value": "AUSMASS TATSÄCHLICHER KOMPETENZ AUF DEM GEBIET DER LEHRE; FÄHIGKEIT, EIN HOHES AKADEMISCHES NIVEAU ZU ERREICHEN."
+        },
+        {
+          "lang": "lt",
+          "value": "AUKŠTŲ AKADEMINIŲ REZULTATŲ PASIEKIMO POTENCIALAS"
+        }
+      ],
+      "inScheme": {
+        "uri": "https://elsst.cessda.eu/id/4/"
+      },
+      "prefLabel": [
+        {
+          "lang": "el",
+          "value": "ΑΚΑΔΗΜΑΪΚΗ ΙΚΑΝΟΤΗΤΑ"
+        },
+        {
+          "lang": "hu",
+          "value": "TUDOMÁNYOS KÉSZSÉG"
+        },
+        {
+          "lang": "cs",
+          "value": "STUDIJNÍ PŘEDPOKLADY"
+        },
+        {
+          "lang": "sl",
+          "value": "SPOSOBNOST ZA ŠTUDIJ"
+        },
+        {
+          "lang": "is",
+          "value": "NÁMSFÆRNI"
+        },
+        {
+          "lang": "fi",
+          "value": "KOULUTUKSELLINEN KYVYKKYYS"
+        },
+        {
+          "lang": "fr",
+          "value": "COMPÉTENCE ACADÉMIQUE"
+        },
+        {
+          "lang": "es",
+          "value": "APTITUD ACADÉMICA"
+        },
+        {
+          "lang": "no",
+          "value": "AKADEMISKE EVNER"
+        },
+        {
+          "lang": "sv",
+          "value": "AKADEMISK FÖRMÅGA"
+        },
+        {
+          "lang": "da",
+          "value": "AKADEMISK EVNE"
+        },
+        {
+          "lang": "de",
+          "value": "AKADEMISCHE FÄHIGKEITEN"
+        },
+        {
+          "lang": "lt",
+          "value": "AKADEMINIAI GEBĖJIMAI"
+        },
+        {
+          "lang": "nl",
+          "value": "ACADEMISCHE VAARDIGHEDEN"
+        },
+        {
+          "lang": "en",
+          "value": "ACADEMIC ABILITY"
+        },
+        {
+          "lang": "ro",
+          "value": "ABILITATE ACADEMICĂ"
+        }
+      ],
+      "related": [
+        {
+          "uri": "https://elsst.cessda.eu/id/4/b1ab6f66-f3ed-42ec-9af5-2a896bdf119f"
+        },
+        {
+          "uri": "https://elsst.cessda.eu/id/4/ffdd3a7e-f82e-4600-98b1-20402e74b0a6"
+        },
+        {
+          "uri": "https://elsst.cessda.eu/id/4/269a8d84-0b08-4034-a79c-129072cc1992"
+        },
+        {
+          "uri": "https://elsst.cessda.eu/id/4/77ae3d1f-2134-429e-bc81-bfd0c20ddce2"
+        },
+        {
+          "uri": "https://elsst.cessda.eu/id/4/4e33f431-f8be-4e8c-b94b-67dcf5f834e1"
+        }
+      ]
+    },
+    {
+      "uri": "https://elsst.cessda.eu/id/4/ffdd3a7e-f82e-4600-98b1-20402e74b0a6",
+      "type": "skos:Concept",
+      "prefLabel": [
+        {
+          "lang": "el",
+          "value": "ΑΚΑΔΗΜΑΪΚΗ ΕΠΙΔΟΣΗ"
+        },
+        {
+          "lang": "cs",
+          "value": "VZDĚLÁVACÍ VÝSLEDKY"
+        },
+        {
+          "lang": "en",
+          "value": "ACADEMIC ACHIEVEMENT"
+        },
+        {
+          "lang": "nl",
+          "value": "ACADEMISCHE PRESTATIE"
+        },
+        {
+          "lang": "lt",
+          "value": "AKADEMINIAI PASIEKIMAI"
+        },
+        {
+          "lang": "da",
+          "value": "AKADEMISK PRÆSTATION"
+        },
+        {
+          "lang": "no",
+          "value": "AKADEMISKE PRESTASJON"
+        },
+        {
+          "lang": "sl",
+          "value": "AKADEMSKI DOSEŽEK"
+        },
+        {
+          "lang": "de",
+          "value": "BILDUNGSLEISTUNG"
+        },
+        {
+          "lang": "es",
+          "value": "LOGROS ACADÉMICOS"
+        },
+        {
+          "lang": "is",
+          "value": "NÁMSAFREK"
+        },
+        {
+          "lang": "fi",
+          "value": "OPINTOMENESTYS"
+        },
+        {
+          "lang": "ro",
+          "value": "REUȘITĂ ACADEMICĂ"
+        },
+        {
+          "lang": "fr",
+          "value": "RÉUSSITE SCOLAIRE"
+        },
+        {
+          "lang": "sv",
+          "value": "STUDIEPRESTATION"
+        },
+        {
+          "lang": "hu",
+          "value": "TUDOMÁNYOS TELJESÍTMÉNY"
+        }
+      ],
+      "related": {
+        "uri": "https://elsst.cessda.eu/id/4/bf0d664a-e89a-4ec3-80d2-04f664b359ab"
+      }
+    }
+  ]
+}

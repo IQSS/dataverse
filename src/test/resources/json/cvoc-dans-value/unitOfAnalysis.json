@@ -1,0 +1,54 @@
+{
+  "@context": {
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "isothes": "http://purl.org/iso25964/skos-thes#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "dct": "http://purl.org/dc/terms/",
+    "dc11": "http://purl.org/dc/elements/1.1/",
+    "uri": "@id",
+    "type": "@type",
+    "lang": "@language",
+    "value": "@value",
+    "graph": "@graph",
+    "label": "rdfs:label",
+    "prefLabel": "skos:prefLabel",
+    "altLabel": "skos:altLabel",
+    "hiddenLabel": "skos:hiddenLabel",
+    "broader": "skos:broader",
+    "narrower": "skos:narrower",
+    "related": "skos:related",
+    "inScheme": "skos:inScheme",
+    "exactMatch": "skos:exactMatch",
+    "closeMatch": "skos:closeMatch",
+    "broadMatch": "skos:broadMatch",
+    "narrowMatch": "skos:narrowMatch",
+    "relatedMatch": "skos:relatedMatch"
+  },
+  "graph": [
+    {
+      "uri": "http://rdf-vocabulary.ddialliance.org/cv/AnalysisUnit/2.1/",
+      "type": "skos:ConceptScheme",
+      "skos:hasTopConcept": {
+        "uri": "http://rdf-vocabulary.ddialliance.org/cv/AnalysisUnit/2.1/#EventOrProcessOrActivity"
+      },
+      "skos:notation": "AnalysisUnit"
+    },
+    {
+      "uri": "http://rdf-vocabulary.ddialliance.org/cv/AnalysisUnit/2.1/#EventOrProcessOrActivity",
+      "type": "skos:Concept",
+      "skos:definition": {
+        "lang": "en",
+        "value": "Any type of incident, occurrence, or activity. Events are usually one-time, individual occurrences, with a limited or short duration. Examples: criminal offenses, riots, meetings, elections, sports competitions, terrorist attacks, natural disasters like floods, etc. Processes typically take place over time, and may include multiple 'events' or gradual changes that ultimately lead, or are projected to lead, to a particular result. Examples: court trials, criminal investigations, political campaigns, medical treatments, education, athletes' training, etc. Use when the main focus is more on the event, process or activity itself. For example, a field observation study on slot machine gambling; or data collected on child abuse cases, such as the type and duration of abuse, the role of the persons involved, etc."
+      },
+      "inScheme": {
+        "uri": "http://rdf-vocabulary.ddialliance.org/cv/AnalysisUnit/2.1/"
+      },
+      "skos:notation": "EventOrProcessOrActivity",
+      "prefLabel": {
+        "lang": "en",
+        "value": "Event/Process/Activity"
+      }
+    }
+  ]
+}

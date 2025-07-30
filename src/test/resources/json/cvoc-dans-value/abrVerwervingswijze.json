@@ -1,0 +1,65 @@
+{
+  "@context": {
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "isothes": "http://purl.org/iso25964/skos-thes#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "dct": "http://purl.org/dc/terms/",
+    "dc11": "http://purl.org/dc/elements/1.1/",
+    "uri": "@id",
+    "type": "@type",
+    "lang": "@language",
+    "value": "@value",
+    "graph": "@graph",
+    "label": "rdfs:label",
+    "prefLabel": "skos:prefLabel",
+    "altLabel": "skos:altLabel",
+    "hiddenLabel": "skos:hiddenLabel",
+    "broader": "skos:broader",
+    "narrower": "skos:narrower",
+    "related": "skos:related",
+    "inScheme": "skos:inScheme",
+    "exactMatch": "skos:exactMatch",
+    "closeMatch": "skos:closeMatch",
+    "broadMatch": "skos:broadMatch",
+    "narrowMatch": "skos:narrowMatch",
+    "relatedMatch": "skos:relatedMatch"
+  },
+  "graph": [
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/7a2a5dd7-4c94-4c79-b90e-e9eb13c905c9",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#AquisitionMethodAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "narrower": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/b7f4fe13-d7b4-4fb9-a7a8-c25ef74b612d"
+      },
+      "prefLabel": {
+        "lang": "nl",
+        "value": "non-destructief"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/b7f4fe13-d7b4-4fb9-a7a8-c25ef74b612d",
+      "type": "skos:Concept",
+      "altLabel": {
+        "lang": "nl",
+        "value": "boring"
+      },
+      "broader": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/7a2a5dd7-4c94-4c79-b90e-e9eb13c905c9"
+      },
+      "prefLabel": {
+        "lang": "nl",
+        "value": "archeologisch: booronderzoek"
+      },
+      "skos:scopeNote": {
+        "lang": "nl",
+        "value": "Door archeologisch booronderzoek verkregen archeologische informatie volgens Protocol 4003 Inventariserend veldonderzoek (IVO-O: VS03) KNA 4.1"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#codeAbr": "ABO"
+    }
+  ]
+}

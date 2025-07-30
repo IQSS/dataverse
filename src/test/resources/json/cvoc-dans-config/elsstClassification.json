@@ -1,0 +1,48 @@
+{
+  "allow-free-text": false,
+  "cvoc-url": "https://dev.vocabs.datastations.nl/",
+  "field-name": "dansElsstClassification",
+  "js-url": "/custom/skosmos.js",
+  "languages": "en",
+  "managed-fields": {
+  },
+  "protocol": "skosmos",
+  "retrieval-filtering": {
+    "@context": {
+      "lang": "@language",
+      "termName": "https://schema.org/name",
+      "value": "@value",
+      "vocabularyName": "https://dataverse.org/schema/vocabularyName",
+      "vocabularyUri": "https://dataverse.org/schema/vocabularyUri"
+    },
+    "@id": {
+      "params": [
+        "@id"
+      ],
+      "pattern": "{0}"
+    },
+    "termName": {
+      "params": [
+        "/graph/uri=@id/prefLabel"
+      ],
+      "pattern": "{0}"
+    },
+    "vocabularyName": {
+      "pattern": "ELSST Thesaurus Version 4",
+      "params": []
+    },
+    "vocabularyUri": {
+      "pattern": "https://elsst.cessda.eu/id/",
+      "params": []
+    }
+  },
+  "retrieval-uri": "https://dev.vocabs.datastations.nl/rest/v1/data?uri={0}",
+  "term-parent-uri": "",
+  "term-uri-field": "dansElsstClassification",
+  "vocabs": {
+    "ELSST_R4": {
+      "uriSpace": "https://elsst.cessda.eu/id/",
+      "vocabularyUri": "https://elsst.cessda.eu/id/"
+    }
+  }
+}
