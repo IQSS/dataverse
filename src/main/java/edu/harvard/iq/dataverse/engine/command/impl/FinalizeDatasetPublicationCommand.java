@@ -1,11 +1,14 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.CurationStatus;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.DatasetVersion;
+
 import static edu.harvard.iq.dataverse.DatasetVersion.VersionState.*;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -26,6 +29,8 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
+
+import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.*;
@@ -38,6 +43,8 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
 import java.util.concurrent.Future;
+
+import org.apache.logging.log4j.util.Strings;
 import org.apache.solr.client.solrj.SolrServerException;
 
 
@@ -150,20 +157,24 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             theDataset.setEmbargoCitationDate(latestEmbargoDate);
         } 
 
-        //Clear any external status
-        theDataset.getLatestVersion().setExternalStatusLabel(null);
+        DatasetVersion version = theDataset.getLatestVersion();
         
-        // update metadata
-        if (theDataset.getLatestVersion().getReleaseTime() == null) {
-            // Allow migrated versions to keep original release dates
-            theDataset.getLatestVersion().setReleaseTime(getTimestamp());
+        // Clear any external status
+        CurationStatus status = version.getCurrentCurationStatus();
+        if (status != null && Strings.isNotBlank(status.getLabel())) {
+            version.addCurationStatus(new CurationStatus(null, version, getRequest().getAuthenticatedUser()));
         }
-        theDataset.getLatestVersion().setLastUpdateTime(getTimestamp());
+        // update metadata
+        if (version.getReleaseTime() == null) {
+            // Allow migrated versions to keep original release dates
+            version.setReleaseTime(getTimestamp());
+        }
+        version.setLastUpdateTime(getTimestamp());
         theDataset.setModificationTime(getTimestamp());
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
         
         //Use dataset pub date (which may not be the current date for migrated datasets)
-        updateFiles(new Timestamp(theDataset.getLatestVersion().getReleaseTime().getTime()), ctxt);
+        updateFiles(new Timestamp(version.getReleaseTime().getTime()), ctxt);
         
         // 
         // TODO: Not sure if this .merge() is necessary here - ? 
@@ -254,6 +265,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         logger.info("Successfully published the dataset "+readyDataset.getGlobalId().asString());
         readyDataset = ctxt.em().merge(readyDataset);
+
+        // Delete any Featured Items that are invalidated by publishing this version
+        ctxt.dataverseFeaturedItems().deleteInvalidatedFeaturedItemsByDataset(readyDataset);
         
         return readyDataset;
     }

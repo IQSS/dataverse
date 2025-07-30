@@ -331,7 +331,7 @@ public class HarvesterServiceBean {
             MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
             
             Metadata oaiMetadata = oaiRecord.getMetadata();
-            String metadataString = oaiMetadata.getMetadataAsString();
+            String metadataString = oaiMetadata.asUnparsedString();
 
             Long datasetId = null; 
             

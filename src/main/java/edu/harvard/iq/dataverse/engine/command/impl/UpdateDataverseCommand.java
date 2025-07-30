@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +67,14 @@ public class UpdateDataverseCommand extends AbstractWriteDataverseCommand {
                 }
             }
         }
+        if (!getUser().isSuperuser() && updatedDataverseDTO != null) {
+            // default if not set
+            if (updatedDataverseDTO.getDatasetFileCountLimit() == null) {
+                updatedDataverseDTO.setDatasetFileCountLimit(dataverse.getDatasetFileCountLimit());
+            } else if (updatedDataverseDTO.getDatasetFileCountLimit() != dataverse.getDatasetFileCountLimit()) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("file.dataset.error.set.file.count.limit"), this);
+            }
+        }
 
         Dataverse oldDv = ctxt.dataverses().find(dataverse.getId());
 
@@ -119,6 +128,9 @@ public class UpdateDataverseCommand extends AbstractWriteDataverseCommand {
         }
         if (dto.getDataverseType() != null) {
             dataverse.setDataverseType(dto.getDataverseType());
+        }
+        if (dto.getDatasetFileCountLimit() != null) {
+            dataverse.setDatasetFileCountLimit(dto.getDatasetFileCountLimit());
         }
     }
 

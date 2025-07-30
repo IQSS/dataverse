@@ -46,4 +46,5 @@ Developer Guide
    workflows
    fontcustom
    classic-dev-env
+   search-services
    

@@ -195,8 +195,9 @@ public class OptionalFileParamsTest {
         assertNull(instance.getDescription());
         assertFalse(instance.hasDescription());
 
-        assertNull(instance.getCategories());
-        assertFalse(instance.hasCategories());
+        assertNotNull(instance.getCategories());
+        assertTrue(instance.hasCategories());
+        assertTrue(instance.getCategories().isEmpty());
 
         assertNull(instance.getDataFileTags());
         assertFalse(instance.hasFileDataTags());

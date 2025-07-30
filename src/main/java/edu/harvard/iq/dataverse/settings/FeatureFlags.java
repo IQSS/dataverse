@@ -25,7 +25,7 @@ import java.util.Objects;
 public enum FeatureFlags {
 
     /**
-     * Enables API authentication via session cookie (JSESSIONID). Caution: Enabling this feature flag exposes the installation to CSRF risks
+     * Enables API authentication via session cookie (JSESSIONID). Caution: Enabling this feature flag may expose the installation to CSRF risks
      * @apiNote Raise flag by setting "dataverse.feature.api-session-auth"
      * @since Dataverse 5.14
      */
@@ -71,6 +71,20 @@ public enum FeatureFlags {
      * @since Dataverse @6.7:
      */
     API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH("api-bearer-auth-use-builtin-user-on-id-match"),
+
+    /**
+     * Allows the use of a Shibboleth user account when an identity match is found during API bearer authentication.
+     * This feature enables automatic association of an incoming IdP identity with an existing Shibboleth user account,
+     * bypassing the need for additional user registration steps.
+     *
+     * <p>The value of this feature flag is only considered when the feature flag
+     * {@link #API_BEARER_AUTH} is enabled.</p>
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-use-shib-user-on-id-match"
+     * @since Dataverse @TODO:
+     */
+    API_BEARER_AUTH_USE_SHIB_USER_ON_ID_MATCH("api-bearer-auth-use-shib-user-on-id-match"),
+
     /**
      * For published (public) objects, don't use a join when searching Solr. 
      * Experimental! Requires a reindex with the following feature flag enabled,
@@ -151,6 +165,21 @@ public enum FeatureFlags {
      * @since Dataverse 6.5
      */
     VERSION_NOTE("enable-version-note"),
+    /**
+     * This flag adds a permission check to assure that the user calling the
+     * /api/localcontexts/datasets/{id} can edit the dataset with that id. This is
+     * currently the only use case - see
+     * https://github.com/gdcc/dataverse-external-vocab-support/tree/main/packages/local_contexts.
+     * The flag adds additional security to stop other uses, but would currently
+     * have to be used in conjunction with the api-session-auth feature flag (the
+     * security implications of which have not been fully investigated) to still
+     * allow adding Local Contexts metadata to a dataset.
+     * 
+     * @apiNote Raise flag by setting
+     *          "dataverse.feature.add-local-contexts-permission-check"
+     * @since Dataverse 6.5
+     */
+    ADD_LOCAL_CONTEXTS_PERMISSION_CHECK("add-local-contexts-permission-check"),
 
     ;
     
