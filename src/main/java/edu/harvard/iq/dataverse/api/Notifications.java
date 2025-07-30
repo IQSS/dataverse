@@ -92,7 +92,7 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
 
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
@@ -114,7 +114,7 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
 
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
@@ -133,7 +133,7 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
 
         UserNotification.Type notificationType;
@@ -157,7 +157,7 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
 
         UserNotification.Type notificationType;
@@ -181,7 +181,7 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
 
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
@@ -200,7 +200,7 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
 
         UserNotification.Type notificationType;
@@ -224,7 +224,7 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
 
         UserNotification.Type notificationType;
