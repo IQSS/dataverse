@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflows.WorkflowUtil;
 import java.util.List;
 import java.util.Optional;
@@ -41,29 +42,18 @@ public class Notifications extends AbstractApiBean {
     @Path("/all")
     public Response getAllNotificationsForUser(@Context ContainerRequestContext crc) {
         User user = getRequestUser(crc);
-        if (!(user instanceof AuthenticatedUser)) {
+        if (!(user instanceof AuthenticatedUser authenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
-        AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
         List<UserNotification> notifications = userNotificationSvc.findByUser(authenticatedUser.getId());
         for (UserNotification notification : notifications) {
             NullSafeJsonBuilder notificationObjectBuilder = jsonObjectBuilder();
-            JsonArrayBuilder reasonsForReturn = Json.createArrayBuilder();
             Type type = notification.getType();
             notificationObjectBuilder.add("id", notification.getId());
             notificationObjectBuilder.add("type", type.toString());
             notificationObjectBuilder.add("displayAsRead", notification.isReadNotification());
-            /* FIXME - Re-add reasons for return if/when they are added to the notifications page.
-            if (Type.RETURNEDDS.equals(type) || Type.SUBMITTEDDS.equals(type)) {
-                JsonArrayBuilder reasons = getReasonsForReturn(notification);
-                for (JsonValue reason : reasons.build()) {
-                    reasonsForReturn.add(reason);
-                }
-                notificationObjectBuilder.add("reasonsForReturn", reasonsForReturn);
-            }
-            */
             Object objectOfNotification =  mailService.getObjectOfNotification(notification);
             if (objectOfNotification != null){
                 String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, objectOfNotification);
