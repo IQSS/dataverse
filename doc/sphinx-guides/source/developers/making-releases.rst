@@ -165,7 +165,7 @@ Return to the parent pom and make the following change, which is necessary for p
 
 - modules/dataverse-parent/pom.xml -> ``<profiles>`` -> profile "ct" -> ``<properties>`` -> Set ``<base.image.version>`` to ``${revision}``
 
-When testing the version change in Docker note that you will have to build the base image manually. See
+When testing the version change in Docker note that you will have to build the base image manually. See :ref:`base-image-build-instructions`.
 
 (Before you make this change the value should be ``${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}``. Later on, after cutting a release, we'll change it back to that value.)
 
