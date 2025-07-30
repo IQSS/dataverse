@@ -587,7 +587,7 @@ public class Datasets extends AbstractApiBean {
             } catch (IllegalArgumentException e) {
                 return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.access.status", List.of(accessStatus)));
             }
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned);
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned, false, true);
             JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
             jsonObjectBuilder.add("total", datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion, fileSearchCriteria));
             jsonObjectBuilder.add("perContentType", json(datasetVersionFilesServiceBean.getFileMetadataCountPerContentType(datasetVersion, fileSearchCriteria)));
@@ -3563,7 +3563,7 @@ public class Datasets extends AbstractApiBean {
             } catch (IllegalArgumentException e) {
                 return error(Response.Status.BAD_REQUEST, "Invalid mode: " + mode);
             }
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, version, findDatasetOrDie(dvIdtf), uriInfo, headers, includeDeaccessioned);
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, version, findDatasetOrDie(dvIdtf), uriInfo, headers, includeDeaccessioned, false,true);
             long datasetStorageSize = datasetVersionFilesServiceBean.getFilesDownloadSize(datasetVersion, fileSearchCriteria, fileDownloadSizeMode);
             String message = MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"), datasetStorageSize);
             JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
