@@ -273,7 +273,7 @@ public enum JvmSettings {
     CSL_COMMON_STYLES(SCOPE_CSL, "common-styles"),
 
     // PersonOrOrgUtil SETTINGS
-    SCOPE_PERSONORORG(PREFIX, "person-or-org", "dataverse.personOrOrg"),
+    SCOPE_PERSONORORG(PREFIX, "person-or-org"),
     ASSUME_COMMA_IN_PERSON_NAME(SCOPE_PERSONORORG, "assume-comma-in-person-name", "dataverse.personOrOrg.assumeCommaInPersonName"),
     ORG_PHRASE_ARRAY(SCOPE_PERSONORORG, "org-phrase-array"),
 

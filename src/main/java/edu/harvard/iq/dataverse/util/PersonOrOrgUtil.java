@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -34,6 +36,14 @@ public class PersonOrOrgUtil {
 
     private static final Logger logger = Logger.getLogger(PersonOrOrgUtil.class.getCanonicalName());
 
+    static boolean assumeCommaInPersonName = false;
+    static List<String> orgPhrases;
+
+    static {
+        setAssumeCommaInPersonName(JvmSettings.ASSUME_COMMA_IN_PERSON_NAME.lookupOptional(Boolean.class).orElse(false));
+        setOrgPhraseArray(JvmSettings.ORG_PHRASE_ARRAY.lookupOptional(String[].class).orElse(new String[]{}));
+    }
+
     /**
      * This method tries to determine if a name belongs to a person or an
      * organization and, if it is a person, what the given and family names are. The
@@ -61,7 +71,6 @@ public class PersonOrOrgUtil {
 
         boolean isOrganization = !isPerson && Organizations.getInstance().isOrganization(name);
         if (!isOrganization) {
-            String[] orgPhrases = JvmSettings.ORG_PHRASE_ARRAY.lookupOptional(String[].class).orElse(new String[]{});
             for (String phrase : orgPhrases) {
                 if (name.contains(phrase)) {
                     isOrganization = true;
@@ -88,7 +97,6 @@ public class PersonOrOrgUtil {
             }
 
         } else {
-            boolean assumeCommaInPersonName = JvmSettings.ASSUME_COMMA_IN_PERSON_NAME.lookupOptional(Boolean.class).orElse(false);
             if (assumeCommaInPersonName && !isPerson) {
                 isOrganization = true;
             } else {
@@ -124,5 +132,19 @@ public class PersonOrOrgUtil {
         job.add("isPerson", !isOrganization);
         return job.build();
 
+    }
+
+    // Public for testing
+    public static void setOrgPhraseArray(String[] phraseArray) {
+        if (phraseArray == null) {
+            orgPhrases = new ArrayList<>();
+        } else {
+            orgPhrases = List.of(phraseArray);
+        }
+    }
+
+    // Public for testing
+    public static void setAssumeCommaInPersonName(boolean assume) {
+        assumeCommaInPersonName = assume;
     }
 }

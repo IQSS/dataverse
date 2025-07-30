@@ -40,12 +40,13 @@ public class PersonOrOrgUtilTest {
         }
 
         @Test
-        @JvmSetting(key = JvmSettings.ORG_PHRASE_ARRAY, value = "Portable,GmbH")
         public void testOrganizationWithOrgPhraseArray() {
+            PersonOrOrgUtil.setOrgPhraseArray(new String[]{"Portable", "GmbH"});
             // The next examples are known to be asserted to be a Person without an entry in the OrgWordArray
             // So we test with the array set via JvmSetting to verify the array works
             verifyIsOrganization("Portable Antiquities of the Netherlands");
             verifyIsOrganization("Max Mustermann GmbH");
+            PersonOrOrgUtil.setOrgPhraseArray(null);
         }
 
         @Test
@@ -58,11 +59,12 @@ public class PersonOrOrgUtilTest {
         }
 
         @Test
-        @JvmSetting(key = JvmSettings.ASSUME_COMMA_IN_PERSON_NAME, value = "true")
         public void testOrganizationAcademicNameWithAssumeComma() {
+            PersonOrOrgUtil.setAssumeCommaInPersonName(true);
             verifyIsOrganization("John Smith Center");
             verifyIsOrganization("John Smith Group");
             verifyIsOrganization("John Smith Project");
+            PersonOrOrgUtil.setAssumeCommaInPersonName(false);
         }
 
         
