@@ -1,4 +1,4 @@
--- This is a workaround for the missing externalvocabularyvalue table
+-- This is a workaround for the missing externalvocabularyvalue table in migration V6.1.0.3
 create table if not exists externalvocabularyvalue
 (
     id             serial primary key,

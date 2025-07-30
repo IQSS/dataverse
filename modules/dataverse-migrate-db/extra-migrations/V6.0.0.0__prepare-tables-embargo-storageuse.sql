@@ -1,4 +1,4 @@
--- This is a workaround for the missing embargo table
+-- This is a workaround for the missing embargo table in migration V6.0.0.2
 create table if not exists embargo
 (
     id            serial primary key,
@@ -6,7 +6,7 @@ create table if not exists embargo
     reason        text
 );
 
--- This is a workaround for the missing storageuse table
+-- This is a workaround for the missing storageuse table in migration V6.0.0.5
 create table if not exists storageuse
 (
     id                   serial primary key,

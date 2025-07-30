@@ -1,4 +1,4 @@
--- This is a workaround for the missing license table
+-- This is a workaround for the missing license table in migration V5.9.0.1
 
 create table if not exists license
 (
@@ -13,9 +13,3 @@ create table if not exists license
 );
 
 create index if not exists license_sortorder_id on license (sortorder, id);
-
--- Save information about CCBY license to temporary table (to be used in a migration after the main license migration)
-CREATE TEMPORARY TABLE ccby(
-   id serial  primary key
-);
-INSERT INTO ccby (id) SELECT id FROM termsofuseandaccess WHERE license = 'CCBY';

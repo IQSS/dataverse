@@ -1,4 +1,4 @@
--- This is a workaround for the missing auxiliaryfile table
+-- This is a workaround for the missing auxiliaryfile table in migration V5.4.1.1
 
 create table if not exists auxiliaryfile
 (
