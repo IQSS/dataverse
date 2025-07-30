@@ -2,13 +2,12 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
-import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflows.WorkflowUtil;
-import java.util.List;
+
 import java.util.Optional;
 import java.util.Set;
 
@@ -17,17 +16,12 @@ import jakarta.ejb.Stateless;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 
-import edu.harvard.iq.dataverse.util.MailUtil;
-import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 @Stateless
@@ -40,32 +34,13 @@ public class Notifications extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/all")
-    public Response getAllNotificationsForUser(@Context ContainerRequestContext crc) {
+    public Response getAllNotificationsForUser(@Context ContainerRequestContext crc, @QueryParam("inAppNotificationFormat") boolean inAppNotificationFormat) {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser authenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
             return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
-        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        List<UserNotification> notifications = userNotificationSvc.findByUser(authenticatedUser.getId());
-        for (UserNotification notification : notifications) {
-            NullSafeJsonBuilder notificationObjectBuilder = jsonObjectBuilder();
-            Type type = notification.getType();
-            notificationObjectBuilder.add("id", notification.getId());
-            notificationObjectBuilder.add("type", type.toString());
-            notificationObjectBuilder.add("displayAsRead", notification.isReadNotification());
-            Object objectOfNotification =  mailService.getObjectOfNotification(notification);
-            if (objectOfNotification != null){
-                String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, objectOfNotification);
-                String messageText = mailService.getMessageTextBasedOnNotification(notification, objectOfNotification, null, notification.getRequestor());
-                notificationObjectBuilder.add("subjectText", subjectText);
-                notificationObjectBuilder.add("messageText", messageText);
-            }
-            notificationObjectBuilder.add("sentTimestamp", notification.getSendDateTimestamp());
-            jsonArrayBuilder.add(notificationObjectBuilder);
-        }
-        JsonObjectBuilder result = Json.createObjectBuilder().add("notifications", jsonArrayBuilder);
-        return ok(result);
+        return ok(Json.createObjectBuilder().add("notifications", json(userNotificationSvc.findByUser(authenticatedUser.getId()))));
     }
 
     @GET

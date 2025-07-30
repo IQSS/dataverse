@@ -36,6 +36,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
+import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 
@@ -76,6 +77,9 @@ public class JsonPrinter {
 
     @EJB
     static DatasetServiceBean datasetService;
+
+    @EJB
+    static MailServiceBean mailService;
     
     public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb, DataverseFieldTypeInputLevelServiceBean dfils, DatasetServiceBean ds) {
             settingsService = ssb;
@@ -1609,5 +1613,34 @@ public class JsonPrinter {
         }
 
         return jsonArrayBuilder;
+    }
+
+    public static JsonArrayBuilder json(List<UserNotification> notifications) {
+        JsonArrayBuilder notificationsArray = Json.createArrayBuilder();
+
+        for (UserNotification notification : notifications) {
+            NullSafeJsonBuilder notificationJson = jsonObjectBuilder();
+            UserNotification.Type type = notification.getType();
+
+            notificationJson.add("id", notification.getId());
+            notificationJson.add("type", type.toString());
+            notificationJson.add("displayAsRead", notification.isReadNotification());
+            notificationJson.add("sentTimestamp", notification.getSendDateTimestamp());
+
+            Object relatedObject = mailService.getObjectOfNotification(notification);
+            if (relatedObject != null) {
+                String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, relatedObject);
+                String messageText = mailService.getMessageTextBasedOnNotification(
+                        notification, relatedObject, null, notification.getRequestor()
+                );
+
+                notificationJson.add("subjectText", subjectText);
+                notificationJson.add("messageText", messageText);
+            }
+
+            notificationsArray.add(notificationJson);
+        }
+
+        return notificationsArray;
     }
 }
