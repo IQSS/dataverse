@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.workflows.WorkflowUtil;
 
 import java.util.Optional;
 import java.util.Set;
@@ -50,11 +49,6 @@ public class Notifications extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-    }
-
-    private JsonArrayBuilder getReasonsForReturn(UserNotification notification) {
-        Long objectId = notification.getObjectId();
-        return WorkflowUtil.getAllWorkflowComments(datasetVersionSvc.find(objectId));
     }
 
     @PUT
