@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -11,7 +10,6 @@ import edu.harvard.iq.dataverse.workflows.WorkflowUtil;
 import java.util.Optional;
 import java.util.Set;
 
-import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
@@ -28,9 +26,6 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 @Path("notifications")
 public class Notifications extends AbstractApiBean {
 
-    @EJB
-    MailServiceBean mailService;
-    
     @GET
     @AuthRequired
     @Path("/all")
