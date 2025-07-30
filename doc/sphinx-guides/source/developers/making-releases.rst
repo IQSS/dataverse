@@ -397,17 +397,20 @@ Announce the Release on Zulip
 
 Post a message under #community at https://dataverse.zulipchat.com
 
-For Hotfixes, Merge Hotfix Branch into "develop" and Rename SQL Scripts
------------------------------------------------------------------------
+For Hotfixes, Merge Hotfix Branch into "develop"
+------------------------------------------------
 
 Note: this only applies to hotfixes!
 
 We've merged the hotfix into the "master" branch but now we need the fixes (and version bump) in the "develop" branch.
 
-Make a new branch off the hotfix branch.
+Make a new branch off the hotfix branch. You can call it something like "6.7.1-hotfix-to-develop".
 
-Do the :ref:`base_image_post_release` step you skipped above. Now is the time.
-
-Because of the hotfix version, any SQL scripts in "develop" should be renamed (from "5.11.0" to "5.11.1" for example). To read more about our naming conventions for SQL scripts, see :doc:`sql-upgrade-scripts`.
+In that branch, do the :ref:`base_image_post_release` step you skipped above. Now is the time.
 
 Create a pull request against develop. Merge conflicts are possible and this pull request should go through review and QA like normal. Afterwards it's fine to delete this branch and the hotfix branch that was merged into master.
+
+For Hotfixes, Rename SQL Scripts
+--------------------------------
+
+Because we have merged a version bump from the hotfix into the "develop" branch, any SQL scripts in the "develop" branch should be renamed (from "5.11.0" to "5.11.1" for example). (To read more about our naming conventions for SQL scripts, see :doc:`sql-upgrade-scripts`.) Look at ``src/main/resources/db/migration`` in the "develop" branch and if any SQL scripts have the wrong version, make a pull request to update them (all at once in a single PR is fine). Tell developers and QA to look at open pull requests and to rename SQL scripts that have the wrong version.
