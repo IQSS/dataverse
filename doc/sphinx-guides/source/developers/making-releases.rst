@@ -328,7 +328,7 @@ Create a pull request and put it through code review, like usual. Give it a mile
 
 For more background, see :ref:`base-image-supported-tags`. For an example, see https://github.com/IQSS/dataverse/pull/10896
 
-For hotfix, we will do this later. See below.
+For a hotfix, we will do this later and in a different branch. See below.
 
 Lift the Code Freeze and Encourage Developers to Update Their Branches
 ----------------------------------------------------------------------
@@ -393,7 +393,7 @@ Note: this only applies to hotfixes!
 
 We've merged the hotfix into the "master" branch but now we need the fixes (and version bump) in the "develop" branch.
 
-Make a new branch off the hotfix branch. You can call it something like "6.7.1-hotfix-to-develop".
+Make a new branch off the hotfix branch. You can call it something like "6.7.1-merge-hotfix-to-develop".
 
 In that branch, do the :ref:`base_image_post_release` step you skipped above. Now is the time.
 
@@ -402,4 +402,4 @@ Create a pull request against develop. Merge conflicts are possible and this pul
 For Hotfixes, Rename SQL Scripts
 --------------------------------
 
-Because we have merged a version bump from the hotfix into the "develop" branch, any SQL scripts in the "develop" branch should be renamed (from "5.11.0" to "5.11.1" for example). (To read more about our naming conventions for SQL scripts, see :doc:`sql-upgrade-scripts`.) Look at ``src/main/resources/db/migration`` in the "develop" branch and if any SQL scripts have the wrong version, make a pull request to update them (all at once in a single PR is fine). Tell developers and QA to look at open pull requests and to rename SQL scripts that have the wrong version.
+For a hotfix, because we have merged a version bump from the hotfix into the "develop" branch, any SQL scripts in the "develop" branch should be renamed (from "5.11.0" to "5.11.1" for example). (To read more about our naming conventions for SQL scripts, see :doc:`sql-upgrade-scripts`.) Look at ``src/main/resources/db/migration`` in the "develop" branch and if any SQL scripts have the wrong version, make a pull request to update them (all at once in a single PR is fine). Tell developers and QA to look at open pull requests and to rename SQL scripts that have the wrong version.
