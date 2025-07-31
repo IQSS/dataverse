@@ -54,6 +54,8 @@ Declare a Code Freeze
 
 The following steps are made more difficult if code is changing in the "develop" branch. Declare a code freeze until the release is out. Do not allow pull requests to be merged.
 
+For a hotfix, a code freeze (no merging) is necessary not because we want code to stop changing in the branch being hotfix released, but because bumping the version used in Jenkins/Ansible means that API tests will fail in pull requests until the version is bumped in those pull requests.
+
 Conduct Performance Testing
 ---------------------------
 
@@ -87,24 +89,14 @@ The task at or near release time is to collect these snippets into a single file
 - Make a pull request. Here's an example: https://github.com/IQSS/dataverse/pull/11613
 - Note that we won't merge the release notes until after we have confirmed that the upgrade instructions are valid by performing a couple upgrades.
 
+For a hotfix, don't worry about release notes yet.
+
 Deploy Release Candidate to Internal
 ------------------------------------
 
 |dedicated|
 
-To upgrade internal, go to /doc/release-notes, open the release-notes.md file for the current release and perform all the steps under "Upgrade Instructions".
-
-Note that we haven't bumped the version yet so you won't be able to follow the steps exactly.
-
-Deploy Release Candidate to Demo
---------------------------------
-
-|dedicated|
-
-First, build the release candidate.
-
-ssh into the dataverse-internal server and undeploy the current war file.
-Go to /doc/release-notes, open the release-notes.md file for the current release, and perform all the steps under "Upgrade Instructions".
+First, build the release candidate. For a regular release, you will use the "develop" branch, as shown below. For a hotfix, you will use whatever branch name is used for the hotfix.
 
 Go to https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ and make the following adjustments to the config:
 
@@ -112,13 +104,18 @@ Go to https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ and make the fo
 - Branch Specifier (blank for 'any'): ``*/develop``
 - Execute shell: Update version in filenames to ``dataverse-5.10.war`` (for example)
 
-Click "Save" then "Build Now".
+Click "Save" then "Build Now". The release candidate war file will be available at https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ws/target/
 
-This will build the war file, and then automatically deploy it on dataverse-internal. Verify that the application has deployed successfully. 
+ssh into the dataverse-internal server and download the release candidate war file from the URL above.
 
-You can scp the war file to the demo server or download it from https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ws/target/
+Go to /doc/release-notes, open the release-notes.md file for the release we're working on, and perform all the steps under "Upgrade Instructions". Note that for regular releases, we haven't bumped the version yet so you won't be able to follow the steps exactly. (For hotfix releases, the version will be bumped already.)
 
-ssh into the demo server and follow the upgrade instructions in the release notes. Again, note that we haven't bumped the version yet.
+Deploy Release Candidate to Demo
+--------------------------------
+
+|dedicated|
+
+Deploy the same war file to https://demo.dataverse.org using the same upgrade instructions as above.
 
 Merge Release Notes (Once Ready)
 --------------------------------
@@ -126,6 +123,8 @@ Merge Release Notes (Once Ready)
 If the upgrade instructions are perfect, simply merge the release notes.
 
 If the upgrade instructions aren't quite right, work with the authors of the release notes until they are good enough, and then merge.
+
+For a hotfix, there are no release notes to merge yet.
 
 Prepare Release Branch
 ----------------------
@@ -155,6 +154,8 @@ Return to the parent pom and make the following change, which is necessary for p
 
 - modules/dataverse-parent/pom.xml -> ``<profiles>`` -> profile "ct" -> ``<properties>`` -> Set ``<base.image.version>`` to ``${revision}``
 
+When testing the version change in Docker note that you will have to build the base image manually. See :ref:`base-image-build-instructions`.
+
 (Before you make this change the value should be ``${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}``. Later on, after cutting a release, we'll change it back to that value.)
 
 For a regular release, make the changes above in the release branch you created, but hold off for a moment on making a pull request because Jenkins will fail because it will be testing the previous release.
@@ -163,10 +164,10 @@ In the dataverse-ansible repo bump the version in `jenkins.yml <https://github.c
 
 Once dataverse-ansible has been merged, return to the branch you created above ("10852-bump-to-6.4" or whatever) and make a pull request. Ensure that all tests are passing and then put the PR through the normal review and QA process.
 
-If you are making a hotfix release, make the pull request against the "master" branch. Do not delete the branch after merging because we will later merge it into the "develop" branch to pick up the hotfix. More on this later.
+If you are making a hotfix release, ``<base.image.version>`` should already be set to ``${revision}``. If so, leave it alone. Go ahead and do the normal bumping of version numbers descibed above. Make the pull request against the "master" branch. Put it through review and QA. Do not delete the branch after merging because we will later merge it into the "develop" branch to pick up the hotfix. More on this later.
 
-Merge "develop" into "master"
------------------------------
+Merge "develop" into "master" (non-hotfix only)
+-----------------------------------------------
 
 If this is a regular (non-hotfix) release, create a pull request to merge the "develop" branch into the "master" branch using this "compare" link: https://github.com/IQSS/dataverse/compare/master...develop
 
@@ -312,6 +313,8 @@ Note that for milestones we use just the number without the "v" (e.g. "5.10.1").
 
 On the project board at https://github.com/orgs/IQSS/projects/34 edit the tab (view) that shows the milestone to show the next milestone.
 
+.. _base_image_post_release:
+
 Update the Container Base Image Version Property
 ------------------------------------------------
 
@@ -325,12 +328,7 @@ Create a pull request and put it through code review, like usual. Give it a mile
 
 For more background, see :ref:`base-image-supported-tags`. For an example, see https://github.com/IQSS/dataverse/pull/10896
 
-Lift the Code Freeze and Encourage Developers to Update Their Branches
-----------------------------------------------------------------------
-
-It's now safe to lift the code freeze. We can start merging pull requests into the "develop" branch for the next release.
-
-Let developers know that they should merge the latest from the "develop" branch into any branches they are working on.
+For a hotfix, we will do this later and in a different branch. See below.
 
 Deploy Final Release on Demo
 ----------------------------
@@ -379,13 +377,33 @@ Announce the Release on Zulip
 
 Post a message under #community at https://dataverse.zulipchat.com
 
-For Hotfixes, Merge Hotfix Branch into "develop" and Rename SQL Scripts
------------------------------------------------------------------------
+For Hotfixes, Merge Hotfix Branch into "develop"
+------------------------------------------------
 
 Note: this only applies to hotfixes!
 
-We've merged the hotfix into the "master" branch but now we need the fixes (and version bump) in the "develop" branch. Make a new branch off the hotfix branch and create a pull request against develop. Merge conflicts are possible and this pull request should go through review and QA like normal. Afterwards it's fine to delete this branch and the hotfix branch that was merged into master.
+We've merged the hotfix into the "master" branch but now we need the fixes (and version bump) in the "develop" branch.
 
-Because of the hotfix version, any SQL scripts in "develop" should be renamed (from "5.11.0" to "5.11.1" for example). To read more about our naming conventions for SQL scripts, see :doc:`sql-upgrade-scripts`.
+Make a new branch off the hotfix branch. You can call it something like "6.7.1-merge-hotfix-to-develop".
 
-Please note that version bumps and SQL script renaming both require all open pull requests to be updated with the latest from the "develop" branch so you might want to add any SQL script renaming to the hotfix branch before you put it through QA to be merged with develop. This way, open pull requests only need to be updated once.
+In that branch, do the :ref:`base_image_post_release` step you skipped above. Now is the time.
+
+Create a pull request against develop. Merge conflicts are possible and this pull request should go through review and QA like normal. Afterwards it's fine to delete this branch and the hotfix branch that was merged into master.
+
+For Hotfixes, Tell Developers to Merge "develop" into Their Branches and Rename SQL Scripts
+-------------------------------------------------------------------------------------------
+
+Note: this only applies to hotfixes!
+
+Because we have merged a version bump from the hotfix into the "develop" branch, any SQL scripts in the "develop" branch should be renamed (from "5.11.0" to "5.11.1" for example). (To read more about our naming conventions for SQL scripts, see :doc:`sql-upgrade-scripts`.)
+
+Look at ``src/main/resources/db/migration`` in the "develop" branch and if any SQL scripts have the wrong version, make a pull request (or ask a developer to) to update them (all at once in a single PR is fine).
+
+Tell developers to merge the "develop" into their open pull requests (to pick up the new version and any fixes) and rename SQL scripts (if any) with the new version.
+
+Lift the Code Freeze and Encourage Developers to Update Their Branches
+----------------------------------------------------------------------
+
+It's now safe to lift the code freeze. We can start merging pull requests into the "develop" branch for the next release.
+
+Let developers know that they should merge the latest from the "develop" branch into any branches they are working on. (For hotfixes we've already told them this.)
