@@ -330,15 +330,6 @@ For more background, see :ref:`base-image-supported-tags`. For an example, see h
 
 For a hotfix, we will do this later and in a different branch. See below.
 
-Lift the Code Freeze and Encourage Developers to Update Their Branches
-----------------------------------------------------------------------
-
-It's now safe to lift the code freeze. We can start merging pull requests into the "develop" branch for the next release.
-
-Let developers know that they should merge the latest from the "develop" branch into any branches they are working on.
-
-For a hotfix, tell developers that soon "develop" will be updated with the new version that they can merge into their open pull requests.
-
 Deploy Final Release on Demo
 ----------------------------
 
@@ -409,3 +400,10 @@ Because we have merged a version bump from the hotfix into the "develop" branch,
 Look at ``src/main/resources/db/migration`` in the "develop" branch and if any SQL scripts have the wrong version, make a pull request (or ask a developer to) to update them (all at once in a single PR is fine).
 
 Tell developers to merge the "develop" into their open pull requests (to pick up the new version and any fixes) and rename SQL scripts (if any) with the new version.
+
+Lift the Code Freeze and Encourage Developers to Update Their Branches
+----------------------------------------------------------------------
+
+It's now safe to lift the code freeze. We can start merging pull requests into the "develop" branch for the next release.
+
+Let developers know that they should merge the latest from the "develop" branch into any branches they are working on. (For hotfixes we've already told them this.)
