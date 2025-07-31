@@ -132,11 +132,18 @@ public class JsonPrinter {
         return builder;
     }
 
+    public static JsonArrayBuilder jsonRoleAssignments(List<RoleAssignment> roleAssignments) {
+        JsonArrayBuilder bld = Json.createArrayBuilder();
+        roleAssignments.forEach(roleAssignment -> bld.add(json(roleAssignment)));
+        return bld;
+    }
+
     public static JsonObjectBuilder json(RoleAssignment ra) {
         return jsonObjectBuilder()
                 .add("id", ra.getId())
                 .add("assignee", ra.getAssigneeIdentifier())
                 .add("roleId", ra.getRole().getId())
+                .add("roleName", ra.getRole().getName())
                 .add("_roleAlias", ra.getRole().getAlias())
                 .add("privateUrlToken", ra.getPrivateUrlToken())
                 .add("definitionPointId", ra.getDefinitionPoint().getId());

@@ -1,16 +1,12 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.*;
-import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.ejb.EJB;
-import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonRoleAssignments;
 
 public class InAppNotificationsJsonPrinter {
 
@@ -27,9 +23,6 @@ public class InAppNotificationsJsonPrinter {
     private static PermissionServiceBean permissionService;
 
     @EJB
-    private static GroupServiceBean groupService;
-
-    @EJB
     private static SystemConfig systemConfig;
 
     public static void addFieldsByType(NullSafeJsonBuilder notificationJson, AuthenticatedUser authenticatedUser, UserNotification userNotification) {
@@ -40,20 +33,18 @@ public class InAppNotificationsJsonPrinter {
             case ASSIGNROLE:
                 Dataverse dataverse = dataverseService.find(userNotification.getObjectId());
                 if (dataverse != null) {
-                    notificationJson.add("role", getRoleStringFromUser(authenticatedUser, dataverse));
-                    notificationJson.add("userGuideUrl", systemConfig.getGuidesUrl());
-
-                    userNotification.setRoleString(getRoleStringFromUser(authenticatedUser, dataverse));
-                    userNotification.setTheObject(dataverse);
+                    notificationJson.add("roleAssignments", jsonRoleAssignments(permissionService.getEffectiveRoleAssignments(authenticatedUser, dataverse)));
+                    notificationJson.add("dataverseAlias", dataverse.getAlias());
+                    notificationJson.add("dataverseDisplayName", dataverse.getDisplayName());
                 } else {
                     Dataset dataset = datasetService.find(userNotification.getObjectId());
                     if (dataset != null) {
-                        userNotification.setRoleString(getRoleStringFromUser(authenticatedUser, dataset));
-                        userNotification.setTheObject(dataset);
+                        /*userNotification.setRoleString(getRoleStringFromUser(authenticatedUser, dataset));
+                        userNotification.setTheObject(dataset);*/
                     } else {
-                        DataFile datafile = dataFileService.find(userNotification.getObjectId());
+                        /*DataFile datafile = dataFileService.find(userNotification.getObjectId());
                         userNotification.setRoleString(getRoleStringFromUser(authenticatedUser, datafile));
-                        userNotification.setTheObject(datafile);
+                        userNotification.setTheObject(datafile);*/
                     }
                 }
             case REVOKEROLE:
@@ -90,25 +81,5 @@ public class InAppNotificationsJsonPrinter {
             case INGESTCOMPLETEDWITHERRORS:
             case DATASETMENTIONED:
         }
-    }
-
-    private static String getRoleStringFromUser(AuthenticatedUser au, DvObject dvObj) {
-        // Find user's role(s) for given dataverse/dataset
-        Set<RoleAssignment> roles = permissionService.assignmentsFor(au, dvObj);
-        List<String> roleNames = new ArrayList<>();
-
-        // Include roles derived from a user's groups
-        Set<Group> groupsUserBelongsTo = groupService.groupsFor(au, dvObj);
-        for (Group g : groupsUserBelongsTo) {
-            roles.addAll(permissionService.assignmentsFor(g, dvObj));
-        }
-
-        for (RoleAssignment ra : roles) {
-            roleNames.add(ra.getRole().getName());
-        }
-        if (roleNames.isEmpty()) {
-            return "[Unknown]";
-        }
-        return StringUtils.join(roleNames, "/");
     }
 }

@@ -13,16 +13,13 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import java.util.HashSet;
-import java.util.List;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
@@ -34,11 +31,9 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.PendingWorkflowInvocation;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static java.util.stream.Collectors.toList;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -926,6 +921,7 @@ public class PermissionServiceBean {
     public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, Permission permission) {
         return findPermittedCollections(request, user, 1 << permission.ordinal());
     }
+
     public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit) {
         if (user != null) {
             // IP Group - Only check IP if a User is calling for themself
@@ -962,6 +958,26 @@ public class PermissionServiceBean {
             return em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
         }
         return null;
+    }
+
+    /**
+     * Calculates the complete list of role assignments for a given user on a DvObject.
+     * This includes roles assigned directly to the user and roles inherited from any groups
+     * the user is a member of.
+     *
+     * @param user The authenticated user whose roles are being checked.
+     * @param dvObject The dataverse object to check for role assignments.
+     * @return A List containing all effective RoleAssignments for the user. Never null.
+     */
+    public List<RoleAssignment> getEffectiveRoleAssignments(AuthenticatedUser user, DvObject dvObject) {
+        Stream<RoleAssignment> directAssignments = assignmentsFor(user, dvObject).stream();
+
+        Stream<RoleAssignment> groupAssignments = groupService.groupsFor(user, dvObject)
+                .stream()
+                .flatMap(group -> assignmentsFor(group, dvObject).stream());
+
+        return Stream.concat(directAssignments, groupAssignments)
+                .collect(Collectors.toList());
     }
 }
 
