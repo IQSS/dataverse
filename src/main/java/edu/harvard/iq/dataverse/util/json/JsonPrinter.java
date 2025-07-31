@@ -1569,6 +1569,7 @@ public class JsonPrinter {
         return jsonObjectBuilder()
                 .add("id", template.getId())
                 .add("name", template.getName())
+                .add("isDefault", template.isIsDefaultForDataverse())
                 .add("usageCount", template.getUsageCount())
                 .add("createTime", template.getCreateTime().toString())
                 .add("createDate", template.getCreateDate())
