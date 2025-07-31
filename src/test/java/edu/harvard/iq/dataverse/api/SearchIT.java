@@ -6,6 +6,7 @@ import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -2017,12 +2018,11 @@ public class SearchIT {
         searchResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.count_in_response", CoreMatchers.is(1))
-                .body("data.items[0].collections[0].id", CoreMatchers.is(dataverseId))
-                .body("data.items[0].collections[0].name", CoreMatchers.is(dataverseName))
-                .body("data.items[0].collections[0].alias", CoreMatchers.is(dataverseAlias))
-                .body("data.items[0].collections[1].id", CoreMatchers.is(dataverse2Id))
-                .body("data.items[0].collections[1].name", CoreMatchers.is(dataverse2Name))
-                .body("data.items[0].collections[1].alias", CoreMatchers.is(dataverse2Alias));;
+                .body("data.items[0].collections.size()", CoreMatchers.is(2))
+                .body("data.items[0].collections", CoreMatchers.hasItems(
+                        Map.of("id", dataverseId, "name", dataverseName, "alias", dataverseAlias),
+                        Map.of("id", dataverse2Id, "name", dataverse2Name, "alias", dataverse2Alias)
+                ));
 
     }
 
