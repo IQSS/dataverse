@@ -132,7 +132,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>6.7</revision>
+        <revision>6.7.1</revision>
     
         <target.java.version>17</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -454,8 +454,8 @@
                     Once the release has been made (tag created), change this back to "${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}"
                     (These properties are provided by the build-helper plugin below.)
                 -->
-                <!--<base.image.version>${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}</base.image.version>-->
-                <base.image.version>${revision}</base.image.version>
+                <base.image.version>${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}</base.image.version>
+                <!--<base.image.version>${revision}</base.image.version>-->
                 <!-- This is used by the maintenance CI jobs, no need to adapt during releases. -->
                 <app.image.version>${base.image.version}</app.image.version>
             </properties>
