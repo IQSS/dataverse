@@ -54,7 +54,7 @@ Declare a Code Freeze
 
 The following steps are made more difficult if code is changing in the "develop" branch. Declare a code freeze until the release is out. Do not allow pull requests to be merged.
 
-For a hotfix, a code freeze is not necessary.
+For a hotfix, a code freeze (no merging) is necessary not because we want code to stop changing in the branch being hotfix released, but because bumping the version used in Jenkins/Ansible means that API tests will fail in pull requests until the version is bumped in those pull requests.
 
 Conduct Performance Testing
 ---------------------------
@@ -337,7 +337,7 @@ It's now safe to lift the code freeze. We can start merging pull requests into t
 
 Let developers know that they should merge the latest from the "develop" branch into any branches they are working on.
 
-For a hotfix, there is no freeze to lift but soon we'll break the bad news to them if we had to rename SQL scripts. See below.
+For a hotfix, tell developers that soon "develop" will be updated with the new version that they can merge into their open pull requests.
 
 Deploy Final Release on Demo
 ----------------------------
@@ -399,7 +399,13 @@ In that branch, do the :ref:`base_image_post_release` step you skipped above. No
 
 Create a pull request against develop. Merge conflicts are possible and this pull request should go through review and QA like normal. Afterwards it's fine to delete this branch and the hotfix branch that was merged into master.
 
-For Hotfixes, Rename SQL Scripts
---------------------------------
+For Hotfixes, Tell Developers to Merge "develop" into Their Branches and Rename SQL Scripts
+-------------------------------------------------------------------------------------------
 
-For a hotfix, because we have merged a version bump from the hotfix into the "develop" branch, any SQL scripts in the "develop" branch should be renamed (from "5.11.0" to "5.11.1" for example). (To read more about our naming conventions for SQL scripts, see :doc:`sql-upgrade-scripts`.) Look at ``src/main/resources/db/migration`` in the "develop" branch and if any SQL scripts have the wrong version, make a pull request to update them (all at once in a single PR is fine). Tell developers and QA to look at open pull requests and to rename SQL scripts that have the wrong version.
+Note: this only applies to hotfixes!
+
+Because we have merged a version bump from the hotfix into the "develop" branch, any SQL scripts in the "develop" branch should be renamed (from "5.11.0" to "5.11.1" for example). (To read more about our naming conventions for SQL scripts, see :doc:`sql-upgrade-scripts`.)
+
+Look at ``src/main/resources/db/migration`` in the "develop" branch and if any SQL scripts have the wrong version, make a pull request (or ask a developer to) to update them (all at once in a single PR is fine).
+
+Tell developers to merge the "develop" into their open pull requests (to pick up the new version and any fixes) and rename SQL scripts (if any) with the new version.
