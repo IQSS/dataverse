@@ -2133,7 +2133,7 @@ public class DatasetVersion implements Serializable {
                 fileObject.add("name", fileMetadata.getLabel());
                 fileObject.add("encodingFormat", fileMetadata.getDataFile().getContentType());
                 fileObject.add("contentSize", fileMetadata.getDataFile().getFilesize());
-                fileObject.add("description", fileMetadata.getDescription());
+                fileObject.add("description", MarkupChecker.stripAllTags(fileMetadata.getDescription()));
                 fileObject.add("@id", filePidUrlAsString);
                 fileObject.add("identifier", filePidUrlAsString);
                 boolean hideFilesBoolean = JvmSettings.HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS.lookupOptional(Boolean.class).orElse(false);
