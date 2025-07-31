@@ -70,7 +70,7 @@ copyright = u'%d, The President & Fellows of Harvard College' % datetime.now().y
 # built documents.
 #
 # The short X.Y version.
-version = '6.7'
+version = '6.7.1'
 # The full version, including alpha/beta/rc tags.
 release = version
 
