@@ -159,7 +159,7 @@
         <slf4j.version>1.7.35</slf4j.version>
         <commons.io.version>2.19.0</commons.io.version>
         <commons.logging.version>1.2</commons.logging.version>
-        <commons.lang3.version>3.12.0</commons.lang3.version>
+        <commons.lang3.version>3.18.0</commons.lang3.version>
         <commons.compress.version>1.26.0</commons.compress.version>
         <apache.httpcomponents.client.version>4.5.13</apache.httpcomponents.client.version>
         <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
