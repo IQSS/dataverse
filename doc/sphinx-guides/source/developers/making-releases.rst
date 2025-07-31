@@ -96,21 +96,7 @@ Deploy Release Candidate to Internal
 
 |dedicated|
 
-To upgrade internal, go to /doc/release-notes, open the release-notes.md file for the current release and perform all the steps under "Upgrade Instructions".
-
-Note that we haven't bumped the version yet so you won't be able to follow the steps exactly.
-
-For a hotfix, wait until a war file has been built.
-
-Deploy Release Candidate to Demo
---------------------------------
-
-|dedicated|
-
-First, build the release candidate.
-
-ssh into the dataverse-internal server and undeploy the current war file.
-Go to /doc/release-notes, open the release-notes.md file for the current release, and perform all the steps under "Upgrade Instructions".
+First, build the release candidate. For a regular release, you will use the "develop" branch, as shown below. For a hotfix, you will use whatever branch name is used for the hotfix.
 
 Go to https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ and make the following adjustments to the config:
 
@@ -118,15 +104,18 @@ Go to https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ and make the fo
 - Branch Specifier (blank for 'any'): ``*/develop``
 - Execute shell: Update version in filenames to ``dataverse-5.10.war`` (for example)
 
-Click "Save" then "Build Now".
+Click "Save" then "Build Now". The release candidate war file will be available at https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ws/target/
 
-This will build the war file, and then automatically deploy it on dataverse-internal. Verify that the application has deployed successfully. 
+ssh into the dataverse-internal server and download the release candidate war file from the URL above.
 
-You can scp the war file to the demo server or download it from https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ws/target/
+Go to /doc/release-notes, open the release-notes.md file for the release we're working on, and perform all the steps under "Upgrade Instructions". Note that for regular releases, we haven't bumped the version yet so you won't be able to follow the steps exactly. (For hotfix releases, the version will be bumped already.)
 
-ssh into the demo server and follow the upgrade instructions in the release notes. Again, note that we haven't bumped the version yet.
+Deploy Release Candidate to Demo
+--------------------------------
 
-For a hotfix, wait until a war file has been built.
+|dedicated|
+
+Deploy the same war file to https://demo.dataverse.org using the same upgrade instructions as above.
 
 Merge Release Notes (Once Ready)
 --------------------------------
@@ -175,7 +164,7 @@ In the dataverse-ansible repo bump the version in `jenkins.yml <https://github.c
 
 Once dataverse-ansible has been merged, return to the branch you created above ("10852-bump-to-6.4" or whatever) and make a pull request. Ensure that all tests are passing and then put the PR through the normal review and QA process.
 
-If you are making a hotfix release, make the pull request against the "master" branch. Put it through review and QA. Do not delete the branch after merging because we will later merge it into the "develop" branch to pick up the hotfix. More on this later.
+If you are making a hotfix release, ``<base.image.version>`` should already be set to ``${revision}``. If so, leave it alone. Go ahead and do the normal bumping of version numbers descibed above. Make the pull request against the "master" branch. Put it through review and QA. Do not delete the branch after merging because we will later merge it into the "develop" branch to pick up the hotfix. More on this later.
 
 Merge "develop" into "master" (non-hotfix only)
 -----------------------------------------------
