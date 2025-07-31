@@ -5360,16 +5360,16 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Test search for file metadata description
 
         // Update file metadata
-        JsonArrayBuilder updateFileDescription = Json.createArrayBuilder();
-        updateFileDescription.add(Json.createObjectBuilder()
-                .add("dataFileId", testFileId2)
-                .add("description", "Updated description. Again"));
+        String updateDescription = "Updated description. Again";
 
-        Response authorizedUpdateResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), updateFileDescription.build(), apiToken);
-        authorizedUpdateResponse.then().assertThat()
-                .statusCode(OK.getStatusCode());
+        String updateJsonString = "{\"description\":\""+updateDescription+"\"}";
+        Response updateMetadataResponse = UtilIT.updateFileMetadata(testFileId2, updateJsonString, apiToken);
+        updateMetadataResponse.prettyPrint();
+        updateMetadataResponse.then().assertThat().statusCode(OK.getStatusCode());
         
         Response getVersionFilesResponseSearchTextDescription = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, null, "again", null, false, apiToken);
+        
+        getVersionFilesResponseSearchTextDescription.prettyPrint();
 
         getVersionFilesResponseSearchTextDescription.then().assertThat()
                 .statusCode(OK.getStatusCode())
