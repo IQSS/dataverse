@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -34,7 +35,8 @@ public class Notifications extends AbstractApiBean {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
             return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
-        return ok(Json.createObjectBuilder().add("notifications", json(userNotificationSvc.findByUser(authenticatedUser.getId()), inAppNotificationFormat)));
+        List<UserNotification> userNotifications = userNotificationSvc.findByUser(authenticatedUser.getId());
+        return ok(Json.createObjectBuilder().add("notifications", json(userNotifications, authenticatedUser, inAppNotificationFormat)));
     }
 
     @GET

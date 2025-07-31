@@ -1615,7 +1615,7 @@ public class JsonPrinter {
         return jsonArrayBuilder;
     }
 
-    public static JsonArrayBuilder json(List<UserNotification> notifications, boolean inAppNotificationFormat) {
+    public static JsonArrayBuilder json(List<UserNotification> notifications, AuthenticatedUser authenticatedUser, boolean inAppNotificationFormat) {
         JsonArrayBuilder notificationsArray = Json.createArrayBuilder();
 
         for (UserNotification notification : notifications) {
@@ -1628,7 +1628,7 @@ public class JsonPrinter {
             notificationJson.add("sentTimestamp", notification.getSendDateTimestamp());
 
             if (inAppNotificationFormat) {
-                InAppNotificationsJsonPrinter.addFieldsByType(notificationJson, type);
+                InAppNotificationsJsonPrinter.addFieldsByType(notificationJson, authenticatedUser, notification);
             } else {
                 Object relatedObject = mailService.getObjectOfNotification(notification);
                 if (relatedObject != null) {
