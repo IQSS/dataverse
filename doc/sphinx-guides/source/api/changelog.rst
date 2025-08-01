@@ -7,6 +7,16 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.9
+----
+
+- The way to set per-format size limits for tabular ingest has changed.
+  JSON input is now used.
+  See :ref:`:TabularIngestSizeLimit`.
+- In the past, the settings API would accept any key and value.
+  This is no longer the case because validation has been added.
+  See :ref:`settings_put_single`, for example.
+
 v6.8
 ----
 
