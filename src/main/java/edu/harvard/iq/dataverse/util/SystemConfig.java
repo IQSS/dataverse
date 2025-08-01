@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2Aut
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
+import jakarta.json.stream.JsonParsingException;
 import org.passay.CharacterRule;
 
 import jakarta.ejb.EJB;
@@ -27,6 +28,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Year;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -484,49 +486,110 @@ public class SystemConfig {
         }
         return null;
     }
-
-    public long getTabularIngestSizeLimit() {
-        // This method will return the blanket ingestable size limit, if 
-        // set on the system. I.e., the universal limit that applies to all 
-        // tabular ingests, regardless of fromat: 
-        
-        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit); 
-        
+    
+    /**
+     * The default key used to identify tabular ingest size limits.
+     * This value represents the standard or fallback configuration.
+     * For any other valid format strings, see implementations of {@code TabularDataFileReader.getFormatName()}.
+     */
+    public static final String TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY = "default";
+    
+    /**
+     * Retrieves the tabular ingest size limits based on the system configuration.
+     * The size limits can be defined as a JSON object with format-specific limits, a single numeric value
+     * applied to all formats, or might not exist, in which case the default limit is applied.
+     *
+     * Note that the format names in the configuration will be transformed to lowercase for user convenience
+     * of how people like to write their formats best.
+     *
+     * If the configuration contains invalid data (e.g., unparsable JSON or non-numeric values),
+     * all tabular ingest operations are disabled by setting size limits to 0.
+     *
+     * TODO: At some later point, if and when the DB lookups or JSON parsing takes a toll to heavy to bear,
+     *       we may introduce a caching singleton for these. (With TTL or using events to invalidate on update.)
+     *
+     * @return a map where the keys represent format names or a default key, and the values represent the maximum allowed size for each format.
+     */
+    public Map<String, Long> getTabularIngestSizeLimits() {
+        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit);
         if (limitEntry != null) {
-            try {
-                Long sizeOption = Long.valueOf(limitEntry);
-                return sizeOption;
-            } catch (NumberFormatException nfe) {
-                logger.warning("Invalid value for TabularIngestSizeLimit option? - " + limitEntry);
+            // Case A: the setting is using JSON to support multiple formats
+            if (limitEntry.trim().startsWith("{")) {
+                try {
+                    JsonObject limits = Json.createReader(new StringReader(limitEntry)).readObject();
+                    
+                    Map<String, Long> limitsMap = new HashMap<>();
+                    // We add the default in case the JSON does not contain the default (which is optional).
+                    limitsMap.put(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, -1L);
+                    
+                    for (String formatName : limits.keySet()) {
+                        // We deliberatly do not validate the formatNames here for backward compatibility.
+                        // But we transform to lowercase here, so the casing doesn't matter for lookups.
+                        String lowercaseFormatName = formatName.toLowerCase();
+                        
+                        try {
+                            Long sizeOption = Long.valueOf(limits.getString(formatName));
+                            limitsMap.put(lowercaseFormatName, sizeOption);
+                        } catch (ClassCastException cce) {
+                            logger.warning("Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long from JSON integer. You must provide the long number as string (use quotes) for format " + formatName);
+                            logger.warning("Disabling all tabular ingest completely until fixed!");
+                            return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
+                        } catch (NumberFormatException nfe) {
+                            logger.warning("Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long for format " + formatName + " (not a number)");
+                            logger.warning("Disabling all tabular ingest completely until fixed!");
+                            return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
+                        }
+                    }
+                    
+                    return Collections.unmodifiableMap(limitsMap);
+                } catch (JsonParsingException e) {
+                    logger.warning("Invalid TabularIngestSizeLimit option found, cannot parse JSON: " + e.getMessage());
+                    logger.warning("Disabling all tabular ingest completely until fixed!");
+                    return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
+                }
+            // Case B: It might be just a simple Long, providing a default for all formats.
+            } else {
+                try {
+                    Long limit = Long.valueOf(limitEntry);
+                    return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, limit);
+                } catch (NumberFormatException nfe) {
+                    logger.warning("Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long: " + nfe);
+                    logger.warning("Disabling all tabular ingest completely until fixed!");
+                    return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
+                }
             }
         }
-        // -1 means no limit is set; 
-        // 0 on the other hand would mean that ingest is fully disabled for 
-        // tabular data. 
-        return -1; 
+        
+        // Default is not to limit at all
+        return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, -1L);
     }
     
+    /**
+     * This method will return the blanket ingestable size limit, if set on the system.
+     * I.e., the universal limit that applies to all tabular ingests, regardless of fromat.
+     * @return -1 = unlimited if not set, 0 if disabled or invalid, some long number of bytes otherwise
+     */
+    public long getTabularIngestSizeLimit() {
+        return getTabularIngestSizeLimits().get(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY);
+    }
+    
+    /**
+     * Retrieves the size limit for tabular data ingestion based on the provided format name.
+     * The format name will be converted to lowercase, making sure the casing doesn't matter.
+     *
+     * @param formatName The name of the format for which the size limit is requested
+     *                   See also implementations of {@code TabularDataFileReader.getFormatName()} for examples.
+     * @return The size limit in bytes for tabular data ingestion associated with the specified format name,
+     *         or the default size limit if no format-specific limit is found or its name is invalid (null, blank, ...).
+     *         -1 = unlimited if not set, 0 if disabled or invalid, some long number of bytes otherwise
+     */
     public long getTabularIngestSizeLimit(String formatName) {
-        // This method returns the size limit set specifically for this format name,
-        // if available, otherwise - the blanket limit that applies to all tabular 
-        // ingests regardless of a format. 
-        
-        if (formatName == null || formatName.equals("")) {
-            return getTabularIngestSizeLimit(); 
+        if (formatName != null && !formatName.isBlank()) {
+            // We convert to lowercase so it doesn't matter which variant someone uses in the JSON config
+            String convertedFormatName = formatName.toLowerCase();
+            return getTabularIngestSizeLimits().getOrDefault(convertedFormatName, getTabularIngestSizeLimit());
         }
-        
-        String limitEntry = settingsService.get(SettingsServiceBean.Key.TabularIngestSizeLimit.toString() + ":" + formatName); 
-                
-        if (limitEntry != null) {
-            try {
-                Long sizeOption = Long.valueOf(limitEntry);
-                return sizeOption;
-            } catch (NumberFormatException nfe) {
-                logger.warning("Invalid value for TabularIngestSizeLimit:" + formatName + "? - " + limitEntry );
-            }
-        }
-        
-        return getTabularIngestSizeLimit();        
+        return getTabularIngestSizeLimit();
     }
 
     public boolean isOAIServerEnabled() {

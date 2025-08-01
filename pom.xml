@@ -21,6 +21,10 @@
         <skipUnitTests>false</skipUnitTests>
         <skipIntegrationTests>false</skipIntegrationTests>
         <it.groups>integration</it.groups>
+        <!-- Provide a fallback value that won't break things if JaCoCo prepare-agent steps don't set it. -->
+        <!-- Note: you must use @{} style late variable binding in argLine, otherwise JaCoCo cannot inject the right settings! -->
+        <surefire.jacoco.args>-Ddummy.jacoco.property=true</surefire.jacoco.args>
+        <failsafe.jacoco.args>-Ddummy.jacoco.property=true</failsafe.jacoco.args>
         
         <!-- By default, this module will produce a WAR file. -->
         <!-- This will be switched within the container profile! -->
@@ -1027,7 +1031,13 @@
                     <!-- testsToExclude come from the profile-->
                     <excludedGroups>${testsToExclude}</excludedGroups>
                     <skip>${skipUnitTests}</skip>
-                    <argLine>${surefire.jacoco.args} ${argLine}</argLine>
+                    <!--
+                        Note: The @{} syntax here is used for late variable binding.
+                              Otherwise we would not be able to override the defaults in <properties> with prepare-agent above.
+                              See also https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html
+                              It's ignored by IntelliJ argLine parsing.
+                    -->
+                    <argLine>@{surefire.jacoco.args} ${argLine}</argLine>
                     <excludes>
                         <exclude>**/builtin-users-spi/**</exclude>
                     </excludes>
@@ -1039,7 +1049,13 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <groups>${it.groups}</groups>
-                    <argLine>${failsafe.jacoco.args} ${argLine}</argLine>
+                    <!--
+                        Note: The @{} syntax here is used for late variable binding.
+                              Otherwise we would not be able to override the defaults in <properties> with prepare-agent above.
+                              See also https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html
+                              It's ignored by IntelliJ argLine parsing.
+                    -->
+                    <argLine>@{failsafe.jacoco.args} ${argLine}</argLine>
                     <skip>${skipIntegrationTests}</skip>
                 </configuration>
                 <executions>

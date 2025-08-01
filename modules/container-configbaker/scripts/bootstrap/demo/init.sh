@@ -31,7 +31,7 @@ fi
 
 echo ""
 echo "Revoke the key that allows for creation of builtin users..."
-curl -sS -X DELETE "${DATAVERSE_URL}/api/admin/settings/BuiltinUsers.KEY"
+curl -sS -X DELETE "${DATAVERSE_URL}/api/admin/settings/:BuiltinUsersKey"
 
 # TODO: stop using these deprecated database settings. See https://github.com/IQSS/dataverse/pull/11454
 echo ""

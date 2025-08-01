@@ -25,7 +25,7 @@ The default password for the "dataverseAdmin" superuser account is "admin", as m
 Blocking API Endpoints
 ++++++++++++++++++++++
 
-The :doc:`/api/native-api` contains a useful but potentially dangerous set of API endpoints called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The "builtin-users" endpoints let admins do tasks such as creating a local/builtin user account if they know the key defined in :ref:`BuiltinUsers.KEY`.
+The :doc:`/api/native-api` contains a useful but potentially dangerous set of API endpoints called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The "builtin-users" endpoints let admins do tasks such as creating a local/builtin user account if they know the key defined in :ref:`:BuiltinUsersKey`.
 
 By default in the code, most of these API endpoints can be operated on remotely and a number of endpoints do not require authentication. However, the endpoints "admin" and "builtin-users" are limited to localhost out of the box by the installer, using the JvmSettings :ref:`dataverse.api.blocked.endpoints` and :ref:`dataverse.api.blocked.policy`.
 
@@ -779,7 +779,7 @@ Both Local and Remote Auth
 
 The ``authenticationproviderrow`` database table controls which "authentication providers" are available within a Dataverse installation. Out of the box, a single row with an id of "builtin" will be present. For each user in a Dataverse installation, the ``authenticateduserlookup`` table will have a value under ``authenticationproviderid`` that matches this id. For example, the default "dataverseAdmin" user will have the value "builtin" under  ``authenticationproviderid``. Why is this important? Users are tied to a specific authentication provider but conversion mechanisms are available to switch a user from one authentication provider to the other. As explained in the :doc:`/user/account` section of the User Guide, a graphical workflow is provided for end users to convert from the "builtin" authentication provider to a remote provider. Conversion from a remote authentication provider to the builtin provider can be performed by a sysadmin with access to the "admin" API. See the :doc:`/api/native-api` section of the API Guide for how to list users and authentication providers as JSON.
 
-Adding and enabling a second authentication provider (:ref:`native-api-add-auth-provider` and :ref:`api-toggle-auth-provider`) will result in the Log In page showing additional providers for your users to choose from. By default, the Log In page will show the "builtin" provider, but you can adjust this via the :ref:`conf-default-auth-provider` configuration option. Further customization can be achieved by setting :ref:`conf-allow-signup` to "false", thus preventing users from creating local accounts via the web interface. Please note that local accounts can also be created through the API by enabling the ``builtin-users`` endpoint (:ref:`:BlockedApiEndpoints`) and setting the ``BuiltinUsers.KEY`` database setting (:ref:`BuiltinUsers.KEY`).
+Adding and enabling a second authentication provider (:ref:`native-api-add-auth-provider` and :ref:`api-toggle-auth-provider`) will result in the Log In page showing additional providers for your users to choose from. By default, the Log In page will show the "builtin" provider, but you can adjust this via the :ref:`conf-default-auth-provider` configuration option. Further customization can be achieved by setting :ref:`conf-allow-signup` to "false", thus preventing users from creating local accounts via the web interface. Please note that local accounts can also be created through the API by enabling the ``builtin-users`` endpoint (:ref:`:BlockedApiEndpoints`) and setting the ``:BuiltinUsersKey`` database setting (:ref:`:BuiltinUsersKey`).
 
 To configure Shibboleth see the :doc:`shibboleth` section and to configure OAuth see the :doc:`oauth2` section.
 
@@ -3827,6 +3827,8 @@ The most commonly used configuration options are listed first.
 
 The pattern you will observe in curl examples below is that an HTTP ``PUT`` is used to add or modify a setting. If you perform an HTTP ``GET`` (the default when using curl), the output will contain the value of the setting, if it has been set. You can also do a ``GET`` of all settings with ``curl http://localhost:8080/api/admin/settings`` which you may want to pretty-print by piping the output through a tool such as jq by appending ``| jq .``. If you want to remove a setting, use an HTTP ``DELETE`` such as ``curl -X DELETE http://localhost:8080/api/admin/settings/:GuidesBaseUrl`` .
 
+For your convenience, there is also an Admin API endpoint to :ref:`bulk manage database settings in an atomic, idempotent fashion <settings_put_bulk>`.
+
 .. _:BlockedApiPolicy:
 
 :BlockedApiPolicy (Deprecated)
@@ -3881,14 +3883,16 @@ Now that ``:BlockedApiKey`` has been enabled, blocked APIs can be accessed using
 
 ``curl https://demo.dataverse.org/api/admin/settings?unblock-key=theKeyYouChose``
 
-.. _BuiltinUsers.KEY:
+.. _:BuiltinUsersKey:
 
-BuiltinUsers.KEY
+:BuiltinUsersKey
 ++++++++++++++++
 
 The key required to create users via API as documented at :doc:`/api/native-api`. Unlike other database settings, this one doesn't start with a colon.
 
-``curl -X PUT -d builtInS3kretKey http://localhost:8080/api/admin/settings/BuiltinUsers.KEY``
+``curl -X PUT -d builtInS3kretKey http://localhost:8080/api/admin/settings/:BuiltinUsersKey``
+
+Note: this key used to be named ``BuiltinUsers.KEY`` until Dataverse 6.8.
 
 :SearchApiRequiresToken
 +++++++++++++++++++++++
@@ -4321,30 +4325,46 @@ In the UI, users trying to download a zip file larger than the Dataverse install
 :TabularIngestSizeLimit
 +++++++++++++++++++++++
 
-Threshold in bytes for limiting whether or not "ingest" it attempted for tabular files (which can be resource intensive). For example, with the below in place, files greater than 2 GB in size will not go through the ingest process:
+Threshold in bytes for limiting whether or not "ingest" is attempted for an uploaded tabular file (which can be resource intensive).
+For example, with the below in place, files greater than 2 GB in size will not go through the ingest process:
 
 ``curl -X PUT -d 2000000000 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 
-(You can set this value to 0 to prevent files from being ingested at all.)
+You can set this value to ``0`` to prevent files from being ingested at all.
+The default is ``-1``, meaning no file size limit is applied.
 
-You can override this global setting on a per-format basis for the following formats:
+Using a JSON-based setting, you can override this global setting on a per-format basis for the following formats:
 
 - DTA
 - POR
 - SAV
 - Rdata
 - CSV
-- XLSX (in lower-case)
+- XLSX
 
-For example :
+The JSON follows this form, all fields optional:
 
-* if you want your Dataverse installation to not attempt to ingest Rdata files larger than 1 MB, use this setting:
+.. code:: json
 
-``curl -X PUT -d 1000000 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit:Rdata``
+  {
+    "default": "-1",
+    "formatX": "0",
+    "formatY": "10",
+    "formatZ": "100"
+  }
 
-* if you want your Dataverse installation to not attempt to ingest XLSX files at all, use this setting:
+The ``default`` key represents the global default (with it being absent meaning the implicit global default of ``-1`` applies).
+Add a format name (as listed above) to change the limit for this particular format.
+Any size limits must be provided as string literals (in quotes), not number literals!
 
-``curl -X PUT -d 0 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit:xlsx``
+Examples:
+
+1. If you want your Dataverse installation to not attempt to ingest Rdata files larger than 1 MB but otherwise unlimited:
+
+   ``curl -X PUT -d '{"Rdata":"1000000"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
+2. If you want your Dataverse installation to not attempt to ingest XLSX files at all and apply a global limit of 512 MiB, use this setting:
+
+   ``curl -X PUT -d '{"default":"536870912", "XSLX":"0"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 
 :ZipUploadFilesLimit
 ++++++++++++++++++++

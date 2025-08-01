@@ -12,6 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
@@ -142,5 +144,103 @@ class SystemConfigTest {
         assertEquals(1000000l, SystemConfig.getThumbnailSizeLimit("PDF"));
         assertEquals(0l, SystemConfig.getThumbnailSizeLimit("NoSuchType"));
     }
-
+    
+    @Test
+    void testGetTabularIngestSizeLimitsWithoutSetting() {
+        // given
+        doReturn(null).when(settingsService).getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit);
+        
+        // when
+        Map<String, Long> result = systemConfig.getTabularIngestSizeLimits();
+        
+        // then
+        assertEquals(1, result.size());
+        assertEquals(-1L, (long) result.get(SystemConfig.TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY));
+    }
+    
+    @Test
+    void testGetTabularIngestSizeLimitsWithValidJson() {
+        // given
+        String validJson = "{\"csV\": \"5000\", \"tSv\": \"10000\"}";
+        doReturn(validJson).when(settingsService).getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit);
+        
+        // when
+        Map<String, Long> result = systemConfig.getTabularIngestSizeLimits();
+        
+        // then
+        assertEquals(3, result.size());
+        assertEquals(-1L, (long) result.get(SystemConfig.TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY));
+        assertEquals(5000L, result.get("csv"));
+        assertEquals(10000L, result.get("tsv"));
+    }
+    
+    @Test
+    void testGetTabularIngestSizeLimitsWithSingleValue() {
+        // given
+        String singleValue = "8000";
+        doReturn(singleValue).when(settingsService).getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit);
+        
+        // when
+        Map<String, Long> result = systemConfig.getTabularIngestSizeLimits();
+        
+        // then
+        assertEquals(1, result.size());
+        assertEquals(8000L, (long) result.get(SystemConfig.TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY));
+    }
+    
+    @Test
+    void testGetTabularIngestSizeLimitsWithSingleInvalidValue() {
+        // given
+        String singleValue = "this-aint-no-number";
+        doReturn(singleValue).when(settingsService).getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit);
+        
+        // when
+        Map<String, Long> result = systemConfig.getTabularIngestSizeLimits();
+        
+        // then
+        assertEquals(1, result.size());
+        assertEquals(0L, (long) result.get(SystemConfig.TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY));
+    }
+    
+    @Test
+    void testGetTabularIngestSizeLimitsWithJsonButUnsupportedJsonInt() {
+        // given
+        String invalidJson = "{\"default\": 0}";
+        doReturn(invalidJson).when(settingsService).getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit);
+        
+        // when
+        Map<String, Long> result = systemConfig.getTabularIngestSizeLimits();
+        
+        // then
+        assertEquals(1, result.size());
+        assertEquals(0L, (long) result.get(SystemConfig.TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY));
+    }
+    
+    @Test
+    void testGetTabularIngestSizeLimitsWithInvalidJson() {
+        // given
+        String invalidJson = "{invalid:}";
+        doReturn(invalidJson).when(settingsService).getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit);
+        
+        // when
+        Map<String, Long> result = systemConfig.getTabularIngestSizeLimits();
+        
+        // then
+        assertEquals(1, result.size());
+        assertEquals(0L, (long) result.get(SystemConfig.TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY));
+    }
+    
+    @Test
+    void testGetTabularIngestSizeLimitsWithInvalidNumberInValidJson() {
+        // given
+        String invalidJson = "{\"csv\": \"this-is-not-a-number\", \"tSv\": \"10000\"}";
+        doReturn(invalidJson).when(settingsService).getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit);
+        
+        // when
+        Map<String, Long> result = systemConfig.getTabularIngestSizeLimits();
+        
+        // then
+        assertEquals(1, result.size());
+        assertEquals(0L, (long) result.get(SystemConfig.TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY));
+    }
 }

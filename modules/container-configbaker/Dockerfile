@@ -23,6 +23,8 @@ ENV PATH="${PATH}:${SCRIPT_DIR}" \
 ARG PKGS="curl dnsutils dumb-init ed jq netcat-openbsd postgresql-client"
 # renovate: datasource=github-releases depName=wait4x/wait4x
 ARG WAIT4X_VERSION="v3.2.0"
+# renove: datasource=github-releases depName=mikefarah/yq
+ARG YQ_VERSION="v4.47.1"
 # renovate: datasource=pypi depName=awscli
 ARG AWSCLI_VERSION="1.40.15"
 ARG PYTHON_PKGS="awscli==${AWSCLI_VERSION}"
@@ -65,7 +67,11 @@ RUN true && \
   echo "$(cat /tmp/w4x-checksum | cut -f1 -d" ") /usr/bin/wait4x.tar.gz" | sha256sum -c - && \
   tar -xzf /usr/bin/wait4x.tar.gz -C /usr/bin && chmod +x /usr/bin/wait4x && \
 
-  # 2. Python packages
+  # 2. yq-go \
+  curl -sSfL -o /usr/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_${ARCH}" && \
+  chmod +x /usr/bin/yq && \
+
+  # 3. Python packages
   pipx install --global ${PYTHON_PKGS}
 
 # Get in the scripts 
@@ -81,7 +87,7 @@ COPY --from=solr /opt/solr/server/solr/configsets/_default ${SOLR_TEMPLATE}/
 COPY maven/solr/*.xml ${SOLR_TEMPLATE}/conf/
 RUN rm ${SOLR_TEMPLATE}/conf/managed-schema.xml
 
-
+WORKDIR ${SCRIPT_DIR}
 # Set the entrypoint to tini (as a process supervisor)
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 # By default run a script that will print a help message and terminate
