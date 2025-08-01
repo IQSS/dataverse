@@ -17,8 +17,8 @@ function read_to_env() {
     source "$target"
     set +o allexport
   elif [ -d "$target" ] && [ -r "$target" ] && [ -x "$target" ]; then
-    # Find all files
-    FILES=$( find "$target" -type f -printf '%P\n' )
+    # Find all files (K8s secrets are symlinks, so look for not directory & remove the hidden mounted files.)
+    FILES=$( find "$target" -not -type d -printf '%P\n' | grep -v '^\.\.' )
     for FILE in $FILES; do
       # Same as MPCONFIG does!
       VARNAME=$( echo "$FILE" | tr '[:lower:]' '[:upper:]' | tr '/' '_' )
