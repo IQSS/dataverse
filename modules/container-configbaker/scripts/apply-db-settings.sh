@@ -74,7 +74,8 @@ CONV_CONF_FILE=$(mktemp)
 if [ -f "${CONFIG_FILE}" ] && [ -r "${CONFIG_FILE}" ]; then
   # See https://mikefarah.gitbook.io/yq/operators/env-variable-operators#tip
   yq -M -o json '(.. | select(tag == "!!str")) |= envsubst(nu)' "${CONFIG_FILE}" > "${CONV_CONF_FILE}" || error "Could not parse config file with yq from '${CONFIG_FILE}'."
-  cat "$CONV_CONF_FILE"
+  # TODO: think about adding a debug switch here, not just print
+  # cat "$CONV_CONF_FILE"
 else
   error "Could not read a config file at '${CONFIG_FILE}'."
 fi
