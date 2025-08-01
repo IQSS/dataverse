@@ -11,6 +11,8 @@ v6.8
 ----
 - For POST /api/files/{id}/metadata passing an empty string ("description":"")  or array ("categories":[]) will no longer be ignored. Empty fields will now clear out the values in the file's metadata. To ignore the fields simply do not include them in the JSON string.
 - For PUT /api/datasets/{id}/editMetadata the query parameter "sourceInternalVersionNumber" has been removed and replaced with "sourceLastUpdateTime" to verify that the data being edited hasn't been modified and isn't stale.
+- The way to set per-format size limits for tabular ingest has changed. JSON input is now used. See :ref:`:TabularIngestSizeLimit`.
+- In the past, the settings API would accept any key and value. This is no longer the case because validation has been added. See :ref:`settings_put_single`, for example.
 
 v6.7
 ----
