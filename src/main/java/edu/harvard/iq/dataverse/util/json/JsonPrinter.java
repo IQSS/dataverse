@@ -323,6 +323,19 @@ public class JsonPrinter {
         return bld;
     }
 
+    // For UI drop down list. Only needing display name and identifier
+    public static JsonArrayBuilder jsonArray(List<Dataverse> collections) {
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        for (Dataverse dataverse : collections) {
+            NullSafeJsonBuilder jsonObject = NullSafeJsonBuilder.jsonObjectBuilder();
+            jsonObject.add("id", dataverse.getId());
+            jsonObject.add("name", dataverse.getDisplayName());
+            jsonObject.add("alias", dataverse.getAlias());
+            jsonArrayBuilder.add(jsonObject);
+        }
+        return jsonArrayBuilder;
+    }
+
     public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
         JsonArrayBuilder jsonArrayOfContacts = Json.createArrayBuilder();
         for (DataverseContact dataverseContact : dataverseContacts) {

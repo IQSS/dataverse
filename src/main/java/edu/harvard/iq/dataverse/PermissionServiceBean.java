@@ -100,6 +100,10 @@ public class PermissionServiceBean {
     @Inject
     DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
 
+    private static final String LIST_ALL_DATAVERSES_SUPERUSER_HAS_PERMISSION = """
+        SELECT * FROM DATAVERSE
+    """;
+
     private static final String LIST_ALL_DATAVERSES_USER_HAS_PERMISSION = """
             WITH grouplist AS (
                   SELECT explicitgroup_authenticateduser.explicitgroup_id as id FROM explicitgroup_authenticateduser
@@ -932,6 +936,7 @@ public class PermissionServiceBean {
             String ipRangeSQL = "FALSE";
             if (request != null
                     && request.getAuthenticatedUser() != null
+                    && !request.getAuthenticatedUser().isSuperuser()
                     && request.getSourceAddress() != null
                     && request.getAuthenticatedUser().getUserIdentifier().equalsIgnoreCase(user.getUserIdentifier())) {
                 IpAddress ip = request.getSourceAddress();
@@ -954,11 +959,15 @@ public class PermissionServiceBean {
                     }
                 }
             }
-
-            String sqlCode = LIST_ALL_DATAVERSES_USER_HAS_PERMISSION
-                    .replace("@USERID", String.valueOf(user.getId()))
-                    .replace("@PERMISSIONBIT", String.valueOf(permissionBit))
-                    .replace("@IPRANGESQL", ipRangeSQL);
+            String sqlCode;
+            if (user.isSuperuser()) {
+                sqlCode = LIST_ALL_DATAVERSES_SUPERUSER_HAS_PERMISSION;
+            } else {
+                sqlCode = LIST_ALL_DATAVERSES_USER_HAS_PERMISSION
+                        .replace("@USERID", String.valueOf(user.getId()))
+                        .replace("@PERMISSIONBIT", String.valueOf(permissionBit))
+                        .replace("@IPRANGESQL", ipRangeSQL);
+            }
             return em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
         }
         return null;

@@ -3,21 +3,16 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.DvObjectServiceBean;
-import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.engine.command.impl.GetUserPermittedCollectionsCommand;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
-//import edu.harvard.iq.dataverse.authorization.MyDataQueryHelperServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -27,15 +22,12 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceFactory;
 import edu.harvard.iq.dataverse.search.SortBy;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
+
 import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObjectBuilder;
+import jakarta.json.*;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -388,7 +380,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
                         true, // dataRelatedToMe
                         SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
                 );
-                
                 //msgt("getResultsStart: " + this.solrQueryResponse.getResultsStart());
                 //msgt("getNumResultsFound: " + this.solrQueryResponse.getNumResultsFound());
                 //msgt("getSolrSearchResults: " + this.solrQueryResponse.getSolrSearchResults().toString());
@@ -455,7 +446,42 @@ public class DataRetrieverAPI extends AbstractApiBean {
                                 
         return jsonData.build().toString();
     }
-   
+
+    @GET
+    @AuthRequired
+    @Path(retrieveDataPartialAPIPath + "/collectionList")
+    @Produces("application/json")
+    public String retrieveMyCollectionList(@Context ContainerRequestContext crc, @QueryParam("userIdentifier") String userIdentifier) {
+        if ((session.getUser() != null) && (session.getUser().isAuthenticated())) {
+            authUser = (AuthenticatedUser) session.getUser();
+        } else {
+            try {
+                authUser = getRequestAuthenticatedUserOrDie(crc);
+            } catch (WrappedResponse e) {
+                return this.getJSONErrorString(
+                        BundleUtil.getStringFromBundle("dataretrieverAPI.authentication.required"),
+                        BundleUtil.getStringFromBundle("dataretrieverAPI.authentication.required.opt")
+                );
+            }
+        }
+        // If the user is a superuser, see if a userIdentifier has been specified and use that instead
+        AuthenticatedUser searchUser = authUser;
+        if ((authUser.isSuperuser()) && (userIdentifier != null) && (!userIdentifier.isEmpty())) {
+            searchUser = getUserFromIdentifier(userIdentifier);
+            if (searchUser == null) {
+                return this.getJSONErrorString(
+                        BundleUtil.getStringFromBundle("dataretrieverAPI.user.not.found", Arrays.asList(userIdentifier)),
+                        null);
+            }
+        }
+        try {
+            JsonObjectBuilder jsonObjBuilder = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), searchUser, Permission.AddDataset.name(), true));
+            return jsonObjBuilder.build().toString();
+        } catch (WrappedResponse ex) {
+            return null;
+        }
+    }
+
     private JsonObjectBuilder getDvObjectTypeCounts(SolrQueryResponse solrResponse) {
 
         if (solrQueryResponse == null) {

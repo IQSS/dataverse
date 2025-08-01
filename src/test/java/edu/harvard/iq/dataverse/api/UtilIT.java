@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
@@ -47,9 +47,7 @@ import org.hamcrest.Matcher;
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static io.restassured.path.xml.XmlPath.from;
 import static io.restassured.RestAssured.given;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
+
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
@@ -4106,6 +4104,18 @@ public class UtilIT {
                 .queryParam("published_states", MyDataFilterParams.defaultPublishedStates)
                 .get("/api/mydata/retrieve?userIdentifier=" + userIdentifier);
         return response;
+    }
+
+    static Response retrieveMyCollectionList(String apiToken, String userIdentifier) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (userIdentifier != null) {
+            requestSpecification.queryParam("userIdentifier", userIdentifier);
+        }
+
+        return requestSpecification.get("/api/mydata/retrieve/collectionList");
     }
 
     static Response createSignedUrl(String apiToken, String apiPath, String username) {
