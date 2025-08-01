@@ -19,7 +19,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.FailedPIDResolutionLoggingServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -37,6 +40,8 @@ import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -44,6 +49,7 @@ import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -86,6 +92,9 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     @EJB
     SystemConfig systemConfig;
+    
+    @Inject
+    FailedPIDResolutionLoggingServiceBean fprLogService;
 
     @EJB
     GlobusServiceBean globusServiceBean;
@@ -94,6 +103,8 @@ public class DatasetServiceBean implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+    
+    private static final boolean pidFailureLoggingEnabled = FeatureFlags.ENABLE_PID_FAILURE_LOG.enabled();
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
@@ -298,8 +309,19 @@ public class DatasetServiceBean implements java.io.Serializable {
         if (retVal != null){
             return retVal;
         } else {
-            //try to find with alternative PID
-            return (Dataset) dvObjectService.findByAltGlobalId(globalId, DvObject.DType.Dataset);
+            // try to find with alternative PID
+            retVal = (Dataset) dvObjectService.findByAltGlobalId(globalId, DvObject.DType.Dataset);
+            if (retVal == null  && pidFailureLoggingEnabled) {
+                try {
+
+                    HttpServletRequest httpRequest = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest());
+                    FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry entry = new FailedPIDResolutionEntry(globalId, httpRequest.getRequestURI(), httpRequest.getMethod(), new DataverseRequest(null, httpRequest).getSourceAddress());
+                    fprLogService.logEntry(entry);
+                } catch (NullPointerException npe) {
+                    // Do nothing - this is an API call with no FacesContext
+                }
+            }
+            return retVal;
         }
     }
 
