@@ -3,10 +3,6 @@
 -- 2. Update lang column to use empty string default instead of NULL (avoid non-unique pairs)
 -- 3. Add NOT NULL constraints and unique constraint for name+lang pairs
 
--- First, update any existing NULL lang values to empty string
-UPDATE setting SET lang = '' WHERE lang IS NULL;
-
--- Postgres doesn't support IF NOT EXISTS for ALTER COLUMN or ADD CONSTRAINT, so we need conditional logic
 DO $$
 BEGIN
     -- These database constraints were added with Dataverse 4.15, but they had no representation in the code,
@@ -16,7 +12,12 @@ BEGIN
     ALTER TABLE setting DROP CONSTRAINT IF EXISTS non_empty_lang;
     DROP INDEX IF EXISTS unique_settings;
 
+    -- Now, update any existing NULL lang values to empty string (we cannot do this before lifting the restrictions)
+    -- This also needs to be done before we try to alter the table to not allow NULL for setting.lang
+    UPDATE setting SET lang = '' WHERE lang IS NULL;
+
     -- Only alter columns if they need to be changed
+    -- (Note: Postgres doesn't support IF NOT EXISTS for ALTER COLUMN or ADD CONSTRAINT, so we need conditional logic)
     IF EXISTS (SELECT 1 FROM information_schema.columns
                WHERE table_name = 'setting' AND column_name = 'name'
                AND (data_type = 'text' OR is_nullable = 'YES')) THEN
