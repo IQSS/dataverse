@@ -15,6 +15,7 @@ import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -1168,11 +1169,16 @@ public class SettingsServiceBean {
         return settings.entrySet().stream()
             .map(entry -> {
                 String key = entry.getKey();
-                String value = entry.getValue().toString()
-                    // This is necessary to avoid storing the quotes inthe DB when a setting is a simple value.
-                    // JsonValue will escape any JsonString with such quotes.
-                    .replaceFirst("^\"", "")
-                    .replaceFirst("\"$", "");
+                
+                String value;
+                JsonValue jsonValue = entry.getValue();
+                if (jsonValue.getValueType() == JsonValue.ValueType.STRING) {
+                    // For string values, get the actual string content (unescaped)
+                    value = ((JsonString) jsonValue).getString();
+                } else {
+                    // For objects, arrays, numbers, booleans, null - use JSON representation
+                    value = jsonValue.toString();
+                }
                 
                 if (key.contains(L10N_KEY_SEPARATOR)) {
                     // Handle localized settings
