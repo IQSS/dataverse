@@ -45,7 +45,7 @@ public class PostExternalSearchServiceBean extends AbstractExternalSearchService
     public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query,
             List<String> filterQueries, String sortField, String sortOrder, int paginationStart,
             boolean onlyDataRelatedToMe, int numResultsPerPage, boolean retrieveEntities, String geoPoint,
-            String geoRadius, boolean addFacets, boolean addHighlights) throws SearchException {
+            String geoRadius, boolean addFacets, boolean addHighlights, boolean addCollections) throws SearchException {
 
         String externalSearchUrl = settingsService.getValueForKey(SettingsServiceBean.Key.PostExternalSearchUrl);
         if (externalSearchUrl == null || externalSearchUrl.isEmpty()) {
@@ -68,7 +68,7 @@ public class PostExternalSearchServiceBean extends AbstractExternalSearchService
             // Parse response and process results
             String responseString = response.readEntity(String.class);
             logger.fine("External search returned: " + responseString);
-            return postProcessResponse(responseString, dataverseRequest, retrieveEntities, addFacets, addHighlights);
+            return postProcessResponse(responseString, dataverseRequest, retrieveEntities, addFacets, addHighlights, addCollections);
         } catch (Exception e) {
             throw new SearchException("Error parsing external search service response", e);
         }

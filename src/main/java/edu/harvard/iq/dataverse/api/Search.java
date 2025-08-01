@@ -75,6 +75,7 @@ public class Search extends AbstractApiBean {
             @QueryParam("geo_point") String geoPointRequested,
             @QueryParam("geo_radius") String geoRadiusRequested,
             @QueryParam("show_type_counts") boolean showTypeCounts,
+            @QueryParam("show_collections") boolean showCollections,
             @QueryParam("search_service") String searchServiceName,
             @Context HttpServletResponse response
     ) {
@@ -134,11 +135,11 @@ public class Search extends AbstractApiBean {
                         List<String> totalFilterQueries = new ArrayList<>();
                         totalFilterQueries.addAll(filterQueries);
                         totalFilterQueries.add(SearchFields.TYPE + allTypes);
-                        
+
                         try {
-                            
+
                             SolrQueryResponse resp = searchService.search(requestUser, dataverseSubtrees, query, totalFilterQueries, null, null, 0,
-                                    dataRelatedToMe, 1, false, null, null, false, false);
+                                    dataRelatedToMe, 1, false, null, null, false, false, false);
                             if (resp != null) {
                                 for (FacetCategory facetCategory : resp.getTypeFacetCategories()) {
                                     for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
@@ -193,11 +194,12 @@ public class Search extends AbstractApiBean {
                         paginationStart,
                         dataRelatedToMe,
                         numResultsPerPage,
-                        queryEntities, 
+                        queryEntities,
                         geoPoint,
                         geoRadius,
                         showFacets, // facets are expensive, no need to ask for them if not requested
-                        showRelevance // no need for highlights unless requested either
+                        showRelevance, // no need for highlights unless requested either
+                        showCollections // same for collections
                 );
             } catch (SearchException ex) {
                 Throwable cause = ex;
@@ -284,15 +286,15 @@ public class Search extends AbstractApiBean {
         }
     }
 
-    
+
     @GET
     @Path("/services")
     public Response getSearchEngines() {
         Map<String, SearchService> availableEngines = searchServiceFactory.getAvailableServices();
         String defaultServiceName = JvmSettings.DEFAULT_SEARCH_SERVICE.lookupOptional().orElse(SearchServiceFactory.INTERNAL_SOLR_SERVICE_NAME);
-        
+
         JsonArrayBuilder enginesArray = Json.createArrayBuilder();
-        
+
         for (String engine : availableEngines.keySet()) {
             JsonObjectBuilder engineObject = Json.createObjectBuilder()
                 .add("name", engine)
@@ -302,10 +304,10 @@ public class Search extends AbstractApiBean {
         JsonObjectBuilder response = Json.createObjectBuilder()
                 .add("services", enginesArray)
                 .add("defaultService", defaultServiceName);
-            
+
         return ok(response);
     }
-    
+
     private User getUser(ContainerRequestContext crc) throws WrappedResponse {
         User userToExecuteSearchAs = GuestUser.get();
         try {

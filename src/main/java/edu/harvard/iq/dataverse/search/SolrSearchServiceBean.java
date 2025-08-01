@@ -36,6 +36,8 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionRolledbackLocalException;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
 import jakarta.persistence.NoResultException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -70,6 +72,8 @@ public class SolrSearchServiceBean implements SearchService {
     @EJB
     DatasetVersionServiceBean datasetVersionService;
     @EJB
+    DataverseServiceBean dataverseService;
+    @EJB
     DatasetFieldServiceBean datasetFieldService;
     @EJB
     GroupServiceBean groupService;
@@ -82,12 +86,12 @@ public class SolrSearchServiceBean implements SearchService {
     @Inject
     ThumbnailServiceWrapper thumbnailServiceWrapper;
     
-    
+
     @Override
     public String getServiceName() {
         return SearchServiceFactory.INTERNAL_SOLR_SERVICE_NAME;
     }
-    
+
     @Override
     public String getDisplayName() {
         return "Dataverse Standard Search";
@@ -107,6 +111,7 @@ public class SolrSearchServiceBean implements SearchService {
      * @param geoRadius e.g. "5"
      * @param addFacets boolean
      * @param addHighlights boolean
+     * @param addCollections boolean
      * @return
      * @throws SearchException
      */
@@ -125,7 +130,8 @@ public class SolrSearchServiceBean implements SearchService {
             String geoPoint,
             String geoRadius,
             boolean addFacets,
-            boolean addHighlights
+            boolean addHighlights,
+            boolean addCollections
     ) throws SearchException {
 
         if (paginationStart < 0) {
@@ -188,7 +194,7 @@ public class SolrSearchServiceBean implements SearchService {
             solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
             solrQuery.addFacetField(SearchFields.DATASET_LICENSE);
             solrQuery.addFacetField(SearchFields.CURATION_STATUS);
-            
+
             /**
              * @todo when a new method on datasetFieldService is available
              * (retrieveFacetsByDataverse?) only show the facets that the
@@ -450,6 +456,7 @@ public class SolrSearchServiceBean implements SearchService {
             String dataverseAffiliation = (String) solrDocument.getFieldValue(SearchFields.DATAVERSE_AFFILIATION);
             String dataverseParentAlias = (String) solrDocument.getFieldValue(SearchFields.DATAVERSE_PARENT_ALIAS);
             String dataverseParentName = (String) solrDocument.getFieldValue(SearchFields.PARENT_NAME);
+            List<String> subtreePaths = (List) solrDocument.getFieldValues(SearchFields.SUBTREE);
             Long embargoEndDate = (Long) solrDocument.getFieldValue(SearchFields.EMBARGO_END_DATE);
             Long retentionEndDate = (Long) solrDocument.getFieldValue(SearchFields.RETENTION_END_DATE);
             //
@@ -583,6 +590,19 @@ public class SolrSearchServiceBean implements SearchService {
 
                 solrSearchResult.setIdentifierOfDataverse(identifierOfDataverse);
                 solrSearchResult.setNameOfDataverse(nameOfDataverse);
+
+                if (addCollections) {
+                    List<Dataverse> collections = new ArrayList<>();
+                    for (String subtreePath : subtreePaths) {
+                        String[] pathSegments = subtreePath.split("/");
+                        if (pathSegments.length == 0) {
+                            // Skip unexpected malformed subtree path
+                            continue;
+                        }
+                        collections.add(dataverseService.find(Long.valueOf(pathSegments[pathSegments.length - 1])));
+                    }
+                    solrSearchResult.setCollections(collections);
+                }
 
                 if (title != null) {
 //                    solrSearchResult.setTitle((String) titles.get(0));

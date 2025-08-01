@@ -44,7 +44,7 @@ public class GetExternalSearchServiceBean extends AbstractExternalSearchServiceB
     public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query,
             List<String> filterQueries, String sortField, String sortOrder, int paginationStart,
             boolean onlyDataRelatedToMe, int numResultsPerPage, boolean retrieveEntities, String geoPoint,
-            String geoRadius, boolean addFacets, boolean addHighlights) throws SearchException {
+            String geoRadius, boolean addFacets, boolean addHighlights, boolean addCollections) throws SearchException {
 
         String externalSearchUrl = settingsService.getValueForKey(SettingsServiceBean.Key.GetExternalSearchUrl);
         if (externalSearchUrl == null || externalSearchUrl.isEmpty()) {
@@ -53,7 +53,7 @@ public class GetExternalSearchServiceBean extends AbstractExternalSearchServiceB
 
         // Prepare query parameters
         String queryParams = prepareQuery(query, paginationStart, numResultsPerPage, sortField, sortOrder,
-                filterQueries, addHighlights, addFacets, onlyDataRelatedToMe, retrieveEntities, geoPoint, geoRadius);
+                filterQueries, addHighlights, addCollections, addFacets, onlyDataRelatedToMe, retrieveEntities, geoPoint, geoRadius);
 
         // Send GET request to external service
         try (Client client = ClientBuilder.newClient()) {
@@ -67,14 +67,14 @@ public class GetExternalSearchServiceBean extends AbstractExternalSearchServiceB
             // Parse response and process results
             String responseString = response.readEntity(String.class);
             logger.finest("External search returned: " + responseString);
-            return postProcessResponse(responseString, dataverseRequest, retrieveEntities, addFacets, addHighlights);
+            return postProcessResponse(responseString, dataverseRequest, retrieveEntities, addFacets, addHighlights, addCollections);
         } catch (Exception e) {
             throw new SearchException("Error parsing external search service response", e);
         }
     }
 
     private String prepareQuery(String query, int paginationStart, int numResultsPerPage, String sortField,
-            String sortOrder, List<String> filterQueries, boolean addHighlights, boolean addFacets,
+            String sortOrder, List<String> filterQueries, boolean addHighlights, boolean addCollections, boolean addFacets,
             boolean onlyDataRelatedToMe, boolean retrieveEntities, String geoPoint, String geoRadius) {
         StringBuilder queryParams = new StringBuilder();
         queryParams.append("q=").append(URLEncoder.encode(query, StandardCharsets.UTF_8));
@@ -94,6 +94,7 @@ public class GetExternalSearchServiceBean extends AbstractExternalSearchServiceB
         }
 
         queryParams.append("&show_relevance=").append(addHighlights);
+        queryParams.append("&show_collections=").append(addCollections);
         queryParams.append("&show_facets=").append(addFacets);
         queryParams.append("&show_entity_ids=true");
         queryParams.append("&show_api_urls=true");
