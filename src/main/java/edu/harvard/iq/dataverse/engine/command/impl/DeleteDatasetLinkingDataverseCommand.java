@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -15,6 +16,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.solr.client.solrj.SolrServerException;
 
@@ -42,12 +45,17 @@ public class DeleteDatasetLinkingDataverseCommand extends AbstractCommand<Datase
         DatasetLinkingDataverse doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);
 
-        try {
-            ctxt.index().indexDataverse(doomed.getLinkingDataverse());
-        } catch (IOException | SolrServerException e) {    
-            String failureLogText = "Post delete linking dataverse indexing failed for Dataverse. ";
-            failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText,  doomed.getLinkingDataverse());
+        List<Dataverse> toReindex = new ArrayList<>();
+        toReindex.add(doomed.getLinkingDataverse());
+        toReindex.addAll(doomed.getLinkingDataverse().getOwners());
+        for (Dataverse dv : toReindex) {
+            try {
+                ctxt.index().indexDataverse(dv);
+            } catch (IOException | SolrServerException e) {
+                String failureLogText = "Post delete linking dataverse indexing failed for Dataverse. ";
+                failureLogText += "\r\n" + e.getLocalizedMessage();
+                LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, dv);
+            }
         }
 
         return merged;

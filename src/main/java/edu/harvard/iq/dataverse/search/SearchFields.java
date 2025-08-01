@@ -297,5 +297,6 @@ public class SearchFields {
 
     public static final String DATASET_LICENSE = "license";
     public static final String FILE_COUNT = "fileCount";
+    public static final String DATASET_COUNT = "datasetCount";
 
 }
