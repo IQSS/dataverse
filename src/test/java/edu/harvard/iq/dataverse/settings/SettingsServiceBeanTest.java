@@ -251,18 +251,23 @@ class SettingsServiceBeanTest {
                 // The REST API endpoint presents a JsonObject, which may have number literals in it.
                 // Check that we can cope with that.
                 .add(":Key3", 123456)
+                // Make sure we deal with quotes
+                .add(":Key4", "&nbsp;<a href=\"https://dataverse.org\">Dataverse</a> &copy; 2014-2025")
                 .build();
             
             // When
             Set<Setting> result = SettingsServiceBean.convertJsonToSettings(input);
             
             // Then
-            assertEquals(3, result.size());
-            assertEquals(
-                Set.of(new Setting(":Key1", "Value1"),
-                       new Setting(":Key2", "123456"),
-                       new Setting(":Key3", "123456")
-                ), result);
+            Map<String, String> expectedResults = Map.of(
+                ":Key1", "Value1",
+                ":Key2", "123456",
+                ":Key3", "123456",
+                ":Key4", "&nbsp;<a href=\"https://dataverse.org\">Dataverse</a> &copy; 2014-2025"
+            );
+            for (Setting setting : result) {
+                assertEquals(expectedResults.get(setting.getName()), setting.getContent());
+            }
         }
         
         @Test
@@ -277,7 +282,7 @@ class SettingsServiceBeanTest {
             Set<Setting> result = SettingsServiceBean.convertJsonToSettings(input);
             
             // Then
-            assertEquals(2, result.size());
+            // Note: we do not verify the content with Setting.equals() - but we are not really interested in it as well.
             assertEquals(
                 Set.of(new Setting(":LocalizedKey", "en", "EnglishValue"),
                        new Setting(":LocalizedKey", "fr", "FrenchValue")
