@@ -150,7 +150,7 @@ for BRANCH in "$@"; do
       mvn -Pct -f . deploy -Ddocker.noCache -Ddocker.platforms="${PLATFORMS}" \
         -Dconf.skipBuild -Dbase.image="${BASE_IMAGE_REF}" \
         -Ddocker.imagePropertyConfiguration=override $TAG_OPTIONS \
-        $( if (( DAMP_RUN )); then echo "-Ddocker.skip.push -Ddocker.skip.tag"; fi )
+        $( if (( DAMP_RUN )); then echo "-Ddocker.skip.push"; fi )
     else
       echo "Skipping Maven build as requested by DRY_RUN=1"
     fi

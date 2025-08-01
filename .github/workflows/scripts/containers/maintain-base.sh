@@ -120,6 +120,13 @@ for BRANCH in "$@"; do
   CURRENT_REV_TAG="${BASE_IMAGE_REF#*:}-r$REV"
   NEXT_REV_TAG="${BASE_IMAGE_REF#*:}-r$(( REV + 1 ))"
 
+  # 6a. Determine if we must newly release an "r0" because a rolling tag from development is now released.
+  IS_NEW_RELEASE=0
+  if ! (( IS_DEV )) && [ "$REV" = "-1" ]; then
+    echo "This is a newly released version of Dataverse - forcing build, as no r0 image is present on Docker Hub"
+    IS_NEW_RELEASE=1
+  fi
+
   # 7. Let's put together what tags we want added to this build run
   TAG_OPTIONS=""
   if ! (( IS_DEV )); then
@@ -139,12 +146,12 @@ for BRANCH in "$@"; do
 
   # 8. Let's build the base image if necessary
   NEWER_IMAGE=0
-  if (( NEWER_JAVA_IMAGE + NEWER_PKGS + FORCE_BUILD > 0 )); then
+  if (( NEWER_JAVA_IMAGE + NEWER_PKGS + IS_NEW_RELEASE + FORCE_BUILD > 0 )); then
     if ! (( DRY_RUN )); then
       # shellcheck disable=SC2046
       mvn -Pct -f modules/container-base deploy -Ddocker.noCache -Ddocker.platforms="${PLATFORMS}" \
         -Ddocker.imagePropertyConfiguration=override $TAG_OPTIONS \
-        $( if (( DAMP_RUN )); then echo "-Ddocker.skip.push -Ddocker.skip.tag"; fi )
+        $( if (( DAMP_RUN )); then echo "-Ddocker.skip.push"; fi )
     else
       echo "Skipping Maven build as requested by DRY_RUN=1"
     fi
