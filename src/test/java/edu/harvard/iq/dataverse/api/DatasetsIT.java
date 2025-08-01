@@ -5614,12 +5614,21 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         responseJsonPath = getVersionFileCountsResponseDeaccessioned.jsonPath();
         assertEquals(5, (Integer) responseJsonPath.get("data.total"));
 
-        // Test that the dataset file counts for a deaccessioned dataset cannot be accessed by a guest
+        // Test that the dataset file counts for a deaccessioned dataset can be accessed by a guest
         // By latest published version
         Response getDatasetVersionResponse = UtilIT.getVersionFileCounts(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, true, null);
-        getDatasetVersionResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        getDatasetVersionResponse.then().assertThat().statusCode(OK.getStatusCode());
+        assertEquals(5, (Integer) responseJsonPath.get("data.total"));
         // By specific version 1.0
         getDatasetVersionResponse = UtilIT.getVersionFileCounts(datasetId, "1.0", null, null, null, null, null, true, null);
+        getDatasetVersionResponse.then().assertThat().statusCode(OK.getStatusCode());
+        assertEquals(5, (Integer) responseJsonPath.get("data.total"));
+        // By specific version 1.0
+        getDatasetVersionResponse = UtilIT.getVersionFileCounts(datasetId, "1.0", null, null, null, null, null, true, null);
+        getDatasetVersionResponse.then().assertThat().statusCode(OK.getStatusCode());
+        assertEquals(5, (Integer) responseJsonPath.get("data.total"));
+        // By latest published version not including deaccessioned
+        getDatasetVersionResponse = UtilIT.getVersionFileCounts(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, false, null);
         getDatasetVersionResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
     }
     
@@ -5738,7 +5747,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     @Test
-    public void getDownloadSize() throws IOException, InterruptedException {
+    public void getDownloadSize() throws IOException {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
@@ -5777,7 +5786,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         int tabularOriginalSize = 157;
 
         // Ensure tabular file is ingested
-        Thread.sleep(2000);
+        UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
 
         // Get the total size ignoring the original tabular file sizes
         getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.Archival.toString(), false, apiToken);
@@ -5814,7 +5823,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         // Ensure tabular file is ingested
-        Thread.sleep(2000);
+        UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
 
         // Get the total size including only original sizes and ignoring archival sizes for tabular files
         expectedSizeIncludingOnlyOriginalForTabular = tabularOriginalSize + expectedSizeIncludingOnlyOriginalForTabular;
@@ -5845,21 +5854,57 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
         deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
 
+        // Auth User Tests:
         // includeDeaccessioned false
-        Response getVersionFileCountsResponseNoDeaccessioned = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), false, apiToken);
-        getVersionFileCountsResponseNoDeaccessioned.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
-
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), false, apiToken);
+        getDownloadSizeResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
         // includeDeaccessioned true
-        Response getVersionFileCountsResponseDeaccessioned = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), true, apiToken);
-        getVersionFileCountsResponseDeaccessioned.then().assertThat().statusCode(OK.getStatusCode());
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), true, apiToken);
+        getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        // Test that the dataset file counts for a deaccessioned dataset cannot be accessed by a guest
+        // Test that the dataset file counts for a deaccessioned dataset can be accessed by a guest
         // By latest published version
         Response getVersionFileCountsGuestUserResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), true, null);
-        getVersionFileCountsGuestUserResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        getVersionFileCountsGuestUserResponse.then().assertThat().statusCode(OK.getStatusCode());
         // By specific version 1.0
         getVersionFileCountsGuestUserResponse = UtilIT.getDownloadSize(datasetId, "1.0", null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), true, null);
-        getVersionFileCountsGuestUserResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        getVersionFileCountsGuestUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Guest User Tests:
+        // By latest published version includeDeaccessioned true
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), true, null);
+        getDownloadSizeResponse.prettyPrint();
+        getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // By specific version 1.0 includeDeaccessioned true
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, "1.0", null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), true, null);
+        getDownloadSizeResponse.prettyPrint();
+        getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // includeDeaccessioned false
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), false, null);
+        getDownloadSizeResponse.prettyPrint();
+        getDownloadSizeResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // Create new dataset with no files and deaccession
+        createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+        deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
+        deaccessionDatasetResponse.prettyPrint();
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // includeDeaccessioned guest gets deaccessioned download size
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), true, null);
+        getDownloadSizeResponse.prettyPrint();
+        getDownloadSizeResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.storageSize", equalTo(0));
+        // includeDeaccessioned guest gets deaccessioned version file counts
+        Response getDatasetVersionFileResponse = UtilIT.getVersionFileCounts(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, true, null);
+        getDatasetVersionFileResponse.prettyPrint();
+        getDatasetVersionFileResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total", equalTo(0));
     }
 
     @Test
