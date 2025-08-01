@@ -2335,6 +2335,7 @@ public class DataversesIT {
         );
         createTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.name", equalTo("Dataverse template"))
+                .body("data.isDefault", equalTo(true))
                 .body("data.usageCount", equalTo(0))
                 .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
                 .body("data.datasetFields.citation.fields.size()", equalTo(1))
@@ -2358,6 +2359,7 @@ public class DataversesIT {
         getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.size()", equalTo(1))
                 .body("data[0].name", equalTo("Dataverse template"))
+                .body("data[0].isDefault", equalTo(true))
                 .body("data[0].usageCount", equalTo(0))
                 .body("data[0].termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
                 .body("data[0].datasetFields.citation.fields.size()", equalTo(1))
