@@ -6532,61 +6532,191 @@ Admin
 
 This is the administrative part of the API.
 For security reasons, it is absolutely essential that you block it before allowing public access to a Dataverse installation.
-Blocking can be done using settings.
-See the ``post-install-api-block.sh`` script in the ``scripts/api`` folder for details.
-See :ref:`blocking-api-endpoints` in Securing Your Installation section of the Configuration page of the Installation Guide.
+See :ref:`blocking-api-endpoints` in the Installation Guide for details.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. _admin-api-db-settings:
+
+Manage Database Settings
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+These are the API endpoints for managing the :ref:`database-settings` listed in the Installation Guide.
+
+.. _settings_get_all:
 
 List All Database Settings
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-List all settings::
+.. code-block:: bash
 
-  GET http://$SERVER/api/admin/settings
+  export SERVER_URL="http://localhost:8080"
+  
+  curl "$SERVER_URL/api/admin/settings"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl http://localhost:8080/api/admin/settings
+
+.. _settings_get_single:
+
+Get Single Database Setting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+  export SERVER_URL="http://localhost:8080"
+  export NAME=":UploadMethods"
+  
+  curl "$SERVER_URL/api/admin/settings/$NAME"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl http://localhost:8080/api/admin/settings/:UploadMethods
+
+.. _settings_get_single_lang:
+
+Get Single Database Setting With Language/Locale
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A small number of settings, most notably :ref:`:ApplicationTermsOfUse`, can be saved in multiple languages.
+
+Use two character language codes.
+
+.. code-block:: bash
+
+  export SERVER_URL="http://localhost:8080"
+  export NAME=":ApplicationTermsOfUse"
+  export LANG="en"
+  
+  curl "$SERVER_URL/api/admin/settings/$NAME/lang/$LANG"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse/lang/en
+
+.. _settings_put_single:
+
+Configure Single Database Setting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+  export SERVER_URL="http://localhost:8080"
+  export NAME=":InstallationName"
+  export VALUE="LibreScholar"
+  
+  curl -X PUT "$SERVER_URL/api/admin/settings/$NAME" -d "$VALUE"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X PUT http://localhost:8080/api/admin/settings/:InstallationName -d LibreScholar
+
+Note: ``NAME`` values are validated for existence and compliance.
+
+.. _settings_put_single_lang:
+
+Configure Single Database Setting With Language/Locale
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A small number of settings, most notably :ref:`:ApplicationTermsOfUse`, can be saved in multiple languages.
+
+Use two character language codes.
+
+.. code-block:: bash
+
+  export SERVER_URL="http://localhost:8080"
+  export NAME=":ApplicationTermsOfUse"
+  export LANG="fr"
+  
+  curl -X PUT "$SERVER_URL/api/admin/settings/$NAME/lang/$LANG" --upload-file /tmp/apptou_fr.html
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X PUT http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse/lang/fr --upload-file /tmp/apptou_fr.html
+
+Note: ``NAME`` and ``LANG`` values are validated for existence and compliance.
 
 .. _settings_put_bulk:
 
 Configure All Database Settings
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Replace all settings in a single idempotent and atomic operation::
+Using a JSON file, replace all settings in a single idempotent and atomic operation and delete any settings not present in that JSON file.
 
-  PUT http://$SERVER/api/admin/settings
+Use the JSON ``data`` object in output of ``GET /api/admin/settings`` (:ref:`settings_get_all`) for the JSON input structure for this endpoint.
+To put this concretely, you can save just the ``data`` object for your existing settings to disk by filtering them through ``.jq`` like this:
 
-See JSON ``data`` object in output of ``GET /api/admin/settings`` for the JSON input structure for this endpoint.
+.. code-block:: bash
+
+  curl http://localhost:8080/api/admin/settings | jq '.data' > /tmp/all-settings.json
+
+Then you can use this "all-settings.json" file as a starting point for your input file.
 The :doc:`../installation/config` page of the Installation Guide has a :ref:`complete list of all the available settings <database-settings>`.
+Note that settings in the JSON file are validated for existence and compliance.
 
-Configure Single Database Setting
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. code-block:: bash
 
-Sets setting ``name`` to the body of the request::
+  export SERVER_URL="http://localhost:8080"
+  
+  curl -X PUT -H "Content-type:application/json" "$SERVER_URL/api/admin/settings" --upload-file /tmp/all-settings.json
 
-  PUT http://$SERVER/api/admin/settings/$name
+The fully expanded example above (without environment variables) looks like this:
 
-Sets a localized setting ``name`` for locale/language ``lang`` to the body of the request::
+.. code-block:: bash
 
-  PUT http://$SERVER/api/admin/settings/$name/lang/$lang
+  curl -X PUT -H "Content-type:application/json" http://localhost:8080/api/admin/settings --upload-file /tmp/all-settings.json
 
-Get Single Database Setting
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Get the setting under ``name``::
-
-  GET http://$SERVER/api/admin/settings/$name
-
-Gets a localized setting under ``name`` for locale/language ``lang``::
-
-  GET http://$SERVER/api/admin/settings/$name/lang/$lang
+.. _settings_delete_single:
 
 Delete Single Database Setting
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Delete the setting under ``name``::
+.. code-block:: bash
 
-  DELETE http://$SERVER/api/admin/settings/$name
+  export SERVER_URL="http://localhost:8080"
+  export NAME=":InstallationName"
+  
+  curl -X DELETE "$SERVER_URL/api/admin/settings/$NAME"
 
-Delete a localized setting under ``name`` for locale/language ``lang``::
+The fully expanded example above (without environment variables) looks like this:
 
-  DELETE http://$SERVER/api/admin/settings/$name/lang/$lang
+.. code-block:: bash
+
+  curl -X DELETE http://localhost:8080/api/admin/settings/:InstallationName
+
+.. _settings_delete_single_lang:
+
+Delete Single Database Setting With Language/Locale
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A small number of settings, most notably :ref:`:ApplicationTermsOfUse`, can be saved in multiple languages.
+
+Use two character language codes.
+
+.. code-block:: bash
+
+  export SERVER_URL="http://localhost:8080"
+  export NAME=":ApplicationTermsOfUse"
+  export LANG="fr"
+  
+  curl -X DELETE "$SERVER_URL/api/admin/settings/$NAME/lang/$LANG"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X DELETE http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse/lang/fr 
 
 .. _list-all-feature-flags:
 

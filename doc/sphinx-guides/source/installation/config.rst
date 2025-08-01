@@ -3818,13 +3818,13 @@ You might also create your own profiles and use these, please refer to the upstr
 Database Settings
 -----------------
 
-These settings are stored in the ``setting`` database table but can be read and modified via the "admin" endpoint of the :doc:`/api/native-api` for easy scripting.
+These settings are stored in the ``setting`` database table but we recommend using the Admin API (:ref:`admin-api-db-settings`) to view and modify them, as shown below.
 
-The most commonly used configuration options are listed first.
+In short:
 
-The pattern you will observe in curl examples below is that an HTTP ``PUT`` is used to add or modify a setting. If you perform an HTTP ``GET`` (the default when using curl), the output will contain the value of the setting, if it has been set. You can also do a ``GET`` of all settings with ``curl http://localhost:8080/api/admin/settings`` which you may want to pretty-print by piping the output through a tool such as jq by appending ``| jq .``. If you want to remove a setting, use an HTTP ``DELETE`` such as ``curl -X DELETE http://localhost:8080/api/admin/settings/:GuidesBaseUrl`` .
-
-For your convenience, there is also an Admin API endpoint to :ref:`bulk manage database settings in an atomic, idempotent fashion <settings_put_bulk>`.
+- HTTP ``GET`` is used to show settings.
+- HTTP ``PUT`` is used to add or modify settings.
+- HTTP ``DELETE`` is used to delete settings.
 
 .. _:BlockedApiPolicy:
 
@@ -4319,10 +4319,14 @@ For performance reasons, your Dataverse installation will only allow creation of
 
 In the UI, users trying to download a zip file larger than the Dataverse installation's :ZipDownloadLimit will receive messaging that the zip file is too large, and the user will be presented with alternate access options. 
 
+.. _:TabularIngestSizeLimit:
+
 :TabularIngestSizeLimit
 +++++++++++++++++++++++
 
 Threshold in bytes for limiting whether or not "ingest" is attempted for an uploaded tabular file (which can be resource intensive).
+For more on the ingest features, see :doc:`/user/tabulardataingest/index` in the User Guide.
+
 For example, with the below in place, files greater than 2 GB in size will not go through the ingest process:
 
 ``curl -X PUT -d 2000000000 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
@@ -4339,6 +4343,8 @@ Using a JSON-based setting, you can override this global setting on a per-format
 - CSV
 - XLSX
 
+(In previous releases of Dataverse, a colon-separated form was used to specify per-format limits, such as ``:TabularIngestSizeLimit:Rdata``, but this is no longer supported. Now JSON is used.)
+
 The JSON follows this form, all fields optional:
 
 .. code:: json
@@ -4350,8 +4356,14 @@ The JSON follows this form, all fields optional:
     "formatZ": "100"
   }
 
-The ``default`` key represents the global default (with it being absent meaning the implicit global default of ``-1`` applies).
-Add a format name (as listed above) to change the limit for this particular format.
+Whatever JSON you send will overwrite existing values. If you have any current settings, you can use the following command to see them in the proper format (and then add the new settings you want):
+
+``curl http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit | jq -r '.data.message'``
+
+The ``default`` key is optional and can be used to give limits to formats that are not specified in the JSON. If you omit the ``default`` key or set it to ``-1``, no limits are applied to formats not specified in the JSON.
+
+Add a format name (DTA, POR, etc., as listed above) to change the limit for this particular format.
+
 Any size limits must be provided as string literals (in quotes), not number literals!
 
 Examples:
