@@ -48,8 +48,7 @@ public class InAppNotificationsJsonPrinter {
             case STATUSUPDATED:
             case PIDRECONCILED:
             case CREATEACC:
-                notificationJson.add("rootDataverseName", dataverseService.findRootDataverse().getName());
-                notificationJson.add("userGuideUrl", systemConfig.getGuidesUrl());
+                addCreateAccountFields(notificationJson);
             case CHECKSUMFAIL:
             case FILESYSTEMIMPORT:
             case GLOBUSUPLOADCOMPLETED:
@@ -96,5 +95,10 @@ public class InAppNotificationsJsonPrinter {
             notificationJson.add("ownerAlias", dataset.getOwner().getAlias());
             notificationJson.add("ownerDisplayName", dataset.getOwner().getDisplayName());
         }
+    }
+
+    private static void addCreateAccountFields(NullSafeJsonBuilder notificationJson) {
+        notificationJson.add("rootDataverseName", dataverseService.findRootDataverse().getName());
+        notificationJson.add("userGuideUrl", systemConfig.getGuidesUrl());
     }
 }
