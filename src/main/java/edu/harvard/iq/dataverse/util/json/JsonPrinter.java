@@ -80,6 +80,9 @@ public class JsonPrinter {
 
     @EJB
     static MailServiceBean mailService;
+
+    @EJB
+    static InAppNotificationsJsonPrinter inAppNotificationsJsonPrinter;
     
     public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb, DataverseFieldTypeInputLevelServiceBean dfils, DatasetServiceBean ds) {
             settingsService = ssb;
@@ -1635,7 +1638,7 @@ public class JsonPrinter {
             notificationJson.add("sentTimestamp", notification.getSendDateTimestamp());
 
             if (inAppNotificationFormat) {
-                InAppNotificationsJsonPrinter.addFieldsByType(notificationJson, authenticatedUser, notification);
+                inAppNotificationsJsonPrinter.addFieldsByType(notificationJson, authenticatedUser, notification);
             } else {
                 Object relatedObject = mailService.getObjectOfNotification(notification);
                 if (relatedObject != null) {
