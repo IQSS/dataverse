@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.ejb.EJB;
 
+import static edu.harvard.iq.dataverse.dataset.DatasetUtil.getLocaleCurationStatusLabel;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonRoleAssignments;
 
 public class InAppNotificationsJsonPrinter {
@@ -16,6 +17,9 @@ public class InAppNotificationsJsonPrinter {
     private static DatasetServiceBean datasetService;
 
     @EJB
+    private static DatasetVersionServiceBean datasetVersionService;
+
+    @EJB
     private static DataFileServiceBean dataFileService;
 
     @EJB
@@ -25,7 +29,6 @@ public class InAppNotificationsJsonPrinter {
     private static SystemConfig systemConfig;
 
     public static void addFieldsByType(NullSafeJsonBuilder notificationJson, AuthenticatedUser authenticatedUser, UserNotification userNotification) {
-        Long objectId = userNotification.getObjectId();
         AuthenticatedUser requestor = userNotification.getRequestor();
         switch (userNotification.getType()) {
             case ASSIGNROLE:
@@ -44,29 +47,33 @@ public class InAppNotificationsJsonPrinter {
             case CREATEDS:
                 addCreateDatasetFields(notificationJson, userNotification);
             case SUBMITTEDDS:
+                addSubmittedDatasetFields(notificationJson, userNotification, requestor);
             case PUBLISHEDDS:
             case PUBLISHFAILED_PIDREG:
             case RETURNEDDS:
             case WORKFLOW_SUCCESS:
             case WORKFLOW_FAILURE:
-            case STATUSUPDATED:
             case PIDRECONCILED:
+            case FILESYSTEMIMPORT:
+            case CHECKSUMIMPORT:
+                addDatasetVersionFields(notificationJson, userNotification);
+            case STATUSUPDATED:
+                addDatasetVersionFields(notificationJson, userNotification, true);
             case CREATEACC:
                 addCreateAccountFields(notificationJson);
-            case CHECKSUMFAIL:
-            case FILESYSTEMIMPORT:
             case GLOBUSUPLOADCOMPLETED:
             case GLOBUSDOWNLOADCOMPLETED:
             case GLOBUSUPLOADCOMPLETEDWITHERRORS:
             case GLOBUSUPLOADREMOTEFAILURE:
             case GLOBUSUPLOADLOCALFAILURE:
             case GLOBUSDOWNLOADCOMPLETEDWITHERRORS:
-            case CHECKSUMIMPORT:
-            case CONFIRMEMAIL:
-            case APIGENERATED:
+            case CHECKSUMFAIL:
+                addDatasetFields(notificationJson, userNotification);
             case INGESTCOMPLETED:
             case INGESTCOMPLETEDWITHERRORS:
+                addIngestFields(notificationJson, userNotification);
             case DATASETMENTIONED:
+                addDatasetMentionedFields(notificationJson, userNotification);
         }
     }
 
@@ -149,5 +156,36 @@ public class InAppNotificationsJsonPrinter {
     private static void addGuidesFields(NullSafeJsonBuilder notificationJson) {
         notificationJson.add("userGuidesBaseUrl", systemConfig.getGuidesBaseUrl());
         notificationJson.add("userGuidesVersion", systemConfig.getGuidesVersion());
+    }
+
+    private static void addSubmittedDatasetFields(NullSafeJsonBuilder notificationJson, UserNotification userNotification, AuthenticatedUser requestor) {
+        addDatasetFields(notificationJson, userNotification);
+        addRequestorFields(notificationJson, requestor);
+    }
+
+    private static void addDatasetVersionFields(NullSafeJsonBuilder notificationJson, UserNotification userNotification) {
+        addDatasetVersionFields(notificationJson, userNotification, false);
+    }
+
+    private static void addDatasetVersionFields(NullSafeJsonBuilder notificationJson, UserNotification userNotification, boolean addCurationStatus) {
+        DatasetVersion datasetVersion = datasetVersionService.find(userNotification.getObjectId());
+        if (datasetVersion != null) {
+            notificationJson.add("datasetPersistentIdentifier", datasetVersion.getDataset().getGlobalId().asString());
+            notificationJson.add("datasetDisplayName", datasetVersion.getDataset().getDisplayName());
+
+            if (addCurationStatus) {
+                notificationJson.add("currentCurationStatus", getLocaleCurationStatusLabel(datasetVersion.getCurrentCurationStatus()));
+            }
+        }
+    }
+
+    private static void addIngestFields(NullSafeJsonBuilder notificationJson, UserNotification userNotification) {
+        addDatasetFields(notificationJson, userNotification);
+        addGuidesFields(notificationJson);
+    }
+
+    private static void addDatasetMentionedFields(NullSafeJsonBuilder notificationJson, UserNotification userNotification) {
+        addDatasetFields(notificationJson, userNotification);
+        notificationJson.add("additionalInfo", userNotification.getAdditionalInfo());
     }
 }
