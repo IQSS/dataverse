@@ -1,0 +1,11 @@
+{
+  "name": "EUPL-1.2",
+  "uri": "https://joinup.ec.europa.eu/page/eupl-text-11-12",
+  "shortDescription": "European Union Public License 1.2",
+  "active": true,
+  "sortOrder": 14,
+  "rightsIdentifier": "EUPL-1.2",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeUri": "https://spdx.org/licenses/",
+  "languageCode": "en"
+}
