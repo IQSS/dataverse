@@ -7,6 +7,9 @@ import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationException;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GoogleOAuth2AP;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -20,12 +23,16 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,6 +41,9 @@ public class AuthenticationServiceBeanTest {
 
     private AuthenticationServiceBean sut;
     private static final String TEST_BEARER_TOKEN = "Bearer test";
+    private static final String TEST_ORCID_USER_ID = "0000-0000-0000-0000";
+    private static final String TEST_GOOGLE_USER_ID = "111111111111111111111";
+    private static final String TEST_GITHUB_USER_ID = "11111111";
 
     @BeforeEach
     public void setUp() {
@@ -181,7 +191,7 @@ public class AuthenticationServiceBeanTest {
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-use-shib-user-on-id-match")
     void testLookupUserByOIDCBearerToken_oneProvider_validToken_userIsPresentAsShibboleth_useShibUserOnIdMatchFeatureFlagEnabled() throws ParseException, IOException, AuthorizationException, OAuth2Exception {
         // Given a single OIDC provider that returns a valid user identifier
-        setUpOIDCProviderWhichValidatesToken(true);
+        setUpOIDCProviderWhichValidatesToken(true, null);
 
         // Spy on the SUT to verify method calls
         AuthenticationServiceBean spySut = Mockito.spy(sut);
@@ -207,6 +217,45 @@ public class AuthenticationServiceBeanTest {
         assertEquals("testIdp|testPersistentId", userIdCaptor.getAllValues().get(0));
     }
 
+    private static Stream<Arguments> oAuthProvider() {
+        return Stream.of(
+                Arguments.of(OrcidOAuth2AP.PROVIDER_ID, TEST_ORCID_USER_ID),
+                Arguments.of(GoogleOAuth2AP.PROVIDER_ID, TEST_GOOGLE_USER_ID),
+                Arguments.of(GitHubOAuth2AP.PROVIDER_ID, TEST_GITHUB_USER_ID)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("oAuthProvider")
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-use-oauth-user-on-id-match")
+    void testLookupUserByOIDCBearerToken_oneProvider_validToken_userIsPresentAsOAuth_useOAuthUserOnIdMatchFeatureFlagEnabled(String providerId, String expectedUserId) throws ParseException, IOException, AuthorizationException, OAuth2Exception {
+        // Given a single OIDC provider that returns a valid user identifier with OAuth attributes
+        setUpOIDCProviderWhichValidatesToken(false, providerId);
+
+        // Spy on the SUT to verify method calls
+        AuthenticationServiceBean spySut = Mockito.spy(sut);
+
+        // Setting up an authenticated user is found
+        AuthenticatedUser authenticatedUser = setupAuthenticatedUserByAuthPrvIDQueryWithResult(new AuthenticatedUser());
+
+        // When invoking lookupUserByOIDCBearerToken
+        User actualUser = spySut.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN);
+
+        // Then the actual user should match the expected authenticated user
+        assertEquals(authenticatedUser, actualUser);
+
+        // Capture calls to lookupUser
+        ArgumentCaptor<String> providerIdCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
+
+        // Ensure lookupUser is called once
+        Mockito.verify(spySut, Mockito.times(1)).lookupUser(providerIdCaptor.capture(), userIdCaptor.capture());
+
+        // Assert that lookupUser is called with expected parameters
+        assertEquals(providerId, providerIdCaptor.getAllValues().get(0));
+        assertEquals(expectedUserId, userIdCaptor.getAllValues().get(0));
+    }
+
     private void setupAuthenticatedUserQueryWithNoResult() {
         TypedQuery<AuthenticatedUserLookup> queryStub = Mockito.mock(TypedQuery.class);
         Mockito.when(queryStub.getSingleResult()).thenThrow(new NoResultException());
@@ -214,10 +263,10 @@ public class AuthenticationServiceBeanTest {
     }
 
     private void setUpOIDCProviderWhichValidatesToken() throws ParseException, IOException, OAuth2Exception {
-        setUpOIDCProviderWhichValidatesToken(false);
+        setUpOIDCProviderWhichValidatesToken(false, null);
     }
 
-    private void setUpOIDCProviderWhichValidatesToken(boolean includeShibAttributes) throws ParseException, IOException, OAuth2Exception {
+    private void setUpOIDCProviderWhichValidatesToken(boolean includeShibAttributes, String providerIdToIncludeClaimsFor) throws ParseException, IOException, OAuth2Exception {
         OIDCAuthProvider oidcAuthProviderStub = stubOIDCAuthProvider("OIDC");
 
         BearerAccessToken token = BearerAccessToken.parse(TEST_BEARER_TOKEN);
@@ -231,8 +280,24 @@ public class AuthenticationServiceBeanTest {
 
         if (includeShibAttributes) {
             Mockito.when(oAuth2UserRecordStub.hasShibAttributes()).thenReturn(true);
-            Mockito.when(oAuth2UserRecordStub.getShibIdp()).thenReturn("testIdp");
+            Mockito.when(oAuth2UserRecordStub.getIdp()).thenReturn("testIdp");
             Mockito.when(oAuth2UserRecordStub.getShibUniquePersistentIdentifier()).thenReturn("testPersistentId");
+        } else if (providerIdToIncludeClaimsFor != null) {
+            Mockito.when(oAuth2UserRecordStub.hasOAuthAttributes()).thenReturn(true);
+            switch (providerIdToIncludeClaimsFor) {
+                case OrcidOAuth2AP.PROVIDER_ID -> {
+                    Mockito.when(oAuth2UserRecordStub.getIdp()).thenReturn("http://orcid.org/oauth/authorize");
+                    Mockito.when(oAuth2UserRecordStub.getOidcUserId()).thenReturn("http://orcid.org/" + TEST_ORCID_USER_ID);
+                }
+                case GoogleOAuth2AP.PROVIDER_ID -> {
+                    Mockito.when(oAuth2UserRecordStub.getIdp()).thenReturn("http://google.com/accounts/o8/id");
+                    Mockito.when(oAuth2UserRecordStub.getOidcUserId()).thenReturn(TEST_GOOGLE_USER_ID);
+                }
+                case GitHubOAuth2AP.PROVIDER_ID -> {
+                    Mockito.when(oAuth2UserRecordStub.getIdp()).thenReturn("http://github.com/login/oauth/authorize");
+                    Mockito.when(oAuth2UserRecordStub.getOidcUserId()).thenReturn(TEST_GITHUB_USER_ID);
+                }
+            }
         }
 
         UserRecordIdentifier userRecordIdentifierStub = Mockito.mock(UserRecordIdentifier.class);

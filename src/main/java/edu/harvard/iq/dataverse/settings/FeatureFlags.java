@@ -86,6 +86,19 @@ public enum FeatureFlags {
     API_BEARER_AUTH_USE_SHIB_USER_ON_ID_MATCH("api-bearer-auth-use-shib-user-on-id-match"),
 
     /**
+     * Allows the use of an OAuth user account (GitHub, Google, or ORCID) when an identity match is found during API bearer authentication.
+     * This feature enables automatic association of an incoming IdP identity with an existing OAuth user account,
+     * bypassing the need for additional user registration steps.
+     *
+     * <p>The value of this feature flag is only considered when the feature flag
+     * {@link #API_BEARER_AUTH} is enabled.</p>
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-use-oauth-user-on-id-match"
+     * @since Dataverse @TODO:
+     */
+    API_BEARER_AUTH_USE_OAUTH_USER_ON_ID_MATCH("api-bearer-auth-use-oauth-user-on-id-match"),
+
+    /**
      * For published (public) objects, don't use a join when searching Solr. 
      * Experimental! Requires a reindex with the following feature flag enabled,
      * in order to add the boolean publicObject_b:true field to all the public

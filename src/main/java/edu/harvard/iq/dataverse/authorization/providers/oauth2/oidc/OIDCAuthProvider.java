@@ -228,12 +228,18 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * @return the usable user record for processing ing {@link edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2LoginBackingBean}
      */
     public OAuth2UserRecord getUserRecord(UserInfo userInfo) {
-        // Extract Shibboleth attributes if present
+        // Extract Shibboleth persistent identifier claim if present
         Object shibUniqueIdObj = userInfo.getClaim(ShibUtil.uniquePersistentIdentifier);
-        Object shibIdpObj = userInfo.getClaim(ShibUtil.shibIdpAttribute);
+
+        // Extract idp claim if present
+        Object idpObj = userInfo.getClaim(OAuth2UserRecord.IDP_CLAIM_NAME);
+
+        // Extract OIDC user id claim if present
+        Object oidcUserIdObj = userInfo.getClaim(OAuth2UserRecord.OIDC_USER_ID_CLAIM_NAME);
 
         String shibUniqueId = (shibUniqueIdObj != null) ? shibUniqueIdObj.toString() : null;
-        String shibIdp = (shibIdpObj != null) ? shibIdpObj.toString() : null;
+        String idp = (idpObj != null) ? idpObj.toString() : null;
+        String oidcUserId = (oidcUserIdObj != null) ? oidcUserIdObj.toString() : null;
 
         // Build display info from user attributes
         AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
@@ -249,7 +255,8 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
                 userInfo.getSubject().getValue(),
                 userInfo.getPreferredUsername(),
                 shibUniqueId,
-                shibIdp,
+                idp,
+                oidcUserId,
                 null,
                 displayInfo,
                 null
