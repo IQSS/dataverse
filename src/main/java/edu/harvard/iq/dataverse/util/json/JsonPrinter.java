@@ -36,6 +36,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
+import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 
@@ -76,6 +77,12 @@ public class JsonPrinter {
 
     @EJB
     static DatasetServiceBean datasetService;
+
+    @EJB
+    static MailServiceBean mailService;
+
+    @EJB
+    static InAppNotificationsJsonPrinter inAppNotificationsJsonPrinter;
     
     public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb, DataverseFieldTypeInputLevelServiceBean dfils, DatasetServiceBean ds) {
             settingsService = ssb;
@@ -128,11 +135,18 @@ public class JsonPrinter {
         return builder;
     }
 
+    public static JsonArrayBuilder jsonRoleAssignments(List<RoleAssignment> roleAssignments) {
+        JsonArrayBuilder bld = Json.createArrayBuilder();
+        roleAssignments.forEach(roleAssignment -> bld.add(json(roleAssignment)));
+        return bld;
+    }
+
     public static JsonObjectBuilder json(RoleAssignment ra) {
         return jsonObjectBuilder()
                 .add("id", ra.getId())
                 .add("assignee", ra.getAssigneeIdentifier())
                 .add("roleId", ra.getRole().getId())
+                .add("roleName", ra.getRole().getName())
                 .add("_roleAlias", ra.getRole().getAlias())
                 .add("privateUrlToken", ra.getPrivateUrlToken())
                 .add("definitionPointId", ra.getDefinitionPoint().getId());
@@ -1609,5 +1623,38 @@ public class JsonPrinter {
         }
 
         return jsonArrayBuilder;
+    }
+
+    public static JsonArrayBuilder json(List<UserNotification> notifications, AuthenticatedUser authenticatedUser, boolean inAppNotificationFormat) {
+        JsonArrayBuilder notificationsArray = Json.createArrayBuilder();
+
+        for (UserNotification notification : notifications) {
+            NullSafeJsonBuilder notificationJson = jsonObjectBuilder();
+            UserNotification.Type type = notification.getType();
+
+            notificationJson.add("id", notification.getId());
+            notificationJson.add("type", type.toString());
+            notificationJson.add("displayAsRead", notification.isReadNotification());
+            notificationJson.add("sentTimestamp", notification.getSendDateTimestamp());
+
+            if (inAppNotificationFormat) {
+                inAppNotificationsJsonPrinter.addFieldsByType(notificationJson, authenticatedUser, notification);
+            } else {
+                Object relatedObject = mailService.getObjectOfNotification(notification);
+                if (relatedObject != null) {
+                    String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, relatedObject);
+                    String messageText = mailService.getMessageTextBasedOnNotification(
+                            notification, relatedObject, null, notification.getRequestor()
+                    );
+
+                    notificationJson.add("subjectText", subjectText);
+                    notificationJson.add("messageText", messageText);
+                }
+            }
+
+            notificationsArray.add(notificationJson);
+        }
+
+        return notificationsArray;
     }
 }

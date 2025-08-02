@@ -1,81 +1,42 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
-import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.workflows.WorkflowUtil;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 
-import edu.harvard.iq.dataverse.util.MailUtil;
-import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 @Stateless
 @Path("notifications")
 public class Notifications extends AbstractApiBean {
 
-    @EJB
-    MailServiceBean mailService;
-    
     @GET
     @AuthRequired
     @Path("/all")
-    public Response getAllNotificationsForUser(@Context ContainerRequestContext crc) {
+    public Response getAllNotificationsForUser(@Context ContainerRequestContext crc, @QueryParam("inAppNotificationFormat") boolean inAppNotificationFormat) {
         User user = getRequestUser(crc);
-        if (!(user instanceof AuthenticatedUser)) {
+        if (!(user instanceof AuthenticatedUser authenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
-        AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
-        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        List<UserNotification> notifications = userNotificationSvc.findByUser(authenticatedUser.getId());
-        for (UserNotification notification : notifications) {
-            NullSafeJsonBuilder notificationObjectBuilder = jsonObjectBuilder();
-            JsonArrayBuilder reasonsForReturn = Json.createArrayBuilder();
-            Type type = notification.getType();
-            notificationObjectBuilder.add("id", notification.getId());
-            notificationObjectBuilder.add("type", type.toString());
-            notificationObjectBuilder.add("displayAsRead", notification.isReadNotification());
-            /* FIXME - Re-add reasons for return if/when they are added to the notifications page.
-            if (Type.RETURNEDDS.equals(type) || Type.SUBMITTEDDS.equals(type)) {
-                JsonArrayBuilder reasons = getReasonsForReturn(notification);
-                for (JsonValue reason : reasons.build()) {
-                    reasonsForReturn.add(reason);
-                }
-                notificationObjectBuilder.add("reasonsForReturn", reasonsForReturn);
-            }
-            */
-            Object objectOfNotification =  mailService.getObjectOfNotification(notification);
-            if (objectOfNotification != null){
-                String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, objectOfNotification);
-                String messageText = mailService.getMessageTextBasedOnNotification(notification, objectOfNotification, null, notification.getRequestor());
-                notificationObjectBuilder.add("subjectText", subjectText);
-                notificationObjectBuilder.add("messageText", messageText);
-            }
-            notificationObjectBuilder.add("sentTimestamp", notification.getSendDateTimestamp());
-            jsonArrayBuilder.add(notificationObjectBuilder);
-        }
-        JsonObjectBuilder result = Json.createObjectBuilder().add("notifications", jsonArrayBuilder);
-        return ok(result);
+        List<UserNotification> userNotifications = userNotificationSvc.findByUser(authenticatedUser.getId());
+        return ok(Json.createObjectBuilder().add("notifications", json(userNotifications, authenticatedUser, inAppNotificationFormat)));
     }
 
     @GET
@@ -90,11 +51,6 @@ public class Notifications extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-    }
-
-    private JsonArrayBuilder getReasonsForReturn(UserNotification notification) {
-        Long objectId = notification.getObjectId();
-        return WorkflowUtil.getAllWorkflowComments(datasetVersionSvc.find(objectId));
     }
 
     @PUT
@@ -127,7 +83,7 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
 
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
@@ -149,7 +105,7 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
 
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
@@ -168,7 +124,7 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
 
         UserNotification.Type notificationType;
@@ -192,7 +148,7 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
 
         UserNotification.Type notificationType;
@@ -216,7 +172,7 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
 
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
@@ -235,7 +191,7 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
 
         UserNotification.Type notificationType;
@@ -259,7 +215,7 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("notifications.errors.unauthenticatedUser"));
         }
 
         UserNotification.Type notificationType;
