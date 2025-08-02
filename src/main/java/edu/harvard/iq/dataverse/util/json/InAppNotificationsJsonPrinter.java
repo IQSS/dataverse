@@ -36,9 +36,9 @@ public class InAppNotificationsJsonPrinter {
             case REQUESTFILEACCESS:
                 addRequestFileAccessFields(notificationJson, userNotification, requestor);
             case REQUESTEDFILEACCESS:
-                addRequestedFileAccessFields(notificationJson, userNotification);
             case GRANTFILEACCESS:
             case REJECTFILEACCESS:
+                addDataFileFields(notificationJson, userNotification);
             case DATASETCREATED:
             case CREATEDS:
             case SUBMITTEDDS:
@@ -102,10 +102,6 @@ public class InAppNotificationsJsonPrinter {
     private static void addCreateAccountFields(NullSafeJsonBuilder notificationJson) {
         notificationJson.add("rootDataverseName", dataverseService.findRootDataverse().getName());
         notificationJson.add("userGuideUrl", systemConfig.getGuidesUrl());
-    }
-
-    private static void addRequestedFileAccessFields(NullSafeJsonBuilder notificationJson, UserNotification userNotification) {
-        addDataFileFields(notificationJson, userNotification);
     }
 
     private static void addRequestFileAccessFields(NullSafeJsonBuilder notificationJson, UserNotification userNotification, AuthenticatedUser requestor) {
