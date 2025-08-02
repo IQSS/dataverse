@@ -307,10 +307,6 @@ public class SystemConfig {
         return saneDefault;
     }
 
-    public String getGuidesUrl() {
-        return getGuidesBaseUrl() + "/" + getGuidesVersion() + "/user/index.html";
-    }
-
     public String getMetricsUrl() {
         String saneDefault = null;
         String metricsUrl = settingsService.getValueForKey(SettingsServiceBean.Key.MetricsUrl, saneDefault);
