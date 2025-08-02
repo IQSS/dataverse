@@ -31,7 +31,7 @@
         <auto-service.version>1.1.1</auto-service.version>
         <jhove.version>1.20.1</jhove.version>
         <poi.version>5.4.0</poi.version>
-        <tika.version>2.9.2</tika.version>
+        <tika.version>3.1.0</tika.version>
         <netcdf.version>5.5.3</netcdf.version>
         
         <openapi.infoTitle>Dataverse API</openapi.infoTitle>
@@ -60,6 +60,10 @@
                   <exclusion>
                     <groupId>org.apache.james</groupId>
                     <artifactId>apache-mime4j-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
                 </exclusion>
                 </exclusions>
             </dependency>
@@ -101,6 +105,11 @@
                 <groupId>org.apache.james</groupId>
                 <artifactId>apache-mime4j-dom</artifactId>
                 <version>0.8.7</version>
+            </dependency>
+            <dependency>
+                <groupId>xerces</groupId>
+                <artifactId>xercesImpl</artifactId>
+                <version>2.12.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -506,7 +515,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
-            <version>1.2</version>
+            <version>1.14.0</version>
         </dependency>
         <!-- OAuth2 authentication. -->
         <dependency>
