@@ -40,6 +40,7 @@ public class InAppNotificationsJsonPrinter {
             case REJECTFILEACCESS:
                 addDataFileFields(notificationJson, userNotification);
             case DATASETCREATED:
+                addDatasetCreatedField(notificationJson, userNotification, requestor);
             case CREATEDS:
             case SUBMITTEDDS:
             case PUBLISHEDDS:
@@ -92,10 +93,7 @@ public class InAppNotificationsJsonPrinter {
     private static void addCreatedDataverseFields(NullSafeJsonBuilder notificationJson, UserNotification userNotification) {
         Dataset dataset = datasetService.find(userNotification.getObjectId());
         if (dataset != null) {
-            notificationJson.add("datasetPersistentIdentifier", dataset.getGlobalId().asString());
-            notificationJson.add("datasetDisplayName", dataset.getDisplayName());
-            notificationJson.add("ownerAlias", dataset.getOwner().getAlias());
-            notificationJson.add("ownerDisplayName", dataset.getOwner().getDisplayName());
+            addDatasetFields(notificationJson, dataset);
         }
     }
 
@@ -105,9 +103,7 @@ public class InAppNotificationsJsonPrinter {
     }
 
     private static void addRequestFileAccessFields(NullSafeJsonBuilder notificationJson, UserNotification userNotification, AuthenticatedUser requestor) {
-        notificationJson.add("requestorFirstName", requestor.getFirstName());
-        notificationJson.add("requestorLastName", requestor.getLastName());
-        notificationJson.add("requestorEmail", requestor.getEmail());
+        addRequestorFields(notificationJson, requestor);
         addDataFileFields(notificationJson, userNotification);
     }
 
@@ -117,5 +113,26 @@ public class InAppNotificationsJsonPrinter {
             notificationJson.add("dataFileId", dataFile.getId());
             notificationJson.add("dataFileDisplayName", dataFile.getDisplayName());
         }
+    }
+
+    private static void addDatasetCreatedField(NullSafeJsonBuilder notificationJson, UserNotification userNotification, AuthenticatedUser requestor) {
+        Dataset dataset = datasetService.find(userNotification.getObjectId());
+        if (dataset != null) {
+            addRequestorFields(notificationJson, requestor);
+            addDatasetFields(notificationJson, dataset);
+        }
+    }
+
+    private static void addRequestorFields(NullSafeJsonBuilder notificationJson, AuthenticatedUser requestor) {
+        notificationJson.add("requestorFirstName", requestor.getFirstName());
+        notificationJson.add("requestorLastName", requestor.getLastName());
+        notificationJson.add("requestorEmail", requestor.getEmail());
+    }
+
+    private static void addDatasetFields(NullSafeJsonBuilder notificationJson, Dataset dataset) {
+        notificationJson.add("datasetPersistentIdentifier", dataset.getGlobalId().asString());
+        notificationJson.add("datasetDisplayName", dataset.getDisplayName());
+        notificationJson.add("ownerAlias", dataset.getOwner().getAlias());
+        notificationJson.add("ownerDisplayName", dataset.getOwner().getDisplayName());
     }
 }
