@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.*;
-import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.ejb.EJB;
@@ -29,26 +28,11 @@ public class InAppNotificationsJsonPrinter {
         Long objectId = userNotification.getObjectId();
         AuthenticatedUser requestor = userNotification.getRequestor();
         switch (userNotification.getType()) {
-            // Copied from DataverseUserPage... WIP
             case ASSIGNROLE:
-                Dataverse dataverse = dataverseService.find(userNotification.getObjectId());
-                if (dataverse != null) {
-                    notificationJson.add("roleAssignments", jsonRoleAssignments(permissionService.getEffectiveRoleAssignments(authenticatedUser, dataverse)));
-                    notificationJson.add("dataverseAlias", dataverse.getAlias());
-                    notificationJson.add("dataverseDisplayName", dataverse.getDisplayName());
-                } else {
-                    Dataset dataset = datasetService.find(userNotification.getObjectId());
-                    if (dataset != null) {
-                        /*userNotification.setRoleString(getRoleStringFromUser(authenticatedUser, dataset));
-                        userNotification.setTheObject(dataset);*/
-                    } else {
-                        /*DataFile datafile = dataFileService.find(userNotification.getObjectId());
-                        userNotification.setRoleString(getRoleStringFromUser(authenticatedUser, datafile));
-                        userNotification.setTheObject(datafile);*/
-                    }
-                }
             case REVOKEROLE:
+                addRoleFields(notificationJson, authenticatedUser, userNotification);
             case CREATEDV:
+                addCreatedDataverseFields(notificationJson, userNotification);
             case REQUESTFILEACCESS:
             case REQUESTEDFILEACCESS:
             case GRANTFILEACCESS:
@@ -80,6 +64,37 @@ public class InAppNotificationsJsonPrinter {
             case INGESTCOMPLETED:
             case INGESTCOMPLETEDWITHERRORS:
             case DATASETMENTIONED:
+        }
+    }
+
+    private static void addRoleFields(NullSafeJsonBuilder notificationJson, AuthenticatedUser authenticatedUser, UserNotification userNotification) {
+        Dataverse dataverse = dataverseService.find(userNotification.getObjectId());
+        if (dataverse != null) {
+            notificationJson.add("roleAssignments", jsonRoleAssignments(permissionService.getEffectiveRoleAssignments(authenticatedUser, dataverse)));
+            notificationJson.add("dataverseAlias", dataverse.getAlias());
+            notificationJson.add("dataverseDisplayName", dataverse.getDisplayName());
+        } else {
+            Dataset dataset = datasetService.find(userNotification.getObjectId());
+            if (dataset != null) {
+                notificationJson.add("roleAssignments", jsonRoleAssignments(permissionService.getEffectiveRoleAssignments(authenticatedUser, dataverse)));
+                notificationJson.add("datasetPersistentIdentifier", dataset.getGlobalId().asString());
+                notificationJson.add("datasetDisplayName", dataset.getDisplayName());
+            } else {
+                DataFile datafile = dataFileService.find(userNotification.getObjectId());
+                notificationJson.add("roleAssignments", jsonRoleAssignments(permissionService.getEffectiveRoleAssignments(authenticatedUser, dataverse)));
+                notificationJson.add("ownerPersistentIdentifier", datafile.getOwner().getGlobalId().asString());
+                notificationJson.add("ownerDisplayName", datafile.getOwner().getDisplayName());
+            }
+        }
+    }
+
+    private static void addCreatedDataverseFields(NullSafeJsonBuilder notificationJson, UserNotification userNotification) {
+        Dataset dataset = datasetService.find(userNotification.getObjectId());
+        if (dataset != null) {
+            notificationJson.add("datasetPersistentIdentifier", dataset.getGlobalId().asString());
+            notificationJson.add("datasetDisplayName", dataset.getDisplayName());
+            notificationJson.add("ownerAlias", dataset.getOwner().getAlias());
+            notificationJson.add("ownerDisplayName", dataset.getOwner().getDisplayName());
         }
     }
 }
