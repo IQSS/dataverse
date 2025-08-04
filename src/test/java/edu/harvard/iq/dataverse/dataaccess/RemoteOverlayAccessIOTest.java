@@ -11,12 +11,22 @@ import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 
+import org.apache.http.ProtocolVersion;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.message.BasicStatusLine;
+import org.apache.http.protocol.HTTP;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.junit.jupiter.api.Assertions.*;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -41,7 +51,7 @@ public class RemoteOverlayAccessIOTest {
     public void setUp() {
         System.setProperty("dataverse.files.test.type", "remote");
         System.setProperty("dataverse.files.test.label", "testOverlay");
-        System.setProperty("dataverse.files.test.base-url", "https://github.com/IQSS/dataverse");
+        System.setProperty("dataverse.files.test.base-url", "https://github.com/IQSS/dataverseXX");
         System.setProperty("dataverse.files.test.base-store", "file");
         System.setProperty("dataverse.files.test.download-redirect", "true");
         System.setProperty("dataverse.files.test.remote-store-name", "DemoDataCorp");
@@ -74,7 +84,7 @@ public class RemoteOverlayAccessIOTest {
     }
 
     @Test
-    void testRemoteOverlayFiles() throws IOException {
+    void testRemoteOverlayFiles() throws IOException, NoSuchFieldException, IllegalAccessException {
         // We can read the storageIdentifier and get the driver
         assertTrue(datafile.getStorageIdentifier()
                 .startsWith(DataAccess.getStorageDriverFromIdentifier(datafile.getStorageIdentifier())));
@@ -99,6 +109,13 @@ public class RemoteOverlayAccessIOTest {
         assertTrue(unsignedURL.equals(System.getProperty("dataverse.files.test.base-url") + "/" + filePath));
         // Once we've opened, we can get the file size (only works if the HEAD call to
         // the file URL works
+        var mockResponse = mockResponseWithContentLength();
+        var mockClient = Mockito.mock(CloseableHttpClient.class);
+        Mockito.when(mockClient.execute(Mockito.any(HttpUriRequest.class), Mockito.any(HttpClientContext.class))).thenReturn(mockResponse);
+        var httpClientField = remoteIO.getClass().getSuperclass().getDeclaredField("httpclient");
+        httpClientField.setAccessible(true);
+        httpClientField.set(remoteIO, mockClient);
+
         remoteIO.open(DataAccessOption.READ_ACCESS);
         assertTrue(remoteIO.getSize() > 0);
         // If we ask for the path for an aux file, it is correct
@@ -113,6 +130,16 @@ public class RemoteOverlayAccessIOTest {
         // 'test' is the driverId in the IOException messages
         assertTrue(thrown.getMessage().contains("test"));
 
+    }
+
+    private @NotNull CloseableHttpResponse mockResponseWithContentLength() {
+        var headers = new BasicHeader[] { new BasicHeader(HTTP.CONTENT_LEN, "123") };
+        var version = new ProtocolVersion("HTTP", 1, 1);
+        var statusLine = new BasicStatusLine(version, 200, "OK");
+        var mockResponse = Mockito.mock(CloseableHttpResponse.class);
+        Mockito.when(mockResponse.getStatusLine()).thenReturn(statusLine);
+        Mockito.when(mockResponse.getHeaders(HTTP.CONTENT_LEN)).thenReturn(headers);
+        return mockResponse;
     }
 
     @Test
