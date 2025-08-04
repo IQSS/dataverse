@@ -4389,7 +4389,7 @@ For example, with the below in place, files greater than 2 GB in size will not g
 You can set this value to ``0`` to prevent files from being ingested at all.
 The default is ``-1``, meaning no file size limit is applied.
 
-Using a JSON-based setting, you can override this global setting on a per-format basis for the following formats:
+Using a JSON-based setting, you can override this global setting on a per-format basis for the following formats (case-insensitive):
 
 - DTA
 - POR
@@ -4417,13 +4417,13 @@ Whatever JSON you send will overwrite existing values. If you have any current s
 
 The ``default`` key is optional and can be used to give limits to formats that are not specified in the JSON. If you omit the ``default`` key or set it to ``-1``, no limits are applied to formats not specified in the JSON.
 
-Add a format name (DTA, POR, etc., as listed above) to change the limit for this particular format.
+Add a format name (DTA, POR, etc., as listed above) to change the limit for that particular format.
 
 Any size limits must be provided as string literals (in quotes), not number literals!
 
 Examples:
 
-1. If you want your Dataverse installation to not attempt to ingest Rdata files larger than 1 MB but otherwise unlimited:
+1. If you want your Dataverse installation to not attempt to ingest Rdata files larger than 1 MB but otherwise be unlimited:
 
    ``curl -X PUT -d '{"Rdata":"1000000"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 2. If you want your Dataverse installation to not attempt to ingest XLSX files at all and apply a global limit of 512 MiB, use this setting:

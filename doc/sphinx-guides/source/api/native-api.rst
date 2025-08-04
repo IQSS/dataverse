@@ -6830,7 +6830,7 @@ Get Single Database Setting With Language/Locale
 
 A small number of settings, most notably :ref:`:ApplicationTermsOfUse`, can be saved in multiple languages.
 
-Use two character language codes.
+Use two-character ISO 639-1 language codes.
 
 .. code-block:: bash
 
@@ -6874,7 +6874,7 @@ Configure Single Database Setting With Language/Locale
 
 A small number of settings, most notably :ref:`:ApplicationTermsOfUse`, can be saved in multiple languages.
 
-Use two character language codes.
+Use two-character ISO 639-1 language codes.
 
 .. code-block:: bash
 
@@ -6900,7 +6900,7 @@ Configure All Database Settings
 Using a JSON file, replace all settings in a single idempotent and atomic operation and delete any settings not present in that JSON file.
 
 Use the JSON ``data`` object in output of ``GET /api/admin/settings`` (:ref:`settings_get_all`) for the JSON input structure for this endpoint.
-To put this concretely, you can save just the ``data`` object for your existing settings to disk by filtering them through ``.jq`` like this:
+To put this concretely, you can save just the ``data`` object for your existing settings to disk by filtering them through ``jq`` like this:
 
 .. code-block:: bash
 
@@ -6947,7 +6947,7 @@ Delete Single Database Setting With Language/Locale
 
 A small number of settings, most notably :ref:`:ApplicationTermsOfUse`, can be saved in multiple languages.
 
-Use two character language codes.
+Use two-character ISO 639-1 language codes.
 
 .. code-block:: bash
 
