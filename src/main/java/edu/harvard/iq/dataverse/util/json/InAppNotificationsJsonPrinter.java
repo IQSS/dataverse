@@ -18,24 +18,24 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonRoleAssignments
 @Stateless
 public class InAppNotificationsJsonPrinter {
 
-    private static final String KEY_ROLE_ASSIGNMENTS = "roleAssignments";
-    private static final String KEY_DATAVERSE_ALIAS = "dataverseAlias";
-    private static final String KEY_DATAVERSE_DISPLAY_NAME = "dataverseDisplayName";
-    private static final String KEY_DATASET_PERSISTENT_ID = "datasetPersistentIdentifier";
-    private static final String KEY_DATASET_DISPLAY_NAME = "datasetDisplayName";
-    private static final String KEY_OWNER_PERSISTENT_ID = "ownerPersistentIdentifier";
-    private static final String KEY_OWNER_ALIAS = "ownerAlias";
-    private static final String KEY_OWNER_DISPLAY_NAME = "ownerDisplayName";
-    private static final String KEY_REQUESTOR_FIRST_NAME = "requestorFirstName";
-    private static final String KEY_REQUESTOR_LAST_NAME = "requestorLastName";
-    private static final String KEY_REQUESTOR_EMAIL = "requestorEmail";
-    private static final String KEY_DATAFILE_ID = "dataFileId";
-    private static final String KEY_DATAFILE_DISPLAY_NAME = "dataFileDisplayName";
-    private static final String KEY_ROOT_DATAVERSE_NAME = "rootDataverseName";
-    private static final String KEY_GUIDES_BASE_URL = "userGuidesBaseUrl";
-    private static final String KEY_GUIDES_VERSION = "userGuidesVersion";
-    private static final String KEY_CURATION_STATUS = "currentCurationStatus";
-    private static final String KEY_ADDITIONAL_INFO = "additionalInfo";
+    public static final String KEY_ROLE_ASSIGNMENTS = "roleAssignments";
+    public static final String KEY_DATAVERSE_ALIAS = "dataverseAlias";
+    public static final String KEY_DATAVERSE_DISPLAY_NAME = "dataverseDisplayName";
+    public static final String KEY_DATASET_PERSISTENT_ID = "datasetPersistentIdentifier";
+    public static final String KEY_DATASET_DISPLAY_NAME = "datasetDisplayName";
+    public static final String KEY_OWNER_PERSISTENT_ID = "ownerPersistentIdentifier";
+    public static final String KEY_OWNER_ALIAS = "ownerAlias";
+    public static final String KEY_OWNER_DISPLAY_NAME = "ownerDisplayName";
+    public static final String KEY_REQUESTOR_FIRST_NAME = "requestorFirstName";
+    public static final String KEY_REQUESTOR_LAST_NAME = "requestorLastName";
+    public static final String KEY_REQUESTOR_EMAIL = "requestorEmail";
+    public static final String KEY_DATAFILE_ID = "dataFileId";
+    public static final String KEY_DATAFILE_DISPLAY_NAME = "dataFileDisplayName";
+    public static final String KEY_ROOT_DATAVERSE_NAME = "rootDataverseName";
+    public static final String KEY_GUIDES_BASE_URL = "userGuidesBaseUrl";
+    public static final String KEY_GUIDES_VERSION = "userGuidesVersion";
+    public static final String KEY_CURATION_STATUS = "currentCurationStatus";
+    public static final String KEY_ADDITIONAL_INFO = "additionalInfo";
 
     @EJB
     private DataverseServiceBean dataverseService;
