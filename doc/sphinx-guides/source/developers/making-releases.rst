@@ -164,7 +164,7 @@ In the dataverse-ansible repo bump the version in `jenkins.yml <https://github.c
 
 Once dataverse-ansible has been merged, return to the branch you created above ("10852-bump-to-6.4" or whatever) and make a pull request. Ensure that all tests are passing and then put the PR through the normal review and QA process.
 
-If you are making a hotfix release, ``<base.image.version>`` should already be set to ``${revision}``. If so, leave it alone. Go ahead and do the normal bumping of version numbers descibed above. Make the pull request against the "master" branch. Put it through review and QA. Do not delete the branch after merging because we will later merge it into the "develop" branch to pick up the hotfix. More on this later.
+If you are making a hotfix release, ``<base.image.version>`` should already be set to ``${revision}``. If so, leave it alone. Go ahead and do the normal bumping of version numbers described above. Make the pull request against the "master" branch. Put it through review and QA. Do not delete the branch after merging because we will later merge it into the "develop" branch to pick up the hotfix. More on this later.
 
 Merge "develop" into "master" (non-hotfix only)
 -----------------------------------------------
