@@ -6010,6 +6010,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         getDriver.then().assertThat()
                 .body("data.name", CoreMatchers.equalTo(name))
                 .body("data.type", CoreMatchers.notNullValue())
+                .body("data.label", CoreMatchers.notNullValue())
                 .statusCode(OK.getStatusCode());
     }
 
