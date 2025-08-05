@@ -13,6 +13,7 @@ v6.8
 - For POST /api/files/{id}/metadata passing an empty string ("description":"")  or array ("categories":[]) will no longer be ignored. Empty fields will now clear out the values in the file's metadata. To ignore the fields simply do not include them in the JSON string.
 - For PUT /api/datasets/{id}/editMetadata the query parameter "sourceInternalVersionNumber" has been removed and replaced with "sourceLastUpdateTime" to verify that the data being edited hasn't been modified and isn't stale.
 - For GET /api/dataverses/$dataverse-alias/links the Json response has changed breaking the backward compatibility of the API.
+- For GET /api/admin/dataverse/{dataverse-alias}/storageDriver and /api/datasets/{identifier}/storageDriver the driver name is no longer returned in data.message. This value is now returned in data.name.
 
 v6.7
 ----

@@ -4505,6 +4505,12 @@ public class UtilIT {
                 .put("/api/datasets/" + datasetId + "/storageDriver");
     }
 
+    static Response getDatasetStorageDriver(Integer datasetId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/storageDriver");
+    }
+
     /** GET on /api/admin/savedsearches/list */
     static Response getSavedSearchList() {
         return given().get("/api/admin/savedsearches/list");

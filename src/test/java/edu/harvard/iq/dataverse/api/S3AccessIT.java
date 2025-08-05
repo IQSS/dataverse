@@ -142,7 +142,7 @@ public class S3AccessIT {
         Response originalStorageDriver = UtilIT.getStorageDriver(dataverseAlias, superuserApiToken);
         originalStorageDriver.prettyPrint();
         originalStorageDriver.then().assertThat()
-                .body("data.message", equalTo("undefined"))
+                .body("data.name", equalTo("undefined"))
                 .statusCode(200);
 
         Response setStorageDriverToS3 = UtilIT.setStorageDriver(dataverseAlias, driverLabel, superuserApiToken);
@@ -273,7 +273,7 @@ public class S3AccessIT {
         Response originalStorageDriver = UtilIT.getStorageDriver(dataverseAlias, superuserApiToken);
         originalStorageDriver.prettyPrint();
         originalStorageDriver.then().assertThat()
-                .body("data.message", equalTo("undefined"))
+                .body("data.name", equalTo("undefined"))
                 .statusCode(200);
 
         Response setStorageDriverToS3 = UtilIT.setStorageDriver(dataverseAlias, driverLabel, superuserApiToken);
@@ -491,7 +491,7 @@ public class S3AccessIT {
         Response originalStorageDriver = UtilIT.getStorageDriver(dataverseAlias, superuserApiToken);
         originalStorageDriver.prettyPrint();
         originalStorageDriver.then().assertThat()
-                .body("data.message", equalTo("undefined"))
+                .body("data.name", equalTo("undefined"))
                 .statusCode(200);
 
         Response setStorageDriverToS3 = UtilIT.setStorageDriver(dataverseAlias, driverLabel, superuserApiToken);
@@ -689,7 +689,7 @@ public class S3AccessIT {
         Response originalStorageDriver = UtilIT.getStorageDriver(dataverseAlias, superuserApiToken);
         originalStorageDriver.prettyPrint();
         originalStorageDriver.then().assertThat()
-                .body("data.message", equalTo("undefined"))
+                .body("data.name", equalTo("undefined"))
                 .statusCode(200);
 
         Response setStorageDriverToS3 = UtilIT.setStorageDriver(dataverseAlias, driverLabel, superuserApiToken);

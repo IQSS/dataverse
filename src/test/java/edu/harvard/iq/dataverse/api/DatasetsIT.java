@@ -5983,6 +5983,37 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     @Test
+    public void testSetGetDatasetStorageDriver() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+
+        Response storageDrivers = UtilIT.listStorageDrivers(apiToken);
+        storageDrivers.prettyPrint();
+        JsonObject data = JsonUtil.getJsonObject(storageDrivers.getBody().asString());
+        String first = data.getJsonObject("data").keySet().iterator().next();
+        String name = data.getJsonObject("data").getString(first);
+
+        Response setDriver = UtilIT.setDatasetStorageDriver(datasetId, first, apiToken);
+        setDriver.prettyPrint();
+        assertEquals(200, setDriver.getStatusCode());
+        Response getDriver = UtilIT.getDatasetStorageDriver(datasetId, apiToken);
+        getDriver.prettyPrint();
+        assertEquals(200, getDriver.getStatusCode());
+        getDriver.then().assertThat()
+                .body("data.name", CoreMatchers.equalTo(name))
+                .body("data.type", CoreMatchers.notNullValue())
+                .statusCode(OK.getStatusCode());
+    }
+
+    @Test
     public void testGetCanDownloadAtLeastOneFile() {
         Response createUserResponse = UtilIT.createRandomUser();
         createUserResponse.then().assertThat().statusCode(OK.getStatusCode());

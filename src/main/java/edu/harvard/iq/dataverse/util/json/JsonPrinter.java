@@ -39,6 +39,7 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 
+import java.io.IOException;
 import java.util.*;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
@@ -1609,5 +1610,14 @@ public class JsonPrinter {
         }
 
         return jsonArrayBuilder;
+    }
+
+    public static JsonObjectBuilder jsonStorageDriver(String storageDriverId) {
+        JsonObjectBuilder jsonObjectBuilder = new NullSafeJsonBuilder();
+        jsonObjectBuilder.add("name", storageDriverId);
+        jsonObjectBuilder.add("type", DataAccess.getDriverType(storageDriverId));
+        jsonObjectBuilder.add("label", DataAccess.getStorageDriverLabelFor(storageDriverId));
+
+        return jsonObjectBuilder;
     }
 }
