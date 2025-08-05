@@ -167,7 +167,7 @@ public class InAppNotificationsJsonPrinterTest {
         verify(notificationJson).add(KEY_REQUESTOR_FIRST_NAME, "John");
         verify(notificationJson).add(KEY_REQUESTOR_LAST_NAME, "Doe");
         verify(notificationJson).add(KEY_REQUESTOR_EMAIL, "johndoe@example.com");
-        verify(notificationJson).add(KEY_DATAFILE_ID, 1L);
+        verify(notificationJson).add(KEY_DATAFILE_ID, Long.valueOf("1"));
         verify(notificationJson).add(KEY_DATAFILE_DISPLAY_NAME, "Test File");
     }
 
@@ -183,7 +183,7 @@ public class InAppNotificationsJsonPrinterTest {
 
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
-        verify(notificationJson).add(KEY_DATAFILE_ID, 1L);
+        verify(notificationJson).add(KEY_DATAFILE_ID, Long.valueOf("1"));
         verify(notificationJson).add(KEY_DATAFILE_DISPLAY_NAME, "Granted File");
         verify(notificationJson, never()).add(eq(KEY_REQUESTOR_FIRST_NAME), anyString());
     }
