@@ -80,9 +80,7 @@ public class AdminIT {
             UtilIT.setSetting(harmlessSetting, harmlessL10nValue, language);
             
             // Step 1: Get current settings state
-            Response getResponse = given()
-                .when()
-                .get("/api/admin/settings");
+            Response getResponse = UtilIT.getSettings();
             
             getResponse.then()
                 .assertThat()
@@ -111,12 +109,7 @@ public class AdminIT {
                 .body("data.message", equalTo(harmlessValue));
             
             // Step 4: Put back the original settings (this is what we're testing)
-            Response putResponse = given()
-                //.header("X-Dataverse-key", "")
-                .header("Content-Type", "application/json")
-                .body(originalSettings.toString())
-                .when()
-                .put("/api/admin/settings");
+            Response putResponse = UtilIT.setSettings(originalSettings.toString());
             
             putResponse.then()
                 .assertThat()
@@ -125,20 +118,14 @@ public class AdminIT {
                 .body("message.message", containsString("successfully updated"));
             
             // Step 5: Verify the harmless setting is gone (restored to original state)
-            Response verifyRestoredResponse = given()
-                //.header("X-Dataverse-key", "")
-                .when()
-                .get("/api/admin/settings" + harmlessSetting.toString());
+            Response verifyRestoredResponse = UtilIT.getSetting(harmlessSetting);
             
             verifyRestoredResponse.then()
                 .assertThat()
                 .statusCode(NOT_FOUND.getStatusCode()); // Should not exist anymore
             
             // Step 6: Verify overall settings state matches original
-            Response finalGetResponse = given()
-                //.header("X-Dataverse-key", "")
-                .when()
-                .get("/api/admin/settings");
+            Response finalGetResponse = UtilIT.getSettings();
             
             finalGetResponse.then()
                 .assertThat()
@@ -165,9 +152,7 @@ public class AdminIT {
             UtilIT.setSetting(harmlessSetting, harmlessL10nValue, language);
             
             // When
-            Response getResponse = given()
-                .when()
-                .get("/api/admin/settings");
+            Response getResponse = UtilIT.getSettings();
             
             // Then
             getResponse.then()
@@ -184,11 +169,7 @@ public class AdminIT {
         @Test
         void testPutAllSettingsWithEmptyJson() {
             // Test error handling for empty JSON
-            Response response = given()
-                .header("Content-Type", "application/json")
-                .body("{}")
-                .when()
-                .put("/api/admin/settings");
+            Response response = UtilIT.setSettings("{}");
             
             response.then()
                 .assertThat()
@@ -199,11 +180,7 @@ public class AdminIT {
         @Test
         void testPutAllSettingsWithInvalidSetting() {
             // Test error handling for empty JSON
-            Response response = given()
-                .header("Content-Type", "application/json")
-                .body("{\":Test1\": \"Foobar\", \":Test2\": \"Foobar\" }")
-                .when()
-                .put("/api/admin/settings");
+            Response response = UtilIT.setSettings("{\":Test1\": \"Foobar\", \":Test2\": \"Foobar\" }");
             
             response.then()
                 .assertThat()
@@ -242,7 +219,7 @@ public class AdminIT {
 
         Response deleteSuperuser = UtilIT.deleteUser(superuserUsername);
         assertEquals(200, deleteSuperuser.getStatusCode());
-    }
+}
     
     @Test
     public void testFilterAuthenticatedUsersForbidden() throws Exception {

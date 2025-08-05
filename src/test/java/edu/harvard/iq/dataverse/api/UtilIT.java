@@ -2507,6 +2507,11 @@ public class UtilIT {
         return response;
     }
 
+    static Response getSettings() {
+        Response response = given().when().get("/api/admin/settings");
+        return response;
+    }
+
     static Response getSetting(SettingsServiceBean.Key settingKey) {
         Response response = given().when().get("/api/admin/settings/" + settingKey);
         return response;
@@ -2532,6 +2537,15 @@ public class UtilIT {
      */
     public static Response setSetting(String settingKey, String value) {
         Response response = given().body(value).when().put("/api/admin/settings/" + settingKey);
+        return response;
+    }
+
+    public static Response setSettings(String value) {
+        Response response = given()
+                .header("Content-Type", "application/json")
+                .body(value)
+                .when()
+                .put("/api/admin/settings");
         return response;
     }
 
