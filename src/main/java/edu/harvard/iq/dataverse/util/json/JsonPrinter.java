@@ -84,10 +84,17 @@ public class JsonPrinter {
     @EJB
     static InAppNotificationsJsonPrinter inAppNotificationsJsonPrinter;
     
-    public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb, DataverseFieldTypeInputLevelServiceBean dfils, DatasetServiceBean ds) {
+    public static void injectSettingsService(SettingsServiceBean ssb,
+                                             DatasetFieldServiceBean dfsb,
+                                             DataverseFieldTypeInputLevelServiceBean dfils,
+                                             DatasetServiceBean ds,
+                                             MailServiceBean ms,
+                                             InAppNotificationsJsonPrinter njp) {
             settingsService = ssb;
             datasetFieldService = dfsb;
             datasetService = ds;
+            mailService = ms;
+            inAppNotificationsJsonPrinter = njp;
     }
 
     public JsonPrinter() {
