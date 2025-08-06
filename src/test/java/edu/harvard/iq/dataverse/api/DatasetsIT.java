@@ -5356,6 +5356,29 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         fileMetadatasCount = getVersionFilesResponseSearchText.jsonPath().getList("data").size();
         assertEquals(1, fileMetadatasCount);
+        
+        // Test search for file metadata description
+
+        // Update file metadata
+        String updateDescription = "Updated description. Again";
+
+        String updateJsonString = "{\"description\":\""+updateDescription+"\"}";
+        Response updateMetadataResponse = UtilIT.updateFileMetadata(testFileId2, updateJsonString, apiToken);
+        updateMetadataResponse.prettyPrint();
+        updateMetadataResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        Response getVersionFilesResponseSearchTextDescription = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, null, "again", null, false, apiToken);
+        
+        getVersionFilesResponseSearchTextDescription.prettyPrint();
+
+        getVersionFilesResponseSearchTextDescription.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].label", equalTo(testFileName2));
+
+        fileMetadatasCount = getVersionFilesResponseSearchText.jsonPath().getList("data").size();
+        assertEquals(1, fileMetadatasCount);
+
+
 
         // Test Deaccessioned
         Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
