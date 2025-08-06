@@ -1422,8 +1422,8 @@ And lastly, to start up the SeaweedFS server and various components you could us
 
 `VAST DataStore <https://www.vastdata.com/platform/datastore>`_
   VAST DataStore must be configured with an S3 gateway. A Dataverse bucket must be created. 
-Follow `VAST DataStore documentation <https://support.vastdata.com/s/document-item?bundleId=vast-cluster-administrator-s-guide4.7&topicId=managing-access-protocols/s3-object-storage-protocol.html&_LANG=enus>`_ to configure the S3 gateway.
-Set ``dataverse.files.<id>.path-style-access=true`` since VAST DataStore uses path style access.
+  Follow `VAST DataStore documentation <https://support.vastdata.com/s/document-item?bundleId=vast-cluster-administrator-s-guide4.7&topicId=managing-access-protocols/s3-object-storage-protocol.html&_LANG=enus>`_ to configure the S3 gateway.
+  Set ``dataverse.files.<id>.path-style-access=true`` since VAST DataStore uses path style access.
 
 **Additional Reported Working S3-Compatible Storage**
 
