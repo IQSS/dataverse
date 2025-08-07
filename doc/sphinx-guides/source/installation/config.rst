@@ -966,7 +966,7 @@ Database Connection Recovery
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Consider the following scenario: if there is no advanced configuration for the database connection and the Dataverse server loses that connection, for example if the database host is down, the server will be "dead" even after the database server is back to normal.
-The only solution to recover dataverse would be to restart the service and redeploy de application. To avoid this situation, a simple init.d script can be created with the following settings that configure validation of the database connection. 
+The only solution to recover Dataverse would be to restart the service and redeploy the application. To avoid this situation, a simple init.d script can be created with the following settings that configure validation of the database connection. 
 This way, the database connection can be automatically recovered after a failure, improving the server availability.
 
 .. code-block:: bash
