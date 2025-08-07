@@ -977,9 +977,9 @@ This way, the database connection can be automatically recovered after a failure
   asadmin create-jvm-options "-Ddataverse.db.is-connection-validation-required=true"
   # Configure to use a database table as the validation method
   asadmin create-jvm-options "-Ddataverse.db.connection-validation-method=table"
-  # Configur setting table to be used for connection validation, any of the tables available can also be used
+  # Configure setting table to be used for connection validation, any of the tables available can also be used
   asadmin create-jvm-options "-Ddataverse.db.validation-table-name=setting"
-  # Congigure a validation period of 60 seconds, can be ajusted to a different value
+  # Configure a validation period of 60 seconds, can be adjusted to a different value
   asadmin create-jvm-options "-Ddataverse.db.validate-atmost-once-period-in-seconds=60"
 
 .. _file-storage:
