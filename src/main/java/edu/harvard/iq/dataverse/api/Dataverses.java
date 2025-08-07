@@ -1767,9 +1767,19 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/linkingDataverses/{searchTerm}")
-    public Response getLinkingDataverseList(@PathParam("identifier") String dvIdtf, @PathParam("searchTerm") String searchTerm){
-        
-        return null;
+    public Response getLinkingDataverseList(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("searchTerm") String searchTerm, @FormDataParam("type") String type){
+        //first determine what you are linking based on identifier and type
+        try{
+           DvObject   dvObject = findDvoByIdAndTypeOrDie(dvIdtf, type);
+           List<Dataverse> dataversesForLinking = dataverseService.filterDataversesForLinking(searchTerm, createDataverseRequest(getRequestUser(crc)), dvObject);
+                JsonArrayBuilder dvBuilder = Json.createArrayBuilder();
+                for (Dataverse dv : dataversesForLinking) {
+                    dvBuilder.add(dv.getAlias());
+                }
+                return ok(dvBuilder);        
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
     }
     
     
@@ -1813,7 +1823,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             dataverse = findDataverseOrDie(dvIdtf);
             if (dvObjectIdtf != null) {
-                dvObject = findDvoByIdAndFeaturedItemTypeOrDie(dvObjectIdtf, type);
+                dvObject = findDvoByIdAndTypeOrDie(dvObjectIdtf, type);
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -1901,7 +1911,7 @@ public class Dataverses extends AbstractApiBean {
 
                 // ignore dvObject if the id is missing or an empty string
                 DvObject dvObject = dvObjectIdtf.get(i) != null && !dvObjectIdtf.get(i).isEmpty()
-                        ? findDvoByIdAndFeaturedItemTypeOrDie(dvObjectIdtf.get(i), types.get(i)) : null;
+                        ? findDvoByIdAndTypeOrDie(dvObjectIdtf.get(i), types.get(i)) : null;
                 if (ids.get(i) == 0) {
                     newItems.add(NewDataverseFeaturedItemDTO.fromFormData(
                             contents.get(i), displayOrders.get(i), fileInputStream, contentDisposition, types.get(i), dvObject));

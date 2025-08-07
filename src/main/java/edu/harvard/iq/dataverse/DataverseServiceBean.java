@@ -505,18 +505,29 @@ public class DataverseServiceBean implements java.io.Serializable {
         return ret;
     }
     
-    public List<Dataverse> filterDataversesForLinking(String query, DataverseRequest req, Dataset dataset) {
+    public List<Dataverse> filterDataversesForLinking(String query, DataverseRequest req, DvObject dvo) {
 
         List<Dataverse> dataverseList = new ArrayList<>();
 
         List<Dataverse> results = filterDataversesByNamePattern(query);
         
-        if (results == null || results.size() == 0) {
+        if (results == null || results.isEmpty()) {
             return null; 
         }
+        
+        Dataset linkedDataset = null;
+        Dataverse linkedDataverse = null;
+        List<Object> alreadyLinkeddv_ids;
+        
+        if ((dvo instanceof Dataset)) {
+            linkedDataset = (Dataset) dvo;
+            alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM datasetlinkingdataverse WHERE dataset_id = " + linkedDataset.getId()).getResultList();
+        } else {
+            linkedDataverse = (Dataverse) dvo;
+            alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM dataverselinkingdataverse WHERE dataverse_id = " + linkedDataverse.getId()).getResultList();
+        }
 
-        List<Object> alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM datasetlinkingdataverse WHERE dataset_id = " + dataset.getId()).getResultList();
-        List<Dataverse> remove = new ArrayList<>();
+         List<Dataverse> remove = new ArrayList<>();
 
         if (alreadyLinkeddv_ids != null && !alreadyLinkeddv_ids.isEmpty()) {
             alreadyLinkeddv_ids.stream().map((testDVId) -> this.find(testDVId)).forEachOrdered((removeIt) -> {
@@ -526,9 +537,11 @@ public class DataverseServiceBean implements java.io.Serializable {
         
         for (Dataverse res : results) {
             if (!remove.contains(res)) {
-                if (this.permissionService.requestOn(req, res).has(Permission.LinkDataset)) {
+                if ((linkedDataset != null && this.permissionService.requestOn(req, res).has(Permission.LinkDataset))
+                       || (linkedDataverse != null && this.permissionService.requestOn(req, res).has(Permission.LinkDataverse))) {
                     dataverseList.add(res);
                 }
+
             }
         }
 

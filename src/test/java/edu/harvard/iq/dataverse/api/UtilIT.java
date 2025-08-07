@@ -4773,6 +4773,18 @@ public class UtilIT {
                                                 String apiToken) {
         return updateDataverseFeaturedItem(featuredItemId, content, displayOrder, keepFile, pathToFile, null, null, apiToken);
     }
+    
+    static Response getLinkableDataverses (String type, String dvObjectId, String apiToken, String dataverseAlias) {
+                return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/dataverses/" + dataverseAlias + "/featuredItems");
+                
+                /*
+                {identifier}/linkingDataverses/{searchTerm}
+                */
+        
+    }
     static Response updateDataverseFeaturedItem(long featuredItemId,
                                                 String content,
                                                 int displayOrder,
