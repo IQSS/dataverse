@@ -1763,6 +1763,15 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }
+    
+    @GET
+    @AuthRequired
+    @Path("/linkingDataverses/{searchTerm}")
+    public Response getLinkingDataverseList(){
+        return null;
+    }
+    
+    
 
     @GET
     @AuthRequired
