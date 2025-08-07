@@ -48,8 +48,8 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     private final Template template;
     private boolean allowSelfNotification = false;
 
-    public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean allowSelfNotification) {
-        this(theDataset, aRequest, null);
+    public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean validate, boolean allowSelfNotification) {
+        this(theDataset, aRequest, null, validate);
         this.allowSelfNotification = allowSelfNotification;
     }
 

@@ -407,9 +407,9 @@ public class Dataverses extends AbstractApiBean {
             ds.setIdentifier(null);
             ds.setProtocol(null);
             ds.setGlobalIdCreateTime(null);
-            Dataset managedDs = null;
+            Dataset managedDs;
             try {
-                managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u), null, validate));
+                managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u), validate, true));
             } catch (WrappedResponse ww) {
                 Throwable cause = ww.getCause();
                 StringBuilder sb = new StringBuilder();
