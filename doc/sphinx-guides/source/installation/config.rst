@@ -966,12 +966,10 @@ Database Connection Recovery
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Consider the following scenario: if there is no advanced configuration for the database connection and the Dataverse server loses that connection, for example if the database host is down, the server will be "dead" even after the database server is back to normal.
-The only solution to recover Dataverse would be to restart the service and redeploy the application. To avoid this situation, a simple init.d script can be created with the following settings that configure validation of the database connection. 
-This way, the database connection can be automatically recovered after a failure, improving the server availability.
+The only solution to recover Dataverse would be to restart the service and redeploy the application. To avoid this situation, the following settings can be used to configure validation of the database connection. 
+This way, the database connection can be automatically recovered after a failure, improving the server availability. For a Docker installation, it is suggested to create an init.d script so that if the container needs to be recreated, these settings will always be configured.
 
 .. code-block:: bash
-
-  #!/bin/bash
 
   # Enable database connection validation
   asadmin create-jvm-options "-Ddataverse.db.is-connection-validation-required=true"
