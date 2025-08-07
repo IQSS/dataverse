@@ -1766,8 +1766,9 @@ public class Dataverses extends AbstractApiBean {
     
     @GET
     @AuthRequired
-    @Path("/linkingDataverses/{searchTerm}")
-    public Response getLinkingDataverseList(){
+    @Path("{identifier}/linkingDataverses/{searchTerm}")
+    public Response getLinkingDataverseList(@PathParam("identifier") String dvIdtf, @PathParam("searchTerm") String searchTerm){
+        
         return null;
     }
     
