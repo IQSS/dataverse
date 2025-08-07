@@ -466,7 +466,39 @@ public class SettingsServiceBean {
          */
         
         ArchiverClassName,
+        /**
+         * Custom settings for each archiver. See list below.
+         */
         ArchiverSettings,
+        /**
+         * :ArchiverSettings used by DRSSubmitToArchiveCommand. DRS is a system
+         * specific to Harvard which is why we don't document it in the guides.
+         * See also https://github.com/IQSS/dataverse.harvard.edu/issues/177
+         */
+        DRSArchiverConfig,
+        /**
+         * :ArchiverSettings used by DuraCloudSubmitToArchiveCommand.
+         */
+        DuraCloudPort,
+        DuraCloudHost,
+        DuraCloudContext,
+        /**
+         * :ArchiverSettings used by GoogleCloudSubmitToArchiveCommand.
+         */
+        GoogleCloudBucket,
+        GoogleCloudProject,
+        /**
+         * :ArchiverSettings used by LocalSubmitToArchiveCommand.
+         */
+        BagItLocalPath,
+        /**
+         * :ArchiverSettings used by S3SubmitToArchiveCommand.
+         */
+        S3ArchiverConfig,
+        /**
+         * :ArchiverSettings used by multiple archive commands.
+         */
+        BagGeneratorThreads,
         /**
          * A comma-separated list of roles for which new dataverses should inherit the
          * corresponding role assignments from the parent dataverse. Also affects

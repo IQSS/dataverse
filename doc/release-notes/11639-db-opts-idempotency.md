@@ -19,3 +19,17 @@ As an administrator of a Dataverse instance, you can now make use of enhanced Bu
    It allows control over all Database Settings from a single source without risking an undefined state.
 
 Note: Despite the validation of setting names and languages, the content of any database setting is still not being validated when using the Settings Admin API!
+
+### Updated Database Settings
+
+The following database settings are were added to the official list within the code (to remain valid with the settings cleanup mentioned above):
+
+- :BagGeneratorThreads
+- :BagItLocalPath
+- :BuiltinUsersKey - formerly BuiltinUsers.KEY
+- :DRSArchiverConfig - a Harvard-specific setting
+- :DuraCloudContext
+- :DuraCloudHost
+- :DuraCloudPort
+- :GoogleCloudBucket
+- :GoogleCloudProject
