@@ -957,7 +957,30 @@ Logging & Slow Performance
      - When set to true, all JDBC calls will be logged allowing tracing of all JDBC interactions including SQL.
      - ``false``
 
+Database Configuration Tips
++++++++++++++++++++++++++++
 
+In this section you can find some example scenarios of advanced configuration for the database connection that can improve service performance and availability.
+
+Database Connection Recovery
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Consider the following scenario: if there is no advanced configuration for the database connection and the Dataverse server loses that connection, for example if the database host is down, the server will be "dead" even after the database server is back to normal.
+The only solution to recover dataverse would be to restart the service and redeploy de application. To avoid this situation, a simple init.d script can be created with the following settings that configure validation of the database connection. 
+This way, the database connection can be automatically recovered after a failure, improving the server availability.
+
+.. code-block:: bash
+
+  #!/bin/bash
+
+  # Enable database connection validation
+  asadmin create-jvm-options "-Ddataverse.db.is-connection-validation-required=true"
+  # Configure to use a database table as the validation method
+  asadmin create-jvm-options "-Ddataverse.db.connection-validation-method=table"
+  # Configur setting table to be used for connection validation, any of the tables available can also be used
+  asadmin create-jvm-options "-Ddataverse.db.validation-table-name=setting"
+  # Congigure a validation period of 60 seconds, can be ajusted to a different value
+  asadmin create-jvm-options "-Ddataverse.db.validate-atmost-once-period-in-seconds=60"
 
 .. _file-storage:
 
