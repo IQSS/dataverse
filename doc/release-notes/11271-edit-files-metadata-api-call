@@ -1,5 +1,0 @@
-Update File Metadata API (PR #11271)
-
-A new API endpoint has been added to allow updating file metadata for one or more files in a dataset.
-
-See the [Native API documentation](https://guides.dataverse.org/en/latest/api/native-api.html) for details on usage.

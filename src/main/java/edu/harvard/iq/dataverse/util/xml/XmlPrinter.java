@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.util.xml;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.logging.Logger;
+
+import javax.xml.XMLConstants;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -16,9 +18,13 @@ public class XmlPrinter {
 
     static public String prettyPrintXml(String xml) {
         try {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            TransformerFactory tf = TransformerFactory.newInstance();
+            // Set secure processing feature
+            tf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             
-            // pretty print by indention
+            tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+            Transformer transformer = tf.newTransformer();
+            // pretty print with indentation
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             // set amount of whitespace during indent
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");

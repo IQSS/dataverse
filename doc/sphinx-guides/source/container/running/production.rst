@@ -7,18 +7,12 @@ Production (Future)
 Status
 ------
 
-The images described in this guide are not yet recommended for production usage, but we think we are close. We'd like to make the following improvements:
+The images described in this guide are not yet recommended for production usage, but we think we are close. (Tagged releases are done; see the "supported image tags" section for :ref:`Application <app-image-supported-tags>` and :ref:`Config Baker <config-image-supported-tags>` images.) For now, please see :doc:`demo`.
 
-- Tagged releases
-
-  - Currently, you have the choice between "alpha" images that change under your feet every time a new version of Dataverse is released or "unstable" images that track the "develop" branch, which is updated frequently. Instead, we'd like to offer images like 6.4, 6.5, etc. We are tracking this work at https://github.com/IQSS/dataverse/issues/10478 and there is some preliminary code at https://github.com/IQSS/dataverse/tree/10478-version-base-img . You are welcome to join the following discussions:
-
-    - https://dataverse.zulipchat.com/#narrow/stream/375812-containers/topic/change.20version.20scheme.20base.20image.3F/near/405636949
-    - https://dataverse.zulipchat.com/#narrow/stream/375812-containers/topic/tagging.20images.20with.20versions/near/366600747 
+We'd like to make the following improvements:
 
 - More docs on setting up additional features
 
-  - How to set up previewers. See https://github.com/IQSS/dataverse/issues/10506
   - How to set up Rserve.
 
 - Go through all the features in docs and check what needs to be done differently with containers

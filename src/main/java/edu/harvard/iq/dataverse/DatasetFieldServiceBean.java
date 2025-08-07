@@ -42,7 +42,6 @@ import jakarta.persistence.TypedQuery;
 
 import jakarta.persistence.criteria.*;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpResponseInterceptor;
@@ -554,7 +553,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 try (CloseableHttpClient httpClient = HttpClients.custom()
                         .addInterceptorLast(new HttpResponseInterceptor() {
                             @Override
-                            public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
+                            public void process(HttpResponse response, HttpContext context) throws IOException {
                                 int statusCode = response.getStatusLine().getStatusCode();
                                 if (statusCode == 504) {
                                     //Throwing an exception triggers the retry handler

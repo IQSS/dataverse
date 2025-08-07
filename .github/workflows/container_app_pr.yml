@@ -1,6 +1,8 @@
 ---
 name: Preview Application Container Image
 
+# TODO: merge this workflow into the existing container_app_push.yaml flow - there's not much difference!
+
 on:
     # We only run the push commands if we are asked to by an issue comment with the correct command.
     # This workflow is always taken from the default branch and runs in repo context with access to secrets.
@@ -8,8 +10,6 @@ on:
         types: [ push-image-command ]
 
 env:
-    IMAGE_TAG: unstable
-    BASE_IMAGE_TAG: unstable
     PLATFORMS: "linux/amd64,linux/arm64"
 
 jobs:
@@ -65,10 +65,9 @@ jobs:
                   install
             - name: Deploy multi-arch application and configbaker container image
               run: >
-                  mvn 
-                  -Dapp.image.tag=${{ env.IMAGE_TAG }} -Dbase.image.tag=${{ env.BASE_IMAGE_TAG }}
+                  mvn -Pct deploy 
+                  -Dapp.image.tag=${{ env.IMAGE_TAG }}
                   -Ddocker.registry=ghcr.io -Ddocker.platforms=${{ env.PLATFORMS }}
-                  -Pct deploy
 
             - uses: marocchino/sticky-pull-request-comment@v2
               with:

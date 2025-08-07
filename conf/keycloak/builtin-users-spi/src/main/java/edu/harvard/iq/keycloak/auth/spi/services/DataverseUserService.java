@@ -17,8 +17,8 @@ public class DataverseUserService {
 
     private final EntityManager em;
 
-    public DataverseUserService(KeycloakSession session) {
-        this.em = session.getProvider(JpaConnectionProvider.class, "user-store").getEntityManager();
+    public DataverseUserService(KeycloakSession session, String datasource) {
+        this.em = session.getProvider(JpaConnectionProvider.class, datasource).getEntityManager();
     }
 
     public DataverseUser getUserById(String id) {
@@ -27,11 +27,16 @@ public class DataverseUserService {
 
         DataverseBuiltinUser builtinUser = em.find(DataverseBuiltinUser.class, persistenceId);
         if (builtinUser == null) {
-            logger.debugf("User not found for external ID: %s", persistenceId);
+            logger.debugf("Builtin user not found for external ID: %s", persistenceId);
             return null;
         }
 
-        DataverseAuthenticatedUser authenticatedUser = getAuthenticatedUserByUsername(builtinUser.getUsername());
+        String username = builtinUser.getUsername();
+        DataverseAuthenticatedUser authenticatedUser = getAuthenticatedUserByUsername(username);
+        if (authenticatedUser == null) {
+            logger.debugf("Authenticated user not found by username: %s", username);
+            return null;
+        }
 
         return new DataverseUser(authenticatedUser, builtinUser);
     }
@@ -43,11 +48,15 @@ public class DataverseUserService {
                 .getResultList();
 
         if (users.isEmpty()) {
-            logger.debugf("User not found by username: %s", username);
+            logger.debugf("Builtin user not found by username: %s", username);
             return null;
         }
 
         DataverseAuthenticatedUser authenticatedUser = getAuthenticatedUserByUsername(username);
+        if (authenticatedUser == null) {
+            logger.debugf("Authenticated user not found by username: %s", username);
+            return null;
+        }
 
         return new DataverseUser(authenticatedUser, users.get(0));
     }
@@ -59,7 +68,7 @@ public class DataverseUserService {
                 .getResultList();
 
         if (authUsers.isEmpty()) {
-            logger.debugf("User not found by email: %s", email);
+            logger.debugf("Authenticated user not found by email: %s", email);
             return null;
         }
 
@@ -67,6 +76,11 @@ public class DataverseUserService {
         List<DataverseBuiltinUser> builtinUsers = em.createNamedQuery("DataverseBuiltinUser.findByUsername", DataverseBuiltinUser.class)
                 .setParameter("username", username)
                 .getResultList();
+
+        if (builtinUsers.isEmpty()) {
+            logger.debugf("Builtin user not found by username: %s", username);
+            return null;
+        }
 
         return new DataverseUser(authUsers.get(0), builtinUsers.get(0));
     }

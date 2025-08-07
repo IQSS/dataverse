@@ -68,9 +68,9 @@ https://github.com/IQSS/dataverse-metrics
 Whole Tale
 ~~~~~~~~~~
 
-Whole Tale enables researchers to analyze data using popular tools including Jupyter and RStudio with the ultimate goal of supporting publishing of reproducible research packages.
+Whole Tale enables researchers to analyze data using popular tools including Jupyter and RStudio with the ultimate goal of supporting publishing of reproducible research packages. As of 2025 the project is not active.
 
-https://github.com/whole-tale/girder_wholetale/tree/v0.7/server/lib/dataverse
+https://github.com/whole-tale/girder-wholetale/blob/v2.0.7/girder_wholetale/lib/dataverse/provider.py
 
 Archivematica
 ~~~~~~~~~~~~~
@@ -100,6 +100,18 @@ idsc.dataverse
 This module can, among others, help you migrate one dataverse to another. (see `migrate.md <https://github.com/iza-institute-of-labor-economics/idsc.dataverse/blob/main/migrate.md>`_)
 
 https://github.com/iza-institute-of-labor-economics/idsc.dataverse
+
+dataverse-metadata-crawler
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A Python CLI tool for bulk extraction of dataverses, datasets, and data file metadata from any chosen level of dataverse collection (an entire Dataverse repository/sub-Dataverse), with flexible export options to JSON and CSV formats.
+
+https://github.com/scholarsportal/dataverse-metadata-crawler
+
+mcp-dataverse
+~~~~~~~~~~~~~
+
+The code at https://github.com/gdcc/mcp-dataverse powers a :ref:`mcp` server for Dataverse.
 
 Java
 ----
@@ -143,9 +155,9 @@ https://github.com/IQSS/doi2pmh-server
 OJS
 ~~~
 
-The Open Journal Systems (OJS) Dataverse Software Plugin adds data sharing and preservation to the OJS publication process.
+The Open Journal Systems (OJS) Dataverse Plugin adds data sharing and preservation to the OJS publication process.
 
-https://github.com/pkp/ojs/tree/ojs-stable-2_4_8/plugins/generic/dataverse
+https://github.com/lepidus/dataversePlugin
 
 OpenScholar
 ~~~~~~~~~~~

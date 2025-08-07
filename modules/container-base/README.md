@@ -32,7 +32,6 @@ to ask for help and guidance.
 
 This image is sourced within the main upstream code [repository of the Dataverse software](https://github.com/IQSS/dataverse).
 Development and maintenance of the [image's code](https://github.com/IQSS/dataverse/tree/develop/modules/container-base) happens there (again, by the community).
-Community-supported image tags are based on the two most important branches:
 
 Our tagging is inspired by [Bitnami](https://docs.vmware.com/en/VMware-Tanzu-Application-Catalog/services/tutorials/GUID-understand-rolling-tags-containers-index.html).
 For more detailed information about our tagging policy, please read about our [base image tags](https://guides.dataverse.org/en/latest/container/base-image.html#supported-image-tags) in the Dataverse Containers Guide.

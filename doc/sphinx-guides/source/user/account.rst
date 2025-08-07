@@ -123,7 +123,7 @@ Dataverse can be configured to allow institutional log in from a worldwide feder
 
 If you have attempted to log in but are seeing an error such as ``The SAML assertion for "eppn" was null``, you will need to contact the people who run the log in system (Identity Provider or IdP) for your organization and explain that the attributes above must be released. You can link them to this document, of course, as well as https://refeds.org/category/research-and-scholarship and :ref:`identity-federation` in the Installation Guide.
 
-Note that while Identity Providers (IdPs) who have joined R&S are required to release the attributes above to all Service Providers (SPs) who have joined R&S (Harvard Dataverse or UNC Dataverse, for example), for a successful login to a Dataverse installation, the IdP could decide to release attributes to just that individual installation.
+Note that while Identity Providers (IdPs) who have joined R&S are required to release the attributes above to all Service Providers (SPs) who have joined R&S (Harvard Dataverse or UNC Dataverse, for example), for a successful login to a Dataverse installation, the IdP could decide to release attributes to just that individual installation. This is explained under :ref:`specific-identity-providers` in the Installation Guide.
 
 ORCID Log In
 ~~~~~~~~~~~~~

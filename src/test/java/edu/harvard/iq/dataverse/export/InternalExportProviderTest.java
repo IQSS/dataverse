@@ -33,6 +33,7 @@ public class InternalExportProviderTest {
         DataFile datafile = new DataFile();
         datafile.setId(1L);
         metadata.setDataFile(datafile);
+        metadata.setDatasetVersion(mockDV);
 
         List<DataTable> dataTables = new ArrayList<>();
         DataTable dataTable = new DataTable();

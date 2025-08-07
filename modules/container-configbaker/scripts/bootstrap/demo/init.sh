@@ -33,6 +33,7 @@ echo ""
 echo "Revoke the key that allows for creation of builtin users..."
 curl -sS -X DELETE "${DATAVERSE_URL}/api/admin/settings/BuiltinUsers.KEY"
 
+# TODO: stop using these deprecated database settings. See https://github.com/IQSS/dataverse/pull/11454
 echo ""
 echo "Set key for accessing blocked API endpoints..."
 curl -sS -X PUT -d "$BLOCKED_API_KEY" "${DATAVERSE_URL}/api/admin/settings/:BlockedApiKey"

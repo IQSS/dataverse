@@ -31,7 +31,10 @@ public class DataverseUserStorageProvider implements
     public DataverseUserStorageProvider(KeycloakSession session, ComponentModel model) {
         this.session = session;
         this.model = model;
-        this.dataverseUserService = new DataverseUserService(session);
+
+        String datasource = model.getConfig().getFirst("datasource");
+        logger.debugf("Using datasource: %s", datasource);
+        this.dataverseUserService = new DataverseUserService(session, datasource);
     }
 
     @Override

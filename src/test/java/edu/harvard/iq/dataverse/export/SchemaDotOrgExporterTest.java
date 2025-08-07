@@ -9,8 +9,6 @@ import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 
-import static edu.harvard.iq.dataverse.util.SystemConfig.FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS;
-
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -171,6 +169,23 @@ public class SchemaDotOrgExporterTest {
 
     assertTrue(json2.getString("description").endsWith("at..."));
     }
+
+    @Test
+    @JvmSetting(key = JvmSettings.HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS, value = "true")
+    public void testExportWithoutDownloadUrl() throws IOException, JsonParseException, ParseException {
+        File datasetVersionJson = new File("src/test/resources/json/dataset-finch2.json");
+        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
+
+        JsonObject json = JsonUtil.getJsonObject(datasetVersionAsJson);
+        ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
+        Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(json);
+
+        JsonObject json2 = createExportFromJson(exportDataProviderStub);
+
+        assertEquals("DataDownload", json2.getJsonArray("distribution").getJsonObject(0).getString("@type"));
+        assertEquals("README.md", json2.getJsonArray("distribution").getJsonObject(0).getString("name"));
+        assertFalse(json2.getJsonArray("distribution").getJsonObject(0).containsKey("contentUrl"));
+    }
     
     private JsonObject createExportFromJson(ExportDataProvider provider) throws JsonParseException, ParseException {
         License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true, 1l);
@@ -195,10 +210,6 @@ public class SchemaDotOrgExporterTest {
         Dataverse dataverse = new Dataverse();
         dataverse.setName("LibraScholar");
         dataset.setOwner(dataverse);
-        boolean hideFileUrls = false;
-        if (hideFileUrls) {
-            System.setProperty(FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS, "true");
-        }
 
         FileMetadata fmd = new FileMetadata();
         DataFile dataFile = new DataFile();

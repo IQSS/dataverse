@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -49,6 +50,9 @@ public class CreateDataverseCommand extends AbstractWriteDataverseCommand {
             if (ctxt.dataverses().isRootDataverseExists()) {
                 throw new IllegalCommandException("Root Dataverse already exists. Cannot create another one", this);
             }
+        }
+        if (!getUser().isSuperuser() && dataverse.isDatasetFileCountLimitSet(dataverse.getDatasetFileCountLimit())) {
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("file.dataset.error.set.file.count.limit"), this);
         }
 
         if (metadataBlocks != null && !metadataBlocks.isEmpty()) {

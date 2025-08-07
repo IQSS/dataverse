@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE resources PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN" "http://glassfish.org/dtds/glassfish-resources_1_5.dtd">
+<resources>
+    <!-- This executor is used in edu.harvard.iq.dataverse.dataaccess.S3AccessIO to support asynchronous operations -->
+    <custom-resource res-type="javax.enterprise.concurrent.ManagedExecutorService" 
+                     jndi-name="java:app/env/concurrent/s3UploadExecutor" 
+                     factory-class="org.glassfish.resources.custom.factory.ManagedExecutorServiceFactory">
+        <property name="threadPriority" value="5"/>
+        <property name="corePoolSize" value="10"/>
+        <property name="maximumPoolSize" value="50"/>
+        <property name="keepAliveTime" value="300"/>
+        <property name="threadLifeTime" value="3600"/>
+    </custom-resource>
+</resources>
