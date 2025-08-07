@@ -24,7 +24,7 @@
 	coverage.Polarization	Polarization	The polarization coverage		text	20		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
 	redshiftType	RedshiftType	RedshiftType string C "Redshift"; or "Optical" or "Radio" definitions of Doppler velocity used in the data object.		text	21		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
 	resolution.Redshift	Redshift Resolution	The resolution in redshift (unitless) or Doppler velocity (km/s) in the data object.	Enter a floating-point number.	float	22		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
-	coverage.RedshiftValue	Redshift Value	The value of the redshift (unitless) or Doppler velocity (km/s in the data object.	Enter a floating-point number.	float	23		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
+	coverage.RedshiftValue	Redshift Value	The value of the redshift (unitless) or Doppler velocity (km/s in the data object.	Enter a floating-point number.	none	23		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
 	coverage.Redshift.MinimumValue	Minimum	The minimum value of the redshift (unitless) or Doppler velocity (km/s in the data object.	Enter a floating-point number.	float	24		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage.RedshiftValue	astrophysics
 	coverage.Redshift.MaximumValue	Maximum	The maximum value of the redshift (unitless) or Doppler velocity (km/s in the data object.	Enter a floating-point number.	float	25		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage.RedshiftValue	astrophysics
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
