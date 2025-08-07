@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
@@ -26,13 +27,8 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
-import java.util.Properties;
 
 import edu.harvard.iq.dataverse.validation.JSONDataValidation;
 import jakarta.ejb.EJB;
@@ -468,8 +464,26 @@ public class DataverseServiceBean implements java.io.Serializable {
         return dataverseLinkingService.findLinkingDataverses(dataverseId);
     }
 
+    public List<Dataset> findDatasetsThisIdHasLinkedTo(long dataverseId, boolean onlyPublished) {
+        List<Dataset> linkedDatasets = datasetLinkingService.findLinkedDatasets(dataverseId);
+
+        if (!onlyPublished) {
+            return linkedDatasets;
+        }
+
+        List<Dataset> retList = new ArrayList();
+
+        for (Dataset ds : linkedDatasets) {
+            if (ds.isReleased() && !ds.isDeaccessioned()) {
+                retList.add(ds);
+            }
+        }
+
+        return retList;
+    }
+
     public List<Dataset> findDatasetsThisIdHasLinkedTo(long dataverseId) {
-        return datasetLinkingService.findLinkedDatasets(dataverseId);
+        return this.findDatasetsThisIdHasLinkedTo(dataverseId, false);
     }
 
     public List<Dataverse> findDataversesThatLinkToThisDatasetId(long datasetId) {
@@ -754,20 +768,24 @@ public class DataverseServiceBean implements java.io.Serializable {
     
     // function to recursively find ids of all children of a dataverse that are 
     // of type dataset
-    public List<Long> findAllDataverseDatasetChildren(Long dvId) {
+    public List<Long> findAllDataverseDatasetChildren(Long dvId, boolean onlyPublished, boolean includeHarvested) {
         // get list of Dataverse children
         List<Long> dataverseChildren = findIdsByOwnerId(dvId);
         // get list of Dataset children
-        List<Long> datasetChildren = datasetService.findIdsByOwnerId(dvId);
+        List<Long> datasetChildren = datasetService.findIdsByOwnerId(dvId, onlyPublished, includeHarvested);
         
         if (dataverseChildren == null) {
             return datasetChildren;
         } else {
             for (Long childDvId : dataverseChildren) {
-                datasetChildren.addAll(findAllDataverseDatasetChildren(childDvId));
+                datasetChildren.addAll(findAllDataverseDatasetChildren(childDvId, onlyPublished, includeHarvested));
             }
             return datasetChildren;
         }
+    }
+
+    public List<Long> findAllDataverseDatasetChildren(Long dvId) {
+        return findAllDataverseDatasetChildren(dvId, false, false);
     }
     
     public String addRoleAssignmentsToChildren(Dataverse owner, ArrayList<String> rolesToInherit,
@@ -1256,5 +1274,37 @@ public class DataverseServiceBean implements java.io.Serializable {
      */
     public long getDataverseCount() {
         return em.createNamedQuery("Dataverse.countAll", Long.class).getSingleResult();
+    }
+
+    /**
+     * Returns the total number of published datasets within a Dataverse collection. The number includes harvested and
+     * linked datasets. Datasets in subcollections are also counted.
+     * @param dvId ID of a Dataverse collection
+     * @return the total number of published datasets within that Dataverse collection
+     */
+    public long getDatasetCount(Long dvId) {
+        Set<Long> dvIds = new HashSet<>();
+        Deque<Long> stack = new ArrayDeque<>();
+        dvIds.add(dvId);
+        stack.push(dvId);
+
+        // Collect IDs of all subdataverses
+        while (!stack.isEmpty()) {
+            Long currentId = stack.pop();
+            List<Long> children = em.createQuery("SELECT d.id FROM Dataverse d WHERE d.owner.id = :parentId", Long.class)
+                                    .setParameter("parentId", currentId)
+                                    .getResultList();
+
+            for (Long childId : children) {
+                if (dvIds.add(childId)) {
+                    stack.push(childId);
+                }
+            }
+        }
+
+        return em.createNamedQuery("Dataverse.getDatasetCount", Long.class)
+                 .setParameter("ids", dvIds)
+                 .setParameter("datasetState", VersionState.RELEASED)
+                 .getSingleResult();
     }
 }
