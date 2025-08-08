@@ -500,6 +500,13 @@ public class SettingsServiceBean {
          */
         BagGeneratorThreads,
         /**
+         * Various BagIt settings.
+         */
+        BagValidatorJobPoolSize,
+        BagValidatorMaxErrors,
+        BagValidatorJobWaitInterval,
+        BagItHandlerEnabled,
+        /**
          * A comma-separated list of roles for which new dataverses should inherit the
          * corresponding role assignments from the parent dataverse. Also affects
          * /api/admin/dataverse/{alias}/addRolesToChildren. Default is "", no
@@ -675,6 +682,8 @@ public class SettingsServiceBean {
          * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
          */
         LDNMessageHosts,
+        LDNAnnounceRequiredFields,
+        LDNTarget,
 
         /*
          * Allow a custom JavaScript to control values of specific fields.
@@ -731,6 +740,8 @@ public class SettingsServiceBean {
          * files *with* the variable names line up top. 
          */
         StoreIngestedTabularFilesWithVarHeaders,
+        FileCategories,
+        CreateDataFilesMaxErrorsToDisplay,
 
         ContactFeedbackMessageSizeLimit,
         //Experimental setting to allow connecting to a GET external search service expecting a GET request with query parameter mirroring the search API query parameters (without search_service) 

@@ -25,11 +25,19 @@ Note: Despite the validation of setting names and languages, the content of any 
 The following database settings are were added to the official list within the code (to remain valid with the settings cleanup mentioned above):
 
 - :BagGeneratorThreads
+- :BagItHandlerEnabled
 - :BagItLocalPath
+- :BagValidatorJobPoolSize
+- :BagValidatorJobWaitInterval
+- :BagValidatorMaxErrors
 - :BuiltinUsersKey - formerly BuiltinUsers.KEY
+- :CreateDataFilesMaxErrorsToDisplay
 - :DRSArchiverConfig - a Harvard-specific setting
 - :DuraCloudContext
 - :DuraCloudHost
 - :DuraCloudPort
+- :FileCategories
 - :GoogleCloudBucket
 - :GoogleCloudProject
+- :LDNAnnounceRequiredFields
+- :LDNTarget
