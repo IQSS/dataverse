@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class NotificationsIT {
@@ -145,5 +146,41 @@ public class NotificationsIT {
         List<String> expectedTypes = Arrays.asList("CREATEACC", "CREATEDV", "DATASETCREATED");
 
         assertTrue(notificationTypes.containsAll(expectedTypes) && expectedTypes.containsAll(notificationTypes));
+
+        // inAppNotificationFormat optional query parameter test cases
+
+        // inAppNotificationFormat = false (default)
+
+        createAuthor = UtilIT.createRandomUser();
+        createAuthor.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        authorApiToken = UtilIT.getApiTokenFromResponse(createAuthor);
+
+        getNotifications = UtilIT.getNotifications(authorApiToken);
+        getNotifications.then().assertThat()
+                .body("data.notifications[0].displayAsRead", equalTo(false))
+                .body("data.notifications.size()", equalTo(1))
+                // In-App fields should be null
+                .body("data.notifications[0].rootDataverseName", equalTo(null))
+                .body("data.notifications[0].userGuidesBaseUrl", equalTo(null))
+                .body("data.notifications[0].userGuidesVersion", equalTo(null))
+                .statusCode(OK.getStatusCode());
+
+        // inAppNotificationFormat = true
+
+        createAuthor = UtilIT.createRandomUser();
+        createAuthor.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        authorApiToken = UtilIT.getApiTokenFromResponse(createAuthor);
+
+        getNotifications = UtilIT.getNotifications(authorApiToken, true);
+        getNotifications.then().assertThat()
+                .body("data.notifications[0].displayAsRead", equalTo(false))
+                .body("data.notifications.size()", equalTo(1))
+                // In-App fields should be present
+                .body("data.notifications[0].rootDataverseName", equalTo("Root"))
+                .body("data.notifications[0].userGuidesBaseUrl", equalTo("https://guides.dataverse.org/en"))
+                .body("data.notifications[0].userGuidesVersion", not(equalTo(null)))
+                .statusCode(OK.getStatusCode());
     }
 }
