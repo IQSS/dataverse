@@ -8,7 +8,6 @@ import io.restassured.response.Response;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.equalTo;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class NotificationsIT {
@@ -164,6 +163,9 @@ public class NotificationsIT {
                 .body("data.notifications[0].rootDataverseName", equalTo(null))
                 .body("data.notifications[0].userGuidesBaseUrl", equalTo(null))
                 .body("data.notifications[0].userGuidesVersion", equalTo(null))
+                // Email-related fields should be present
+                .body("data.notifications[0].subjectText", equalTo("Root: Your account has been created"))
+                .body("data.notifications[0].messageText", containsString("Hello,"))
                 .statusCode(OK.getStatusCode());
 
         // inAppNotificationFormat = true
@@ -181,6 +183,9 @@ public class NotificationsIT {
                 .body("data.notifications[0].rootDataverseName", equalTo("Root"))
                 .body("data.notifications[0].userGuidesBaseUrl", equalTo("https://guides.dataverse.org/en"))
                 .body("data.notifications[0].userGuidesVersion", not(equalTo(null)))
+                // Email-related fields should be null
+                .body("data.notifications[0].subjectText", equalTo(null))
+                .body("data.notifications[0].messageText", equalTo(null))
                 .statusCode(OK.getStatusCode());
     }
 }
