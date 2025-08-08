@@ -373,7 +373,7 @@ public class ShibServiceBean {
         String returnUrl = URLEncoder.encode(SystemConfig.getDataverseSiteUrlStatic() + "/Shibboleth.sso/Login?SAMLDS=1", StandardCharsets.UTF_8);;
         String wayFinderUrl = INCOMMON_WAYFINDER_URL + "/?entityID=" + encodedEntityId
                 + "&return=" + returnUrl 
-                + "%2526target%3D" + targetUrl; //"%253FredirectPage%253D%25252Fdataverse.xhtml";
+                + "%26target%3D" + targetUrl; //"%253FredirectPage%253D%25252Fdataverse.xhtml";
         return wayFinderUrl; 
     }
     
