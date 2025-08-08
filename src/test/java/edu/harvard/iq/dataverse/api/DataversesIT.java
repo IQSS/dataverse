@@ -696,8 +696,15 @@ public class DataversesIT {
         createDatasetResponse.prettyPrint();
         String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
         
-        Response getLinkableDataverses = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, apiToken, dataverseAlias);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+         
+        System.out.print("After pub dataset");
+        
+        Response getLinkableDataverses = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, apiToken, "dv0");
         getLinkableDataverses.prettyPrint();
+                getLinkableDataverses.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
 
     @Test

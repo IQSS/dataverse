@@ -4774,16 +4774,21 @@ public class UtilIT {
         return updateDataverseFeaturedItem(featuredItemId, content, displayOrder, keepFile, pathToFile, null, null, apiToken);
     }
     
-    static Response getLinkableDataverses (String type, String dvObjectId, String apiToken, String dataverseAlias) {
-                return given()
+    static Response getLinkableDataverses (String type, String dvObjectId, String apiToken, String searchTerm) {
+
+        String idInPath = dvObjectId; // Assume it's a number to start.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (type.equals("dataset")) {
+            if (!NumberUtils.isCreatable(idInPath)) {
+                idInPath = ":persistentId";
+                optionalQueryParam = "?persistentId=" + dvObjectId;
+            }
+        }
+
+        return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .contentType("application/json")
-                .get("/api/dataverses/" + dataverseAlias + "/featuredItems");
-                
-                /*
-                {identifier}/linkingDataverses/{searchTerm}
-                */
-        
+                .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses/" + searchTerm + optionalQueryParam);
+
     }
     static Response updateDataverseFeaturedItem(long featuredItemId,
                                                 String content,
