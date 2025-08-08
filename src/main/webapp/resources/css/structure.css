@@ -752,6 +752,10 @@ a.popoverHTML {display:inline-block;}
 /* TERMS */
 .waiver-CC0-inline {display:inline-block; margin-left:1em;}
 
+/* CURATION STATUS HISTORY */
+div[id$="curationStatusHistoryDialog"] {max-width:800px;}
+div[id$="curationStatusHistoryDialog"] th span {color:white;text-shadow:none;}
+
 /* FILES */
 div[id$="filesTable"].ui-datatable.ui-widget div.ui-datatable-tablewrapper {overflow:visible;}
 div[id$="filesTable"].ui-datatable.ui-widget {margin-bottom:20px;}
@@ -1074,6 +1078,10 @@ progress::-webkit-progress-bar {
 
 progress::-webkit-progress-value {
   background-color:green;
+}
+
+.curation-status {
+  background-color: #CE15D1
 }
 
 /*External vocabulary support*/

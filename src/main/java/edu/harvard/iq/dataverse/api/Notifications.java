@@ -54,6 +54,7 @@ public class Notifications extends AbstractApiBean {
             Type type = notification.getType();
             notificationObjectBuilder.add("id", notification.getId());
             notificationObjectBuilder.add("type", type.toString());
+            notificationObjectBuilder.add("displayAsRead", notification.isReadNotification());
             /* FIXME - Re-add reasons for return if/when they are added to the notifications page.
             if (Type.RETURNEDDS.equals(type) || Type.SUBMITTEDDS.equals(type)) {
                 JsonArrayBuilder reasons = getReasonsForReturn(notification);
@@ -77,9 +78,46 @@ public class Notifications extends AbstractApiBean {
         return ok(result);
     }
 
+    @GET
+    @AuthRequired
+    @Path("/unreadCount")
+    public Response getUnreadNotificationsCountForUser(@Context ContainerRequestContext crc) {
+        try {
+            AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
+            long unreadCount = userNotificationSvc.getUnreadNotificationCountByUser(au.getId());
+            return ok(Json.createObjectBuilder()
+                    .add("unreadCount", unreadCount));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
     private JsonArrayBuilder getReasonsForReturn(UserNotification notification) {
         Long objectId = notification.getObjectId();
         return WorkflowUtil.getAllWorkflowComments(datasetVersionSvc.find(objectId));
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("/{id}/markAsRead")
+    public Response markNotificationAsReadForUser(@Context ContainerRequestContext crc, @PathParam("id") long id) {
+        try {
+            AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
+            Long userId = au.getId();
+            Optional<UserNotification> notification = userNotificationSvc.findByUser(userId).stream().filter(x -> x.getId().equals(id)).findFirst();
+            if (notification.isPresent()) {
+                UserNotification saved = userNotificationSvc.markAsRead(notification.get());
+                if (saved.isReadNotification()) {
+                    return ok("Notification " + id + " marked as read.");
+                } else {
+                    return badRequest("Notification " + id + " could not be marked as read.");
+                }
+            } else {
+                return notFound("Notification " + id + " not found.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
     }
 
     @DELETE

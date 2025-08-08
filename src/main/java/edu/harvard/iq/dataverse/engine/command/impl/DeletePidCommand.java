@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import org.apache.commons.httpclient.HttpException;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,13 +49,8 @@ public class DeletePidCommand extends AbstractVoidCommand {
             dataset.setGlobalIdCreateTime(null);
             dataset.setIdentifierRegistered(false);
             ctxt.datasets().merge(dataset);
-        } catch (HttpException hex) {
-            String message = BundleUtil.getStringFromBundle("pids.deletePid.failureExpected",
-                    Arrays.asList(dataset.getGlobalId().asString(), Integer.toString(hex.getReasonCode())));
-            logger.info(message);
-            throw new IllegalCommandException(message, this);
         } catch (Exception ex) {
-            String message = BundleUtil.getStringFromBundle("pids.deletePid.failureOther",
+            String message = BundleUtil.getStringFromBundle("pids.deletePid.failure",
                     Arrays.asList(dataset.getGlobalId().asString(), ex.getLocalizedMessage()));
             logger.info(message);
             throw new IllegalCommandException(message, this);

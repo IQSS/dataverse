@@ -433,11 +433,10 @@ public class DatasetField implements Serializable {
     private Boolean required;
     @Transient 
     private Boolean hasRequiredChildren;
-       
+
     public boolean isRequired() {
         if (required == null) {
-            required = false;
-            
+            required = false;            
             if (this.datasetFieldType.isRequired()) {
                 required = true;
             } else {
@@ -464,6 +463,13 @@ public class DatasetField implements Serializable {
             {
                 required = false;
             }
+            
+            //this is needed to enforce required children validation and display on create #11421
+            //set the parent to required only if a child is set to required at the DV level
+            if (this.datasetFieldType.isCompound() && isHasRequiredChildrenDV()) {
+                required = true;
+            }
+           
         }
         
         return required;
@@ -471,21 +477,24 @@ public class DatasetField implements Serializable {
     
     public boolean isHasRequiredChildren() {
         if (hasRequiredChildren == null) {
-            hasRequiredChildren = false;
+            hasRequiredChildren = this.datasetFieldType.isHasRequiredChildren() || checkRequiredChildren(false);
         }
-        
-        if (this.datasetFieldType.isHasRequiredChildren()) {
-            hasRequiredChildren = true;
-        }        
-        
+        return hasRequiredChildren;
+    }
+
+    public boolean isHasRequiredChildrenDV() {
+        return isHasRequiredChildren() && checkRequiredChildren(true);
+    }
+    
+    private boolean checkRequiredChildren(boolean checkDVOnly) {
         Dataverse dv = getDataverse();
         while (!dv.isMetadataBlockRoot()) {
             if (dv.getOwner() == null) {
-                break; // we are at the root; which by defintion is metadata blcok root, regarldess of the value
+                break; // we are at the root; which by defintion is metadata block root, regardless of the value
             }
             dv = dv.getOwner();
-        }        
-        
+        }
+
         List<DataverseFieldTypeInputLevel> dftilListFirst = dv.getDataverseFieldTypeInputLevels();
 
         if (getDatasetFieldType().isHasChildren() && (!dftilListFirst.isEmpty())) {
@@ -493,13 +502,19 @@ public class DatasetField implements Serializable {
                 for (DataverseFieldTypeInputLevel dftilTest : dftilListFirst) {
                     if (child.equals(dftilTest.getDatasetFieldType())) {
                         if (dftilTest.isRequired()) {
-                            hasRequiredChildren = true;
+                            if (checkDVOnly) {
+                                if (!child.isRequired()) {
+                                    return true;
+                                }
+                            } else {
+                                return true;
+                            }
                         }
                     }
                 }
             }
-        }        
-        return hasRequiredChildren;
+        }
+        return false;
     }
     
     public Dataverse getDataverse() {

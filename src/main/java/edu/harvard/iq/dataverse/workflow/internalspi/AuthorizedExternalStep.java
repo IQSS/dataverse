@@ -10,25 +10,18 @@ import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import edu.harvard.iq.dataverse.workflows.WorkflowUtil;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.URI;
-import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.hc.client5.http.classic.methods.*;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.net.URIBuilder;
 
 /**
  * A workflow step that sends a HTTP request, and then pauses, waiting for an
@@ -48,24 +41,23 @@ public class AuthorizedExternalStep implements WorkflowStep {
     
     @Override
     public WorkflowStepResult run(WorkflowContext context) {
-        HttpClient client = new HttpClient();
-        
-        try {
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
             // build method
-            HttpMethodBase mtd = buildMethod(false, context);
+            ClassicHttpRequest request = buildMethod(false, context);
             // execute
-            int responseStatus = client.executeMethod(mtd);
-            if (responseStatus>=200 && responseStatus<300 ) {
-                // HTTP OK range
-                Map<String, String> data = new HashMap<String, String> ();
-                //Allow external client to use invocationId as a key to act on the user's behalf
-                data.put(PendingWorkflowInvocation.AUTHORIZED, "true");
-                return new Pending(data);
-            } else {
-                String responseBody = mtd.getResponseBodyAsString();
-                return new Failure("Error communicating with server. Server response: " + responseBody + " (" + responseStatus + ").");
-            }
-            
+            return client.execute(request, response -> {
+                int responseStatus = response.getCode();
+                if (responseStatus >= 200 && responseStatus < 300) {
+                    // HTTP OK range
+                    Map<String, String> data = new HashMap<>();
+                    //Allow external client to use invocationId as a key to act on the user's behalf
+                    data.put(PendingWorkflowInvocation.AUTHORIZED, "true");
+                    return new Pending(data);
+                } else {
+                    String responseBody = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
+                    return new Failure("Error communicating with server. Server response: " + responseBody + " (" + responseStatus + ").");
+                }
+            });
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Error communicating with remote server: " + ex.getMessage(), ex);
             return new Failure("Error executing request: " + ex.getLocalizedMessage(), "Cannot communicate with remote server.");
@@ -79,68 +71,64 @@ public class AuthorizedExternalStep implements WorkflowStep {
 
     @Override
     public void rollback(WorkflowContext context, Failure reason) {
-        HttpClient client = new HttpClient();
-        
-        try {
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
             // build method
-            HttpMethodBase mtd = buildMethod(true, context);
+            ClassicHttpRequest request = buildMethod(true, context);
             
             // execute
-            int responseStatus = client.executeMethod(mtd);
-            if (responseStatus<200 || responseStatus>=300 ) {
-                // out of HTTP OK range
-                String responseBody = mtd.getResponseBodyAsString();
-                Logger.getLogger(AuthorizedExternalStep.class.getName()).log(Level.WARNING, 
-                        "Bad response from remote server while rolling back step: {0}", responseBody);
-            }
-            
+            client.execute(request, response -> {
+                int responseStatus = response.getCode();
+                if (responseStatus < 200 || responseStatus >= 300) {
+                    // out of HTTP OK range
+                    String responseBody = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
+                    Logger.getLogger(AuthorizedExternalStep.class.getName()).log(Level.WARNING, 
+                            "Bad response from remote server while rolling back step: {0}", responseBody);
+                }
+                return null;
+            });
         } catch (Exception ex) {
             Logger.getLogger(AuthorizedExternalStep.class.getName()).log(Level.WARNING, "IO error rolling back step: " + ex.getMessage(), ex);
         }
     }
     
-    HttpMethodBase buildMethod(boolean rollback, WorkflowContext ctxt) throws Exception {
+    ClassicHttpRequest buildMethod(boolean rollback, WorkflowContext ctxt) throws Exception {
         String methodName = params.getOrDefault("method" + (rollback ? "-rollback":""), "GET").trim().toUpperCase();
-        HttpMethodBase m = null;
-        switch (methodName) {
-            case "GET":    m = new GetMethod(); m.setFollowRedirects(true); break;
-            case "POST":   m = new PostMethod(); break;
-            case "PUT":    m = new PutMethod(); break;
-            case "DELETE": m = new DeleteMethod(); m.setFollowRedirects(true); break;
-            default: throw new IllegalStateException("Unsupported HTTP method: '" + methodName + "'");
-        }
-        
         
         Map<String,String> templateParams = new HashMap<>();
-        templateParams.put( "invocationId", ctxt.getInvocationId() );
-        templateParams.put( "dataset.id", Long.toString(ctxt.getDataset().getId()) );
-        templateParams.put( "dataset.identifier", ctxt.getDataset().getIdentifier() );
-        templateParams.put( "dataset.globalId", ctxt.getDataset().getGlobalId().toString() );
-        templateParams.put( "dataset.displayName", ctxt.getDataset().getDisplayName() );
-        templateParams.put( "dataset.citation", ctxt.getDataset().getCitation() );
-        templateParams.put( "minorVersion", Long.toString(ctxt.getNextMinorVersionNumber()) );
-        templateParams.put( "majorVersion", Long.toString(ctxt.getNextVersionNumber()) );
-        templateParams.put( "releaseStatus", (ctxt.getType()==TriggerType.PostPublishDataset) ? "done":"in-progress" );
-        templateParams.put( "language", BundleUtil.getDefaultLocale().getISO3Language());
-
+        templateParams.put("invocationId", ctxt.getInvocationId());
+        templateParams.put("dataset.id", Long.toString(ctxt.getDataset().getId()));
+        templateParams.put("dataset.identifier", ctxt.getDataset().getIdentifier());
+        templateParams.put("dataset.globalId", ctxt.getDataset().getGlobalId().toString());
+        templateParams.put("dataset.displayName", ctxt.getDataset().getDisplayName());
+        templateParams.put("dataset.citation", ctxt.getDataset().getCitation());
+        templateParams.put("minorVersion", Long.toString(ctxt.getNextMinorVersionNumber()));
+        templateParams.put("majorVersion", Long.toString(ctxt.getNextVersionNumber()));
+        templateParams.put("releaseStatus", (ctxt.getType()==TriggerType.PostPublishDataset) ? "done":"in-progress");
+        templateParams.put("language", BundleUtil.getDefaultLocale().getISO3Language());
+    
+        String urlKey = rollback ? "rollbackUrl" : "url";
+        String urlTemplate = params.get(urlKey);
+        String processedUrl = process(urlTemplate, templateParams);
         
-        m.addRequestHeader("Content-Type", params.getOrDefault("contentType", "text/plain"));
-        
-        String urlKey = rollback ? "rollbackUrl":"url";
-        String url = params.get(urlKey);
+        URI uri;
         try {
-            m.setURI(new URI(process(url,templateParams), true) );
-        } catch (URIException ex) {
-            throw new IllegalStateException("Illegal URL: '" + url + "'");
+            uri = new URIBuilder(processedUrl).build();
+        } catch (Exception ex) {
+            throw new IllegalStateException("Illegal URL: '" + processedUrl + "'", ex);
         }
-        
-        String bodyKey = (rollback ? "rollbackBody" : "body");
-        if ( params.containsKey(bodyKey) && m instanceof EntityEnclosingMethod ) {
-            String body = params.get(bodyKey);
-            ((EntityEnclosingMethod)m).setRequestEntity(new StringRequestEntity(process( body, templateParams), params.getOrDefault("contentType", "text/plain"), StandardCharsets.UTF_8.name()));
+    
+        ClassicHttpRequest request;
+        switch (methodName) {
+            case "GET":    request = new HttpGet(uri); break;
+            case "POST":   request = new HttpPost(uri); break;
+            case "PUT":    request = new HttpPut(uri); break;
+            case "DELETE": request = new HttpDelete(uri); break;
+            default: throw new IllegalStateException("Unsupported HTTP method: '" + methodName + "'");
         }
-        
-        return m;
+    
+        request.setHeader("Content-Type", params.getOrDefault("contentType", "text/plain"));
+    
+        return request;
     }
     
     String process(String template, Map<String,String> values ) {
@@ -158,5 +146,4 @@ public class AuthorizedExternalStep implements WorkflowStep {
         
         return curValue;
     }
-    
 }
