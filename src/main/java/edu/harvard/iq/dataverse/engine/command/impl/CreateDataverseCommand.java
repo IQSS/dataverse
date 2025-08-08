@@ -28,19 +28,23 @@ import java.util.List;
 @RequiredPermissions(Permission.AddDataverse)
 public class CreateDataverseCommand extends AbstractWriteDataverseCommand {
 
+    private final boolean sendNotificationOnSuccess;
+
     public CreateDataverseCommand(Dataverse created,
                                   DataverseRequest request,
                                   List<DatasetFieldType> facets,
                                   List<DataverseFieldTypeInputLevel> inputLevels) {
-        this(created, request, facets, inputLevels, null);
+        this(created, request, facets, inputLevels, null, false);
     }
 
     public CreateDataverseCommand(Dataverse created,
                                   DataverseRequest request,
                                   List<DatasetFieldType> facets,
                                   List<DataverseFieldTypeInputLevel> inputLevels,
-                                  List<MetadataBlock> metadataBlocks) {
+                                  List<MetadataBlock> metadataBlocks,
+                                  boolean sendNotificationOnSuccess) {
         super(created, created.getOwner(), request, facets, inputLevels, metadataBlocks);
+        this.sendNotificationOnSuccess = sendNotificationOnSuccess;
     }
 
     @Override
@@ -145,6 +149,11 @@ public class CreateDataverseCommand extends AbstractWriteDataverseCommand {
 
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
+        if (sendNotificationOnSuccess) {
+            AuthenticatedUser authenticatedUser = (AuthenticatedUser) getUser();
+            ctxt.notifications().sendNotification(authenticatedUser, dataverse.getCreateDate(), UserNotification.Type.CREATEDV, dataverse.getId());
+        }
+
         return ctxt.dataverses().index((Dataverse) r);
     }
 }

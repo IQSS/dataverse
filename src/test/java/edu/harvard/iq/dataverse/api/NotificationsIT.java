@@ -13,6 +13,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class NotificationsIT {
@@ -39,30 +42,39 @@ public class NotificationsIT {
                 .statusCode(OK.getStatusCode());
         String noPermsApiToken = UtilIT.getApiTokenFromResponse(noPermsUser);
 
-        // Some API calls don't generate a notification: https://github.com/IQSS/dataverse/issues/1342
         Response createDataverseResponse = UtilIT.createRandomDataverse(authorApiToken);
         createDataverseResponse.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        // Some API calls don't generate a notification: https://github.com/IQSS/dataverse/issues/1342
         Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, authorApiToken);
         createDataset.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
 
         Response getNotifications = UtilIT.getNotifications(authorApiToken);
         getNotifications.then().assertThat()
-                .body("data.notifications[0].type", equalTo("CREATEACC"))
                 .body("data.notifications[0].displayAsRead", equalTo(false))
-                .body("data.notifications[1]", equalTo(null))
+                .body("data.notifications[1].displayAsRead", equalTo(false))
+                .body("data.notifications.size()", equalTo(2))
                 .statusCode(OK.getStatusCode());
+
+        String firstNotificationType = JsonPath.from(getNotifications.body().asString()).getString("data.notifications[0].type");
+        String secondNotificationType = JsonPath.from(getNotifications.body().asString()).getString("data.notifications[1].type");
+        long createAccountId = 0L;
+        if (firstNotificationType.equals("CREATEDV")) {
+            assertEquals("CREATEACC", secondNotificationType);
+            createAccountId = JsonPath.from(getNotifications.getBody().asString()).getLong("data.notifications[1].id");
+        } else if (firstNotificationType.equals("CREATEACC")) {
+            assertEquals("CREATEDV", secondNotificationType);
+            createAccountId = JsonPath.from(getNotifications.getBody().asString()).getLong("data.notifications[0].id");
+        } else {
+            fail("Unexpected notification type: " + firstNotificationType);
+        }
 
         Response unreadCount = UtilIT.getUnreadNotificationsCount(authorApiToken);
         unreadCount.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.unreadCount", equalTo(1));
-
-        long createAccountId = JsonPath.from(getNotifications.getBody().asString()).getLong("data.notifications[0].id");
+                .body("data.unreadCount", equalTo(2));
 
         Response markReadNoPerms = UtilIT.markNotificationAsRead(createAccountId, noPermsApiToken);
         markReadNoPerms.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
@@ -72,10 +84,22 @@ public class NotificationsIT {
 
         Response getNotifications2 = UtilIT.getNotifications(authorApiToken);
         getNotifications2.then().assertThat()
-                .body("data.notifications[0].type", equalTo("CREATEACC"))
-                .body("data.notifications[0].displayAsRead", equalTo(true))
-                .body("data.notifications[1]", equalTo(null))
+                .body("data.notifications.size()", equalTo(2))
                 .statusCode(OK.getStatusCode());
+
+        firstNotificationType = JsonPath.from(getNotifications2.body().asString()).getString("data.notifications[0].type");
+        secondNotificationType = JsonPath.from(getNotifications2.body().asString()).getString("data.notifications[1].type");
+        if (firstNotificationType.equals("CREATEDV")) {
+            assertEquals("CREATEACC", secondNotificationType);
+            assertTrue(JsonPath.from(getNotifications2.body().asString()).getBoolean("data.notifications[1].displayAsRead"));
+            assertFalse(JsonPath.from(getNotifications2.body().asString()).getBoolean("data.notifications[0].displayAsRead"));
+        } else if (firstNotificationType.equals("CREATEACC")) {
+            assertEquals("CREATEDV", secondNotificationType);
+            assertTrue(JsonPath.from(getNotifications2.body().asString()).getBoolean("data.notifications[0].displayAsRead"));
+            assertFalse(JsonPath.from(getNotifications2.body().asString()).getBoolean("data.notifications[1].displayAsRead"));
+        } else {
+            fail("Unexpected notification type: " + firstNotificationType);
+        }
 
         Response deleteNotificationNoPerms = UtilIT.deleteNotification(createAccountId, noPermsApiToken);
         deleteNotificationNoPerms.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
@@ -85,7 +109,8 @@ public class NotificationsIT {
 
         Response getNotifications3 = UtilIT.getNotifications(authorApiToken);
         getNotifications3.then().assertThat()
-                .body("data.notifications[0]", equalTo(null))
+                .body("data.notifications[0].type", equalTo("CREATEDV"))
+                .body("data.notifications.size()", equalTo(1))
                 .statusCode(OK.getStatusCode());
 
         // SendNotificationOnDatasetCreation setting is true
@@ -109,17 +134,16 @@ public class NotificationsIT {
 
         getNotifications = UtilIT.getNotifications(authorApiToken);
         getNotifications.then().assertThat()
-                .body("data.notifications.size()", equalTo(2))
+                .body("data.notifications[0].displayAsRead", equalTo(false))
+                .body("data.notifications[1].displayAsRead", equalTo(false))
+                .body("data.notifications[2].displayAsRead", equalTo(false))
+                .body("data.notifications.size()", equalTo(3))
                 .statusCode(OK.getStatusCode());
 
-        String firstNotificationType = JsonPath.from(getNotifications.body().asString()).getString("data.notifications[0].type");
-        String secondNotificationType = JsonPath.from(getNotifications.body().asString()).getString("data.notifications[1].type");
-        if (firstNotificationType.equals("DATASETCREATED")) {
-            assertEquals("CREATEACC", secondNotificationType);
-        } else if (firstNotificationType.equals("CREATEACC")) {
-            assertEquals("DATASETCREATED", secondNotificationType);
-        } else {
-            fail("Unexpected notification type: " + firstNotificationType);
-        }
+        List<String> notificationTypes = JsonPath.from(getNotifications.body().asString()).getList("data.notifications.type");
+
+        List<String> expectedTypes = Arrays.asList("CREATEACC", "CREATEDV", "DATASETCREATED");
+
+        assertTrue(notificationTypes.containsAll(expectedTypes) && expectedTypes.containsAll(notificationTypes));
     }
 }
