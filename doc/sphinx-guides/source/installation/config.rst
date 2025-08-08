@@ -4380,46 +4380,47 @@ In the UI, users trying to download a zip file larger than the Dataverse install
 +++++++++++++++++++++++
 
 Threshold in bytes for limiting whether or not "ingest" is attempted for an uploaded tabular file (which can be resource intensive).
-For more on the ingest features, see :doc:`/user/tabulardataingest/index` in the User Guide.
+For more on the ingest feature, see :doc:`/user/tabulardataingest/index` in the User Guide.
 
-For example, with the below in place, files greater than 2 GB in size will not go through the ingest process:
+There are two ways to specify ingest size limits. You can set a global limit for all file types or you can use a JSON file for more granularity. We'll cover the global limit first.
+
+With the following value in place (again, expressed in bytes), files greater than 2 GB in size will not go through the ingest process:
 
 ``curl -X PUT -d 2000000000 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 
 You can set this value to ``0`` to prevent files from being ingested at all.
-The default is ``-1``, meaning no file size limit is applied.
 
-Using a JSON-based setting, you can override this global setting on a per-format basis for the following formats (case-insensitive):
+Out of the box, the ``:TabularIngestSizeLimit`` setting is absent, which results in ingest being attempted no matter how large the file is. You can specify this "no size limit" default explicitly with the value ``-1``.
 
+Using a JSON-based setting, you can set a global default and per-format limits for the following formats:
+
+- CSV
 - DTA
 - POR
-- SAV
 - Rdata
-- CSV
+- SAV
 - XLSX
 
 (In previous releases of Dataverse, a colon-separated form was used to specify per-format limits, such as ``:TabularIngestSizeLimit:Rdata``, but this is no longer supported. Now JSON is used.)
 
-The JSON follows this form, all fields optional:
+The expected JSON is an object with key/value pairs like the following. Format names are case-insensitive, and all fields are optional. The size limits must be strings with double quotes around them (e.g. ``"10"``) rather than numbers (e.g. ``10``).
 
 .. code:: json
 
   {
     "default": "-1",
-    "formatX": "0",
-    "formatY": "10",
-    "formatZ": "100"
+    "csv": "0",
+    "dta": "10",
+    "por": "100"
   }
 
-Whatever JSON you send will overwrite existing values. If you have any current settings, you can use the following command to see them in the proper format (and then add the new settings you want):
+Whatever JSON you send will overwrite existing values. If you have any exiting ``:TabularIngestSizeLimit`` settings, you can use the following command to see them in the expected input format above (and then add the new settings you want):
 
 ``curl http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit | jq -r '.data.message'``
 
-The ``default`` key is optional and can be used to give limits to formats that are not specified in the JSON. If you omit the ``default`` key or set it to ``-1``, no limits are applied to formats not specified in the JSON.
+The ``default`` key is optional and can be used to give limits to formats that are not specified in the JSON. If you omit the ``default`` key or set it to ``"-1"``, no limits are applied to formats not specified in the JSON. If you set it to ``"0"``, ingest will be disabled (but you can override this per-format).
 
-Add a format name (DTA, POR, etc., as listed above) to change the limit for that particular format.
-
-Any size limits must be provided as string literals (in quotes), not number literals!
+Add a format name (``csv``, ``dta``, etc., as listed above) to change the limit for that particular format.
 
 Examples:
 
@@ -4429,6 +4430,9 @@ Examples:
 2. If you want your Dataverse installation to not attempt to ingest XLSX files at all and apply a global limit of 512 MiB, use this setting:
 
    ``curl -X PUT -d '{"default":"536870912", "XSLX":"0"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
+3. If you want your Dataverse installation to not attempt to ingest files at all except for CSV files that are 256 MiB or smaller, use this setting:
+
+   ``curl -X PUT -d '{"default":"0", "CSV":"268435456"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 
 :ZipUploadFilesLimit
 ++++++++++++++++++++
