@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
@@ -142,7 +143,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
     
     
     public boolean isSuperuser(){
-        return (session.getUser() != null) && session.getUser().isSuperuser();
+        return (authUser != null) && authUser.isSuperuser();
     }
     
     private AuthenticatedUser getUserFromIdentifier(String userIdentifier){
@@ -279,23 +280,26 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
         String noMsgResultsFound = BundleUtil.getStringFromBundle("dataretrieverAPI.noMsgResultsFound");
 
-        if ((session.getUser() != null) && (session.getUser().isAuthenticated())) {
-            authUser = (AuthenticatedUser) session.getUser();
-        } else {
-            try {
-                authUser = getRequestAuthenticatedUserOrDie(crc);
-            } catch (WrappedResponse e) {
-                return this.getJSONErrorString(
-                    BundleUtil.getStringFromBundle("dataretrieverAPI.authentication.required"),
-                    BundleUtil.getStringFromBundle("dataretrieverAPI.authentication.required.opt")
-                );
+        authUser = null;
+        try {
+            authUser = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse e) {
+        }
+        if (authUser == null) {
+            if ((session.getUser() != null) && (session.getUser().isAuthenticated())) {
+                authUser = (AuthenticatedUser) session.getUser();
             }
+        }
+        if (authUser == null) {
+            return this.getJSONErrorString(
+                    BundleUtil.getStringFromBundle("dataretrieverAPI.authentication.required"),
+                    BundleUtil.getStringFromBundle("dataretrieverAPI.authentication.required.opt"));
         }
 
         // For superusers, the searchUser may differ from the authUser
         AuthenticatedUser searchUser = null;
         // If the user is a superuser, see if a userIdentifier has been specified and use that instead
-        if ((authUser.isSuperuser()) && (userIdentifier != null) && (!userIdentifier.isEmpty())) {
+        if (isSuperuser() && (userIdentifier != null) && (!userIdentifier.isEmpty())) {
             searchUser = getUserFromIdentifier(userIdentifier);
             if (searchUser != null) {
                 authUser = searchUser;
