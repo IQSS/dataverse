@@ -4641,6 +4641,25 @@ public class UtilIT {
                 .put("/api/datasets/datasetTypes/" + idOrName + "/licenses");
     }
 
+    public static Response getWorkflowIpWhitelist() {
+        Response response = given()
+                .get("/api/admin/workflows/ip-whitelist");
+        return response;
+    }
+
+    public static Response setWorkflowIpWhitelist(String iPWhitelist) {
+        Response response = given()
+                .body(iPWhitelist)
+                .put("/api/admin/workflows/ip-whitelist");
+        return response;
+    }
+
+    public static Response deleteWorkflowIpWhitelist() {
+        Response response = given()
+                .delete("/api/admin/workflows/ip-whitelist");
+        return response;
+    }
+
     static Response registerOidcUser(String jsonIn, String bearerToken) {
         return given()
                 .header(HttpHeaders.AUTHORIZATION, bearerToken)

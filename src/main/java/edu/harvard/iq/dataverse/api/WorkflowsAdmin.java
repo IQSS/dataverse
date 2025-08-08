@@ -31,6 +31,7 @@ import jakarta.ws.rs.core.Response;
 @Path("admin/workflows")
 public class WorkflowsAdmin extends AbstractApiBean {
       
+    // TODO: To comply with validateSettingName, prepend with a colon?
     public static final String IP_WHITELIST_KEY="WorkflowsAdmin#IP_WHITELIST_KEY";
     
     @EJB

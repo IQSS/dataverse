@@ -60,6 +60,7 @@ public class Workflows extends AbstractApiBean {
     
     private void updateWhitelist() { 
         IpGroup updatedList = new IpGroup();
+        // TODO: Investigate if this still works now that validateSettingName is in place.
         String[] ips = settingsSvc.get(WorkflowsAdmin.IP_WHITELIST_KEY, "127.0.0.1;::1").split(";");
         Arrays.stream(ips)
                 .forEach( str -> updatedList.add(
