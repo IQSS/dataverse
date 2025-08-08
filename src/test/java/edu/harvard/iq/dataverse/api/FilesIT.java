@@ -60,6 +60,8 @@ public class FilesIT {
         Response removePublicInstall = UtilIT.deleteSetting(SettingsServiceBean.Key.PublicInstall);
         removePublicInstall.then().assertThat().statusCode(200);
 
+        Response removeLimit = UtilIT.deleteSetting(SettingsServiceBean.Key.TabularIngestSizeLimit);
+        removeLimit.then().assertThat().statusCode(OK.getStatusCode());
     }
 
     @AfterAll
@@ -1208,7 +1210,83 @@ public class FilesIT {
         }
 
     }
-    
+
+    @Test
+    public void testIngestSizeLimits() throws InterruptedException, IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
+        makeSuperUser.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        String tinyCsvOnly = """
+{
+  "csv": "50"
+}
+""";
+
+        Response setLimit = UtilIT.setSetting(SettingsServiceBean.Key.TabularIngestSizeLimit, tinyCsvOnly);
+        setLimit.then().assertThat().statusCode(OK.getStatusCode());
+
+        Path pathToDataFile = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.csv");
+        String contentOfCsv = ""
+                + "name,pounds,species,treats\n"
+                + "Midnight,15,dog,milkbones\n"
+                + "Tiger,17,cat,cat grass\n"
+                + "Panther,21,cat,cat nip\n";
+        java.nio.file.Files.write(pathToDataFile, contentOfCsv.getBytes());
+
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data.csv"));
+
+        String fileId1 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        Response getFileDataTablesForNonTabularFileResponse = UtilIT.getFileDataTables(fileId1, apiToken);
+        getFileDataTablesForNonTabularFileResponse.prettyPrint();
+        getFileDataTablesForNonTabularFileResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported")));
+
+        String largerCsv = """
+{
+  "csv": "123456"
+}
+""";
+
+        setLimit = UtilIT.setSetting(SettingsServiceBean.Key.TabularIngestSizeLimit, largerCsv);
+        setLimit.then().assertThat().statusCode(OK.getStatusCode());
+
+        uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data-1.csv"));
+
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToDataFile);
+
+        String fileId2 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        Response getFileDataTablesForTabularFileResponse = UtilIT.getFileDataTables(fileId2, apiToken);
+        getFileDataTablesForTabularFileResponse.prettyPrint();
+        getFileDataTablesForTabularFileResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].varQuantity", equalTo(4));
+
+        Response removeLimit = UtilIT.deleteSetting(SettingsServiceBean.Key.TabularIngestSizeLimit);
+        removeLimit.then().assertThat().statusCode(OK.getStatusCode());
+    }
+
     @Test
     public void testUningestFileViaApi() throws InterruptedException {
         Response createUser = UtilIT.createRandomUser();
