@@ -67,6 +67,7 @@ public class FilesIT {
     @AfterAll
     public static void tearDownClass() {
         UtilIT.deleteSetting(SettingsServiceBean.Key.PublicInstall);
+        UtilIT.deleteSetting(SettingsServiceBean.Key.TabularIngestSizeLimit);
     }
 
     /**
@@ -1252,9 +1253,9 @@ public class FilesIT {
 
         String fileId1 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
 
-        Response getFileDataTablesForNonTabularFileResponse = UtilIT.getFileDataTables(fileId1, apiToken);
-        getFileDataTablesForNonTabularFileResponse.prettyPrint();
-        getFileDataTablesForNonTabularFileResponse.then().assertThat()
+        Response getTabularFails = UtilIT.getFileDataTables(fileId1, apiToken);
+        getTabularFails.prettyPrint();
+        getTabularFails.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported")));
 
@@ -1277,9 +1278,109 @@ public class FilesIT {
 
         String fileId2 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
 
-        Response getFileDataTablesForTabularFileResponse = UtilIT.getFileDataTables(fileId2, apiToken);
-        getFileDataTablesForTabularFileResponse.prettyPrint();
-        getFileDataTablesForTabularFileResponse.then().assertThat()
+        Response getTabularWorks = UtilIT.getFileDataTables(fileId2, apiToken);
+        getTabularWorks.prettyPrint();
+        getTabularWorks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].varQuantity", equalTo(4));
+
+        String tinyDefaultSize = """
+{
+  "default": "50"
+}
+""";
+
+        setLimit = UtilIT.setSetting(SettingsServiceBean.Key.TabularIngestSizeLimit, tinyDefaultSize);
+        setLimit.then().assertThat().statusCode(OK.getStatusCode());
+
+        uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data-2.csv"));
+
+        String fileId3 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        getTabularFails = UtilIT.getFileDataTables(fileId3, apiToken);
+        getTabularFails.prettyPrint();
+        getTabularFails.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported")));
+
+        // The behavior of `"default": "-2"` is not documented in the guides
+        // but it acts like `"default": "0"` which disables ingest.
+        String unexpectedNegativeDefault = """
+{
+  "default": "-2"
+}
+""";
+
+        setLimit = UtilIT.setSetting(SettingsServiceBean.Key.TabularIngestSizeLimit, unexpectedNegativeDefault);
+        setLimit.then().assertThat().statusCode(OK.getStatusCode());
+
+        uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data-3.csv"));
+
+        String fileId4 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        getTabularFails = UtilIT.getFileDataTables(fileId4, apiToken);
+        getTabularFails.prettyPrint();
+        getTabularFails.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported")));
+
+        // As the guides say, you MUST provide a string, not a JSON number.
+        // That is, `"123"` in quotes rather than `123` with no quotes.
+        // If you provide a number (no quotes) rather than a string,
+        // all ingest will be disabled and you'll see an error in server.log
+        // about how the system is misconfigured.
+        String invalidNonString = """
+{
+  "default": 987654321
+}
+""";
+
+        setLimit = UtilIT.setSetting(SettingsServiceBean.Key.TabularIngestSizeLimit, invalidNonString);
+        setLimit.then().assertThat().statusCode(OK.getStatusCode());
+
+        uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data-4.csv"));
+
+        String fileId5 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        getTabularFails = UtilIT.getFileDataTables(fileId5, apiToken);
+        getTabularFails.prettyPrint();
+        getTabularFails.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported")));
+
+        String defaultDisabledAndLargeCsvLimit = """
+{
+  "default": "0",
+  "csv": "123456"
+}
+""";
+
+        setLimit = UtilIT.setSetting(SettingsServiceBean.Key.TabularIngestSizeLimit, defaultDisabledAndLargeCsvLimit);
+        setLimit.then().assertThat().statusCode(OK.getStatusCode());
+
+        uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data-5.csv"));
+
+        String fileId6 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        getTabularWorks = UtilIT.getFileDataTables(fileId2, apiToken);
+        getTabularWorks.prettyPrint();
+        getTabularWorks.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].varQuantity", equalTo(4));
 
