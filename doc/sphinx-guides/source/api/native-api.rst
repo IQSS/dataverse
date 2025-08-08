@@ -6001,7 +6001,7 @@ The expected OK (200) response looks something like this:
               }
   ...
 
-This endpoint supports an optional query parameter inAppNotificationFormat which, if sent as true, retrieves the fields needed to build the in-app notifications for the Notifications section of the Dataverse UI, omitting fields related to email notifications.
+This endpoint supports an optional query parameter ``inAppNotificationFormat`` which, if sent as ``true``, retrieves the fields needed to build the in-app notifications for the Notifications section of the Dataverse UI, omitting fields related to email notifications.
 
 .. code-block:: bash
 
