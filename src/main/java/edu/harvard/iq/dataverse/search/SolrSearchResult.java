@@ -83,6 +83,10 @@ public class SolrSearchResult {
     */
     private Long fileCount;
     /**
+     * Only Dataverses can have a dataset count
+     */
+    private Long datasetCount;
+    /**
      * Files and datasets might have a UNF. Dataverses don't.
      */
     private String unf;
@@ -702,6 +706,7 @@ public class SolrSearchResult {
                 nullSafeJsonBuilder.add("affiliation", dataverseAffiliation);
                 nullSafeJsonBuilder.add("parentDataverseName", dataverseParentName);
                 nullSafeJsonBuilder.add("parentDataverseIdentifier", dataverseParentAlias);
+                nullSafeJsonBuilder.add("datasetCount", this.datasetCount);
             } else if (this.entity.isInstanceofDataFile()) {
                 // "published_at" field is only set when the version state is not draft.
                 // On the contrary, this field also takes into account DataFiles in draft version,
@@ -1401,5 +1406,13 @@ public class SolrSearchResult {
 
     public void setFileCount(Long fileCount) {
         this.fileCount = fileCount;
+    }
+
+    public Long getDatasetCount() {
+        return datasetCount;
+    }
+
+    public void setDatasetCount(Long datasetCount) {
+        this.datasetCount = datasetCount;
     }
 }
