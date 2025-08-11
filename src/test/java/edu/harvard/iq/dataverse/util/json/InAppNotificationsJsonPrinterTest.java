@@ -119,7 +119,7 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
-    public void testAddFieldsByType_createDv() {
+    public void testAddFieldsByType_createDv_dvHasOwner() {
         userNotification.setType(UserNotification.Type.CREATEDV);
         userNotification.setObjectId(1L);
 
@@ -143,6 +143,30 @@ public class InAppNotificationsJsonPrinterTest {
         verify(notificationJson).add(KEY_DATAVERSE_DISPLAY_NAME, "Child Dataverse");
         verify(notificationJson).add(KEY_OWNER_ALIAS, "parentDv");
         verify(notificationJson).add(KEY_OWNER_DISPLAY_NAME, "Parent Dataverse");
+        verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
+        verify(notificationJson).add(KEY_GUIDES_VERSION, "v1.0");
+        verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_DATAVERSE_MANAGEMENT_HTML);
+    }
+
+    @Test
+    public void testAddFieldsByType_createDv_dvHasNoOwner() {
+        userNotification.setType(UserNotification.Type.CREATEDV);
+        userNotification.setObjectId(1L);
+
+        Dataverse dataverse = mock(Dataverse.class);
+
+        when(dataverse.getAlias()).thenReturn("dv");
+        when(dataverse.getDisplayName()).thenReturn("Dataverse");
+        when(dataverse.getOwner()).thenReturn(null);
+
+        when(dataverseService.find(1L)).thenReturn(dataverse);
+        when(systemConfig.getGuidesBaseUrl()).thenReturn("http://guides.dataverse.org");
+        when(systemConfig.getGuidesVersion()).thenReturn("v1.0");
+
+        sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
+
+        verify(notificationJson).add(KEY_DATAVERSE_ALIAS, "dv");
+        verify(notificationJson).add(KEY_DATAVERSE_DISPLAY_NAME, "Dataverse");
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
         verify(notificationJson).add(KEY_GUIDES_VERSION, "v1.0");
         verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_DATAVERSE_MANAGEMENT_HTML);

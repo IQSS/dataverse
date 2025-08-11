@@ -151,8 +151,11 @@ public class InAppNotificationsJsonPrinter {
         if (dataverse != null) {
             notificationJson.add(KEY_DATAVERSE_ALIAS, dataverse.getAlias());
             notificationJson.add(KEY_DATAVERSE_DISPLAY_NAME, dataverse.getDisplayName());
-            notificationJson.add(KEY_OWNER_ALIAS, dataverse.getOwner().getAlias());
-            notificationJson.add(KEY_OWNER_DISPLAY_NAME, dataverse.getOwner().getDisplayName());
+            Dataverse owner = dataverse.getOwner();
+            if (owner != null) {
+                notificationJson.add(KEY_OWNER_ALIAS, owner.getAlias());
+                notificationJson.add(KEY_OWNER_DISPLAY_NAME, owner.getDisplayName());
+            }
         }
         addGuidesFields(notificationJson, GUIDES_SECTION_PATH_DATAVERSE_MANAGEMENT_HTML);
     }
