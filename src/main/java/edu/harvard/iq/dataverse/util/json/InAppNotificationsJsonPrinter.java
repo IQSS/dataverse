@@ -34,8 +34,13 @@ public class InAppNotificationsJsonPrinter {
     public static final String KEY_ROOT_DATAVERSE_NAME = "rootDataverseName";
     public static final String KEY_GUIDES_BASE_URL = "userGuidesBaseUrl";
     public static final String KEY_GUIDES_VERSION = "userGuidesVersion";
+    public static final String KEY_GUIDES_SECTION_PATH = "userGuidesSectionPath";
     public static final String KEY_CURATION_STATUS = "currentCurationStatus";
     public static final String KEY_ADDITIONAL_INFO = "additionalInfo";
+
+    public static final String GUIDES_SECTION_PATH_DATAVERSE_MANAGEMENT_HTML = "user/dataverse-management.html";
+    public static final String GUIDES_SECTION_PATH_DATASET_MANAGEMENT_HTML = "user/dataset-management.html";
+    public static final String GUIDES_SECTION_PATH_USER_HTML = "user/index.html";
 
     @EJB
     private DataverseServiceBean dataverseService;
@@ -149,12 +154,12 @@ public class InAppNotificationsJsonPrinter {
             notificationJson.add(KEY_OWNER_ALIAS, dataverse.getOwner().getAlias());
             notificationJson.add(KEY_OWNER_DISPLAY_NAME, dataverse.getOwner().getDisplayName());
         }
-        addGuidesFields(notificationJson);
+        addGuidesFields(notificationJson, GUIDES_SECTION_PATH_DATAVERSE_MANAGEMENT_HTML);
     }
 
     private void addCreateAccountFields(final NullSafeJsonBuilder notificationJson) {
         notificationJson.add(KEY_ROOT_DATAVERSE_NAME, dataverseService.findRootDataverse().getName());
-        addGuidesFields(notificationJson);
+        addGuidesFields(notificationJson, GUIDES_SECTION_PATH_USER_HTML);
     }
 
     private void addRequestFileAccessFields(final NullSafeJsonBuilder notificationJson, final UserNotification userNotification, final AuthenticatedUser requestor) {
@@ -192,13 +197,21 @@ public class InAppNotificationsJsonPrinter {
     }
 
     private void addCreateDatasetFields(final NullSafeJsonBuilder notificationJson, final UserNotification userNotification) {
-        addGuidesFields(notificationJson);
+        addGuidesFields(notificationJson, GUIDES_SECTION_PATH_DATASET_MANAGEMENT_HTML);
         addDatasetFields(notificationJson, userNotification);
     }
 
     private void addGuidesFields(final NullSafeJsonBuilder notificationJson) {
+        addGuidesFields(notificationJson, null);
+    }
+
+    private void addGuidesFields(final NullSafeJsonBuilder notificationJson, String guidesSectionPath) {
         notificationJson.add(KEY_GUIDES_BASE_URL, systemConfig.getGuidesBaseUrl());
         notificationJson.add(KEY_GUIDES_VERSION, systemConfig.getGuidesVersion());
+
+        if (guidesSectionPath != null) {
+            notificationJson.add(KEY_GUIDES_SECTION_PATH, guidesSectionPath);
+        }
     }
 
     private void addSubmittedDatasetFields(final NullSafeJsonBuilder notificationJson, final UserNotification userNotification, final AuthenticatedUser requestor) {

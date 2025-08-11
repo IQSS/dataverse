@@ -163,6 +163,7 @@ public class NotificationsIT {
                 .body("data.notifications[0].rootDataverseName", equalTo(null))
                 .body("data.notifications[0].userGuidesBaseUrl", equalTo(null))
                 .body("data.notifications[0].userGuidesVersion", equalTo(null))
+                .body("data.notifications[0].userGuidesSectionPath", equalTo(null))
                 // Email-related fields should be present
                 .body("data.notifications[0].subjectText", equalTo("Root: Your account has been created"))
                 .body("data.notifications[0].messageText", containsString("Hello,"))
@@ -182,6 +183,7 @@ public class NotificationsIT {
                 // In-App fields should be present
                 .body("data.notifications[0].rootDataverseName", equalTo("Root"))
                 .body("data.notifications[0].userGuidesBaseUrl", equalTo("https://guides.dataverse.org/en"))
+                .body("data.notifications[0].userGuidesSectionPath", equalTo("user/index.html"))
                 .body("data.notifications[0].userGuidesVersion", not(equalTo(null)))
                 // Email-related fields should be null
                 .body("data.notifications[0].subjectText", equalTo(null))

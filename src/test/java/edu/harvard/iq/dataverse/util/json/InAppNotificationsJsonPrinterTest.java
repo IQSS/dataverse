@@ -145,6 +145,7 @@ public class InAppNotificationsJsonPrinterTest {
         verify(notificationJson).add(KEY_OWNER_DISPLAY_NAME, "Parent Dataverse");
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
         verify(notificationJson).add(KEY_GUIDES_VERSION, "v1.0");
+        verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_DATAVERSE_MANAGEMENT_HTML);
     }
 
     @Test
@@ -211,6 +212,7 @@ public class InAppNotificationsJsonPrinterTest {
 
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
         verify(notificationJson).add(KEY_GUIDES_VERSION, "v1.0");
+        verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_DATASET_MANAGEMENT_HTML);
         verify(notificationJson).add(KEY_DATASET_PERSISTENT_ID, testGlobalId.toString());
         verify(notificationJson).add(KEY_DATASET_DISPLAY_NAME, "My Dataset");
         verify(notificationJson).add(KEY_OWNER_ALIAS, "ownerDv");
@@ -310,6 +312,7 @@ public class InAppNotificationsJsonPrinterTest {
         verify(notificationJson).add(KEY_ROOT_DATAVERSE_NAME, "Root");
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
         verify(notificationJson).add(KEY_GUIDES_VERSION, "v1.0");
+        verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_USER_HTML);
     }
 
     @Test
