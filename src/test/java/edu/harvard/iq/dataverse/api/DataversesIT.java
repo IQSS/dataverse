@@ -2314,16 +2314,38 @@ public class DataversesIT {
     }
 
     @Test
-    public void testCreateAndGetTemplates() {
+    public void testCreateAndGetTemplates() throws JsonParseException  {
         Response createUserResponse = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
 
         Response createSecondUserResponse = UtilIT.createRandomUser();
         String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
-
+        /*
+        We need to make this a non-inherited metadatablocks so the get template will only get templates from current dv
+         */
+        
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        String newName = "New Test Dataverse Name";
+        String newAffiliation = "New Test Dataverse Affiliation";
+        String newDataverseType = Dataverse.DataverseType.TEACHING_COURSES.toString();
+        String[] newContactEmails = new String[]{"new_email@dataverse.com"};
+        String[] newInputLevelNames = new String[]{"geographicCoverage"};
+        String[] newFacetIds = new String[]{"contributorName"};
+        String[] newMetadataBlockNames = new String[]{"citation", "geospatial", "biomedical"};
+
+        // Assert that the error is returned for having both MetadataBlockNames and inheritMetadataBlocksFromParent
+       Response updateDataverseResponse = UtilIT.updateDataverse(
+                dataverseAlias, dataverseAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
+                null, newMetadataBlockNames, apiToken,
+                Boolean.FALSE, Boolean.FALSE, null
+        );
+        updateDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+   
+
 
         // Create a template
 
