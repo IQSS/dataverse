@@ -146,6 +146,10 @@ public class NotificationsIT {
 
         assertTrue(notificationTypes.containsAll(expectedTypes) && expectedTypes.containsAll(notificationTypes));
 
+        disableSendNotificationOnDatasetCreationSettingResponse = UtilIT.deleteSetting(SettingsServiceBean.Key.SendNotificationOnDatasetCreation);
+        disableSendNotificationOnDatasetCreationSettingResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
         // inAppNotificationFormat optional query parameter test cases
 
         // inAppNotificationFormat = false (default)
