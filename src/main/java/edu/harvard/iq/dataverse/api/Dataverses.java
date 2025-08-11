@@ -1781,7 +1781,7 @@ public class Dataverses extends AbstractApiBean {
            List<Dataverse> dataversesForLinking = dataverseService.filterDataversesForLinking(searchTerm, createDataverseRequest(getRequestUser(crc)), dvObject);
                 JsonArrayBuilder dvBuilder = Json.createArrayBuilder();
                 for (Dataverse dv : dataversesForLinking) {
-                    dvBuilder.add(dv.getAlias());
+                    dvBuilder.add(json(dv, true));
                 }
                 return ok(dvBuilder);        
         } catch (WrappedResponse wr) {

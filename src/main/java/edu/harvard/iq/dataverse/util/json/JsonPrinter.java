@@ -269,6 +269,17 @@ public class JsonPrinter {
 
         return bld;
     }
+    
+    public static JsonObjectBuilder json(Dataverse dv, Boolean mini) {
+        if (!mini){
+            return json(dv, false, false, null);
+        } else {
+            return jsonObjectBuilder()
+                .add("id", dv.getId())
+                .add("alias", dv.getAlias())
+                .add("name", dv.getName());           
+        }
+    }
 
     public static JsonObjectBuilder json(Dataverse dv) {
         return json(dv, false, false, null);
