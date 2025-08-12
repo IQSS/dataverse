@@ -119,6 +119,20 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    public void testAddFieldsByType_revokeRole_objectDeleted() {
+        userNotification.setType(UserNotification.Type.REVOKEROLE);
+        userNotification.setObjectId(1L);
+
+        when(dataverseService.find(1L)).thenReturn(null);
+        when(datasetService.find(1L)).thenReturn(null);
+        when(dataFileService.find(1L)).thenReturn(null);
+
+        sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
+
+        verify(notificationJson).add(KEY_OBJECT_DELETED, true);
+    }
+
+    @Test
     public void testAddFieldsByType_createDv_dvHasOwner() {
         userNotification.setType(UserNotification.Type.CREATEDV);
         userNotification.setObjectId(1L);
@@ -173,6 +187,23 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    public void testAddFieldsByType_createDv_objectDeleted() {
+        userNotification.setType(UserNotification.Type.CREATEDV);
+        userNotification.setObjectId(1L);
+
+        when(dataverseService.find(1L)).thenReturn(null);
+        when(systemConfig.getGuidesBaseUrl()).thenReturn("http://guides.dataverse.org");
+        when(systemConfig.getGuidesVersion()).thenReturn("v1.0");
+
+        sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
+
+        verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
+        verify(notificationJson).add(KEY_GUIDES_VERSION, "v1.0");
+        verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_DATAVERSE_MANAGEMENT_HTML);
+        verify(notificationJson).add(KEY_OBJECT_DELETED, true);
+    }
+
+    @Test
     public void testAddFieldsByType_requestFileAccess() {
         userNotification.setType(UserNotification.Type.REQUESTFILEACCESS);
         userNotification.setObjectId(1L);
@@ -211,6 +242,18 @@ public class InAppNotificationsJsonPrinterTest {
         verify(notificationJson).add(KEY_DATAFILE_ID, Long.valueOf("1"));
         verify(notificationJson).add(KEY_DATAFILE_DISPLAY_NAME, "Granted File");
         verify(notificationJson, never()).add(eq(KEY_REQUESTOR_FIRST_NAME), anyString());
+    }
+
+    @Test
+    public void testAddFieldsByType_grantFileAccess_objectDeleted() {
+        userNotification.setType(UserNotification.Type.GRANTFILEACCESS);
+        userNotification.setObjectId(1L);
+
+        when(dataFileService.find(1L)).thenReturn(null);
+
+        sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
+
+        verify(notificationJson).add(KEY_OBJECT_DELETED, true);
     }
 
     @Test
@@ -341,6 +384,18 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    public void testAddFieldsByType_statusUpdated_objectDeleted() {
+        userNotification.setType(UserNotification.Type.STATUSUPDATED);
+        userNotification.setObjectId(1L);
+
+        when(datasetVersionService.find(1L)).thenReturn(null);
+
+        sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
+
+        verify(notificationJson).add(KEY_OBJECT_DELETED, true);
+    }
+
+    @Test
     public void testAddFieldsByType_createAcc() {
         userNotification.setType(UserNotification.Type.CREATEACC);
 
@@ -360,7 +415,7 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
-    public void testAddFieldsByType_IngestCompleted() {
+    public void testAddFieldsByType_ingestCompleted() {
         userNotification.setType(UserNotification.Type.INGESTCOMPLETED);
         userNotification.setObjectId(1L);
 
@@ -385,6 +440,24 @@ public class InAppNotificationsJsonPrinterTest {
         verify(notificationJson).add(KEY_DATASET_DISPLAY_NAME, "Ingested Dataset");
         verify(notificationJson).add(KEY_OWNER_ALIAS, "ownerDv");
         verify(notificationJson).add(KEY_OWNER_DISPLAY_NAME, "Owner Dataverse");
+        verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
+        verify(notificationJson).add(KEY_GUIDES_VERSION, "v1.0");
+        verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_DATASET_MANAGEMENT_TABULAR_FILES_HTML);
+    }
+
+    @Test
+    public void testAddFieldsByType_ingestCompleted_objectDeleted() {
+        userNotification.setType(UserNotification.Type.INGESTCOMPLETED);
+        userNotification.setObjectId(1L);
+
+        when(datasetService.find(1L)).thenReturn(null);
+
+        when(systemConfig.getGuidesBaseUrl()).thenReturn("http://guides.dataverse.org");
+        when(systemConfig.getGuidesVersion()).thenReturn("v1.0");
+
+        sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
+
+        verify(notificationJson).add(KEY_OBJECT_DELETED, true);
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
         verify(notificationJson).add(KEY_GUIDES_VERSION, "v1.0");
         verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_DATASET_MANAGEMENT_TABULAR_FILES_HTML);

@@ -37,6 +37,7 @@ public class InAppNotificationsJsonPrinter {
     public static final String KEY_GUIDES_SECTION_PATH = "userGuidesSectionPath";
     public static final String KEY_CURATION_STATUS = "currentCurationStatus";
     public static final String KEY_ADDITIONAL_INFO = "additionalInfo";
+    public static final String KEY_OBJECT_DELETED = "objectDeleted";
 
     public static final String GUIDES_SECTION_PATH_DATAVERSE_MANAGEMENT_HTML = "user/dataverse-management.html";
     public static final String GUIDES_SECTION_PATH_DATASET_MANAGEMENT_HTML = "user/dataset-management.html";
@@ -140,9 +141,13 @@ public class InAppNotificationsJsonPrinter {
                 notificationJson.add(KEY_DATASET_DISPLAY_NAME, dataset.getDisplayName());
             } else {
                 DataFile datafile = dataFileService.find(userNotification.getObjectId());
-                notificationJson.add(KEY_ROLE_ASSIGNMENTS, jsonRoleAssignments(permissionService.getEffectiveRoleAssignments(authenticatedUser, datafile)));
-                notificationJson.add(KEY_OWNER_PERSISTENT_ID, datafile.getOwner().getGlobalId().asString());
-                notificationJson.add(KEY_OWNER_DISPLAY_NAME, datafile.getOwner().getDisplayName());
+                if (datafile != null) {
+                    notificationJson.add(KEY_ROLE_ASSIGNMENTS, jsonRoleAssignments(permissionService.getEffectiveRoleAssignments(authenticatedUser, datafile)));
+                    notificationJson.add(KEY_OWNER_PERSISTENT_ID, datafile.getOwner().getGlobalId().asString());
+                    notificationJson.add(KEY_OWNER_DISPLAY_NAME, datafile.getOwner().getDisplayName());
+                } else {
+                    notificationJson.add(KEY_OBJECT_DELETED, true);
+                }
             }
         }
     }
@@ -157,6 +162,8 @@ public class InAppNotificationsJsonPrinter {
                 notificationJson.add(KEY_OWNER_ALIAS, owner.getAlias());
                 notificationJson.add(KEY_OWNER_DISPLAY_NAME, owner.getDisplayName());
             }
+        } else {
+            notificationJson.add(KEY_OBJECT_DELETED, true);
         }
         addGuidesFields(notificationJson, GUIDES_SECTION_PATH_DATAVERSE_MANAGEMENT_HTML);
     }
@@ -176,6 +183,8 @@ public class InAppNotificationsJsonPrinter {
         if (dataFile != null) {
             notificationJson.add(KEY_DATAFILE_ID, dataFile.getId());
             notificationJson.add(KEY_DATAFILE_DISPLAY_NAME, dataFile.getDisplayName());
+        } else {
+            notificationJson.add(KEY_OBJECT_DELETED, true);
         }
     }
 
@@ -197,6 +206,8 @@ public class InAppNotificationsJsonPrinter {
             notificationJson.add(KEY_DATASET_DISPLAY_NAME, dataset.getDisplayName());
             notificationJson.add(KEY_OWNER_ALIAS, dataset.getOwner().getAlias());
             notificationJson.add(KEY_OWNER_DISPLAY_NAME, dataset.getOwner().getDisplayName());
+        } else {
+            notificationJson.add(KEY_OBJECT_DELETED, true);
         }
     }
 
@@ -234,6 +245,8 @@ public class InAppNotificationsJsonPrinter {
             if (addCurationStatus) {
                 notificationJson.add(KEY_CURATION_STATUS, getLocaleCurationStatusLabel(datasetVersion.getCurrentCurationStatus()));
             }
+        } else {
+            notificationJson.add(KEY_OBJECT_DELETED, true);
         }
     }
 
