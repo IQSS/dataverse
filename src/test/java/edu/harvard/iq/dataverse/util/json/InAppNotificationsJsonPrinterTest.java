@@ -218,16 +218,20 @@ public class InAppNotificationsJsonPrinterTest {
         userNotification.setType(UserNotification.Type.CREATEDS);
         userNotification.setObjectId(1L);
 
+        DatasetVersion datasetVersion = mock(DatasetVersion.class);
         Dataset dataset = mock(Dataset.class);
         Dataverse owner = mock(Dataverse.class);
+
+        when(owner.getAlias()).thenReturn("ownerDv");
+        when(owner.getDisplayName()).thenReturn("Owner Dataverse");
+
+        when(datasetVersion.getDataset()).thenReturn(dataset);
 
         when(dataset.getGlobalId()).thenReturn(testGlobalId);
         when(dataset.getDisplayName()).thenReturn("My Dataset");
         when(dataset.getOwner()).thenReturn(owner);
-        when(datasetService.find(1L)).thenReturn(dataset);
 
-        when(owner.getAlias()).thenReturn("ownerDv");
-        when(owner.getDisplayName()).thenReturn("Owner Dataverse");
+        when(datasetVersionService.find(1L)).thenReturn(datasetVersion);
 
         when(systemConfig.getGuidesBaseUrl()).thenReturn("http://guides.dataverse.org");
         when(systemConfig.getGuidesVersion()).thenReturn("v1.0");
@@ -282,10 +286,17 @@ public class InAppNotificationsJsonPrinterTest {
 
         DatasetVersion datasetVersion = mock(DatasetVersion.class);
         Dataset dataset = mock(Dataset.class);
+        Dataverse owner = mock(Dataverse.class);
+
+        when(owner.getAlias()).thenReturn("ownerDv");
+        when(owner.getDisplayName()).thenReturn("Owner Dataverse");
 
         when(datasetVersion.getDataset()).thenReturn(dataset);
+
+        when(dataset.getOwner()).thenReturn(owner);
         when(dataset.getGlobalId()).thenReturn(testGlobalId);
         when(dataset.getDisplayName()).thenReturn("Published Dataset");
+
         when(datasetVersionService.find(1L)).thenReturn(datasetVersion);
 
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
@@ -293,6 +304,8 @@ public class InAppNotificationsJsonPrinterTest {
         verify(notificationJson).add(KEY_DATASET_PERSISTENT_ID, testGlobalId.toString());
         verify(notificationJson).add(KEY_DATASET_DISPLAY_NAME, "Published Dataset");
         verify(notificationJson, never()).add(eq(KEY_CURATION_STATUS), anyString());
+        verify(notificationJson).add(KEY_OWNER_ALIAS, "ownerDv");
+        verify(notificationJson).add(KEY_OWNER_DISPLAY_NAME, "Owner Dataverse");
     }
 
     @Test
@@ -302,6 +315,10 @@ public class InAppNotificationsJsonPrinterTest {
 
         DatasetVersion datasetVersion = mock(DatasetVersion.class);
         Dataset dataset = mock(Dataset.class);
+        Dataverse owner = mock(Dataverse.class);
+
+        when(owner.getAlias()).thenReturn("ownerDv");
+        when(owner.getDisplayName()).thenReturn("Owner Dataverse");
 
         CurationStatus curationStatusMock = mock(CurationStatus.class);
         when(curationStatusMock.getLabel()).thenReturn("testStatus");
@@ -310,6 +327,7 @@ public class InAppNotificationsJsonPrinterTest {
         when(datasetVersion.getCurrentCurationStatus()).thenReturn(curationStatusMock);
         when(datasetVersionService.find(1L)).thenReturn(datasetVersion);
 
+        when(dataset.getOwner()).thenReturn(owner);
         when(dataset.getGlobalId()).thenReturn(testGlobalId);
         when(dataset.getDisplayName()).thenReturn("Status Update Dataset");
 
@@ -318,6 +336,8 @@ public class InAppNotificationsJsonPrinterTest {
         verify(notificationJson).add(KEY_DATASET_PERSISTENT_ID, testGlobalId.toString());
         verify(notificationJson).add(KEY_DATASET_DISPLAY_NAME, "Status Update Dataset");
         verify(notificationJson).add(eq(KEY_CURATION_STATUS), any(String.class));
+        verify(notificationJson).add(KEY_OWNER_ALIAS, "ownerDv");
+        verify(notificationJson).add(KEY_OWNER_DISPLAY_NAME, "Owner Dataverse");
     }
 
     @Test
@@ -350,8 +370,10 @@ public class InAppNotificationsJsonPrinterTest {
         when(dataset.getGlobalId()).thenReturn(testGlobalId);
         when(dataset.getDisplayName()).thenReturn("Ingested Dataset");
         when(dataset.getOwner()).thenReturn(owner);
+
         when(owner.getAlias()).thenReturn("ownerDv");
         when(owner.getDisplayName()).thenReturn("Owner Dataverse");
+
         when(datasetService.find(1L)).thenReturn(dataset);
 
         when(systemConfig.getGuidesBaseUrl()).thenReturn("http://guides.dataverse.org");

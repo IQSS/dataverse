@@ -201,7 +201,7 @@ public class InAppNotificationsJsonPrinter {
 
     private void addCreateDatasetFields(final NullSafeJsonBuilder notificationJson, final UserNotification userNotification) {
         addGuidesFields(notificationJson, GUIDES_SECTION_PATH_DATASET_MANAGEMENT_HTML);
-        addDatasetFields(notificationJson, userNotification);
+        addDatasetVersionFields(notificationJson, userNotification);
     }
 
     private void addGuidesFields(final NullSafeJsonBuilder notificationJson) {
@@ -229,8 +229,11 @@ public class InAppNotificationsJsonPrinter {
     private void addDatasetVersionFields(final NullSafeJsonBuilder notificationJson, final UserNotification userNotification, final boolean addCurationStatus) {
         final DatasetVersion datasetVersion = datasetVersionService.find(userNotification.getObjectId());
         if (datasetVersion != null) {
-            notificationJson.add(KEY_DATASET_PERSISTENT_ID, datasetVersion.getDataset().getGlobalId().asString());
-            notificationJson.add(KEY_DATASET_DISPLAY_NAME, datasetVersion.getDataset().getDisplayName());
+            Dataset dataset = datasetVersion.getDataset();
+            notificationJson.add(KEY_DATASET_PERSISTENT_ID, dataset.getGlobalId().asString());
+            notificationJson.add(KEY_DATASET_DISPLAY_NAME, dataset.getDisplayName());
+            notificationJson.add(KEY_OWNER_ALIAS, dataset.getOwner().getAlias());
+            notificationJson.add(KEY_OWNER_DISPLAY_NAME, dataset.getOwner().getDisplayName());
             if (addCurationStatus) {
                 notificationJson.add(KEY_CURATION_STATUS, getLocaleCurationStatusLabel(datasetVersion.getCurrentCurationStatus()));
             }
