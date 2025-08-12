@@ -2320,6 +2320,7 @@ public class DataversesIT {
 
         Response createSecondUserResponse = UtilIT.createRandomUser();
         String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
+        
         /*
         We need to make this a non-inherited metadatablocks so the get template will only get templates from current dv
          */
@@ -2342,10 +2343,9 @@ public class DataversesIT {
                 null, newMetadataBlockNames, apiToken,
                 Boolean.FALSE, Boolean.FALSE, null
         );
+       
         updateDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-   
-
 
         // Create a template
 
@@ -2384,6 +2384,7 @@ public class DataversesIT {
                 jsonString,
                 apiToken
         );
+        
         createTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.name", equalTo("Dataverse template"))
                 .body("data.usageCount", equalTo(0))
