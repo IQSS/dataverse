@@ -29,7 +29,7 @@ public class InReviewWorkflowIT {
     }
 
     @Test
-    public void testCuratorSendsCommentsToAuthor() throws InterruptedException {
+    public void testCuratorSendsCommentsToAuthor() {
         Response createCurator = UtilIT.createRandomUser();
         createCurator.prettyPrint();
         createCurator.then().assertThat()
