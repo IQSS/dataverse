@@ -723,6 +723,8 @@ public class DataversesIT {
         Response createDataverseResponseUnavailableForLinking = UtilIT.createRandomDataverse(apiTokenTwo);
         createDataverseResponseUnavailableForLinking.prettyPrint();
         String dataverseAliasUnavailableForLinking = UtilIT.getAliasFromResponse(createDataverseResponseUnavailableForLinking);
+        publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAliasUnavailableForLinking, apiTokenTwo);
+        assertEquals(200, publishDataverse.getStatusCode());
         
         Response getUnavailableForDataset = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, apiToken, dataverseAliasUnavailableForLinking);
         getUnavailableForDataset.prettyPrint();
