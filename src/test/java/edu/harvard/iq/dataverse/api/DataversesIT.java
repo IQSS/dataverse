@@ -681,15 +681,19 @@ public class DataversesIT {
     @Test
     public void testGetLinkableDataverses(){
         Response createUser = UtilIT.createRandomUser();
-        String username = UtilIT.getUsernameFromResponse(createUser);
-        Response makeSuperUser = UtilIT.makeSuperUser(username);
-        assertEquals(200, makeSuperUser.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+        //Create dataverse for linking
+        Response createDataverseResponseForLinking = UtilIT.createRandomDataverse(apiToken);
+        String dataverseAliasForLinking = UtilIT.getAliasFromResponse(createDataverseResponseForLinking);
 
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+        
+        publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAliasForLinking, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
         
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
@@ -698,13 +702,41 @@ public class DataversesIT {
         
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
         UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
-         
-        System.out.print("After pub dataset");
         
-        Response getLinkableDataverses = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, apiToken, "dv0");
+        Response getLinkableDataverses = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, apiToken, dataverseAliasForLinking);
         getLinkableDataverses.prettyPrint();
                 getLinkableDataverses.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode())
+                .body("data[0].alias", equalTo(dataverseAliasForLinking));
+                
+        Response getLinkableDataversesForDataverse = UtilIT.getLinkableDataverses("dataverse", dataverseAlias, apiToken, dataverseAliasForLinking);
+        getLinkableDataversesForDataverse.prettyPrint();
+                getLinkableDataverses.then().assertThat()
+                .statusCode(OK.getStatusCode())                
+                .body("data[0].alias", equalTo(dataverseAliasForLinking));  
+                
+        // create new user and dataverse - the new dataverse should not be available to the first user for linking...
+        Response createUserTwo = UtilIT.createRandomUser();
+        String apiTokenTwo = UtilIT.getApiTokenFromResponse(createUserTwo);
+        
+        //Create dataverse that should be unavailable for linking
+        Response createDataverseResponseUnavailableForLinking = UtilIT.createRandomDataverse(apiTokenTwo);
+        createDataverseResponseUnavailableForLinking.prettyPrint();
+        String dataverseAliasUnavailableForLinking = UtilIT.getAliasFromResponse(createDataverseResponseUnavailableForLinking);
+        
+        Response getUnavailableForDataset = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, apiToken, dataverseAliasUnavailableForLinking);
+        getUnavailableForDataset.prettyPrint();
+                getUnavailableForDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(0));
+                
+        Response getUnavailableForDataverse = UtilIT.getLinkableDataverses("dataverse", dataverseAlias, apiToken, dataverseAliasUnavailableForLinking);
+        getUnavailableForDataverse.prettyPrint();
+                getUnavailableForDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode())                
+                .body("data.size()", equalTo(0));
+
+        
     }
 
     @Test

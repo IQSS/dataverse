@@ -1771,11 +1771,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/{type}/linkingDataverses/{searchTerm}")
     public Response getLinkingDataverseList(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("searchTerm") String searchTerm, @PathParam("type") String type){
         //first determine what you are linking based on identifier and type
-        System.out.print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        System.out.print("in dataverses method");
-        System.out.print("id: " + dvIdtf);
-        System.out.print("searchTerm: " + searchTerm);
-        System.out.print("type: " + type);
+
         try{
            DvObject   dvObject = findDvoByIdAndTypeOrDie(dvIdtf, type);
            List<Dataverse> dataversesForLinking = dataverseService.filterDataversesForLinking(searchTerm, createDataverseRequest(getRequestUser(crc)), dvObject);
