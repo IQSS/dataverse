@@ -1771,14 +1771,16 @@ public class Dataverses extends AbstractApiBean {
     public Response getLinkingDataverseList(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("searchTerm") String searchTerm, @PathParam("type") String type){
         //first determine what you are linking based on identifier and type
 
-        try{
-           DvObject   dvObject = findDvoByIdAndTypeOrDie(dvIdtf, type);
-           List<Dataverse> dataversesForLinking = dataverseService.filterDataversesForLinking(searchTerm, createDataverseRequest(getRequestUser(crc)), dvObject);
-                JsonArrayBuilder dvBuilder = Json.createArrayBuilder();
+        try {
+            DvObject dvObject = findDvoByIdAndTypeOrDie(dvIdtf, type);
+            List<Dataverse> dataversesForLinking = dataverseService.filterDataversesForLinking(searchTerm, createDataverseRequest(getRequestUser(crc)), dvObject);
+            JsonArrayBuilder dvBuilder = Json.createArrayBuilder();
+            if (dataversesForLinking != null && !dataversesForLinking.isEmpty()) {
                 for (Dataverse dv : dataversesForLinking) {
                     dvBuilder.add(json(dv, true));
                 }
-                return ok(dvBuilder);        
+            }
+            return ok(dvBuilder);       
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         } catch (Exception e){

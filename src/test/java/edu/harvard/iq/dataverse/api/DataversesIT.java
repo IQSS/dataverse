@@ -715,7 +715,17 @@ public class DataversesIT {
                 getLinkableDataverses.then().assertThat()
                 .statusCode(OK.getStatusCode())                
                 .body("data[0].alias", equalTo(dataverseAliasForLinking));  
-                
+                                        
+        //Should be able to get based on a partial alias...
+        // Partial must include the first part of the name
+        String searchTerm = dataverseAliasForLinking.substring(0, 5);
+            
+        Response getLinkableDataversesForDataversePartial = UtilIT.getLinkableDataverses("dataverse", dataverseAlias, apiToken, searchTerm);
+        getLinkableDataversesForDataversePartial.prettyPrint();
+                getLinkableDataversesForDataversePartial.then().assertThat()
+                .statusCode(OK.getStatusCode())                
+                .body("data[0].alias", equalTo(dataverseAliasForLinking));         
+                                
         // create new user and dataverse - the new dataverse should not be available to the first user for linking...
         Response createUserTwo = UtilIT.createRandomUser();
         String apiTokenTwo = UtilIT.getApiTokenFromResponse(createUserTwo);
