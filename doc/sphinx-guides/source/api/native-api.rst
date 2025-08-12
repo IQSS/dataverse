@@ -732,6 +732,50 @@ Note: you must have "Add Dataset" permission in the given collection to invoke t
 
 .. _featured-collections:
 
+List Dataverse Collections that a given Dataset or Dataverse Collection may be linked to
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The user may provide a search term to limit the list of Dataverse Collections returned
+The response is a JSON array of the ids, aliases, and names of the Dataverse collections that a given Dataset or Dataverse Collection may be linked to:
+
+For a given Dataverse Collection:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export OBJECT_TYPE=dataverse
+  export ID=collectionAlias
+  export SEARCH_TERM=searchOn
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/dataverses/$ID/$OBJECT_TYPE/linkingDataverses/$SEARCH_TERM" 
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/dataverses/collectionAlias/dataverse/linkingDataverses/searchOn" 
+
+For a given Dataset:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export OBJECT_TYPE=dataset
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
+  export SEARCH_TERM=searchOn
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/dataverses/:persistentId/$OBJECT_TYPE/linkingDataverses/$SEARCH_TERM?persistentId=$PERSISTENT_IDENTIFIER"" 
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/dataverses/:persistentId/dataset/linkingDataverses/searchOn?persistentId=doi:10.5072/FK2/J8SJZB" 
+
+
+
 List Featured Collections for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
