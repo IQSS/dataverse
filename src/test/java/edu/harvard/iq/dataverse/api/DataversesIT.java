@@ -682,7 +682,8 @@ public class DataversesIT {
     public void testGetLinkableDataverses(){
         Response createUser = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        
+        String username = UtilIT.getUsernameFromResponse(createUser);
+
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         
@@ -737,7 +738,25 @@ public class DataversesIT {
                 getUnavailableForDataverse.then().assertThat()
                 .statusCode(OK.getStatusCode())                
                 .body("data.size()", equalTo(0));
-
+        
+        //now link a dataverse and see that it's unavailable in the future          
+       
+        Response makeSuperUser = UtilIT.setSuperuserStatus(username, Boolean.TRUE);
+                
+        Response linkDataset = UtilIT.linkDataset(datasetPersistentId, dataverseAliasForLinking, apiToken);
+        linkDataset.prettyPrint();
+        linkDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());  
+        
+        //set it back to non-super user so perms are limited
+        UtilIT.setSuperuserStatus(username, Boolean.FALSE);
+        
+        //should get an empty list because dataset is already linked
+        getLinkableDataverses = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, apiToken, dataverseAliasForLinking);
+        getLinkableDataverses.prettyPrint();
+                getLinkableDataverses.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(0));
         
     }
 
