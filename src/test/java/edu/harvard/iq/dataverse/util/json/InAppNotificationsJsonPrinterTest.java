@@ -387,6 +387,7 @@ public class InAppNotificationsJsonPrinterTest {
         verify(notificationJson).add(KEY_OWNER_DISPLAY_NAME, "Owner Dataverse");
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
         verify(notificationJson).add(KEY_GUIDES_VERSION, "v1.0");
+        verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_DATASET_MANAGEMENT_TABULAR_FILES_HTML);
     }
 
     @Test

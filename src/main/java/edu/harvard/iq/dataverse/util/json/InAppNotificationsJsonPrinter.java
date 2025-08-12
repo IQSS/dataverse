@@ -40,6 +40,7 @@ public class InAppNotificationsJsonPrinter {
 
     public static final String GUIDES_SECTION_PATH_DATAVERSE_MANAGEMENT_HTML = "user/dataverse-management.html";
     public static final String GUIDES_SECTION_PATH_DATASET_MANAGEMENT_HTML = "user/dataset-management.html";
+    public static final String GUIDES_SECTION_PATH_DATASET_MANAGEMENT_TABULAR_FILES_HTML = "user/dataset-management.html#tabular-data-files";
     public static final String GUIDES_SECTION_PATH_USER_HTML = "user/index.html";
 
     @EJB
@@ -204,10 +205,6 @@ public class InAppNotificationsJsonPrinter {
         addDatasetVersionFields(notificationJson, userNotification);
     }
 
-    private void addGuidesFields(final NullSafeJsonBuilder notificationJson) {
-        addGuidesFields(notificationJson, null);
-    }
-
     private void addGuidesFields(final NullSafeJsonBuilder notificationJson, String guidesSectionPath) {
         notificationJson.add(KEY_GUIDES_BASE_URL, systemConfig.getGuidesBaseUrl());
         notificationJson.add(KEY_GUIDES_VERSION, systemConfig.getGuidesVersion());
@@ -242,7 +239,7 @@ public class InAppNotificationsJsonPrinter {
 
     private void addIngestFields(final NullSafeJsonBuilder notificationJson, final UserNotification userNotification) {
         addDatasetFields(notificationJson, userNotification);
-        addGuidesFields(notificationJson);
+        addGuidesFields(notificationJson, GUIDES_SECTION_PATH_DATASET_MANAGEMENT_TABULAR_FILES_HTML);
     }
 
     private void addDatasetMentionedFields(final NullSafeJsonBuilder notificationJson, final UserNotification userNotification) {
