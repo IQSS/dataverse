@@ -1767,7 +1767,6 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("{identifier}/{type}/linkingDataverses/{searchTerm}")
     public Response getLinkingDataverseList(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("searchTerm") String searchTerm, @PathParam("type") String type){
         //first determine what you are linking based on identifier and type

@@ -541,7 +541,6 @@ public class DataverseServiceBean implements java.io.Serializable {
                        || (linkedDataverse != null && this.permissionService.requestOn(req, res).has(Permission.LinkDataverse))) {
                     dataverseList.add(res);
                 }
-
             }
         }
 
