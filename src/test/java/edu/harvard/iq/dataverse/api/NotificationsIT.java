@@ -10,6 +10,7 @@ import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.OK;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -24,14 +25,17 @@ public class NotificationsIT {
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+        disableSendNotificationOnDatasetCreationSetting();
+    }
+
+    @AfterAll
+    public static void afterClass() {
+        disableSendNotificationOnDatasetCreationSetting();
     }
 
     @Test
     public void testNotifications() {
         // SendNotificationOnDatasetCreation setting is false
-        Response disableSendNotificationOnDatasetCreationSettingResponse = UtilIT.deleteSetting(SettingsServiceBean.Key.SendNotificationOnDatasetCreation);
-        disableSendNotificationOnDatasetCreationSettingResponse.then().assertThat()
-                .statusCode(OK.getStatusCode());
 
         Response createAuthor = UtilIT.createRandomUser();
         createAuthor.then().assertThat()
@@ -115,6 +119,7 @@ public class NotificationsIT {
                 .statusCode(OK.getStatusCode());
 
         // SendNotificationOnDatasetCreation setting is true
+
         createAuthor = UtilIT.createRandomUser();
         createAuthor.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -147,9 +152,7 @@ public class NotificationsIT {
 
         assertTrue(notificationTypes.containsAll(expectedTypes) && expectedTypes.containsAll(notificationTypes));
 
-        disableSendNotificationOnDatasetCreationSettingResponse = UtilIT.deleteSetting(SettingsServiceBean.Key.SendNotificationOnDatasetCreation);
-        disableSendNotificationOnDatasetCreationSettingResponse.then().assertThat()
-                .statusCode(OK.getStatusCode());
+        disableSendNotificationOnDatasetCreationSetting();
 
         // inAppNotificationFormat optional query parameter test cases
 
@@ -193,6 +196,12 @@ public class NotificationsIT {
                 // Email-related fields should be null
                 .body("data.notifications[0].subjectText", equalTo(null))
                 .body("data.notifications[0].messageText", equalTo(null))
+                .statusCode(OK.getStatusCode());
+    }
+
+    private static void disableSendNotificationOnDatasetCreationSetting() {
+        Response disableSendNotificationOnDatasetCreationSettingResponse = UtilIT.deleteSetting(SettingsServiceBean.Key.SendNotificationOnDatasetCreation);
+        disableSendNotificationOnDatasetCreationSettingResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
     }
 }
