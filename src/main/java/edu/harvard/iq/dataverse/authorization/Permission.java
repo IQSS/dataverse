@@ -49,10 +49,12 @@ public enum Permission implements java.io.Serializable {
     ManageFilePermissions(BundleUtil.getStringFromBundle("permission.managePermissionsDataFile"), true, DataFile.class),
     PublishDataverse(BundleUtil.getStringFromBundle("permission.publishDataverse"), true, Dataverse.class),
     PublishDataset(BundleUtil.getStringFromBundle("permission.publishDataset"), true, Dataset.class, Dataverse.class),
+    LinkDataverse(BundleUtil.getStringFromBundle("permission.linkDataverse"), true, Dataverse.class),
+    LinkDataset(BundleUtil.getStringFromBundle("permission.linkDataset"), true, Dataset.class, Dataverse.class),
     // Delete
     DeleteDataverse(BundleUtil.getStringFromBundle("permission.deleteDataverse"), true, Dataverse.class),
     DeleteDatasetDraft(BundleUtil.getStringFromBundle("permission.deleteDataset"), true, Dataset.class);
-    
+
 
     // FUTURE:
     //RestrictMetadata("Mark metadata as restricted", DvObject.class),

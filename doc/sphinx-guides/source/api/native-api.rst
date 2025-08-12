@@ -1840,8 +1840,6 @@ The returned file counts are based on different criteria:
 - Per tabular tag name
 - Per access status (Possible values: Public, Restricted, EmbargoedThenRestricted, EmbargoedThenPublic, RetentionPeriodExpired)
 
-Note: Authentication is required. This call will return a 403/Forbidden response for Guest users.
-
 .. code-block:: bash
 
   export SERVER_URL=https://demo.dataverse.org
@@ -2823,7 +2821,6 @@ Get the size of Downloading all the files of a Dataset Version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Shows the combined size in bytes of all the files available for download from version ``versionId`` of dataset ``id``.
-Note: Authentication is required. This call will return a 403/Forbidden response for Guest users.
 
 .. code-block:: bash
 
