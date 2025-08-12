@@ -732,11 +732,11 @@ Note: you must have "Add Dataset" permission in the given collection to invoke t
 
 .. _featured-collections:
 
-List Dataverse Collections that a given Dataset or Dataverse Collection may be linked to
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+List Dataverse Collections to which a given Dataset or Dataverse Collection may be linked
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The user may provide a search term to limit the list of Dataverse Collections returned
-The response is a JSON array of the ids, aliases, and names of the Dataverse collections that a given Dataset or Dataverse Collection may be linked to:
+The user may provide a search term to limit the list of Dataverse Collections returned.
+The response is a JSON array of the ids, aliases, and names of the Dataverse collections to which a given Dataset or Dataverse Collection may be linked:
 
 For a given Dataverse Collection:
 
