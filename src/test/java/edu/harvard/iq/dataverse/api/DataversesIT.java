@@ -739,7 +739,7 @@ public class DataversesIT {
                 .statusCode(OK.getStatusCode())                
                 .body("data.size()", equalTo(0));
         
-        //now link a dataverse and see that it's unavailable in the future          
+        //now link a dataset and see that it's unavailable in the future          
        
         Response makeSuperUser = UtilIT.setSuperuserStatus(username, Boolean.TRUE);
                 
@@ -748,7 +748,7 @@ public class DataversesIT {
         linkDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());  
         
-        //set it back to non-super user so perms are limited
+        //set user api back to non-super user so perms are limited
         UtilIT.setSuperuserStatus(username, Boolean.FALSE);
         
         //should get an empty list because dataset is already linked
