@@ -5,6 +5,7 @@ import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 
+import static edu.harvard.iq.dataverse.UserNotification.Type.*;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.OK;
@@ -61,11 +62,11 @@ public class NotificationsIT {
         String firstNotificationType = JsonPath.from(getNotifications.body().asString()).getString("data.notifications[0].type");
         String secondNotificationType = JsonPath.from(getNotifications.body().asString()).getString("data.notifications[1].type");
         long createAccountId = 0L;
-        if (firstNotificationType.equals("CREATEDV")) {
-            assertEquals("CREATEACC", secondNotificationType);
+        if (firstNotificationType.equals(CREATEDV.toString())) {
+            assertEquals(CREATEACC.toString(), secondNotificationType);
             createAccountId = JsonPath.from(getNotifications.getBody().asString()).getLong("data.notifications[1].id");
-        } else if (firstNotificationType.equals("CREATEACC")) {
-            assertEquals("CREATEDV", secondNotificationType);
+        } else if (firstNotificationType.equals(CREATEACC.toString())) {
+            assertEquals(CREATEDV.toString(), secondNotificationType);
             createAccountId = JsonPath.from(getNotifications.getBody().asString()).getLong("data.notifications[0].id");
         } else {
             fail("Unexpected notification type: " + firstNotificationType);
@@ -89,12 +90,12 @@ public class NotificationsIT {
 
         firstNotificationType = JsonPath.from(getNotifications2.body().asString()).getString("data.notifications[0].type");
         secondNotificationType = JsonPath.from(getNotifications2.body().asString()).getString("data.notifications[1].type");
-        if (firstNotificationType.equals("CREATEDV")) {
-            assertEquals("CREATEACC", secondNotificationType);
+        if (firstNotificationType.equals(CREATEDV.toString())) {
+            assertEquals(CREATEACC.toString(), secondNotificationType);
             assertTrue(JsonPath.from(getNotifications2.body().asString()).getBoolean("data.notifications[1].displayAsRead"));
             assertFalse(JsonPath.from(getNotifications2.body().asString()).getBoolean("data.notifications[0].displayAsRead"));
-        } else if (firstNotificationType.equals("CREATEACC")) {
-            assertEquals("CREATEDV", secondNotificationType);
+        } else if (firstNotificationType.equals(CREATEACC.toString())) {
+            assertEquals(CREATEDV.toString(), secondNotificationType);
             assertTrue(JsonPath.from(getNotifications2.body().asString()).getBoolean("data.notifications[0].displayAsRead"));
             assertFalse(JsonPath.from(getNotifications2.body().asString()).getBoolean("data.notifications[1].displayAsRead"));
         } else {
@@ -109,7 +110,7 @@ public class NotificationsIT {
 
         Response getNotifications3 = UtilIT.getNotifications(authorApiToken);
         getNotifications3.then().assertThat()
-                .body("data.notifications[0].type", equalTo("CREATEDV"))
+                .body("data.notifications[0].type", equalTo(CREATEDV.toString()))
                 .body("data.notifications.size()", equalTo(1))
                 .statusCode(OK.getStatusCode());
 
@@ -142,7 +143,7 @@ public class NotificationsIT {
 
         List<String> notificationTypes = JsonPath.from(getNotifications.body().asString()).getList("data.notifications.type");
 
-        List<String> expectedTypes = Arrays.asList("CREATEACC", "CREATEDV", "DATASETCREATED");
+        List<String> expectedTypes = Arrays.asList(CREATEACC.toString(), CREATEDV.toString(), DATASETCREATED.toString());
 
         assertTrue(notificationTypes.containsAll(expectedTypes) && expectedTypes.containsAll(notificationTypes));
 
