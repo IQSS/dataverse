@@ -766,7 +766,7 @@ For a given Dataset:
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
   export SEARCH_TERM=searchOn
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/dataverses/:persistentId/$OBJECT_TYPE/linkingDataverses/$SEARCH_TERM?persistentId=$PERSISTENT_IDENTIFIER"" 
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/dataverses/:persistentId/$OBJECT_TYPE/linkingDataverses/$SEARCH_TERM?persistentId=$PERSISTENT_IDENTIFIER" 
 
 The fully expanded example above (without environment variables) looks like this:
 
