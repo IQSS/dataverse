@@ -108,6 +108,33 @@ Out of the box, your Dataverse installation will list email addresses of the con
 Additional Recommendations
 ++++++++++++++++++++++++++
 
+Restricting Payara's HTTP Listener to Localhost
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+If Apache or Nginx is running on the same host as Payara, and you do not need direct access
+to Payara from outside (for example, you only want access via Apache on ports 80/443),
+you can bind Payara’s HTTP listener (``http-listener-1``, which is port 8080 by default) to ``127.0.0.1``.
+
+This ensures the service is only reachable locally and not from the public internet.
+
+.. code-block:: bash
+
+   asadmin set configs.config.server-config.network-config.network-listeners.network-listener.http-listener-1.address=127.0.0.1
+   asadmin restart-domain
+
+After this change:
+
+* Apache/Nginx continues to serve on ports 80 and 443.
+* Direct external access to ``:8080`` is blocked.
+* Local requests to ``127.0.0.1:8080`` still work (needed for the proxy).
+
+.. warning::
+
+   Do not use this configuration if your Apache/Nginx proxy is running on a different host
+   than Payara, or if your setup requires direct access to 8080 from other servers.
+
+For extra security, also remove port 8080 from your host firewall rules or your cloud provider's
+security group so that it cannot be exposed accidentally in the future.
+
 Run Payara as a User Other Than Root
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -240,9 +267,12 @@ If you really don't want to front Payara with any proxy (not recommended), you c
 
 What about port 80? Even if you don't front your Dataverse installation with Apache, you may want to let Apache run on port 80 just to rewrite HTTP to HTTPS as described above. You can use a similar command as above to change the HTTP port that Payara uses from 8080 to 80 (substitute ``http-listener-1.port=80``). Payara can be used to enforce HTTPS on its own without Apache, but configuring this is an exercise for the reader. Answers here may be helpful: https://stackoverflow.com/questions/25122025/glassfish-v4-java-7-port-unification-error-not-able-to-redirect-http-to
 
-If you are running an installation with Apache and Payara on the same server, and would like to restrict Payara from responding to any requests to port 8080 from external hosts (in other words, not through Apache), you can restrict the AJP listener to localhost only with:
+If you are running an installation with Apache and Payara on the same server, and would like to restrict Payara from responding to any requests to port 8080 from external hosts (in other words, not through Apache), you can restrict Payara’s HTTP listener (``http-listener-1``) to localhost only with:
 
-``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-1.address=127.0.0.1``
+.. code-block:: bash
+
+   asadmin set configs.config.server-config.network-config.network-listeners.network-listener.http-listener-1.address=127.0.0.1
+   asadmin restart-domain
 
 You should **NOT** use the configuration option above if you are running in a load-balanced environment, or otherwise have the web server on a different host than the application server.
 
