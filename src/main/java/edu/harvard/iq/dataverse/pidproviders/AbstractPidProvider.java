@@ -343,8 +343,11 @@ public abstract class AbstractPidProvider implements PidProvider {
         if (!PidProvider.isValidGlobalId(protocol, authority, identifier)) {
             return null;
         }
+        String comparableShoulder = getShoulder();
+        
         if(isCaseInsensitive) {
             identifier = identifier.toUpperCase();
+            comparableShoulder = comparableShoulder.toUpperCase();
         }
         // Check authority/identifier if this is a provider that manages specific
         // identifiers
@@ -362,7 +365,7 @@ public abstract class AbstractPidProvider implements PidProvider {
             logger.fine("managed in " + getId() + ": " + getManagedSet().contains(cleanIdentifier));
             logger.fine("excluded from " + getId() + ": " + getExcludedSet().contains(cleanIdentifier));
 
-            if (!(((authority.equals(getAuthority()) && identifier.startsWith(getShoulder().toUpperCase()))
+            if (!(((authority.equals(getAuthority()) && identifier.startsWith(comparableShoulder))
                     || getManagedSet().contains(cleanIdentifier)) && !getExcludedSet().contains(cleanIdentifier))) {
                 return null;
             }
