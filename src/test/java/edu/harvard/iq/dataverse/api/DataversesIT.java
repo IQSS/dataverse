@@ -729,6 +729,7 @@ public class DataversesIT {
         // create new user and dataverse - the new dataverse should not be available to the first user for linking...
         Response createUserTwo = UtilIT.createRandomUser();
         String apiTokenTwo = UtilIT.getApiTokenFromResponse(createUserTwo);
+        String usernameTwo = UtilIT.getUsernameFromResponse(createUserTwo);
         
         //Create dataverse that should be unavailable for linking
         Response createDataverseResponseUnavailableForLinking = UtilIT.createRandomDataverse(apiTokenTwo);
@@ -767,6 +768,29 @@ public class DataversesIT {
                 getLinkableDataverses.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", equalTo(0));
+                
+    //set user api back to super user for cleanup
+        UtilIT.setSuperuserStatus(username, Boolean.TRUE);
+                
+                
+        // Clean up
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+        
+        deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAliasForLinking, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+        
+        deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAliasUnavailableForLinking, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+        
+        Response deleteUserResponse = UtilIT.deleteUser(usernameTwo);
+        assertEquals(200, deleteUserResponse.getStatusCode()); 
+        
+        deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());           
         
     }
 
