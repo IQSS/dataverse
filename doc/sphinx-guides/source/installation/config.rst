@@ -109,7 +109,7 @@ Additional Recommendations
 ++++++++++++++++++++++++++
 
 Restricting Payara's HTTP Listener to Localhost
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 If Apache or Nginx is running on the same host as Payara, and you do not need direct access
 to Payara from outside (for example, you only want access via Apache on ports 80/443),
 you can bind Payara’s HTTP listener (``http-listener-1``, which is port 8080 by default) to ``127.0.0.1``.
