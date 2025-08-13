@@ -151,8 +151,8 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
         }
 
         // 2. Identify the user who initiated the action.
-        final User sessionUser = getUser();
-        final AuthenticatedUser requestor = sessionUser.isAuthenticated() ? (AuthenticatedUser) sessionUser : null;
+        final User user = getUser();
+        final AuthenticatedUser requestor = user.isAuthenticated() ? (AuthenticatedUser) user : null;
 
         // 3. Get all users with publish permission and notify them.
         ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, dataset)
