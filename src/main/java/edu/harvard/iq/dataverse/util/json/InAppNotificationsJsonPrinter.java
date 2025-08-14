@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -38,6 +39,7 @@ public class InAppNotificationsJsonPrinter {
     public static final String KEY_CURATION_STATUS = "currentCurationStatus";
     public static final String KEY_ADDITIONAL_INFO = "additionalInfo";
     public static final String KEY_OBJECT_DELETED = "objectDeleted";
+    public static final String KEY_INSTALLATION_NAME = "installationName";
 
     public static final String GUIDES_SECTION_PATH_DATAVERSE_MANAGEMENT_HTML = "user/dataverse-management.html";
     public static final String GUIDES_SECTION_PATH_DATASET_MANAGEMENT_HTML = "user/dataset-management.html";
@@ -56,6 +58,8 @@ public class InAppNotificationsJsonPrinter {
     private PermissionServiceBean permissionService;
     @EJB
     private SystemConfig systemConfig;
+    @EJB
+    private SettingsServiceBean settingsService;
 
     /**
      * Populates a JSON builder with fields specific to the notification type.
@@ -170,6 +174,7 @@ public class InAppNotificationsJsonPrinter {
 
     private void addCreateAccountFields(final NullSafeJsonBuilder notificationJson) {
         notificationJson.add(KEY_ROOT_DATAVERSE_NAME, dataverseService.findRootDataverse().getName());
+        notificationJson.add(KEY_INSTALLATION_NAME, settingsService.getValueForKey(SettingsServiceBean.Key.InstallationName));
         addGuidesFields(notificationJson, GUIDES_SECTION_PATH_USER_HTML);
     }
 

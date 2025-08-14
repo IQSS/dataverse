@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util.json;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.json.JsonArrayBuilder;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +33,8 @@ public class InAppNotificationsJsonPrinterTest {
     private DataFileServiceBean dataFileService;
     @Mock
     private PermissionServiceBean permissionService;
+    @Mock
+    private SettingsServiceBean settingsService;
     @Mock
     private SystemConfig systemConfig;
 
@@ -402,6 +405,7 @@ public class InAppNotificationsJsonPrinterTest {
         Dataverse rootDataverse = mock(Dataverse.class);
         when(rootDataverse.getName()).thenReturn("Root");
         when(dataverseService.findRootDataverse()).thenReturn(rootDataverse);
+        when(settingsService.getValueForKey(SettingsServiceBean.Key.InstallationName)).thenReturn("InstallationName");
 
         when(systemConfig.getGuidesBaseUrl()).thenReturn("http://guides.dataverse.org");
         when(systemConfig.getGuidesVersion()).thenReturn("v1.0");
@@ -409,6 +413,7 @@ public class InAppNotificationsJsonPrinterTest {
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
         verify(notificationJson).add(KEY_ROOT_DATAVERSE_NAME, "Root");
+        verify(notificationJson).add(KEY_INSTALLATION_NAME, "InstallationName");
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
         verify(notificationJson).add(KEY_GUIDES_VERSION, "v1.0");
         verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_USER_HTML);
