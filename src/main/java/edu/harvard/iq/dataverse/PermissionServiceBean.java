@@ -964,6 +964,12 @@ public class PermissionServiceBean {
      * Calculates the complete list of role assignments for a given user on a DvObject.
      * This includes roles assigned directly to the user and roles inherited from any groups
      * the user is a member of.
+     * <p>
+     * This method's logic is based on the private method {@code getRoleStringFromUser}
+     * in the {@code DataverseUserPage} class, which produces a concatenated string of
+     * effective user role names required for displaying role-related user notifications.
+     * The common logic from these two methods may be centralized in the future to
+     * avoid code duplication.
      *
      * @param user The authenticated user whose roles are being checked.
      * @param dvObject The dataverse object to check for role assignments.
