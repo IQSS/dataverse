@@ -161,7 +161,7 @@ public class InAppNotificationsJsonPrinterTest {
         verify(notificationJson).add(KEY_OWNER_ALIAS, "parentDv");
         verify(notificationJson).add(KEY_OWNER_DISPLAY_NAME, "Parent Dataverse");
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
-        verify(notificationJson).add(KEY_GUIDES_VERSION, "v1.0");
+        verify(notificationJson).add(KEY_GUIDES_VERSION, "1.0");
         verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_DATAVERSE_MANAGEMENT_HTML);
     }
 
@@ -185,7 +185,7 @@ public class InAppNotificationsJsonPrinterTest {
         verify(notificationJson).add(KEY_DATAVERSE_ALIAS, "dv");
         verify(notificationJson).add(KEY_DATAVERSE_DISPLAY_NAME, "Dataverse");
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
-        verify(notificationJson).add(KEY_GUIDES_VERSION, "v1.0");
+        verify(notificationJson).add(KEY_GUIDES_VERSION, "1.0");
         verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_DATAVERSE_MANAGEMENT_HTML);
     }
 
@@ -201,7 +201,7 @@ public class InAppNotificationsJsonPrinterTest {
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
-        verify(notificationJson).add(KEY_GUIDES_VERSION, "v1.0");
+        verify(notificationJson).add(KEY_GUIDES_VERSION, "1.0");
         verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_DATAVERSE_MANAGEMENT_HTML);
         verify(notificationJson).add(KEY_OBJECT_DELETED, true);
     }
@@ -285,7 +285,7 @@ public class InAppNotificationsJsonPrinterTest {
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
-        verify(notificationJson).add(KEY_GUIDES_VERSION, "v1.0");
+        verify(notificationJson).add(KEY_GUIDES_VERSION, "1.0");
         verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_DATASET_MANAGEMENT_HTML);
         verify(notificationJson).add(KEY_DATASET_PERSISTENT_ID, testGlobalId.toString());
         verify(notificationJson).add(KEY_DATASET_DISPLAY_NAME, "My Dataset");
@@ -415,7 +415,7 @@ public class InAppNotificationsJsonPrinterTest {
         verify(notificationJson).add(KEY_ROOT_DATAVERSE_NAME, "Root");
         verify(notificationJson).add(KEY_INSTALLATION_NAME, "InstallationName");
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
-        verify(notificationJson).add(KEY_GUIDES_VERSION, "v1.0");
+        verify(notificationJson).add(KEY_GUIDES_VERSION, "1.0");
         verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_USER_HTML);
     }
 
@@ -446,7 +446,7 @@ public class InAppNotificationsJsonPrinterTest {
         verify(notificationJson).add(KEY_OWNER_ALIAS, "ownerDv");
         verify(notificationJson).add(KEY_OWNER_DISPLAY_NAME, "Owner Dataverse");
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
-        verify(notificationJson).add(KEY_GUIDES_VERSION, "v1.0");
+        verify(notificationJson).add(KEY_GUIDES_VERSION, "1.0");
         verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_DATASET_MANAGEMENT_TABULAR_FILES_HTML);
     }
 
@@ -464,7 +464,7 @@ public class InAppNotificationsJsonPrinterTest {
 
         verify(notificationJson).add(KEY_OBJECT_DELETED, true);
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
-        verify(notificationJson).add(KEY_GUIDES_VERSION, "v1.0");
+        verify(notificationJson).add(KEY_GUIDES_VERSION, "1.0");
         verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_DATASET_MANAGEMENT_TABULAR_FILES_HTML);
     }
 
