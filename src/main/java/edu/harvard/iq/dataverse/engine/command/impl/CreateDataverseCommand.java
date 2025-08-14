@@ -147,6 +147,23 @@ public class CreateDataverseCommand extends AbstractWriteDataverseCommand {
         return managedDv;
     }
 
+    /**
+     * Handles the successful creation of the dataverse by sending a notification
+     * and triggering indexing.
+     * <p>
+     * The {@code sendNotificationOnSuccess} flag is used because this command is
+     * consumed from two different places: the JSF front-end and the API.
+     * <ul>
+     * <li><b>From JSF:</b> The flag is {@code false}, as the user notification is
+     * sent separately by the UI logic.</li>
+     * <li><b>From the API:</b> The flag is {@code true} to ensure users receive a
+     * notification when creating a dataverse through the API.</li>
+     * </ul>
+     *
+     * @param ctxt The command context.
+     * @param r    The created Dataverse object, returned from the command execution.
+     * @return {@code true} if the dataverse was indexed successfully.
+     */
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
         if (sendNotificationOnSuccess) {
