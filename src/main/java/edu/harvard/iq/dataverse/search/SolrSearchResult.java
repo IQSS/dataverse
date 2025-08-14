@@ -25,6 +25,8 @@ import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
+import javax.xml.crypto.Data;
+
 public class SolrSearchResult {
 
     private static final Logger logger = Logger.getLogger(SolrSearchResult.class.getCanonicalName());
@@ -106,6 +108,7 @@ public class SolrSearchResult {
     private String dataverseAlias;
     private String dataverseParentAlias;
     private String dataverseParentName;
+    private List<Dataverse> collections;
 //    private boolean statePublished;
     /**
      * @todo Investigate/remove this "unpublishedState" variable. For files that
@@ -702,6 +705,19 @@ public class SolrSearchResult {
 
                     nullSafeJsonBuilder.add("metadataBlocks", metadataFieldBuilder);
                 }
+
+                if (this.collections != null && !this.collections.isEmpty()) {
+                    JsonArrayBuilder collections = Json.createArrayBuilder();
+                    for (Dataverse collection : this.collections) {
+                        NullSafeJsonBuilder dvBuilder = jsonObjectBuilder();
+                        dvBuilder.add("id", collection.getId());
+                        dvBuilder.add("name", collection.getName());
+                        dvBuilder.add("alias", collection.getAlias());
+                        collections.add(dvBuilder);
+                    }
+                    nullSafeJsonBuilder.add("collections", collections);
+                }
+
             } else if (this.entity.isInstanceofDataverse()) {
                 nullSafeJsonBuilder.add("affiliation", dataverseAffiliation);
                 nullSafeJsonBuilder.add("parentDataverseName", dataverseParentName);
@@ -1303,6 +1319,10 @@ public class SolrSearchResult {
      */
     public void setDataverseParentName(String dataverseParentName) {
         this.dataverseParentName = dataverseParentName;
+    }
+
+    public void setCollections(List<Dataverse> collections) {
+        this.collections = collections;
     }
 
     public float getScore() {
