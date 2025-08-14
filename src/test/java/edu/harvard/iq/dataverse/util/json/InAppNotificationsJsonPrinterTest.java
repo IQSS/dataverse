@@ -151,7 +151,7 @@ public class InAppNotificationsJsonPrinterTest {
         when(owner.getDisplayName()).thenReturn("Parent Dataverse");
 
         when(dataverseService.find(1L)).thenReturn(dataverse);
-        when(systemConfig.getGuidesBaseUrl()).thenReturn("http://guides.dataverse.org");
+        when(systemConfig.getGuidesBaseUrl(false)).thenReturn("http://guides.dataverse.org");
         when(systemConfig.getGuidesVersion()).thenReturn("v1.0");
 
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
@@ -177,7 +177,7 @@ public class InAppNotificationsJsonPrinterTest {
         when(dataverse.getOwner()).thenReturn(null);
 
         when(dataverseService.find(1L)).thenReturn(dataverse);
-        when(systemConfig.getGuidesBaseUrl()).thenReturn("http://guides.dataverse.org");
+        when(systemConfig.getGuidesBaseUrl(false)).thenReturn("http://guides.dataverse.org");
         when(systemConfig.getGuidesVersion()).thenReturn("v1.0");
 
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
@@ -195,7 +195,7 @@ public class InAppNotificationsJsonPrinterTest {
         userNotification.setObjectId(1L);
 
         when(dataverseService.find(1L)).thenReturn(null);
-        when(systemConfig.getGuidesBaseUrl()).thenReturn("http://guides.dataverse.org");
+        when(systemConfig.getGuidesBaseUrl(false)).thenReturn("http://guides.dataverse.org");
         when(systemConfig.getGuidesVersion()).thenReturn("v1.0");
 
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
@@ -279,7 +279,7 @@ public class InAppNotificationsJsonPrinterTest {
 
         when(datasetVersionService.find(1L)).thenReturn(datasetVersion);
 
-        when(systemConfig.getGuidesBaseUrl()).thenReturn("http://guides.dataverse.org");
+        when(systemConfig.getGuidesBaseUrl(false)).thenReturn("http://guides.dataverse.org");
         when(systemConfig.getGuidesVersion()).thenReturn("v1.0");
 
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
@@ -407,7 +407,7 @@ public class InAppNotificationsJsonPrinterTest {
         when(dataverseService.findRootDataverse()).thenReturn(rootDataverse);
         when(settingsService.getValueForKey(SettingsServiceBean.Key.InstallationName)).thenReturn("InstallationName");
 
-        when(systemConfig.getGuidesBaseUrl()).thenReturn("http://guides.dataverse.org");
+        when(systemConfig.getGuidesBaseUrl(false)).thenReturn("http://guides.dataverse.org");
         when(systemConfig.getGuidesVersion()).thenReturn("v1.0");
 
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
@@ -436,7 +436,7 @@ public class InAppNotificationsJsonPrinterTest {
 
         when(datasetService.find(1L)).thenReturn(dataset);
 
-        when(systemConfig.getGuidesBaseUrl()).thenReturn("http://guides.dataverse.org");
+        when(systemConfig.getGuidesBaseUrl(false)).thenReturn("http://guides.dataverse.org");
         when(systemConfig.getGuidesVersion()).thenReturn("v1.0");
 
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
@@ -457,7 +457,7 @@ public class InAppNotificationsJsonPrinterTest {
 
         when(datasetService.find(1L)).thenReturn(null);
 
-        when(systemConfig.getGuidesBaseUrl()).thenReturn("http://guides.dataverse.org");
+        when(systemConfig.getGuidesBaseUrl(false)).thenReturn("http://guides.dataverse.org");
         when(systemConfig.getGuidesVersion()).thenReturn("v1.0");
 
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);

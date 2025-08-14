@@ -222,7 +222,7 @@ public class InAppNotificationsJsonPrinter {
     }
 
     private void addGuidesFields(final NullSafeJsonBuilder notificationJson, String guidesSectionPath) {
-        notificationJson.add(KEY_GUIDES_BASE_URL, systemConfig.getGuidesBaseUrl());
+        notificationJson.add(KEY_GUIDES_BASE_URL, systemConfig.getGuidesBaseUrl(false));
         notificationJson.add(KEY_GUIDES_VERSION, getGuidesVersionFormattedString());
 
         if (guidesSectionPath != null) {

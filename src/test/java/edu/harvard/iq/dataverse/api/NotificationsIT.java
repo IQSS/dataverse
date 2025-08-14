@@ -190,7 +190,7 @@ public class NotificationsIT {
                 .body("data.notifications.size()", equalTo(1))
                 // In-App fields should be present
                 .body("data.notifications[0].rootDataverseName", equalTo("Root"))
-                .body("data.notifications[0].userGuidesBaseUrl", equalTo("https://guides.dataverse.org/en"))
+                .body("data.notifications[0].userGuidesBaseUrl", equalTo("https://guides.dataverse.org"))
                 .body("data.notifications[0].userGuidesSectionPath", equalTo("user/index.html"))
                 .body("data.notifications[0].userGuidesVersion", not(equalTo(null)))
                 // Email-related fields should be null
