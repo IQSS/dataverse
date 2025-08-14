@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.json.JsonArrayBuilder;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
@@ -33,8 +34,6 @@ public class InAppNotificationsJsonPrinterTest {
     private DataFileServiceBean dataFileService;
     @Mock
     private PermissionServiceBean permissionService;
-    @Mock
-    private SettingsServiceBean settingsService;
     @Mock
     private SystemConfig systemConfig;
 
@@ -401,22 +400,19 @@ public class InAppNotificationsJsonPrinterTest {
     @Test
     public void testAddFieldsByType_createAcc() {
         userNotification.setType(UserNotification.Type.CREATEACC);
+        try (MockedStatic<BrandingUtil> mockedBrandingUtil = mockStatic(BrandingUtil.class)) {
+            mockedBrandingUtil.when(BrandingUtil::getInstallationBrandName).thenReturn("My Test Brand Name");
 
-        Dataverse rootDataverse = mock(Dataverse.class);
-        when(rootDataverse.getName()).thenReturn("Root");
-        when(dataverseService.findRootDataverse()).thenReturn(rootDataverse);
-        when(settingsService.getValueForKey(SettingsServiceBean.Key.InstallationName)).thenReturn("InstallationName");
+            when(systemConfig.getGuidesBaseUrl(false)).thenReturn("http://guides.dataverse.org");
+            when(systemConfig.getGuidesVersion()).thenReturn("v1.0");
 
-        when(systemConfig.getGuidesBaseUrl(false)).thenReturn("http://guides.dataverse.org");
-        when(systemConfig.getGuidesVersion()).thenReturn("v1.0");
+            sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
-        sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
-
-        verify(notificationJson).add(KEY_ROOT_DATAVERSE_NAME, "Root");
-        verify(notificationJson).add(KEY_INSTALLATION_NAME, "InstallationName");
-        verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
-        verify(notificationJson).add(KEY_GUIDES_VERSION, "1.0");
-        verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_USER_HTML);
+            verify(notificationJson).add(KEY_INSTALLATION_BRAND_NAME, "My Test Brand Name");
+            verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
+            verify(notificationJson).add(KEY_GUIDES_VERSION, "1.0");
+            verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_USER_HTML);
+        }
     }
 
     @Test

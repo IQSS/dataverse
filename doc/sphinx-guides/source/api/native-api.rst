@@ -6020,8 +6020,7 @@ The expected OK (200) response looks something like this:
                   "type": "CREATEACC",
                   "displayAsRead": false,
                   "sentTimestamp": "2025-08-08T08:00:16Z",
-                  "rootDataverseName": "Root",
-                  "installationName": "Your Installation Name",
+                  "installationBrandName": "Your Installation Name",
                   "userGuidesBaseUrl": "https://guides.dataverse.org",
                   "userGuidesVersion": "6.7.1",
                   "userGuidesSectionPath": "user/index.html"
