@@ -223,7 +223,7 @@ public class InAppNotificationsJsonPrinter {
 
     private void addGuidesFields(final NullSafeJsonBuilder notificationJson, String guidesSectionPath) {
         notificationJson.add(KEY_GUIDES_BASE_URL, systemConfig.getGuidesBaseUrl());
-        notificationJson.add(KEY_GUIDES_VERSION, systemConfig.getGuidesVersion());
+        notificationJson.add(KEY_GUIDES_VERSION, getGuidesVersionFormattedString());
 
         if (guidesSectionPath != null) {
             notificationJson.add(KEY_GUIDES_SECTION_PATH, guidesSectionPath);
@@ -263,5 +263,13 @@ public class InAppNotificationsJsonPrinter {
     private void addDatasetMentionedFields(final NullSafeJsonBuilder notificationJson, final UserNotification userNotification) {
         addDatasetFields(notificationJson, userNotification);
         notificationJson.add(KEY_ADDITIONAL_INFO, userNotification.getAdditionalInfo());
+    }
+
+    private String getGuidesVersionFormattedString() {
+        String guidesVersion = systemConfig.getGuidesVersion();
+        if (guidesVersion != null && guidesVersion.startsWith("v")) {
+            guidesVersion = guidesVersion.substring(1);
+        }
+        return guidesVersion;
     }
 }
