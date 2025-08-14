@@ -1255,6 +1255,45 @@ public class DataversesIT {
         updateDataverseInputLevelsResponse.then().assertThat()
                 .body("message", equalTo("Error while updating dataverse input levels: Input level list cannot be null or empty"))
                 .statusCode(INTERNAL_SERVER_ERROR.getStatusCode());
+        
+        //Add new types and see that previously changed ones remain as before... #11387
+        testInputLevelNames = new String[]{"subtitle", "relatedMaterial"};
+       
+        testRequiredInputLevels = new boolean[] {false, false};
+        testIncludedInputLevels = new boolean[] {true, true};
+        boolean [] testDisplayOnCreate = new boolean[] {true, true};
+         updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, testDisplayOnCreate, apiToken);
+         actualInputLevelName = updateDataverseInputLevelsResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");
+        int subtitleInputLevelIndex = actualInputLevelName.equals("subtitle") ? 0 : 1;
+        updateDataverseInputLevelsResponse.prettyPrint();
+        
+        updateDataverseInputLevelsResponse.then().assertThat()
+                .body(String.format("data.inputLevels[%d].include", subtitleInputLevelIndex), equalTo(true))
+                .body(String.format("data.inputLevels[%d].required", subtitleInputLevelIndex), equalTo(false))
+                .body(String.format("data.inputLevels[%d].displayOnCreate", subtitleInputLevelIndex), equalTo(true))
+                .body(String.format("data.inputLevels[%d].include", 1 - subtitleInputLevelIndex), equalTo(true))
+                .body(String.format("data.inputLevels[%d].required", 1 - subtitleInputLevelIndex), equalTo(false))
+                .body(String.format("data.inputLevels[%d].displayOnCreate", 1 - subtitleInputLevelIndex), equalTo(true))
+                .statusCode(OK.getStatusCode());
+         actualFieldTypeName1 = updateDataverseInputLevelsResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");
+         actualFieldTypeName2 = updateDataverseInputLevelsResponse.then().extract().path("data.inputLevels[1].datasetFieldTypeName");
+        assertNotEquals(actualFieldTypeName1, actualFieldTypeName2);
+        assertThat(testInputLevelNames, hasItemInArray(actualFieldTypeName1));
+        assertThat(testInputLevelNames, hasItemInArray(actualFieldTypeName2));
+        
+ 
+        testInputLevelNames = new String[]{"subtitle", "otherReferences"};
+        testRequiredInputLevels = new boolean[] {false, false};
+        testIncludedInputLevels = new boolean[] {true, true};
+        testDisplayOnCreate = new boolean[] {false, true};
+        
+        updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, testDisplayOnCreate, apiToken);
+        updateDataverseInputLevelsResponse.prettyPrint();
+
+        updateDataverseInputLevelsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+      
+        
     }
 
     @Test
@@ -2274,14 +2313,16 @@ public class DataversesIT {
                 .body("data[0].displayName", equalTo("Citation Metadata"))
                 .body("data.size()", equalTo(expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks))
                 .body("data[0].fields.author.childFields.size()", is(4));
-        
+             
         updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
-            dataverseAlias, "subtitle", false, apiToken);
+                dataverseAlias, "subtitle", false, apiToken);
+        String actualInputLevelName = updateResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");
+        int subtitleIndex = actualInputLevelName.equals("subtitle") ? 0 : 1;
         updateResponse.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.inputLevels[0].displayOnCreate", equalTo(false))
-                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("subtitle"));
-        
+                .body(String.format("data.inputLevels[%d].displayOnCreate", subtitleIndex), equalTo(false))
+                .body(String.format("data.inputLevels[%d].datasetFieldTypeName", subtitleIndex), equalTo("subtitle"))
+                .statusCode(OK.getStatusCode());
+
     }
 
     @Test
