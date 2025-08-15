@@ -172,10 +172,16 @@ public class MakeDataCountApi extends AbstractApiBean {
                     applyRateLimit();
                     
                     // Process the citation update
-                    processCitationUpdate(dataset, pid, pidProvider);
+                    boolean success = processCitationUpdate(dataset, pid, pidProvider);
                     
                     // Update the last execution time after processing
                     lastExecutionTime.set(System.currentTimeMillis());
+                    
+                    if (success) {
+                        logger.fine("Successfully processed citation update for dataset " + id);
+                    } else {
+                        logger.warning("Failed to process citation update for dataset " + id);
+                    }
                 } catch (Exception e) {
                     logger.log(Level.SEVERE, "Error processing citation update for dataset " + id, e);
                 }
@@ -220,8 +226,9 @@ public class MakeDataCountApi extends AbstractApiBean {
     /**
      * Process the citation update for a dataset
      * This method contains the logic that was previously in updateCitationsForDataset
+     * @return true if processing was successful, false otherwise
      */
-    private void processCitationUpdate(Dataset dataset, GlobalId pid, PidProvider pidProvider) throws IOException {
+    private boolean processCitationUpdate(Dataset dataset, GlobalId pid, PidProvider pidProvider) {
         String persistentId = pid.asRawIdentifier();
         
         // Request max page size and then loop to handle multiple pages
@@ -231,88 +238,94 @@ public class MakeDataCountApi extends AbstractApiBean {
                           "/events?doi=" +
                           persistentId +
                           "&source=crossref&page[size]=1000&page[cursor]=1").toURL();
-        } catch (URISyntaxException e) {
+        } catch (URISyntaxException | MalformedURLException e) {
             //Nominally this means a config error/ bad DATACITE_REST_API_URL for this provider
             logger.warning("Unable to create URL for " + persistentId + ", pidProvider " + pidProvider.getId());
-            return;
+            return false;
         }
         
         logger.fine("Retrieving Citations from " + url.toString());
         boolean nextPage = true;
         JsonArrayBuilder dataBuilder = Json.createArrayBuilder();
         
-        do {
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            int status = connection.getResponseCode();
-            if (status != 200) {
-                logger.warning("Failed to get citations from " + url.toString());
-                connection.disconnect();
-                return;
-            }
-            
-            JsonObject report;
-            try (InputStream inStream = connection.getInputStream()) {
-                report = JsonUtil.getJsonObject(inStream);
-            } finally {
-                connection.disconnect();
-            }
-            
-            JsonObject links = report.getJsonObject("links");
-            JsonArray data = report.getJsonArray("data");
-            Iterator<JsonValue> iter = data.iterator();
-            while (iter.hasNext()) {
-                JsonValue citationValue = iter.next();
-                JsonObject citation = (JsonObject) citationValue;
+        try {
+            do {
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                int status = connection.getResponseCode();
+                if (status != 200) {
+                    logger.warning("Failed to get citations from " + url.toString());
+                    connection.disconnect();
+                    return false;
+                }
                 
-                // Filter out relations we don't use (e.g. hasPart) to lower memory req. with many files
-                if (citation.containsKey("attributes")) {
-                    JsonObject attributes = citation.getJsonObject("attributes");
-                    if (attributes.containsKey("relation-type-id")) {
-                        String relationshipType = attributes.getString("relation-type-id");
-                        
-                        // Only add citations with relationship types we care about
-                        if (DatasetExternalCitationsServiceBean.inboundRelationships.contains(relationshipType)  ||
-                                DatasetExternalCitationsServiceBean.outboundRelationships.contains(relationshipType)) {
-                            dataBuilder.add(citationValue);
+                JsonObject report;
+                try (InputStream inStream = connection.getInputStream()) {
+                    report = JsonUtil.getJsonObject(inStream);
+                } finally {
+                    connection.disconnect();
+                }
+                
+                JsonObject links = report.getJsonObject("links");
+                JsonArray data = report.getJsonArray("data");
+                Iterator<JsonValue> iter = data.iterator();
+                while (iter.hasNext()) {
+                    JsonValue citationValue = iter.next();
+                    JsonObject citation = (JsonObject) citationValue;
+                    
+                    // Filter out relations we don't use (e.g. hasPart) to lower memory req. with many files
+                    if (citation.containsKey("attributes")) {
+                        JsonObject attributes = citation.getJsonObject("attributes");
+                        if (attributes.containsKey("relation-type-id")) {
+                            String relationshipType = attributes.getString("relation-type-id");
+                            
+                            // Only add citations with relationship types we care about
+                            if (DatasetExternalCitationsServiceBean.inboundRelationships.contains(relationshipType) ||
+                                    DatasetExternalCitationsServiceBean.outboundRelationships.contains(relationshipType)) {
+                                dataBuilder.add(citationValue);
+                            }
                         }
                     }
                 }
-            }
-            
-            if (links.containsKey("next")) {
-                try {
-                    url = new URI(links.getString("next")).toURL();
-                    applyRateLimit();
-                } catch (URISyntaxException e) {
-                    logger.warning("Unable to create URL from DataCite response: " + links.getString("next"));
-                    return;
+                
+                if (links.containsKey("next")) {
+                    try {
+                        url = new URI(links.getString("next")).toURL();
+                        applyRateLimit();
+                    } catch (URISyntaxException e) {
+                        logger.warning("Unable to create URL from DataCite response: " + links.getString("next"));
+                        return false;
+                    }
+                } else {
+                    nextPage = false;
                 }
-            } else {
-                nextPage = false;
+                
+                logger.fine("body of citation response: " + report.toString());
+            } while (nextPage == true);
+            
+            JsonArray allData = dataBuilder.build();
+            List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(allData);
+            
+            /*
+             * ToDo: If this is the only source of citations, we should remove all the existing ones for the dataset and repopulate them.
+             * As is, this call doesn't remove old citations if there are now none (legacy issue if we decide to stop counting certain types of citation
+             * as we've done for 'hasPart').
+             * If there are some, this call individually checks each one and if a matching item exists, it removes it and adds it back. Faster and better to delete all and
+             * add the new ones.
+             */
+            if (!datasetExternalCitations.isEmpty()) {
+                for (DatasetExternalCitations dm : datasetExternalCitations) {
+                    datasetExternalCitationsService.save(dm);
+                }
             }
             
-            logger.fine("body of citation response: " + report.toString());
-        } while (nextPage == true);
-        
-        JsonArray allData = dataBuilder.build();
-        List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(allData);
-        
-        /*
-         * ToDo: If this is the only source of citations, we should remove all the existing ones for the dataset and repopulate them.
-         * As is, this call doesn't remove old citations if there are now none (legacy issue if we decide to stop counting certain types of citation
-         * as we've done for 'hasPart').
-         * If there are some, this call individually checks each one and if a matching item exists, it removes it and adds it back. Faster and better to delete all and
-         * add the new ones.
-         */
-        if (!datasetExternalCitations.isEmpty()) {
-            for (DatasetExternalCitations dm : datasetExternalCitations) {
-                datasetExternalCitationsService.save(dm);
-            }
+            logger.fine("Citation update completed for dataset " + dataset.getId() + 
+                       " with " + datasetExternalCitations.size() + " citations");
+            return true;
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Error processing citation update for dataset " + dataset.getId(), e);
+            return false;
         }
-        
-        logger.info("Citation update completed for dataset " + dataset.getId() + 
-                   " with " + datasetExternalCitations.size() + " citations");
     }
     
     @GET
