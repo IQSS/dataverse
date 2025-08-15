@@ -2324,9 +2324,8 @@ public class DataversesIT {
                 .body("data[0].displayName", equalTo("Citation Metadata"))
                 .body("data.size()", equalTo(expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks))
                 .body("data[0].fields.author.childFields.size()", is(4));
-             
-        updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
-                dataverseAlias, "subtitle", false, apiToken);
+
+        updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(dataverseAlias, "subtitle", false, apiToken);
         String actualInputLevelName = updateResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");
         int subtitleIndex = actualInputLevelName.equals("subtitle") ? 0 : 1;
         updateResponse.then().assertThat()
