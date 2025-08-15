@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_LATEST_PUBLISHED;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -37,6 +39,7 @@ public class DatasetTypesIT {
         UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
 
         ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_SOFTWARE, apiToken);
+        ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_REVIEW, apiToken);
         ensureDatasetTypeIsPresent(INSTRUMENT, apiToken);
     }
 
@@ -711,6 +714,293 @@ public class DatasetTypesIT {
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
 
+    }
+
+    /**
+     * In this test, there are two users: one who publishes a dataset and
+     * another who publishes a review of that dataset.
+     */
+    @Test
+    public void testCreateReview() {
+        Response createDatasetDepositor = UtilIT.createRandomUser();
+        createDatasetDepositor.then().assertThat().statusCode(OK.getStatusCode());
+        String apiTokenDepositor = UtilIT.getApiTokenFromResponse(createDatasetDepositor);
+
+        Response createCollectionOfData = UtilIT.createRandomDataverse(apiTokenDepositor);
+        createCollectionOfData.then().assertThat().statusCode(CREATED.getStatusCode());
+        String collectionOfDataAlias = UtilIT.getAliasFromResponse(createCollectionOfData);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(collectionOfDataAlias, apiTokenDepositor);
+        createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.getBody().asString()).getString("data.persistentId");
+
+        UtilIT.publishDataverseViaNativeApi(collectionOfDataAlias, apiTokenDepositor).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiTokenDepositor);
+
+        Response createReviewer = UtilIT.createRandomUser();
+        createReviewer.then().assertThat().statusCode(OK.getStatusCode());
+        String apiTokenReviewer = UtilIT.getApiTokenFromResponse(createReviewer);
+
+        // We assume the reviewer wants their own collection for reviews.
+        Response createCollectionOfReviews = UtilIT.createRandomDataverse(apiTokenReviewer);
+        createCollectionOfReviews.then().assertThat().statusCode(CREATED.getStatusCode());
+        String collectionOfReviewsAlias = UtilIT.getAliasFromResponse(createCollectionOfReviews);
+
+        Response datasetMetadataResponse = UtilIT.nativeGet(datasetId, apiTokenReviewer);
+        datasetMetadataResponse.then().assertThat().statusCode(OK.getStatusCode());
+        datasetMetadataResponse.prettyPrint();
+        JsonPath datasetMetadata = JsonPath.from(datasetMetadataResponse.body().asString());
+        String datasetTitle = datasetMetadata.getString("data.latestVersion.metadataBlocks.citation.fields[0].value");
+        String datasetPidUrl = datasetMetadata.getString("data.persistentUrl");
+        String datasetPidProtocol = datasetMetadata.getString("data.protocol");
+        String datasetPidAuthority = datasetMetadata.getString("data.authority");
+        String datasetPidSeparator = datasetMetadata.getString("data.separator");
+        String datasetPidIdentifier = datasetMetadata.getString("data.identifier");
+        String datasetPidWithoutProtocol = datasetPidAuthority + datasetPidSeparator + datasetPidIdentifier;
+
+        Response getCitation = UtilIT.getDatasetVersionCitation(datasetId, DS_VERSION_LATEST_PUBLISHED, false, apiTokenReviewer);
+        getCitation.prettyPrint();
+        getCitation.then().assertThat().statusCode(OK.getStatusCode());
+        String datasetCitationHtml = JsonPath.from(getCitation.getBody().asString()).getString("data.message");
+        String datasetCitationText = StringUtil.html2text(datasetCitationHtml);
+
+        JsonObjectBuilder jsonForCreatingReview = Json.createObjectBuilder()
+                /**
+                 * See above where this type is added to the installation and
+                 * therefore available for use.
+                 */
+                .add("datasetType", DatasetType.DATASET_TYPE_REVIEW)
+                .add("datasetVersion", Json.createObjectBuilder()
+                        .add("license", Json.createObjectBuilder()
+                                .add("name", "CC0 1.0")
+                                .add("uri", "http://creativecommons.org/publicdomain/zero/1.0")
+                        )
+                        .add("metadataBlocks", Json.createObjectBuilder()
+                                .add("citation", Json.createObjectBuilder()
+                                        .add("fields", Json.createArrayBuilder()
+                                                .add(Json.createObjectBuilder()
+                                                        .add("typeName", "title")
+                                                        .add("value", "Review of " + datasetTitle)
+                                                        .add("typeClass", "primitive")
+                                                        .add("multiple", false)
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("authorName",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "Simpson, Homer")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "authorName"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "author")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("datasetContactEmail",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "hsimpson@mailinator.com")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "datasetContactEmail"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "datasetContact")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("dsDescriptionValue",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "This is a review of a dataset.")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "dsDescriptionValue"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "dsDescription")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add("Other")
+                                                        )
+                                                        .add("typeClass", "controlledVocabulary")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "subject")
+                                                )
+                                                /**
+                                                 * Related Dataset.
+                                                 *
+                                                 * The tooltip for Related
+                                                 * Dataset says "Information,
+                                                 * such as a persistent ID or
+                                                 * citation, about a related
+                                                 * dataset, such as previous
+                                                 * research on the Dataset's
+                                                 * subject".
+                                                 *
+                                                 * For now we'll add multiple
+                                                 * forms so we can discuss and
+                                                 * decide which one to use.
+                                                 *
+                                                 * Also, we are well aware that
+                                                 * there is a custom metadata
+                                                 * block called
+                                                 * "relatedDatasetsV2" at
+                                                 * https://github.com/vera/related-datasets-cvoc
+                                                 * that we hope to play with
+                                                 * soon.
+                                                 */
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(datasetPid)
+                                                                .add(datasetPidUrl)
+                                                                .add(datasetCitationText)
+                                                                .add(datasetCitationHtml)
+                                                        )
+                                                        .add("typeClass", "primitive")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "relatedDatasets")
+                                                )
+                                                /**
+                                                 * Related Publication.
+                                                 *
+                                                 * Related Dataset is more
+                                                 * appropriate than Related
+                                                 * Publication but we're adding
+                                                 * Related Publication (twice,
+                                                 * with plain text and HTML
+                                                 * citations) because unlike
+                                                 * Related Dataset, Related
+                                                 * Publication lets us send
+                                                 * publicationRelationType,
+                                                 * which gets sent to DataCite
+                                                 * as "References" or "Cites" or
+                                                 * whatever.
+                                                 *
+                                                 * (Ideally, we'd send "Reviews"
+                                                 * but we get this error:
+                                                 *
+                                                 * "Error parsing Json: Invalid
+                                                 * controlled vocabulary in
+                                                 * compound field Value
+                                                 * 'Reviews' does not exist in
+                                                 * type
+                                                 * 'publicationRelationType';")
+                                                 */
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                // Plain text citation version
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("publicationRelationType",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "References")
+                                                                                        //                                                                                        .add("value", "Reviews")
+                                                                                        .add("typeClass", "controlledVocabulary")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "publicationRelationType")
+                                                                        )
+                                                                        .add("publicationCitation",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", datasetCitationHtml)
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "publicationCitation")
+                                                                        )
+                                                                        .add("publicationIDType",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", datasetPidProtocol)
+                                                                                        .add("typeClass", "controlledVocabulary")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "publicationIDType")
+                                                                        )
+                                                                        .add("publicationIDNumber",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", datasetPidWithoutProtocol)
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "publicationIDNumber")
+                                                                        )
+                                                                        .add("publicationURL",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", datasetPidUrl)
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "publicationURL")
+                                                                        )
+                                                                )
+                                                                // HTML citation version
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("publicationRelationType",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "References")
+                                                                                        //                                                                                        .add("value", "Reviews")
+                                                                                        .add("typeClass", "controlledVocabulary")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "publicationRelationType")
+                                                                        )
+                                                                        .add("publicationCitation",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", datasetCitationText)
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "publicationCitation")
+                                                                        )
+                                                                        .add("publicationIDType",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", datasetPidProtocol)
+                                                                                        .add("typeClass", "controlledVocabulary")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "publicationIDType")
+                                                                        )
+                                                                        .add("publicationIDNumber",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", datasetPidWithoutProtocol)
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "publicationIDNumber")
+                                                                        )
+                                                                        .add("publicationURL",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", datasetPidUrl)
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "publicationURL")
+                                                                        )
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "publication")
+                                                )
+                                        )
+                                )
+                        ));
+
+        Response createReview = UtilIT.createDataset(collectionOfReviewsAlias, jsonForCreatingReview, apiTokenReviewer);
+        createReview.prettyPrint();
+        createReview.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer reviewId = UtilIT.getDatasetIdFromResponse(createReview);
+        String reviewPid = JsonPath.from(createReview.getBody().asString()).getString("data.persistentId");
+
+        Response getReviewMetadata = UtilIT.nativeGet(reviewId, apiTokenReviewer);
+        getReviewMetadata.prettyPrint();
+        getReviewMetadata.then().assertThat().statusCode(OK.getStatusCode());
+        String datasetType = JsonPath.from(getReviewMetadata.getBody().asString()).getString("data.datasetType");
+        assertEquals("review", datasetType);
+
+        UtilIT.publishDataverseViaNativeApi(collectionOfReviewsAlias, apiTokenReviewer).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(reviewPid, "major", apiTokenReviewer).then().assertThat().statusCode(OK.getStatusCode());
     }
 
 }

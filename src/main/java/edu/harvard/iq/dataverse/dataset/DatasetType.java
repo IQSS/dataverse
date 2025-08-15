@@ -39,6 +39,7 @@ public class DatasetType implements Serializable {
     public static final String DATASET_TYPE_DATASET = "dataset";
     public static final String DATASET_TYPE_SOFTWARE = "software";
     public static final String DATASET_TYPE_WORKFLOW = "workflow";
+    public static final String DATASET_TYPE_REVIEW = "review";
     public static final String DEFAULT_DATASET_TYPE = DATASET_TYPE_DATASET;
 
     @Id

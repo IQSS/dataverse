@@ -970,8 +970,8 @@ You should expect an HTTP 200 ("OK") response and JSON indicating the database I
 
 .. _api-create-dataset-with-type:
 
-Create a Dataset with a Dataset Type (Software, etc.)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Create a Dataset with a Dataset Type (Software, Workflow, Review, etc.)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 By default, datasets are given the type "dataset" but if your installation had added additional types (see :ref:`api-add-dataset-type`), you can specify the type.
 
@@ -1025,8 +1025,8 @@ Before calling the API, make sure the data files referenced by the ``POST``\ ed 
 
 .. _import-dataset-with-type:
 
-Import a Dataset with a Dataset Type (Software, etc.)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Import a Dataset with a Dataset Type (Software, Workflow, Review, etc.)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 By default, datasets are given the type "dataset" but if your installation had added additional types (see :ref:`api-add-dataset-type`), you can specify the type.
 
@@ -3925,7 +3925,27 @@ The fully expanded example above (without environment variables) looks like this
 Add Dataset Type
 ^^^^^^^^^^^^^^^^
 
-Note: Before you add any types of your own, there should be a single type called "dataset". If you add "software" or "workflow", these types will be sent to DataCite (if you use DataCite). Otherwise, the only functionality you gain currently from adding types is an entry in the "Dataset Type" facet but be advised that if you add a type other than "software" or "workflow", you will need to add your new type to your Bundle.properties file for it to appear in Title Case rather than lower case in the "Dataset Type" facet.
+Note: Before you add any types of your own, there should be a single type called "dataset".
+
+Adding certain dataset types will result in a value other than "Dataset" being sent to DataCite (if you use DataCite) as shown in the table below.
+
+.. list-table:: Values sent to DataCite for resourceTypeGeneral by Dataset Type
+   :header-rows: 1
+   :stub-columns: 1
+   :align: left
+
+   * - Dataset Type
+     - Value sent to DataCite
+   * - dataset
+     - Dataset
+   * - software
+     - Software
+   * - workflow
+     - Workflow
+   * - review
+     - Other
+
+Other than sending a different resourceTypeGeneral to DataCite, the only functionality you gain currently from adding types is an entry in the "Dataset Type" facet but be advised that if you add a type other than "software", "workflow", or "review", you will need to add your new type to your Bundle.properties file for it to appear in Title Case rather than lower case in the "Dataset Type" facet.
 
 With all that said, we'll add a "software" type in the example below. This API endpoint is superuser only. The "name" of a type cannot be only digits. Note that this endpoint also allows you to add metadata blocks and available licenses for your new dataset type by adding "linkedMetadataBlocks" and/or "availableLicenses" arrays to your JSON.
 

@@ -842,6 +842,8 @@ public class XmlMetadataTemplate {
             case DatasetType.DATASET_TYPE_DATASET -> "Dataset";
             case DatasetType.DATASET_TYPE_SOFTWARE -> "Software";
             case DatasetType.DATASET_TYPE_WORKFLOW -> "Workflow";
+            // "Other" for now but we might ask DataCite to support https://schema.org/CriticReview 
+            case DatasetType.DATASET_TYPE_REVIEW -> "Other";
             default -> "Dataset";
             };
         }
