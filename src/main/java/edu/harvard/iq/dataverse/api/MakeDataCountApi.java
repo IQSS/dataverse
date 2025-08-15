@@ -196,7 +196,9 @@ public class MakeDataCountApi extends AbstractApiBean {
     private void applyRateLimit() {
         // Check if rate limiting is enabled
         long minDelay = JvmSettings.API_MDC_UPDATE_MIN_DELAY_MS.lookupOptional(Long.class).orElse(0l);
-        
+        if(minDelay ==0) {
+            return;
+        }
         // Calculate how long to wait
         long lastExecution = lastExecutionTime.get();
         long currentTime = System.currentTimeMillis();
@@ -260,12 +262,28 @@ public class MakeDataCountApi extends AbstractApiBean {
             JsonArray data = report.getJsonArray("data");
             Iterator<JsonValue> iter = data.iterator();
             while (iter.hasNext()) {
-                dataBuilder.add(iter.next());
+                JsonValue citationValue = iter.next();
+                JsonObject citation = (JsonObject) citationValue;
+                
+                // Filter out relations we don't use (e.g. hasPart) to lower memory req. with many files
+                if (citation.containsKey("attributes")) {
+                    JsonObject attributes = citation.getJsonObject("attributes");
+                    if (attributes.containsKey("relation-type-id")) {
+                        String relationshipType = attributes.getString("relation-type-id");
+                        
+                        // Only add citations with relationship types we care about
+                        if (DatasetExternalCitationsServiceBean.inboundRelationships.contains(relationshipType)  ||
+                                DatasetExternalCitationsServiceBean.outboundRelationships.contains(relationshipType)) {
+                            dataBuilder.add(citationValue);
+                        }
+                    }
+                }
             }
             
             if (links.containsKey("next")) {
                 try {
                     url = new URI(links.getString("next")).toURL();
+                    applyRateLimit();
                 } catch (URISyntaxException e) {
                     logger.warning("Unable to create URL from DataCite response: " + links.getString("next"));
                     return;
