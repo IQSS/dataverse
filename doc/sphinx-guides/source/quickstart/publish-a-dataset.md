@@ -2,7 +2,7 @@
 
 ## 🔐 Step 1: Log In & Create a Draft
 
-- Log in.
+- {ref}`Log in <account-log-in-options>`.
 - (Optional) Navigate to a collection.
 - Click "Add Data" → "New Dataset".
 
