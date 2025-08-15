@@ -1692,13 +1692,21 @@ public class Dataverses extends AbstractApiBean {
             List<Dataverse> dvsThisDvHasLinkedToList = dataverseSvc.findDataversesThisIdHasLinkedTo(dv.getId());
             JsonArrayBuilder dvsThisDvHasLinkedToBuilder = Json.createArrayBuilder();
             for (Dataverse dataverse : dvsThisDvHasLinkedToList) {
-                dvsThisDvHasLinkedToBuilder.add(dataverse.getAlias());
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                job.add("id", dataverse.getId());
+                job.add("alias", dataverse.getAlias());
+                job.add("displayName", dataverse.getDisplayName());
+                dvsThisDvHasLinkedToBuilder.add(job);
             }
 
             List<Dataverse> dvsThatLinkToThisDvList = dataverseSvc.findDataversesThatLinkToThisDvId(dv.getId());
             JsonArrayBuilder dvsThatLinkToThisDvBuilder = Json.createArrayBuilder();
             for (Dataverse dataverse : dvsThatLinkToThisDvList) {
-                dvsThatLinkToThisDvBuilder.add(dataverse.getAlias());
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                job.add("id", dataverse.getId());
+                job.add("alias", dataverse.getAlias());
+                job.add("displayName", dataverse.getDisplayName());
+                dvsThatLinkToThisDvBuilder.add(job);
             }
 
             List<Dataset> datasetsThisDvHasLinkedToList = dataverseSvc.findDatasetsThisIdHasLinkedTo(dv.getId());
