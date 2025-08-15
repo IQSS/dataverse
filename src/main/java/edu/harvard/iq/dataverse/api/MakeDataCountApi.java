@@ -25,6 +25,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,6 +70,9 @@ public class MakeDataCountApi extends AbstractApiBean {
     // Inject the managed executor service provided by the container
     @Resource(name = "concurrent/CitationUpdateExecutor")
     private ManagedExecutorService executorService;
+    
+    // Track the last execution time to implement rate limiting during Citation updates
+    private static final AtomicLong lastExecutionTime = new AtomicLong(0);
     
     /**
      * TODO: For each dataset, send the following:
@@ -163,7 +168,14 @@ public class MakeDataCountApi extends AbstractApiBean {
             // Submit the task to the managed executor service
             Future<?> future = executorService.submit(() -> {
                 try {
+                    // Apply rate limiting if enabled
+                    applyRateLimit();
+                    
+                    // Process the citation update
                     processCitationUpdate(dataset, pid, pidProvider);
+                    
+                    // Update the last execution time after processing
+                    lastExecutionTime.set(System.currentTimeMillis());
                 } catch (Exception e) {
                     logger.log(Level.SEVERE, "Error processing citation update for dataset " + id, e);
                 }
@@ -175,6 +187,31 @@ public class MakeDataCountApi extends AbstractApiBean {
             return ok(output);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
+        }
+    }
+    
+    /**
+     * Apply rate limiting by waiting if necessary
+     */
+    private void applyRateLimit() {
+        // Check if rate limiting is enabled
+        long minDelay = JvmSettings.API_MDC_UPDATE_MIN_DELAY_MS.lookupOptional(Long.class).orElse(0l);
+        
+        // Calculate how long to wait
+        long lastExecution = lastExecutionTime.get();
+        long currentTime = System.currentTimeMillis();
+        long elapsedTime = currentTime - lastExecution;
+        
+        // If not enough time has passed since the last execution, wait
+        if (lastExecution > 0 && elapsedTime < minDelay) {
+            long waitTime = minDelay - elapsedTime;
+            logger.fine("Rate limiting: waiting " + waitTime + " ms before processing next citation update");
+            try {
+                Thread.sleep(waitTime);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.warning("Rate limiting sleep interrupted: " + e.getMessage());
+            }
         }
     }
     
