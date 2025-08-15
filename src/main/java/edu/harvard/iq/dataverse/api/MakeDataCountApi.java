@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -159,38 +160,45 @@ public class MakeDataCountApi extends AbstractApiBean {
             final Dataset dataset = findDatasetOrDie(id);
             final GlobalId pid = dataset.getGlobalId();
             final PidProvider pidProvider = PidUtil.getPidProvider(pid.getProviderId());
-            
+
             // Only supported for DOIs and for DataCite DOI providers
-            if(!DataCiteDOIProvider.TYPE.equals(pidProvider.getProviderType())) {
+            if (!DataCiteDOIProvider.TYPE.equals(pidProvider.getProviderType())) {
                 return error(Status.BAD_REQUEST, "Only DataCite DOI providers are supported");
             }
-            
+
             // Submit the task to the managed executor service
-            Future<?> future = executorService.submit(() -> {
-                try {
-                    // Apply rate limiting if enabled
-                    applyRateLimit();
-                    
-                    // Process the citation update
-                    boolean success = processCitationUpdate(dataset, pid, pidProvider);
-                    
-                    // Update the last execution time after processing
-                    lastExecutionTime.set(System.currentTimeMillis());
-                    
-                    if (success) {
-                        logger.fine("Successfully processed citation update for dataset " + id);
-                    } else {
-                        logger.warning("Failed to process citation update for dataset " + id);
+            Future<?> future;
+            try {
+                future = executorService.submit(() -> {
+                    try {
+                        // Apply rate limiting if enabled
+                        applyRateLimit();
+
+                        // Process the citation update
+                        boolean success = processCitationUpdate(dataset, pid, pidProvider);
+
+                        // Update the last execution time after processing
+                        lastExecutionTime.set(System.currentTimeMillis());
+
+                        if (success) {
+                            logger.fine("Successfully processed citation update for dataset " + id);
+                        } else {
+                            logger.warning("Failed to process citation update for dataset " + id);
+                        }
+                    } catch (Exception e) {
+                        logger.log(Level.SEVERE, "Error processing citation update for dataset " + id, e);
                     }
-                } catch (Exception e) {
-                    logger.log(Level.SEVERE, "Error processing citation update for dataset " + id, e);
-                }
-            });
-            
-            JsonObjectBuilder output = Json.createObjectBuilder();
-            output.add("status", "queued");
-            output.add("message", "Citation update for dataset " + id + " has been queued for processing");
-            return ok(output);
+                });
+
+                JsonObjectBuilder output = Json.createObjectBuilder();
+                output.add("status", "queued");
+                output.add("message", "Citation update for dataset " + id + " has been queued for processing");
+                return ok(output);
+            } catch (RejectedExecutionException ree) {
+                logger.warning("Citation update for dataset " + id + " was rejected: Queue is full");
+                return error(Status.SERVICE_UNAVAILABLE,
+                        "Citation update service is currently at capacity. Please try again later.");
+            }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
