@@ -1289,10 +1289,21 @@ public class DataversesIT {
         
         updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, testDisplayOnCreate, apiToken);
         updateDataverseInputLevelsResponse.prettyPrint();
+        
+        actualInputLevelName = updateDataverseInputLevelsResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");
+        subtitleInputLevelIndex = actualInputLevelName.equals("subtitle") ? 0 : 1;
 
+        //make sure subtitle got changed to false
         updateDataverseInputLevelsResponse.then().assertThat()
+                .body(String.format("data.inputLevels[%d].displayOnCreate", subtitleInputLevelIndex), equalTo(false))
                 .statusCode(OK.getStatusCode());
       
+        //make superuser for cleanup
+        String username = UtilIT.getUsernameFromResponse(createUserResponse);
+        UtilIT.setSuperuserStatus(username, Boolean.TRUE);
+        Response deleteDataverse1Response = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverse1Response.prettyPrint();
+        assertEquals(200, deleteDataverse1Response.getStatusCode());
         
     }
 
