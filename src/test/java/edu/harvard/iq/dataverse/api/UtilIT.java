@@ -4781,13 +4781,13 @@ public class UtilIT {
         if (type.equals("dataset")) {
             if (!NumberUtils.isCreatable(idInPath)) {
                 idInPath = ":persistentId";
-                optionalQueryParam = "?persistentId=" + dvObjectId;
+                optionalQueryParam = "&persistentId=" + dvObjectId;
             }
         }
 
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses/" + searchTerm + optionalQueryParam);
+                .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses?searchTerm=" + searchTerm + optionalQueryParam);
 
     }
     static Response updateDataverseFeaturedItem(long featuredItemId,
