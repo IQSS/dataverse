@@ -535,6 +535,10 @@ public class DataverseServiceBean implements java.io.Serializable {
             });
         }
         
+        if (dvo instanceof Dataverse dataverse){
+            remove.add(dataverse);
+        }
+        
         for (Dataverse res : results) {
             if (!remove.contains(res)) {
                 if ((linkedDataset != null && this.permissionService.requestOn(req, res).has(Permission.LinkDataset))

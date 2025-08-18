@@ -724,6 +724,15 @@ public class DataversesIT {
         getLinkableDataversesForDataversePartial.prettyPrint();
                 getLinkableDataversesForDataversePartial.then().assertThat()
                 .statusCode(OK.getStatusCode())                
+                .body("data[0].alias", equalTo(dataverseAliasForLinking));  
+                
+                
+        //Try with empty string search term        
+        searchTerm = "";
+        getLinkableDataversesForDataversePartial = UtilIT.getLinkableDataverses("dataverse", dataverseAlias, apiToken, searchTerm);
+        getLinkableDataversesForDataversePartial.prettyPrint();
+                getLinkableDataversesForDataversePartial.then().assertThat()
+                .statusCode(OK.getStatusCode())                
                 .body("data[0].alias", equalTo(dataverseAliasForLinking));         
                                 
         // create new user and dataverse - the new dataverse should not be available to the first user for linking...
