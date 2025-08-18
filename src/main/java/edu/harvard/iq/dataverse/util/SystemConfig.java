@@ -288,9 +288,13 @@ public class SystemConfig {
     }
 
     public String getGuidesBaseUrl() {
+        return getGuidesBaseUrl(true);
+    }
+
+    public String getGuidesBaseUrl(boolean includeLang) {
         String saneDefault = "https://guides.dataverse.org";
         String guidesBaseUrl = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl, saneDefault);
-        return guidesBaseUrl + "/" + getGuidesLanguage();
+        return includeLang ? guidesBaseUrl + "/" + getGuidesLanguage() : guidesBaseUrl;
     }
 
     private String getGuidesLanguage() {
