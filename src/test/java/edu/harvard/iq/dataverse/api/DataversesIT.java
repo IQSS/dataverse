@@ -2306,11 +2306,13 @@ public class DataversesIT {
                 .body("data.inputLevels[0].displayOnCreate", equalTo(true))
                 .body("data.inputLevels[0].datasetFieldTypeName", equalTo("notesText"));
         
-        String actualInputLevelName = updateResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");        
-        int subtitleInputLevelIndex = actualInputLevelName.equals("subtitle") ? 0 : 1;
-        
+
         updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
             dataverseAlias, "subtitle", true, apiToken);
+        
+        String actualInputLevelName = updateResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");        
+        int subtitleInputLevelIndex = actualInputLevelName.equals("subtitle") ? 0 : 1;
+        updateResponse.prettyPrint();
         updateResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body(String.format("data.inputLevels[%d].displayOnCreate", subtitleInputLevelIndex), equalTo(true))
