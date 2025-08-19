@@ -111,7 +111,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             newVersion.getCurationStatuses().clear();
         }
 
-        // Add a new empty curation status to indicate the curation action
+        // Add a new empty curation status to clear the status in the published version (as done in the FinalizeDatasetPublicationCommand)
         CurationStatus status = updateVersion.getCurrentCurationStatus();
         if (status != null && StringUtils.isNotBlank(status.getLabel())) {
             updateVersion.addCurationStatus(new CurationStatus(null, updateVersion, getRequest().getAuthenticatedUser()));
