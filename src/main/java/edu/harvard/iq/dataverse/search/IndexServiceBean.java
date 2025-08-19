@@ -59,7 +59,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -85,6 +85,8 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
+
+import static edu.harvard.iq.dataverse.DatasetField.NA_VALUE;
 import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
 
 import jakarta.inject.Inject;
@@ -235,7 +237,7 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getCreateDate());
         }
 
-        /* We don't really have harvested dataverses yet; 
+        /* We don't really have harvested dataverses yet;
            (I have in fact just removed the isHarvested() method from the Dataverse object) -- L.A.
         if (dataverse.isHarvested()) {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, true);
@@ -265,7 +267,7 @@ public class IndexServiceBean {
         Set<String> langs = settingsService.getConfiguredLanguages();
         for (ControlledVocabularyValue dataverseSubject : dataverse.getDataverseSubjects()) {
             String subject = dataverseSubject.getStrValue();
-            if (!subject.equals(DatasetField.NA_VALUE)) {
+            if (!subject.equals(NA_VALUE)) {
              // Index in all used languages (display and metadata languages
                 for(String locale: langs) {
                     solrInputDocument.addField(SearchFields.DATAVERSE_SUBJECT, dataverseSubject.getLocaleStrValue(locale));
@@ -1060,7 +1062,7 @@ public class IndexServiceBean {
             if (datasetVersion.isInReview()) {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
             }
-            
+
             CurationStatus status = datasetVersion.getCurrentCurationStatus();
             if(status != null && Strings.isNotBlank(status.getLabel())) {
                 solrInputDocument.addField(SearchFields.CURATION_STATUS, status.getLabel());
@@ -1258,7 +1260,7 @@ public class IndexServiceBean {
                              */
                             if (dsf.getControlledVocabularyValues().isEmpty()) {
                                 for (DatasetFieldValue dfv : dsf.getDatasetFieldValues()) {
-                                    if (dfv.getValue() == null || dfv.getValue().equals(DatasetField.NA_VALUE)) {
+                                    if (dfv.getValue() == null || dfv.getValue().equals(NA_VALUE)) {
                                         continue;
                                     }
                                     solrInputDocument.addField(solrFieldSearchable, dfv.getValue());
@@ -1269,7 +1271,7 @@ public class IndexServiceBean {
                                 }
                             } else {
                                 for (ControlledVocabularyValue controlledVocabularyValue : dsf.getControlledVocabularyValues()) {
-                                    if (controlledVocabularyValue.getStrValue().equals(DatasetField.NA_VALUE)) {
+                                    if (controlledVocabularyValue.getStrValue().equals(NA_VALUE)) {
                                         continue;
                                     }
 
@@ -1305,7 +1307,9 @@ public class IndexServiceBean {
                                         solrInputDocument.addField(solrFieldFacetable, topicClassificationTerm);
                                     }
                                 } else {
-                                    solrInputDocument.addField(solrFieldFacetable, dsf.getValuesWithoutNaValues());
+                                    var values = dsf.getDisplayValues(); // for proper display of facets with &apos;
+                                    values.removeAll(Arrays.asList(NA_VALUE));
+                                    solrInputDocument.addField(solrFieldFacetable, values);
                                 }
                             }
                         }
@@ -1722,7 +1726,7 @@ public class IndexServiceBean {
                     GlobalId filePid = datafile.getGlobalId();
                     datafileSolrInputDocument.addField(SearchFields.FILE_PERSISTENT_ID,
                             (filePid != null) ? filePid.toString() : null);
-                       
+
                     datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
                     // datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE,
                     // dataFile.getOwner().getOwner().getName());
@@ -1743,7 +1747,7 @@ public class IndexServiceBean {
                         datafileSolrInputDocument.addField(SearchFields.VARIABLE_COUNT, variables.size());
                         datafileSolrInputDocument.addField(SearchFields.OBSERVATIONS, observations);
                         datafileSolrInputDocument.addField(SearchFields.UNF, dtable.getUnf());
-                            
+
 
                         Map<Long, VariableMetadata> variableMap = null;
                         Collection<VariableMetadata> variablesByMetadata = fileMetadata.getVariableMetadatas();

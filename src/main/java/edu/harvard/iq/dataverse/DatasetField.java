@@ -374,6 +374,29 @@ public class DatasetField implements Serializable {
         }
         return returnList;
     }
+    /**
+     * list of values (as opposed to display values).
+     * used for passing to solr for indexing
+     */
+    public List<String> getDisplayValues()
+    {
+        List returnList = new ArrayList();
+        if (!datasetFieldValues.isEmpty()) {
+            for (DatasetFieldValue dsfv : datasetFieldValues) {
+                String value = dsfv.getDisplayValue();
+                if (value != null) {
+                    returnList.add(value);
+                }
+            }
+        } else {
+            for (ControlledVocabularyValue cvv : controlledVocabularyValues) {
+                if (cvv != null && cvv.getStrValue() != null) {
+                    returnList.add(cvv.getStrValue());
+                }
+            }
+        }
+        return returnList;
+    }
 
     /**
      * appears to be only used for sending info to solr; changed to return values
