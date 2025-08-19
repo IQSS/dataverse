@@ -735,7 +735,7 @@ Note: you must have "Add Dataset" permission in the given collection to invoke t
 List Dataverse Collections to which a given Dataset or Dataverse Collection may be linked
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The user must provide a search term to limit the list of Dataverse Collections returned. The search term will be compared to the name of the Dataverse Collections and must include the beginning of the Dataverse Collections' names.
+The user may provide a search term to limit the list of Dataverse Collections returned. The search term will be compared to the name of the Dataverse Collections and must include the beginning of the Dataverse Collections' names.
 The response is a JSON array of the ids, aliases, and names of the Dataverse collections to which a given Dataset or Dataverse Collection may be linked:
 
 For a given Dataverse Collection:
@@ -748,13 +748,13 @@ For a given Dataverse Collection:
   export ID=collectionAlias
   export SEARCH_TERM=searchOn
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/dataverses/$ID/$OBJECT_TYPE/linkingDataverses/$SEARCH_TERM" 
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/dataverses/$ID/$OBJECT_TYPE/linkingDataverses?searchTerm=$SEARCH_TERM" 
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/dataverses/collectionAlias/dataverse/linkingDataverses/searchOn" 
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/dataverses/collectionAlias/dataverse/linkingDataverses?searchTerm=searchOn" 
 
 For a given Dataset:
 
@@ -766,13 +766,13 @@ For a given Dataset:
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
   export SEARCH_TERM=searchOn
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/dataverses/:persistentId/$OBJECT_TYPE/linkingDataverses/$SEARCH_TERM?persistentId=$PERSISTENT_IDENTIFIER" 
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/dataverses/:persistentId/$OBJECT_TYPE/linkingDataverses?searchTerm=SEARCH_TERM&persistentId=$PERSISTENT_IDENTIFIER" 
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/dataverses/:persistentId/dataset/linkingDataverses/searchOn?persistentId=doi:10.5072/FK2/J8SJZB" 
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/dataverses/:persistentId/dataset/linkingDataverses?searchTerm=searchOn&persistentId=doi:10.5072/FK2/J8SJZB" 
 
 
 
