@@ -2306,12 +2306,15 @@ public class DataversesIT {
                 .body("data.inputLevels[0].displayOnCreate", equalTo(true))
                 .body("data.inputLevels[0].datasetFieldTypeName", equalTo("notesText"));
         
+        String actualInputLevelName = updateResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");        
+        int subtitleInputLevelIndex = actualInputLevelName.equals("subtitle") ? 0 : 1;
+        
         updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
             dataverseAlias, "subtitle", true, apiToken);
         updateResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.inputLevels[0].displayOnCreate", equalTo(true))
-                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("subtitle"));
+                .body(String.format("data.inputLevels[%d].displayOnCreate", subtitleInputLevelIndex), equalTo(true))
+                .body(String.format("data.inputLevels[%d].datasetFieldTypeName", subtitleInputLevelIndex), equalTo("subtitle"));
         
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
         listMetadataBlocksResponse.prettyPrint();
@@ -2326,7 +2329,7 @@ public class DataversesIT {
                 .body("data[0].fields.author.childFields.size()", is(4));
 
         updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(dataverseAlias, "subtitle", false, apiToken);
-        String actualInputLevelName = updateResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");
+        actualInputLevelName = updateResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");
         int subtitleIndex = actualInputLevelName.equals("subtitle") ? 0 : 1;
         updateResponse.then().assertThat()
                 .body(String.format("data.inputLevels[%d].displayOnCreate", subtitleIndex), equalTo(false))
