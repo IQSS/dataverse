@@ -72,6 +72,18 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
         }
         if (targetUser != null && userApiToken != null) {
             String signedUrl = URLDecoder.decode(uriInfo.getRequestUri().toString(), StandardCharsets.UTF_8);
+            
+            System.out.println("Orig URL: " + containerRequestContext.getUriInfo().getRequestUri().toString());
+            String forwardedProto = containerRequestContext.getHeaderString("X-Forwarded-Proto");
+            System.out.println("XFP: " + forwardedProto);
+            
+
+            if (forwardedProto != null && !forwardedProto.isEmpty()) {
+                if ("https".equalsIgnoreCase(forwardedProto) && signedUrl.startsWith("http:")) {
+                    signedUrl = "https" + signedUrl.substring(4);
+                }
+            }
+
             String requestMethod = containerRequestContext.getMethod();
             String signedUrlSigningKey = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + userApiToken.getTokenString();
             boolean isSignedUrlValid = UrlSignerUtil.isValidUrl(signedUrl, userId, requestMethod, signedUrlSigningKey);
