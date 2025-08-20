@@ -1287,8 +1287,9 @@ public class DataversesIT {
                 .body(String.format("data.inputLevels[%d].required", relatedMaterialInputLevelIndex), equalTo(false))
                 .body(String.format("data.inputLevels[%d].displayOnCreate", relatedMaterialInputLevelIndex), equalTo(false))
                 .statusCode(OK.getStatusCode());
-         actualFieldTypeName1 = updateDataverseInputLevelsResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");
-         actualFieldTypeName2 = updateDataverseInputLevelsResponse.then().extract().path("data.inputLevels[1].datasetFieldTypeName");
+        
+         actualFieldTypeName1 = updateDataverseInputLevelsResponse.then().extract().path(String.format("data.inputLevels[%d].datasetFieldTypeName", subtitleInputLevelIndex));
+         actualFieldTypeName2 = updateDataverseInputLevelsResponse.then().extract().path(String.format("data.inputLevels[%d].datasetFieldTypeName", relatedMaterialInputLevelIndex));
         assertNotEquals(actualFieldTypeName1, actualFieldTypeName2);
         assertThat(testInputLevelNames, hasItemInArray(actualFieldTypeName1));
         assertThat(testInputLevelNames, hasItemInArray(actualFieldTypeName2));
@@ -1302,9 +1303,21 @@ public class DataversesIT {
         updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, testDisplayOnCreate, apiToken);
         updateDataverseInputLevelsResponse.prettyPrint();
         
-        actualInputLevelName = updateDataverseInputLevelsResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");
-        subtitleInputLevelIndex = actualInputLevelName.equals("subtitle") ? 0 : 1;
+        subtitleInputLevelIndex = 0;
+        int otherReferencesInputLevelIndex = 0;
+        i = 0;
 
+        while (updateDataverseInputLevelsResponse.then().extract().path(String.format("data.inputLevels[%d].datasetFieldTypeName", i)) != null) {
+            actualInputLevelName = updateDataverseInputLevelsResponse.then().extract().path(String.format("data.inputLevels[%d].datasetFieldTypeName", i)).toString();
+            if (actualInputLevelName.equals("subtitle")) {
+                subtitleInputLevelIndex = i;
+            }
+            if (actualInputLevelName.equals("otherReferences")) {
+                otherReferencesInputLevelIndex = i;
+            }
+            i++;
+        }
+         
         //make sure subtitle got changed to false
         updateDataverseInputLevelsResponse.then().assertThat()
                 .body(String.format("data.inputLevels[%d].displayOnCreate", subtitleInputLevelIndex), equalTo(false))
