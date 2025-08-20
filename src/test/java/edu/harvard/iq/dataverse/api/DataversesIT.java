@@ -1261,19 +1261,31 @@ public class DataversesIT {
        
         testRequiredInputLevels = new boolean[] {false, false};
         testIncludedInputLevels = new boolean[] {true, true};
-        boolean [] testDisplayOnCreate = new boolean[] {true, true};
+        boolean [] testDisplayOnCreate = new boolean[] {true, false};
          updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, testDisplayOnCreate, apiToken);
-         actualInputLevelName = updateDataverseInputLevelsResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");
-        int subtitleInputLevelIndex = actualInputLevelName.equals("subtitle") ? 0 : 1;
-        updateDataverseInputLevelsResponse.prettyPrint();
-        
+         updateDataverseInputLevelsResponse.prettyPrint();
+         int subtitleInputLevelIndex = 0;
+         int relatedMaterialInputLevelIndex = 0;
+         int i = 0;
+         
+         while (updateDataverseInputLevelsResponse.then().extract().path(String.format("data.inputLevels[%d].datasetFieldTypeName", i)) != null){
+             actualInputLevelName = updateDataverseInputLevelsResponse.then().extract().path(String.format("data.inputLevels[%d].datasetFieldTypeName", i)).toString();
+             if (actualInputLevelName.equals("subtitle")){
+                 subtitleInputLevelIndex = i;
+             }
+             if (actualInputLevelName.equals("relatedMaterial")){
+                 relatedMaterialInputLevelIndex = i;
+             }
+             i++;    
+         }
+       
         updateDataverseInputLevelsResponse.then().assertThat()
                 .body(String.format("data.inputLevels[%d].include", subtitleInputLevelIndex), equalTo(true))
                 .body(String.format("data.inputLevels[%d].required", subtitleInputLevelIndex), equalTo(false))
                 .body(String.format("data.inputLevels[%d].displayOnCreate", subtitleInputLevelIndex), equalTo(true))
-                .body(String.format("data.inputLevels[%d].include", 1 - subtitleInputLevelIndex), equalTo(true))
-                .body(String.format("data.inputLevels[%d].required", 1 - subtitleInputLevelIndex), equalTo(false))
-                .body(String.format("data.inputLevels[%d].displayOnCreate", 1 - subtitleInputLevelIndex), equalTo(true))
+                .body(String.format("data.inputLevels[%d].include", relatedMaterialInputLevelIndex), equalTo(true))
+                .body(String.format("data.inputLevels[%d].required", relatedMaterialInputLevelIndex), equalTo(false))
+                .body(String.format("data.inputLevels[%d].displayOnCreate", relatedMaterialInputLevelIndex), equalTo(false))
                 .statusCode(OK.getStatusCode());
          actualFieldTypeName1 = updateDataverseInputLevelsResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");
          actualFieldTypeName2 = updateDataverseInputLevelsResponse.then().extract().path("data.inputLevels[1].datasetFieldTypeName");
