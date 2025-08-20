@@ -109,7 +109,7 @@ It inherits (is built on) an Ubuntu environment from the upstream
 `base image of Eclipse Temurin <https://hub.docker.com/_/eclipse-temurin>`_.
 You are free to change the JRE/JDK image to your liking (see below).
 
-
+.. _base-image-build-instructions:
 
 Build Instructions
 ++++++++++++++++++

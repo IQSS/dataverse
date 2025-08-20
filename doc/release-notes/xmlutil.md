@@ -1,1 +1,0 @@
-The configuration of XML parsers used in Dataverse has been centralized and unused functionality has been turned off to enhance security.

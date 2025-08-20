@@ -320,6 +320,11 @@ public class IndexServiceBean {
         }
         
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
+
+        if (dataverse.isReleased()) {
+            solrInputDocument.addField(SearchFields.DATASET_COUNT, dataverseService.getDatasetCount(dataverse.getId()));
+        }
+
         docs.add(solrInputDocument);
 
         String status;
@@ -2124,7 +2129,7 @@ public class IndexServiceBean {
         } catch (Exception ex) {
             logger.info("failed to find dataverseSegments for dataversePaths for " + SearchFields.SUBTREE + ": " + ex);
         }        
-        List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
+        Set<String> dataversePaths = new HashSet<>(getDataversePathsFromSegments(dataverseSegments));
         if (dataversePaths.size() > 0 && dvo.isInstanceofDataverse()) {
             // removing the dataverse's own id from the paths
             // fixes bug where if my parent dv was linked my dv was shown as linked to myself
@@ -2134,7 +2139,7 @@ public class IndexServiceBean {
         add linking paths
         */
         dataversePaths.addAll(findLinkingDataversePaths(findAllLinkingDataverses(dvo)));
-        return dataversePaths;
+        return new ArrayList<>(dataversePaths);
     }
 
     public String delete(Dataverse doomed) {
