@@ -58,6 +58,9 @@ import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.json.*;
 import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -5187,6 +5190,45 @@ public class Datasets extends AbstractApiBean {
 
             URLTokenUtil eth = new ExternalToolHandler(externalTool, target.getDataset(), apiToken, locale);
             return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters())), JsonUtil.getJsonArray(externalTool.getAllowedApiCalls())));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    /**
+     * Public endpoint: list dataset-scope external tools applicable to a dataset, with toolUrlWithQueryParams resolved.
+     * Example: GET /api/datasets/{id}/externalTools?type=explore
+     * If the request is authenticated, callback URLs for tools that declare allowedApiCalls will be signed.
+     */
+    @GET
+    @Path("{id}/externalTools")
+    public Response getDatasetExternalTools(@Context ContainerRequestContext crc,
+                                            @PathParam("id") String idSupplied,
+                                            @QueryParam("type") String typeSupplied,
+                                            @QueryParam("locale") String locale) {
+        ExternalTool.Type type;
+        try {
+            type = ExternalTool.Type.fromString(typeSupplied);
+        } catch (IllegalArgumentException ex) {
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
+        }
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+
+            ApiToken apiToken = null;
+            User user = getRequestUser(crc);
+            apiToken = authSvc.getValidApiTokenForUser(user);
+
+            String localeCode = (locale != null && !locale.isBlank()) ? locale : null;
+
+            JsonArrayBuilder tools = Json.createArrayBuilder();
+            List<ExternalTool> datasetTools = externalToolService.findDatasetToolsByType(type);
+            for (ExternalTool tool : datasetTools) {
+                ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, dataset, apiToken, localeCode);
+                JsonObjectBuilder toolToJson = externalToolService.getToolAsJsonWithQueryParameters(externalToolHandler);
+                tools.add(toolToJson);
+            }
+            return ok(tools);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

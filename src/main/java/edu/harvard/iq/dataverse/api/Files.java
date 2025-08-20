@@ -886,6 +886,59 @@ public class Files extends AbstractApiBean {
         eth = new ExternalToolHandler(externalTool, target.getDataFile(), apiToken, target, locale);
         return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters())), JsonUtil.getJsonArray(externalTool.getAllowedApiCalls())));
     }
+
+    /**
+     * Public: return all external tools applicable to a file (by its content type and requirements), each with toolUrlWithQueryParams resolved.
+     * Example: GET /api/files/{id}/externalTools?type=preview|explore|query[&fileMetadataId=...][&locale=en]
+     */
+    @GET
+    @Path("{id}/externalTools")
+    public Response getFileExternalTools(@Context ContainerRequestContext crc,
+                                         @PathParam("id") String idSupplied,
+                                         @QueryParam("type") String typeSupplied,
+                                         @QueryParam("fileMetadataId") Long fileMetadataId,
+                                         @QueryParam("locale") String locale) {
+        ExternalTool.Type type;
+        try {
+            type = ExternalTool.Type.fromString(typeSupplied);
+        } catch (IllegalArgumentException ex) {
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
+        }
+        try {
+            DataFile dataFile = findDataFileOrDie(idSupplied);
+
+            // Resolve FileMetadata context
+            FileMetadata fm = null;
+            if (fileMetadataId != null) {
+                fm = fileSvc.findFileMetadata(fileMetadataId);
+                if (fm == null) {
+                    return error(BAD_REQUEST, "FileMetadata not found for id " + fileMetadataId);
+                }
+            } else {
+                fm = dataFile.getFileMetadata();
+            }
+
+            ApiToken apiToken = null;
+            User user = getRequestUser(crc);
+            apiToken = authSvc.getValidApiTokenForUser(user);
+
+            String localeCode = (locale != null && !locale.isBlank()) ? locale : null;
+
+            // Get all tools of the requested type, then filter by file using service logic (handles tabular/TSV_ALT, requirements, storage access)
+            List<ExternalTool> typeTools = externalToolService.findFileToolsByType(type);
+            List<ExternalTool> applicable = externalToolService.findExternalToolsByFile(typeTools, dataFile);
+
+            JsonArrayBuilder tools = Json.createArrayBuilder();
+            for (ExternalTool tool : applicable) {
+                ExternalToolHandler handler = new ExternalToolHandler(tool, dataFile, apiToken, fm, localeCode);
+                JsonObjectBuilder toolJson = externalToolService.getToolAsJsonWithQueryParameters(handler);
+                tools.add(toolJson);
+            }
+            return ok(tools);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
     
     @GET
     @Path("fixityAlgorithm")
