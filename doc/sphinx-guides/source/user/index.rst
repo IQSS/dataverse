@@ -6,6 +6,8 @@
 User Guide
 =================================================
 
+|publish-a-dataset|
+
 **Contents:**
 
 .. toctree::
@@ -17,3 +19,8 @@ User Guide
    dataset-management
    tabulardataingest/index
    appendix
+
+.. |publish-a-dataset| image:: ./img/publish-a-dataset.svg
+   :scale: 70%
+   :alt: Publish a Dataset button
+   :target: ../quickstart/publish-a-dataset.html
