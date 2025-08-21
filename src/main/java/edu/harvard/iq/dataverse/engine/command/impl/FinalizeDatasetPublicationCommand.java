@@ -334,16 +334,12 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 while (dv != null) {
                     boolean newSubjectsAdded = false;
                     for (ControlledVocabularyValue cvv : dsf.getControlledVocabularyValues()) {                   
-                        if (!cvv.getStrValue().equals(DatasetField.NA_VALUE)) {
-                            if (!dv.getDataverseSubjects().contains(cvv)) {
-                                logger.fine("dv "+dv.getAlias()+" does not have subject "+cvv.getStrValue());
-                                newSubjectsAdded = true;
-                                dv.getDataverseSubjects().add(cvv);
-                            } else {
-                                logger.fine("dv "+dv.getAlias()+" already has subject "+cvv.getStrValue());
-                            }
+                        if (!dv.getDataverseSubjects().contains(cvv)) {
+                            logger.fine("dv "+dv.getAlias()+" does not have subject "+cvv.getStrValue());
+                            newSubjectsAdded = true;
+                            dv.getDataverseSubjects().add(cvv);
                         } else {
-                            logger.fine("Subject is not recognized : " + cvv.getStrValue());
+                            logger.fine("dv "+dv.getAlias()+" already has subject "+cvv.getStrValue());
                         }
                     }
                     if (newSubjectsAdded) {
