@@ -5382,7 +5382,7 @@ Example response:
   }
 
 Get File External Tool Parameters
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This API call is intended as a callback that can be used by :doc:`/installation/external-tools` to retrieve signed URLs necessary for their interaction with Dataverse files.
 It can be called directly as well.
