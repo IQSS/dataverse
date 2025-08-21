@@ -764,7 +764,13 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 }
 
             } else {
-                curPath = ((JsonObject) curPath).get(pathParts[index]);
+                try {
+                    int indexNumber = Integer.parseInt(pathParts[index]);
+                    curPath = ((JsonObject) curPath).get(indexNumber);
+                } catch (NumberFormatException nfe) {
+                    curPath = ((JsonObject) curPath).get(pathParts[index]);
+                }
+                // curPath = ((JsonObject) curPath).get(pathParts[index]);
                 logger.fine("Found next Path object " + curPath.toString());
                 return processPathSegment(index + 1, pathParts, curPath, termUri);
             }
