@@ -5404,6 +5404,7 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Accept:application/json" "https://demo.dataverse.org/api/files/42/metadata/123/toolparams/3"
+
 Get External Tool Parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
