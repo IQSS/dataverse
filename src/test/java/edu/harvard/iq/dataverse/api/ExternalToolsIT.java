@@ -7,8 +7,11 @@ import io.restassured.response.Response;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
+
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObjectBuilder;
@@ -22,6 +25,8 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.junit.jupiter.api.Disabled;
 
 public class ExternalToolsIT {
@@ -725,5 +730,234 @@ public class ExternalToolsIT {
                 .statusCode(OK.getStatusCode());
         
     }
+    
+
+@Test
+public void testExternalToolUrlApi() {
+    // Create a user
+    Response createUser = UtilIT.createRandomUser();
+    createUser.prettyPrint();
+    createUser.then().assertThat()
+            .statusCode(OK.getStatusCode());
+    String username = UtilIT.getUsernameFromResponse(createUser);
+    String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+    // Create a dataverse
+    Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+    createDataverseResponse.prettyPrint();
+    createDataverseResponse.then().assertThat()
+            .statusCode(CREATED.getStatusCode());
+    String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+    // Create a dataset
+    Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+    createDataset.prettyPrint();
+    createDataset.then().assertThat()
+            .statusCode(CREATED.getStatusCode());
+    Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+    String datasetPid = JsonPath.from(createDataset.getBody().asString()).getString("data.persistentId");
+
+    // Upload a text file
+    String pathToTextFile = "src/test/java/edu/harvard/iq/dataverse/util/testing-readme.txt";
+    Response uploadTextFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTextFile, apiToken);
+    uploadTextFile.prettyPrint();
+    uploadTextFile.then().assertThat()
+            .statusCode(OK.getStatusCode());
+    Integer textFileId = JsonPath.from(uploadTextFile.getBody().asString()).getInt("data.files[0].dataFile.id");
+    
+    // Create a dataset-level tool
+    JsonObjectBuilder datasetToolJob = Json.createObjectBuilder();
+    datasetToolJob.add("displayName", "Dataset API Tool");
+    datasetToolJob.add("description", "Tests the dataset-level tool URL API");
+    datasetToolJob.add("types", Json.createArrayBuilder().add("explore"));
+    datasetToolJob.add("scope", "dataset");
+    datasetToolJob.add("toolUrl", "http://example.org/dataset-tool");
+    datasetToolJob.add("toolParameters", Json.createObjectBuilder()
+            .add("queryParameters", Json.createArrayBuilder()
+                    .add(Json.createObjectBuilder()
+                            .add("datasetId", "{datasetId}")
+                            .build())
+                    .add(Json.createObjectBuilder()
+                            .add("key", "{apiToken}")
+                            .build())
+                    .build())
+            .build());
+    datasetToolJob.add("allowedApiCalls", Json.createArrayBuilder()
+            .add(Json.createObjectBuilder()
+                    .add("name", "retrieveDatasetJson")
+                    .add("httpMethod", "GET")
+                    .add("urlTemplate", "/api/v1/datasets/{datasetId}")
+                    .add("timeOut", 10)
+                    .build())
+            .build());
+    
+    Response addDatasetTool = UtilIT.addExternalTool(datasetToolJob.build());
+    addDatasetTool.prettyPrint();
+    addDatasetTool.then().assertThat()
+            .statusCode(OK.getStatusCode())
+            .body("data.displayName", CoreMatchers.equalTo("Dataset API Tool"));
+    Long datasetToolId = JsonPath.from(addDatasetTool.getBody().asString()).getLong("data.id");
+    
+    // Create a file-level tool for text/plain
+    JsonObjectBuilder fileToolJob = Json.createObjectBuilder();
+    fileToolJob.add("displayName", "Text File Tool");
+    fileToolJob.add("description", "Tests the file-level tool URL API");
+    fileToolJob.add("types", Json.createArrayBuilder().add("explore"));
+    fileToolJob.add("scope", "file");
+    fileToolJob.add("contentType", "text/plain");
+    fileToolJob.add("toolUrl", "http://example.org/text-tool");
+    fileToolJob.add("toolParameters", Json.createObjectBuilder()
+            .add("queryParameters", Json.createArrayBuilder()
+                    .add(Json.createObjectBuilder()
+                            .add("fileId", "{fileId}")
+                            .build())
+                    .add(Json.createObjectBuilder()
+                            .add("key", "{apiToken}")
+                            .build())
+                    .build())
+            .build());
+    fileToolJob.add("allowedApiCalls", Json.createArrayBuilder()
+            .add(Json.createObjectBuilder()
+                    .add("name", "retrieveFileContents")
+                    .add("httpMethod", "GET")
+                    .add("urlTemplate", "/api/v1/access/datafile/{fileId}?gbrecs=true")
+                    .add("timeOut", 3600)
+                    .build())
+            .build());
+    
+    Response addFileTool = UtilIT.addExternalTool(fileToolJob.build());
+    addFileTool.prettyPrint();
+    addFileTool.then().assertThat()
+            .statusCode(OK.getStatusCode())
+            .body("data.displayName", CoreMatchers.equalTo("Text File Tool"));
+    Long fileToolId = JsonPath.from(addFileTool.getBody().asString()).getLong("data.id");
+    
+    // Test the dataset tool URL API
+    Response datasetToolUrl = UtilIT.getDatasetToolUrl(datasetId.toString(), datasetToolId.toString(), apiToken, null);
+    datasetToolUrl.prettyPrint();
+    datasetToolUrl.then().assertThat()
+            .statusCode(OK.getStatusCode())
+            .body("status", CoreMatchers.equalTo("OK"))
+            .body("data.toolUrl", CoreMatchers.startsWith("http://example.org/dataset-tool?datasetId=" + datasetId))
+            .body("data.toolName", CoreMatchers.equalTo("Dataset API Tool"));
+    
+ // Extract the callback parameter
+    String toolUrl = JsonPath.from(datasetToolUrl.getBody().asString()).getString("data.toolUrl");
+    String callbackParam = toolUrl.substring(toolUrl.indexOf("callback=") + 9);
+    if (callbackParam.contains("&")) {
+        callbackParam = callbackParam.substring(0, callbackParam.indexOf("&"));
+    }
+
+    // Decode the callback URL
+    byte[] decodedBytes = Base64.getDecoder().decode(callbackParam);
+    String decodedCallback = new String(decodedBytes, StandardCharsets.UTF_8);
+    System.out.println("Decoded callback URL: " + decodedCallback);
+
+    // Verify the callback URL contains the dataset API endpoint
+    assertTrue(decodedCallback.contains("toolparams/" + datasetToolId), 
+            "Callback URL should contain a call to a/api/datasets/{id}/versions/{versionId}/toolparams/{toolId}");
+
+    // Actually call the callback URL and verify the response
+    Response callbackResponse = UtilIT.callCallbackUrl(decodedCallback);
+    callbackResponse.prettyPrint();
+    callbackResponse.then().assertThat().statusCode(OK.getStatusCode()).body("status", CoreMatchers.equalTo("OK"));
+
+    // Verify the response contains the dataset API endpoint
+    String callbackResponseBody = callbackResponse.getBody().asString();
+    assertTrue(callbackResponseBody.contains("/api/v1/datasets/" + datasetId),
+            "Callback response should contain the dataset API endpoint");
+
+    // Verify the response contains the allowed API calls
+    assertTrue(callbackResponseBody.contains("retrieveDatasetJson"),
+            "Callback response should contain the allowed API call name");
+
+    // Test the file tool URL API
+    Response fileToolUrl = UtilIT.getFileToolUrl(textFileId.toString(), fileToolId.toString(), apiToken, null);
+    fileToolUrl.prettyPrint();
+    fileToolUrl.then().assertThat()
+            .statusCode(OK.getStatusCode())
+            .body("status", CoreMatchers.equalTo("OK"))
+            .body("data.toolUrl", CoreMatchers.startsWith("http://example.org/text-tool?fileId=" + textFileId))
+            .body("data.toolName", CoreMatchers.equalTo("Text File Tool"));
+    
+ // Extract the callback parameter from file tool URL
+    String fileToolUrlString = JsonPath.from(fileToolUrl.getBody().asString()).getString("data.toolUrl");
+    String fileCallbackParam = fileToolUrlString.substring(fileToolUrlString.indexOf("callback=") + 9);
+    if (fileCallbackParam.contains("&")) {
+        fileCallbackParam = fileCallbackParam.substring(0, fileCallbackParam.indexOf("&"));
+    }
+
+    // Decode the file tool callback URL
+    byte[] fileDecodedBytes = Base64.getDecoder().decode(fileCallbackParam);
+    String fileDecodedCallback = new String(fileDecodedBytes, StandardCharsets.UTF_8);
+    System.out.println("Decoded file callback URL: " + fileDecodedCallback);
+
+    // Verify the file callback URL contains the file API endpoint
+    assertTrue(fileDecodedCallback.contains("toolparams/" + fileToolId), 
+            "File callback URL should contain a call to api/files/{id}/toolparams/{toolId}");
+
+    // Actually call the file callback URL and verify the response
+    Response fileCallbackResponse = UtilIT.callCallbackUrl(fileDecodedCallback);
+    fileCallbackResponse.prettyPrint();
+    fileCallbackResponse.then().assertThat()
+            .statusCode(OK.getStatusCode())
+            .body("status", CoreMatchers.equalTo("OK"));
+
+    // Verify the response contains the file API endpoint
+    String fileCallbackResponseBody = fileCallbackResponse.getBody().asString();
+    assertTrue(fileCallbackResponseBody.contains("/api/v1/access/datafile/" + textFileId),
+            "File callback response should contain the file API endpoint");
+
+    // Verify the response contains the allowed API calls
+    assertTrue(fileCallbackResponseBody.contains("retrieveFileContents"),
+            "File callback response should contain the allowed API call name");
+    assertTrue(fileCallbackResponseBody.contains("gbrecs=true"),
+            "File callback response should contain the query parameter");
+    
+    // Test with preview mode
+    JsonObjectBuilder previewParams = Json.createObjectBuilder()
+            .add("preview", true)
+            .add("locale", "fr");
+    
+    Response fileToolUrlWithPreview = UtilIT.getFileToolUrl(
+            textFileId.toString(), fileToolId.toString(), apiToken, previewParams.build());
+    fileToolUrlWithPreview.prettyPrint();
+    fileToolUrlWithPreview.then().assertThat()
+            .statusCode(OK.getStatusCode())
+            .body("status", CoreMatchers.equalTo("OK"))
+            .body("data.preview", CoreMatchers.equalTo(true));
+    
+    // Clean up - delete the tools
+    Response deleteDatasetTool = UtilIT.deleteExternalTool(datasetToolId);
+    deleteDatasetTool.then().assertThat()
+            .statusCode(OK.getStatusCode());
+    
+    Response deleteFileTool = UtilIT.deleteExternalTool(fileToolId);
+    deleteFileTool.then().assertThat()
+            .statusCode(OK.getStatusCode());
+    
+    // Clean up - delete dataset, dataverse, and user
+    try {
+        // Delete dataset
+        Response deleteDataset = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deleteDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        // Delete dataverse
+        Response deleteDataverse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        // Delete user
+        Response deleteUser = UtilIT.deleteUser(username);
+        deleteUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    } catch (Exception e) {
+        System.out.println("Error during cleanup: " + e.getMessage());
+        e.printStackTrace();
+        fail("Cleanup failed: " + e.getMessage());
+    }
+    
+}
 
 }

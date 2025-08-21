@@ -4972,4 +4972,58 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/dataverses/" + dataverseAlias + "/templates");
     }
+    
+    /**
+     * Gets the tool URL for a dataset with optional parameters
+     * @param datasetId The ID of the dataset
+     * @param toolId The ID of the external tool
+     * @param apiToken The API token for authentication
+     * @param params Optional parameters (can be null)
+     * @return Response from the API
+     */
+    public static Response getDatasetToolUrl(String datasetId, String toolId, String apiToken, JsonObject params) {
+        RequestSpecification request = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.JSON);
+        
+        if (params != null) {
+            request = request.body(params.toString());
+        }
+        
+        return request.post("/api/datasets/" + datasetId + "/externalTool/" + toolId + "/toolUrl");
+    }
+
+    /**
+     * Gets the tool URL for a file with optional parameters
+     * @param fileId The ID of the file
+     * @param toolId The ID of the external tool
+     * @param apiToken The API token for authentication
+     * @param params Optional parameters (can be null)
+     * @return Response from the API
+     */
+    public static Response getFileToolUrl(String fileId, String toolId, String apiToken, JsonObject params) {
+        RequestSpecification request = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.JSON);
+        
+        if (params != null) {
+            request = request.body(params.toString());
+        }
+        
+        return request.post("/api/files/" + fileId + "/externalTool/" + toolId + "/toolUrl");
+    }
+
+    /**
+     * This simple does a get of the URL sent. It's initial use is to try the
+     * (potentially signed) callback URL sent to external tools.
+     * 
+     * 
+     * @param callbackUrl
+     * @return the response from the API
+     */
+    public static Response callCallbackUrl(String callbackUrl) {
+        return given()
+                .when()
+                .get(callbackUrl);
+    }
 }
