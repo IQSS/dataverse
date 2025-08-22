@@ -983,12 +983,8 @@ public class Files extends AbstractApiBean {
             }
 
             // Return the URL in a JSON response
-            return ok(Json.createObjectBuilder().add("status", ApiConstants.STATUS_OK)
-                    .add("data",
-                            Json.createObjectBuilder().add("toolUrl", toolUrl)
-                                    .add("toolName", externalTool.getDisplayName()).add("fileId", dataFile.getId())
-                                    .add("preview", preview))
-                    .build());
+            return ok(Json.createObjectBuilder().add("toolUrl", toolUrl).add("toolName", externalTool.getDisplayName())
+                    .add("fileId", dataFile.getId()).add("preview", preview));
 
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Error getting external tool URL: " + ex.getMessage(), ex);

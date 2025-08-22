@@ -5266,13 +5266,8 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }
 
         // Return the URL in a JSON response
-        return ok(Json.createObjectBuilder().add("status", ApiConstants.STATUS_OK)
-                .add("data",
-                        Json.createObjectBuilder().add("toolUrl", toolUrl)
-                                .add("toolName", externalTool.getDisplayName())
-                                .add("datasetId", dataset.getId())
-                                .add("preview", preview))
-                .build());
+        return ok(Json.createObjectBuilder().add("toolUrl", toolUrl).add("toolName", externalTool.getDisplayName())
+                .add("datasetId", dataset.getId()).add("preview", preview));
 
     } catch (Exception ex) {
         logger.log(Level.SEVERE, "Error getting dataset external tool URL: " + ex.getMessage(), ex);
