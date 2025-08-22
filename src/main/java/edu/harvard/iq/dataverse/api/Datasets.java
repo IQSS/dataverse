@@ -5190,19 +5190,20 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     String locale = null;
 
     // Parse request body for parameters
-    try {
-        jakarta.json.JsonObject jsonObject = JsonUtil.getJsonObject(jsonBody);
-        if (jsonObject.containsKey("preview")) {
-            preview = jsonObject.getBoolean("preview");
+    if (StringUtils.isNotBlank(jsonBody)) {
+        try {
+            jakarta.json.JsonObject jsonObject = JsonUtil.getJsonObject(jsonBody);
+            if (jsonObject.containsKey("preview")) {
+                preview = jsonObject.getBoolean("preview");
+            }
+            if (jsonObject.containsKey("locale")) {
+                locale = jsonObject.getString("locale");
+            }
+        } catch (JsonParsingException | NullPointerException e) {
+            logger.warning("Error parsing JSON: " + e.getMessage());
+            // Return an error response for malformed JSON
+            return error(Response.Status.BAD_REQUEST, "Invalid JSON format in request body");
         }
-        if (jsonObject.containsKey("locale")) {
-            locale = jsonObject.getString("locale");
-        }
-    } catch (JsonParsingException | NullPointerException e) {
-        logger.warning("Error parsing JSON: " + e.getMessage());
-        // Return an error response for malformed JSON
-        return error(Response.Status.BAD_REQUEST, 
-                    "Invalid JSON format in request body");
     }
 
     try {
