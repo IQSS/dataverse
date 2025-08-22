@@ -768,7 +768,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 if (NumberUtils.isCreatable(pathParts[index])) {
                     try {
                         int indexNumber = Integer.parseInt(pathParts[index]);
-                        curPath = ((JsonObject) curPath).get(indexNumber);
+                        curPath = ((JsonArray) curPath).get(indexNumber);
                     } catch (NumberFormatException nfe) {
                         logger.fine("Please provide a valid integer number " + pathParts[index]);
                     }
