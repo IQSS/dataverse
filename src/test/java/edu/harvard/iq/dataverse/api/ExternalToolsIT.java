@@ -758,8 +758,8 @@ public void testExternalToolUrlApi() {
     String datasetPid = JsonPath.from(createDataset.getBody().asString()).getString("data.persistentId");
 
     // Upload a text file
-    String pathToTextFile = "src/test/java/edu/harvard/iq/dataverse/util/testing-readme.txt";
-    Response uploadTextFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTextFile, apiToken);
+    String pathToTextFile = "src/test/java/edu/harvard/iq/dataverse/api/ExternalToolsIT.java";
+    Response uploadTextFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTextFile, null, "text/plain", apiToken);
     uploadTextFile.prettyPrint();
     uploadTextFile.then().assertThat()
             .statusCode(OK.getStatusCode());
