@@ -5199,9 +5199,10 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             locale = jsonObject.getString("locale");
         }
     } catch (JsonParsingException | NullPointerException e) {
-        // Return a proper error response for malformed JSON
+        logger.warning("Error parsing JSON: " + e.getMessage());
+        // Return an error response for malformed JSON
         return error(Response.Status.BAD_REQUEST, 
-                    "Invalid JSON format in request body: " + e.getMessage());
+                    "Invalid JSON format in request body");
     }
 
     try {
@@ -5275,7 +5276,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     } catch (Exception ex) {
         logger.log(Level.SEVERE, "Error getting dataset external tool URL: " + ex.getMessage(), ex);
         return error(Response.Status.INTERNAL_SERVER_ERROR,
-                "An error occurred while generating the external tool URL: " + ex.getMessage());
+                "An error occurred while generating the external tool URL.");
     }
 }
 

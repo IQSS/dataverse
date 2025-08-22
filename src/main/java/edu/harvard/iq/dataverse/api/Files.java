@@ -903,9 +903,10 @@ public class Files extends AbstractApiBean {
                 locale = jsonObject.getString("locale");
             }
         } catch (JsonParsingException | NullPointerException e) {
+            logger.warning("Error parsing JSON: " + e.getMessage());
             // Return a proper error response for malformed JSON
             return error(Response.Status.BAD_REQUEST, 
-                        "Invalid JSON format in request body: " + e.getMessage());
+                        "Invalid JSON format in request body.");
         }
 
         try {
@@ -928,6 +929,16 @@ public class Files extends AbstractApiBean {
                 return error(BAD_REQUEST, "External tool does not have file scope.");
             }
 
+            // Check if the tool's content type matches the file's content type
+            String toolContentType = externalTool.getContentType();
+            String fileContentType = dataFile.getContentType();
+            if (toolContentType != null && !toolContentType.isEmpty() && 
+                !toolContentType.equals(fileContentType)) {
+                return error(BAD_REQUEST, 
+                    "External tool content type (" + toolContentType + 
+                    ") does not match file content type (" + fileContentType + ").");
+            }
+            
             // Get the current user and create a request object
             User user = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(user);
@@ -981,7 +992,7 @@ public class Files extends AbstractApiBean {
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Error getting external tool URL: " + ex.getMessage(), ex);
             return error(Response.Status.INTERNAL_SERVER_ERROR,
-                    "An error occurred while generating the external tool URL: " + ex.getMessage());
+                    "An error occurred while generating the external tool URL.");
         }
     }
     
