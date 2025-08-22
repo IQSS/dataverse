@@ -43,6 +43,7 @@ import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.client.methods.HttpGet;
@@ -764,10 +765,14 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 }
 
             } else {
-                try {
-                    int indexNumber = Integer.parseInt(pathParts[index]);
-                    curPath = ((JsonObject) curPath).get(indexNumber);
-                } catch (NumberFormatException nfe) {
+                if (NumberUtils.isCreatable(pathParts[index])) {
+                    try {
+                        int indexNumber = Integer.parseInt(pathParts[index]);
+                        curPath = ((JsonObject) curPath).get(indexNumber);
+                    } catch (NumberFormatException nfe) {
+                        logger.fine("Please provide a valid integer number " + pathParts[index]);
+                    }
+                } else {
                     curPath = ((JsonObject) curPath).get(pathParts[index]);
                 }
                 // curPath = ((JsonObject) curPath).get(pathParts[index]);
