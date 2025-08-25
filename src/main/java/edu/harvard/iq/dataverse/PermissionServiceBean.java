@@ -96,7 +96,7 @@ public class PermissionServiceBean {
     DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
 
     private static final String LIST_ALL_DATAVERSES_SUPERUSER_HAS_PERMISSION = """
-        SELECT * FROM DATAVERSE
+        SELECT id, name, alias FROM DATAVERSE
     """;
 
     private static final String LIST_ALL_DATAVERSES_USER_HAS_PERMISSION = """

@@ -13,17 +13,14 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
-import static jakarta.ws.rs.core.Response.Status.OK;
-import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DataRetrieverApiIT {
-
-    private static final String ERR_MSG_FORMAT = "{\n    \"success\": false,\n    \"error_message\": \"%s\"\n}";
 
     @BeforeAll
     public static void setUpClass() {
@@ -45,28 +42,40 @@ public class DataRetrieverApiIT {
 
         String badUserIdentifier = "bad-identifier";
         Response invalidUserIdentifierResponse = UtilIT.retrieveMyDataAsJsonString(superUserApiToken, badUserIdentifier, emptyRoleIdsList);
-        assertEquals(prettyPrintError("dataretrieverAPI.user.not.found", Arrays.asList(badUserIdentifier)), invalidUserIdentifierResponse.prettyPrint());
-        assertEquals(OK.getStatusCode(), invalidUserIdentifierResponse.getStatusCode());
+        invalidUserIdentifierResponse.prettyPrint();
+        invalidUserIdentifierResponse.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataretrieverAPI.user.not.found", Arrays.asList(badUserIdentifier))))
+                .statusCode(NOT_FOUND.getStatusCode());
 
         // Call as superuser with valid user identifier and no roles
         Response createSecondUserResponse = UtilIT.createRandomUser();
         String userIdentifier = UtilIT.getUsernameFromResponse(createSecondUserResponse);
         Response validUserIdentifierResponse = UtilIT.retrieveMyDataAsJsonString(superUserApiToken, userIdentifier, emptyRoleIdsList);
-        assertEquals(prettyPrintError("myDataFinder.error.result.no.role", null), validUserIdentifierResponse.prettyPrint());
-        assertEquals(OK.getStatusCode(), validUserIdentifierResponse.getStatusCode());
+        validUserIdentifierResponse.prettyPrint();
+        validUserIdentifierResponse.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("myDataFinder.error.result.no.role")))
+                .statusCode(BAD_REQUEST.getStatusCode());
 
         // Call as normal user with one valid role and no results
         Response createNormalUserResponse = UtilIT.createRandomUser();
         String normalUserUsername = UtilIT.getUsernameFromResponse(createNormalUserResponse);
         String normalUserApiToken = UtilIT.getApiTokenFromResponse(createNormalUserResponse);
         Response noResultwithOneRoleResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(5L)));
-        assertEquals(prettyPrintError("myDataFinder.error.result.role.empty", Arrays.asList("Dataset Creator")), noResultwithOneRoleResponse.prettyPrint());
-        assertEquals(OK.getStatusCode(), noResultwithOneRoleResponse.getStatusCode());
+        noResultwithOneRoleResponse.prettyPrint();
+        noResultwithOneRoleResponse.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("myDataFinder.error.result.role.empty", Arrays.asList("Dataset Creator"))))
+                .statusCode(BAD_REQUEST.getStatusCode());
 
         // Call as normal user with multiple valid roles and no results
         Response noResultWithMultipleRoleResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(5L, 6L)));
-        assertEquals(prettyPrintError("myDataFinder.error.result.roles.empty", Arrays.asList("Dataset Creator, Contributor")), noResultWithMultipleRoleResponse.prettyPrint());
-        assertEquals(OK.getStatusCode(), noResultWithMultipleRoleResponse.getStatusCode());
+        noResultWithMultipleRoleResponse.prettyPrint();
+        noResultWithMultipleRoleResponse.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("myDataFinder.error.result.roles.empty", Arrays.asList("Dataset Creator, Contributor"))))
+                .statusCode(BAD_REQUEST.getStatusCode());
 
         // Call as normal user with one valid dataset role and one dataset result
         Response createDataverseResponse = UtilIT.createRandomDataverse(normalUserApiToken);
@@ -78,6 +87,7 @@ public class DataRetrieverApiIT {
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
         UtilIT.sleepForReindex(datasetId.toString(), normalUserApiToken, 4);
         Response oneDatasetResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(6L)));
+        oneDatasetResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), oneDatasetResponse.getStatusCode());
         JsonPath jsonPathOneDataset = oneDatasetResponse.getBody().jsonPath();
         assertEquals(1, jsonPathOneDataset.getInt("data.total_count"));
@@ -110,7 +120,7 @@ public class DataRetrieverApiIT {
     @Test
     public void testRetrieveMyDataCollections() throws InterruptedException {
         int rootCount = 1; // everyone has access to this dataverse
-        List<Object> items;
+        List<Map<String, String>> items;
         Response createDataverseResponse;
         Response retrieveMyCollectionListResponse;
         // Create Superuser
@@ -156,51 +166,55 @@ public class DataRetrieverApiIT {
         retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(User1ApiToken, null);
         retrieveMyCollectionListResponse.prettyPrint();
         // The count should show the list size to be User1's + Root Dataverse count
-        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("items");
+        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("data.items");
         assertEquals(rootCount + user1DataverseCount, items.size());
 
         // User2 gets the list of Dataverses/Collections it has access to
         retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(User2ApiToken, null);
         retrieveMyCollectionListResponse.prettyPrint();
         // The count should show the list size to be User1's + User2's + Root Dataverse count
-        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("items");
+        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("data.items");
         assertEquals(rootCount + user1DataverseCount + user2DataverseCount, items.size());
 
         // User3 gets the list of Dataverses/Collections it has access to
         retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(User3ApiToken, null);
         retrieveMyCollectionListResponse.prettyPrint();
         // The count should show the list size to be only Root Dataverse count
-        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("items");
+        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("data.items");
         assertEquals(rootCount, items.size());
+        // Verify the name and alias of the Root Dataverse. We don't know the id so just make sure it's in the response
+        assertNotNull(items.get(0).get("id"));
+        assertEquals("Root", items.get(0).get("name"));
+        assertEquals("root", items.get(0).get("alias"));
 
         // Superuser gets the list of Dataverses/Collections it has access to
         retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(superUserApiToken, null);
         retrieveMyCollectionListResponse.prettyPrint();
         // The count should show the list size of all Dataverses (including any Dataverses created by other tests)
-        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("items");
+        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("data.items");
         assertTrue(items.size() >= rootCount + user1DataverseCount + user2DataverseCount);
 
         // Superuser gets the list of Dataverses/Collections User1 has access to
         retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(superUserApiToken, User1Username);
         retrieveMyCollectionListResponse.prettyPrint();
         // The count should show the list size to be User1's + Root Dataverse count
-        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("items");
+        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("data.items");
         assertEquals(rootCount + user1DataverseCount, items.size());
 
         // Superuser gets the list of Dataverses/Collections User2 has access to
         retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(superUserApiToken, User2Username);
         retrieveMyCollectionListResponse.prettyPrint();
         // The count should show the list size to be User1's + User2's + Root Dataverse count
-        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("items");
+        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("data.items");
         assertEquals(rootCount + user1DataverseCount + user2DataverseCount, items.size());
 
         // Superuser gets the list of Dataverses/Collections for bad username
         retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(superUserApiToken, "badUserName");
         retrieveMyCollectionListResponse.prettyPrint();
         retrieveMyCollectionListResponse.then().assertThat()
-                .body("success", equalTo(false))
-                .body("error_message", startsWith("No user found for:"))
-                .statusCode(OK.getStatusCode());
+                .body("status", equalTo("ERROR"))
+                .body("message", startsWith("No user found for:"))
+                .statusCode(NOT_FOUND.getStatusCode());
 
         // Clean up
         dataverses.forEach(dv -> {
@@ -236,8 +250,11 @@ public class DataRetrieverApiIT {
 
         // Call as regular user with no result
         Response myDataEmptyResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
-        assertEquals(prettyPrintError("myDataFinder.error.result.role.empty", Arrays.asList("Contributor")), myDataEmptyResponse.prettyPrint());
-        assertEquals(OK.getStatusCode(), myDataEmptyResponse.getStatusCode());
+        myDataEmptyResponse.prettyPrint();
+        myDataEmptyResponse.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("myDataFinder.error.result.role.empty", Arrays.asList("Contributor"))))
+                .statusCode(BAD_REQUEST.getStatusCode());
 
         // Create and publish a dataverse
         Response createDataverseResponse = UtilIT.createRandomDataverse(superUserApiToken);
@@ -392,15 +409,5 @@ public class DataRetrieverApiIT {
         Response deleteSuperUserResponse = UtilIT.deleteUser(superUserIdentifier);
         deleteSuperUserResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), deleteSuperUserResponse.getStatusCode());
-    }
-
-    private static String prettyPrintError(String resourceBundleKey, List<String> params) {
-        final String errorMessage;
-        if (params == null || params.isEmpty()) {
-            errorMessage = BundleUtil.getStringFromBundle(resourceBundleKey);
-        } else {
-            errorMessage = BundleUtil.getStringFromBundle(resourceBundleKey, params);
-        }
-        return String.format(ERR_MSG_FORMAT, errorMessage.replaceAll("\"", "\\\\\""));
     }
 }
