@@ -14,10 +14,10 @@ RUN mvn clean package
 # ------------------------------------------
 # Stage 2: Build Keycloak Image
 # ------------------------------------------
-FROM quay.io/keycloak/keycloak:26.1.4
+FROM quay.io/keycloak/keycloak:26.3.2
 
 # Add the Oracle JDBC jars
-ARG ORACLE_JDBC_VERSION=23.7.0.25.01
+ARG ORACLE_JDBC_VERSION=23.8.0.25.04
 ADD --chown=keycloak:keycloak https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc11/${ORACLE_JDBC_VERSION}/ojdbc11-${ORACLE_JDBC_VERSION}.jar /opt/keycloak/providers/ojdbc11.jar
 ADD --chown=keycloak:keycloak https://repo1.maven.org/maven2/com/oracle/database/nls/orai18n/${ORACLE_JDBC_VERSION}/orai18n-${ORACLE_JDBC_VERSION}.jar /opt/keycloak/providers/orai18n.jar
 

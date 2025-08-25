@@ -118,7 +118,7 @@ Moves a dataset whose id is passed to a Dataverse collection whose alias is pass
 Link a Dataset
 ^^^^^^^^^^^^^^
 
-Creates a link between a dataset and a Dataverse collection (see the :ref:`dataset-linking` section of the User Guide for more information). ::
+Creates a link between a dataset and a Dataverse collection (see the :ref:`dataset-linking` section of the User Guide for more information). Accessible to users with Link Dataset permission on the Dataverse collection. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/datasets/$linked-dataset-id/link/$linking-dataverse-alias
 
@@ -155,7 +155,7 @@ It returns a list in the following format (new format as of v6.4):
 Unlink a Dataset
 ^^^^^^^^^^^^^^^^
 
-Removes a link between a dataset and a Dataverse collection. Accessible to users with Publish Dataset permissions. ::
+Removes a link between a dataset and a Dataverse collection. Accessible to users with Link Dataset permission on the Dataverse collection. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$linked-dataset-id/deleteLink/$linking-dataverse-alias
 

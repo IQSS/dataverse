@@ -19,7 +19,7 @@ We assume you plan to run your Dataverse installation on Linux and we recommend 
 Java
 ----
 
-The Dataverse Software requires Java SE 17 (or higher).
+The recommended version is Java 17 because it's the version we test with.
 
 Installing Java
 ===============

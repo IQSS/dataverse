@@ -97,6 +97,9 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
 
         Dataset managedDs = ctxt.em().merge(managed.getDataset());
 
+        // delete all FeaturedItems with links to this deaccessioned dataset
+        ctxt.dataverseFeaturedItems().deleteAllByDvObjectId(ds.getId());
+
         return managed;
     }
 

@@ -71,7 +71,8 @@
                                         <!-- Restricted File Icon -->
                                         <span class="glyphicon glyphicon-lock text-danger" title="#{bundle['restricted']}" data-toggle="tooltip" jsf:rendered="#{FilePage.fileMetadata.restricted and !(fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}"/>
                                         <span class="icon-unlock text-success" title="#{bundle['restrictedaccess']}" data-toggle="tooltip" jsf:rendered="#{FilePage.fileMetadata.restricted  and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }"/>
-
+                                        <o:importFunctions type="edu.harvard.iq.dataverse.dataset.DatasetUtil" />
+                                        
                                         <!-- DATASET Publication Status -->
                                         <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{FilePage.fileMetadata.datasetVersion.draft}"/>
                                         <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{dataFileServiceBean.isActivelyEmbargoed(FilePage.fileMetadata)}"/>
@@ -79,7 +80,7 @@
                                         <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}"/>
-                                        <h:outputText value="#{FilePage.fileMetadata.datasetVersion.externalStatusLabel}" styleClass="label label-info" rendered="#{FilePage.fileMetadata.datasetVersion.externalStatusLabel!=null  and FilePage.canPublishDataset()}"/>
+                                        <h:outputText value="#{DatasetUtil:getLocaleCurationStatusLabel(FilePage.fileMetadata.datasetVersion.currentCurationStatus)}" styleClass="label label-info curation-status" rendered="#{FilePage.canSeeCurationStatus()}"/>
                                         <h:outputText value="#{bundle['incomplete']}" styleClass="label label-danger" rendered="#{!FilePage.valid}"/>
                                         <!-- DATASET VERSION NUMBER -->
                                         <h:outputText styleClass="label label-default" rendered="#{FilePage.fileMetadata.datasetVersion.released and !(FilePage.fileMetadata.datasetVersion.draft or FilePage.fileMetadata.datasetVersion.inReview)}"

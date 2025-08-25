@@ -1,9 +1,10 @@
 package edu.harvard.iq.dataverse.dataverse.featured;
 
-import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
@@ -16,11 +17,14 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 @Stateless
 @Named
 public class DataverseFeaturedItemServiceBean implements Serializable {
+    private static final Logger logger = Logger.getLogger(DataverseFeaturedItemServiceBean.class.getCanonicalName());
 
     public static class InvalidImageFileException extends Exception {
         public InvalidImageFileException(String message) {
@@ -30,6 +34,12 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+    @EJB
+    protected DataFileServiceBean fileService;
+    @EJB
+    protected DatasetServiceBean datasetService;
+    @EJB
+    protected PermissionServiceBean permissionService;
 
     public DataverseFeaturedItem findById(Long id) {
         return em.find(DataverseFeaturedItem.class, id);
@@ -51,11 +61,37 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
                 .executeUpdate();
     }
 
+    public void deleteAllByDvObjectId(Long id) {
+        em.createNamedQuery("DataverseFeaturedItem.deleteByDvObjectId", DataverseFeaturedItem.class)
+                .setParameter("id", id)
+                .executeUpdate();
+    }
+
+    public void deleteInvalidatedFeaturedItemsByDataset(Dataset dataset) {
+        // Delete any Featured Items that contain Datafiles that were removed or restricted in the latest published version
+        List<DataverseFeaturedItem> featuredItems = findAllByDataverseOrdered(dataset.getOwner());
+        for (DataverseFeaturedItem featuredItem : featuredItems) {
+            if (featuredItem.getDvObject() != null && featuredItem.getType().equalsIgnoreCase(DataverseFeaturedItem.TYPES.DATAFILE.name())) {
+                DataFile df = (DataFile) featuredItem.getDvObject();
+                List<Long> latestVersionFileIds = new ArrayList<>();
+                dataset.getLatestVersion().getFileMetadatas().stream()
+                        .map(FileMetadata::getId)
+                        .forEachOrdered(latestVersionFileIds::add);
+                // If the datafile is restricted or part of this dataset but not in the latest version we need to delete the featured item
+                if (df.isRestricted() || (dataset.getFiles().contains(df) && !latestVersionFileIds.contains(df.getId()))) {
+                    logger.fine("Deleting invalidated Featured Item for " + (df.isRestricted() ? "Restricted" : "Deleted") + "Datafile ID: " + df.getId());
+                    deleteAllByDvObjectId(df.getId());
+                }
+            }
+        }
+    }
+
     public List<DataverseFeaturedItem> findAllByDataverseOrdered(Dataverse dataverse) {
-        return em
+        List<DataverseFeaturedItem> items = em
                 .createNamedQuery("DataverseFeaturedItem.findByDataverseOrderedByDisplayOrder", DataverseFeaturedItem.class)
                 .setParameter("dataverse", dataverse)
                 .getResultList();
+        return items;
     }
 
     public InputStream getImageFileAsInputStream(DataverseFeaturedItem dataverseFeaturedItem) throws IOException {

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.dto.UpdatedDataverseFeaturedItemDTO;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
@@ -51,6 +52,8 @@ public class DataverseFeaturedItems extends AbstractApiBean {
     public Response updateFeaturedItem(@Context ContainerRequestContext crc,
                                        @PathParam("id") Long id,
                                        @FormDataParam("content") String content,
+                                       @FormDataParam("type") String type,
+                                       @FormDataParam("dvObjectIdentifier") String dvObjectIdtf,
                                        @FormDataParam("displayOrder") int displayOrder,
                                        @FormDataParam("keepFile") boolean keepFile,
                                        @FormDataParam("file") InputStream imageFileInputStream,
@@ -60,7 +63,8 @@ public class DataverseFeaturedItems extends AbstractApiBean {
             if (dataverseFeaturedItem == null) {
                 throw new WrappedResponse(error(Response.Status.NOT_FOUND, MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notFound"), id)));
             }
-            UpdatedDataverseFeaturedItemDTO updatedDataverseFeaturedItemDTO = UpdatedDataverseFeaturedItemDTO.fromFormData(content, displayOrder, keepFile, imageFileInputStream, contentDispositionHeader);
+            DvObject dvObject = (dvObjectIdtf != null) ? findDvoByIdAndFeaturedItemTypeOrDie(dvObjectIdtf, type) : null;
+            UpdatedDataverseFeaturedItemDTO updatedDataverseFeaturedItemDTO = UpdatedDataverseFeaturedItemDTO.fromFormData(content, displayOrder, keepFile, imageFileInputStream, contentDispositionHeader, type, dvObject);
             return ok(json(execCommand(new UpdateDataverseFeaturedItemCommand(createDataverseRequest(getRequestUser(crc)), dataverseFeaturedItem, updatedDataverseFeaturedItemDTO))));
         } catch (WrappedResponse e) {
             return e.getResponse();

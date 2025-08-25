@@ -12,15 +12,46 @@ on:
         required: false
         default: false
         description: "Build and deploy even if no newer Java images or package updates are found."
+      dry_run:
+        type: boolean
+        required: false
+        default: false
+        description: "Run in dry-run mode (no builds, verify logic)"
+      damp_run:
+        type: boolean
+        required: false
+        default: false
+        description: "Run in damp-run mode (build but don't push)"
   schedule:
     - cron: '23 3 * * 0' # Run for 'develop' every Sunday at 03:23 UTC
+  release:
+    types: [published]
 
 env:
   PLATFORMS: linux/amd64,linux/arm64
   NUM_PAST_RELEASES: 3
 
 jobs:
-  build:
+  discover:
+    name: Discover supported releases
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    outputs:
+      branches: ${{ steps.discover.outputs.branches }}
+      develop-branch: ${{ steps.discover.outputs.develop-branch }}
+    steps:
+      - name: Discover maintained releases
+        id: discover
+        run: |
+          DEVELOPMENT_BRANCH=$( curl -f -sS https://api.github.com/repos/${{ github.repository }} | jq -r '.default_branch' )
+          echo "develop-branch=$DEVELOPMENT_BRANCH" | tee -a "${GITHUB_OUTPUT}"
+          
+          SUPPORTED_BRANCHES=$( curl -f -sS https://api.github.com/repos/IQSS/dataverse/releases | jq -r " .[0:${{ env.NUM_PAST_RELEASES }}] | .[].tag_name, \"${DEVELOPMENT_BRANCH}\" " | tr "\n" " " )
+          echo "branches=$SUPPORTED_BRANCHES" | tee -a "${GITHUB_OUTPUT}"
+
+  base-image:
     name: Base Image Matrix Build
     runs-on: ubuntu-latest
     permissions:
@@ -28,9 +59,16 @@ jobs:
       packages: read
     # Only run in upstream repo - avoid unnecessary runs in forks
     if: ${{ github.repository_owner == 'IQSS' }}
+    needs:
+      - discover
     outputs:
+      # This is a JSON map with keys of branch names (supported releases & develop) and values containing an array of known image tags for the branch
+      # Example: {"v6.6": ["latest", "6.6-noble", "6.6-noble-r1"], "v6.5": ["6.5-noble", "6.5-noble-r5"], "v6.4": ["6.4-noble", "6.4-noble-r12"], "develop": ["unstable", "6.7-noble", "6.7-noble-p6.2025.3-j17"]}
       supported_tag_matrix: ${{ steps.execute.outputs.supported_tag_matrix }}
-      rebuilt_base_images: ${{ steps.execute.outputs.rebuilt_base_images }}
+
+      # This is a JSON list containing a flattened map of branch names and the latest non-rolling tag
+      # Example: [ "v6.6=gdcc/base:6.6-noble-r1", "v6.5=gdcc/base:6.5-noble-r5", "v6.4=gdcc/base:6.4-noble-r12", "develop=gdcc/base:6.7-noble-p6.2025.3-j17" ]
+      rebuilt_images: ${{ steps.execute.outputs.rebuilt_images }}
 
     steps:
       - name: Checkout and Setup Maven
@@ -50,40 +88,104 @@ jobs:
         with:
           platforms: ${{ env.PLATFORMS }}
 
-      # Discover the releases we want to maintain
-      - name: Discover maintained releases
-        id: discover
-        run: |
-          echo "FORCE_BUILD=$( [[ "${{ inputs.force_build }}" = "true" ]] && echo 1 || echo 0 )" | tee -a "$GITHUB_ENV"
-          DEVELOPMENT_BRANCH=$( curl -f -sS https://api.github.com/repos/${{ github.repository }} | jq -r '.default_branch' )
-          echo "DEVELOPMENT_BRANCH=$DEVELOPMENT_BRANCH" | tee -a "$GITHUB_ENV"
-          echo "branches=$( curl -f -sS https://api.github.com/repos/IQSS/dataverse/releases | jq -r " .[0:${{ env.NUM_PAST_RELEASES }}] | .[].tag_name, \"${DEVELOPMENT_BRANCH}\" " | tr "\n" " " )" | tee -a "${GITHUB_OUTPUT}"
+      # Execute matrix build for the discovered branches
+      - name: Execute build matrix script
+        id: execute
+        run: >
+          FORCE_BUILD=$( [[ "${{ inputs.force_build }}" = "true" ]] && echo 1 || echo 0 )
+          DRY_RUN=$( [[ "${{ inputs.dry_run }}" = "true" ]] && echo 1 || echo 0 )
+          DAMP_RUN=$( [[ "${{ inputs.damp_run }}" = "true" ]] && echo 1 || echo 0 )
+          DEVELOPMENT_BRANCH=${{ needs.discover.outputs.develop-branch }}
+          .github/workflows/scripts/containers/maintain-base.sh ${{ needs.discover.outputs.branches }}
+
+  application-image:
+    name: "Application Image Matrix Build"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    needs:
+      - discover
+      - base-image
+    # Only run in upstream repo - avoid unnecessary runs in forks.
+    # TODO: If we add a push trigger later, we might want to prepend "always() &&" to ignore the status of the base job. Needs further investigation.
+    if: ${{ github.repository_owner == 'IQSS' }}
+    outputs:
+      supported_tag_matrix: ${{ steps.execute.outputs.supported_tag_matrix }}
+      rebuilt_images: ${{ steps.execute.outputs.rebuilt_images }}
+    steps:
+      - name: Checkout and Setup Maven
+        uses: IQSS/dataverse/.github/actions/setup-maven@develop
+        with:
+          pom-paths: ./pom.xml
+
+      # Note: Accessing, pushing tags etc. to DockerHub will only succeed in upstream and
+      #       on events in context of upstream because secrets. PRs run in context of forks by default!
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up QEMU for multi-arch builds
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: ${{ env.PLATFORMS }}
 
       # Execute matrix build for the discovered branches
       - name: Execute build matrix script
         id: execute
-        run: |
-          .github/workflows/scripts/maintenance-job.sh ${{ steps.discover.outputs.branches }}
+        run: >
+          FORCE_BUILD=$( [[ "${{ inputs.force_build }}" = "true" ]] && echo 1 || echo 0 )
+          DRY_RUN=$( [[ "${{ inputs.dry_run }}" = "true" ]] && echo 1 || echo 0 )
+          DAMP_RUN=$( [[ "${{ inputs.damp_run }}" = "true" ]] && echo 1 || echo 0 )
+          DEVELOPMENT_BRANCH=${{ needs.discover.outputs.develop-branch }}
+          .github/workflows/scripts/containers/maintain-application.sh ${{ needs.discover.outputs.branches }}
 
-  # TODO: Use the needs.build.outputs.rebuilt_base_images with fromJSON() to create a matrix job.
-  #       Must be a single rank matrix (vector), the branch and base image tag information ships as "branch=tag" string
-  #       Will be part of working on #10618, app image versioned tags.
-  #push-app-img:
-  #  name: "Rebase & Publish App Image"
-  #  permissions:
-  #    contents: read
-  #    packages: write
-  #    pull-requests: write
-  #  secrets: inherit
-  #  needs:
-  #    - build
-  #  strategy:
-  #    fail-fast: false
-  #    matrix:
-  #      branch: ${{ fromJson(needs.discover.outputs.branches) }}
-  #  uses: ./.github/workflows/container_app_push.yml
-  #  with:
-  #    branch: ${{ matrix.branch }}
+  configbaker-image:
+    name: "ConfigBaker Image Matrix Build"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    needs:
+      - discover
+    # Only run in upstream repo - avoid unnecessary runs in forks.
+    # TODO: If we add a push trigger later, we might want to prepend "always() &&" to ignore the status of the base job. Needs further investigation.
+    if: ${{ github.repository_owner == 'IQSS' }}
+    outputs:
+      supported_tag_matrix: ${{ steps.execute.outputs.supported_tag_matrix }}
+      rebuilt_images: ${{ steps.execute.outputs.rebuilt_images }}
+    steps:
+      - name: Checkout and Setup Maven
+        uses: IQSS/dataverse/.github/actions/setup-maven@develop
+        with:
+          pom-paths: ./pom.xml
+
+      # Note: Accessing, pushing tags etc. to DockerHub will only succeed in upstream and
+      #       on events in context of upstream because secrets. PRs run in context of forks by default!
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up QEMU for multi-arch builds
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: ${{ env.PLATFORMS }}
+      - name: Setup Trivy binary for vulnerability scanning
+        uses: aquasecurity/setup-trivy@v0.2.3
+        with:
+          version: v0.63.0
+
+      # Execute matrix build for the discovered branches
+      - name: Execute build matrix script
+        id: execute
+        run: >
+          FORCE_BUILD=$( [[ "${{ inputs.force_build }}" = "true" ]] && echo 1 || echo 0 )
+          DRY_RUN=$( [[ "${{ inputs.dry_run }}" = "true" ]] && echo 1 || echo 0 )
+          DAMP_RUN=$( [[ "${{ inputs.damp_run }}" = "true" ]] && echo 1 || echo 0 )
+          DEVELOPMENT_BRANCH=${{ needs.discover.outputs.develop-branch }}
+          .github/workflows/scripts/containers/maintain-configbaker.sh ${{ needs.discover.outputs.branches }}
 
   hub-description:
     name: Push description to DockerHub
@@ -91,25 +193,31 @@ jobs:
     permissions:
       contents: read
       packages: read
-    needs: build
+    needs:
+      - base-image
+      - application-image
+      - configbaker-image
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Render README
-        id: render
+
+      ### BASE IMAGE
+      - name: Render README for base image
+        if: toJSON(needs.base-image.outputs.rebuilt_images) != '[]'
         run: |
-          TAGS_JSON='${{ needs.build.outputs.supported_tag_matrix }}'
+          TAGS_JSON='${{ needs.base-image.outputs.supported_tag_matrix }}'
           echo "$TAGS_JSON" | jq -r 'keys | sort | reverse | .[]' |
           while IFS= read -r branch; do
             echo \
               "- \`$( echo "$TAGS_JSON" | jq --arg v "$branch" -r '.[$v] | join("`, `")' )\`" \
               "([Dockerfile](https://github.com/IQSS/dataverse/blob/${branch}/modules/container-base/src/main/docker/Dockerfile)," \
               "[Patches](https://github.com/IQSS/dataverse/blob/develop/modules/container-base/src/backports/${branch}))" \
-            | tee -a "${GITHUB_WORKSPACE}/tags.md" 
+            | tee -a "${GITHUB_WORKSPACE}/tags-base.md" 
           done
-          sed -i -e "/<\!-- TAG BLOCK HERE -->/r ${GITHUB_WORKSPACE}/tags.md" "./modules/container-base/README.md"
-
-      - name: Push description to DockerHub
+          sed -i -e "/<\!-- TAG BLOCK HERE -->/r ${GITHUB_WORKSPACE}/tags-base.md" "./modules/container-base/README.md"
+          cat "./modules/container-base/README.md"
+      - name: Push description to DockerHub for base image
+        if: ${{ ! inputs.dry_run && ! inputs.damp_run && toJSON(needs.base-image.outputs.rebuilt_images) != '[]' }}
         uses: peter-evans/dockerhub-description@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -117,3 +225,53 @@ jobs:
           repository: gdcc/base
           short-description: "Dataverse Base Container image providing Payara application server and optimized configuration"
           readme-filepath: ./modules/container-base/README.md
+
+      ### APPLICATION IMAGE
+      - name: Render README for application image
+        if: toJSON(needs.application-image.outputs.rebuilt_images) != '[]'
+        run: |
+          TAGS_JSON='${{ needs.application-image.outputs.supported_tag_matrix }}'
+          echo "$TAGS_JSON" | jq -r 'keys | sort | reverse | .[]' |
+          while IFS= read -r branch; do
+            echo \
+              "- \`$( echo "$TAGS_JSON" | jq --arg v "$branch" -r '.[$v] | join("`, `")' )\`" \
+              "([Dockerfile](https://github.com/IQSS/dataverse/blob/${branch}/src/main/docker/Dockerfile)," \
+              "[Patches](https://github.com/IQSS/dataverse/blob/develop/src/backports/${branch}))" \
+            | tee -a "${GITHUB_WORKSPACE}/tags-app.md" 
+          done
+          sed -i -e "/<\!-- TAG BLOCK HERE -->/r ${GITHUB_WORKSPACE}/tags-app.md" "./src/main/docker/README.md"
+          cat "./src/main/docker/README.md"
+      - name: Push description to DockerHub for application image
+        if: ${{ ! inputs.dry_run && ! inputs.damp_run && toJSON(needs.application-image.outputs.rebuilt_images) != '[]' }}
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: gdcc/dataverse
+          short-description: "Dataverse Application Container Image providing the executable"
+          readme-filepath: ./src/main/docker/README.md
+
+      ### CONFIGBAKER IMAGE
+      - name: Render README for config baker image
+        if: toJSON(needs.configbaker-image.outputs.rebuilt_images) != '[]'
+        run: |
+          TAGS_JSON='${{ needs.configbaker-image.outputs.supported_tag_matrix }}'
+          echo "$TAGS_JSON" | jq -r 'keys | sort | reverse | .[]' |
+          while IFS= read -r branch; do
+            echo \
+              "- \`$( echo "$TAGS_JSON" | jq --arg v "$branch" -r '.[$v] | join("`, `")' )\`" \
+              "([Dockerfile](https://github.com/IQSS/dataverse/blob/${branch}/modules/container-configbaker/Dockerfile)," \
+              "[Patches](https://github.com/IQSS/dataverse/blob/develop/modules/container-configbaker/backports/${branch}))" \
+            | tee -a "${GITHUB_WORKSPACE}/tags-config.md"
+          done
+          sed -i -e "/<\!-- TAG BLOCK HERE -->/r ${GITHUB_WORKSPACE}/tags-config.md" "./modules/container-configbaker/README.md"
+          cat "./modules/container-configbaker/README.md"
+      - name: Push description to DockerHub for config baker image
+        if: ${{ ! inputs.dry_run && ! inputs.damp_run && toJSON(needs.configbaker-image.outputs.rebuilt_images) != '[]' }}
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: gdcc/base
+          short-description: "Dataverse Config Baker Container Image providing setup tooling and more"
+          readme-filepath: ./modules/container-configbaker/README.md
