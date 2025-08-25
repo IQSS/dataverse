@@ -5266,7 +5266,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }
 
         // Return the URL in a JSON response
-        return ok(Json.createObjectBuilder().add("toolUrl", toolUrl).add("toolName", externalTool.getDisplayName())
+        return ok(Json.createObjectBuilder().add("toolUrl", toolUrl).add("displayName", externalTool.getDisplayName())
                 .add("datasetId", dataset.getId()).add("preview", preview));
 
     } catch (Exception ex) {
