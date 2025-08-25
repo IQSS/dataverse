@@ -26,12 +26,12 @@ public class GetUserPermittedCollectionsCommand extends AbstractCommand<JsonObje
     private DataverseRequest request;
     private AuthenticatedUser user;
     private String permission;
-    private Boolean minimalOutput;
+    private boolean minimalOutput;
 
     public GetUserPermittedCollectionsCommand(DataverseRequest request, AuthenticatedUser user, String permission) {
         this(request, user, permission, false);
     }
-    public GetUserPermittedCollectionsCommand(DataverseRequest request, AuthenticatedUser user, String permission, Boolean minimalOutput) {
+    public GetUserPermittedCollectionsCommand(DataverseRequest request, AuthenticatedUser user, String permission, boolean minimalOutput) {
         super(request, (DvObject) null);
         this.request = request;
         this.user = user;
@@ -56,7 +56,7 @@ public class GetUserPermittedCollectionsCommand extends AbstractCommand<JsonObje
         if (collections != null) {
             JsonObjectBuilder job = Json.createObjectBuilder();
             job.add("count", collections.size());
-            if (minimalOutput != null && minimalOutput) {
+            if (minimalOutput) {
                 job.add("items", jsonArray(collections));
             } else {
                 JsonArrayBuilder jab = Json.createArrayBuilder();
