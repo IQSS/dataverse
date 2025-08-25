@@ -24,10 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonString;
+import jakarta.json.*;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.assertj.core.util.Lists;
@@ -483,6 +480,26 @@ public class JsonPrinterTest {
         
         assertNotNull(result);
         assertEquals(sut, result);
+    }
+
+    @Test
+    public void testJsonArrayDataverseCollections() {
+        List<Dataverse> collections = new ArrayList<>();
+        for (long i=0; i < 10; i++) {
+            Dataverse dv = new Dataverse();
+            dv.setAlias("alias" + i);
+            dv.setName("Alias" + i);
+            dv.setId(i);
+            collections.add(dv);
+        }
+        JsonArrayBuilder jsob = JsonPrinter.jsonArray(collections);
+        JsonArray result = jsob.build();
+        assertNotNull(result);
+        assertEquals(10, result.size());
+        System.out.println(result.get(5).toString());
+        assertTrue(result.get(6).toString().contains("name\":\"Alias6"));
+        assertTrue(result.get(6).toString().contains("alias\":\"alias6"));
+        assertTrue(result.get(6).toString().contains("id\":6"));
     }
 
     private Dataverse createDataverse(long id) {
