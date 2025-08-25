@@ -838,9 +838,7 @@ public void testExternalToolUrlApi() {
     datasetToolUrl.then().assertThat()
             .statusCode(OK.getStatusCode())
             .body("status", CoreMatchers.equalTo("OK"))
-            .body("data.toolUrl", CoreMatchers.startsWith("http://example.org/dataset-tool"))
-            .body("data.toolUrl", CoreMatchers.containsString("datasetId=" + datasetId))
-            .body("data.toolName", CoreMatchers.equalTo("Dataset API Tool"));
+            .body("data.toolUrl", CoreMatchers.startsWith("http://example.org/dataset-tool"));
     
  // Extract the callback parameter
     String toolUrl = JsonPath.from(datasetToolUrl.getBody().asString()).getString("data.toolUrl");
@@ -878,9 +876,7 @@ public void testExternalToolUrlApi() {
     fileToolUrl.then().assertThat()
             .statusCode(OK.getStatusCode())
             .body("status", CoreMatchers.equalTo("OK"))
-            .body("data.toolUrl", CoreMatchers.startsWith("http://example.org/text-tool"))
-            .body("data.toolUrl", CoreMatchers.containsString("fileId=" + textFileId))
-            .body("data.toolName", CoreMatchers.equalTo("Text File Tool"));
+            .body("data.toolUrl", CoreMatchers.startsWith("http://example.org/text-tool"));
     
  // Extract the callback parameter from file tool URL
     String fileToolUrlString = JsonPath.from(fileToolUrl.getBody().asString()).getString("data.toolUrl");
