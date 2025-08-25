@@ -957,7 +957,28 @@ Logging & Slow Performance
      - When set to true, all JDBC calls will be logged allowing tracing of all JDBC interactions including SQL.
      - ``false``
 
+Database Configuration Tips
++++++++++++++++++++++++++++
 
+In this section you can find some example scenarios of advanced configuration for the database connection that can improve service performance and availability.
+
+Database Connection Recovery
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Consider the following scenario: if there is no advanced configuration for the database connection and the Dataverse server loses that connection, for example if the database host is down, the server will be "dead" even after the database server is back to normal.
+The only solution to recover Dataverse would be to restart the service. To avoid this situation, the following settings can be used to configure validation of the database connection. 
+This way, the database connection can be automatically recovered after a failure, improving the server availability. For a Docker installation, it is suggested to create an init.d script so that if the container needs to be recreated, these settings will always be configured.
+
+.. code-block:: bash
+
+  # Enable database connection validation
+  asadmin create-jvm-options "-Ddataverse.db.is-connection-validation-required=true"
+  # Configure to use a database table as the validation method
+  asadmin create-jvm-options "-Ddataverse.db.connection-validation-method=table"
+  # Configure the "setting" table to be used for connection validation, but any tables can be used
+  asadmin create-jvm-options "-Ddataverse.db.validation-table-name=setting"
+  # Configure a validation period of 60 seconds, but different values may be used
+  asadmin create-jvm-options "-Ddataverse.db.validate-atmost-once-period-in-seconds=60"
 
 .. _file-storage:
 
@@ -1419,6 +1440,11 @@ And lastly, to start up the SeaweedFS server and various components you could us
 .. code-block:: bash
 
   weed server -s3 -metricsPort=9327 -dir=/data -s3.config=/config.json
+
+`VAST DataStore <https://www.vastdata.com/platform/datastore>`_
+  VAST DataStore must be configured with an S3 gateway. A Dataverse bucket must be created. 
+  Follow `VAST DataStore documentation <https://support.vastdata.com/s/document-item?bundleId=vast-cluster-administrator-s-guide4.7&topicId=managing-access-protocols/s3-object-storage-protocol.html&_LANG=enus>`_ to configure the S3 gateway.
+  Set ``dataverse.files.<id>.path-style-access=true`` since VAST DataStore uses path style access.
 
 **Additional Reported Working S3-Compatible Storage**
 
