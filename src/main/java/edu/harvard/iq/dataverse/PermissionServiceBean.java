@@ -101,7 +101,7 @@ public class PermissionServiceBean {
                   WHERE explicitgroup_authenticateduser.containedauthenticatedusers_id = @USERID
                 )
                         
-                SELECT * FROM DATAVERSE WHERE id IN (
+                SELECT * FROM DATAVERSE WHERE id  IN (
                   SELECT definitionpoint_id
                   FROM roleassignment
                   WHERE roleassignment.assigneeidentifier IN (
@@ -157,7 +157,7 @@ public class PermissionServiceBean {
                        AND @IPRANGESQL
                      )
                   )
-                )
+                ) @SEARCHCLAUSE
             """;
     /**
      * A request-level permission query (e.g includes IP ras).
@@ -921,8 +921,16 @@ public class PermissionServiceBean {
     public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, Permission permission) {
         return findPermittedCollections(request, user, 1 << permission.ordinal());
     }
+    
+    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, Permission permission, String searchTerm) {
+        return findPermittedCollections(request, user, 1 << permission.ordinal(), searchTerm);
+    }
 
     public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit) {
+         return findPermittedCollections(request, user, permissionBit, "");
+    }
+    
+    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit, String searchTerm) {
         if (user != null) {
             // IP Group - Only check IP if a User is calling for themself
             String ipRangeSQL = "FALSE";
@@ -950,15 +958,25 @@ public class PermissionServiceBean {
                     }
                 }
             }
+            
+            String searchClause = "";
+            if (!searchTerm.isEmpty()){
+              searchClause =    " AND ((LOWER(DATAVERSE.alias) LIKE '%@ALIAS%') OR (LOWER(DATAVERSE.name) LIKE '%@NAME%') OR (LOWER(DATAVERSE.affiliation) LIKE '%@AFFILIATION%')) "
+                      .replace("@ALIAS", searchTerm.toLowerCase())
+                      .replace("@NAME", searchTerm.toLowerCase())
+                      .replace("@AFFILIATION", searchTerm.toLowerCase());
+            }
 
             String sqlCode = LIST_ALL_DATAVERSES_USER_HAS_PERMISSION
                     .replace("@USERID", String.valueOf(user.getId()))
                     .replace("@PERMISSIONBIT", String.valueOf(permissionBit))
-                    .replace("@IPRANGESQL", ipRangeSQL);
+                    .replace("@IPRANGESQL", ipRangeSQL)
+                    .replace("@SEARCHCLAUSE", searchClause);
             return em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
         }
         return null;
     }
+
 
     /**
      * Calculates the complete list of role assignments for a given user on a DvObject.

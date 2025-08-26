@@ -550,6 +550,47 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         return dataverseList;
     }
+    
+    
+    public List<Dataverse> removeUnlinkableDataverses (List<Dataverse> allWithPerms, DvObject dvo){
+        List<Dataverse> dataverseList = new ArrayList<>();
+        Dataset linkedDataset = null;
+        Dataverse linkedDataverse = null;
+        List<Object> alreadyLinkeddv_ids;
+        
+        if ((dvo instanceof Dataset)) {
+            linkedDataset = (Dataset) dvo;
+            alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM datasetlinkingdataverse WHERE dataset_id = " + linkedDataset.getId()).getResultList();
+        } else {
+            linkedDataverse = (Dataverse) dvo;
+            alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM dataverselinkingdataverse WHERE dataverse_id = " + linkedDataverse.getId()).getResultList();
+        }
+
+         List<Dataverse> remove = new ArrayList<>();
+
+        if (alreadyLinkeddv_ids != null && !alreadyLinkeddv_ids.isEmpty()) {
+            alreadyLinkeddv_ids.stream().map((testDVId) -> this.find(testDVId)).forEachOrdered((removeIt) -> {
+                remove.add(removeIt);
+            });
+        }
+        
+        if (dvo instanceof Dataverse dataverse){
+            remove.add(dataverse);
+        }  else {
+            //dataset is always owned by a dataverse
+            remove.add((Dataverse)dvo.getOwner());
+        }
+        
+        for (Dataverse res : allWithPerms) {
+            if (!remove.contains(res)) {
+                   dataverseList.add(res);
+            }
+        }
+        
+       return dataverseList; 
+    }
+    
+  
     public List<Dataverse> filterDataversesForUnLinking(String query, DataverseRequest req, Dataset dataset) {
         List<Object> alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id FROM datasetlinkingdataverse WHERE dataset_id = " + dataset.getId()).getResultList();
         List<Dataverse> dataverseList = new ArrayList<>();

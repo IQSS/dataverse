@@ -683,7 +683,7 @@ public class DataversesIT {
         Response createUser = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         String username = UtilIT.getUsernameFromResponse(createUser);
-
+        
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         
@@ -718,7 +718,7 @@ public class DataversesIT {
                                         
         //Should be able to get based on a partial alias...
         // Partial must include the first part of the name
-        String searchTerm = dataverseAliasForLinking.substring(0, 5);
+        String searchTerm = dataverseAliasForLinking.substring(0, 7);
             
         Response getLinkableDataversesForDataversePartial = UtilIT.getLinkableDataverses("dataverse", dataverseAlias, apiToken, searchTerm);
         getLinkableDataversesForDataversePartial.prettyPrint();
@@ -745,15 +745,21 @@ public class DataversesIT {
         createDataverseResponseUnavailableForLinking.prettyPrint();
         String dataverseAliasUnavailableForLinking = UtilIT.getAliasFromResponse(createDataverseResponseUnavailableForLinking);
         publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAliasUnavailableForLinking, apiTokenTwo);
+        publishDataverse.prettyPrint();
         assertEquals(200, publishDataverse.getStatusCode());
         
-        Response getUnavailableForDataset = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, apiToken, dataverseAliasUnavailableForLinking);
+        //user 3 will not have permissions
+        Response createUserThree = UtilIT.createRandomUser();
+        String apiTokenThree = UtilIT.getApiTokenFromResponse(createUserThree);
+        String usernameThree = UtilIT.getUsernameFromResponse(createUserThree);
+        
+        Response getUnavailableForDataset = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, apiTokenThree, dataverseAliasUnavailableForLinking);
         getUnavailableForDataset.prettyPrint();
                 getUnavailableForDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", equalTo(0));
                 
-        Response getUnavailableForDataverse = UtilIT.getLinkableDataverses("dataverse", dataverseAlias, apiToken, dataverseAliasUnavailableForLinking);
+        Response getUnavailableForDataverse = UtilIT.getLinkableDataverses("dataverse", dataverseAlias, apiTokenThree, dataverseAliasUnavailableForLinking);
         getUnavailableForDataverse.prettyPrint();
                 getUnavailableForDataverse.then().assertThat()
                 .statusCode(OK.getStatusCode())                
@@ -796,6 +802,9 @@ public class DataversesIT {
         assertEquals(200, deleteDataverseResponse.getStatusCode());
         
         Response deleteUserResponse = UtilIT.deleteUser(usernameTwo);
+        assertEquals(200, deleteUserResponse.getStatusCode()); 
+        
+        deleteUserResponse = UtilIT.deleteUser(usernameThree);
         assertEquals(200, deleteUserResponse.getStatusCode()); 
         
         deleteUserResponse = UtilIT.deleteUser(username);

@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
@@ -1781,8 +1782,21 @@ public class Dataverses extends AbstractApiBean {
 
         try {
             DvObject dvObject = findDvoByIdAndTypeOrDie(dvIdtf, type);
-            List<Dataverse> dataversesForLinking = dataverseService.filterDataversesForLinking(searchTerm, createDataverseRequest(getRequestUser(crc)), dvObject);
-            JsonArrayBuilder dvBuilder = Json.createArrayBuilder();
+           // List<Dataverse> dataversesForLinking = dataverseService.filterDataversesForLinking(searchTerm, createDataverseRequest(getRequestUser(crc)), dvObject);
+           // public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, Permission permission, String searchTerm) {
+   
+           AuthenticatedUser requestUser = (AuthenticatedUser)getRequestUser(crc);
+           List<Dataverse> dataversesForLinking = new ArrayList<>();
+  
+           if ((dvObject instanceof Dataset)) {
+               dataversesForLinking = permissionService.findPermittedCollections( new DataverseRequest(requestUser, (IpAddress) null), requestUser, Permission.LinkDataset, searchTerm);
+           } else {
+               dataversesForLinking = permissionService.findPermittedCollections( new DataverseRequest(requestUser, (IpAddress) null), requestUser, Permission.LinkDataverse, searchTerm);
+
+           }
+               
+           dataversesForLinking = dataverseService.removeUnlinkableDataverses(dataversesForLinking, dvObject);
+           JsonArrayBuilder dvBuilder = Json.createArrayBuilder();
             if (dataversesForLinking != null && !dataversesForLinking.isEmpty()) {
                 for (Dataverse dv : dataversesForLinking) {
                     dvBuilder.add(json(dv, true));
