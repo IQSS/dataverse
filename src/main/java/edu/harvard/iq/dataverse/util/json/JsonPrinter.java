@@ -344,7 +344,6 @@ public class JsonPrinter {
         return bld;
     }
 
-    // For UI drop down list. Only needing display name and identifier
     public static JsonObjectBuilder jsonArray(List<Dataverse> collections) {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("count", collections.size());
