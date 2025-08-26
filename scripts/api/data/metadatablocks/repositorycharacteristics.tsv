@@ -1,0 +1,8 @@
+#metadataBlock	name	dataverseAlias	displayName	blockURI												
+	repositorycharacteristics		Repository Characteristics													
+#datasetField	name	title	description	watermark	fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id	termURI
+	repositoryOrHosting	Repository or Hosting	Where and how the data are stored (e.g. institutional repository, cloud) and the oversight and management policies that ensure ethical and transparent handling of the data		textbox	0		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		repositorycharacteristics	
+	securityAndTechnicalSafeguards	Security and Technical Safeguards	The mechanisms that the repository or hosting platform uses to prevent tampering with or unauthorized access to the data		textbox	1		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		repositorycharacteristics	
+	sustainabilityAndLongevity	Sustainability and Longevity	The strategies that the repository or hosting platform uses to support the long-term preservation and maintenance of the data		textbox	2		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		repositorycharacteristics	
+	standardsCertification	Standards Certification	The certification of the repository or hosting platform (e.g. CoreTrustSeal)		textbox	3		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		repositorycharacteristics	
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder												
