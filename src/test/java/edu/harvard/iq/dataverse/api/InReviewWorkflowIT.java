@@ -5,9 +5,10 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import java.util.logging.Logger;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
+
+import static edu.harvard.iq.dataverse.UserNotification.Type.*;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
@@ -21,8 +22,6 @@ import org.junit.jupiter.api.Test;
 
 public class InReviewWorkflowIT {
 
-    private static final Logger logger = Logger.getLogger(DatasetsIT.class.getCanonicalName());
-
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
@@ -30,7 +29,7 @@ public class InReviewWorkflowIT {
     }
 
     @Test
-    public void testCuratorSendsCommentsToAuthor() throws InterruptedException {
+    public void testCuratorSendsCommentsToAuthor() {
         Response createCurator = UtilIT.createRandomUser();
         createCurator.prettyPrint();
         createCurator.then().assertThat()
@@ -124,7 +123,7 @@ public class InReviewWorkflowIT {
         Response authorsChecksForCommentsPrematurely = UtilIT.getNotifications(authorApiToken);
         authorsChecksForCommentsPrematurely.prettyPrint();
         authorsChecksForCommentsPrematurely.then().assertThat()
-                .body("data.notifications[0].type", equalTo("CREATEACC"))
+                .body("data.notifications[0].type", equalTo(CREATEACC.toString()))
                 // The author thinks, "What's taking the curator so long to review my data?!?"
                 .body("data.notifications[1]", equalTo(null))
                 .statusCode(OK.getStatusCode());
@@ -136,10 +135,12 @@ public class InReviewWorkflowIT {
         Response curatorChecksNotificationsAndFindsWorkToDo = UtilIT.getNotifications(curatorApiToken);
         curatorChecksNotificationsAndFindsWorkToDo.prettyPrint();
         curatorChecksNotificationsAndFindsWorkToDo.then().assertThat()
-                .body("data.notifications[0].type", equalTo("SUBMITTEDDS"))
+                .body("data.notifications[0].type", equalTo(SUBMITTEDDS.toString()))
                 .body("data.notifications[0].reasonForReturn", equalTo(null))
-                .body("data.notifications[1].type", equalTo("CREATEACC"))
+                .body("data.notifications[1].type", equalTo(CREATEDV.toString()))
                 .body("data.notifications[1].reasonForReturn", equalTo(null))
+                .body("data.notifications[2].type", equalTo(CREATEACC.toString()))
+                .body("data.notifications[2].reasonForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
         // Joe Random, a user with no perms on dataset, tries returning the dataset as if he's a curator and fails.
@@ -230,12 +231,12 @@ public class InReviewWorkflowIT {
                 Response returnToAuthor = UtilIT.returnDatasetToAuthor(datasetPersistentId, jsonObjectBuilder.build(), curatorApiToken);
                 returnToAuthor.prettyPrint();
             } else {
-                // Increasing the sleep delay here, from 2 to 10 sec.; 
+                // Increasing the sleep delay here, from 2 to 10 sec.;
                 // With the 2 sec. delay, it appears to have been working consistently
                 // on Jenkins (because it's fast, I'm guessing?) - but
-                // I kept seeing an error on my own build at this point once in a while, 
-                // because the dataset is still locked when we try to edit it, 
-                // a few lines down. -- L.A. Oct. 2018  
+                // I kept seeing an error on my own build at this point once in a while,
+                // because the dataset is still locked when we try to edit it,
+                // a few lines down. -- L.A. Oct. 2018
                 // Changes to test for ingest lock and 3 seconds duration SEK 09/2019 #6128
                 assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", curatorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFileThatGoesThroughIngest);
                // Thread.sleep(10000);
@@ -299,15 +300,15 @@ public class InReviewWorkflowIT {
         returnToAuthorAlreadyReturned.then().assertThat()
                 .body("message", equalTo("This dataset cannot be return to the author(s) because the latest version is not In Review. The author(s) needs to click Submit for Review first."))
                 .statusCode(FORBIDDEN.getStatusCode());
-        //FIXME when/if reasons for return are returned to notifications page and the API is 
+        //FIXME when/if reasons for return are returned to notifications page and the API is
         // updated appropriately, these tests will have to be updated.
         Response authorChecksForCommentsAgain = UtilIT.getNotifications(authorApiToken);
         authorChecksForCommentsAgain.prettyPrint();
         authorChecksForCommentsAgain.then().assertThat()
-                .body("data.notifications[0].type", equalTo("RETURNEDDS"))
+                .body("data.notifications[0].type", equalTo(RETURNEDDS.toString()))
                 // The author thinks, "This why we have curators!"
                 //.body("data.notifications[0].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
-                .body("data.notifications[1].type", equalTo("CREATEACC"))
+                .body("data.notifications[1].type", equalTo(CREATEACC.toString()))
                 //.body("data.notifications[1].reasonsForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
@@ -332,13 +333,14 @@ public class InReviewWorkflowIT {
         curatorChecksNotifications.prettyPrint();
         curatorChecksNotifications.then().assertThat()
                 // TODO: Test this issue from the UI as well: https://github.com/IQSS/dataverse/issues/2526
-                .body("data.notifications[0].type", equalTo("SUBMITTEDDS"))
+                .body("data.notifications[0].type", equalTo(SUBMITTEDDS.toString()))
                 //.body("data.notifications[0].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
-                .body("data.notifications[1].type", equalTo("INGESTCOMPLETED"))
-                .body("data.notifications[2].type", equalTo("SUBMITTEDDS"))
+                .body("data.notifications[1].type", equalTo(INGESTCOMPLETED.toString()))
+                .body("data.notifications[2].type", equalTo(SUBMITTEDDS.toString()))
                 // Yes, it's a little weird that the first "SUBMITTEDDS" notification now shows the return reason when it showed nothing before. For now we are simply always showing all the reasons for return. They start to stack up. That way you can see the history.
                 //.body("data.notifications[1].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
-                .body("data.notifications[3].type", equalTo("CREATEACC"))
+                .body("data.notifications[3].type", equalTo(CREATEDV.toString()))
+                .body("data.notifications[4].type", equalTo(CREATEACC.toString()))
                 //.body("data.notifications[2].reasonsForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
@@ -353,14 +355,14 @@ public class InReviewWorkflowIT {
         Response authorChecksForComments3 = UtilIT.getNotifications(authorApiToken);
         authorChecksForComments3.prettyPrint();
         authorChecksForComments3.then().assertThat()
-                .body("data.notifications[0].type", equalTo("RETURNEDDS"))
+                .body("data.notifications[0].type", equalTo(RETURNEDDS.toString()))
                 // .body("data.notifications[0].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 //.body("data.notifications[0].reasonsForReturn[1].message", equalTo("A README is required."))
-                .body("data.notifications[1].type", equalTo("RETURNEDDS"))
+                .body("data.notifications[1].type", equalTo(RETURNEDDS.toString()))
                 // Yes, it's a little weird that the reason for return on the first "RETURNEDDS" changed. We're showing the history.
                 // .body("data.notifications[1].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 // .body("data.notifications[1].reasonsForReturn[1].message", equalTo("A README is required."))
-                .body("data.notifications[2].type", equalTo("CREATEACC"))
+                .body("data.notifications[2].type", equalTo(CREATEACC.toString()))
                 // .body("data.notifications[2].reasonsForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
@@ -384,18 +386,19 @@ public class InReviewWorkflowIT {
         curatorHopesTheReadmeIsThereNow.prettyPrint();
         curatorHopesTheReadmeIsThereNow.then().assertThat()
                 // TODO: Test this issue from the UI as well: https://github.com/IQSS/dataverse/issues/2526
-                .body("data.notifications[0].type", equalTo("SUBMITTEDDS"))
+                .body("data.notifications[0].type", equalTo(SUBMITTEDDS.toString()))
                 // .body("data.notifications[0].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 // .body("data.notifications[0].reasonsForReturn[1].message", equalTo("A README is required."))
-                .body("data.notifications[1].type", equalTo("SUBMITTEDDS"))
+                .body("data.notifications[1].type", equalTo(SUBMITTEDDS.toString()))
                 //  .body("data.notifications[1].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 //   .body("data.notifications[1].reasonsForReturn[1].message", equalTo("A README is required."))
-                .body("data.notifications[2].type", equalTo("INGESTCOMPLETED"))
-                .body("data.notifications[3].type", equalTo("SUBMITTEDDS"))
+                .body("data.notifications[2].type", equalTo(INGESTCOMPLETED.toString()))
+                .body("data.notifications[3].type", equalTo(SUBMITTEDDS.toString()))
                 // Yes, it's a little weird that the first "SUBMITTEDDS" notification now shows the return reason when it showed nothing before. We're showing the history.
                 //   .body("data.notifications[2].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 //   .body("data.notifications[2].reasonsForReturn[1].message", equalTo("A README is required."))
-                .body("data.notifications[4].type", equalTo("CREATEACC"))
+                .body("data.notifications[4].type", equalTo(CREATEDV.toString()))
+                .body("data.notifications[5].type", equalTo(CREATEACC.toString()))
                 //   .body("data.notifications[3].reasonsForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
@@ -414,15 +417,15 @@ public class InReviewWorkflowIT {
         Response authorsChecksForCommentsPostPublication = UtilIT.getNotifications(authorApiToken);
         authorsChecksForCommentsPostPublication.prettyPrint();
         authorsChecksForCommentsPostPublication.then().assertThat()
-                .body("data.notifications[0].type", equalTo("PUBLISHEDDS"))
-                .body("data.notifications[1].type", equalTo("RETURNEDDS"))
+                .body("data.notifications[0].type", equalTo(PUBLISHEDDS.toString()))
+                .body("data.notifications[1].type", equalTo(RETURNEDDS.toString()))
                 // .body("data.notifications[1].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 //  .body("data.notifications[1].reasonsForReturn[1].message", equalTo("A README is required."))
-                .body("data.notifications[2].type", equalTo("RETURNEDDS"))
+                .body("data.notifications[2].type", equalTo(RETURNEDDS.toString()))
                 // Yes, it's a little weird that the reason for return on the first "RETURNEDDS" changed. For now we are always showing the most recent reason for return.
                 //  .body("data.notifications[2].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 //.body("data.notifications[2].reasonsForReturn[1].message", equalTo("A README is required."))
-                .body("data.notifications[3].type", equalTo("CREATEACC"))
+                .body("data.notifications[3].type", equalTo(CREATEACC.toString()))
                 //   .body("data.notifications[3].reasonsForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
