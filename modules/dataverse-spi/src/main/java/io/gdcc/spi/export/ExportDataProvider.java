@@ -21,8 +21,13 @@ public interface ExportDataProvider {
      *          OAI_ORE export are the only two that provide 'complete'
      *          dataset-level metadata along with basic file metadata for each file
      *          in the dataset.
+     * @param options - optional argument(s). currently supports DatasetMetadataOnly: 
+     *               in a situation where we need to generate a format like DC,
+     *               that has no use for file-level metadata, it makes sense to
+     *               skip retrieving and formatting it, since there can be quite a few
+     *               files in a dataset.
      */
-    JsonObject getDatasetJson();
+    JsonObject getDatasetJson(ExportDataOption... options);    
 
     /**
      * 
@@ -39,7 +44,7 @@ public interface ExportDataProvider {
      * Dataverse is capable of extracting DDI-centric metadata from tabular
      * datafiles. This detailed metadata, which is only available for successfully
      * "ingested" tabular files, is not included in the output of any other methods
-     * in this interface.
+     * in this interface. 
      * 
      * @return - a JSONArray with one entry per ingested tabular dataset file.
      * @apiNote - there is no JSON schema available for this output and the format
@@ -50,6 +55,20 @@ public interface ExportDataProvider {
      */
     JsonArray getDatasetFileDetails();
 
+    /**
+     * Similar to the above, but 
+     * a) retrieves the information for the ingested/tabular data files _only_
+     * b) provides an option for retrieving this stuff in batches 
+     * c) provides an option for skipping restricted/embargoed etc. files.
+     * Intended for datasets with massive numbers of tabular files and datavariables. 
+     * @param offset (can be null)
+     * @param length (can be null)
+     * @param options (optional) supports PublicFilesOnly;
+     * @return json array containing the datafile/filemetadata->datatable->datavariable metadata
+     * @throws ExportException
+     */
+    JsonArray getTabularDataDetails(Integer offset, Integer length, ExportDataOption ... options) throws ExportException;
+    
     /**
      * 
      * @return - the subset of metadata conforming to the schema.org standard as
@@ -91,6 +110,11 @@ public interface ExportDataProvider {
      */
     default Optional<InputStream> getPrerequisiteInputStream() {
         return Optional.empty();
+    }
+    
+    public enum ExportDataOption {
+        DatasetMetadataOnly,
+        PublicFilesOnly;
     }
 
 }
