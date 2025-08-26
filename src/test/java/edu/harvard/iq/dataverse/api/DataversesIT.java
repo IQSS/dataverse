@@ -753,17 +753,23 @@ public class DataversesIT {
         String apiTokenThree = UtilIT.getApiTokenFromResponse(createUserThree);
         String usernameThree = UtilIT.getUsernameFromResponse(createUserThree);
         
-        Response getUnavailableForDataset = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, apiTokenThree, dataverseAliasUnavailableForLinking);
+        Response getUnavailableForDataset = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, apiToken, dataverseAliasUnavailableForLinking);
         getUnavailableForDataset.prettyPrint();
                 getUnavailableForDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", equalTo(0));
                 
-        Response getUnavailableForDataverse = UtilIT.getLinkableDataverses("dataverse", dataverseAlias, apiTokenThree, dataverseAliasUnavailableForLinking);
+        Response getUnavailableForDataverse = UtilIT.getLinkableDataverses("dataverse", dataverseAlias, apiToken, dataverseAliasUnavailableForLinking);
         getUnavailableForDataverse.prettyPrint();
                 getUnavailableForDataverse.then().assertThat()
                 .statusCode(OK.getStatusCode())                
                 .body("data.size()", equalTo(0));
+                
+        Response getNoPermsOnAnyCollection = UtilIT.getLinkableDataverses("dataverse", dataverseAlias, apiTokenThree, "");
+        getNoPermsOnAnyCollection.prettyPrint();
+                getNoPermsOnAnyCollection.then().assertThat()
+                .statusCode(OK.getStatusCode())                
+                .body("data.size()", equalTo(0));        
         
         //now link a dataset and see that it's unavailable in the future          
        
