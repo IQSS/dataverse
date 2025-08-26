@@ -1702,12 +1702,16 @@ public class UtilIT {
     }
 
     static Response getNotifications(String apiToken) {
+        return getNotifications(apiToken, false);
+    }
+
+    static Response getNotifications(String apiToken, boolean inAppNotificationFormat) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
-        return requestSpecification.get("/api/notifications/all");
+        return requestSpecification.get("/api/notifications/all?inAppNotificationFormat=" + inAppNotificationFormat);
     }
 
     static Response getUnreadNotificationsCount(String apiToken) {

@@ -957,7 +957,28 @@ Logging & Slow Performance
      - When set to true, all JDBC calls will be logged allowing tracing of all JDBC interactions including SQL.
      - ``false``
 
+Database Configuration Tips
++++++++++++++++++++++++++++
 
+In this section you can find some example scenarios of advanced configuration for the database connection that can improve service performance and availability.
+
+Database Connection Recovery
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Consider the following scenario: if there is no advanced configuration for the database connection and the Dataverse server loses that connection, for example if the database host is down, the server will be "dead" even after the database server is back to normal.
+The only solution to recover Dataverse would be to restart the service. To avoid this situation, the following settings can be used to configure validation of the database connection. 
+This way, the database connection can be automatically recovered after a failure, improving the server availability. For a Docker installation, it is suggested to create an init.d script so that if the container needs to be recreated, these settings will always be configured.
+
+.. code-block:: bash
+
+  # Enable database connection validation
+  asadmin create-jvm-options "-Ddataverse.db.is-connection-validation-required=true"
+  # Configure to use a database table as the validation method
+  asadmin create-jvm-options "-Ddataverse.db.connection-validation-method=table"
+  # Configure the "setting" table to be used for connection validation, but any tables can be used
+  asadmin create-jvm-options "-Ddataverse.db.validation-table-name=setting"
+  # Configure a validation period of 60 seconds, but different values may be used
+  asadmin create-jvm-options "-Ddataverse.db.validate-atmost-once-period-in-seconds=60"
 
 .. _file-storage:
 
@@ -1419,6 +1440,11 @@ And lastly, to start up the SeaweedFS server and various components you could us
 .. code-block:: bash
 
   weed server -s3 -metricsPort=9327 -dir=/data -s3.config=/config.json
+
+`VAST DataStore <https://www.vastdata.com/platform/datastore>`_
+  VAST DataStore must be configured with an S3 gateway. A Dataverse bucket must be created. 
+  Follow `VAST DataStore documentation <https://support.vastdata.com/s/document-item?bundleId=vast-cluster-administrator-s-guide4.7&topicId=managing-access-protocols/s3-object-storage-protocol.html&_LANG=enus>`_ to configure the S3 gateway.
+  Set ``dataverse.files.<id>.path-style-access=true`` since VAST DataStore uses path style access.
 
 **Additional Reported Working S3-Compatible Storage**
 
@@ -3728,6 +3754,9 @@ please find all known feature flags below. Any of these flags can be activated u
       - ``Off``
     * - api-bearer-auth-use-shib-user-on-id-match
       - Allows the use of a Shibboleth user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing Shibboleth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
+      - ``Off``
+    * - api-bearer-auth-use-oauth-user-on-id-match
+      - Allows the use of an OAuth user account (GitHub, Google, or ORCID) when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing OAuth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
       - ``Off``
     * - avoid-expensive-solr-join
       - Changes the way Solr queries are constructed for public content (published Collections, Datasets and Files). It removes a very expensive Solr join on all such documents, improving overall performance, especially for large instances under heavy load. Before this feature flag is enabled, the corresponding indexing feature (see next feature flag) must be turned on and a full reindex performed (otherwise public objects are not going to be shown in search results). See :doc:`/admin/solr-search-index`. 
