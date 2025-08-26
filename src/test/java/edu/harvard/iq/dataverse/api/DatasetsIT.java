@@ -6087,6 +6087,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data.name", CoreMatchers.equalTo(name))
                 .body("data.type", CoreMatchers.notNullValue())
                 .body("data.label", CoreMatchers.notNullValue())
+                .body("data.directUpload", CoreMatchers.notNullValue())
                 .statusCode(OK.getStatusCode());
     }
 

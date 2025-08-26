@@ -1634,11 +1634,14 @@ public class JsonPrinter {
         return jsonArrayBuilder;
     }
 
-    public static JsonObjectBuilder jsonStorageDriver(String storageDriverId) {
+    public static JsonObjectBuilder jsonStorageDriver(String storageDriverId, Dataset dataset) {
         JsonObjectBuilder jsonObjectBuilder = new NullSafeJsonBuilder();
         jsonObjectBuilder.add("name", storageDriverId);
         jsonObjectBuilder.add("type", DataAccess.getDriverType(storageDriverId));
         jsonObjectBuilder.add("label", DataAccess.getStorageDriverLabelFor(storageDriverId));
+        if (dataset != null) {
+            jsonObjectBuilder.add("directUpload", DataAccess.uploadToDatasetAllowed(dataset, storageDriverId));
+        }
 
         return jsonObjectBuilder;
     }
