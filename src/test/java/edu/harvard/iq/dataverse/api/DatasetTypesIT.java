@@ -765,6 +765,23 @@ public class DatasetTypesIT {
         String datasetCitationHtml = JsonPath.from(getCitation.getBody().asString()).getString("data.message");
         String datasetCitationText = StringUtil.html2text(datasetCitationHtml);
 
+        /**
+         * We are added the HTML version of a Related Dataset. We like the HTML
+         * version because both JSF and the SPA render the DOI link as a
+         * clickable link.
+         *
+         * The tooltip for Related Dataset says "Information, such as a
+         * persistent ID or citation, about a related dataset, such as previous
+         * research on the Dataset's subject".
+         *
+         * We are aware that there is a custom metadata block called
+         * "relatedDatasetsV2" at https://github.com/vera/related-datasets-cvoc
+         * that we have been playing with. We especially like that relationships
+         * can be expressed between the current object (a review) and the
+         * related dataset. This is simlar to how "Related Publication" works.
+         * See also discussion at
+         * https://dataverse.zulipchat.com/#narrow/channel/379673-dev/topic/Improved.20.22Related.20datasets.22/near/534969036
+         */
         JsonObjectBuilder jsonForCreatingReview = Json.createObjectBuilder()
                 /**
                  * See above where this type is added to the installation and
@@ -838,150 +855,13 @@ public class DatasetTypesIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "subject")
                                                 )
-                                                /**
-                                                 * Related Dataset.
-                                                 *
-                                                 * The tooltip for Related
-                                                 * Dataset says "Information,
-                                                 * such as a persistent ID or
-                                                 * citation, about a related
-                                                 * dataset, such as previous
-                                                 * research on the Dataset's
-                                                 * subject".
-                                                 *
-                                                 * For now we'll add multiple
-                                                 * forms so we can discuss and
-                                                 * decide which one to use.
-                                                 *
-                                                 * Also, we are well aware that
-                                                 * there is a custom metadata
-                                                 * block called
-                                                 * "relatedDatasetsV2" at
-                                                 * https://github.com/vera/related-datasets-cvoc
-                                                 * that we hope to play with
-                                                 * soon.
-                                                 */
                                                 .add(Json.createObjectBuilder()
                                                         .add("value", Json.createArrayBuilder()
-                                                                .add(datasetPid)
-                                                                .add(datasetPidUrl)
-                                                                .add(datasetCitationText)
                                                                 .add(datasetCitationHtml)
                                                         )
                                                         .add("typeClass", "primitive")
                                                         .add("multiple", true)
                                                         .add("typeName", "relatedDatasets")
-                                                )
-                                                /**
-                                                 * Related Publication.
-                                                 *
-                                                 * Related Dataset is more
-                                                 * appropriate than Related
-                                                 * Publication but we're adding
-                                                 * Related Publication (twice,
-                                                 * with plain text and HTML
-                                                 * citations) because unlike
-                                                 * Related Dataset, Related
-                                                 * Publication lets us send
-                                                 * publicationRelationType,
-                                                 * which gets sent to DataCite
-                                                 * as "References" or "Cites" or
-                                                 * whatever.
-                                                 *
-                                                 * (Ideally, we'd send "Reviews"
-                                                 * but we get this error:
-                                                 *
-                                                 * "Error parsing Json: Invalid
-                                                 * controlled vocabulary in
-                                                 * compound field Value
-                                                 * 'Reviews' does not exist in
-                                                 * type
-                                                 * 'publicationRelationType';")
-                                                 */
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                // Plain text citation version
-                                                                .add(Json.createObjectBuilder()
-                                                                        .add("publicationRelationType",
-                                                                                Json.createObjectBuilder()
-                                                                                        .add("value", "References")
-                                                                                        //                                                                                        .add("value", "Reviews")
-                                                                                        .add("typeClass", "controlledVocabulary")
-                                                                                        .add("multiple", false)
-                                                                                        .add("typeName", "publicationRelationType")
-                                                                        )
-                                                                        .add("publicationCitation",
-                                                                                Json.createObjectBuilder()
-                                                                                        .add("value", datasetCitationHtml)
-                                                                                        .add("typeClass", "primitive")
-                                                                                        .add("multiple", false)
-                                                                                        .add("typeName", "publicationCitation")
-                                                                        )
-                                                                        .add("publicationIDType",
-                                                                                Json.createObjectBuilder()
-                                                                                        .add("value", datasetPidProtocol)
-                                                                                        .add("typeClass", "controlledVocabulary")
-                                                                                        .add("multiple", false)
-                                                                                        .add("typeName", "publicationIDType")
-                                                                        )
-                                                                        .add("publicationIDNumber",
-                                                                                Json.createObjectBuilder()
-                                                                                        .add("value", datasetPidWithoutProtocol)
-                                                                                        .add("typeClass", "primitive")
-                                                                                        .add("multiple", false)
-                                                                                        .add("typeName", "publicationIDNumber")
-                                                                        )
-                                                                        .add("publicationURL",
-                                                                                Json.createObjectBuilder()
-                                                                                        .add("value", datasetPidUrl)
-                                                                                        .add("typeClass", "primitive")
-                                                                                        .add("multiple", false)
-                                                                                        .add("typeName", "publicationURL")
-                                                                        )
-                                                                )
-                                                                // HTML citation version
-                                                                .add(Json.createObjectBuilder()
-                                                                        .add("publicationRelationType",
-                                                                                Json.createObjectBuilder()
-                                                                                        .add("value", "References")
-                                                                                        //                                                                                        .add("value", "Reviews")
-                                                                                        .add("typeClass", "controlledVocabulary")
-                                                                                        .add("multiple", false)
-                                                                                        .add("typeName", "publicationRelationType")
-                                                                        )
-                                                                        .add("publicationCitation",
-                                                                                Json.createObjectBuilder()
-                                                                                        .add("value", datasetCitationText)
-                                                                                        .add("typeClass", "primitive")
-                                                                                        .add("multiple", false)
-                                                                                        .add("typeName", "publicationCitation")
-                                                                        )
-                                                                        .add("publicationIDType",
-                                                                                Json.createObjectBuilder()
-                                                                                        .add("value", datasetPidProtocol)
-                                                                                        .add("typeClass", "controlledVocabulary")
-                                                                                        .add("multiple", false)
-                                                                                        .add("typeName", "publicationIDType")
-                                                                        )
-                                                                        .add("publicationIDNumber",
-                                                                                Json.createObjectBuilder()
-                                                                                        .add("value", datasetPidWithoutProtocol)
-                                                                                        .add("typeClass", "primitive")
-                                                                                        .add("multiple", false)
-                                                                                        .add("typeName", "publicationIDNumber")
-                                                                        )
-                                                                        .add("publicationURL",
-                                                                                Json.createObjectBuilder()
-                                                                                        .add("value", datasetPidUrl)
-                                                                                        .add("typeClass", "primitive")
-                                                                                        .add("multiple", false)
-                                                                                        .add("typeName", "publicationURL")
-                                                                        )
-                                                                )
-                                                        )
-                                                        .add("typeClass", "compound")
-                                                        .add("multiple", true)
-                                                        .add("typeName", "publication")
                                                 )
                                         )
                                 )
