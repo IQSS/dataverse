@@ -492,14 +492,17 @@ public class JsonPrinterTest {
             dv.setId(i);
             collections.add(dv);
         }
-        JsonArrayBuilder jsob = JsonPrinter.jsonArray(collections);
-        JsonArray result = jsob.build();
+        JsonObjectBuilder job = JsonPrinter.jsonArray(collections);
+        JsonObject result = job.build();
         assertNotNull(result);
-        assertEquals(10, result.size());
-        System.out.println(result.get(5).toString());
-        assertTrue(result.get(6).toString().contains("name\":\"Alias6"));
-        assertTrue(result.get(6).toString().contains("alias\":\"alias6"));
-        assertTrue(result.get(6).toString().contains("id\":6"));
+        System.out.println(result);
+        assertEquals(10, result.getInt("count"));
+        JsonArray items = result.getJsonArray("items");
+        JsonObject item6 = items.getJsonObject(6);
+        System.out.println(item6);
+        assertEquals(6, item6.getInt("id"));
+        assertEquals("Alias6", item6.getString("name"));
+        assertEquals("alias6", item6.getString("alias"));
     }
 
     private Dataverse createDataverse(long id) {

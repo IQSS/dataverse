@@ -6,6 +6,8 @@ package edu.harvard.iq.dataverse.mydata;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.GetUserPermittedCollectionsCommand;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
@@ -22,11 +24,16 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceFactory;
 import edu.harvard.iq.dataverse.search.SortBy;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import jakarta.ejb.EJB;
-import jakarta.json.*;
+import jakarta.inject.Inject;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -36,6 +43,7 @@ import jakarta.ws.rs.core.Context;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import jakarta.ws.rs.core.Response;
+import org.json.JSONObject;
 
 /**
  *
@@ -53,6 +61,9 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
     public static final String retrieveDataFullAPIPath = "/api/v1/mydata/retrieve";
     private static final String retrieveDataPartialAPIPath = "retrieve";
+
+    @Inject
+    DataverseSession session;
 
     @EJB
     DataverseRoleServiceBean dataverseRoleService;
@@ -76,6 +87,10 @@ public class DataRetrieverAPI extends AbstractApiBean {
     private AuthenticatedUser authUser = null;
     private AuthenticatedUser searchUser = null;
 
+    public static final String JSON_SUCCESS_FIELD_NAME = "success";
+    public static final String JSON_ERROR_MSG_FIELD_NAME = "error_message";
+    public static final String JSON_DATA_FIELD_NAME = "data";
+
     /**
      * Constructor
      * 
@@ -92,8 +107,34 @@ public class DataRetrieverAPI extends AbstractApiBean {
         return authenticationService.getAuthenticatedUser(userIdentifier);
     }
 
+    private String getJSONErrorString(String jsonMsg, String optionalLoggerMsg){
+
+        if (jsonMsg == null){
+            throw new NullPointerException("jsonMsg cannot be null");
+        }
+        if (optionalLoggerMsg != null){
+            logger.severe(optionalLoggerMsg);
+        }
+        JsonObjectBuilder jsonData = Json.createObjectBuilder();
+
+        jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, false);
+        jsonData.add(DataRetrieverAPI.JSON_ERROR_MSG_FIELD_NAME, jsonMsg);
+
+        return jsonData.build().toString();
+
+    }
+
     private void verifyAuth (ContainerRequestContext crc, String userIdentifier) throws WrappedResponse {
-        searchUser = authUser = getRequestAuthenticatedUserOrDie(crc);
+        // Handle calls from JSF where the User is in the session
+        User requestUser = getRequestUser(crc);
+        if (session != null && session.getUser() != null && requestUser instanceof GuestUser) {
+            searchUser = authUser = (AuthenticatedUser) session.getUser();
+            if (!authUser.isAuthenticated()) {
+                throw new WrappedResponse(authenticatedUserRequired());
+            }
+        } else {
+            searchUser = authUser = getRequestAuthenticatedUserOrDie(crc);
+        }
 
         // If the user is a superuser, see if a userIdentifier has been specified and use that instead
         if ((authUser.isSuperuser()) && (userIdentifier != null) && (!userIdentifier.isEmpty())) {
@@ -108,7 +149,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
     @AuthRequired
     @Path(retrieveDataPartialAPIPath)
     @Produces({"application/json"})
-    public Response retrieveMyDataAsJsonString(
+    public String retrieveMyDataAsJsonString(
             @Context ContainerRequestContext crc,
             @QueryParam("dvobject_types") List<DvObject.DType> dvobject_types,
             @QueryParam("published_states") List<String> published_states, 
@@ -118,19 +159,20 @@ public class DataRetrieverAPI extends AbstractApiBean {
             @QueryParam("userIdentifier") String userIdentifier,
             @QueryParam("filter_validities") Boolean filterValidities,
             @QueryParam("dataset_valid") List<Boolean> datasetValidities) {
+        boolean OTHER_USER = false;
 
         String noMsgResultsFound = BundleUtil.getStringFromBundle("dataretrieverAPI.noMsgResultsFound");
 
         try {
             verifyAuth(crc, userIdentifier);
+            OTHER_USER = !authUser.equals(searchUser);
         } catch (WrappedResponse wr) {
-            return wr.getResponse();
+            return this.getJSONErrorString((new JSONObject(wr.getResponse().getEntity().toString())).getString("message"), null);
         }
 
         roleList = dataverseRoleService.findAll();
-        rolePermissionHelper = new DataverseRolePermissionHelper(roleList);    
-        
-       
+        rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
+
         List<DvObject.DType> dtypes;
         if (dvobject_types != null){
             dtypes = dvobject_types;
@@ -153,8 +195,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
         
         MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, dtypes, pub_states, roleIds, searchTerm, validities);
-        if (filterParams.hasError()) {
-            return error(Response.Status.BAD_REQUEST, filterParams.getErrorMessage());
+        if (filterParams.hasError()){
+            return this.getJSONErrorString(filterParams.getErrorMessage(), filterParams.getErrorMessage());
         }
        
         // ---------------------------------
@@ -165,8 +207,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
                                         dvObjectServiceBean, 
                                         groupService);
         this.myDataFinder.runFindDataSteps(filterParams);
-        if (myDataFinder.hasError()) {
-            return error(Response.Status.BAD_REQUEST, myDataFinder.getErrorMessage());
+        if (myDataFinder.hasError()){
+            return this.getJSONErrorString(myDataFinder.getErrorMessage(), myDataFinder.getErrorMessage());
         }
 
         // ---------------------------------
@@ -183,7 +225,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         List<String> filterQueries = this.myDataFinder.getSolrFilterQueries();
         if (filterQueries==null){
             logger.fine("No ids found for this search");
-            return error(Response.Status.NOT_FOUND, noMsgResultsFound);
+            return this.getJSONErrorString(noMsgResultsFound, null);
         }
 
         try {
@@ -199,17 +241,20 @@ public class DataRetrieverAPI extends AbstractApiBean {
                         SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
                 );
 
-                if (this.solrQueryResponse.getNumResultsFound()==0) {
-                    return error(Response.Status.NOT_FOUND, noMsgResultsFound);
-                }                
-                         
+            if (this.solrQueryResponse.getNumResultsFound()==0){
+                return this.getJSONErrorString(noMsgResultsFound, null);
+            }
+
         } catch (SearchException ex) {
             solrQueryResponse = null;   
             logger.severe("Solr SearchException: " + ex.getMessage());
         }
         
         if (solrQueryResponse == null) {
-            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("dataretrieverAPI.solr.error"));
+            return this.getJSONErrorString(
+                    BundleUtil.getStringFromBundle("dataretrieverAPI.solr.error"),
+                    BundleUtil.getStringFromBundle("dataretrieverAPI.solr.error.opt")
+            );
         }
                 
          // ---------------------------------
@@ -224,23 +269,27 @@ public class DataRetrieverAPI extends AbstractApiBean {
         // Initialize JSON response
         JsonObjectBuilder jsonData = Json.createObjectBuilder();
 
-        Pager pager = new Pager(solrQueryResponse.getNumResultsFound().intValue(), 
-                                SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE, 
-                                paginationStart);
-        
+        Pager pager = new Pager(solrQueryResponse.getNumResultsFound().intValue(),
+                SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE,
+                paginationStart);
+
         RoleTagRetriever roleTagRetriever = new RoleTagRetriever(this.rolePermissionHelper, this.roleAssigneeSvc, this.dvObjectServiceBean);
         roleTagRetriever.loadRoles(dataverseRequest, solrQueryResponse);
 
-                
-        jsonData.add("pagination", pager.asJsonObjectBuilderUsingCardTerms())
-                .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, roleTagRetriever))
-                .add(SearchConstants.SEARCH_API_TOTAL_COUNT, solrQueryResponse.getNumResultsFound())
-                .add(SearchConstants.SEARCH_API_START, solrQueryResponse.getResultsStart())
-                .add("search_term",  filterParams.getSearchTerm())
-                .add("dvobject_counts", this.getDvObjectTypeCounts(solrQueryResponse))
-                .add("pubstatus_counts", this.getPublicationStatusCounts(solrQueryResponse))
-                .add("selected_filters", this.myDataFinder.getSelectedFilterParamsAsJSON())
-            ;
+
+        jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, true)
+                .add(DataRetrieverAPI.JSON_DATA_FIELD_NAME,
+                        Json.createObjectBuilder()
+                                .add("pagination", pager.asJsonObjectBuilderUsingCardTerms())
+                                //.add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, filterParams, this.myDataFinder))
+                                .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, roleTagRetriever))
+                                .add(SearchConstants.SEARCH_API_TOTAL_COUNT, solrQueryResponse.getNumResultsFound())
+                                .add(SearchConstants.SEARCH_API_START, solrQueryResponse.getResultsStart())
+                                .add("search_term",  filterParams.getSearchTerm())
+                                .add("dvobject_counts", this.getDvObjectTypeCounts(solrQueryResponse))
+                                .add("pubstatus_counts", this.getPublicationStatusCounts(solrQueryResponse))
+                                .add("selected_filters", this.myDataFinder.getSelectedFilterParamsAsJSON())
+                );
 
         // ---------------------------------------------------------
         // We're doing ~another~ solr query here
@@ -248,12 +297,12 @@ public class DataRetrieverAPI extends AbstractApiBean {
         // ---------------------------------------------------------
         //jsonData.add("total_dvobject_counts", getTotalCountsFromSolrAsJSON(searchUser, this.myDataFinder));
 
-        
-        if (searchUser != null && !authUser.equals(searchUser)) {
+
+        if (OTHER_USER){
             jsonData.add("other_user", searchUser.getIdentifier());
         }
-                                
-        return ok(jsonData);
+
+        return jsonData.build().toString();
     }
 
     @GET
@@ -263,8 +312,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
     public Response retrieveMyCollectionList(@Context ContainerRequestContext crc, @QueryParam("userIdentifier") String userIdentifier) {
         try {
             verifyAuth(crc, userIdentifier);
-            JsonObjectBuilder jsonObjBuilder = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), searchUser, Permission.AddDataset.name(), true));
-            return ok(jsonObjBuilder);
+            List<Dataverse> collections = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), searchUser, Permission.AddDataset.name()));
+            return ok(JsonPrinter.jsonArray(collections));
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

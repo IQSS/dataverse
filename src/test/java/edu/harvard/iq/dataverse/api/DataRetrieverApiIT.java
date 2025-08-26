@@ -22,6 +22,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class DataRetrieverApiIT {
 
+    private static final String ERR_MSG_FORMAT = "{\n    \"success\": false,\n    \"error_message\": \"%s\"\n}";
+
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
@@ -42,40 +44,28 @@ public class DataRetrieverApiIT {
 
         String badUserIdentifier = "bad-identifier";
         Response invalidUserIdentifierResponse = UtilIT.retrieveMyDataAsJsonString(superUserApiToken, badUserIdentifier, emptyRoleIdsList);
-        invalidUserIdentifierResponse.prettyPrint();
-        invalidUserIdentifierResponse.then().assertThat()
-                .body("status", equalTo("ERROR"))
-                .body("message", equalTo(BundleUtil.getStringFromBundle("dataretrieverAPI.user.not.found", Arrays.asList(badUserIdentifier))))
-                .statusCode(NOT_FOUND.getStatusCode());
+        assertEquals(prettyPrintError("dataretrieverAPI.user.not.found", Arrays.asList(badUserIdentifier)), invalidUserIdentifierResponse.prettyPrint());
+        assertEquals(OK.getStatusCode(), invalidUserIdentifierResponse.getStatusCode());
 
         // Call as superuser with valid user identifier and no roles
         Response createSecondUserResponse = UtilIT.createRandomUser();
         String userIdentifier = UtilIT.getUsernameFromResponse(createSecondUserResponse);
         Response validUserIdentifierResponse = UtilIT.retrieveMyDataAsJsonString(superUserApiToken, userIdentifier, emptyRoleIdsList);
-        validUserIdentifierResponse.prettyPrint();
-        validUserIdentifierResponse.then().assertThat()
-                .body("status", equalTo("ERROR"))
-                .body("message", equalTo(BundleUtil.getStringFromBundle("myDataFinder.error.result.no.role")))
-                .statusCode(BAD_REQUEST.getStatusCode());
+        assertEquals(prettyPrintError("myDataFinder.error.result.no.role", null), validUserIdentifierResponse.prettyPrint());
+        assertEquals(OK.getStatusCode(), validUserIdentifierResponse.getStatusCode());
 
         // Call as normal user with one valid role and no results
         Response createNormalUserResponse = UtilIT.createRandomUser();
         String normalUserUsername = UtilIT.getUsernameFromResponse(createNormalUserResponse);
         String normalUserApiToken = UtilIT.getApiTokenFromResponse(createNormalUserResponse);
         Response noResultwithOneRoleResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(5L)));
-        noResultwithOneRoleResponse.prettyPrint();
-        noResultwithOneRoleResponse.then().assertThat()
-                .body("status", equalTo("ERROR"))
-                .body("message", equalTo(BundleUtil.getStringFromBundle("myDataFinder.error.result.role.empty", Arrays.asList("Dataset Creator"))))
-                .statusCode(BAD_REQUEST.getStatusCode());
+        assertEquals(prettyPrintError("myDataFinder.error.result.role.empty", Arrays.asList("Dataset Creator")), noResultwithOneRoleResponse.prettyPrint());
+        assertEquals(OK.getStatusCode(), noResultwithOneRoleResponse.getStatusCode());
 
         // Call as normal user with multiple valid roles and no results
         Response noResultWithMultipleRoleResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(5L, 6L)));
-        noResultWithMultipleRoleResponse.prettyPrint();
-        noResultWithMultipleRoleResponse.then().assertThat()
-                .body("status", equalTo("ERROR"))
-                .body("message", equalTo(BundleUtil.getStringFromBundle("myDataFinder.error.result.roles.empty", Arrays.asList("Dataset Creator, Contributor"))))
-                .statusCode(BAD_REQUEST.getStatusCode());
+        assertEquals(prettyPrintError("myDataFinder.error.result.roles.empty", Arrays.asList("Dataset Creator, Contributor")), noResultWithMultipleRoleResponse.prettyPrint());
+        assertEquals(OK.getStatusCode(), noResultWithMultipleRoleResponse.getStatusCode());
 
         // Call as normal user with one valid dataset role and one dataset result
         Response createDataverseResponse = UtilIT.createRandomDataverse(normalUserApiToken);
@@ -87,7 +77,6 @@ public class DataRetrieverApiIT {
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
         UtilIT.sleepForReindex(datasetId.toString(), normalUserApiToken, 4);
         Response oneDatasetResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(6L)));
-        oneDatasetResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), oneDatasetResponse.getStatusCode());
         JsonPath jsonPathOneDataset = oneDatasetResponse.getBody().jsonPath();
         assertEquals(1, jsonPathOneDataset.getInt("data.total_count"));
@@ -97,6 +86,8 @@ public class DataRetrieverApiIT {
         UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR.toString(),
                 "@" + normalUserUsername, superUserApiToken);
         Response oneDataverseResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(5L)));
+        oneDataverseResponse.prettyPrint();
+
         assertEquals(OK.getStatusCode(), oneDataverseResponse.getStatusCode());
         JsonPath jsonPathOneDataverse = oneDataverseResponse.getBody().jsonPath();
         assertEquals(1, jsonPathOneDataverse.getInt("data.total_count"));
@@ -250,11 +241,8 @@ public class DataRetrieverApiIT {
 
         // Call as regular user with no result
         Response myDataEmptyResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
-        myDataEmptyResponse.prettyPrint();
-        myDataEmptyResponse.then().assertThat()
-                .body("status", equalTo("ERROR"))
-                .body("message", equalTo(BundleUtil.getStringFromBundle("myDataFinder.error.result.role.empty", Arrays.asList("Contributor"))))
-                .statusCode(BAD_REQUEST.getStatusCode());
+        assertEquals(prettyPrintError("myDataFinder.error.result.role.empty", Arrays.asList("Contributor")), myDataEmptyResponse.prettyPrint());
+        assertEquals(OK.getStatusCode(), myDataEmptyResponse.getStatusCode());
 
         // Create and publish a dataverse
         Response createDataverseResponse = UtilIT.createRandomDataverse(superUserApiToken);
@@ -409,5 +397,15 @@ public class DataRetrieverApiIT {
         Response deleteSuperUserResponse = UtilIT.deleteUser(superUserIdentifier);
         deleteSuperUserResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), deleteSuperUserResponse.getStatusCode());
+    }
+
+    private static String prettyPrintError(String resourceBundleKey, List<String> params) {
+        final String errorMessage;
+        if (params == null || params.isEmpty()) {
+            errorMessage = BundleUtil.getStringFromBundle(resourceBundleKey);
+        } else {
+            errorMessage = BundleUtil.getStringFromBundle(resourceBundleKey, params);
+        }
+        return String.format(ERR_MSG_FORMAT, errorMessage.replaceAll("\"", "\\\\\""));
     }
 }
