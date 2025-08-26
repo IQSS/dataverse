@@ -76,19 +76,6 @@ public class InternalExportDataProvider implements ExportDataProvider {
         return jsonRepresentation;
     }
     
-    /*@Override*/
-    public JsonObject getDatasetOnlyJson() {
-        // If we already have the "full" Json representation (with files) 
-        // generated, should we return it (potentially moving MUCH more json 
-        // than the client needs, or spend extra cycles generating the short 
-        // form from scratch? - I'm choosing to go with latter. 
-        if (jsonRepresentationNoFiles == null) {
-            final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.jsonAsDatasetDto(dv, false);
-            jsonRepresentationNoFiles = datasetAsJsonBuilder.build();
-        }
-        return jsonRepresentationNoFiles;
-    }
-
     @Override
     public JsonObject getDatasetSchemaDotOrg() {
         if (schemaDotOrgRepresentation == null) {
