@@ -2371,6 +2371,18 @@ public class DataversesIT {
         getTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
     }
 
+    @Test
+    public void testGetStorageDriver() {
+        Response updatedStorageDriver = UtilIT.getStorageDriver("root", getSuperuserToken());
+        updatedStorageDriver.prettyPrint();
+        updatedStorageDriver.then().assertThat()
+                .body("data.name", CoreMatchers.notNullValue())
+                .body("data.type", CoreMatchers.notNullValue())
+                .body("data.label", CoreMatchers.notNullValue())
+                .body("data.directUpload", CoreMatchers.nullValue())
+                .statusCode(200);
+    }
+
     private String getSuperuserToken() {
         Response createResponse = UtilIT.createRandomUser();
         String adminApiToken = UtilIT.getApiTokenFromResponse(createResponse);

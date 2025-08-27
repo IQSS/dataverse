@@ -6089,6 +6089,25 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data.label", CoreMatchers.notNullValue())
                 .body("data.directUpload", CoreMatchers.notNullValue())
                 .statusCode(OK.getStatusCode());
+
+        // Test dataset under root with default storage driver
+        Response getStorageDriverResponse = UtilIT.getStorageDriver("root", apiToken);
+        getStorageDriverResponse.prettyPrint();
+        data = JsonUtil.getJsonObject(getStorageDriverResponse.getBody().asString());
+        name = data.getJsonObject("data").getString("name");
+        String type = data.getJsonObject("data").getString("type");
+        String label = data.getJsonObject("data").getString("label");
+        createDataset = UtilIT.createRandomDatasetViaNativeApi("root", apiToken);
+        datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        getDriver = UtilIT.getDatasetStorageDriver(datasetId, apiToken);
+        getDriver.prettyPrint();
+        assertEquals(200, getDriver.getStatusCode());
+        getDriver.then().assertThat()
+                .body("data.name", CoreMatchers.equalTo(name))
+                .body("data.type", CoreMatchers.equalTo(type))
+                .body("data.label", CoreMatchers.equalTo(label))
+                .body("data.directUpload", CoreMatchers.notNullValue())
+                .statusCode(OK.getStatusCode());
     }
 
     @Test
