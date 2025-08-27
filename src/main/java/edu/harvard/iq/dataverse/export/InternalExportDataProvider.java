@@ -15,16 +15,14 @@ import edu.harvard.iq.dataverse.DatasetVersionFilesServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.FileSearchCriteria;
 import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DOIDataCiteRegisterService;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import io.gdcc.spi.export.ExportDataProvider;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import static edu.harvard.iq.dataverse.util.FileUtil.MIME_TYPE_INGESTED_FILE;
 import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.ExportDataOption;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Provides all data necessary to create an export
@@ -77,7 +75,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
     }
     
     @Override
-    public JsonObject getDatasetSchemaDotOrg() {
+    public JsonObject getDatasetSchemaDotOrg(ExportDataOption... options) {
         if (schemaDotOrgRepresentation == null) {
             String jsonLdAsString = dv.getJsonLd();
             schemaDotOrgRepresentation = JsonUtil.getJsonObject(jsonLdAsString);
@@ -86,7 +84,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
     }
 
     @Override
-    public JsonObject getDatasetORE() {
+    public JsonObject getDatasetORE(ExportDataOption... options) {
         if (oreRepresentation == null) {
             oreRepresentation = new OREMap(dv).getOREMap();
         }
@@ -94,13 +92,13 @@ public class InternalExportDataProvider implements ExportDataProvider {
     }
 
     @Override
-    public String getDataCiteXml() {
+    public String getDataCiteXml(ExportDataOption... options) {
         return DOIDataCiteRegisterService.getMetadataFromDvObject(
                 dv.getDataset().getGlobalId().asString(), new DataCitation(dv).getDataCiteMetadata(), dv.getDataset());
     }
     
     @Override
-    public JsonArray getDatasetFileDetails() {
+    public JsonArray getDatasetFileDetails(ExportDataOption... options) {
         if (fileAndDataDetails == null) {
             JsonArrayBuilder jab = Json.createArrayBuilder();
             for (FileMetadata fileMetadata : dv.getFileMetadatas()) {
@@ -125,7 +123,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
             try {
                 fileSearchCriteria = new FileSearchCriteria(
                         MIME_TYPE_INGESTED_FILE,
-                        isOnlyPublicMetadataRequested(options) ? FileSearchCriteria.FileAccessStatus.Public : null, // this is optional
+                        isOnlyPublicMetadataRequested(options) ? FileSearchCriteria.FileAccessStatus.Public : null, 
                         null,
                         null,
                         null
@@ -141,7 +139,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
             throw new ExportException("EJB DatasetVersionFilesService is not available"); 
         }
         
-        for (FileMetadata fileMetadata : dv.getFileMetadatas()) {
+        for (FileMetadata fileMetadata : fileMetadatas) {
             DataFile dataFile = fileMetadata.getDataFile();
             jab.add(JsonPrinter.json(dataFile, fileMetadata, true));
         }
@@ -149,7 +147,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
     }
     
     @Override
-    public Optional<InputStream> getPrerequisiteInputStream() {
+    public Optional<InputStream> getPrerequisiteInputStream(ExportDataOption... options) {
         return Optional.ofNullable(is);
     }
     
@@ -168,7 +166,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
     private boolean isOnlyDatasetLevelMetadataRequested(ExportDataOption... options) {
         for (ExportDataOption option : options) {
 
-            if (option == ExportDataOption.DatasetOnly) {
+            if (option.isDatasetMetadataOnly()) {
                 return true;
             } 
         }
@@ -181,7 +179,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
 
         for (ExportDataOption option : options) {
 
-            if (option == ExportDataOption.PublicFilesOnly) {
+            if (option.isPublicFilesOnly()) {
                 return true;
             } else {
                 throw new ExportException("Unsupported data export option");
@@ -191,4 +189,5 @@ public class InternalExportDataProvider implements ExportDataProvider {
         // By default, we return the metadata for all files - embargoed, restricted, etc.:
         return false;
     }
+
 }
