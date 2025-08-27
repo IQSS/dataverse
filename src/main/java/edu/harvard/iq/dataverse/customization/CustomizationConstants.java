@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse.customization;
 
+import java.util.List;
+
 /**
  *
  * @author rmp553
@@ -23,5 +25,5 @@ public class CustomizationConstants {
 
     public static String fileTypeLogo = "logo";
 
-
+    public static List<String> validTypes = List.of(fileTypeHomePage, fileTypeHeader, fileTypeFooter, fileTypeStyle, fileTypeAnalytics, fileTypeLogo);
 } // end CustomizationConstants
