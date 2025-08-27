@@ -1912,8 +1912,6 @@ The returned file counts are based on different criteria:
 - Per tabular tag name
 - Per access status (Possible values: Public, Restricted, EmbargoedThenRestricted, EmbargoedThenPublic, RetentionPeriodExpired)
 
-Note: Authentication is required. This call will return a 403/Forbidden response for Guest users.
-
 .. code-block:: bash
 
   export SERVER_URL=https://demo.dataverse.org
@@ -2895,7 +2893,6 @@ Get the size of Downloading all the files of a Dataset Version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Shows the combined size in bytes of all the files available for download from version ``versionId`` of dataset ``id``.
-Note: Authentication is required. This call will return a 403/Forbidden response for Guest users.
 
 .. code-block:: bash
 
@@ -6203,6 +6200,35 @@ The expected OK (200) response looks something like this:
                   "messageText": "Hello, \nWelcome to...",
                   "sentTimestamp": "2025-07-21T19:15:37Z"
               }
+  ...
+
+This endpoint supports an optional query parameter ``inAppNotificationFormat`` which, if sent as ``true``, retrieves the fields needed to build the in-app notifications for the Notifications section of the Dataverse UI, omitting fields related to email notifications.
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all?inAppNotificationFormat=true"
+
+The expected OK (200) response looks something like this:
+
+.. code-block:: text
+
+  {
+      "status": "OK",
+      "data": {
+          "notifications": [
+              {
+                  "id": 79,
+                  "type": "CREATEACC",
+                  "displayAsRead": false,
+                  "sentTimestamp": "2025-08-08T08:00:16Z",
+                  "installationBrandName": "Your Installation Name",
+                  "userGuidesBaseUrl": "https://guides.dataverse.org",
+                  "userGuidesVersion": "6.7.1",
+                  "userGuidesSectionPath": "user/index.html"
+              }
+          ]
+      }
+  }
   ...
 
 Get Unread Count

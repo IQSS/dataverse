@@ -320,6 +320,11 @@ public class IndexServiceBean {
         }
         
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
+
+        if (dataverse.isReleased()) {
+            solrInputDocument.addField(SearchFields.DATASET_COUNT, dataverseService.getDatasetCount(dataverse.getId()));
+        }
+
         docs.add(solrInputDocument);
 
         String status;

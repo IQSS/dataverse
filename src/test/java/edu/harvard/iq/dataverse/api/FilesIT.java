@@ -1440,88 +1440,11 @@ public class FilesIT {
         
         magicControlString = MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"), magicSizeNumber);
         
-        Response datasetDownloadSizeResponse = UtilIT.findDatasetDownloadSize(datasetId.toString(), apiTokenRando, null, null, null);
+        Response datasetDownloadSizeResponse = UtilIT.findDatasetDownloadSize(datasetId.toString());
         datasetDownloadSizeResponse.prettyPrint();
                 
         assertEquals(magicControlString, JsonPath.from(datasetDownloadSizeResponse.body().asString()).getString("data.message"));
         
-    }
-
-    @Test
-    public void testDeaccessionedDatasetGetDownloadSize() {
-        // Create user
-        String apiToken = createUserGetToken();
-        // Create Dataverse
-        String dataverseAlias = createDataverseGetAlias(apiToken);
-        // Create Dataset
-        String datasetId1 = createDatasetGetId(dataverseAlias, apiToken).toString();
-        String datasetId2 = createDatasetGetId(dataverseAlias, apiToken).toString();
-        String pathToFile = "scripts/search/data/binary/trees.png";
-        Response addResponse = UtilIT.uploadFileViaNative(datasetId1, pathToFile, apiToken);
-
-        // Publish
-        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
-        UtilIT.publishDatasetViaNativeApi(datasetId1, "major", apiToken);
-        UtilIT.publishDatasetViaNativeApi(datasetId2, "major", apiToken);
-
-        // Test get sizes from Published Dataset with no files
-        Response datasetDownloadSizeResponse = UtilIT.findDatasetDownloadSize(datasetId2, apiToken, null, Boolean.TRUE, null);
-        datasetDownloadSizeResponse.prettyPrint();
-        datasetDownloadSizeResponse.then().assertThat()
-                .body("data.message", containsString("0 bytes"))
-                .body("data.storageSize", equalTo(0))
-                .statusCode(OK.getStatusCode());
-        // Test get files count from Published Dataset with no files
-        Response datasetFilesCountResponse = UtilIT.findDatasetFilesCount(datasetId2, apiToken, null, Boolean.TRUE);
-        datasetFilesCountResponse.prettyPrint();
-        datasetFilesCountResponse.then().assertThat()
-                .body("data.total", equalTo(0))
-                .statusCode(OK.getStatusCode());
-
-        // Deaccession the Dataset
-        UtilIT.deaccessionDataset(datasetId1, "1.0", "reason", null, apiToken).prettyPrint();
-        UtilIT.deaccessionDataset(datasetId2, "1.0", "reason", null, apiToken).prettyPrint();
-
-        // Test get sizes from Deaccessioned Dataset with files (Auth user)
-        datasetDownloadSizeResponse = UtilIT.findDatasetDownloadSize(datasetId1, apiToken, null, Boolean.TRUE, "Archival");
-        datasetDownloadSizeResponse.prettyPrint();
-        datasetDownloadSizeResponse.then().assertThat()
-                .body("data.message", containsString("8,361 bytes"))
-                .body("data.storageSize", equalTo(8361))
-                .statusCode(OK.getStatusCode());
-        // Test get sizes from Deaccessioned Dataset with files (Guest user)
-        datasetDownloadSizeResponse = UtilIT.findDatasetDownloadSize(datasetId1, null, null, Boolean.TRUE, "Archival");
-        datasetDownloadSizeResponse.prettyPrint();
-        datasetDownloadSizeResponse.then().assertThat()
-                .statusCode(FORBIDDEN.getStatusCode())
-                .body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.auth")));
-
-        // Test get sizes from Deaccessioned Dataset with no files (Auth user)
-        datasetDownloadSizeResponse = UtilIT.findDatasetDownloadSize(datasetId2, apiToken, null, Boolean.TRUE, "Archival");
-        datasetDownloadSizeResponse.prettyPrint();
-        datasetDownloadSizeResponse.then().assertThat()
-                .body("data.message", containsString("0 bytes"))
-                .body("data.storageSize", equalTo(0))
-                .statusCode(OK.getStatusCode());
-        // Test get sizes from Deaccessioned Dataset with no files (Guest user)
-        datasetDownloadSizeResponse = UtilIT.findDatasetDownloadSize(datasetId2, null, null, Boolean.TRUE, "Archival");
-        datasetDownloadSizeResponse.prettyPrint();
-        datasetDownloadSizeResponse.then().assertThat()
-                .statusCode(FORBIDDEN.getStatusCode())
-                .body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.auth")));
-
-        // Test get files count from Deaccessioned Dataset with no files (Auth user)
-        datasetFilesCountResponse = UtilIT.findDatasetFilesCount(datasetId2, apiToken, null, Boolean.TRUE);
-        datasetFilesCountResponse.prettyPrint();
-        datasetFilesCountResponse.then().assertThat()
-                .body("data.total", equalTo(0))
-                .statusCode(OK.getStatusCode());
-        // Test get files count from Deaccessioned Dataset with no files (Guest user)
-        datasetFilesCountResponse = UtilIT.findDatasetFilesCount(datasetId2, null, null, Boolean.TRUE);
-        datasetFilesCountResponse.prettyPrint();
-        datasetFilesCountResponse.then().assertThat()
-                .statusCode(FORBIDDEN.getStatusCode())
-                .body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.auth")));
     }
 
     @Test
@@ -3324,7 +3247,8 @@ public class FilesIT {
         uploadFileResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         String fileId = String.valueOf(JsonPath.from(uploadFileResponse.body().asString()).getInt("data.files[0].dataFile.id"));
-        UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
+
+        assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         // upload a second file should fail since the limit is 1 file per dataset
         pathToFile = "scripts/search/data/tabular/open-source-at-harvard118.dta";
@@ -3345,7 +3269,8 @@ public class FilesIT {
         uploadFileResponse.prettyPrint();
         uploadFileResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
+
+        assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         // Set limit back to 1 even though the number of files is 2
         dv.setDatasetFileCountLimit(1);
@@ -3369,16 +3294,16 @@ public class FilesIT {
         replaceFileResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
+
         // Superuser file uploads can exceed the limit!
         pathToFile = "scripts/search/data/tabular/stata13-auto.dta";
-        uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
-        uploadFileResponse.prettyPrint();
-        uploadFileResponse.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode());
         uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, adminApiToken);
         uploadFileResponse.prettyPrint();
         uploadFileResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
+
+        assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", adminApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         // Test changing the limit by a non-superuser
         dv.setDatasetFileCountLimit(100);

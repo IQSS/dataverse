@@ -1,0 +1,47 @@
+{
+    "field-name": "dansAbrComplex",
+    "term-uri-field": "dansAbrComplex",
+    "cvoc-url": "https://dev.vocabs.datastations.nl/",
+    "js-url": "/custom/skosmos.js",
+    "protocol": "skosmos",
+    "retrieval-uri": "https://dev.vocabs.datastations.nl/rest/v1/data?uri={0}",
+    "term-parent-uri": "https://data.cultureelerfgoed.nl/term/id/abr/e9546020-4b28-4819-b0c2-29e7c864c5c0",
+    "languages": "nl",
+    "allow-free-text": false,
+    "vocabs": {
+      "ABR": {
+        "vocabularyUri": "https://data.cultureelerfgoed.nl/term/id/abr/b6df7840-67bf-48bd-aa56-7ee39435d2ed",
+        "uriSpace": "https://data.cultureelerfgoed.nl/term/id/abr/"
+      }
+    },
+    "managed-fields": {},
+    "retrieval-filtering": {
+      "@context": {
+        "termName": "https://schema.org/name",
+        "vocabularyName": "https://dataverse.org/schema/vocabularyName",
+        "vocabularyUri": "https://dataverse.org/schema/vocabularyUri",
+        "lang": "@language",
+        "value": "@value"
+      },
+      "@id": {
+        "pattern": "{0}",
+        "params": [
+          "@id"
+        ]
+      },
+      "termName": {
+        "pattern": "{0}",
+        "params": [
+          "/graph/uri=@id/prefLabel"
+        ]
+      },
+      "vocabularyName": {
+        "pattern": "ABR complextypen",
+        "params": []
+      },
+      "vocabularyUri": {
+        "pattern": "https://data.cultureelerfgoed.nl/term/id/abr/e9546020-4b28-4819-b0c2-29e7c864c5c0",
+        "params": []
+      }
+    }
+  }

@@ -152,7 +152,7 @@ public class Dataverses extends AbstractApiBean {
             }
 
             AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
-            newDataverse = execCommand(new CreateDataverseCommand(newDataverse, createDataverseRequest(u), facets, inputLevels, metadataBlocks));
+            newDataverse = execCommand(new CreateDataverseCommand(newDataverse, createDataverseRequest(u), facets, inputLevels, metadataBlocks, true));
             return created("/dataverses/" + newDataverse.getAlias(), json(newDataverse));
 
         } catch (WrappedResponse ww) {
@@ -408,9 +408,9 @@ public class Dataverses extends AbstractApiBean {
             ds.setIdentifier(null);
             ds.setProtocol(null);
             ds.setGlobalIdCreateTime(null);
-            Dataset managedDs = null;
+            Dataset managedDs;
             try {
-                managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u), null, validate));
+                managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u), validate, true));
             } catch (WrappedResponse ww) {
                 Throwable cause = ww.getCause();
                 StringBuilder sb = new StringBuilder();
@@ -1693,13 +1693,21 @@ public class Dataverses extends AbstractApiBean {
             List<Dataverse> dvsThisDvHasLinkedToList = dataverseSvc.findDataversesThisIdHasLinkedTo(dv.getId());
             JsonArrayBuilder dvsThisDvHasLinkedToBuilder = Json.createArrayBuilder();
             for (Dataverse dataverse : dvsThisDvHasLinkedToList) {
-                dvsThisDvHasLinkedToBuilder.add(dataverse.getAlias());
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                job.add("id", dataverse.getId());
+                job.add("alias", dataverse.getAlias());
+                job.add("displayName", dataverse.getDisplayName());
+                dvsThisDvHasLinkedToBuilder.add(job);
             }
 
             List<Dataverse> dvsThatLinkToThisDvList = dataverseSvc.findDataversesThatLinkToThisDvId(dv.getId());
             JsonArrayBuilder dvsThatLinkToThisDvBuilder = Json.createArrayBuilder();
             for (Dataverse dataverse : dvsThatLinkToThisDvList) {
-                dvsThatLinkToThisDvBuilder.add(dataverse.getAlias());
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                job.add("id", dataverse.getId());
+                job.add("alias", dataverse.getAlias());
+                job.add("displayName", dataverse.getDisplayName());
+                dvsThatLinkToThisDvBuilder.add(job);
             }
 
             List<Dataset> datasetsThisDvHasLinkedToList = dataverseSvc.findDatasetsThisIdHasLinkedTo(dv.getId());

@@ -1,0 +1,64 @@
+{
+  "@context": {
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "isothes": "http://purl.org/iso25964/skos-thes#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "dct": "http://purl.org/dc/terms/",
+    "dc11": "http://purl.org/dc/elements/1.1/",
+    "uri": "@id",
+    "type": "@type",
+    "lang": "@language",
+    "value": "@value",
+    "graph": "@graph",
+    "label": "rdfs:label",
+    "prefLabel": "skos:prefLabel",
+    "altLabel": "skos:altLabel",
+    "hiddenLabel": "skos:hiddenLabel",
+    "broader": "skos:broader",
+    "narrower": "skos:narrower",
+    "related": "skos:related",
+    "inScheme": "skos:inScheme",
+    "exactMatch": "skos:exactMatch",
+    "closeMatch": "skos:closeMatch",
+    "broadMatch": "skos:broadMatch",
+    "narrowMatch": "skos:narrowMatch",
+    "relatedMatch": "skos:relatedMatch"
+  },
+  "graph": [
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/1b5b4dd1-f4f8-4e4c-9108-a6fb2c606cde",
+      "type": "skos:Concept",
+      "altLabel": {
+        "lang": "nl",
+        "value": "ringwalburcht"
+      },
+      "broader": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/2179d872-888f-4807-a6d5-5e5afaa616c4"
+      },
+      "hiddenLabel": {
+        "lang": "nl",
+        "value": "BEWV.WB"
+      },
+      "prefLabel": {
+        "lang": "nl",
+        "value": "(ring)walburg"
+      },
+      "skos:scopeNote": {
+        "lang": "nl",
+        "value": "Een door een stelsel van wallen en grachten omsloten ronde, ovale of hoefijzervormig ruimte met een binnenterrein met een diameter van ca. 100-300 m. De wallen hebben een gemiddelde hoogte van twee tot vier m. In de meeste gevallen zijn er geen aanwijzingen voor vaste bewoning en zijn er dientengevolge nauwelijks vondsten."
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/2179d872-888f-4807-a6d5-5e5afaa616c4",
+      "type": "skos:Concept",
+      "narrower": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/1b5b4dd1-f4f8-4e4c-9108-a6fb2c606cde"
+      },
+      "prefLabel": {
+        "lang": "nl",
+        "value": "bewoning (inclusief verdediging)"
+      }
+    }
+  ]
+}
