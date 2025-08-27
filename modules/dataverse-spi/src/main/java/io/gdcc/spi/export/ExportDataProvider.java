@@ -38,7 +38,7 @@ public interface ExportDataProvider {
      *          dataset-level metadata along with basic file metadata for each file
      *          in the dataset.
      */
-    JsonObject getDatasetORE();
+    JsonObject getDatasetORE(ExportDataOption... options);
 
     /**
      * Dataverse is capable of extracting DDI-centric metadata from tabular
@@ -53,7 +53,7 @@ public interface ExportDataProvider {
      *          edu.harvard.iq.dataverse.util.json.JSONPrinter classes where this
      *          output is used/generated (respectively).
      */
-    JsonArray getDatasetFileDetails();
+    JsonArray getDatasetFileDetails(ExportDataOption... options);
 
     /**
      * Similar to the above, but 
@@ -78,7 +78,7 @@ public interface ExportDataProvider {
      *          a starting point for an Exporter if it simplifies your exporter
      *          relative to using the JSON or OAI_ORE exports.
      */
-    JsonObject getDatasetSchemaDotOrg();
+    JsonObject getDatasetSchemaDotOrg(ExportDataOption... options);
 
     /**
      * 
@@ -88,7 +88,7 @@ public interface ExportDataProvider {
      *          a starting point for an Exporter if it simplifies your exporter
      *          relative to using the JSON or OAI_ORE exports.
      */
-    String getDataCiteXml();
+    String getDataCiteXml(ExportDataOption... options);
 
     /**
      * If an Exporter has specified a prerequisite format name via the
@@ -108,13 +108,8 @@ public interface ExportDataProvider {
      *          Exporter is configured to replace the internal ddi Exporter in
      *          Dataverse.
      */
-    default Optional<InputStream> getPrerequisiteInputStream() {
+    default Optional<InputStream> getPrerequisiteInputStream(ExportDataOption... options) {
         return Optional.empty();
     }
-    
-    public enum ExportDataOption {
-        DatasetMetadataOnly,
-        PublicFilesOnly;
-    }
-
-}
+   
+ }
