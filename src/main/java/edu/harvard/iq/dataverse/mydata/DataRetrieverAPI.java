@@ -126,8 +126,9 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
     private void verifyAuth (ContainerRequestContext crc, String userIdentifier) throws WrappedResponse {
         // Handle calls from JSF where the User is in the session
+        boolean requiresApiKey = getRequestApiKey() != null;
         User requestUser = getRequestUser(crc);
-        if (session != null && session.getUser() != null && requestUser instanceof GuestUser) {
+        if (!requiresApiKey && session != null && session.getUser() != null && requestUser instanceof GuestUser) {
             searchUser = authUser = (AuthenticatedUser) session.getUser();
             if (!authUser.isAuthenticated()) {
                 throw new WrappedResponse(authenticatedUserRequired());
