@@ -347,7 +347,9 @@ public abstract class AbstractPidProvider implements PidProvider {
         
         if(isCaseInsensitive) {
             identifier = identifier.toUpperCase();
-            comparableShoulder = comparableShoulder.toUpperCase();
+            if(comparableShoulder != null) {
+                comparableShoulder = comparableShoulder.toUpperCase();
+            }
         }
         // Check authority/identifier if this is a provider that manages specific
         // identifiers
