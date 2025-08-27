@@ -2129,30 +2129,70 @@ public class DatasetVersion implements Serializable {
         }
 
         List<FileMetadata> fileMetadatasSorted = getFileMetadatasSorted();
+
         if (fileMetadatasSorted != null && !fileMetadatasSorted.isEmpty()) {
-            JsonArrayBuilder fileArray = Json.createArrayBuilder();
-            String dataverseSiteUrl = SystemConfig.getDataverseSiteUrlStatic();
-            for (FileMetadata fileMetadata : fileMetadatasSorted) {
-                JsonObjectBuilder fileObject = NullSafeJsonBuilder.jsonObjectBuilder();
-                String filePidUrlAsString = null;
-                GlobalId gid = fileMetadata.getDataFile().getGlobalId();
-                filePidUrlAsString = gid != null ? gid.asURL() : null;
-                fileObject.add("@type", "DataDownload");
-                fileObject.add("name", fileMetadata.getLabel());
-                fileObject.add("encodingFormat", fileMetadata.getDataFile().getContentType());
-                fileObject.add("contentSize", fileMetadata.getDataFile().getFilesize());
-                fileObject.add("description", MarkupChecker.stripAllTags(fileMetadata.getDescription()));
-                fileObject.add("@id", filePidUrlAsString);
-                fileObject.add("identifier", filePidUrlAsString);
-                boolean hideFilesBoolean = JvmSettings.HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS.lookupOptional(Boolean.class).orElse(false);
-                if (!hideFilesBoolean) {
-                    String nullDownloadType = null;
-                    fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false, fileMetadata.getId()));
+            Integer maxFilesForDownloadEntries = JvmSettings.EXPORTS_SCHEMA_DOT_ORG_MAX_FILES_FOR_DOWNLOAD_ENTRIES.lookupOptional(Integer.class).orElse(Integer.MAX_VALUE);
+            if (fileMetadatasSorted.size() <= maxFilesForDownloadEntries) {
+
+                JsonArrayBuilder fileArray = Json.createArrayBuilder();
+                String dataverseSiteUrl = SystemConfig.getDataverseSiteUrlStatic();
+                for (FileMetadata fileMetadata : fileMetadatasSorted) {
+                    JsonObjectBuilder fileObject = NullSafeJsonBuilder.jsonObjectBuilder();
+                    String filePidUrlAsString = null;
+                    GlobalId gid = fileMetadata.getDataFile().getGlobalId();
+                    filePidUrlAsString = gid != null ? gid.asURL() : null;
+                    fileObject.add("@type", "DataDownload");
+                    fileObject.add("name", fileMetadata.getLabel());
+                    fileObject.add("encodingFormat", fileMetadata.getDataFile().getContentType());
+                    fileObject.add("contentSize", fileMetadata.getDataFile().getFilesize());
+                    fileObject.add("description", MarkupChecker.stripAllTags(fileMetadata.getDescription()));
+                    fileObject.add("@id", filePidUrlAsString);
+                    fileObject.add("identifier", filePidUrlAsString);
+                    boolean hideFilesBoolean = JvmSettings.HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS.lookupOptional(Boolean.class).orElse(false);
+                    if (!hideFilesBoolean) {
+                        String nullDownloadType = null;
+                        fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false, fileMetadata.getId()));
+                    }
+                    fileArray.add(fileObject);
                 }
-                fileArray.add(fileObject);
+                job.add("distribution", fileArray);
+            } else {
+                // If we have too many files, we don't include individual distribution entries
+                // but we can still provide a search action for file downloads
+                StringBuilder valuePattern = new StringBuilder();
+                boolean first = true;
+
+                // Build the pattern of all file IDs joined with OR operator
+                for (FileMetadata fileMetadata : fileMetadatas) {
+                    if (!first) {
+                        valuePattern.append("|");
+                    } else {
+                        first = false;
+                    }
+                    valuePattern.append(fileMetadata.getDataFile().getId());
+                }
+
+                // Create the potentialAction object
+                JsonObjectBuilder potentialAction = Json.createObjectBuilder()
+                        .add("@type", "SearchAction")
+                        .add("target", Json.createObjectBuilder()
+                                .add("@type", "EntryPoint")
+                                .add("contentType", Json.createArrayBuilder().add("*/*"))
+                                .add("urlTemplate", SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/{fileId}")
+                                .add("description", "Download each file from the dataset based on file id")
+                                .add("httpMethod", Json.createArrayBuilder().add("GET")))
+                        .add("query-input", Json.createArrayBuilder()
+                                .add(Json.createObjectBuilder()
+                                        .add("@type", "PropertyValueSpecification")
+                                        .add("valueName", "fileId")
+                                        .add("description", "Id of the desired file")
+                                        .add("valueRequired", true)
+                                        .add("valuePattern", "(" + valuePattern.toString() + ")")));
+
+                job.add("potentialAction", potentialAction);
             }
-            job.add("distribution", fileArray);
         }
+
         jsonLd = job.build().toString();
 
         //Most fields above should be stripped/sanitized but, since this is output in the dataset page as header metadata, do a final sanitize step to make sure
