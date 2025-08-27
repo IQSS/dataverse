@@ -1,0 +1,1 @@
+The styled citations available through the "View Styled Citations" menu were including extra characters, e.g. 'doi:' in the URL form of the PIDs in the citation. This is now fixed.
