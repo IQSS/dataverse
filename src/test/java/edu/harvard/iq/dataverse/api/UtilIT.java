@@ -2911,9 +2911,13 @@ public class UtilIT {
     }
 
     static Response getStorageDriver(String dvAlias, String apiToken) {
+        return getStorageDriver(dvAlias, apiToken, null);
+    }
+    static Response getStorageDriver(String dvAlias, String apiToken, Boolean defaultToOwner) {
+        String params = defaultToOwner != null ? "?defaultToOwner=" + defaultToOwner : "";
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/admin/dataverse/" + dvAlias + "/storageDriver");
+                .get("/api/admin/dataverse/" + dvAlias + "/storageDriver" + params);
     }
 
     static Response setStorageDriver(String dvAlias, String label, String apiToken) {

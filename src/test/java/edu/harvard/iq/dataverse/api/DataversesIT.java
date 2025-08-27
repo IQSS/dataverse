@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -2373,13 +2374,21 @@ public class DataversesIT {
 
     @Test
     public void testGetStorageDriver() {
-        Response updatedStorageDriver = UtilIT.getStorageDriver("root", getSuperuserToken());
+        Response updatedStorageDriver = UtilIT.getStorageDriver("root", getSuperuserToken(), Boolean.TRUE);
         updatedStorageDriver.prettyPrint();
         updatedStorageDriver.then().assertThat()
                 .body("data.name", CoreMatchers.notNullValue())
                 .body("data.type", CoreMatchers.notNullValue())
                 .body("data.label", CoreMatchers.notNullValue())
                 .body("data.directUpload", CoreMatchers.nullValue())
+                .body("data.directDownload", CoreMatchers.nullValue())
+                .statusCode(200);
+
+        // Root without default is undefined
+        updatedStorageDriver = UtilIT.getStorageDriver("root", getSuperuserToken(), null);
+        updatedStorageDriver.prettyPrint();
+        updatedStorageDriver.then().assertThat()
+                .body("data.name", CoreMatchers.equalTo(DataAccess.UNDEFINED_STORAGE_DRIVER_IDENTIFIER))
                 .statusCode(200);
     }
 

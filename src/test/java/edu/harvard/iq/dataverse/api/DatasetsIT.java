@@ -6088,10 +6088,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data.type", CoreMatchers.notNullValue())
                 .body("data.label", CoreMatchers.notNullValue())
                 .body("data.directUpload", CoreMatchers.notNullValue())
+                .body("data.directDownload", CoreMatchers.notNullValue())
                 .statusCode(OK.getStatusCode());
 
         // Test dataset under root with default storage driver
-        Response getStorageDriverResponse = UtilIT.getStorageDriver("root", apiToken);
+        Response getStorageDriverResponse = UtilIT.getStorageDriver("root", apiToken, Boolean.TRUE);
         getStorageDriverResponse.prettyPrint();
         data = JsonUtil.getJsonObject(getStorageDriverResponse.getBody().asString());
         name = data.getJsonObject("data").getString("name");
@@ -6107,6 +6108,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data.type", CoreMatchers.equalTo(type))
                 .body("data.label", CoreMatchers.equalTo(label))
                 .body("data.directUpload", CoreMatchers.notNullValue())
+                .body("data.directDownload", CoreMatchers.notNullValue())
                 .statusCode(OK.getStatusCode());
     }
 
