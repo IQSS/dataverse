@@ -145,6 +145,12 @@ experience.
 .. _quickstart: https://docs.datalad.org/projects/dataverse/en/latest/settingup.html
 .. _tutorial: https://docs.datalad.org/projects/dataverse/en/latest/tutorial.html
 
+.. _ood-upload:
+
+Open OnDemand
++++++++++++++
+
+`Open OnDemand <https://openondemand.org>`_ is a web frontend to High Performance Computing (HPC) resources. Through a system called `OnDemand Loop <https://github.com/IQSS/ondemand-loop>`_, developed at IQSS, researchers can create datasets in Dataverse and upload files to them from their Open OnDemand installation. They can also :ref:`download <ood-download>` files from Dataverse.
 
 Embedding Data on Websites
 --------------------------
@@ -219,6 +225,13 @@ Rclone
 `Rclone <https://rclone.org>`_ ("rsync for cloud storage") is a command-line program to sync files and directories to and from different cloud storage providers.
 
 Rclone v1.70+ supports listing and downloading files from Dataverse datasets. For details, consult the Rclone `DOI remote <https://rclone.org/doi/>`_ documentation and the `discussion <https://groups.google.com/g/dataverse-community/c/IoxF85arJhA/m/QFD6vP-bBQAJ>`_ on the Dataverse mailing list.
+
+.. _ood-download:
+
+Open OnDemand
++++++++++++++
+
+`Open OnDemand <https://openondemand.org>`_ is a web frontend to High Performance Computing (HPC) resources. Through a system called `OnDemand Loop <https://github.com/IQSS/ondemand-loop>`_, developed at IQSS, researchers can click a button to explore a dataset (if the :doc:`external tool </admin/external-tools>` has been enabled) or discover and download datasets from Dataverse installations from around the world (and other data repositories) in their Open OnDemand computational environment. From that environment they can also :ref:`create datasets <ood-upload>` in Dataverse and upload files.
 
 .. _integrations-discovery:
 
