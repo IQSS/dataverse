@@ -1780,17 +1780,17 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/{type}/linkingDataverses")
     public Response getLinkingDataverseList(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("searchTerm") String searchTerm, @PathParam("type") String type) {
         //first determine what you are linking based on identifier and type
-        
-            AuthenticatedUser requestUser = (AuthenticatedUser) getRequestUser(crc);
-            DataverseRequest dvReq = new DataverseRequest(requestUser, (IpAddress) null);
-            List<Dataverse> dataversesForLinking;
-            dataversesForLinking = permissionService.findPermittedCollections(dvReq, requestUser, Permission.LinkDataset);
 
         try {
 
             DvObject dvObject = findDvoByIdAndTypeOrDie(dvIdtf, type, false);
             List<Dataverse> dataversesForLinkingSearch = new ArrayList();
-            dataversesForLinkingSearch = dataverseService.filterDataversesByNameAliasPattern(searchTerm);
+            dataversesForLinkingSearch = dataverseService.filterDataversesByNamePattern(searchTerm);            
+                    
+            AuthenticatedUser requestUser = (AuthenticatedUser) getRequestUser(crc);
+            DataverseRequest dvReq = new DataverseRequest(requestUser, (IpAddress) null);
+            List<Dataverse> dataversesForLinking;
+            dataversesForLinking = permissionService.findPermittedCollections(dvReq, requestUser, Permission.LinkDataset);
 
             List<Dataverse> mergedWithSearch = new ArrayList<>();
             dataversesForLinking = dataverseService.removeUnlinkableDataverses(dataversesForLinking, dvObject);
