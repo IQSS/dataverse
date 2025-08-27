@@ -601,7 +601,7 @@ public abstract class AbstractApiBean {
      * @throws WrappedResponse
      */
     @NotNull
-    protected DvObject findDvoByIdAndTypeOrDie(@NotNull final String dvIdtf, String type) throws WrappedResponse {
+    protected DvObject findDvoByIdAndTypeOrDie(@NotNull final String dvIdtf, String type, Boolean testForReleased) throws WrappedResponse {
         try {
             DataverseFeaturedItem.TYPES dvType = DataverseFeaturedItem.getDvType(type);
             DvObject dvObject = null;
@@ -634,7 +634,9 @@ public abstract class AbstractApiBean {
                     }
                 }
             }
-            DataverseFeaturedItem.validateTypeAndDvObject(dvIdtf, dvObject, dvType);
+            if (testForReleased){
+                DataverseFeaturedItem.validateTypeAndDvObject(dvIdtf, dvObject, dvType);
+            }
             return dvObject;
         } catch (IllegalArgumentException e) {
             throw new WrappedResponse(error(Response.Status.BAD_REQUEST, e.getMessage()));

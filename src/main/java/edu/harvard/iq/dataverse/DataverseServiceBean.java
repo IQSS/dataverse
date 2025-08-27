@@ -687,6 +687,57 @@ public class DataverseServiceBean implements java.io.Serializable {
         return searchResults;
     }
     
+    /* 
+        This method takes a search parameter and expands it into a list of 
+        Dataverses with matching names. 
+        The search is performed on the name with the trailing word "dataverse"
+        stripped (if present). This way the search on "data" (or on "da" pr 
+        "dat") does NOT return almost every dataverse in the database - since
+        most of them have names that end in "... Dataverse". 
+        The query isn't pretty, but it works, and it's still EJB QL (and NOT a 
+        native query). 
+    */
+    public List<Dataverse> filterDataversesByNameAliasPattern(String pattern) {
+
+        pattern = pattern.toLowerCase();
+        
+        String pattern1 = pattern + "%";
+        String pattern2 = "% " + pattern + "%";
+
+        // Adjust the queries for very short, 1 and 2-character patterns:
+        if (pattern.length() == 1) {
+            pattern1 = pattern;
+            pattern2 = pattern + " %";
+        } 
+        /*if (pattern.length() == 2) {
+            pattern2 = pattern + "%";
+        }*/
+        
+        
+        String qstr = "select dv from Dataverse dv "
+                + "where (LOWER(dv.name) LIKE :dataverse and ((SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE :pattern1) "
+                + "     or (SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE :pattern2))) "
+                + "or (LOWER(dv.name) NOT LIKE :dataverse and ((LOWER(dv.name) LIKE :pattern1) "
+                + "     or (LOWER(dv.name) LIKE :pattern2)) "
+                + "or (LOWER(dv.alias)   LIKE :pattern1) "
+                + "     or (LOWER(dv.alias) LIKE :pattern2))) "
+                + "order by dv.alias";
+                
+        List<Dataverse> searchResults = null;
+        
+        try {
+            searchResults = em.createQuery(qstr, Dataverse.class)
+                    .setParameter("dataverse", "%dataverse")
+                    .setParameter("pattern1", pattern1)
+                    .setParameter("pattern2", pattern2)
+                    .getResultList();
+        } catch (Exception ex) {
+            searchResults = null;
+        }
+        
+        return searchResults;
+    }
+    
     /**
      * Used to identify and properly display Harvested objects on the dataverse page.
      * 

@@ -157,7 +157,7 @@ public class PermissionServiceBean {
                        AND @IPRANGESQL
                      )
                   )
-                ) AND ((LOWER(DATAVERSE.alias) LIKE '%@SEARCHTERM%') OR (LOWER(DATAVERSE.name) LIKE '%@SEARCHTERM%') OR (LOWER(DATAVERSE.affiliation) LIKE '%@SEARCHTERM%')) 
+                ) 
             """;
     /**
      * A request-level permission query (e.g includes IP ras).
@@ -922,15 +922,8 @@ public class PermissionServiceBean {
         return findPermittedCollections(request, user, 1 << permission.ordinal());
     }
     
-    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, Permission permission, String searchTerm) {
-        return findPermittedCollections(request, user, 1 << permission.ordinal(), searchTerm);
-    }
-
-    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit) {
-         return findPermittedCollections(request, user, permissionBit, "");
-    }
     
-    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit, String searchTerm) {
+    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit) {
         if (user != null) {
             // IP Group - Only check IP if a User is calling for themself
             String ipRangeSQL = "FALSE";
@@ -962,8 +955,7 @@ public class PermissionServiceBean {
             String sqlCode = LIST_ALL_DATAVERSES_USER_HAS_PERMISSION
                     .replace("@USERID", String.valueOf(user.getId()))
                     .replace("@PERMISSIONBIT", String.valueOf(permissionBit))
-                    .replace("@IPRANGESQL", ipRangeSQL)
-                    .replace("@SEARCHTERM", searchTerm);
+                    .replace("@IPRANGESQL", ipRangeSQL);
             return em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
         }
         return null;

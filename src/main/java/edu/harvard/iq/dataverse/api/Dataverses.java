@@ -70,6 +70,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.StreamingOutput;
+import java.sql.PreparedStatement;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -120,7 +121,7 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
-
+    
     @POST
     @AuthRequired
     public Response addRoot(@Context ContainerRequestContext crc, String body) {
@@ -1777,37 +1778,41 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{identifier}/{type}/linkingDataverses")
-    public Response getLinkingDataverseList(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("searchTerm") String searchTerm, @PathParam("type") String type){
+    public Response getLinkingDataverseList(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("searchTerm") String searchTerm, @PathParam("type") String type) {
         //first determine what you are linking based on identifier and type
+        
+            AuthenticatedUser requestUser = (AuthenticatedUser) getRequestUser(crc);
+            DataverseRequest dvReq = new DataverseRequest(requestUser, (IpAddress) null);
+            List<Dataverse> dataversesForLinking;
+            dataversesForLinking = permissionService.findPermittedCollections(dvReq, requestUser, Permission.LinkDataset);
 
         try {
-            DvObject dvObject = findDvoByIdAndTypeOrDie(dvIdtf, type);
-           // List<Dataverse> dataversesForLinking = dataverseService.filterDataversesForLinking(searchTerm, createDataverseRequest(getRequestUser(crc)), dvObject);
-           // public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, Permission permission, String searchTerm) {
-   
-           AuthenticatedUser requestUser = (AuthenticatedUser)getRequestUser(crc);
-           List<Dataverse> dataversesForLinking = new ArrayList<>();
-  
-           if ((dvObject instanceof Dataset)) {
-               dataversesForLinking = permissionService.findPermittedCollections( new DataverseRequest(requestUser, (IpAddress) null), requestUser, Permission.LinkDataset, searchTerm);
-           } else {
-               dataversesForLinking = permissionService.findPermittedCollections( new DataverseRequest(requestUser, (IpAddress) null), requestUser, Permission.LinkDataverse, searchTerm);
 
-           }
-               
-           dataversesForLinking = dataverseService.removeUnlinkableDataverses(dataversesForLinking, dvObject);
-           JsonArrayBuilder dvBuilder = Json.createArrayBuilder();
-            if (dataversesForLinking != null && !dataversesForLinking.isEmpty()) {
+            DvObject dvObject = findDvoByIdAndTypeOrDie(dvIdtf, type, false);
+            List<Dataverse> dataversesForLinkingSearch = new ArrayList();
+            dataversesForLinkingSearch = dataverseService.filterDataversesByNameAliasPattern(searchTerm);
+
+            List<Dataverse> mergedWithSearch = new ArrayList<>();
+            dataversesForLinking = dataverseService.removeUnlinkableDataverses(dataversesForLinking, dvObject);
+            if (!dataversesForLinkingSearch.isEmpty()) {
                 for (Dataverse dv : dataversesForLinking) {
+                    if (dataversesForLinkingSearch.contains(dv)) {
+                        mergedWithSearch.add(dv);
+                    }
+                }
+            }
+            JsonArrayBuilder dvBuilder = Json.createArrayBuilder();
+            if (!mergedWithSearch.isEmpty()) {
+                for (Dataverse dv : mergedWithSearch) {
                     dvBuilder.add(json(dv, true));
                 }
             }
-            return ok(dvBuilder);       
+            return ok(dvBuilder);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
-        } catch (Exception e){
+        } catch (Exception e) {
             return error(Status.BAD_REQUEST, e.getLocalizedMessage());
-            
+
         }
     }
     
@@ -1852,7 +1857,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             dataverse = findDataverseOrDie(dvIdtf);
             if (dvObjectIdtf != null) {
-                dvObject = findDvoByIdAndTypeOrDie(dvObjectIdtf, type);
+                dvObject = findDvoByIdAndTypeOrDie(dvObjectIdtf, type, true);
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -1940,7 +1945,7 @@ public class Dataverses extends AbstractApiBean {
 
                 // ignore dvObject if the id is missing or an empty string
                 DvObject dvObject = dvObjectIdtf.get(i) != null && !dvObjectIdtf.get(i).isEmpty()
-                        ? findDvoByIdAndTypeOrDie(dvObjectIdtf.get(i), types.get(i)) : null;
+                        ? findDvoByIdAndTypeOrDie(dvObjectIdtf.get(i), types.get(i), true) : null;
                 if (ids.get(i) == 0) {
                     newItems.add(NewDataverseFeaturedItemDTO.fromFormData(
                             contents.get(i), displayOrders.get(i), fileInputStream, contentDisposition, types.get(i), dvObject));
