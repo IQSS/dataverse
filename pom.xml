@@ -31,7 +31,7 @@
         <auto-service.version>1.1.1</auto-service.version>
         <jhove.version>1.20.1</jhove.version>
         <poi.version>5.4.0</poi.version>
-        <tika.version>3.1.0</tika.version>
+        <tika.version>3.2.2</tika.version>
         <netcdf.version>5.5.3</netcdf.version>
         
         <openapi.infoTitle>Dataverse API</openapi.infoTitle>
