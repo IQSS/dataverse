@@ -1603,9 +1603,10 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder jsonTermsOfUseAndAccess(TermsOfUseAndAccess termsOfUseAndAccess) {
+        License license = termsOfUseAndAccess.getLicense();
         return jsonObjectBuilder()
                 .add("id", termsOfUseAndAccess.getId())
-                .add("license", json(termsOfUseAndAccess.getLicense()))
+                .add("license", license != null ? json(license) : null)
                 .add("termsOfUse", termsOfUseAndAccess.getTermsOfUse())
                 .add("termsOfAccess", termsOfUseAndAccess.getTermsOfAccess())
                 .add("confidentialityDeclaration", termsOfUseAndAccess.getConfidentialityDeclaration())
