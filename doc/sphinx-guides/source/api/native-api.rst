@@ -735,7 +735,7 @@ Note: you must have "Add Dataset" permission in the given collection to invoke t
 List Dataverse Collections to which a given Dataset or Dataverse Collection may be linked
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The user may provide a search term to limit the list of Dataverse Collections returned. The search term will be compared to the name of the Dataverse Collections and must include the beginning of the Dataverse Collections' names.
+The user may provide a search term to limit the list of Dataverse Collections returned. The search term will be compared to the name of the Dataverse Collections.
 The response is a JSON array of the ids, aliases, and names of the Dataverse collections to which a given Dataset or Dataverse Collection may be linked:
 
 For a given Dataverse Collection:
