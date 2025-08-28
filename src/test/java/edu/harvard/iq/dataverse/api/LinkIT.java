@@ -121,6 +121,7 @@ public class LinkIT {
         Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse2.prettyPrint();
         String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
+        Integer dataverseId2 = UtilIT.getDataverseIdFromResponse(createDataverseResponse2);
 
         Response createLinkingDataverseResponse = UtilIT.createDataverseLink(dataverseAlias, dataverseAlias2, apiToken);
         createLinkingDataverseResponse.prettyPrint();
@@ -138,12 +139,16 @@ public class LinkIT {
         getLinksResponse.prettyPrint();
         getLinksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.dataversesLinkingToThis[0]", equalTo(dataverseAlias2));
+                .body("data.dataversesLinkingToThis[0].id", equalTo(dataverseId2))
+                .body("data.dataversesLinkingToThis[0].alias", equalTo(dataverseAlias2))
+                .body("data.dataversesLinkingToThis[0].displayName", equalTo(dataverseAlias2));
         getLinksResponse = UtilIT.getDataverseLinks(dataverseAlias2, apiToken);
         getLinksResponse.prettyPrint();
         getLinksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.linkedDataverses[0]", equalTo(dataverseAlias));
+                .body("data.linkedDataverses[0].id", equalTo(dataverseId))
+                .body("data.linkedDataverses[0].alias", equalTo(dataverseAlias))
+                .body("data.linkedDataverses[0].displayName", equalTo(dataverseAlias));
 
         Response deleteLinkingDataverseResponse = UtilIT.deleteDataverseLink(dataverseAlias, dataverseAlias2, apiToken);
         deleteLinkingDataverseResponse.prettyPrint();
