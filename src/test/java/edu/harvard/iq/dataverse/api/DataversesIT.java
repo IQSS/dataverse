@@ -724,7 +724,14 @@ public class DataversesIT {
         getLinkableDataversesForDataversePartial.prettyPrint();
                 getLinkableDataversesForDataversePartial.then().assertThat()
                 .statusCode(OK.getStatusCode())                
-                .body("data[0].alias", equalTo(dataverseAliasForLinking));  
+                .body("data[0].alias", equalTo(dataverseAliasForLinking));
+        
+        //if I give a blank search term i should get the one that I have perms on        
+        Response getLinkableDataversesForDataverseBlank = UtilIT.getLinkableDataverses("dataverse", dataverseAlias, apiToken, "");
+        getLinkableDataversesForDataverseBlank.prettyPrint();
+                getLinkableDataversesForDataverseBlank.then().assertThat()
+                .statusCode(OK.getStatusCode())                
+                .body("data[0].alias", equalTo(dataverseAliasForLinking));          
                 
                 
         //Try with empty string search term        

@@ -1785,8 +1785,7 @@ public class Dataverses extends AbstractApiBean {
 
             DvObject dvObject = findDvoByIdAndTypeOrDie(dvIdtf, type, false);
             List<Dataverse> dataversesForLinkingSearch = new ArrayList();
-            dataversesForLinkingSearch = dataverseService.filterDataversesByNamePattern(searchTerm);            
-                    
+            
             AuthenticatedUser requestUser = (AuthenticatedUser) getRequestUser(crc);
             DataverseRequest dvReq = new DataverseRequest(requestUser, (IpAddress) null);
             List<Dataverse> dataversesForLinking;
@@ -1794,13 +1793,22 @@ public class Dataverses extends AbstractApiBean {
 
             List<Dataverse> mergedWithSearch = new ArrayList<>();
             dataversesForLinking = dataverseService.removeUnlinkableDataverses(dataversesForLinking, dvObject);
-            if (!dataversesForLinkingSearch.isEmpty()) {
-                for (Dataverse dv : dataversesForLinking) {
-                    if (dataversesForLinkingSearch.contains(dv)) {
-                        mergedWithSearch.add(dv);
+            
+            //Only do search lookup if search term is there. Otherwise just include the collections based on perms
+            if (!searchTerm.isEmpty()) {
+                dataversesForLinkingSearch = dataverseService.filterDataversesByNamePattern(searchTerm);
+                if (!dataversesForLinkingSearch.isEmpty()) {
+                    for (Dataverse dv : dataversesForLinking) {
+                        if (dataversesForLinkingSearch.contains(dv)) {
+                            mergedWithSearch.add(dv);
+                        }
                     }
                 }
+            } else {
+                //search term empty then add all based on perms
+                mergedWithSearch.addAll(dataversesForLinking);
             }
+            
             JsonArrayBuilder dvBuilder = Json.createArrayBuilder();
             if (!mergedWithSearch.isEmpty()) {
                 for (Dataverse dv : mergedWithSearch) {
