@@ -510,15 +510,15 @@ public class DataverseServiceBean implements java.io.Serializable {
         List<Dataverse> dataverseList = new ArrayList<>();
 
         List<Dataverse> results = filterDataversesByNamePattern(query);
-        
+
         if (results == null || results.isEmpty()) {
-            return null; 
+            return null;
         }
-        
+
         Dataset linkedDataset = null;
         Dataverse linkedDataverse = null;
         List<Object> alreadyLinkeddv_ids;
-        
+
         if ((dvo instanceof Dataset)) {
             linkedDataset = (Dataset) dvo;
             alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM datasetlinkingdataverse WHERE dataset_id = " + linkedDataset.getId()).getResultList();
@@ -527,22 +527,22 @@ public class DataverseServiceBean implements java.io.Serializable {
             alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM dataverselinkingdataverse WHERE dataverse_id = " + linkedDataverse.getId()).getResultList();
         }
 
-         List<Dataverse> remove = new ArrayList<>();
+        List<Dataverse> remove = new ArrayList<>();
 
         if (alreadyLinkeddv_ids != null && !alreadyLinkeddv_ids.isEmpty()) {
             alreadyLinkeddv_ids.stream().map((testDVId) -> this.find(testDVId)).forEachOrdered((removeIt) -> {
                 remove.add(removeIt);
             });
         }
-        
-        if (dvo instanceof Dataverse dataverse){
+
+        if (dvo instanceof Dataverse dataverse) {
             remove.add(dataverse);
         }
-        
+
         for (Dataverse res : results) {
             if (!remove.contains(res)) {
                 if ((linkedDataset != null && this.permissionService.requestOn(req, res).has(Permission.LinkDataset))
-                       || (linkedDataverse != null && this.permissionService.requestOn(req, res).has(Permission.LinkDataverse))) {
+                        || (linkedDataverse != null && this.permissionService.requestOn(req, res).has(Permission.LinkDataverse))) {
                     dataverseList.add(res);
                 }
             }
@@ -550,44 +550,43 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         return dataverseList;
     }
-    
-    
-    public List<Dataverse> removeUnlinkableDataverses (List<Dataverse> allWithPerms, DvObject dvo){
+
+    public List<Dataverse> removeUnlinkableDataverses(List<Dataverse> allWithPerms, DvObject dvo) {
         List<Dataverse> dataverseList = new ArrayList<>();
         Dataset linkedDataset = null;
         Dataverse linkedDataverse = null;
         List<Object> alreadyLinkeddv_ids;
-        
+
         if ((dvo instanceof Dataset)) {
             linkedDataset = (Dataset) dvo;
-            alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM datasetlinkingdataverse WHERE dataset_id = " + linkedDataset.getId()).getResultList();
+            alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id FROM datasetlinkingdataverse WHERE dataset_id = " + linkedDataset.getId()).getResultList();
         } else {
             linkedDataverse = (Dataverse) dvo;
-            alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM dataverselinkingdataverse WHERE dataverse_id = " + linkedDataverse.getId()).getResultList();
+            alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id FROM dataverselinkingdataverse WHERE dataverse_id = " + linkedDataverse.getId()).getResultList();
         }
 
-         List<Dataverse> remove = new ArrayList<>();
+        List<Dataverse> remove = new ArrayList<>();
 
         if (alreadyLinkeddv_ids != null && !alreadyLinkeddv_ids.isEmpty()) {
             alreadyLinkeddv_ids.stream().map((testDVId) -> this.find(testDVId)).forEachOrdered((removeIt) -> {
                 remove.add(removeIt);
             });
         }
-        
-        if (dvo instanceof Dataverse dataverse){
+
+        if (dvo instanceof Dataverse dataverse) {
             remove.add(dataverse);
-        }  else {
+        } else {
             //dataset is always owned by a dataverse
-            remove.add((Dataverse)dvo.getOwner());
+            remove.add((Dataverse) dvo.getOwner());
         }
-        
+
         for (Dataverse res : allWithPerms) {
             if (!remove.contains(res)) {
-                   dataverseList.add(res);
+                dataverseList.add(res);
             }
         }
-        
-       return dataverseList; 
+
+        return dataverseList;
     }
     
   
