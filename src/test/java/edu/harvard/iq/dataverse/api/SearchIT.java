@@ -2391,13 +2391,16 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode());
 
         // Clean up - delete dataset, dataverse, and user
-        try {
+
             // Delete the dataset
             Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
             deleteDatasetResponse.prettyPrint();
             deleteDatasetResponse.then().assertThat()
                     .statusCode(OK.getStatusCode());
 
+            Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
+            assertEquals(200, makeSuperUser.getStatusCode());
+            
             // Delete the dataverse
             Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
             deleteDataverseResponse.prettyPrint();
@@ -2409,10 +2412,6 @@ public class SearchIT {
             deleteUserResponse.prettyPrint();
             deleteUserResponse.then().assertThat()
                     .statusCode(OK.getStatusCode());
-        } catch (Exception e) {
-            // Log any cleanup failures but don't fail the test
-            System.out.println("Error during cleanup: " + e.getMessage());
-        }
     }
 
 }
