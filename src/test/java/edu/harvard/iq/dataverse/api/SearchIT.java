@@ -2377,7 +2377,7 @@ public class SearchIT {
         Integer fileId = JsonPath.from(uploadFileResponse.getBody().asString()).getInt("data.files[0].dataFile.id");
 
         // Wait for indexing to complete
-        String searchQuery = "parentId:" + fileId;
+        String searchQuery = "entityId:" + fileId;
         assertTrue(UtilIT.sleepForSearch(searchQuery, apiToken, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), 
                    "Failed test if search exceeds max duration " + searchQuery);
 
