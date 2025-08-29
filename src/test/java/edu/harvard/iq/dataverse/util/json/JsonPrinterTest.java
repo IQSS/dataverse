@@ -495,11 +495,9 @@ public class JsonPrinterTest {
         JsonObjectBuilder job = JsonPrinter.jsonArray(collections);
         JsonObject result = job.build();
         assertNotNull(result);
-        System.out.println(result);
         assertEquals(10, result.getInt("count"));
         JsonArray items = result.getJsonArray("items");
         JsonObject item6 = items.getJsonObject(6);
-        System.out.println(item6);
         assertEquals(6, item6.getInt("id"));
         assertEquals("Alias6", item6.getString("name"));
         assertEquals("alias6", item6.getString("alias"));

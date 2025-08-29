@@ -126,13 +126,21 @@ public class DataRetrieverAPI extends AbstractApiBean {
         // Handle calls from JSF where the User is in the session
         // Must use api key if the token is present
         boolean requiresApiKey = getRequestApiKey() != null;
+        logger.severe(">>>> requiresApiKey " + requiresApiKey);
+        logger.severe(">>>> getRequestApiKey() " + getRequestApiKey());
+        logger.severe(">>>> session != null " + (session != null));
+        logger.severe(">>>> session.getUser() != null " + (session != null && session.getUser() != null));
         if (!requiresApiKey && session != null && session.getUser() != null) {
             searchUser = authUser = (AuthenticatedUser) session.getUser();
+            logger.severe(">>>> session authUser " + authUser);
+            logger.severe(">>>> session authUser isAuthenticated " + authUser.isAuthenticated());
             if (!authUser.isAuthenticated()) {
                 throw new WrappedResponse(authenticatedUserRequired());
             }
         } else {
             searchUser = authUser = getRequestAuthenticatedUserOrDie(crc);
+            logger.severe(">>>> API authUser " + authUser);
+            logger.severe(">>>> API authUser isAuthenticated " + authUser.isAuthenticated());
         }
 
         // If the user is a superuser, see if a userIdentifier has been specified and use that instead
