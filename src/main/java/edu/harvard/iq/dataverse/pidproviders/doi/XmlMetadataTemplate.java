@@ -58,6 +58,7 @@ import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import edu.harvard.iq.dataverse.util.xml.XmlWriterUtil;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonValue.ValueType;
 
 public class XmlMetadataTemplate {
 
@@ -621,7 +622,8 @@ public class XmlMetadataTemplate {
             if (externalIdentifier.isValidIdentifier(orgName)) {
                 isROR = true;
                 JsonObject jo = getExternalVocabularyValue(orgName);
-                if (jo != null) {
+                // Some ext. cvv configs store a JsonArray of multiple objects/values. In such cases, we'll leave orgName blank 
+                if (jo != null && jo.getValueType() == ValueType.STRING) {
                     orgName = jo.getString("termName");
                 }
             }
