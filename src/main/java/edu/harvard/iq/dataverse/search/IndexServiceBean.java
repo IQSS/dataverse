@@ -69,6 +69,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
@@ -1428,7 +1429,31 @@ public class IndexServiceBean {
                 query.setParameter(1, dataset.getReleasedVersion().getId());
                 query.setParameter(2, datasetVersion.getId());
 
-                changedFileMetadataIds.addAll(query.getResultList());
+                /*
+                 * When the query was configured to return Long, it was returning Integer. The query has been changed to return Integer now. The code here is robust if that changes in the future.
+                 */
+                List<Object> queryResults = query.getResultList();
+                for (Object result : queryResults) {
+                    if (result != null) {
+                        // Ensure we're adding Long objects to the list
+                        if (result instanceof Integer intResult) {
+                            logger.finest("Converted Integer result to Long: " + result);
+                            changedFileMetadataIds.add(Long.valueOf(intResult));
+                        } else if (result instanceof Long longResult) {
+                            // Already a Long, add directly
+                            logger.finest("Added existing Long to list: " + result);
+                            changedFileMetadataIds.add(longResult);
+                        } else {
+                            // If it's not a Long, convert it to one via String
+                            try {
+                                changedFileMetadataIds.add(Long.valueOf(result.toString()));
+                                logger.finest("Converted non-Long result to Long: " + result + " of type " + result.getClass().getName());
+                            } catch (NumberFormatException e) {
+                                logger.warning("Could not convert query result to Long: " + result);
+                            }
+                        }
+                    }
+                }
                 logger.fine(
                         "We are indexing a draft version of a dataset that has a released version. We'll be checking file metadatas if they are exact clones of the released versions.");
             } else if (datasetVersion.isDraft()) {
@@ -1515,6 +1540,8 @@ public class IndexServiceBean {
 
                     SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();
                     Long fileEntityId = datafile.getId();
+                    logger.finest("Indexing file " + fileEntityId);
+
                     datafileSolrInputDocument.addField(SearchFields.ENTITY_ID, fileEntityId);
                     datafileSolrInputDocument.addField(SearchFields.DATAVERSE_VERSION_INDEXED_BY, dataverseVersion);
                     datafileSolrInputDocument.addField(SearchFields.IDENTIFIER, fileEntityId);
