@@ -76,7 +76,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         newTerms.setDatasetVersion(updateVersion);
         updateVersion.setTermsOfUseAndAccess(newTerms);
         
-        //Creation Note
+        //Version Note
         updateVersion.setVersionNote(newVersion.getVersionNote());
         
         // Clear unnecessary terms relationships ....
@@ -222,7 +222,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             // This can be corrected by running the update PID API later, but who will look in the log?
             // With the change to not use the DeleteDatasetVersionCommand above and other
             // fixes, this error may now cleanly restore the initial state
-            // with the draft and last published versions unchanged, but this has not yet bee tested.
+            // with the draft and last published versions unchanged, but this has not yet been tested.
             // (Alternately this could move to onSuccess if we intend it to stay non-fatal.)
             logger.log(Level.WARNING, "Curate Published DatasetVersion: exception while updating PID metadata:{0}", ex.getMessage());
         }
