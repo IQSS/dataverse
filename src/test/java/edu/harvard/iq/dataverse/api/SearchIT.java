@@ -2392,26 +2392,26 @@ public class SearchIT {
 
         // Clean up - delete dataset, dataverse, and user
 
-            // Delete the dataset
-            Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
-            deleteDatasetResponse.prettyPrint();
-            deleteDatasetResponse.then().assertThat()
-                    .statusCode(OK.getStatusCode());
+        // Delete the dataset
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        deleteDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
-            Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
-            assertEquals(200, makeSuperUser.getStatusCode());
-            
-            // Delete the dataverse
-            Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
-            deleteDataverseResponse.prettyPrint();
-            deleteDataverseResponse.then().assertThat()
-                    .statusCode(OK.getStatusCode());
+        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
+        assertEquals(200, makeSuperUser.getStatusCode());
 
-            // Delete the user
-            Response deleteUserResponse = UtilIT.deleteUser(username);
-            deleteUserResponse.prettyPrint();
-            deleteUserResponse.then().assertThat()
-                    .statusCode(OK.getStatusCode());
+        // Delete the dataverse
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        deleteDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Delete the user
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        deleteUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
 
 }
