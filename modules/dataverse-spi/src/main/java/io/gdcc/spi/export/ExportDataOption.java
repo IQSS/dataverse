@@ -8,6 +8,7 @@ package io.gdcc.spi.export;
  * options going forward with minimal or no changes to the existing code in 
  * export plugins. 
  */
+@Deprecated
 public class ExportDataOption {
     
     public enum SupportedOptions {
