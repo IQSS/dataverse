@@ -6,6 +6,8 @@ package edu.harvard.iq.dataverse.mydata;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.GetUserPermittedCollectionsCommand;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
@@ -26,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
@@ -124,23 +127,19 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
     private void verifyAuth (ContainerRequestContext crc, String userIdentifier) throws WrappedResponse {
         // Handle calls from JSF where the User is in the session
-        // Must use api key if the token is present
-        boolean requiresApiKey = getRequestApiKey() != null;
-        logger.severe(">>>> requiresApiKey " + requiresApiKey);
-        logger.severe(">>>> getRequestApiKey() " + getRequestApiKey());
-        logger.severe(">>>> session != null " + (session != null));
-        logger.severe(">>>> session.getUser() != null " + (session != null && session.getUser() != null));
-        if (!requiresApiKey && session != null && session.getUser() != null) {
+        logger.severe(">>>> session.getUser() " + (session != null ? session.getUser() : "null"));
+        User requestUser = getRequestUser(crc);
+        logger.severe(">>>> requestUser " + requestUser);
+        logger.severe(">>>> FeatureFlags.API_SESSION_AUTH.enabled() " + FeatureFlags.API_SESSION_AUTH.enabled());
+        boolean checkSession = !FeatureFlags.API_SESSION_AUTH.enabled() && (requestUser instanceof GuestUser);
+        logger.severe(">>>> checkSession " + checkSession);
+        if (checkSession && session != null && session.getUser() != null) {
             searchUser = authUser = (AuthenticatedUser) session.getUser();
-            logger.severe(">>>> session authUser " + authUser);
-            logger.severe(">>>> session authUser isAuthenticated " + authUser.isAuthenticated());
             if (!authUser.isAuthenticated()) {
                 throw new WrappedResponse(authenticatedUserRequired());
             }
         } else {
             searchUser = authUser = getRequestAuthenticatedUserOrDie(crc);
-            logger.severe(">>>> API authUser " + authUser);
-            logger.severe(">>>> API authUser isAuthenticated " + authUser.isAuthenticated());
         }
 
         // If the user is a superuser, see if a userIdentifier has been specified and use that instead
