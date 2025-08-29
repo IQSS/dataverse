@@ -1537,7 +1537,7 @@ public class IndexServiceBean {
                             logger.fine("This file metadata hasn't changed since the released version; skipping indexing.");
                         }
                     } else {
-                        logger.warning("File is not in released version when trying to compare variable metadata, fileId: " + datafile.getId()););
+                        logger.warning("File is not in released version when trying to compare variable metadata, fileId: " + datafile.getId());
                     }
                 }
                 if (indexThisFile) {
