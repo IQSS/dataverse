@@ -1527,6 +1527,8 @@ public class IndexServiceBean {
                 if (indexThisMetadata && (isReleasedVersion || changedFileMetadataIds.contains(fileMetadata.getId()))) {
                     indexThisFile = true;
                 } else if (indexThisMetadata) {
+                    // Draft version, file is not new or all file metadata matches the released version
+                    // The only thing left to check is variable-level metadata, index if there is a difference
                     logger.fine("Checking if this file metadata is a duplicate.");
                     FileMetadata getFromMap = fileMap.get(datafile.getId());
                     if (getFromMap != null) {
@@ -1534,6 +1536,8 @@ public class IndexServiceBean {
                             indexThisFile = true;
                             logger.fine("This file metadata hasn't changed since the released version; skipping indexing.");
                         }
+                    } else {
+                        logger.warning("File is not in released version when trying to compare variable metadata, fileId: " + datafile.getId()););
                     }
                 }
                 if (indexThisFile) {
