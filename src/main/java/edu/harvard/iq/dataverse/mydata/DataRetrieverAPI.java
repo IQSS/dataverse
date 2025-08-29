@@ -6,8 +6,6 @@ package edu.harvard.iq.dataverse.mydata;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.GetUserPermittedCollectionsCommand;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
@@ -126,9 +124,9 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
     private void verifyAuth (ContainerRequestContext crc, String userIdentifier) throws WrappedResponse {
         // Handle calls from JSF where the User is in the session
+        // Must use api key if the token is present
         boolean requiresApiKey = getRequestApiKey() != null;
-        User requestUser = getRequestUser(crc);
-        if (!requiresApiKey && session != null && session.getUser() != null && requestUser instanceof GuestUser) {
+        if (!requiresApiKey && session != null && session.getUser() != null) {
             searchUser = authUser = (AuthenticatedUser) session.getUser();
             if (!authUser.isAuthenticated()) {
                 throw new WrappedResponse(authenticatedUserRequired());
@@ -160,13 +158,13 @@ public class DataRetrieverAPI extends AbstractApiBean {
             @QueryParam("userIdentifier") String userIdentifier,
             @QueryParam("filter_validities") Boolean filterValidities,
             @QueryParam("dataset_valid") List<Boolean> datasetValidities) {
-        boolean OTHER_USER = false;
+        boolean otherUser;
 
         String noMsgResultsFound = BundleUtil.getStringFromBundle("dataretrieverAPI.noMsgResultsFound");
 
         try {
             verifyAuth(crc, userIdentifier);
-            OTHER_USER = !authUser.equals(searchUser);
+            otherUser = !authUser.equals(searchUser);
         } catch (WrappedResponse wr) {
             return this.getJSONErrorString((new JSONObject(wr.getResponse().getEntity().toString())).getString("message"), null);
         }
@@ -299,7 +297,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         //jsonData.add("total_dvobject_counts", getTotalCountsFromSolrAsJSON(searchUser, this.myDataFinder));
 
 
-        if (OTHER_USER){
+        if (otherUser){
             jsonData.add("other_user", searchUser.getIdentifier());
         }
 
