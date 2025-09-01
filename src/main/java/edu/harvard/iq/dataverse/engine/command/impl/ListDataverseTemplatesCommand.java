@@ -26,14 +26,22 @@ public class ListDataverseTemplatesCommand extends AbstractCommand<List<Template
 
     @Override
     public List<Template> execute(CommandContext ctxt) throws CommandException {
-        List<Template> templates = new ArrayList<>();
+        List<Template> availableTemplates = new ArrayList<>(dataverse.getTemplates());
 
         if (dataverse.getOwner() != null) {
-            templates.addAll(dataverse.getParentTemplates());
+            availableTemplates.addAll(dataverse.getParentTemplates());
         }
 
-        templates.addAll(dataverse.getTemplates());
+        setDefaultTemplate(availableTemplates);
 
-        return templates;
+        return availableTemplates;
+    }
+
+    private void setDefaultTemplate(List<Template> availableTemplates) {
+        Optional.ofNullable(dataverse.getDefaultTemplate())
+                .map(Template::getId).flatMap(defaultTemplateId -> availableTemplates.stream()
+                        .filter(template -> template.getId().equals(defaultTemplateId))
+                        .findFirst())
+                .ifPresent(template -> template.setIsDefaultForDataverse(true));
     }
 }
