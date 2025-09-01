@@ -38,7 +38,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportService;
-import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
@@ -1652,12 +1651,11 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getDisplayTitle() {
-        //displayCitation = dataset.getCitation(false, workingVersion);
         return displayTitle;
     }
 
-    public void setDisplayTitle(String displayCitation) {
-        this.displayCitation = displayTitle;
+    public void setDisplayTitle(String displayTitle) {
+        this.displayTitle = displayTitle;
     }
 
     public String getDropBoxSelection() {

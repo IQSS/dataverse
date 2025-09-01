@@ -86,7 +86,6 @@ import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 
-import static edu.harvard.iq.dataverse.DatasetField.NA_VALUE;
 import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
 
 import jakarta.inject.Inject;
@@ -267,7 +266,7 @@ public class IndexServiceBean {
         Set<String> langs = settingsService.getConfiguredLanguages();
         for (ControlledVocabularyValue dataverseSubject : dataverse.getDataverseSubjects()) {
             String subject = dataverseSubject.getStrValue();
-            if (!subject.equals(NA_VALUE)) {
+            if (!subject.equals(DatasetField.NA_VALUE)) {
              // Index in all used languages (display and metadata languages
                 for(String locale: langs) {
                     solrInputDocument.addField(SearchFields.DATAVERSE_SUBJECT, dataverseSubject.getLocaleStrValue(locale));
@@ -1062,7 +1061,6 @@ public class IndexServiceBean {
             if (datasetVersion.isInReview()) {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
             }
-
             CurationStatus status = datasetVersion.getCurrentCurationStatus();
             if(status != null && Strings.isNotBlank(status.getLabel())) {
                 solrInputDocument.addField(SearchFields.CURATION_STATUS, status.getLabel());
@@ -1260,7 +1258,7 @@ public class IndexServiceBean {
                              */
                             if (dsf.getControlledVocabularyValues().isEmpty()) {
                                 for (DatasetFieldValue dfv : dsf.getDatasetFieldValues()) {
-                                    if (dfv.getValue() == null || dfv.getValue().equals(NA_VALUE)) {
+                                    if (dfv.getValue() == null || dfv.getValue().equals(DatasetField.NA_VALUE)) {
                                         continue;
                                     }
                                     solrInputDocument.addField(solrFieldSearchable, dfv.getValue());
@@ -1271,7 +1269,7 @@ public class IndexServiceBean {
                                 }
                             } else {
                                 for (ControlledVocabularyValue controlledVocabularyValue : dsf.getControlledVocabularyValues()) {
-                                    if (controlledVocabularyValue.getStrValue().equals(NA_VALUE)) {
+                                    if (controlledVocabularyValue.getStrValue().equals(DatasetField.NA_VALUE)) {
                                         continue;
                                     }
 
@@ -1308,7 +1306,7 @@ public class IndexServiceBean {
                                     }
                                 } else {
                                     var values = dsf.getDisplayValues(); // for proper display of facets with &apos;
-                                    values.removeAll(Arrays.asList(NA_VALUE));
+                                    values.removeAll(Arrays.asList(DatasetField.NA_VALUE));
                                     solrInputDocument.addField(solrFieldFacetable, values);
                                 }
                             }
