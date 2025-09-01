@@ -2391,15 +2391,16 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode());
 
         // Clean up - delete dataset, dataverse, and user
-
+        
+        //Superuser to delete published dataset
+        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
+        assertEquals(200, makeSuperUser.getStatusCode());
+        
         // Delete the dataset
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         deleteDatasetResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-
-        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
-        assertEquals(200, makeSuperUser.getStatusCode());
 
         // Delete the dataverse
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
