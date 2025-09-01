@@ -68,6 +68,31 @@ public class ListDataverseTemplatesCommandTest {
     }
 
     @Test
+    public void execute_shouldNotIncludeParentTemplates_whenDataverseIsRoot() throws CommandException {
+        // Arrange
+        String parentTemplateName = "parentTemplate";
+        Template parentTemplate = TemplateBuilder.aTemplate().withName(parentTemplateName).build();
+        String childTemplateName = "childTemplateName";
+        Template childTemplate = TemplateBuilder.aTemplate().withName(childTemplateName).build();
+        Dataverse dataverseMock = Mockito.mock(Dataverse.class);
+        Dataverse parentDataverseMock = Mockito.mock(Dataverse.class);
+        Mockito.when(dataverseMock.getTemplates()).thenReturn(Collections.singletonList(childTemplate));
+        Mockito.when(dataverseMock.getParentTemplates()).thenReturn(Collections.singletonList(parentTemplate));
+        Mockito.when(dataverseMock.getOwner()).thenReturn(parentDataverseMock);
+        Mockito.when(dataverseMock.isTemplateRoot()).thenReturn(true);
+
+        ListDataverseTemplatesCommand sut = new ListDataverseTemplatesCommand(dataverseRequestStub, dataverseMock);
+
+        // Act
+        List<Template> result = sut.execute(Mockito.mock(CommandContext.class));
+
+        // Assert
+        assertEquals(1, result.size());
+        assertTrue(result.get(0).getName().equals(childTemplateName));
+    }
+
+
+    @Test
     public void execute_shouldReturnTemplates_parentHasNoTemplates() throws CommandException {
         // Arrange
         Dataverse dataverseMock = Mockito.mock(Dataverse.class);

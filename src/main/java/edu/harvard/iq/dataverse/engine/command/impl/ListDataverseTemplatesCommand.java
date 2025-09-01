@@ -28,7 +28,7 @@ public class ListDataverseTemplatesCommand extends AbstractCommand<List<Template
     public List<Template> execute(CommandContext ctxt) throws CommandException {
         List<Template> availableTemplates = new ArrayList<>(dataverse.getTemplates());
 
-        if (dataverse.getOwner() != null) {
+        if (!dataverse.isTemplateRoot() && dataverse.getOwner() != null) {
             availableTemplates.addAll(dataverse.getParentTemplates());
         }
 
