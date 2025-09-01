@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import edu.harvard.iq.dataverse.util.template.TemplateBuilder;
 import jakarta.json.*;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -535,7 +536,7 @@ public class JsonPrinterTest {
     @Test
     public void testJsonTemplate() {
         // Setup a test Template
-        Template template = createTemplateWithEmptyFields();
+        Template template = TemplateBuilder.aTemplate().build();
         JsonObjectBuilder job = JsonPrinter.jsonTemplate(template);
         assertNotNull(job);
         JsonObject jsonObject = job.build();
@@ -571,50 +572,6 @@ public class JsonPrinterTest {
 
         assertEquals("Enter the author's name here.", instructionsMap.get("author"));
         assertEquals("Provide a title for the dataset.", instructionsMap.get("title"));
-    }
-
-    private Template createTemplateWithEmptyFields() {
-        // Setup a test Dataverse
-        Dataverse dataverse = new Dataverse();
-        dataverse.setAlias("test-dataverse");
-
-        // Setup a test TermsOfUseAndAccess
-        TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-        termsOfUseAndAccess.setId(1L);
-        termsOfUseAndAccess.setTermsOfUse("Test Terms of Use");
-        termsOfUseAndAccess.setTermsOfAccess("Test Terms of Access");
-        termsOfUseAndAccess.setConfidentialityDeclaration("Test Confidentiality Declaration");
-        termsOfUseAndAccess.setSpecialPermissions("Test Special Permissions");
-        termsOfUseAndAccess.setRestrictions("Test Restrictions");
-        termsOfUseAndAccess.setCitationRequirements("Test Citation Requirements");
-        termsOfUseAndAccess.setDepositorRequirements("Test Depositor Requirements");
-        termsOfUseAndAccess.setConditions("Test Conditions");
-        termsOfUseAndAccess.setDisclaimer("Test Disclaimer");
-        termsOfUseAndAccess.setDataAccessPlace("Test Data Access Place");
-        termsOfUseAndAccess.setOriginalArchive("Test Original Archive");
-        termsOfUseAndAccess.setAvailabilityStatus("Test Availability Status");
-        termsOfUseAndAccess.setSizeOfCollection("Test Size of Collection");
-        termsOfUseAndAccess.setStudyCompletion("Test Study Completion");
-
-        // Setup a test Template
-        Template template = new Template();
-        template.setName("Test Template");
-        template.setIsDefaultForDataverse(true);
-        template.setUsageCount(5L);
-        template.setCreateTime(new Timestamp(new Date().getTime()));
-        template.setTermsOfUseAndAccess(termsOfUseAndAccess);
-        template.setDataverse(dataverse);
-
-        // Set an empty list of DatasetFields to avoid the loop in jsonByBlocks
-        template.setDatasetFields(new ArrayList<>());
-
-        // Add test instructions map
-        Map<String, String> instructionsMap = Map.of(
-                "author", "Enter the author's name here.",
-                "title", "Provide a title for the dataset."
-        );
-        template.setInstructionsMap(instructionsMap);
-        return template;
     }
 
     private License createLicense(long id) {
