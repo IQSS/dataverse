@@ -110,8 +110,7 @@ public class ListDataverseTemplatesCommandTest {
 
         Template resultDefault = findTemplateByName(result, defaultTplName);
         assertNotNull(resultDefault, "Default template should be in the list");
-        assertTrue(resultDefault.isIsDefaultForDataverse(),
-                "The template with name " + defaultTplName + " should be marked as default");
+        assertTrue(resultDefault.isIsDefaultForDataverse(), "The template with name " + defaultTplName + " should be marked as default");
 
         Template resultOther = findTemplateByName(result, otherTplName);
         assertNotNull(resultOther, "Other template should be in the list");
