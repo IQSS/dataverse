@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -97,8 +98,16 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         // ROLES
         for (DataverseRole ra : ctxt.roles().findByOwnerId(managedDoomed.getId())) {
             ctxt.em().remove(ra);
-        }   
-        
+        }
+
+        ExportService exportService = ExportService.getInstance();
+        try {
+            exportService.clearAllCachedFormats(doomed);
+        }
+        catch (IOException e) {
+            logger.log(Level.WARNING, "Export service could not clear all cached formats:", e.getMessage());
+        }
+
         if (!managedDoomed.isHarvested()) {
             //also, lets delete the uploaded thumbnails!
             deleteDatasetLogo(managedDoomed);
