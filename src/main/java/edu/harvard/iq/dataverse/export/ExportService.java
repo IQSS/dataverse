@@ -64,7 +64,7 @@ public class ExportService {
     private Map<String, Exporter> exporterMap = new HashMap<>();
 
     private static final Logger logger = Logger.getLogger(ExportService.class.getCanonicalName());
-
+    
     private ExportService() {
         /*
          * Step 1 - find the EXPORTERS dir and add all jar files there to a class loader
@@ -378,7 +378,7 @@ public class ExportService {
         }
 
     }
-
+    
     public Exporter getExporter(String formatName) throws ExportException {
         Exporter e = exporterMap.get(formatName);
         if (e != null) {

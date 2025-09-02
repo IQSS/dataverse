@@ -58,6 +58,7 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import java.math.BigDecimal;
 
 /**
  * Convert objects to Json.
@@ -491,6 +492,11 @@ public class JsonPrinter {
     }
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList,
         boolean includeFiles, boolean returnOwners, boolean includeMetadataBlocks) {
+        return json(dsv,  anonymizedFieldTypeNamesList, includeFiles,  returnOwners, includeMetadataBlocks, false);
+    }
+
+    public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList,
+        boolean includeFiles, boolean returnOwners, boolean includeMetadataBlocks, boolean forExportDataProvider) {
         Dataset dataset = dsv.getDataset();
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dataset.getId())
@@ -548,7 +554,7 @@ public class JsonPrinter {
             bld.add("isPartOf", getOwnersFromDvObject(dataset));
         }
         if (includeFiles) {
-            bld.add("files", jsonFileMetadatas(dsv.getFileMetadatas()));
+            bld.add("files", jsonFileMetadatas(dsv.getFileMetadatas(), forExportDataProvider));
         }
 
         return bld;
@@ -573,34 +579,8 @@ public class JsonPrinter {
         return bld;
     }
 
-    /**
-     * Export formats such as DDI require the citation to be included. See
-     * https://github.com/IQSS/dataverse/issues/2579 for more on DDI export.
-     *
-     * @todo Instead of having this separate method, should "citation" be added
-     * to the regular `json` method for DatasetVersion? Will anything break?
-     * Unit tests for that method could not be found.
-     */
-    public static JsonObjectBuilder jsonWithCitation(DatasetVersion dsv, boolean includeFiles) {
-        JsonObjectBuilder dsvWithCitation = JsonPrinter.json(dsv, includeFiles);
-        dsvWithCitation.add("citation", dsv.getCitation());
-        return dsvWithCitation;
-    }
-
-    /**
-     * Export formats such as DDI require the persistent identifier components
-     * such as "protocol", "authority" and "identifier" to be included so we
-     * create a JSON object we can convert to a DatasetDTO which can include a
-     * DatasetVersionDTO, which has all the metadata fields we need to export.
-     * See https://github.com/IQSS/dataverse/issues/2579 for more on DDI export.
-     *
-     * @todo Instead of having this separate method, should "datasetVersion" be
-     * added to the regular `json` method for Dataset? Will anything break? Unit
-     * tests for that method could not be found. If we keep this method as-is
-     * should the method be renamed?
-     */
-    public static JsonObjectBuilder jsonAsDatasetDto(DatasetVersion dsv) {
-        return jsonAsDatasetDto(dsv, true);
+    public static JsonObjectBuilder datasetAsJsonForDTO(DatasetVersion dsv) {
+        return datasetAsJsonForDTO(dsv, true);
     }
     
     /**
@@ -609,16 +589,34 @@ public class JsonPrinter {
      * @param includeFiles
      * @return 
      */
-    public static JsonObjectBuilder jsonAsDatasetDto(DatasetVersion dsv, boolean includeFiles) {
-        JsonObjectBuilder datasetDtoAsJson = JsonPrinter.json(dsv.getDataset());
-        datasetDtoAsJson.add("datasetVersion", jsonWithCitation(dsv, includeFiles));
-        return datasetDtoAsJson;
+    public static JsonObjectBuilder datasetAsJsonForDTO(DatasetVersion dsv, boolean includeFiles) {
+        JsonObjectBuilder jsonForDTO = JsonPrinter.json(dsv.getDataset());
+        jsonForDTO.add("datasetVersion", versionAsJsonForDTO(dsv, includeFiles));
+        return jsonForDTO;
+    }
+    
+    /**
+     * Export formats such as DDI require the citation to be included. See
+     * https://github.com/IQSS/dataverse/issues/2579 for more on DDI export.
+     *
+     * @todo Instead of having this separate method, should "citation" be added
+     * to the regular `json` method for DatasetVersion? Will anything break?
+     * Unit tests for that method could not be found.
+     */
+    private static JsonObjectBuilder versionAsJsonForDTO(DatasetVersion dsv, boolean includeFiles) {
+        JsonObjectBuilder dsvWithCitation = JsonPrinter.json(dsv, null, includeFiles, false,true, true);
+        dsvWithCitation.add("citation", dsv.getCitation());
+        return dsvWithCitation;
     }
 
     public static JsonArrayBuilder jsonFileMetadatas(Collection<FileMetadata> fmds) {
+        return jsonFileMetadatas(fmds, false);
+    }
+    
+    public static JsonArrayBuilder jsonFileMetadatas(Collection<FileMetadata> fmds, boolean forExportDataProvider) {
         JsonArrayBuilder filesArr = Json.createArrayBuilder();
         for (FileMetadata fmd : fmds) {
-            filesArr.add(JsonPrinter.json(fmd));
+            filesArr.add(JsonPrinter.json(fmd, false, false, forExportDataProvider));
         }
 
         return filesArr;
@@ -832,6 +830,10 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(FileMetadata fmd, boolean returnOwners, boolean printDatasetVersion) {
+        return json(fmd, returnOwners, printDatasetVersion, false);
+    }
+    
+    public static JsonObjectBuilder json(FileMetadata fmd, boolean returnOwners, boolean printDatasetVersion, boolean forExportDataProvider) {
         NullSafeJsonBuilder builder = jsonObjectBuilder();
 
                 // deprecated: .add("category", fmd.getCategory())
@@ -847,7 +849,7 @@ public class JsonPrinter {
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
                 .add("categories", getFileCategories(fmd))
-                .add("dataFile", JsonPrinter.json(fmd.getDataFile(), fmd, false, returnOwners));
+                .add("dataFile", JsonPrinter.json(fmd.getDataFile(), fmd, forExportDataProvider, returnOwners));
 
         if (printDatasetVersion) {
             builder.add("datasetVersion", json(fmd.getDatasetVersion(), false));
@@ -877,15 +879,12 @@ public class JsonPrinter {
         return json(df, fileMetadata, forExportDataProvider, false);
     }
 
+    
     public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata, boolean forExportDataProvider, boolean returnOwners) {
-        // File names are no longer stored in the DataFile entity; 
-        // (they are instead in the FileMetadata (as "labels") - this way 
-        // the filename can change between versions... 
-        // It does appear that for some historical purpose we still need the
-        // filename in the file DTO (?)... We rely on it to be there for the 
-        // DDI export, for example. So we need to make sure this is is the 
-        // *correct* file name - i.e., that it comes from the right version. 
-        // (TODO...? L.A. 4.5, Aug 7 2016)
+        return json(df, fileMetadata, forExportDataProvider, returnOwners, false);
+    }
+
+    public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata, boolean forExportDataProvider, boolean returnOwners, boolean includeVariables) {
         String fileName = null;
 
         if (fileMetadata == null){
@@ -949,14 +948,18 @@ public class JsonPrinter {
          * The restricted state was not included prior to #9175 so to avoid backward
          * incompatability, it is now only added when generating json for the
          * InternalExportDataProvider fileDetails.
+         * [update]: more fields have been added below that are only there
+         * when the json is requested by the InternalExportDataProvider.
          */
         if (forExportDataProvider) {
             builder.add("restricted", df.isRestricted())
-            .add("fileMetadataId", fileMetadata.getId())
-            .add("dataTables", df.getDataTables().isEmpty() ? null : JsonPrinter.jsonDT(df.getDataTables()))
-            .add("varGroups", fileMetadata.getVarGroups().isEmpty()
-                    ? JsonPrinter.jsonVarGroup(fileMetadata.getVarGroups())
-                    : null);
+                    .add("fileMetadataId", fileMetadata.getId())
+                    .add("dataTables", df.getDataTables().isEmpty() ? null : jsonDT(df.getDataTables(), includeVariables));
+            if (includeVariables) {
+                builder.add("varGroups", fileMetadata.getVarGroups().isEmpty()
+                        ? JsonPrinter.jsonVarGroup(fileMetadata.getVarGroups())
+                        : null);
+            }
         }
         if (returnOwners){
             builder.add("isPartOf", getOwnersFromDvObject(df, fileMetadata.getDatasetVersion()));
@@ -965,22 +968,24 @@ public class JsonPrinter {
     }
 
     //Started from https://github.com/RENCI-NRIG/dataverse/, i.e. https://github.com/RENCI-NRIG/dataverse/commit/2b5a1225b42cf1caba85e18abfeb952171c6754a
-    public static JsonArrayBuilder jsonDT(List<DataTable> ldt) {
+    public static JsonArrayBuilder jsonDT(List<DataTable> ldt, boolean includeVariables) {
         JsonArrayBuilder ldtArr = Json.createArrayBuilder();
         for(DataTable dt: ldt){
-            ldtArr.add(JsonPrinter.json(dt));
+            ldtArr.add(JsonPrinter.json(dt, includeVariables));
         }
         return ldtArr;
     }
 
-    public static JsonObjectBuilder json(DataTable dt) {
-        return jsonObjectBuilder()
+    public static JsonObjectBuilder json(DataTable dt, boolean includeVariables) {
+        JsonObjectBuilder builder = jsonObjectBuilder()
                 .add("varQuantity", dt.getVarQuantity())
                 .add("caseQuantity", dt.getCaseQuantity())
                 .add("recordsPerCase", dt.getRecordsPerCase())
-                .add("UNF", dt.getUnf())
-                .add("dataVariables", JsonPrinter.jsonDV(dt.getDataVariables()))
-                ;
+                .add("UNF", dt.getUnf());
+        if (includeVariables) {
+            builder.add("dataVariables", JsonPrinter.jsonDV(dt.getDataVariables()));
+        }
+        return builder;
     }
 
     public static JsonArrayBuilder jsonDV(List<DataVariable> dvl) {

@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.api.dto.DataTableDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
@@ -31,6 +32,7 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import edu.harvard.iq.dataverse.util.xml.XmlUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlWriterUtil;
+import io.gdcc.spi.export.ExportDataProvider;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -81,6 +83,7 @@ public class DdiExportUtil {
     public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
     public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
     public static final String CITATION_BLOCK_NAME = "citation";
+    public static final int DATATABLES_BATCH_SIZE = 50; 
 
     //Some tests don't send real PIDs that can be parsed
     //Use constant empty PID in these cases
@@ -125,7 +128,13 @@ public class DdiExportUtil {
                 xmlw.writeAttribute("xml:lang", datasetDto.getMetadataLanguage());
             }
             createStdyDscr(xmlw, datasetDto);
-            createOtherMats(xmlw, datasetDto.getDatasetVersion().getFiles());
+            if (datasetDto.getDatasetVersion().getFiles() != null) {
+                // We create "otherMat" sections with skipTabularFiles = false, because 
+                // this is the short version of the DDI where all the files, whether 
+                // ingested or not, are encoded as otherMats:
+
+                createOtherMats(xmlw, datasetDto.getDatasetVersion().getFiles(), false);
+            }
             xmlw.writeEndElement(); // codeBook
             xmlw.flush();
         } finally {
@@ -142,11 +151,11 @@ public class DdiExportUtil {
 
     
     // "full" ddi, with the the "<fileDscr>"  and "<dataDscr>/<var>" sections: 
-    public static void datasetJson2ddi(JsonObject datasetDtoAsJson, JsonArray fileDetails, OutputStream outputStream) throws XMLStreamException {
+    public static void datasetJson2ddi(JsonObject datasetDtoAsJson, ExportDataProvider dataProvider, OutputStream outputStream) throws XMLStreamException {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson.toString(), DatasetDTO.class);
-        
+
         XMLStreamWriter xmlw = null;
         try {
             xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
@@ -160,9 +169,37 @@ public class DdiExportUtil {
                 xmlw.writeAttribute("xml:lang", datasetDto.getMetadataLanguage());
             }
             createStdyDscr(xmlw, datasetDto);
-            createFileDscr(xmlw, fileDetails);
-            createDataDscr(xmlw, fileDetails);
-            createOtherMatsFromFileMetadatas(xmlw, fileDetails);
+
+            // If there are no files in this dataset, we can stop here
+            if (datasetDto.getDatasetVersion().getFiles() != null) {
+
+                // The Files and Data section, for the rich metadata describing 
+                // the "ingested" tabular data files.
+                // Note that as of 6.8, we are generating the fileDscr from the DTOs
+                // supplied by ExportDataProvider.ExportDataProvider.getDatasetJson()
+                int tabularFilesTotal = createFileDscrs(xmlw, datasetDto.getDatasetVersion().getFiles());
+
+                if (tabularFilesTotal > 0) {
+                    // Now that we know that there is 1 or more ingested tabular file
+                    // in the dataset, we can try and produce the dataDscr section. 
+                    // A dataset with a large number 
+                    // of ingested files may contain more of such metadata than is 
+                    // practical or desirable to pass around as a single chunk of json. 
+                    // As of the ExportDataProvider v2.1.0 a more efficient method is 
+                    // provided for retrieving this information in chunks of length-offset
+                    // datatables-worth at a time.
+                    if (tabularFilesTotal <= DATATABLES_BATCH_SIZE) {
+                        createDataDscr(xmlw, dataProvider.getDatasetFileDetails());
+                    } else {
+                        createDataDscrInBatches(xmlw, dataProvider);
+                    }
+                }
+                // otherMats section:
+                // Note that we are asking createOtherMats() to skip tabular files,
+                // since we have already created the fileDscr and dataDscr sections 
+                // for those. 
+                createOtherMats(xmlw, datasetDto.getDatasetVersion().getFiles(), true);
+            }
             xmlw.writeEndElement(); // codeBook
             xmlw.flush();
         } finally {
@@ -1427,7 +1464,7 @@ public class DdiExportUtil {
     // see if there's more information that we could encode in this otherMat. 
     // contentType? Unfs and such? (in the "short" DDI that is being used for 
     // harvesting *all* files are encoded as otherMats; even tabular ones.
-    private static void createOtherMats(XMLStreamWriter xmlw, List<FileDTO> fileDtos) throws XMLStreamException {
+    private static void createOtherMats(XMLStreamWriter xmlw, List<FileDTO> fileDtos, boolean skipTabularFiles) throws XMLStreamException {
         // The preferred URL for this dataverse, for cooking up the file access API links:
         String dataverseUrl = SystemConfig.getDataverseSiteUrlStatic();
         
@@ -1435,7 +1472,7 @@ public class DdiExportUtil {
             // We'll continue using the scheme we've used before, in DVN2-3: non-tabular files are put into otherMat,
             // tabular ones - in fileDscr sections. (fileDscr sections have special fields for numbers of variables
             // and observations, etc.)
-            if (fileDTo.getDataFile().getDataTables() == null || fileDTo.getDataFile().getDataTables().isEmpty()) {
+            if (!(skipTabularFiles && isTabularData(fileDTo))) {
                 xmlw.writeStartElement("otherMat");
                 XmlWriterUtil.writeAttribute(xmlw, "ID", "f" + fileDTo.getDataFile().getId());
                 String pidURL = fileDTo.getDataFile().getPidURL();
@@ -1473,6 +1510,13 @@ public class DdiExportUtil {
     // tell if this file is in fact tabular data - so that we know if it needs an
     // otherMat, or a fileDscr section. 
     // -- L.A. 4.5 
+    // [update:] Since the comment above was written, the method below was changed
+    // to operate on a JsonArray, as provided by the FileDetails method in the 
+    // ExportDataProvider. However, As of 6.8, this method is no longer used at 
+    // all. This is because the DTOs supplied by ExportDataProvider.getDatasetJson() 
+    // DO in fact contain enough information to generate the otherMat sections 
+    // properly, whether this is a short or a full version of the DDI. I am however leaving 
+    // this method here for reference. 
     
     private static void createOtherMatsFromFileMetadatas(XMLStreamWriter xmlw, JsonArray fileDetails) throws XMLStreamException {
         // The preferred URL for this dataverse, for cooking up the file access API links:
@@ -1483,7 +1527,7 @@ public class DdiExportUtil {
             // We'll continue using the scheme we've used before, in DVN2-3: non-tabular files are put into otherMat,
             // tabular ones - in fileDscr sections. (fileDscr sections have special fields for numbers of variables
             // and observations, etc.)
-            if (!fileJson.containsKey("dataTables")) {
+            if (!fileJson.getBoolean("tabularData", false)) {
                 xmlw.writeStartElement("otherMat");
                 xmlw.writeAttribute("ID", "f" + fileJson.getJsonNumber(("id").toString()));
                 if (fileJson.containsKey("pidUrl")){
@@ -1519,12 +1563,14 @@ public class DdiExportUtil {
     }
     
     private static void writeFileDescription(XMLStreamWriter xmlw, FileDTO fileDTo) throws XMLStreamException {
-        xmlw.writeStartElement("txt");
         String description = fileDTo.getDataFile().getDescription();
         if (description != null) {
+            xmlw.writeStartElement("txt");
+
             xmlw.writeCharacters(description);
+            xmlw.writeEndElement(); // txt
+
         }
-        xmlw.writeEndElement(); // txt
     }
     
 
@@ -1646,6 +1692,13 @@ public class DdiExportUtil {
             xmlw.writeEndElement(); // dataDscr
         }
     }
+    
+    public static void createDataDscrInBatches(XMLStreamWriter xmlw, ExportDataProvider exportDataProvider) throws XMLStreamException {
+        int offset = 0;
+        boolean inprogress = true;
+
+    }
+    
     private static void createVarGroupDDI(XMLStreamWriter xmlw, JsonObject varGrp) throws XMLStreamException {
         xmlw.writeStartElement("varGrp");
         xmlw.writeAttribute("ID", "VG" + varGrp.getJsonNumber("id").toString());
@@ -1909,45 +1962,42 @@ public class DdiExportUtil {
 
     }
     
-    private static void createFileDscr(XMLStreamWriter xmlw, JsonArray fileDetails) throws XMLStreamException {
+ private static int createFileDscrs(XMLStreamWriter xmlw, List<FileDTO> fileDtos) throws XMLStreamException {
         String dataverseUrl = SystemConfig.getDataverseSiteUrlStatic();
-        for (int i =0;i<fileDetails.size();i++) {
-            JsonObject fileJson = fileDetails.getJsonObject(i);
-            //originalFileFormat is one of several keys that only exist for tabular data
-            if (fileJson.containsKey("originalFileFormat")) {
-                JsonObject dt = null;
-                if (fileJson.containsKey("dataTables")) {
-                    dt = fileJson.getJsonArray("dataTables").getJsonObject(0);
-                }
+        int counter = 0;
+        for (FileDTO fileDTo : fileDtos) {
+            if (isTabularData(fileDTo)) {
                 xmlw.writeStartElement("fileDscr");
-                String fileId = fileJson.getJsonNumber("id").toString();
-                xmlw.writeAttribute("ID", "f" + fileId);
-                xmlw.writeAttribute("URI", dataverseUrl + "/api/access/datafile/" + fileId);
+                
+                xmlw.writeAttribute("ID", "f" + fileDTo.getDataFile().getId());
+                xmlw.writeAttribute("URI", dataverseUrl + "/api/access/datafile/" + fileDTo.getDataFile().getId());
 
                 xmlw.writeStartElement("fileTxt");
                 xmlw.writeStartElement("fileName");
-                xmlw.writeCharacters(fileJson.getString("filename"));
+                xmlw.writeCharacters(fileDTo.getDataFile().getFilename());
                 xmlw.writeEndElement(); // fileName
-
-                if (dt != null && (dt.containsKey("caseQuantity") || dt.containsKey("varQuantity")
-                        || dt.containsKey("recordsPerCase"))) {
+                
+                DataTableDTO dataTableDTO = fileDTo.getDataFile().getDataTables().get(0);
+                if (dataTableDTO.getCaseQuantity() != null
+                        || dataTableDTO.getVarQuantity() != null
+                        || dataTableDTO.getRecordsPerCase() != null) {
                     xmlw.writeStartElement("dimensns");
 
-                    if (dt.containsKey("caseQuantity")) {
+                    if (dataTableDTO.getCaseQuantity() != null) {
                         xmlw.writeStartElement("caseQnty");
-                        xmlw.writeCharacters(dt.getJsonNumber("caseQuantity").toString());
+                        xmlw.writeCharacters(dataTableDTO.getCaseQuantity().toString());
                         xmlw.writeEndElement(); // caseQnty
                     }
 
-                    if (dt.containsKey("varQuantity")) {
+                    if (dataTableDTO.getVarQuantity() != null) {
                         xmlw.writeStartElement("varQnty");
-                        xmlw.writeCharacters(dt.getJsonNumber("varQuantity").toString());
+                        xmlw.writeCharacters(dataTableDTO.getVarQuantity().toString());
                         xmlw.writeEndElement(); // varQnty
                     }
 
-                    if (dt.containsKey("recordsPerCase")) {
+                    if (dataTableDTO.getRecordsPerCase() != null) {
                         xmlw.writeStartElement("recPrCas");
-                        xmlw.writeCharacters(dt.getJsonNumber("recordsPerCase").toString());
+                        xmlw.writeCharacters(dataTableDTO.getRecordsPerCase().toString());
                         xmlw.writeEndElement(); // recPrCas
                     }
 
@@ -1955,7 +2005,7 @@ public class DdiExportUtil {
                 }
 
                 xmlw.writeStartElement("fileType");
-                xmlw.writeCharacters(fileJson.getString("contentType"));
+                xmlw.writeCharacters(fileDTo.getDataFile().getContentType());
                 xmlw.writeEndElement(); // fileType
 
                 xmlw.writeEndElement(); // fileTxt
@@ -1963,50 +2013,48 @@ public class DdiExportUtil {
                 // various notes:
                 // this specially formatted note section is used to store the UNF
                 // (Universal Numeric Fingerprint) signature:
-                if ((dt!=null) && (dt.containsKey("UNF") && !dt.getString("UNF").isBlank())) {
+                if (fileDTo.getDataFile().getUNF() != null && !fileDTo.getDataFile().getUNF().isBlank()) {
                     xmlw.writeStartElement("notes");
                     xmlw.writeAttribute("level", LEVEL_FILE);
                     xmlw.writeAttribute("type", NOTE_TYPE_UNF);
                     xmlw.writeAttribute("subject", NOTE_SUBJECT_UNF);
-                    xmlw.writeCharacters(dt.getString("UNF"));
+                    xmlw.writeCharacters(fileDTo.getDataFile().getUNF());
                     xmlw.writeEndElement(); // notes
                 }
 
                 // If any tabular tags are present, each is formatted in a 
                 // dedicated note:
-                if (fileJson.containsKey("tabularTags")) {
-                    JsonArray tags = fileJson.getJsonArray("tabularTags");
-                    for (int j = 0; j < tags.size(); j++) {
+                //if (fileJson.containsKey("tabularTags")) {
+                if (fileDTo.getDataFile().getTabularTags() != null) {
+                    for (String tag : fileDTo.getDataFile().getTabularTags()) {
                         xmlw.writeStartElement("notes");
                         xmlw.writeAttribute("level", LEVEL_FILE);
                         xmlw.writeAttribute("type", NOTE_TYPE_TAG);
                         xmlw.writeAttribute("subject", NOTE_SUBJECT_TAG);
-                        xmlw.writeCharacters(tags.getString(j));
+                        xmlw.writeCharacters(tag);
                         xmlw.writeEndElement(); // notes
                     }
                 }
                 
                 // Adding a dedicated node for the description entry (for 
                 // non-tabular files we format it under the <txt> field)
-                if (fileJson.containsKey("description")) {
+                if (fileDTo.getDataFile().getDescription() != null) {
                     xmlw.writeStartElement("notes");
                     xmlw.writeAttribute("level", LEVEL_FILE);
                     xmlw.writeAttribute("type", NOTE_TYPE_FILEDESCRIPTION);
                     xmlw.writeAttribute("subject", NOTE_SUBJECT_FILEDESCRIPTION);
-                    xmlw.writeCharacters(fileJson.getString("description"));
+                    xmlw.writeCharacters(fileDTo.getDataFile().getDescription());
                     xmlw.writeEndElement(); // notes
                 }
 
                 // TODO: add the remaining fileDscr elements!
                 xmlw.writeEndElement(); // fileDscr
+                counter++; 
             }
         }
+        return counter;
     }
-    
-    
-
-
-
+   
     public static void datasetHtmlDDI(InputStream datafile, OutputStream outputStream) throws XMLStreamException {
 
         try {
@@ -2050,6 +2098,10 @@ public class DdiExportUtil {
 
     public static void injectSettingsService(SettingsServiceBean settingsSvc) {
         settingsService=settingsSvc;
+    }
+    
+    private static boolean isTabularData(FileDTO fileDTO) {
+        return !(fileDTO.getDataFile().getDataTables() == null || fileDTO.getDataFile().getDataTables().isEmpty());
     }
 
 }
