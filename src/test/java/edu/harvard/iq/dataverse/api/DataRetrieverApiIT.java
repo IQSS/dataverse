@@ -207,6 +207,14 @@ public class DataRetrieverApiIT {
                 .body("message", startsWith("No user found for:"))
                 .statusCode(NOT_FOUND.getStatusCode());
 
+        // Unknown user gets the list of Dataverses/Collections it has access to
+        retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList("badtoken", null);
+        retrieveMyCollectionListResponse.prettyPrint();
+        retrieveMyCollectionListResponse.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo(ApiKeyAuthMechanism.RESPONSE_MESSAGE_BAD_API_KEY))
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
         // Clean up
         dataverses.forEach(dv -> {
             Response deleteDataverseResponse = UtilIT.deleteDataverse(dv, superUserApiToken);
