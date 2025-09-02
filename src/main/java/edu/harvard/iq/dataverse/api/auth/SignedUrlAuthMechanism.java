@@ -16,6 +16,7 @@ import jakarta.ws.rs.core.UriInfo;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.util.UrlSignerUtil.SIGNED_URL_TOKEN;
 import static edu.harvard.iq.dataverse.util.UrlSignerUtil.SIGNED_URL_USER;
@@ -33,6 +34,8 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
     @Inject
     protected PrivateUrlServiceBean privateUrlSvc;
     
+    private static final Logger logger = Logger.getLogger(SignedUrlAuthMechanism.class.getCanonicalName());
+
     @Override
     public User findUserFromRequest(ContainerRequestContext containerRequestContext) throws WrappedAuthErrorResponse {
         String signedUrlRequestParameter = getSignedUrlRequestParameter(containerRequestContext);
@@ -73,9 +76,9 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
         if (targetUser != null && userApiToken != null) {
             String signedUrl = URLDecoder.decode(uriInfo.getRequestUri().toString(), StandardCharsets.UTF_8);
             
-            System.out.println("Orig URL: " + containerRequestContext.getUriInfo().getRequestUri().toString());
+            logger.fine("Original URL: " + containerRequestContext.getUriInfo().getRequestUri().toString());
             String forwardedProto = containerRequestContext.getHeaderString("X-Forwarded-Proto");
-            System.out.println("XFP: " + forwardedProto);
+            logger.fine("X-Forwarded-Proto is: " + forwardedProto);
             
 
             if (forwardedProto != null && !forwardedProto.isEmpty()) {
