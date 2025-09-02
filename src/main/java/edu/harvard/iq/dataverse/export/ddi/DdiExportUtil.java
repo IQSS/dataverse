@@ -32,7 +32,9 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import edu.harvard.iq.dataverse.util.xml.XmlUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlWriterUtil;
+import io.gdcc.spi.export.ExportDataContext;
 import io.gdcc.spi.export.ExportDataProvider;
+import io.gdcc.spi.export.ExportException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -83,7 +85,7 @@ public class DdiExportUtil {
     public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
     public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
     public static final String CITATION_BLOCK_NAME = "citation";
-    public static final int DATATABLES_BATCH_SIZE = 50; 
+    public static final int DATATABLES_BATCH_SIZE = 1; //50; 
 
     //Some tests don't send real PIDs that can be parsed
     //Use constant empty PID in these cases
@@ -1640,7 +1642,7 @@ public class DdiExportUtil {
             return;
         }
 
-        boolean tabularData = false;
+        boolean dataDscrWritten = false;
 
         // we're not writing the opening <dataDscr> tag until we find an actual 
         // tabular datafile.
@@ -1654,51 +1656,86 @@ public class DdiExportUtil {
              * should instead use the "Data Variable Metadata Access" endpoint.)
              * These days we skip restricted files to avoid this exposure.
              */
-            if (fileJson.containsKey("restricted") && fileJson.getBoolean("restricted")) {
+            if (isFileRestricted(fileJson)) {
                 continue;
-            }
-            if(fileJson.containsKey("embargo")) {
-             String dateString = fileJson.getJsonObject("embargo").getString("dateAvailable");
-             LocalDate endDate = LocalDate.parse(dateString);
-             if (endDate != null && endDate.isAfter(LocalDate.now())) {
-                 //Embargo is active so skip
-                 continue;
-             }
             }
         
             if (fileJson.containsKey("dataTables")) {
-                if (!tabularData) {
+                if (!dataDscrWritten) {
                     xmlw.writeStartElement("dataDscr");
-                    tabularData = true;
+                    dataDscrWritten = true;
                 }
-                if(fileJson.containsKey("varGroups")) {
-                    JsonArray varGroups = fileJson.getJsonArray("varGroups");
-                    for (int j=0;j<varGroups.size();j++){
-                        createVarGroupDDI(xmlw, varGroups.getJsonObject(j));
-                    }
-                }
-                JsonObject dataTable = fileJson.getJsonArray("dataTables").getJsonObject(0);
-                JsonArray vars = dataTable.getJsonArray("dataVariables");
-                if (vars != null) {
-                    for (int j = 0; j < vars.size(); j++) {
-                        createVarDDI(xmlw, vars.getJsonObject(j), fileJson.getJsonNumber("id").toString(),
-                                fileJson.getJsonNumber("fileMetadataId").toString());
-                    }
-                }
+                
+                createVariablesForDataFile(xmlw, fileJson);
             }
         }
 
-        if (tabularData) {
+        if (dataDscrWritten) {
             xmlw.writeEndElement(); // dataDscr
         }
     }
     
     public static void createDataDscrInBatches(XMLStreamWriter xmlw, ExportDataProvider exportDataProvider) throws XMLStreamException {
         int offset = 0;
-        boolean inprogress = true;
+        boolean inProgress = true;
+        boolean dataDscrWritten = false;
+        
+        try {
+            while (inProgress) {
+                JsonArray tabularFileDetails = exportDataProvider.getTabularDataDetails(ExportDataContext.context().withOffset(offset).withLength(DATATABLES_BATCH_SIZE));
+                
+                for (int i = 0; i < tabularFileDetails.size(); i++) {
+                    JsonObject fileJson = tabularFileDetails.getJsonObject(i);
+
+                    if (isFileRestricted(fileJson)) {
+                        continue;
+                    }
+        
+                    if (fileJson.containsKey("dataTables")) {
+                        if (!dataDscrWritten) {
+                            xmlw.writeStartElement("dataDscr");
+                            dataDscrWritten = true;
+                        }
+                
+                        createVariablesForDataFile(xmlw, fileJson);
+                    }
+                }
+                
+                inProgress = tabularFileDetails.size() == DATATABLES_BATCH_SIZE; 
+            }
+        } catch (ExportException ee) {
+            if (dataDscrWritten) {
+                // Unfortunately, we've already written some output by the time 
+                // this exception was caught. We have no other choice but to 
+                // give up
+                throw new XMLStreamException("Failed to write dataDscr variable-level section using exportDataProvider.getTabularData()");
+            } else {
+                // Looks like we haven't written anything out yet. We can try 
+                // and produce the dataDscr section using the classic, "all-at-once" 
+                // approach instead. 
+                createDataDscr(xmlw, exportDataProvider.getDatasetFileDetails());
+            }
+        }
 
     }
-    
+
+    private static void createVariablesForDataFile(XMLStreamWriter xmlw, JsonObject fileJson) throws XMLStreamException {
+        if (fileJson.containsKey("varGroups")) {
+            JsonArray varGroups = fileJson.getJsonArray("varGroups");
+            for (int j = 0; j < varGroups.size(); j++) {
+                createVarGroupDDI(xmlw, varGroups.getJsonObject(j));
+            }
+        }
+        JsonObject dataTable = fileJson.getJsonArray("dataTables").getJsonObject(0);
+        JsonArray vars = dataTable.getJsonArray("dataVariables");
+        if (vars != null) {
+            for (int j = 0; j < vars.size(); j++) {
+                createVarDDI(xmlw, vars.getJsonObject(j), fileJson.getJsonNumber("id").toString(),
+                        fileJson.getJsonNumber("fileMetadataId").toString());
+            }
+        }
+    }
+   
     private static void createVarGroupDDI(XMLStreamWriter xmlw, JsonObject varGrp) throws XMLStreamException {
         xmlw.writeStartElement("varGrp");
         xmlw.writeAttribute("ID", "VG" + varGrp.getJsonNumber("id").toString());
@@ -2103,5 +2140,31 @@ public class DdiExportUtil {
     private static boolean isTabularData(FileDTO fileDTO) {
         return !(fileDTO.getDataFile().getDataTables() == null || fileDTO.getDataFile().getDataTables().isEmpty());
     }
+    
+    /**
+     * Previously (in Dataverse 5.3 and below) the dataDscr section was included
+     * for restricted files but that meant that summary statistics were exposed.
+     * (To get at these statistics, API users should instead use the "Data
+     * Variable Metadata Access" endpoint.) These days we skip restricted files
+     * to avoid this exposure.
+     * @param fileJson - a JsonObject representing one datafile/datatable-worth
+     *                   of tabular data. 
+     */
+    private static boolean isFileRestricted(JsonObject fileJson) {
+        if (fileJson.containsKey("restricted") && fileJson.getBoolean("restricted")) {
+            return true;
+        }
+        if (fileJson.containsKey("embargo")) {
+            String dateString = fileJson.getJsonObject("embargo").getString("dateAvailable");
+            LocalDate endDate = LocalDate.parse(dateString);
+            if (endDate != null && endDate.isAfter(LocalDate.now())) {
+                //Embargo is active so skip
+                return true;
+            }
+        }
+        return false;
+    }
+    
+
 
 }
