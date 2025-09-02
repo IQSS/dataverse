@@ -2913,8 +2913,8 @@ public class UtilIT {
     static Response getStorageDriver(String dvAlias, String apiToken) {
         return getStorageDriver(dvAlias, apiToken, null);
     }
-    static Response getStorageDriver(String dvAlias, String apiToken, Boolean defaultToOwner) {
-        String params = defaultToOwner != null ? "?defaultToOwner=" + defaultToOwner : "";
+    static Response getStorageDriver(String dvAlias, String apiToken, Boolean getEffective) {
+        String params = getEffective != null ? "?getEffective=" + getEffective : "";
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/admin/dataverse/" + dvAlias + "/storageDriver" + params);

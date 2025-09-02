@@ -2184,7 +2184,7 @@ public class Admin extends AbstractApiBean {
     @AuthRequired
     @Path("/dataverse/{alias}/storageDriver")
     public Response getStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias,
-                                     @QueryParam("defaultToOwner") Boolean defaultToOwner) throws WrappedResponse {
+                                     @QueryParam("getEffective") Boolean getEffective) throws WrappedResponse {
         Dataverse dataverse = dataverseSvc.findByAlias(alias);
         if (dataverse == null) {
             return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
@@ -2198,7 +2198,7 @@ public class Admin extends AbstractApiBean {
             return wr.getResponse();
         }
 
-        if (defaultToOwner != null && defaultToOwner) {
+        if (getEffective != null && getEffective) {
             return ok(JsonPrinter.jsonStorageDriver(dataverse.getEffectiveStorageDriverId(), null));
         } else {
             return ok(JsonPrinter.jsonStorageDriver(dataverse.getStorageDriverId(), null));
