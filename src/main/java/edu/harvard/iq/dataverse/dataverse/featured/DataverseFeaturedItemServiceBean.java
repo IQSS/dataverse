@@ -76,7 +76,7 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
                 DataFile df = (DataFile) featuredItem.getDvObject();
                 
                 // Check if the file is restricted or deleted
-                if (df.isRestricted() || df.isInDatasetVersion(latestVersion)) {
+                if (df.isRestricted() || (dataset.equals(df.getOwner()) && !df.isInDatasetVersion(latestVersion))) {
                     logger.fine("Deleting invalidated Featured Item for " + (df.isRestricted() ? "Restricted" : "Deleted") + " Datafile ID: " + df.getId());
                     deleteAllByDvObjectId(df.getId());
                 }
