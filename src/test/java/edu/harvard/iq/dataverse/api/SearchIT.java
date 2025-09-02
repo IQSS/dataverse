@@ -2397,7 +2397,7 @@ public class SearchIT {
         assertEquals(200, makeSuperUser.getStatusCode());
         
         // Delete the dataset
-        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         deleteDatasetResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
