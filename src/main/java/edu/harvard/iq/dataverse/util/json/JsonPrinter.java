@@ -1621,6 +1621,7 @@ public class JsonPrinter {
                 .add("availabilityStatus", termsOfUseAndAccess.getAvailabilityStatus())
                 .add("sizeOfCollection", termsOfUseAndAccess.getSizeOfCollection())
                 .add("studyCompletion", termsOfUseAndAccess.getStudyCompletion())
+                .add("contactForAccess", termsOfUseAndAccess.getContactForAccess())
                 .add("fileAccessRequest", termsOfUseAndAccess.isFileAccessRequest());
     }
 
