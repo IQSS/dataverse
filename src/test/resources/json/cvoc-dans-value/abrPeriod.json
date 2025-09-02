@@ -1,0 +1,1535 @@
+{
+  "@context": {
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "isothes": "http://purl.org/iso25964/skos-thes#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "dct": "http://purl.org/dc/terms/",
+    "dc11": "http://purl.org/dc/elements/1.1/",
+    "uri": "@id",
+    "type": "@type",
+    "lang": "@language",
+    "value": "@value",
+    "graph": "@graph",
+    "label": "rdfs:label",
+    "prefLabel": "skos:prefLabel",
+    "altLabel": "skos:altLabel",
+    "hiddenLabel": "skos:hiddenLabel",
+    "broader": "skos:broader",
+    "narrower": "skos:narrower",
+    "related": "skos:related",
+    "inScheme": "skos:inScheme",
+    "exactMatch": "skos:exactMatch",
+    "closeMatch": "skos:closeMatch",
+    "broadMatch": "skos:broadMatch",
+    "narrowMatch": "skos:narrowMatch",
+    "relatedMatch": "skos:relatedMatch"
+  },
+  "graph": [
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/02aea074-a4a9-4335-9698-bec9a188964e",
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/05a1149d-6410-4fc7-9b11-318235dc2878",
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/08d13f7f-7ba9-4037-a45d-b0cb33e7b0c3",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "bolpot"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/09991368-af46-4512-93b4-d56bdd94837a",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "amulet - alsengemme"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/0b585fbe-caf8-49e6-bd2c-ed8f034ef036",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "Cruciformfibula"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/0fd16779-7c72-46e6-a27b-7c1aec917be5",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "heiligenfibula geemailleerd"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/108f7a1d-c8ce-4c55-ab4f-663998dd6bb8",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "pseudomuntfibula"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/137bcf48-93d8-486a-9eba-6d872e30ad63",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory",
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "mayenaardewerk"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/1444787e-5d77-48e9-a931-3b7bf4008ad1",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "pingsdorfaardewerk:kom"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/17eeedcd-2e80-414b-9059-4fceccc13706",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "haarnaald - bolle kop"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/1a663a6d-dced-4509-9657-13ac276e425d",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory",
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "karolingisch grijsbakkend aardewerk"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/1c1399bf-e2d4-4481-9aca-ce507c537dbc",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "kogelpot:type Dorestad (ongeprofileerd) - Dorestad HIB:schelpgruismagering"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/1cd83c1e-ba0d-4924-af28-e654ee904e0a",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory",
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "Walberberg aardewerk"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/1e359798-2abf-4f91-b89e-ed434056cd09",
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/1f218dac-6129-49e2-938d-efcecdff3c0b",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "haarnaald - polyederkop"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/1f784bad-306c-4ce1-95e4-06b6023b05d2",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "geelwitbakkend gedraaid:beker"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/21196e10-6491-4a71-b21c-ca9c3fb50485",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "bommeloorring"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/2922d4d2-e335-4a47-88bb-28cbfd91d9b9",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "geelwitbakkend handgevormd:kom"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/29c3c134-1020-4239-b257-f2fab3e04e49",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "zalfdoos"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/29c66ad6-242c-4add-87aa-3124abd6b59c",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "Andenne:pot, bolvormig"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/2a0729f1-99cd-466b-94a3-eda91ffb8a8e",
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/2e364fe9-3e01-4085-a442-7282e4659dc9",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "dirhan"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/2f85a3d3-650e-45e7-8e53-b11aae1441de",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory",
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "Zuid-Limburg handgevormd aardewerk"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/35a3199d-c5c6-495b-9cde-c10bf1fc0d63",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "solidus"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/3acdd8c3-dd4b-4225-b531-c6d500a6f7dd",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "kogelpot:type Dorestad (ongeprofileerd)"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/3b9e2c46-9497-461a-90a3-16c944c76963",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "kom - Dorestad HIV:inbuigende rand"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/3ca651bd-1e93-42cf-96bb-e3edc5c488da",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "kogelpot:verticale,hoog opgetrokken rand"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/44bad953-f272-4ec3-b000-ea5338d5fbc8",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "Vikingzwaard:typen Wheeler V-VII"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/4567e775-3216-438b-aa59-39b0e100ec5a",
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/46be796a-1f10-4f4c-9eb6-520d7cfc375e",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory",
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "duisburg aardewerk"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/49cefc62-894c-4939-8bc9-a6c36c01a560",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "Noordfrans geelwitbakkend:tuitpot"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/4ae1dd58-d9f6-46f0-9882-b3c5f22dc6bc",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "kogelpot:type Dorestad (ongeprofileerd) - Dorestad HIA:kleine variant"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/4c74f143-c15f-418d-8451-dbec8c80899d",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory",
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "badorfaardewerk"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f",
+      "type": [
+        "skos:Concept",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "https://data.cultureelerfgoed.nl/id/rnce#PeriodAbr"
+      ],
+      "altLabel": {
+        "lang": "nl",
+        "value": "Ottoons"
+      },
+      "broader": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/ae70e517-2662-49ea-a1be-eca52b2d218e"
+      },
+      "skos:hiddelLabel": {
+        "lang": "nl",
+        "value": "MEVD"
+      },
+      "prefLabel": {
+        "lang": "nl",
+        "value": "Vroege Middeleeuwen D"
+      },
+      "skos:scopeNote": {
+        "lang": "nl",
+        "value": "De periode tussen 900 en 1050, ruwweg gebaseerd op de datering van de overheersing door de dynastie van Ottoonse koningen en de keizers van het Oost-Frankische Rijk, waartoe Nederland ook behoorde."
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#beginYearAbr": 900,
+      "https://data.cultureelerfgoed.nl/id/rnce#codeAbr": {
+        "lang": "nl",
+        "value": "MEVD"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#endYearAbr": 1049,
+      "https://data.cultureelerfgoed.nl/id/rnce#isBeginPeriodAbrOf": [
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/bc6d9959-73b0-4430-a86b-e326fe87e336"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/5e771043-c208-47f4-99b7-1641af0b4d76"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/2922d4d2-e335-4a47-88bb-28cbfd91d9b9"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/add9f8ad-2284-4511-8275-0c5bc795c0cd"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/1f784bad-306c-4ce1-95e4-06b6023b05d2"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/6284d339-beb9-463a-84ff-4d451ced4e24"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/59b28798-377f-4010-acb0-c6a804ec3097"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/d57765d0-22bf-4cc4-8c97-232d042b7df3"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/88e76597-965f-432f-b25c-b4fa108eca84"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/bae2fb38-a77d-408a-b1bb-69ddd3594a63"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/49cefc62-894c-4939-8bc9-a6c36c01a560"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/925c2604-b8fa-4a45-be0a-7d146f675ae7"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/60385fad-ddc7-4af1-b2f8-f14b41cd0456"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/c82986f1-cef5-44b0-9465-7e6a8ff06409"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/75bc1be1-a218-4f4a-9fa8-c6c2aa864c9d"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/60c3498d-7527-4684-97e2-8aeb9ec2e173"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/29c66ad6-242c-4add-87aa-3124abd6b59c"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/2f85a3d3-650e-45e7-8e53-b11aae1441de"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/7573b80c-562c-42f1-acee-dbe9d2011ab7"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/1444787e-5d77-48e9-a931-3b7bf4008ad1"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/88d09cbd-0743-4fbe-bb5d-af7b62be4651"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/a482c1b9-12bc-40ef-9a15-20040b340cd1"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/782c60cd-a98e-4c4b-b51f-e8150486af72"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/9a99163b-c22d-48d6-9ded-ef0112de8524"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/ec2c5349-a70b-4334-80c5-fc41de29d979"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/eeecb436-c8c7-445c-a89b-4e66ee74fe8e"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/46be796a-1f10-4f4c-9eb6-520d7cfc375e"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/5eca7ed8-bfca-450a-bfa7-e2b5e654e9c4"
+        }
+      ],
+      "https://data.cultureelerfgoed.nl/id/rnce#isEndPeriodAbrOf": [
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/2e364fe9-3e01-4085-a442-7282e4659dc9"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/108f7a1d-c8ce-4c55-ab4f-663998dd6bb8"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/dbb05ee3-b8dc-4e86-ba79-c320b364147d"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/3b9e2c46-9497-461a-90a3-16c944c76963"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/09991368-af46-4512-93b4-d56bdd94837a"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/c74a1b87-4013-4516-91df-209009d28d9e"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/bc6d9959-73b0-4430-a86b-e326fe87e336"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/be3776d9-72da-4283-9b31-e7c10c1950b3"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/b555ce1c-fb08-44d4-9f81-87a262b16329"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/0fd16779-7c72-46e6-a27b-7c1aec917be5"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/21196e10-6491-4a71-b21c-ca9c3fb50485"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/44bad953-f272-4ec3-b000-ea5338d5fbc8"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/e7eb705b-5992-4fcb-9f1a-d68073f906ad"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/c9f89fa4-debb-4461-a8cf-5d3a4788ff7e"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/aea78d62-4d84-45ae-9d16-3b75452d4abe"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/82bb0d14-3cd0-4be9-a80f-97e7f18b97c3"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/3ca651bd-1e93-42cf-96bb-e3edc5c488da"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/642113ae-8045-4183-bda9-e11dbdbc0182"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/af72712e-c721-4d7c-884f-4f7ff0e838e2"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/1c1399bf-e2d4-4481-9aca-ce507c537dbc"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/4ae1dd58-d9f6-46f0-9882-b3c5f22dc6bc"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/ef22ff5e-4667-4e6f-be61-eda1a50006f5"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/3acdd8c3-dd4b-4225-b531-c6d500a6f7dd"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/77883f24-528e-4891-8513-2ccccaa22dcb"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/0b585fbe-caf8-49e6-bd2c-ed8f034ef036"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/942c5c6f-f1f2-4443-a1d8-b22376c276c4"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/ad921750-046f-4e9c-8cc4-d79f5c6c201e"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/6e6b2f8e-8841-453f-a374-76e9ed458b5e"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/35a3199d-c5c6-495b-9cde-c10bf1fc0d63"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/dae339a1-7021-4c1d-bc1a-66625f6a96f3"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/76d45cf1-4391-404c-8c8f-e9152fd70203"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/ba62ecc3-2dc8-4f2c-99a5-6cbd448d7bfe"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/17eeedcd-2e80-414b-9059-4fceccc13706"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/fc399356-62df-4a0b-9ac7-eeca9ab4dcf0"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/1f218dac-6129-49e2-938d-efcecdff3c0b"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/57f8e38c-58ff-4d02-817d-a668466057ec"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/ab81b9b2-53f5-496b-995a-fd81b851aba2"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/9a119be1-0225-4795-a1fb-fa782548bfb2"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/fab8ad7a-588b-4370-9a80-b73735732847"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/f8d93a84-153a-4079-97e2-6f85d234441e"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/29c3c134-1020-4239-b257-f2fab3e04e49"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/08d13f7f-7ba9-4037-a45d-b0cb33e7b0c3"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/56ecd5d7-2591-416f-99f1-c227ed8650d9"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/c18ecbf9-f787-4e38-854d-32df989d9eb7"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/53611175-c12c-4520-adca-437899332c24"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/1cd83c1e-ba0d-4924-af28-e654ee904e0a"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/1a663a6d-dced-4509-9657-13ac276e425d"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/137bcf48-93d8-486a-9eba-6d872e30ad63"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/4c74f143-c15f-418d-8451-dbec8c80899d"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/46be796a-1f10-4f4c-9eb6-520d7cfc375e"
+        }
+      ],
+      "https://data.cultureelerfgoed.nl/id/rnce#sortPeriod": "caad"
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/53611175-c12c-4520-adca-437899332c24",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory",
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "badorfaardewerk (Hunneschans-type)"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/56ecd5d7-2591-416f-99f1-c227ed8650d9",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory",
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "kogelpotaardewerk schelgruismagering"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/57f8e38c-58ff-4d02-817d-a668466057ec",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "penslot"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/59b28798-377f-4010-acb0-c6a804ec3097",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "geelwitbakkend gedraaid:pot, bolvormig"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/5e771043-c208-47f4-99b7-1641af0b4d76",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "pothelm"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/5eca7ed8-bfca-450a-bfa7-e2b5e654e9c4",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory",
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "pingsdorfaardewerk"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/60385fad-ddc7-4af1-b2f8-f14b41cd0456",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "Noordfrans geelwitbakkend:kan"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/60c3498d-7527-4684-97e2-8aeb9ec2e173",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "Andenne:tuitpot"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/6284d339-beb9-463a-84ff-4d451ced4e24",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "geelwitbakkend handgevormd:pot, bolvorm. - Zuidlimburgs"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/642113ae-8045-4183-bda9-e11dbdbc0182",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "kogelpot:type Dorestad (ongeprofileerd) - Dorestad HIC"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/6e6b2f8e-8841-453f-a374-76e9ed458b5e",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "weefgewicht - ringvormig"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/70df9b2f-b8ac-43c0-8d27-f3c998b61a29",
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/7573b80c-562c-42f1-acee-dbe9d2011ab7",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory",
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "Zuid-Limburg gedraaid aardewerk"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/75bc1be1-a218-4f4a-9fa8-c6c2aa864c9d",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "geelwitbakkend gedraaid:tuitpot"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/76d45cf1-4391-404c-8c8f-e9152fd70203",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "fibula - geemailleerd"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/77883f24-528e-4891-8513-2ccccaa22dcb",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "kogelpot:horizontale rand,ongeprofileerd"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/782c60cd-a98e-4c4b-b51f-e8150486af72",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "pingsdorfaardewerk:tuitpot"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/7e9f750d-2331-4342-9577-4ba1b1d98ea3",
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/82bb0d14-3cd0-4be9-a80f-97e7f18b97c3",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "slijpsteen - doorboord"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/88d09cbd-0743-4fbe-bb5d-af7b62be4651",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "pingsdorfaardewerk:beker"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/88e76597-965f-432f-b25c-b4fa108eca84",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "kogelpot - Kempische variant"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/925c2604-b8fa-4a45-be0a-7d146f675ae7",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "geelwitbakkend gedraaid:kan"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/942c5c6f-f1f2-4443-a1d8-b22376c276c4",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "gelijkarmige fibula"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/9a119be1-0225-4795-a1fb-fa782548bfb2",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "umbo"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/9a99163b-c22d-48d6-9ded-ef0112de8524",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "pingsdorfaardewerk:kan"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/a482c1b9-12bc-40ef-9a15-20040b340cd1",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "pingsdorfaardewerk:pot"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/a627267f-67f1-454a-a9f8-daf4e281993c",
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/a9003966-105f-477a-8840-04f61b962b11",
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/ab81b9b2-53f5-496b-995a-fd81b851aba2",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "handgreep"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/ad921750-046f-4e9c-8cc4-d79f5c6c201e",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "schijffibula"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/add9f8ad-2284-4511-8275-0c5bc795c0cd",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "geelwitbakkend handgevormd:kom - Zuidlimburgs"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/ae70e517-2662-49ea-a1be-eca52b2d218e",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#PeriodAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "narrower": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      },
+      "prefLabel": {
+        "lang": "nl",
+        "value": "Vroege Middeleeuwen"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/aea78d62-4d84-45ae-9d16-3b75452d4abe",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "steelpan - Dorestad HII"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/af72712e-c721-4d7c-884f-4f7ff0e838e2",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "kogelpot:type Dorestad (ongeprofileerd) - Dorestad HIA"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/b555ce1c-fb08-44d4-9f81-87a262b16329",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "schijffibula - Maltezer kruis"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/ba62ecc3-2dc8-4f2c-99a5-6cbd448d7bfe",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "schijffibula - geemailleerd"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/bae2fb38-a77d-408a-b1bb-69ddd3594a63",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "kogelpot - tuitvormige oren"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/bc6d9959-73b0-4430-a86b-e326fe87e336",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "oorring - Byzantijns"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/be3776d9-72da-4283-9b31-e7c10c1950b3",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "pseudokameefibula"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/c18ecbf9-f787-4e38-854d-32df989d9eb7",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "Badorf aardewerk - Dorestad WII A-E:eivormig/radstempel"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/c74a1b87-4013-4516-91df-209009d28d9e",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "runenstaaf"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/c82986f1-cef5-44b0-9465-7e6a8ff06409",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "geelwitbakkend gedraaid:kom"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/c9f89fa4-debb-4461-a8cf-5d3a4788ff7e",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "Badorf aardewerk - Dorestad WI/II:Badorfhybride"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/d57765d0-22bf-4cc4-8c97-232d042b7df3",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "geelwitbakkend handgevormd:pot, bolvorm."
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/dae339a1-7021-4c1d-bc1a-66625f6a96f3",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "munthanger"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/dbb05ee3-b8dc-4e86-ba79-c320b364147d",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "kruisvormige fibula"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/e7eb705b-5992-4fcb-9f1a-d68073f906ad",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "Badorf aardewerk - reliefbandamfoor:Dorestad WI A-C"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/ec2c5349-a70b-4334-80c5-fc41de29d979",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory",
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "pingsdorfaardewerk (Zuid-Limburg type)"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/eeecb436-c8c7-445c-a89b-4e66ee74fe8e",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory",
+        "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "witbakkend Maaslands aardewerk"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/ef22ff5e-4667-4e6f-be61-eda1a50006f5",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "kogelpot - versierd en eenvoudig randprofiel"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/f8d93a84-153a-4079-97e2-6f85d234441e",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "weefgewicht - kegelvormig"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/f9c4e8e1-4f8f-46c0-aed4-a75dda88ee60",
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/fab8ad7a-588b-4370-9a80-b73735732847",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "beslag (schildonderdeel)"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/fc399356-62df-4a0b-9ac7-eeca9ab4dcf0",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "haarnaald - biconische kop"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f"
+      }
+    }
+  ]
+}
