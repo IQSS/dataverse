@@ -84,19 +84,6 @@ public interface Exporter {
     default Optional<String> getPrerequisiteFormatName() {
         return Optional.empty();
     }
-        
-    /**
-     * Most metadata formats do not require tabular metadata to be generated. 
-     * (the 2 known cases that encode variable-level information, as of Dataverse 6.7, 
-     * are rich DDI and Croissant). In order to serve it more efficiently,
-     * the data provider may need to be initialized in a special way (with access
-     * to EJBs that in most cases isn't needed), so it may help to know 
-     * programmatically whether it's required for this format. 
-     * @return Optional<Boolean> 
-     */
-    default Optional<Boolean> isNeedsTabularMetadata() {
-        return Optional.of(false);
-    }
 
     /**
      * Harvestable Exporters will be available as options in Dataverse's Harvesting mechanism.
