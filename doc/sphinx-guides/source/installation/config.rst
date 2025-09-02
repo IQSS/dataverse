@@ -94,6 +94,16 @@ First of all, confirm that access is denied! If you are in fact able to access t
 
 Still feel like activating this option in your configuration? - Have fun and be safe!
 
+.. _signed-urls-forwarded-proto-header:
+
+Using X-Forwarded-Proto for Signed Urls
++++++++++++++++++++++++++++++++++++++++
+
+If you use an Apache or Nginx proxy, or have a firewall such as Anubis, and they are configured to forward traffic to Dataverse over http
+(i.e. your proxy receives user calls over https but forwards locally to Dataverse over http), signed urls, used by external tools and 
+upload apps (such as DVWebloader), are likely to fail unless you configure your proxy to send an X-ForwardedProto HTTP Header.
+This allows Dataverse to recognize that the communication from the user was over https and that validation of signed urls should assume 
+they started with https:// (rather than http:// as received from the proxy).
 
 .. _PrivacyConsiderations:
 
