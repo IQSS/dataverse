@@ -2402,6 +2402,12 @@ public class SearchIT {
         deleteDatasetResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        try {
+            // give the bag time to generate
+            Thread.sleep(3000);
+        } catch (InterruptedException ex) {
+        }
+
         // Delete the dataverse
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteDataverseResponse.prettyPrint();
