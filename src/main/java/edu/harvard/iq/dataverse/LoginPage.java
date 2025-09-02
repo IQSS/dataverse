@@ -275,7 +275,9 @@ public class LoginPage implements java.io.Serializable {
         // parameter (this will be the FOURTH redirect in the shib. authentication
         // loop), the redirectPage= pointing to the final destination Dataverse 
         // page. Note the corresponding multiple-level URL encoding involved.
-        String finalRedirectUrl = wayFinderUrl + "%253FredirectPage%253D" + getRedirectPage().replaceAll("/", "%25252F");
+        String finalRedirectUrl = wayFinderUrl 
+                + "%253FredirectPage%253D" 
+                + getRedirectPage().replaceAll("/", "%25252F").replaceAll("=", "%25253D").replaceAll("\\?", "%25253F").replaceAll("&", "%252526");
         logger.fine("final redirect url: " + finalRedirectUrl);
         return finalRedirectUrl;
     }
