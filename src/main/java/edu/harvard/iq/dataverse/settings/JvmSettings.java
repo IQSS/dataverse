@@ -75,7 +75,7 @@ public enum JvmSettings {
     // INDEX CONCURENCY
     SCOPE_SOLR_CONCURENCY(SCOPE_SOLR, "concurrency"),
     MAX_ASYNC_INDEXES(SCOPE_SOLR_CONCURENCY, "max-async-indexes"),
-    
+
     // RSERVE CONNECTION
     SCOPE_RSERVE(PREFIX, "rserve"),
     RSERVE_HOST(SCOPE_RSERVE, "host"),
@@ -279,7 +279,12 @@ public enum JvmSettings {
     //CSL CITATION SETTINGS
     SCOPE_CSL(PREFIX, "csl"),
     CSL_COMMON_STYLES(SCOPE_CSL, "common-styles"),
-    
+
+    // PersonOrOrgUtil SETTINGS
+    SCOPE_PERSONORORG(PREFIX, "person-or-org"),
+    ASSUME_COMMA_IN_PERSON_NAME(SCOPE_PERSONORORG, "assume-comma-in-person-name", "dataverse.personOrOrg.assumeCommaInPersonName"),
+    ORG_PHRASE_ARRAY(SCOPE_PERSONORORG, "org-phrase-array"),
+
     // CORS SETTINGS
     SCOPE_CORS(PREFIX, "cors"),
     CORS_ORIGIN(SCOPE_CORS, "origin"),
