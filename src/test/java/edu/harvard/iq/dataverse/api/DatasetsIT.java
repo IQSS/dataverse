@@ -3875,6 +3875,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        
         Response setCurationLabelSets = UtilIT.setSetting(SettingsServiceBean.Key.AllowedCurationLabels, "{\"StandardProcess\":[\"Author contacted\", \"Privacy Review\", \"Awaiting paper publication\", \"Final Approval\"],\"AlternateProcess\":[\"State 1\",\"State 2\",\"State 3\"]}");
         setCurationLabelSets.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -3885,7 +3887,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response setDataverseCurationLabelSetResponse = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "AlternateProcess");
         setDataverseCurationLabelSetResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
         
-        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
         assertEquals(200, makeSuperUser.getStatusCode());
 
         //Non-existent option
@@ -3996,7 +3998,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertTrue(foundState2, "History should contain the State 2 label after updatecurrent");        
        
         // Clean up
-        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         assertEquals(200, deleteDatasetResponse.getStatusCode());
     
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
