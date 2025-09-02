@@ -498,6 +498,7 @@ public class JsonPrinterTest {
         termsOfUseAndAccess.setAvailabilityStatus("Test Availability Status");
         termsOfUseAndAccess.setSizeOfCollection("Test Size of Collection");
         termsOfUseAndAccess.setStudyCompletion("Test Study Completion");
+        termsOfUseAndAccess.setFileAccessRequest(true);
 
         JsonObjectBuilder job = JsonPrinter.jsonTermsOfUseAndAccess(termsOfUseAndAccess);
         assertNotNull(job);
@@ -519,6 +520,7 @@ public class JsonPrinterTest {
         assertEquals(termsOfUseAndAccess.getAvailabilityStatus(), jsonObject.getString("availabilityStatus"));
         assertEquals(termsOfUseAndAccess.getSizeOfCollection(), jsonObject.getString("sizeOfCollection"));
         assertEquals(termsOfUseAndAccess.getStudyCompletion(), jsonObject.getString("studyCompletion"));
+        assertEquals(termsOfUseAndAccess.isFileAccessRequest(), jsonObject.getBoolean("fileAccessRequest"));
 
         // Assert license is null
         assertNull(jsonObject.getJsonObject("license"));

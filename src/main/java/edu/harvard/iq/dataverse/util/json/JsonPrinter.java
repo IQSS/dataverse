@@ -1620,7 +1620,8 @@ public class JsonPrinter {
                 .add("originalArchive", termsOfUseAndAccess.getOriginalArchive())
                 .add("availabilityStatus", termsOfUseAndAccess.getAvailabilityStatus())
                 .add("sizeOfCollection", termsOfUseAndAccess.getSizeOfCollection())
-                .add("studyCompletion", termsOfUseAndAccess.getStudyCompletion());
+                .add("studyCompletion", termsOfUseAndAccess.getStudyCompletion())
+                .add("fileAccessRequest", termsOfUseAndAccess.isFileAccessRequest());
     }
 
     public static JsonArrayBuilder jsonTemplateInstructions(Map<String, String> templateInstructions) {
