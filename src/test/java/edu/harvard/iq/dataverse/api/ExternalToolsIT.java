@@ -38,12 +38,15 @@ public class ExternalToolsIT {
 
     @Test
     public void testGetExternalTools() {
+        //Tests that the api exists - response may or may not include tools depending on when the test runs
         Response getExternalTools = UtilIT.getExternalTools();
         getExternalTools.prettyPrint();
+        getExternalTools.then().assertThat()
+        .statusCode(OK.getStatusCode());
     }
 
     @Test
-    public void testExternalToolsNonAdminEndpoint() {
+    public void testExternalToolsLifecycle() {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         createUser.then().assertThat()
@@ -89,45 +92,51 @@ public class ExternalToolsIT {
  }
 """;
 
+        //Add tool
+        
         Response addExternalTool = UtilIT.addExternalTool(JsonUtil.getJsonObject(toolManifest), apiToken);
         addExternalTool.prettyPrint();
         addExternalTool.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.displayName", CoreMatchers.equalTo("Dataset Configurator"));
 
+        // Get by id
         Long toolId = JsonPath.from(addExternalTool.getBody().asString()).getLong("data.id");
-//        Response getExternalToolsByDatasetId = UtilIT.getExternalToolForDatasetById(datasetId.toString(), "configure", apiToken, toolId.toString()); // TODO: delete
-        Response getExternalToolsByDatasetId = UtilIT.getDatasetToolUrl(datasetId.toString(), toolId.toString(), apiToken, null);
-        getExternalToolsByDatasetId.prettyPrint();
-        getExternalToolsByDatasetId.then().assertThat()
+        Response getExternalToolById = UtilIT.getExternalTool(toolId);
+        getExternalToolById.prettyPrint();
+        getExternalToolById.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.displayName", CoreMatchers.equalTo("Dataset Configurator"))
-//                .body("data.scope", CoreMatchers.equalTo("dataset"))
-//                .body("data.types[0]", CoreMatchers.equalTo("configure"))
-                .body("data.toolUrl", CoreMatchers.equalTo("https://datasetconfigurator.com?datasetPid=" + datasetPid));
+                .body("data.scope", CoreMatchers.equalTo("dataset"))
+                .body("data.types[0]", CoreMatchers.equalTo("configure"))
+                .body("data.toolParameters.queryParameters", Matchers.hasSize(2));
 
+        // Get all tools for a given dataset - should be at least this one
         Response getExternalTools = UtilIT.getExternalTools(apiToken);
         getExternalTools.prettyPrint();
         getExternalTools.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        Response getExternalTool = UtilIT.getExternalTool(toolId, apiToken);
-        getExternalTool.prettyPrint();
-        getExternalTool.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode())
+                .body("data", Matchers.hasSize(Matchers.greaterThanOrEqualTo(1)));
 
-        // non superuser can only view tools
+        // Get tool launch Url for a give dataset
+        Response getExternalToolUrl = UtilIT.getDatasetToolUrl(datasetId.toString(), toolId.toString(), apiToken, null);
+        getExternalToolUrl.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.displayName", CoreMatchers.equalTo("Dataset Configurator"))
+                .body("data.datasetId", CoreMatchers.equalTo(datasetId))
+                .body("data.toolUrl", CoreMatchers.equalTo("https://datasetconfigurator.com?datasetPid=" + datasetPid));
+
+        // non superuser can also view tools
         UtilIT.setSuperuserStatus(username, false);
         getExternalTools = UtilIT.getExternalTools(apiToken);
         getExternalTools.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-//        getExternalToolsByDatasetId = UtilIT.getExternalToolForDatasetById(datasetId.toString(), "configure", apiToken, toolId.toString()); // TODO: delete
-        getExternalToolsByDatasetId = UtilIT.getDatasetToolUrl(datasetId.toString(), toolId.toString(), apiToken, null);
-        getExternalToolsByDatasetId.prettyPrint();
-        getExternalToolsByDatasetId.then().assertThat()
-                .statusCode(OK.getStatusCode());
+        // but can't get a launch url (which would need to be signed for a draft dataset)
+        getExternalToolUrl = UtilIT.getDatasetToolUrl(datasetId.toString(), toolId.toString(), apiToken, null);
+        getExternalToolUrl.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode());
 
-        //Add by non-superuser will fail
+        //Add by non-superuser will also fail
         addExternalTool = UtilIT.addExternalTool(JsonUtil.getJsonObject(toolManifest), apiToken);
         addExternalTool.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode())
@@ -219,23 +228,13 @@ public class ExternalToolsIT {
                 .body("data.scope", CoreMatchers.equalTo("file"))
                 .statusCode(OK.getStatusCode());
 
-        // TODO: delete this test
-//        Response getExternalToolsForFileInvalidType = UtilIT.getExternalToolsForFile(tabularFileId.toString(), "invalidType", apiToken);
-//        getExternalToolsForFileInvalidType.prettyPrint();
-//        getExternalToolsForFileInvalidType.then().assertThat()
-//                .statusCode(BAD_REQUEST.getStatusCode())
-//                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure, preview, query]."));
-
        // Getting tool by tool Id to avoid issue where there are existing tools
         String toolIdString = toolId.toString();
-//        Response getExternalToolsForTabularFiles = UtilIT.getExternalToolForFileById(tabularFileId.toString(), "explore", apiToken, toolIdString); // TODO: delete
         Response getExternalToolsForTabularFiles = UtilIT.getFileToolUrl(tabularFileId.toString(), toolIdString, apiToken, null);
         getExternalToolsForTabularFiles.prettyPrint();
         getExternalToolsForTabularFiles.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.displayName", CoreMatchers.equalTo("AwesomeTool"))
-//                .body("data.scope", CoreMatchers.equalTo("file"))
-//                .body("data.contentType", CoreMatchers.equalTo("text/tab-separated-values"))
                 .body("data.toolUrl", CoreMatchers.equalTo("http://awesometool.com?fileid=" + tabularFileId + "&key=" + apiToken));
 
         Response getExternalToolsForJuptyerNotebooks = UtilIT.getFileToolUrl(jupyterNotebookFileId.toString(), toolId.toString(), apiToken, null);
@@ -310,19 +309,10 @@ public class ExternalToolsIT {
         
         Long toolId = JsonPath.from(addExternalTool.getBody().asString()).getLong("data.id");
 
-        // TODO: delete this test
-//        Response getExternalToolsByDatasetIdInvalidType = UtilIT.getExternalToolsForDataset(datasetId.toString(), "invalidType", apiToken);
-//        getExternalToolsByDatasetIdInvalidType.prettyPrint();
-//        getExternalToolsByDatasetIdInvalidType.then().assertThat()
-//                .statusCode(BAD_REQUEST.getStatusCode())
-//                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure, preview, query]."));
-//
-//        Response getExternalToolsByDatasetId = UtilIT.getExternalToolForDatasetById(datasetId.toString(), "explore", apiToken, toolId.toString());
         Response getExternalToolsByDatasetId = UtilIT.getDatasetToolUrl(datasetId.toString(), toolId.toString(), apiToken, null);
         getExternalToolsByDatasetId.prettyPrint();
         getExternalToolsByDatasetId.then().assertThat()
                 .body("data.displayName", CoreMatchers.equalTo("DatasetTool1"))
-//                .body("data.scope", CoreMatchers.equalTo("dataset"))
                 .body("data.toolUrl", CoreMatchers.equalTo("http://datasettool1.com?datasetPid=" + datasetPid + "&key=" + apiToken))
                 .statusCode(OK.getStatusCode());
         
@@ -385,13 +375,10 @@ public class ExternalToolsIT {
                 .body("data.displayName", CoreMatchers.equalTo("Dataset Configurator"));
         
         Long toolId = JsonPath.from(addExternalTool.getBody().asString()).getLong("data.id");
-//        Response getExternalToolsByDatasetId = UtilIT.getExternalToolForDatasetById(datasetId.toString(), "configure", apiToken, toolId.toString()); // TODO: delete
         Response getExternalToolsByDatasetId = UtilIT.getDatasetToolUrl(datasetId.toString(), toolId.toString(), apiToken, null);
         getExternalToolsByDatasetId.prettyPrint();
         getExternalToolsByDatasetId.then().assertThat()
                 .body("data.displayName", CoreMatchers.equalTo("Dataset Configurator"))
-//                .body("data.scope", CoreMatchers.equalTo("dataset"))
-//                .body("data.types[0]", CoreMatchers.equalTo("configure"))
                 .body("data.toolUrl", CoreMatchers.equalTo("https://datasetconfigurator.com?datasetPid=" + datasetPid))
                 .statusCode(OK.getStatusCode());
         
@@ -716,23 +703,18 @@ public class ExternalToolsIT {
                 .statusCode(OK.getStatusCode());
 
         // No tools for false HDF5 file. Aux file couldn't be extracted. Doesn't meet requirements.
-//        Response getToolsForFalseHdf5 = UtilIT.getExternalToolsForFile(falseHdf5.toString(), "preview", apiToken); // TODO: delete
         Response getToolsForFalseHdf5 = UtilIT.getFileToolUrl(falseHdf5.toString(), toolId.toString(), apiToken, null);
         getToolsForFalseHdf5.prettyPrint();
-        // TODO: update this assertion once the backend is fixed. The backend should not be offering a tool in this case.
         getToolsForFalseHdf5.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data", Matchers.hasSize(0));
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("data.message", CoreMatchers.equalTo("External tool requirements not met for this file."));
 
         // The tool shows for a true HDF5 file. The NcML aux file is available. Requirements met.
-//        Response getToolsForTrueHdf5 = UtilIT.getExternalToolForFileById(trueHdf5.toString(), "preview", apiToken, toolId.toString()); // TODO: delete
         Response getToolsForTrueHdf5 = UtilIT.getFileToolUrl(trueHdf5.toString(), toolId.toString(), apiToken, null);
         getToolsForTrueHdf5.prettyPrint();
         getToolsForTrueHdf5.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.displayName", CoreMatchers.equalTo("HDF5 Tool"));
-//                .body("data.scope", CoreMatchers.equalTo("file"))
-//                .body("data.contentType", CoreMatchers.equalTo("application/x-hdf5"));
         
         //Delete the tool added by this test...
         Response deleteExternalTool = UtilIT.deleteExternalTool(toolId);
