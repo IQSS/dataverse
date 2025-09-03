@@ -3956,7 +3956,13 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         JsonObject statusAfterPublish = Json.createReader(new StringReader(getStatusAfterPublish.body().asString())).readObject();
         JsonObject dataObject = statusAfterPublish.getJsonObject("data");
         assertFalse(dataObject.containsKey("label"), "Curation label should be empty after publishing");
-           
+          
+        //Cause a new draft version
+        String jsonLDTerms = "{\"https://dataverse.org/schema/core#fileTermsOfAccess\":{\"https://dataverse.org/schema/core#dataAccessPlace\":\"Somewhere\"}}";
+        Response updateTerms = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, jsonLDTerms, true);
+        updateTerms.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
         // Add a new valid curation label
         Response setNewStatus = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 2");
         setNewStatus.then().assertThat().statusCode(OK.getStatusCode());
