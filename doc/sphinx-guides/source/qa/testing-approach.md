@@ -34,7 +34,7 @@ Think about risk. Is the feature or function part of a critical area such as per
 
 ## Smoke Test
 
-1. Go to the homepage on <https://dataverse-internal.iq.harvard.edu>. Scroll to the bottom to ensure the build number is the one you intend to test from Jenkins.
+1. Go to the homepage on <https://qa.dataverse.org> (this server has production data). Scroll to the bottom to ensure the build number is the one you intend to test from Jenkins.
 1. Create a new user: It's fine to use a formulaic name with your initials and date and make the username and password the same, eg. kc080622.
 1. Create a dataverse: You can use the same username.
 1. Create a dataset: You can use the same username; fill in the required fields (do not use a template).

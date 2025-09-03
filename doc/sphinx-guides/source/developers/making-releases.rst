@@ -8,9 +8,13 @@ Making Releases
 Introduction
 ------------
 
-This document is about releasing the main Dataverse app (https://github.com/IQSS/dataverse). See :doc:`making-library-releases` for how to release our various libraries. Other projects have their own release documentation.
+.. note:: This document is about releasing the main Dataverse app (https://github.com/IQSS/dataverse). See :doc:`making-library-releases` for how to release our various libraries. Other projects have their own release documentation.
 
-Below you'll see branches like "develop" and "master" mentioned. For more on our branching strategy, see :doc:`version-control`.
+.. note:: Below you'll see branches like "develop" and "master" mentioned. For more on our branching strategy, see :doc:`version-control`.
+
+Dataverse releases are time-based as opposed to being feature-based. That is, we announce an approximate release date in advance (e.g. for `6.8 <https://groups.google.com/g/dataverse-community/c/Y0G9mw4raLU/m/om8vjjVAAQAJ>`_) and try to hit that deadline. If features we're working on aren't ready yet, the train will leave the station without them. We release quarterly.
+
+We also announce "last call" dates for both community pull requests and those made by core developers. If you are part of the community and have made a pull request, you have until this date to ask the team to add the upcoming milestone to your pull request. The same goes for core developers. This is not a guarantee that these pull requests will be reviewed, tested, QA'ed and merged before :ref:`code freeze <declare-code-freeze>`, but we'll try.
 
 Regular or Hotfix?
 ------------------
@@ -30,7 +34,9 @@ Early on, make sure it's clear what type of release this is. The steps below des
 Ensure Issues Have Been Created
 -------------------------------
 
-Some of the steps in this document are well-served by having their own dedicated GitHub issue. You'll see a label like this on them:
+We have a "create release issues" script at https://github.com/IQSS/sabo that should be run a week or so before code freeze.
+
+For each issue that is created by the script there is likely a corresponding step in this document that has "dedicated" label on it like this:
 
 |dedicated|
 
@@ -41,20 +47,39 @@ There are a variety of reasons why a step might deserve its own dedicated issue:
 
 Steps don't get their own dedicated issue if it would be confusing to have multiple people involved. Too many cooks in the kitchen, as they say. Also, some steps are so small the overhead of an issue isn't worth it.
 
-Before the release even begins you can coordinate with the project manager about the creation of these issues.
-
 .. |dedicated| raw:: html
 
       <span class="label label-success pull-left">
         Dedicated Issue
       </span>&nbsp;
 
+.. _declare-code-freeze:
+
 Declare a Code Freeze
 ---------------------
 
-The following steps are made more difficult if code is changing in the "develop" branch. Declare a code freeze until the release is out. Do not allow pull requests to be merged.
+When we declare a code freeze, we mean:
 
-For a hotfix, a code freeze (no merging) is necessary not because we want code to stop changing in the branch being hotfix released, but because bumping the version used in Jenkins/Ansible means that API tests will fail in pull requests until the version is bumped in those pull requests.
+- No additional features will be merged until the freeze is lifted.
+- Bug fixes will only be merged if they relate to the upcoming release in some way, such as fixes for regressions or performance problems in that release.
+- Pull requests that directly affect the release, such as bumping the version, will be merged, of course.
+
+The benefits of the code freeze are:
+
+- The team can focus on getting the release out together.
+- Regression and performance testing can happen on code that isn't changing.
+- The release notes can be written without having to worry about new features (and their release note snippets) being merged in.
+
+In short, the steps described below become easier under a code freeze.
+
+Note: for a hotfix, a code freeze is necessary not because we want code to stop changing in the branch being hotfix released, but because bumping the version used in Jenkins/Ansible means that API tests will fail in pull requests until the version is bumped in those pull requests. Basically, we want to get the hotfix merged quickly so we can propogate the version bump into all open pull requests so that API tests can start passing again in those pull requests.
+
+Push Back Milestones on Pull Requests That Missed the Train
+-----------------------------------------------------------
+
+As of this writing, we optimistically add milestones to issues and pull requests, hoping that the work will be complete before code freeze. Inevitably, we're a bit too optimistic.
+
+Hopefully, as the release approached, the team has already decided which pull requests (that aren't related to the release) won't make the cut. If not, go ahead and bump them to the next release.
 
 Conduct Performance Testing
 ---------------------------
@@ -68,6 +93,7 @@ Conduct Regression Testing
 
 |dedicated|
 
+Regression testing should be conducted on production data.
 See :doc:`/qa/testing-approach` for details.
 Refer to the provided regression checklist for the list of items to verify during the testing process: `Regression Checklist <https://docs.google.com/document/d/1OsGJV0sMLDSmfkU9-ee8h_ozbQcUDJ1EOwNPm4dC63Q/edit?usp=sharing>`_.
 
@@ -85,7 +111,7 @@ The task at or near release time is to collect these snippets into a single file
 - Find the issue in GitHub that tracks the work of creating release notes for the upcoming release.
 - Create a branch, add a .md file for the release (ex. 5.10.1 Release Notes) in ``/doc/release-notes`` and write the release notes, making sure to pull content from the release note snippets mentioned above. Snippets may not include any issue number or pull request number in the text so be sure to copy the number from the filename of the snippet into the final release note.
 - Delete (``git rm``) the release note snippets as the content is added to the main release notes file.
-- Include instructions describing the steps required to upgrade the application from the previous version. These must be customized for release numbers and special circumstances such as changes to metadata blocks and infrastructure.
+- Include instructions describing the steps required to upgrade the application from the previous version. These must be customized for release numbers and special circumstances such as changes to metadata blocks and infrastructure. These instructions are required for the next steps (deploying to various environments) so try to prioritize them over finding just the right words in release highlights (which you can do later).
 - Make a pull request. Here's an example: https://github.com/IQSS/dataverse/pull/11613
 - Note that we won't merge the release notes until after we have confirmed that the upgrade instructions are valid by performing a couple upgrades.
 
@@ -110,12 +136,39 @@ ssh into the dataverse-internal server and download the release candidate war fi
 
 Go to /doc/release-notes, open the release-notes.md file for the release we're working on, and perform all the steps under "Upgrade Instructions". Note that for regular releases, we haven't bumped the version yet so you won't be able to follow the steps exactly. (For hotfix releases, the version will be bumped already.)
 
+Deploy Release Candidate to QA
+------------------------------
+
+|dedicated|
+
+Deploy the same war file to https://qa.dataverse.org using the same upgrade instructions as above.
+
 Deploy Release Candidate to Demo
 --------------------------------
 
 |dedicated|
 
 Deploy the same war file to https://demo.dataverse.org using the same upgrade instructions as above.
+
+Solicit Feedback from Curation Team
+-----------------------------------
+
+Ask the curation team to test on https://qa.dataverse.org and give them five days to provide feedback.
+
+Build the Guides for the Release Candidate
+------------------------------------------
+
+Go to https://jenkins.dataverse.org/job/guides.dataverse.org/ and make the following adjustments to the config:
+
+- Repository URL: ``https://github.com/IQSS/dataverse.git``
+- Branch Specifier (blank for 'any'): ``*/develop``
+- ``VERSION`` (under "Build Steps"): use the next release version but add "-rc.1" to the end. Don't prepend a "v". Use ``6.8-rc.1`` (for example)
+
+Click "Save" then "Build Now".
+
+Make sure the guides directory appears in the expected location such as https://guides.dataverse.org/en/6.8-rc.1/
+
+When previewing the HTML version of docs from pull requests, we don't usually use this Jenkins job, relying instead on automated ReadTheDocs builds. The reason for doing this step now while we wait for feedback from the Curation Team is that it's an excellent time to fix the Jenkins job, if necessary, to accomodate any changes needed to continue to build the docs. For example, Sphinx might need to be updated or a dependency might need to be installed. Such changes should be listed in the release notes for documentation writers.
 
 Merge Release Notes (Once Ready)
 --------------------------------
@@ -171,9 +224,18 @@ Merge "develop" into "master" (non-hotfix only)
 
 If this is a regular (non-hotfix) release, create a pull request to merge the "develop" branch into the "master" branch using this "compare" link: https://github.com/IQSS/dataverse/compare/master...develop
 
-Once important tests have passed (compile, unit tests, etc.), merge the pull request (skipping code review is ok). Don't worry about style tests failing such as for shell scripts. 
+Allow time for important tests (compile, unit tests, etc.) to pass. Don't worry about style tests failing such as for shell scripts. It's ok to skip code review.
+
+When merging the pull request, be sure to choose "create a merge commit" and not "squash and merge" or "rebase and merge". We suspect that choosing squash or rebase may have led to `lots of merge conflicts <https://github.com/IQSS/dataverse/pull/11647#issuecomment-3085289132>`_ when we tried to perform this "merge develop to master" step, forcing us to `re-do <https://docs.google.com/document/d/1oit6LLDUWpNpV_uWveOMvdwDsaUey-74ehvzCZp1f3k/edit?usp=sharing>`_ the previous release before we could proceed with the current release.
 
 If this is a hotfix release, skip this whole "merge develop to master" step (the "develop" branch is not involved until later).
+
+Confirm "master" Mergeability
+-----------------------------
+
+Hopefully, the previous step went ok. As a sanity check, use the "compare" link at https://github.com/IQSS/dataverse/compare/master...develop again to look for merge conflicts without making a pull request.
+
+If the GitHub UI tells you there would be merge conflicts, something has gone horribly wrong (again) with the "merge develop to master" step. Stop and ask for help.
 
 Add Milestone to Pull Requests and Issues
 -----------------------------------------
