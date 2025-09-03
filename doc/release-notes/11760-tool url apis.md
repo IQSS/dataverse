@@ -5,3 +5,6 @@ and
 /api/files/$FILE_ID/externalTool/$TOOL_ID/toolUrl
 
 If the dataset/file is not public, the caller must authenticate and have permission to view the dataset/file. In such cases, the generated URL will include a callback token containing a signed URL the tool can use to retrieve all the parameters it is configured for.
+
+Backward incompatibility:
+The responses from the GET /api/externalTools and /api/externalTools/{id} are now formatted as JSON (previously the toolParameters and allowedApiCalls were JSON serialized as strings) and any confiugured "requirements" are included.
