@@ -2795,65 +2795,81 @@ public class UtilIT {
         return requestSpecification.delete("/api/externalTools/" + externalToolid);
     }
 
-    static Response getExternalToolsForDataset(String idOrPersistentIdOfDataset, String type, String apiToken) {
-        String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
-        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
-            idInPath = ":persistentId";
-            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
-        }
-        RequestSpecification requestSpecification = given();
-        if (apiToken != null) {
-            requestSpecification = given()
-                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
-        }
-        return requestSpecification.get("/api/admin/test/datasets/" + idInPath + "/externalTools?type=" + type + optionalQueryParam);
-    }
-    
-    static Response getExternalToolForDatasetById(String idOrPersistentIdOfDataset, String type, String apiToken, String toolId) {
-        String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
-        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
-            idInPath = ":persistentId";
-            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
-        }
-        RequestSpecification requestSpecification = given();
-        if (apiToken != null) {
-            requestSpecification = given()
-                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
-        }
-        return requestSpecification.get("/api/admin/test/datasets/" + idInPath + "/externalTool/" + toolId + "?type=" + type + optionalQueryParam);
-    }
-
-    static Response getExternalToolsForFile(String idOrPersistentIdOfFile, String type, String apiToken) {
-        String idInPath = idOrPersistentIdOfFile; // Assume it's a number.
-        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isCreatable(idOrPersistentIdOfFile)) {
-            idInPath = ":persistentId";
-            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfFile;
-        }
-        RequestSpecification requestSpecification = given();
-        if (apiToken != null) {
-            requestSpecification = given()
-                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
-        }
-        return requestSpecification.get("/api/admin/test/files/" + idInPath + "/externalTools?type=" + type + optionalQueryParam);
-    }
-    
-    static Response getExternalToolForFileById(String idOrPersistentIdOfFile, String type, String apiToken, String toolId) {
-        String idInPath = idOrPersistentIdOfFile; // Assume it's a number.
-        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isCreatable(idOrPersistentIdOfFile)) {
-            idInPath = ":persistentId";
-            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfFile;
-        }
-        RequestSpecification requestSpecification = given();
-        if (apiToken != null) {
-            requestSpecification = given()
-                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
-        }
-        return requestSpecification.get("/api/admin/test/files/" + idInPath + "/externalTool/" + toolId + "?type=" + type + optionalQueryParam);
-    }
+    /**
+     * TODO: delete all this commented-out code. It's here while we're reviewing
+     * https://github.com/IQSS/dataverse/pull/11760 but all these methods no
+     * longer exist once TestApi.java, which we are proposing we delete, is
+     * gone. Some comments on these methods:
+     *
+     * - getExternalToolsForDataset and getExternalToolForDatasetById: These
+     * methods were exercising externalToolService.findDatasetToolsByType. Now
+     * this code is only exercised by JSF. Does this matter? Will the SPA use
+     * this method?
+     *
+     * - getExternalToolForFile and getExternalToolForFileById: Same but these
+     * methods were exercising externalToolService.findFileToolsByType (byType
+     * for files instead of datasets). Now only JSF calls into this method.
+     */
+//
+//    static Response getExternalToolsForDataset(String idOrPersistentIdOfDataset, String type, String apiToken) {
+//        String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
+//        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+//        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
+//            idInPath = ":persistentId";
+//            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
+//        }
+//        RequestSpecification requestSpecification = given();
+//        if (apiToken != null) {
+//            requestSpecification = given()
+//                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+//        }
+//        return requestSpecification.get("/api/admin/test/datasets/" + idInPath + "/externalTools?type=" + type + optionalQueryParam);
+//    }
+//    
+//    static Response getExternalToolForDatasetById(String idOrPersistentIdOfDataset, String type, String apiToken, String toolId) {
+//        String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
+//        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+//        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
+//            idInPath = ":persistentId";
+//            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
+//        }
+//        RequestSpecification requestSpecification = given();
+//        if (apiToken != null) {
+//            requestSpecification = given()
+//                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+//        }
+//        return requestSpecification.get("/api/admin/test/datasets/" + idInPath + "/externalTool/" + toolId + "?type=" + type + optionalQueryParam);
+//    }
+//
+//    static Response getExternalToolsForFile(String idOrPersistentIdOfFile, String type, String apiToken) {
+//        String idInPath = idOrPersistentIdOfFile; // Assume it's a number.
+//        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+//        if (!NumberUtils.isCreatable(idOrPersistentIdOfFile)) {
+//            idInPath = ":persistentId";
+//            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfFile;
+//        }
+//        RequestSpecification requestSpecification = given();
+//        if (apiToken != null) {
+//            requestSpecification = given()
+//                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+//        }
+//        return requestSpecification.get("/api/admin/test/files/" + idInPath + "/externalTools?type=" + type + optionalQueryParam);
+//    }
+//    
+//    static Response getExternalToolForFileById(String idOrPersistentIdOfFile, String type, String apiToken, String toolId) {
+//        String idInPath = idOrPersistentIdOfFile; // Assume it's a number.
+//        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+//        if (!NumberUtils.isCreatable(idOrPersistentIdOfFile)) {
+//            idInPath = ":persistentId";
+//            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfFile;
+//        }
+//        RequestSpecification requestSpecification = given();
+//        if (apiToken != null) {
+//            requestSpecification = given()
+//                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+//        }
+//        return requestSpecification.get("/api/admin/test/files/" + idInPath + "/externalTool/" + toolId + "?type=" + type + optionalQueryParam);
+//    }
 
     static Response submitFeedback(JsonObjectBuilder job) {
         return given()
@@ -4978,7 +4994,9 @@ public class UtilIT {
      * @param datasetId The ID of the dataset
      * @param toolId The ID of the external tool
      * @param apiToken The API token for authentication
-     * @param params Optional parameters (can be null)
+     * @param params Optional parameters (can be null). preview: boolean flag to
+     * indicate if the tool should run in preview mode (default: false), locale:
+     * string specifying the locale for internationalization
      * @return Response from the API
      */
     public static Response getDatasetToolUrl(String datasetId, String toolId, String apiToken, JsonObject params) {
@@ -4998,7 +5016,9 @@ public class UtilIT {
      * @param fileId The ID of the file
      * @param toolId The ID of the external tool
      * @param apiToken The API token for authentication
-     * @param params Optional parameters (can be null)
+     * @param params Optional parameters (can be null). preview: boolean flag to
+     * indicate if the tool should run in preview mode (default: false), locale:
+     * string specifying the locale for internationalization
      * @return Response from the API
      */
     public static Response getFileToolUrl(String fileId, String toolId, String apiToken, JsonObject params) {
