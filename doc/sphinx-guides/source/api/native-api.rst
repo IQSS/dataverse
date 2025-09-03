@@ -3453,10 +3453,10 @@ Authentication is required for draft or deaccessioned datasets and the user must
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export DATASET_ID=1234
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
   export TOOL_ID=42
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/datasets/$DATASET_ID/externalTool/$TOOL_ID/toolUrl" \
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/datasets/:persistentId/externalTool/$TOOL_ID/toolUrl?persistentId=$PERSISTENT_IDENTIFIER" \
   -H "Content-Type: application/json" \
   -d '{"preview": false, "locale": "en"}'
 
@@ -3464,15 +3464,17 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/1234/externalTool/42/toolUrl" \
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/:persistentId/externalTool/42/toolUrl?persistentId=doi:10.5072/FK2/7U7YBV" \
   -H "Content-Type: application/json" \
   -d '{"preview": false, "locale": "en"}'
 
 The JSON request body accepts the following optional parameters:
+
 - ``preview``: boolean flag to indicate if the tool should run in preview mode (default: false)
 - ``locale``: string specifying the locale for internationalization
 
 The response includes:
+
 - ``toolUrl``: the URL to access the external tool
 - ``toolName``: the display name of the external tool
 - ``datasetId``: the ID of the dataset
@@ -5358,10 +5360,12 @@ The fully expanded example above (without environment variables) looks like this
   -d '{"preview": false, "locale": "en"}'
 
 The JSON request body accepts the following optional parameters:
+
 - ``preview``: boolean flag to indicate if the tool should run in preview mode (default: false)
 - ``locale``: string specifying the locale for internationalization
 
 The response includes:
+
 - ``toolUrl``: the URL to access the external tool
 - ``toolName``: the display name of the external tool
 - ``fileId``: the ID of the file
