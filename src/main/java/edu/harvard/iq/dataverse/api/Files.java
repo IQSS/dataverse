@@ -940,6 +940,10 @@ public class Files extends AbstractApiBean {
                     ") does not match file content type (" + fileContentType + ").");
             }
             
+            if (!externalToolService.meetsRequirements(externalTool, dataFile)) {
+                return error(BAD_REQUEST, "External tool requirements not met for this file.");
+            }
+
             // Get the current user and create a request object
             User user = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(user);
