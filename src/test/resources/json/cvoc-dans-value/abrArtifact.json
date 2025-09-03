@@ -1,0 +1,167 @@
+{
+  "@context": {
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "isothes": "http://purl.org/iso25964/skos-thes#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "dct": "http://purl.org/dc/terms/",
+    "dc11": "http://purl.org/dc/elements/1.1/",
+    "uri": "@id",
+    "type": "@type",
+    "lang": "@language",
+    "value": "@value",
+    "graph": "@graph",
+    "label": "rdfs:label",
+    "prefLabel": "skos:prefLabel",
+    "altLabel": "skos:altLabel",
+    "hiddenLabel": "skos:hiddenLabel",
+    "broader": "skos:broader",
+    "narrower": "skos:narrower",
+    "related": "skos:related",
+    "inScheme": "skos:inScheme",
+    "exactMatch": "skos:exactMatch",
+    "closeMatch": "skos:closeMatch",
+    "broadMatch": "skos:broadMatch",
+    "narrowMatch": "skos:narrowMatch",
+    "relatedMatch": "skos:relatedMatch"
+  },
+  "graph": [
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/4d2b6f51-c9bc-42c7-ad1f-8b7022fa3953",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#MaterialAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": [
+        {
+          "lang": "en",
+          "value": "flint"
+        },
+        {
+          "lang": "nl",
+          "value": "vuursteen"
+        }
+      ],
+      "https://data.cultureelerfgoed.nl/id/rnce#isMaterialAbrOf": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/d252345b-3dd8-4afe-85fc-d8bef7c5cb0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/50916375-b4c8-4afb-949f-244755e2afa4",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "narrower": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/d252345b-3dd8-4afe-85fc-d8bef7c5cb0f"
+      },
+      "prefLabel": {
+        "lang": "nl",
+        "value": "steker"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/8d762bf7-bda3-4c07-b77f-5df51301ad3f",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#PeriodAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "Paleolithicum"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#isBeginPeriodAbrOf": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/d252345b-3dd8-4afe-85fc-d8bef7c5cb0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/8d85b35a-7497-4b14-af54-a35648bce535",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#MaterialAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "zandsteen/kwartsiet"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#isMaterialAbrOf": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/d252345b-3dd8-4afe-85fc-d8bef7c5cb0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/c6134150-77f2-481b-bba6-c482e59046e8",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#PeriodAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "Neolithicum"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#isEndPeriodAbrOf": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/d252345b-3dd8-4afe-85fc-d8bef7c5cb0f"
+      }
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/d252345b-3dd8-4afe-85fc-d8bef7c5cb0f",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "broader": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/50916375-b4c8-4afb-949f-244755e2afa4"
+      },
+      "prefLabel": {
+        "lang": "nl",
+        "value": "A-steker"
+      },
+      "skos:scopeNote": {
+        "lang": "nl",
+        "value": "Steker waarvan de werkkant het negatief van één stekerafslag (A is afslag) heeft."
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#beginningOfValidity": {
+        "type": "http://www.w3.org/2001/XMLSchema#date",
+        "value": "2012-09-12"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#codeAbr": "STEKER.ASTEKER",
+      "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/8d762bf7-bda3-4c07-b77f-5df51301ad3f"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/c6134150-77f2-481b-bba6-c482e59046e8"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#hasMaterialAbr": [
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/4d2b6f51-c9bc-42c7-ad1f-8b7022fa3953"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/8d85b35a-7497-4b14-af54-a35648bce535"
+        },
+        {
+          "uri": "https://data.cultureelerfgoed.nl/term/id/abr/db8feb21-8ddc-432f-8062-a3a15f7f7cf4"
+        }
+      ]
+    },
+    {
+      "uri": "https://data.cultureelerfgoed.nl/term/id/abr/db8feb21-8ddc-432f-8062-a3a15f7f7cf4",
+      "type": [
+        "https://data.cultureelerfgoed.nl/id/rnce#MaterialAbr",
+        "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept",
+        "skos:Concept"
+      ],
+      "prefLabel": {
+        "lang": "nl",
+        "value": "steen"
+      },
+      "https://data.cultureelerfgoed.nl/id/rnce#isMaterialAbrOf": {
+        "uri": "https://data.cultureelerfgoed.nl/term/id/abr/d252345b-3dd8-4afe-85fc-d8bef7c5cb0f"
+      }
+    }
+  ]
+}

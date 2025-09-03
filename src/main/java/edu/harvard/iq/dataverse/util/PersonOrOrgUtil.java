@@ -4,12 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import jakarta.json.JsonArray;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonString;
 
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 /**
@@ -42,8 +40,8 @@ public class PersonOrOrgUtil {
     static List<String> orgPhrases;
 
     static {
-        setAssumeCommaInPersonName(Boolean.parseBoolean(System.getProperty("dataverse.personOrOrg.assumeCommaInPersonName", "false")));
-        setOrgPhraseArray(System.getProperty("dataverse.personOrOrg.orgPhraseArray", null));
+        setAssumeCommaInPersonName(JvmSettings.ASSUME_COMMA_IN_PERSON_NAME.lookupOptional(Boolean.class).orElse(false));
+        setOrgPhraseArray(JvmSettings.ORG_PHRASE_ARRAY.lookupOptional(String[].class).orElse(new String[]{}));
     }
 
     /**
@@ -137,25 +135,16 @@ public class PersonOrOrgUtil {
     }
 
     // Public for testing
-    public static void setOrgPhraseArray(String phraseArray) {
-        orgPhrases = new ArrayList<String>();
-        if (!StringUtil.isEmpty(phraseArray)) {
-            try {
-                JsonArray phrases = JsonUtil.getJsonArray(phraseArray);
-                phrases.forEach(val -> {
-                    JsonString strVal = (JsonString) val;
-                    orgPhrases.add(strVal.getString());
-                });
-            } catch (Exception e) {
-                logger.warning("Could not parse Org phrase list");
-            }
+    public static void setOrgPhraseArray(String[] phraseArray) {
+        if (phraseArray == null) {
+            orgPhrases = new ArrayList<>();
+        } else {
+            orgPhrases = List.of(phraseArray);
         }
-
     }
 
     // Public for testing
     public static void setAssumeCommaInPersonName(boolean assume) {
         assumeCommaInPersonName = assume;
     }
-
 }
