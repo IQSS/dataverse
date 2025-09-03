@@ -3971,7 +3971,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response getStatusAfterSet = UtilIT.getDatasetCurationStatus(datasetId, apiToken, false);
         getStatusAfterSet.then().assertThat().statusCode(OK.getStatusCode());
         JsonObject statusAfterSet = Json.createReader(new StringReader(getStatusAfterSet.body().asString())).readObject();
-        assertEquals("State 2", statusAfterSet.getString("label"), "Curation label should be set to State 2");
+        JsonObject dataInSecondDraft = statusAfterSet.getJsonObject("data");
+        assertEquals("State 2", dataInSecondDraft.getString("label"), "Curation label should be set to State 2");
         
         // Publish the dataset again using updatecurrent as superuser
         Response updateCurrentResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "updatecurrent", apiToken);
