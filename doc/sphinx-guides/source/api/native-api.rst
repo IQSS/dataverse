@@ -3495,7 +3495,7 @@ Example response:
 Get External Tool Parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This API call is intended as a callback that can be used by :doc:`/installation/external-tools` to retrieve signed Urls necessary for their interaction with Dataverse.
+This API call is intended as a callback that can be used by :doc:`/installation/external-tools` to retrieve signed URLs necessary for their interaction with Dataverse.
 It can be called directly as well.
 
 The response is a JSON object described in the :doc:`/api/external-tools` section of the API guide.
@@ -5336,7 +5336,7 @@ Get File External Tool URL
 
 This API call generates a URL for accessing an external tool (see :doc:`/installation/external-tools`) that operates at the file level. The URL includes necessary authentication tokens and parameters based on the user's permissions and the tool's configuration.
 
-Authentication is required for draft, restricted, embargoed, or expired (retention period) files, the user must have appropriate permissions.
+Authentication is required for draft, restricted, embargoed, or expired (retention period) files; the user must have appropriate permissions.
 
 .. code-block:: bash
 
