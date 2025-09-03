@@ -1264,8 +1264,8 @@ public class DataversesIT {
         boolean [] testDisplayOnCreate = new boolean[] {true, false};
          updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, testDisplayOnCreate, apiToken);
          updateDataverseInputLevelsResponse.prettyPrint();
-         int subtitleInputLevelIndex = 0;
-         int relatedMaterialInputLevelIndex = 0;
+         int subtitleInputLevelIndex = -1;
+         int relatedMaterialInputLevelIndex = -1;
          int i = 0;
          
          while (updateDataverseInputLevelsResponse.then().extract().path(String.format("data.inputLevels[%d].datasetFieldTypeName", i)) != null){
@@ -1304,16 +1304,12 @@ public class DataversesIT {
         updateDataverseInputLevelsResponse.prettyPrint();
         
         subtitleInputLevelIndex = 0;
-        int otherReferencesInputLevelIndex = 0;
         i = 0;
 
         while (updateDataverseInputLevelsResponse.then().extract().path(String.format("data.inputLevels[%d].datasetFieldTypeName", i)) != null) {
             actualInputLevelName = updateDataverseInputLevelsResponse.then().extract().path(String.format("data.inputLevels[%d].datasetFieldTypeName", i)).toString();
             if (actualInputLevelName.equals("subtitle")) {
                 subtitleInputLevelIndex = i;
-            }
-            if (actualInputLevelName.equals("otherReferences")) {
-                otherReferencesInputLevelIndex = i;
             }
             i++;
         }
