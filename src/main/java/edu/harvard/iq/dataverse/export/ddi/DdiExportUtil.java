@@ -1683,6 +1683,7 @@ public class DdiExportUtil {
         try {
             while (inProgress) {
                 JsonArray tabularFileDetails = exportDataProvider.getTabularDataDetails(ExportDataContext.context().withOffset(offset).withLength(DATATABLES_BATCH_SIZE));
+                logger.info("retrieved "+tabularFileDetails.size()+" tabular file data entries");
                 
                 for (int i = 0; i < tabularFileDetails.size(); i++) {
                     JsonObject fileJson = tabularFileDetails.getJsonObject(i);
@@ -1701,6 +1702,7 @@ public class DdiExportUtil {
                     }
                 }
                 
+                offset+=DATATABLES_BATCH_SIZE;
                 inProgress = tabularFileDetails.size() == DATATABLES_BATCH_SIZE; 
             }
         } catch (ExportException ee) {
@@ -1728,6 +1730,7 @@ public class DdiExportUtil {
         }
         JsonObject dataTable = fileJson.getJsonArray("dataTables").getJsonObject(0);
         JsonArray vars = dataTable.getJsonArray("dataVariables");
+        logger.info(vars.size() + " variables retrieved for file " + fileJson.getJsonNumber("id"));
         if (vars != null) {
             for (int j = 0; j < vars.size(); j++) {
                 createVarDDI(xmlw, vars.getJsonObject(j), fileJson.getJsonNumber("id").toString(),
@@ -2000,9 +2003,11 @@ public class DdiExportUtil {
     }
     
  private static int createFileDscrs(XMLStreamWriter xmlw, List<FileDTO> fileDtos) throws XMLStreamException {
+     logger.info(fileDtos.size() + "files passed");
         String dataverseUrl = SystemConfig.getDataverseSiteUrlStatic();
         int counter = 0;
         for (FileDTO fileDTo : fileDtos) {
+            logger.info("processing file "+ fileDTo.getDataFile().getId());
             if (isTabularData(fileDTo)) {
                 xmlw.writeStartElement("fileDscr");
                 
@@ -2089,6 +2094,7 @@ public class DdiExportUtil {
                 counter++; 
             }
         }
+        logger.info("produced "+counter+" fileDscr entries; returning");
         return counter;
     }
    
