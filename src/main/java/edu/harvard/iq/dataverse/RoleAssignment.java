@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import java.util.Objects;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.ColumnResult;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,8 +13,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedNativeQueries;
+import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
+import jakarta.persistence.SqlResultSetMapping;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
@@ -52,6 +56,33 @@ import jakarta.persistence.UniqueConstraint;
         @NamedQuery( name = "RoleAssignment.deleteAllByAssigneeIdentifier_Definition_PointId_RoleType",
 				 query = "DELETE FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier AND r.role.id=:roleId and r.definitionPoint.id=:definitionPointId")
 })
+@NamedNativeQueries({
+    @NamedNativeQuery(
+            name = "RoleAssignment.findAssigneesWithPermissionOnDvObject",
+            query = "WITH RECURSIVE owner_hierarchy(id, owner_id, permissionroot) AS ( " +
+                    "    SELECT dvo.id, dvo.owner_id, COALESCE(dv.permissionroot, false) " +
+                    "    FROM dvobject dvo " +
+                    "    LEFT JOIN dataverse dv ON dvo.id = dv.id " +
+                    "    WHERE dvo.id = ?2 " +
+                    "    UNION ALL " +
+                    "    SELECT dvo.id, dvo.owner_id, dv.permissionroot " +
+                    "    FROM dvobject dvo " +
+                    "    LEFT JOIN dataverse dv ON dvo.id = dv.id " +
+                    "    JOIN owner_hierarchy oh ON dvo.id = oh.owner_id " +
+                    "    WHERE NOT oh.permissionroot " +
+                    ") " +
+                    "SELECT DISTINCT ra.assigneeidentifier " +
+                    "FROM roleassignment ra " +
+                    "JOIN dataverserole dr ON ra.role_id = dr.id " +
+                    "JOIN owner_hierarchy oh ON ra.definitionpoint_id = oh.id " +
+                    "WHERE get_bit(dr.permissionbits::bit(64), ?1) = '1'",
+            resultSetMapping = "AssigneeIdentifierMapping"
+        )
+})
+@SqlResultSetMapping(
+        name = "AssigneeIdentifierMapping",
+        columns = @ColumnResult(name = "assigneeidentifier")
+    )
 public class RoleAssignment implements java.io.Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,8 +94,8 @@ public class RoleAssignment implements java.io.Serializable {
 	@ManyToOne( cascade = {CascadeType.MERGE} )
 	@JoinColumn( nullable=false )
 	private DataverseRole role;
-	
-	@ManyToOne( cascade = {CascadeType.MERGE} ) 
+
+	@ManyToOne
 	@JoinColumn( nullable=false )
 	private DvObject definitionPoint;
 

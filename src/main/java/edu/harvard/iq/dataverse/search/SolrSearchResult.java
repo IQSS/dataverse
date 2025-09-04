@@ -25,6 +25,8 @@ import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
+import javax.xml.crypto.Data;
+
 public class SolrSearchResult {
 
     private static final Logger logger = Logger.getLogger(SolrSearchResult.class.getCanonicalName());
@@ -83,6 +85,10 @@ public class SolrSearchResult {
     */
     private Long fileCount;
     /**
+     * Only Dataverses can have a dataset count
+     */
+    private Long datasetCount;
+    /**
      * Files and datasets might have a UNF. Dataverses don't.
      */
     private String unf;
@@ -102,6 +108,7 @@ public class SolrSearchResult {
     private String dataverseAlias;
     private String dataverseParentAlias;
     private String dataverseParentName;
+    private List<Dataverse> collections;
 //    private boolean statePublished;
     /**
      * @todo Investigate/remove this "unpublishedState" variable. For files that
@@ -277,7 +284,7 @@ public class SolrSearchResult {
     private List<String> matchedFields;
 
     // External Status Label (enabled via AllowedCurationLabels setting)
-    private String externalStatus;
+    private String curationStatus;
 
     /**
      * @todo: remove name?
@@ -698,10 +705,24 @@ public class SolrSearchResult {
 
                     nullSafeJsonBuilder.add("metadataBlocks", metadataFieldBuilder);
                 }
+
+                if (this.collections != null && !this.collections.isEmpty()) {
+                    JsonArrayBuilder collections = Json.createArrayBuilder();
+                    for (Dataverse collection : this.collections) {
+                        NullSafeJsonBuilder dvBuilder = jsonObjectBuilder();
+                        dvBuilder.add("id", collection.getId());
+                        dvBuilder.add("name", collection.getName());
+                        dvBuilder.add("alias", collection.getAlias());
+                        collections.add(dvBuilder);
+                    }
+                    nullSafeJsonBuilder.add("collections", collections);
+                }
+
             } else if (this.entity.isInstanceofDataverse()) {
                 nullSafeJsonBuilder.add("affiliation", dataverseAffiliation);
                 nullSafeJsonBuilder.add("parentDataverseName", dataverseParentName);
                 nullSafeJsonBuilder.add("parentDataverseIdentifier", dataverseParentAlias);
+                nullSafeJsonBuilder.add("datasetCount", this.datasetCount);
             } else if (this.entity.isInstanceofDataFile()) {
                 // "published_at" field is only set when the version state is not draft.
                 // On the contrary, this field also takes into account DataFiles in draft version,
@@ -1300,6 +1321,10 @@ public class SolrSearchResult {
         this.dataverseParentName = dataverseParentName;
     }
 
+    public void setCollections(List<Dataverse> collections) {
+        this.collections = collections;
+    }
+
     public float getScore() {
         return score;
     }
@@ -1350,12 +1375,12 @@ public class SolrSearchResult {
         this.nameOfDataverse = id;
     }
 
-    public String getExternalStatus() {
-        return externalStatus;
+    public String getCurationStatus() {
+        return curationStatus;
     }
 
-    public void setExternalStatus(String externalStatus) {
-        this.externalStatus = externalStatus;
+    public void setCurationStatus(String curationStatus) {
+        this.curationStatus = curationStatus;
 
     }
 
@@ -1401,5 +1426,13 @@ public class SolrSearchResult {
 
     public void setFileCount(Long fileCount) {
         this.fileCount = fileCount;
+    }
+
+    public Long getDatasetCount() {
+        return datasetCount;
+    }
+
+    public void setDatasetCount(Long datasetCount) {
+        this.datasetCount = datasetCount;
     }
 }

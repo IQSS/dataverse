@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+title: Dataverse
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Gary
+    family-names: King
+    orcid: 'https://orcid.org/0000-0002-5327-7631'
+    affiliation: Harvard University
+identifiers:
+  - type: doi
+    value: 10.1177/0049124107306660
+repository-code: 'https://github.com/IQSS/dataverse'
+url: 'https://dataverse.org'
+abstract: >-
+  Dataverse is an open source software platform designed for
+  sharing, finding, citing, and preserving research data.
+license: Apache-2.0

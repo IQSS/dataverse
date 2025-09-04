@@ -1,0 +1,47 @@
+{
+  "allow-free-text": false,
+  "cvoc-url": "https://dev.vocabs.datastations.nl/",
+  "field-name": "dansResearchInstrument",
+  "js-url": "/custom/skosmos.js",
+  "languages": "en",
+  "managed-fields": {},
+  "protocol": "skosmos",
+  "retrieval-filtering": {
+    "@context": {
+      "lang": "@language",
+      "termName": "https://schema.org/name",
+      "value": "@value",
+      "vocabularyName": "https://dataverse.org/schema/vocabularyName",
+      "vocabularyUri": "https://dataverse.org/schema/vocabularyUri"
+    },
+    "@id": {
+      "params": [
+        "@id"
+      ],
+      "pattern": "{0}"
+    },
+    "termName": {
+      "params": [
+        "/graph/uri=@id/prefLabel"
+      ],
+      "pattern": "{0}"
+    },
+    "vocabularyName": {
+      "pattern": "DDI Alliance Controlled Vocabulary for Type of Instrument 1.1",
+      "params": []
+    },
+    "vocabularyUri": {
+      "pattern": "http://rdf-vocabulary.ddialliance.org/cv/TypeOfInstrument/1.1/",
+      "params": []
+    }
+  },
+  "retrieval-uri": "https://dev.vocabs.datastations.nl/rest/v1/data?uri={0}",
+  "term-parent-uri": "",
+  "term-uri-field": "dansResearchInstrument",
+  "vocabs": {
+    "TypeOfInstrument_1_1": {
+      "uriSpace": "http://rdf-vocabulary.ddialliance.org/cv/TypeOfInstrument/1.1/",
+      "vocabularyUri": "http://rdf-vocabulary.ddialliance.org/cv/TypeOfInstrument/1.1/"
+    }
+  }
+}

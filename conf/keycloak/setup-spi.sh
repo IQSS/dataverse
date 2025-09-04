@@ -35,7 +35,10 @@ curl -X POST "http://keycloak:8090/admin/realms/test/components" \
     "name": "Dataverse built-in users authentication",
     "providerId": "dv-builtin-users-authenticator",
     "providerType": "org.keycloak.storage.UserStorageProvider",
-    "parentId": null
+    "parentId": null,
+    "config": {
+      "datasource": ["user-store"]
+    }
   }'
 
 echo "Keycloak SPI configured in realm."

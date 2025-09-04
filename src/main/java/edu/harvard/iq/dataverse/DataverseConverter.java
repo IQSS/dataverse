@@ -19,7 +19,6 @@ import jakarta.faces.convert.FacesConverter;
  */
 @FacesConverter("dataverseConverter")
 public class DataverseConverter implements Converter {
-
     
     //@EJB
     DataverseServiceBean dataverseService = CDI.current().select(DataverseServiceBean.class).get();

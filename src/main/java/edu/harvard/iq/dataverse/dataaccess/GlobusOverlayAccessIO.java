@@ -240,10 +240,10 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
     public InputStream getInputStream() throws IOException {
         //Currently only supported when using an S3 store with the Globus S3Connector.
         //ToDo: Support when using a managed Globus endpoint that supports http access
-        if(StorageIO.isDataverseAccessible(endpoint)) {
+        if(isDataverseAccessible(driverId)) {
             return baseStore.getInputStream();
         } else {
-            throw new IOException("Not implemented");
+            return null;
         }
     }
     
@@ -503,6 +503,11 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
     public void saveInputStream(InputStream inputStream, Long filesize) throws IOException {
         throw new UnsupportedDataAccessOperationException(
                 this.getClass().getName() + ": savePath() not implemented in this storage driver.");
+    }
+    
+    @Override
+    public boolean isDataverseAccessible() {
+        return isDataverseAccessible(this.driverId);
     }
 
 }
