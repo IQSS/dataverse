@@ -213,7 +213,7 @@ public class DataverseUserPage implements java.io.Serializable {
         } else {
             return permissionsWrapper.notAuthorized();
         }
-
+        
         return "";
     }
 

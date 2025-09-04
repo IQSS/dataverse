@@ -1012,7 +1012,7 @@ public class AuthenticationServiceBean {
                 logger.log(Level.FINE, "OAuth user found for the given bearer token");
                 return authenticatedUser;
             }
-        } else if (FeatureFlags.API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH.enabled()) {
+        } else if (FeatureFlags.API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH.enabled() && oAuth2UserRecord.hasBuiltinAttributes()) {
             authenticatedUser = lookupUser(BuiltinAuthenticationProvider.PROVIDER_ID, oAuth2UserRecord.getUsername());
             if (authenticatedUser != null) {
                 logger.log(Level.FINE, "Builtin user found for the given bearer token");
