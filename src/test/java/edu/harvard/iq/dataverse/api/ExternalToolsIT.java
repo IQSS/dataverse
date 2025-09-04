@@ -718,7 +718,7 @@ public class ExternalToolsIT {
         getToolsForFalseHdf5.prettyPrint();
         getToolsForFalseHdf5.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("data.message", CoreMatchers.equalTo("External tool requirements not met for this file."));
+                .body("message", CoreMatchers.equalTo("External tool requirements not met for this file."));
 
         // The tool shows for a true HDF5 file. The NcML aux file is available. Requirements met.
         Response getToolsForTrueHdf5 = UtilIT.getFileToolUrl(trueHdf5.toString(), toolId.toString(), apiToken, null);
