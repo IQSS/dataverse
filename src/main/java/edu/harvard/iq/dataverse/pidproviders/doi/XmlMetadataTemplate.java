@@ -58,6 +58,8 @@ import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import edu.harvard.iq.dataverse.util.xml.XmlWriterUtil;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
 import jakarta.json.JsonValue.ValueType;
 
 public class XmlMetadataTemplate {
@@ -623,8 +625,11 @@ public class XmlMetadataTemplate {
                 isROR = true;
                 JsonObject jo = getExternalVocabularyValue(orgName);
                 // Some ext. cvv configs store a JsonArray of multiple objects/values. In such cases, we'll leave orgName blank 
-                if (jo != null && jo.getValueType() == ValueType.STRING) {
-                    orgName = jo.getString("termName");
+                if (jo.containsKey("termName")) {
+                    JsonValue termName = jo.get("termName");
+                    if (termName.getValueType() == ValueType.STRING) {
+                        orgName = ((JsonString) termName).getString();
+                    }
                 }
             }
           
