@@ -1,0 +1,1 @@
+A bug introduced in v6.5 broken Handle parsing when using a lower-case shoulder. This is now fixed.

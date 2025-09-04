@@ -6,6 +6,7 @@ import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -2266,4 +2267,158 @@ public class SearchIT {
         searchResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
     }
+
+    @Test
+    public void testShowCollections() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        JsonPath createdDataverse = JsonPath.from(createDataverseResponse.body().asString());
+        String dataverseName = createdDataverse.getString("data.name");
+        String dataverseAlias = createdDataverse.getString("data.alias");
+        Integer dataverseId = createdDataverse.getInt("data.id");
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        JsonPath createdDataset = JsonPath.from(createDatasetResponse.body().asString());
+        int datasetId = createdDataset.getInt("data.id");
+        String datasetPid = createdDataset.getString("data.persistentId");
+
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        // Test that the Dataverse collection that the dataset was created in is returned
+        Response searchResponse = UtilIT.search("*", apiToken, "&subtree=" + dataverseAlias + "&type=dataset&show_collections=true");
+        searchResponse.prettyPrint();
+        searchResponse.then().assertThat()
+                      .statusCode(OK.getStatusCode())
+                      .body("data.count_in_response", CoreMatchers.is(1))
+                      .body("data.items[0].collections[0].id", CoreMatchers.is(dataverseId))
+                      .body("data.items[0].collections[0].name", CoreMatchers.is(dataverseName))
+                      .body("data.items[0].collections[0].alias", CoreMatchers.is(dataverseAlias));
+
+        Response createDataverse2Response = UtilIT.createRandomDataverse(apiToken);
+        createDataverse2Response.prettyPrint();
+        createDataverse2Response.then().assertThat().statusCode(CREATED.getStatusCode());
+        JsonPath createDataverse2 = JsonPath.from(createDataverse2Response.body().asString());
+        String dataverse2Name = createDataverse2.getString("data.name");
+        String dataverse2Alias = createDataverse2.getString("data.alias");
+        Integer dataverse2Id = createDataverse2.getInt("data.id");
+
+        UtilIT.publishDataverseViaNativeApi(dataverse2Alias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.linkDataset(datasetPid, dataverse2Alias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
+
+        // Test that the Dataverse collection that the dataset was linked to is also returned
+        searchResponse = UtilIT.search("*", apiToken, "&subtree=" + dataverseAlias + "&type=dataset&show_collections=true");
+        searchResponse.prettyPrint();
+        searchResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.count_in_response", CoreMatchers.is(1))
+                .body("data.items[0].collections.size()", CoreMatchers.is(2))
+                .body("data.items[0].collections", CoreMatchers.hasItems(
+                        Map.of("id", dataverseId, "name", dataverseName, "alias", dataverseAlias),
+                        Map.of("id", dataverse2Id, "name", dataverse2Name, "alias", dataverse2Alias)
+                ));
+
+    }
+    
+    @Test
+    public void testFileAddedAfterPublicationIsIndexed() {
+        // Create user
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        // Create dataverse
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Create dataset
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+
+        // Publish dataverse and dataset
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataverse.prettyPrint();
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDataset.prettyPrint();
+        publishDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Verify no files in search results initially
+        Response searchBeforeFileUpload = UtilIT.search("parentId:" + datasetId, apiToken);
+        searchBeforeFileUpload.prettyPrint();
+        searchBeforeFileUpload.then().assertThat()
+                .body("data.total_count", CoreMatchers.is(0))
+                .statusCode(OK.getStatusCode());
+
+        // Upload a file after publication
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadFileResponse.prettyPrint();
+        uploadFileResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Get file ID from the upload response
+        Integer fileId = JsonPath.from(uploadFileResponse.getBody().asString()).getInt("data.files[0].dataFile.id");
+
+        // Wait for indexing to complete
+        String searchQuery = "entityId:" + fileId;
+        assertTrue(UtilIT.sleepForSearch(searchQuery, apiToken, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), 
+                   "Failed test if search exceeds max duration " + searchQuery);
+
+        // Search for the file and verify it's indexed
+        Response searchAfterFileUpload = UtilIT.search(searchQuery, apiToken);
+        searchAfterFileUpload.prettyPrint();
+        searchAfterFileUpload.then().assertThat()
+                .body("data.total_count", CoreMatchers.is(1))
+                .body("data.items[0].name", is("dataverseproject.png"))
+                .body("data.items[0].file_content_type", CoreMatchers.is("image/png"))
+                .statusCode(OK.getStatusCode());
+
+        // Clean up - delete dataset, dataverse, and user
+        
+        //Superuser to delete published dataset
+        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
+        assertEquals(200, makeSuperUser.getStatusCode());
+        
+        // Delete the dataset
+        Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        deleteDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        try {
+            // give the bag time to generate
+            Thread.sleep(3000);
+        } catch (InterruptedException ex) {
+        }
+
+        // Delete the dataverse
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        deleteDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Delete the user
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        deleteUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
+
 }

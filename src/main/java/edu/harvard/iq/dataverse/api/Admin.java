@@ -1243,6 +1243,14 @@ public class Admin extends AbstractApiBean {
     @Produces({"application/json"})
     public Response validateDatasetDatafiles(@PathParam("id") String id) {
         
+        Dataset dataset;
+        // First check if the dataset exists before starting the streaming output
+        try {
+            dataset = findDatasetOrDie(id);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse(); // This will return the proper 404 Not Found response
+        }
+        
         // Streaming output: the API will start producing 
         // the output right away, as it goes through the list 
         // of the datafiles in the dataset.
@@ -1252,23 +1260,13 @@ public class Admin extends AbstractApiBean {
             @Override
             public void write(OutputStream os) throws IOException,
                     WebApplicationException {
-                Dataset dataset;
-        
-                try {
-                    dataset = findDatasetOrDie(id);
-                } catch (Exception ex) {
-                    throw new IOException(ex.getMessage());
-                }
                 
                 os.write("{\"dataFiles\": [\n".getBytes());
                 
                 boolean wroteObject = false;
                 for (DataFile dataFile : dataset.getFiles()) {
-                    // Potentially, there's a godzillion datasets in this Dataverse. 
-                    // This is why we go through the list of ids here, and instantiate 
-                    // only one dataset at a time. 
+
                     boolean success = false;
-                    boolean constraintViolationDetected = false;
                      
                     JsonObjectBuilder output = Json.createObjectBuilder();
                     output.add("datafileId", dataFile.getId());
