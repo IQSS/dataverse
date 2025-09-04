@@ -107,7 +107,7 @@ import static org.mockito.ArgumentMatchers.any;
 @JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "HDL 1", varArgs = "hdl1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = HandlePidProvider.TYPE, varArgs = "hdl1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "20.500.1234", varArgs = "hdl1")
-@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "", varArgs = "hdl1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "test", varArgs = "hdl1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_MANAGED_LIST, value = "hdl:20.20.20/FK2ABCDEF", varArgs ="hdl1")
 @JvmSetting(key = JvmSettings.HANDLENET_AUTH_HANDLE, value = "20.500.1234/ADMIN", varArgs ="hdl1")
 @JvmSetting(key = JvmSettings.HANDLENET_INDEPENDENT_SERVICE, value = "true", varArgs ="hdl1")
@@ -294,16 +294,22 @@ public class PidUtilTest {
     @Test
     public void testHandleParsing() throws IOException {
         
-        String pid1String = "hdl:20.500.1234/10052";
+        String pid1String = "hdl:20.500.1234/test10052";
         GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);
         assertEquals(pid1String, pid2.asString());
         assertEquals("hdl1", pid2.getProviderId());
-        assertEquals("https://hdl.handle.net/" + pid2.getAuthority() + PidUtil.getPidProvider(pid2.getProviderId()).getSeparator() + pid2.getIdentifier(),pid2.asURL());
+        assertEquals("https://hdl.handle.net/" + pid2.getAuthority() + PidUtil.getPidProvider(pid2.getProviderId()).getSeparator() + pid2.getIdentifier(), pid2.asURL());
         assertEquals("20.500.1234", pid2.getAuthority());
         assertEquals(HandlePidProvider.HDL_PROTOCOL, pid2.getProtocol());
         GlobalId pid3 = PidUtil.parseAsGlobalID(pid2.asURL());
         assertEquals(pid1String, pid3.asString());
         assertEquals("hdl1", pid3.getProviderId());
+        
+        // Test case sensitivity - a handle with uppercase "TEST" should not match the hdl1 provider
+        String pid4String = "hdl:20.500.1234/TEST10052";
+        GlobalId pid4 = PidUtil.parseAsGlobalID(pid4String);
+        assertEquals(pid4String, pid4.asString());
+        assertEquals(UnmanagedHandlePidProvider.ID, pid4.getProviderId());
     }
 
     @Test
