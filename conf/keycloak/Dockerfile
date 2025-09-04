@@ -29,7 +29,7 @@ COPY --from=builder /app/target/keycloak-dv-builtin-users-authenticator-1.0-SNAP
 
 # Copy additional configurations
 COPY ./builtin-users-spi/conf/quarkus.properties /opt/keycloak/conf/
-COPY ./test-realm.json /opt/keycloak/data/import/
+COPY ./test-realm-include-spi.json /opt/keycloak/data/import/
 
 # Set the Keycloak command
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh"]
