@@ -127,15 +127,25 @@ public class ExternalToolsIT {
 
         // non superuser can also view tools
         UtilIT.setSuperuserStatus(username, false);
+        
         getExternalTools = UtilIT.getExternalTools(apiToken);
         getExternalTools.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        // but can't get a launch url (which would need to be signed for a draft dataset)
-        getExternalToolUrl = UtilIT.getDatasetToolUrl(datasetId.toString(), toolId.toString(), apiToken, null);
+        //Create user who can't see draft dataset
+        Response createUser2 = UtilIT.createRandomUser();
+        createUser2.prettyPrint();
+        createUser2.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username2 = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser);
+        
+        // User who can't see draft can't get a launch url (which would need to be signed for a draft dataset)
+        getExternalToolUrl = UtilIT.getDatasetToolUrl(datasetId.toString(), toolId.toString(), apiToken2, null);
         getExternalToolUrl.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode());
 
+        // User who can't see draft can't get a launch url (which would need to be signed for a draft dataset)
         //Add by non-superuser will also fail
         addExternalTool = UtilIT.addExternalTool(JsonUtil.getJsonObject(toolManifest), apiToken);
         addExternalTool.then().assertThat()
@@ -154,6 +164,7 @@ public class ExternalToolsIT {
         deleteExternalTool.prettyPrint();
         deleteExternalTool.then().assertThat()
                 .statusCode(OK.getStatusCode());
+        
     }
 
     @Test
