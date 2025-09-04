@@ -137,8 +137,8 @@ public class ExternalToolsIT {
         createUser2.prettyPrint();
         createUser2.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        String username2 = UtilIT.getUsernameFromResponse(createUser);
-        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser);
+        String username2 = UtilIT.getUsernameFromResponse(createUser2);
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
         
         // User who can't see draft can't get a launch url (which would need to be signed for a draft dataset)
         getExternalToolUrl = UtilIT.getDatasetToolUrl(datasetId.toString(), toolId.toString(), apiToken2, null);
