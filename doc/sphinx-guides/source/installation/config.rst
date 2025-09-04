@@ -3163,27 +3163,36 @@ This setting is useful in cases such as running your Dataverse installation behi
 	"HTTP_VIA",
 	"REMOTE_ADDR"
 	
-.. _dataverse.personOrOrg.assumeCommaInPersonName:
+.. _dataverse.person-or-org.assume-comma-in-person-name:
 
-dataverse.personOrOrg.assumeCommaInPersonName
-+++++++++++++++++++++++++++++++++++++++++++++
+dataverse.person-or-org.assume-comma-in-person-name
++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Please note that this setting is experimental.
 
 The Schema.org metadata and OpenAIRE exports and the Schema.org metadata included in DatasetPages try to infer whether each entry in the various fields (e.g. Author, Contributor) is a Person or Organization. If you are sure that
 users are following the guidance to add people in the recommended family name, given name order, with a comma, you can set this true to always assume entries without a comma are for Organizations. The default is false.
 
-.. _dataverse.personOrOrg.orgPhraseArray:
+``./asadmin create-jvm-options '-Ddataverse.person-or-org.assume-comma-in-person-name=true'``
 
-dataverse.personOrOrg.orgPhraseArray
-++++++++++++++++++++++++++++++++++++
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_PERSON_OR_ORG_ASSUME_COMMA_IN_PERSON_NAME``.
+
+**Note:** This setting was previously called `dataverse.personOrOrg.assumeCommaInPersonName`, which is still available as an alias for backwards compatiblity.
+
+.. _dataverse.person-or-org.org-phrase-array:
+
+dataverse.person-or-org.org-phrase-array
+++++++++++++++++++++++++++++++++++++++++
 
 Please note that this setting is experimental.
 
 The Schema.org metadata and OpenAIRE exports and the Schema.org metadata included in DatasetPages try to infer whether each entry in the various fields (e.g. Author, Contributor) is a Person or Organization.
 If you have examples where an orgization name is being inferred to belong to a person, you can use this setting to force it to be recognized as an organization.
-The value is expected to be a JsonArray of strings. Any name that contains one of the strings is assumed to be an organization. For example, "Project" is a word that is not otherwise associated with being an organization. 
+The value is expected to be a comma-separated list of strings. Any name that contains one of the strings is assumed to be an organization. For example, "Project" is a word that is not otherwise associated with being an organization.
 
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_PERSON_OR_ORG_ORG_PHRASE_ARRAY``.
+
+**Note:** This setting was previously called `dataverse.personOrOrg.orgPhraseArray` and expected a JsonArray of strings. Please update both the name and value format if using the old setting.
 
 .. _dataverse.api.signature-secret:
 
@@ -3750,7 +3759,7 @@ please find all known feature flags below. Any of these flags can be activated u
       - Specifies that Terms of Service acceptance is handled by the IdP, eliminating the need to include ToS acceptance boolean parameter (termsAccepted) in the OIDC user registration request body. This feature only works when the feature flag ``api-bearer-auth`` is also enabled.
       - ``Off``
     * - api-bearer-auth-use-builtin-user-on-id-match
-      - Allows the use of a built-in user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing built-in user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this feature flag exposes the installation to potential user impersonation issues depending on the specifics of the IdP configured (For example, if it is configured such that an attacker can create a new account in the IdP, or configured social login account, matching a Dataverse built-in account).**
+      - Allows the use of a built-in user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing built-in user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
       - ``Off``
     * - api-bearer-auth-use-shib-user-on-id-match
       - Allows the use of a Shibboleth user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing Shibboleth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
@@ -3782,8 +3791,11 @@ please find all known feature flags below. Any of these flags can be activated u
     * - enable-version-note
       - Turns on the ability to add/view/edit/delete per-dataset-version notes intended to provide :ref:`provenance` information about why the dataset/version was created.  
       - ``Off``
-    * - add-local-contexts-permission-check
-      - Adds a permission check to ensure that the user calling the /api/localcontexts/datasets/{id} API can edit the dataset with that id. This is currently the only use case - see https://github.com/gdcc/dataverse-external-vocab-support/tree/main/packages/local_contexts. The flag adds additional security to stop other uses, but would currently have to be used in conjunction with the api-session-auth feature flag (the security implications of which have not been fully investigated) to still allow adding Local Contexts metadata to a dataset.
+    * - shibboleth-use-wayfinder
+      - This flag allows an instance to use Shibboleth with InCommon federation services. Our original Shibboleth implementation that relies on DiscoFeed can no longer be used since InCommon discontinued their old-style metadata feed. An alternative mechanism had to be implemented in order to use WayFinder service, their recommended replacements, instead.
+      - ``Off``
+    * - shibboleth-use-localhost
+      - A Shibboleth-using Dataverse instance needs to make network calls to the locally-running ``shibd`` service. The default behavior is to use the address configured via the ``siteUrl`` setting. There are however situations (firewalls, etc.) where localhost would be preferable.
       - ``Off``
     * - enable-pid-failure-log
       - Turns on creation of a monthly log file (logs/PIDFailures_<yyyy-MM>.log) showing failed requests for dataset/file PIDs. Can be used directly or with scripts at https://github.com/gdcc/dataverse-recipes/python/pid_reports to alert admins.
