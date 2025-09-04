@@ -17,8 +17,12 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2Aut
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthenticationProviderFactory;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProviderFactory;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +37,16 @@ import jakarta.ejb.Singleton;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 /**
  *
@@ -63,6 +77,9 @@ public class AuthenticationProvidersRegistrationServiceBean {
     @EJB
     AuthenticationServiceBean authenticationService;
     
+    @EJB
+    SettingsServiceBean settingsService;
+      
     /**
      * The maps below (the objects themselves) are "final", but the
      * values will be populated in @PostConstruct (see below) during 
@@ -117,7 +134,32 @@ public class AuthenticationProvidersRegistrationServiceBean {
                 .getResultList().forEach((row) -> {
                     if(row.isEnabled()) {
                     try {
-                        registerProvider( loadProvider(row) );
+                        AuthenticationProvider authProvider = loadProvider(row);
+                        
+                        registerProvider( authProvider );
+                        
+                        // For production Shibboleth instances that are not using 
+                        // the legacy DiscoFeed-based workflow, we need to call 
+                        // shibd to look up and cache its entityID, since it will 
+                        // be needed in order to issue WayFinder service redirects.
+                                                
+                        if ("shib".equals(authProvider.getId())
+                                && FeatureFlags.SHIBBOLETH_USE_WAYFINDER.enabled()) {
+                            // ... is this a prod. shibboleth instance?
+                            String shibTypeSetting = settingsService.getValueForKey(SettingsServiceBean.Key.DebugShibAccountType, null);
+                            boolean isProduction = shibTypeSetting == null || shibTypeSetting.equals("PRODUCTION");
+
+                            if (isProduction) {
+                                String spEntityId = lookupShibbolethEntityId();
+                                logger.info("Looked up the entityId of the shibboleth service provider (via a call to shibd): "
+                                        + spEntityId);
+                                if (spEntityId == null) {
+                                    // we'll make this educated guess - it may or may not help us later on:
+                                    spEntityId = SystemConfig.getDataverseSiteUrlStatic() + "/sp";
+                                }
+                                ((ShibAuthenticationProvider) authProvider).setServiceProviderEntityId(spEntityId);
+                            }
+                        }
                         
                     } catch ( AuthenticationProviderFactoryNotFoundException e ) {
                         logger.log(Level.SEVERE, "Cannot find authentication provider factory with alias '" + e.getFactoryAlias() + "'",e);
@@ -307,5 +349,75 @@ public class AuthenticationProvidersRegistrationServiceBean {
         return oAuth2authenticationProviders.values().stream().anyMatch( s -> s.getId().toLowerCase().contains("orcid") );
     }
     */
+    
+    private String lookupShibbolethEntityId() {
+        
+        String baseUrl; 
+        if (FeatureFlags.SHIBBOLETH_USE_LOCALHOST.enabled()) {
+            baseUrl = "http://localhost";
+        } else {
+            baseUrl = SystemConfig.getDataverseSiteUrlStatic();
+        }
+        
+        String urlString = baseUrl + "/Shibboleth.sso/Metadata";
+        
+        URL url = null;
+        try {
+            url = new URL(urlString);
+        } catch (MalformedURLException ex) {
+            logger.warning(ex.toString());
+            return null;
+        }
+        
+        if (url == null) {
+            logger.warning("url object was null after parsing " + urlString);
+            return null;
+        }
+        
+        HttpURLConnection metadataRequest = null;
+        try {
+            metadataRequest = (HttpURLConnection) url.openConnection();
+        } catch (IOException ex) {
+            logger.warning(ex.toString());
+            return null;
+        }
+        if (metadataRequest == null) {
+            logger.warning("http request was null for a local /Shibboleth.sso/Metadata call");
+            return null;
+        }
+        try {
+            metadataRequest.connect();
+        } catch (IOException ex) {
+            logger.warning(ex.toString());
+            return null;
+        }
+        
+        XMLStreamReader xmlr = null;
+
+        try {
+            XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
+            xmlr =  xmlFactory.createXMLStreamReader(new InputStreamReader((InputStream) metadataRequest.getInputStream()));
+            
+            while ( xmlr.next() == XMLStreamConstants.COMMENT);
+            xmlr.require(XMLStreamConstants.START_ELEMENT, null, "EntityDescriptor");
+            
+            return xmlr.getAttributeValue(null, "entityID");
+            
+        } catch (IOException ioex) {
+            logger.warning("IOException instantiating a stream reader of the /Shibboleth.sso/Metadata output" + ioex.getMessage());
+        } catch (XMLStreamException xsex) {
+            logger.warning("Failed to parse the xml output of the /Shibboleth.sso/Metadata; " + xsex.getMessage());
+        } finally {
+            if (xmlr != null) {
+                try {
+                    logger.fine("closing xml reader");
+                    xmlr.close();
+                } catch (XMLStreamException xsex) {
+                    // we don't care
+                }
+            }
+        }
+        return null; 
+    }
 
 }
