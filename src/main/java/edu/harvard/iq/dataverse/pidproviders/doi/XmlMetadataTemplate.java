@@ -625,7 +625,7 @@ public class XmlMetadataTemplate {
                 isROR = true;
                 JsonObject jo = getExternalVocabularyValue(orgName);
                 // Some ext. cvv configs store a JsonArray of multiple objects/values. In such cases, we'll leave orgName blank 
-                if (jo.containsKey("termName")) {
+                if (jo != null && jo.containsKey("termName")) {
                     JsonValue termName = jo.get("termName");
                     if (termName.getValueType() == ValueType.STRING) {
                         orgName = ((JsonString) termName).getString();
