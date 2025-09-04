@@ -1,13 +1,17 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
+import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import jakarta.json.JsonObject;
 
+@LocalJvmSettings
 public class PersonOrOrgUtilTest {
 
         public PersonOrOrgUtilTest() {
@@ -26,27 +30,41 @@ public class PersonOrOrgUtilTest {
             verifyIsOrganization("The Ford Foundation");
             verifyIsOrganization("United Nations Economic and Social Commission for Asia and the Pacific (UNESCAP)");
             verifyIsOrganization("Michael J. Fox Foundation for Parkinson's Research");
-            // The next example is one known to be asserted to be a Person without an entry
-            // in the OrgWordArray
-            // So we test with it in the array and then when the array is empty to verify
-            // the array works, resetting the array works, and the problem still exists in
+            // The next examples are known to be asserted to be a Person without an entry in the OrgWordArray
+            // So we test when no array is set via JvmSetting to verify the problem still exists in
             // the underlying algorithm
-            PersonOrOrgUtil.setOrgPhraseArray("[\"Portable\"]");
-            verifyIsOrganization("Portable Antiquities of the Netherlands");
-            PersonOrOrgUtil.setOrgPhraseArray(null);
             JsonObject obj = PersonOrOrgUtil.getPersonOrOrganization("Portable Antiquities of the Netherlands", false, false);
             assertTrue(obj.getBoolean("isPerson"));
+            JsonObject obj2 = PersonOrOrgUtil.getPersonOrOrganization("Max Mustermann GmbH", false, false);
+            assertTrue(obj2.getBoolean("isPerson"));
+        }
+
+        @Test
+        public void testOrganizationWithOrgPhraseArray() {
+            PersonOrOrgUtil.setOrgPhraseArray(new String[]{"Portable", "GmbH"});
+            // The next examples are known to be asserted to be a Person without an entry in the OrgWordArray
+            // So we test with the array set via JvmSetting to verify the array works
+            verifyIsOrganization("Portable Antiquities of the Netherlands");
+            verifyIsOrganization("Max Mustermann GmbH");
+            PersonOrOrgUtil.setOrgPhraseArray(null);
         }
 
         @Test
         public void testOrganizationAcademicName() {
+            verifyIsOrganization("John Smith Center");
+            verifyIsOrganization("John Smith Group");
+            // An example the base algorithm doesn't handle:
+            JsonObject obj = PersonOrOrgUtil.getPersonOrOrganization("John Smith Project", false, false);
+            assertTrue(obj.getBoolean("isPerson"));
+        }
 
-        verifyIsOrganization("John Smith Center");
-        verifyIsOrganization("John Smith Group");
-        //An example the base algorithm doesn't handle:
-        PersonOrOrgUtil.setAssumeCommaInPersonName(true);
-        verifyIsOrganization("John Smith Project");
-        PersonOrOrgUtil.setAssumeCommaInPersonName(false);
+        @Test
+        public void testOrganizationAcademicNameWithAssumeComma() {
+            PersonOrOrgUtil.setAssumeCommaInPersonName(true);
+            verifyIsOrganization("John Smith Center");
+            verifyIsOrganization("John Smith Group");
+            verifyIsOrganization("John Smith Project");
+            PersonOrOrgUtil.setAssumeCommaInPersonName(false);
         }
 
         

@@ -6,6 +6,7 @@ import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,6 +32,7 @@ import org.hamcrest.Matchers;
 
 import jakarta.json.JsonObjectBuilder;
 
+import static io.restassured.RestAssured.given;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
 import java.nio.file.Path;
@@ -41,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class SearchIT {
 
@@ -1628,6 +1631,307 @@ public class SearchIT {
 
     }
 
+    @Test
+    public void testDataverseDatasetCounts() throws InterruptedException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response makeSuperuser = UtilIT.makeSuperUser(username);
+        makeSuperuser.prettyPrint();
+        makeSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Wait for reindex of dataverse after publishing
+        String searchEmptyDataverseQuery = "identifier:" + dataverseAlias + " AND publicationStatus:Published AND datasetCount:0";
+        assertTrue(UtilIT.sleepForSearch(searchEmptyDataverseQuery, null, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response searchEmptyDataverse = UtilIT.search(searchEmptyDataverseQuery, apiToken, "&type=dataverse");
+        searchEmptyDataverse.prettyPrint();
+        searchEmptyDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1))
+                .body("data.items[0].identifier", CoreMatchers.equalTo(dataverseAlias))
+                .body("data.items[0].datasetCount", CoreMatchers.equalTo(0));
+
+        // Check that published datasets are counted
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPid = JsonPath.from(createDatasetResponse.getBody().asString()).getString("data.persistentId");
+
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken);
+        publishDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        UtilIT.sleepForReindex(datasetPid, apiToken, 5);
+
+        // Wait for reindex of dataverse after publishing
+        String searchDataverseWithDatasetQuery = "identifier:" + dataverseAlias + " AND datasetCount:1";
+        assertTrue(UtilIT.sleepForSearch(searchDataverseWithDatasetQuery, null, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response searchDataverseWithDataset = UtilIT.search(searchDataverseWithDatasetQuery, apiToken, "&type=dataverse");
+        searchDataverseWithDataset.prettyPrint();
+        searchDataverseWithDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1))
+                .body("data.items[0].identifier", CoreMatchers.equalTo(dataverseAlias))
+                .body("data.items[0].datasetCount", CoreMatchers.equalTo(1));
+
+        Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse2.prettyPrint();
+        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
+
+        Response publishDataverse2 = UtilIT.publishDataverseViaNativeApi(dataverseAlias2, apiToken);
+        publishDataverse2.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Wait for reindex of dataverse after publishing
+        String searchEmptyDataverse2Query = "identifier:" + dataverseAlias2 + " AND publicationStatus:Published AND datasetCount:0";
+        assertTrue(UtilIT.sleepForSearch(searchEmptyDataverse2Query, null, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response searchEmptyDataverse2 = UtilIT.search(searchEmptyDataverse2Query, apiToken, "&type=dataverse");
+        searchEmptyDataverse2.prettyPrint();
+        searchEmptyDataverse2.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1))
+                .body("data.items[0].identifier", CoreMatchers.equalTo(dataverseAlias2))
+                .body("data.items[0].datasetCount", CoreMatchers.equalTo(0));
+
+        // Check that linked datasets are counted
+        Response linkDataset = UtilIT.linkDataset(datasetPid, dataverseAlias2, apiToken);
+        linkDataset.prettyPrint();
+        linkDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Wait for reindex of dataverse after linking
+        String searchDataverseWithLinkedDatasetQuery = "identifier:" + dataverseAlias2 + " AND datasetCount:1";
+        assertTrue(UtilIT.sleepForSearch(searchDataverseWithLinkedDatasetQuery, null, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response searchDataverseWithLinkedDataset = UtilIT.search(searchDataverseWithLinkedDatasetQuery, apiToken, "&type=dataverse");
+        searchDataverseWithLinkedDataset.prettyPrint();
+        searchDataverseWithLinkedDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1))
+                .body("data.items[0].identifier", CoreMatchers.equalTo(dataverseAlias2))
+                .body("data.items[0].datasetCount", CoreMatchers.equalTo(1));
+
+        // Check that unlinked datasets are no longer counted
+        Response unlinkDataset = UtilIT.deleteDatasetLink(Long.valueOf(datasetId), dataverseAlias2, apiToken);
+        unlinkDataset.prettyPrint();
+        unlinkDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Wait for reindex of dataverse after unlinking
+        String searchDataverseWithUnlinkedDatasetQuery = "identifier:" + dataverseAlias2 + " AND datasetCount:0";
+        assertTrue(UtilIT.sleepForSearch(searchDataverseWithUnlinkedDatasetQuery, null, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response searchDataverseWithUnlinkedDataset = UtilIT.search(searchDataverseWithUnlinkedDatasetQuery, apiToken, "&type=dataverse");
+        searchDataverseWithUnlinkedDataset.prettyPrint();
+        searchDataverseWithUnlinkedDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1))
+                .body("data.items[0].identifier", CoreMatchers.equalTo(dataverseAlias2))
+                .body("data.items[0].datasetCount", CoreMatchers.equalTo(0));
+
+        // Re-link dataset
+        Response linkDatasetAgain = UtilIT.linkDataset(datasetPid, dataverseAlias2, apiToken);
+        linkDatasetAgain.prettyPrint();
+        linkDatasetAgain.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Wait for reindex of dataverse after linking
+        assertTrue(UtilIT.sleepForSearch(searchDataverseWithLinkedDatasetQuery, null, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        // Check that destroyed datasets are no longer counted
+        Response destroyDataset = UtilIT.destroyDataset(datasetPid, apiToken);
+        destroyDataset.prettyPrint();
+        destroyDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Wait for reindex of dataverses after destroying dataset
+        String searchDataverseWithDestroyedDatasetQuery = "identifier:" + dataverseAlias + " AND datasetCount:0";
+        assertTrue(UtilIT.sleepForSearch(searchDataverseWithDestroyedDatasetQuery, null, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        String searchDataverseWithDestroyedLinkedDatasetQuery = "identifier:" + dataverseAlias2 + " AND datasetCount:0";
+        assertTrue(UtilIT.sleepForSearch(searchDataverseWithDestroyedLinkedDatasetQuery, null, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response searchDataverseWithDestroyedDataset = UtilIT.search(searchDataverseWithDestroyedDatasetQuery, apiToken, "&type=dataverse");
+        searchDataverseWithDestroyedDataset.prettyPrint();
+        searchDataverseWithDestroyedDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1))
+                .body("data.items[0].identifier", CoreMatchers.equalTo(dataverseAlias))
+                .body("data.items[0].datasetCount", CoreMatchers.equalTo(0));
+
+        Response searchDataverseWithDestroyedLinkedDataset = UtilIT.search(searchDataverseWithDestroyedLinkedDatasetQuery, apiToken, "&type=dataverse");
+        searchDataverseWithDestroyedLinkedDataset.prettyPrint();
+        searchDataverseWithDestroyedLinkedDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1))
+                .body("data.items[0].identifier", CoreMatchers.equalTo(dataverseAlias2))
+                .body("data.items[0].datasetCount", CoreMatchers.equalTo(0));
+
+        // Check that harvested datasets are counted
+        Response createDataverseResponse3 = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse3.prettyPrint();
+        String dataverseAlias3 = UtilIT.getAliasFromResponse(createDataverseResponse3);
+
+        Response publishDataverse3 = UtilIT.publishDataverseViaNativeApi(dataverseAlias3, apiToken);
+        publishDataverse3.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String nickName = "h" + UtilIT.getRandomString(6);
+        String sourceName = "";
+
+        String clientApiPath = String.format("/api/harvest/clients/%s", nickName);
+        String clientJson = String.format("{\"dataverseAlias\":\"%s\","
+                        + "\"type\":\"oai\","
+                        + "\"sourceName\":\"%s\","
+                        + "\"harvestUrl\":\"%s\","
+                        + "\"archiveUrl\":\"%s\","
+                        + "\"set\":\"%s\","
+                        + "\"allowHarvestingMissingCVV\":%s,"
+                        + "\"metadataFormat\":\"%s\"}",
+                dataverseAlias3, sourceName, "https://demo.dataverse.org/oai", "https://demo.dataverse.org",
+                "controlTestSet2", true, "oai_dc");
+
+        Response createResponse = given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                .body(clientJson)
+                .post(clientApiPath);
+        createResponse.prettyPrint();
+        assertEquals(CREATED.getStatusCode(), createResponse.getStatusCode());
+
+        String runHarvestApiPath = String.format("/api/harvest/clients/%s/run", nickName);
+
+        Response runResponse = given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                .post(runHarvestApiPath);
+        runResponse.prettyPrint();
+        assertEquals(ACCEPTED.getStatusCode(), runResponse.getStatusCode());
+
+        int i = 0;
+        int maxWait=20; // a very conservative interval; this harvest has no business taking this long
+        int numberOfDatasetsHarvested = 0;
+        do {
+            // Give it an initial 2 sec. delay, to make sure the client state
+            // has been updated in the database, which can take some appreciable
+            // amount of time on a heavily-loaded server running a full suite of
+            // tests:
+            Thread.sleep(2000L);
+            // keep checking the status of the client with the GET api:
+            Response getClientResponse = given()
+                    .get(clientApiPath);
+
+            assertEquals(OK.getStatusCode(), getClientResponse.getStatusCode());
+            JsonPath responseJsonPath = getClientResponse.body().jsonPath();
+            assertNotNull(responseJsonPath, "Invalid JSON in GET client response");
+            assertEquals(ApiConstants.STATUS_OK, responseJsonPath.getString("status"));
+
+            String clientStatus = responseJsonPath.getString("data.status");
+            assertNotNull(clientStatus);
+
+            if ("inProgress".equals(clientStatus) || "IN PROGRESS".equals(responseJsonPath.getString("data.lastResult"))) {
+                // we'll sleep for 2 more seconds
+                i++;
+            } else {
+                logger.info("getClientResponse.prettyPrint: "
+                        + getClientResponse.prettyPrint());
+                // Check the values in the response:
+                // a) Confirm that the harvest has completed:
+                assertEquals("inActive", clientStatus, "Unexpected client status: "+clientStatus);
+
+                // b) Confirm that it has actually succeeded:
+                assertTrue(responseJsonPath.getString("data.lastResult").contains("Completed"), "Last harvest not reported a success (took "+i+" seconds)");
+                String harvestTimeStamp = responseJsonPath.getString("data.lastHarvest");
+                assertNotNull(harvestTimeStamp);
+
+                // c) Confirm that at least one dataset has been harvested:
+                numberOfDatasetsHarvested = responseJsonPath.getInt("data.lastDatasetsHarvested");
+                assertTrue(numberOfDatasetsHarvested > 0);
+
+                // ok, it looks like the harvest has completed successfully.
+                break;
+            }
+        } while (i<maxWait);
+
+        System.out.println("Waited " + i + " seconds for the harvest to complete.");
+
+        // Wait for reindex of dataverse after harvesting
+        String searchDataverseWithHarvestedDatasetQuery = "identifier:" + dataverseAlias3 + " AND datasetCount:" + numberOfDatasetsHarvested;
+        assertTrue(UtilIT.sleepForSearch(searchDataverseWithHarvestedDatasetQuery, null, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response searchDataverseWithHarvestedDataset = UtilIT.search(searchDataverseWithHarvestedDatasetQuery, apiToken, "&type=dataverse");
+        searchDataverseWithHarvestedDataset.prettyPrint();
+        searchDataverseWithHarvestedDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1))
+                .body("data.items[0].identifier", CoreMatchers.equalTo(dataverseAlias3))
+                .body("data.items[0].datasetCount", CoreMatchers.equalTo(numberOfDatasetsHarvested));
+
+        // Clean up harvesting client and harvested datasets
+        Response deleteResponse = given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                .delete(clientApiPath);
+        deleteResponse.prettyPrint();
+
+        String searchDataverseWithNoMoreHarvestedDatasetsQuery = "identifier:" + dataverseAlias3 + " AND datasetCount:0";
+        assertTrue(UtilIT.sleepForSearch(searchDataverseWithNoMoreHarvestedDatasetsQuery, null, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response searchDataverseWithNoMoreHarvestedDatasets = UtilIT.search(searchDataverseWithNoMoreHarvestedDatasetsQuery, apiToken, "&type=dataverse");
+        searchDataverseWithNoMoreHarvestedDatasets.prettyPrint();
+        searchDataverseWithNoMoreHarvestedDatasets.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1))
+                .body("data.items[0].identifier", CoreMatchers.equalTo(dataverseAlias3))
+                .body("data.items[0].datasetCount", CoreMatchers.equalTo(0));
+
+        // Check that datasets in child collections are counted
+        Response createDataverseResponse4 = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse4.prettyPrint();
+        String dataverseAlias4 = UtilIT.getAliasFromResponse(createDataverseResponse4);
+
+        Response publishDataverse4 = UtilIT.publishDataverseViaNativeApi(dataverseAlias4, apiToken);
+        publishDataverse4.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String childDataverseAlias = dataverseAlias4 + "-child";
+        Response createChildDataverseResponse = UtilIT.createSubDataverse(childDataverseAlias, null, apiToken, dataverseAlias4);
+        createChildDataverseResponse.prettyPrint();
+
+        Response publishChildDataverse = UtilIT.publishDataverseViaNativeApi(childDataverseAlias, apiToken);
+        publishChildDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response createGrandchildDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(childDataverseAlias, apiToken);
+        createGrandchildDatasetResponse.prettyPrint();
+        String grandchildDatasetPid = JsonPath.from(createGrandchildDatasetResponse.getBody().asString()).getString("data.persistentId");
+
+        Response publishGrandchildDataset = UtilIT.publishDatasetViaNativeApi(grandchildDatasetPid, "major", apiToken);
+        publishGrandchildDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        UtilIT.sleepForReindex(grandchildDatasetPid, apiToken, 5);
+
+        // Wait for reindex of dataverse after publishing
+        String searchDataverseWithGrandchildDatasetQuery = "identifier:" + dataverseAlias4 + " AND datasetCount:1";
+        assertTrue(UtilIT.sleepForSearch(searchDataverseWithGrandchildDatasetQuery, null, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response searchDataverseWithGrandchildDataset = UtilIT.search(searchDataverseWithGrandchildDatasetQuery, apiToken, "&type=dataverse");
+        searchDataverseWithGrandchildDataset.prettyPrint();
+        searchDataverseWithGrandchildDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1))
+                .body("data.items[0].identifier", CoreMatchers.equalTo(dataverseAlias4))
+                .body("data.items[0].datasetCount", CoreMatchers.equalTo(1));
+    }
+
     @AfterEach
     public void tearDownDataverse() {
         File treesThumb = new File("scripts/search/data/binary/trees.png.thumb48");
@@ -1963,4 +2267,158 @@ public class SearchIT {
         searchResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
     }
+
+    @Test
+    public void testShowCollections() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        JsonPath createdDataverse = JsonPath.from(createDataverseResponse.body().asString());
+        String dataverseName = createdDataverse.getString("data.name");
+        String dataverseAlias = createdDataverse.getString("data.alias");
+        Integer dataverseId = createdDataverse.getInt("data.id");
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        JsonPath createdDataset = JsonPath.from(createDatasetResponse.body().asString());
+        int datasetId = createdDataset.getInt("data.id");
+        String datasetPid = createdDataset.getString("data.persistentId");
+
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        // Test that the Dataverse collection that the dataset was created in is returned
+        Response searchResponse = UtilIT.search("*", apiToken, "&subtree=" + dataverseAlias + "&type=dataset&show_collections=true");
+        searchResponse.prettyPrint();
+        searchResponse.then().assertThat()
+                      .statusCode(OK.getStatusCode())
+                      .body("data.count_in_response", CoreMatchers.is(1))
+                      .body("data.items[0].collections[0].id", CoreMatchers.is(dataverseId))
+                      .body("data.items[0].collections[0].name", CoreMatchers.is(dataverseName))
+                      .body("data.items[0].collections[0].alias", CoreMatchers.is(dataverseAlias));
+
+        Response createDataverse2Response = UtilIT.createRandomDataverse(apiToken);
+        createDataverse2Response.prettyPrint();
+        createDataverse2Response.then().assertThat().statusCode(CREATED.getStatusCode());
+        JsonPath createDataverse2 = JsonPath.from(createDataverse2Response.body().asString());
+        String dataverse2Name = createDataverse2.getString("data.name");
+        String dataverse2Alias = createDataverse2.getString("data.alias");
+        Integer dataverse2Id = createDataverse2.getInt("data.id");
+
+        UtilIT.publishDataverseViaNativeApi(dataverse2Alias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.linkDataset(datasetPid, dataverse2Alias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
+
+        // Test that the Dataverse collection that the dataset was linked to is also returned
+        searchResponse = UtilIT.search("*", apiToken, "&subtree=" + dataverseAlias + "&type=dataset&show_collections=true");
+        searchResponse.prettyPrint();
+        searchResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.count_in_response", CoreMatchers.is(1))
+                .body("data.items[0].collections.size()", CoreMatchers.is(2))
+                .body("data.items[0].collections", CoreMatchers.hasItems(
+                        Map.of("id", dataverseId, "name", dataverseName, "alias", dataverseAlias),
+                        Map.of("id", dataverse2Id, "name", dataverse2Name, "alias", dataverse2Alias)
+                ));
+
+    }
+    
+    @Test
+    public void testFileAddedAfterPublicationIsIndexed() {
+        // Create user
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        // Create dataverse
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Create dataset
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+
+        // Publish dataverse and dataset
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataverse.prettyPrint();
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDataset.prettyPrint();
+        publishDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Verify no files in search results initially
+        Response searchBeforeFileUpload = UtilIT.search("parentId:" + datasetId, apiToken);
+        searchBeforeFileUpload.prettyPrint();
+        searchBeforeFileUpload.then().assertThat()
+                .body("data.total_count", CoreMatchers.is(0))
+                .statusCode(OK.getStatusCode());
+
+        // Upload a file after publication
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadFileResponse.prettyPrint();
+        uploadFileResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Get file ID from the upload response
+        Integer fileId = JsonPath.from(uploadFileResponse.getBody().asString()).getInt("data.files[0].dataFile.id");
+
+        // Wait for indexing to complete
+        String searchQuery = "entityId:" + fileId;
+        assertTrue(UtilIT.sleepForSearch(searchQuery, apiToken, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), 
+                   "Failed test if search exceeds max duration " + searchQuery);
+
+        // Search for the file and verify it's indexed
+        Response searchAfterFileUpload = UtilIT.search(searchQuery, apiToken);
+        searchAfterFileUpload.prettyPrint();
+        searchAfterFileUpload.then().assertThat()
+                .body("data.total_count", CoreMatchers.is(1))
+                .body("data.items[0].name", is("dataverseproject.png"))
+                .body("data.items[0].file_content_type", CoreMatchers.is("image/png"))
+                .statusCode(OK.getStatusCode());
+
+        // Clean up - delete dataset, dataverse, and user
+        
+        //Superuser to delete published dataset
+        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
+        assertEquals(200, makeSuperUser.getStatusCode());
+        
+        // Delete the dataset
+        Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        deleteDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        try {
+            // give the bag time to generate
+            Thread.sleep(3000);
+        } catch (InterruptedException ex) {
+        }
+
+        // Delete the dataverse
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        deleteDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Delete the user
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        deleteUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
+
 }

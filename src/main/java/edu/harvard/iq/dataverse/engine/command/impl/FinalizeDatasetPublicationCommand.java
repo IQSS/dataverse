@@ -33,8 +33,7 @@ import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,7 +41,7 @@ import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import java.util.ArrayList;
+
 import java.util.concurrent.Future;
 
 import org.apache.logging.log4j.util.Strings;
@@ -67,7 +66,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      */
     final boolean datasetExternallyReleased;
     
-    List<Dataverse> dataversesToIndex = new ArrayList<>();
+    Set<Dataverse> dataversesToIndex = new HashSet<>();
     
     public static final String FILE_VALIDATION_ERROR = "FILE VALIDATION ERROR";
     
@@ -209,6 +208,15 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
         }
 
+        // The owning dataverse plus all dataverses linking to this dataset must be re-indexed to update their
+        // datasetCount
+        dataversesToIndex.add(getDataset().getOwner());
+        dataversesToIndex.addAll(getDataset().getOwner().getOwners());
+        getDataset().getDatasetLinkingDataverses().forEach(dld -> {
+            dataversesToIndex.add(dld.getLinkingDataverse());
+            dataversesToIndex.addAll(dld.getLinkingDataverse().getOwners());
+        });
+
         List<Command> previouslyCalled = ctxt.getCommandsCalled();
         
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
@@ -326,12 +334,16 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 while (dv != null) {
                     boolean newSubjectsAdded = false;
                     for (ControlledVocabularyValue cvv : dsf.getControlledVocabularyValues()) {                   
-                        if (!dv.getDataverseSubjects().contains(cvv)) {
-                            logger.fine("dv "+dv.getAlias()+" does not have subject "+cvv.getStrValue());
-                            newSubjectsAdded = true;
-                            dv.getDataverseSubjects().add(cvv);
+                        if (!cvv.getStrValue().equals(DatasetField.NA_VALUE)) {
+                            if (!dv.getDataverseSubjects().contains(cvv)) {
+                                logger.fine("dv "+dv.getAlias()+" does not have subject "+cvv.getStrValue());
+                                newSubjectsAdded = true;
+                                dv.getDataverseSubjects().add(cvv);
+                            } else {
+                                logger.fine("dv "+dv.getAlias()+" already has subject "+cvv.getStrValue());
+                            }
                         } else {
-                            logger.fine("dv "+dv.getAlias()+" already has subject "+cvv.getStrValue());
+                            logger.fine("Subject is not recognized : " + cvv.getStrValue());
                         }
                     }
                     if (newSubjectsAdded) {

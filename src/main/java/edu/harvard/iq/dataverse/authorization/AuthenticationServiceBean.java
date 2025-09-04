@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
@@ -995,10 +996,30 @@ public class AuthenticationServiceBean {
         // TODO: Get the identifier from an invalidating cache to avoid lookup bursts of the same token.
         // Tokens in the cache should be removed after some (configurable) time.
         OAuth2UserRecord oAuth2UserRecord = verifyOIDCBearerTokenAndGetOAuth2UserRecord(bearerToken);
-        if (FeatureFlags.API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH.enabled()) {
-            AuthenticatedUser builtinAuthenticatedUser = lookupUser(BuiltinAuthenticationProvider.PROVIDER_ID, oAuth2UserRecord.getUsername());
-            return (builtinAuthenticatedUser != null) ? builtinAuthenticatedUser : lookupUser(oAuth2UserRecord.getUserRecordIdentifier());
+        AuthenticatedUser authenticatedUser;
+        if (FeatureFlags.API_BEARER_AUTH_USE_SHIB_USER_ON_ID_MATCH.enabled() && oAuth2UserRecord.hasShibAttributes()) {
+            logger.log(Level.FINE, "OAuth2UserRecord has Shibboleth attributes");
+            String userPersistentId = ShibUtil.createUserPersistentIdentifier(oAuth2UserRecord.getIdp(), oAuth2UserRecord.getShibUniquePersistentIdentifier());
+            authenticatedUser = lookupUser(ShibAuthenticationProvider.PROVIDER_ID, userPersistentId);
+            if (authenticatedUser != null) {
+                logger.log(Level.FINE, "Shibboleth user found for the given bearer token");
+                return authenticatedUser;
+            }
+        } else if (FeatureFlags.API_BEARER_AUTH_USE_OAUTH_USER_ON_ID_MATCH.enabled() && oAuth2UserRecord.hasOAuthAttributes()) {
+            OAuthUserLookupParams userLookupParams = OAuthUserLookupParamsFactory.getOAuthUserLookupParams(oAuth2UserRecord.getIdp(), oAuth2UserRecord.getOidcUserId());
+            authenticatedUser = lookupUser(userLookupParams.getProviderId(), userLookupParams.getLookupUserId());
+            if (authenticatedUser != null) {
+                logger.log(Level.FINE, "OAuth user found for the given bearer token");
+                return authenticatedUser;
+            }
+        } else if (FeatureFlags.API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH.enabled() && oAuth2UserRecord.hasBuiltinAttributes()) {
+            authenticatedUser = lookupUser(BuiltinAuthenticationProvider.PROVIDER_ID, oAuth2UserRecord.getUsername());
+            if (authenticatedUser != null) {
+                logger.log(Level.FINE, "Builtin user found for the given bearer token");
+                return authenticatedUser;
+            }
         }
+
         return lookupUser(oAuth2UserRecord.getUserRecordIdentifier());
     }
 

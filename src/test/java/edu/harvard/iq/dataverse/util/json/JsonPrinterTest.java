@@ -210,11 +210,7 @@ public class JsonPrinterTest {
         datasetContactField.setDatasetFieldCompoundValues(vals);
         fields.add(datasetContactField);
 
-        SettingsServiceBean nullServiceBean = null;
-        DatasetFieldServiceBean nullDFServiceBean = null;
-        DataverseFieldTypeInputLevelServiceBean nullDFILServiceBean = null;
-        DatasetServiceBean nullDatasetServiceBean = null;
-        JsonPrinter.injectSettingsService(nullServiceBean, nullDFServiceBean, nullDFILServiceBean, nullDatasetServiceBean);
+        JsonPrinter.injectSettingsService(null, null, null, null, null, null);
 
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
@@ -255,10 +251,7 @@ public class JsonPrinterTest {
         datasetContactField.setDatasetFieldCompoundValues(vals);
         fields.add(datasetContactField);
 
-        DatasetFieldServiceBean nullDFServiceBean = null;
-        DataverseFieldTypeInputLevelServiceBean nullDFILServiceBean = null;
-        DatasetServiceBean nullDatasetServiceBean = null;
-        JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean, nullDFILServiceBean, nullDatasetServiceBean);
+        JsonPrinter.injectSettingsService(new MockSettingsSvc(), null, null, null, null, null);
 
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
@@ -308,10 +301,7 @@ public class JsonPrinterTest {
 
         block.setDatasetFieldTypes(datasetFieldTypes);
 
-        DatasetFieldServiceBean nullDFServiceBean = null;
-        DataverseFieldTypeInputLevelServiceBean nullDFILServiceBean = null;
-        DatasetServiceBean nullDatasetServiceBean = null;
-        JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean, nullDFILServiceBean, nullDatasetServiceBean);
+        JsonPrinter.injectSettingsService(new MockSettingsSvc(), null, null ,null, null, null);
 
         JsonObject jsonObject = JsonPrinter.json(block).build();
         assertNotNull(jsonObject);
