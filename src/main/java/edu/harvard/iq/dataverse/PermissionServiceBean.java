@@ -157,7 +157,7 @@ public class PermissionServiceBean {
                        AND @IPRANGESQL
                      )
                   )
-                ) 
+                )
             """;
     /**
      * A request-level permission query (e.g includes IP ras).
