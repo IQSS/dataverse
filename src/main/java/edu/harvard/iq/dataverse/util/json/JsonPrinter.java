@@ -292,7 +292,7 @@ public class JsonPrinter {
     }
     
     public static JsonObjectBuilder json(Dataverse dv, boolean minimal) {
-        if (!mini){
+        if (!minimal){
             return json(dv, false, false, null);
         } else {
             return jsonObjectBuilder()
