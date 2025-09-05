@@ -961,7 +961,6 @@ public class PermissionServiceBean {
         return null;
     }
 
-
     /**
      * Calculates the complete list of role assignments for a given user on a DvObject.
      * This includes roles assigned directly to the user and roles inherited from any groups
