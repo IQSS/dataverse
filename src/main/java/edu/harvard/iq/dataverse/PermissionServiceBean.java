@@ -101,7 +101,7 @@ public class PermissionServiceBean {
                   WHERE explicitgroup_authenticateduser.containedauthenticatedusers_id = @USERID
                 )
                         
-                SELECT * FROM DATAVERSE WHERE id  IN (
+                SELECT * FROM DATAVERSE WHERE id IN (
                   SELECT definitionpoint_id
                   FROM roleassignment
                   WHERE roleassignment.assigneeidentifier IN (
