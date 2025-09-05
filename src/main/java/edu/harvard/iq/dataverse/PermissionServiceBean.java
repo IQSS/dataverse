@@ -922,7 +922,6 @@ public class PermissionServiceBean {
         return findPermittedCollections(request, user, 1 << permission.ordinal());
     }
     
-    
     public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit) {
         if (user != null) {
             // IP Group - Only check IP if a User is calling for themself
