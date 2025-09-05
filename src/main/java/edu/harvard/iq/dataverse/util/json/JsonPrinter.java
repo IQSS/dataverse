@@ -344,11 +344,11 @@ public class JsonPrinter {
         return bld;
     }
 
-    public static JsonObjectBuilder jsonArray(List<Dataverse> collections) {
+    public static JsonObjectBuilder jsonArray(List<Dataverse> dataverses) {
         JsonObjectBuilder job = Json.createObjectBuilder();
-        job.add("count", collections.size());
+        job.add("count", dataverses.size());
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        for (Dataverse dataverse : collections) {
+        for (Dataverse dataverse : dataverses) {
             NullSafeJsonBuilder jsonObject = NullSafeJsonBuilder.jsonObjectBuilder();
             jsonObject.add("id", dataverse.getId());
             jsonObject.add("name", dataverse.getDisplayName());
