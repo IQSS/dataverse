@@ -335,6 +335,7 @@
                                         <h:outputText rendered="#{!empty file.directoryLabel}" value="#{file.directoryLabel}/" styleClass="text-muted"/>
                                         <h:outputText value="#{file.displayName}"/>
                                         <h:outputText value=" (#{bundle['dataverse.permissionsFiles.files.deleted']}) " rendered="#{file.deleted}"/>
+                                        <h:outputText value=" (#{bundle['dataverse.permissionsFiles.files.draftUnpublished']}) "  rendered="#{file.unpublished}"/>
                                     </p:column>
                                 </p:dataTable>
                             </div>
