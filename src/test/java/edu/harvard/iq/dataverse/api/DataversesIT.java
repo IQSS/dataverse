@@ -797,7 +797,7 @@ public class DataversesIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", equalTo(0));
                 
-    //set user api back to super user for cleanup
+        //set user api back to super user for cleanup
         UtilIT.setSuperuserStatus(username, Boolean.TRUE);
                 
                 
