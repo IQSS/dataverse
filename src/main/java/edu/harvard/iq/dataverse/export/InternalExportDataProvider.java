@@ -149,7 +149,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
 
         for (FileMetadata fileMetadata : fileMetadatas) {
             DataFile dataFile = fileMetadata.getDataFile();
-            jab.add(JsonPrinter.json(dataFile, fileMetadata, true));
+            jab.add(JsonPrinter.jsonDatafileWithDatatableForExport(dataFile, fileMetadata));
         }
         return jab.build();
     }

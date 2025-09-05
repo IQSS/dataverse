@@ -85,7 +85,7 @@ public class DdiExportUtil {
     public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
     public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
     public static final String CITATION_BLOCK_NAME = "citation";
-    public static final int DATATABLES_BATCH_SIZE = 1; //50; 
+    public static final int DATATABLES_BATCH_SIZE = 50; 
 
     //Some tests don't send real PIDs that can be parsed
     //Use constant empty PID in these cases

@@ -879,11 +879,14 @@ public class JsonPrinter {
         return json(df, fileMetadata, forExportDataProvider, false);
     }
 
-    
     public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata, boolean forExportDataProvider, boolean returnOwners) {
         return json(df, fileMetadata, forExportDataProvider, returnOwners, false);
     }
 
+    public static JsonObjectBuilder jsonDatafileWithDatatableForExport(DataFile df, FileMetadata fileMetadata) {
+        return json(df, fileMetadata, true, false, true);
+    }
+    
     public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata, boolean forExportDataProvider, boolean returnOwners, boolean includeVariables) {
         String fileName = null;
 
