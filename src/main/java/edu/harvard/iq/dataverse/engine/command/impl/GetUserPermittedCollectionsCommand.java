@@ -13,7 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.List;
 import java.util.logging.Logger;
 
-@RequiredPermissions({})
+@RequiredPermissions({}) // No specific permission is needed to execute this command. To filter the collection a list of permissions are passed in
 public class GetUserPermittedCollectionsCommand extends AbstractCommand<List<Dataverse>> {
     private static final Logger logger = Logger.getLogger(GetUserPermittedCollectionsCommand.class.getCanonicalName());
 
