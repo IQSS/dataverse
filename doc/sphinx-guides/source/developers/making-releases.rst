@@ -72,7 +72,7 @@ The benefits of the code freeze are:
 
 In short, the steps described below become easier under a code freeze.
 
-Note: for a hotfix, a code freeze is necessary not because we want code to stop changing in the branch being hotfix released, but because bumping the version used in Jenkins/Ansible means that API tests will fail in pull requests until the version is bumped in those pull requests. Basically, we want to get the hotfix merged quickly so we can propogate the version bump into all open pull requests so that API tests can start passing again in those pull requests.
+Note: for a hotfix, a code freeze is necessary not because we want code to stop changing in the branch being hotfix released, but because bumping the version used in Jenkins/Ansible means that API tests will fail in pull requests until the version is bumped in those pull requests. Basically, we want to get the hotfix merged quickly so we can propagate the version bump into all open pull requests so that API tests can start passing again in those pull requests.
 
 Push Back Milestones on Pull Requests That Missed the Train
 -----------------------------------------------------------
@@ -161,7 +161,7 @@ Click "Save" then "Build Now".
 
 Make sure the guides directory appears in the expected location such as https://guides.dataverse.org/en/6.8-rc.1/
 
-When previewing the HTML version of docs from pull requests, we don't usually use this Jenkins job, relying instead on automated ReadTheDocs builds. The reason for doing this step now while we wait for feedback from the Curation Team is that it's an excellent time to fix the Jenkins job, if necessary, to accomodate any changes needed to continue to build the docs. For example, Sphinx might need to be updated or a dependency might need to be installed. Such changes should be listed in the release notes for documentation writers.
+When previewing the HTML version of docs from pull requests, we don't usually use this Jenkins job, relying instead on automated ReadTheDocs builds. The reason for doing this step now while we wait for feedback from the Curation Team is that it's an excellent time to fix the Jenkins job, if necessary, to accommodate any changes needed to continue to build the docs. For example, Sphinx might need to be updated or a dependency might need to be installed. Such changes should be listed in the release notes for documentation writers.
 
 Deploy Release Candidate to Demo
 --------------------------------
