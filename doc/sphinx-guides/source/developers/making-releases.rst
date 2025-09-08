@@ -143,13 +143,6 @@ Deploy Release Candidate to QA
 
 Deploy the same war file to https://qa.dataverse.org using the same upgrade instructions as above.
 
-Deploy Release Candidate to Demo
---------------------------------
-
-|dedicated|
-
-Deploy the same war file to https://demo.dataverse.org using the same upgrade instructions as above.
-
 Solicit Feedback from Curation Team
 -----------------------------------
 
@@ -169,6 +162,15 @@ Click "Save" then "Build Now".
 Make sure the guides directory appears in the expected location such as https://guides.dataverse.org/en/6.8-rc.1/
 
 When previewing the HTML version of docs from pull requests, we don't usually use this Jenkins job, relying instead on automated ReadTheDocs builds. The reason for doing this step now while we wait for feedback from the Curation Team is that it's an excellent time to fix the Jenkins job, if necessary, to accomodate any changes needed to continue to build the docs. For example, Sphinx might need to be updated or a dependency might need to be installed. Such changes should be listed in the release notes for documentation writers.
+
+Deploy Release Candidate to Demo
+--------------------------------
+
+|dedicated|
+
+Time has passed. The curation team has given feedback. We've finished regression and performance testing. Fixes may have been merged into the "develop" branch. We're ready to actually make the release now, which includes deploying a release candidate to the demo server.
+
+Build a new war file, if necessary, and deploy it to https://demo.dataverse.org using the upgrade instructions in the release notes.
 
 Merge Release Notes (Once Ready)
 --------------------------------
