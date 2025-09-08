@@ -1,15 +1,51 @@
-Big Data Support
-================
+Scaling Dataverse with Data Size
+================================
 
-Big data support includes some experimental options. Eventually more of this content will move to the Installation Guide.
+This guide is intended to help administrators configure Dataverse appropriately to handle the amount of data their installation needs to manage.
+
+Scaling is a complex subject and there are many options available in Dataverse that can improve performance with larger scale data, but some of these
+work differently than Dataverse's default configuration, potentially requiring user education, and can require additional expertise to manage.
+
+In general, there are three dimensions in which Dataverse can scale:
+  
+1. **Number of Datasets**
+2. **Number of Files per Dataset**
+3. **Storage size of individual files and aggregate storage size**
+
+This guide will primarily focus on the latter two dimensions.
 
 .. contents:: |toctitle|
         :local:
 
-Various components will need to be installed and/or configured for big data support via the methods described below.
+Choosing the Right Approach
+---------------------------
+
+The table below provides guidance on which storage solution to choose based on your requirements:
+
++------------------------+---------------------------+---------------------------+---------------------------+
+| **Solution**           | **File Size Range**       | **File Volume Support**   | **Key Benefits**          |
++========================+===========================+===========================+===========================+
+| Default Storage        | Up to ~2GB                | Up to thousands           | Simple, no configuration  |
++------------------------+---------------------------+---------------------------+---------------------------+
+| S3 Direct Upload       | Up to several TB          | Up to tens of thousands   | Simple configuration,     |
+|                        |                           |                           | familiar user interface   |
++------------------------+---------------------------+---------------------------+---------------------------+
+| Remote Storage         | Unlimited                 | Unlimited                 | No file transfer needed,  |
+|                        |                           |                           | files remain in place     |
++------------------------+---------------------------+---------------------------+---------------------------+
+| Globus Transfer        | Unlimited                 | Millions+                 | Robust transfer,          |
+|                        |                           |                           | resumable, high-speed     |
++------------------------+---------------------------+---------------------------+---------------------------+
+
+Handling Large Individual Files
+-------------------------------
+
+When individual files exceed typical web upload/download capabilities (generally 1-2GB), you'll need specialized approaches.
 
 S3 Direct Upload and Download
------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Best for:** Files up to several TB in size with minimal configuration changes
 
 A lightweight option for supporting file sizes beyond a few gigabytes - a size that can cause performance issues when uploaded through a Dataverse installation itself - is to configure an S3 store to provide direct upload and download via 'pre-signed URLs'. When these options are configured, file uploads and downloads are made directly to and from a configured S3 store using secure (https) connections that enforce a Dataverse installation's access controls. (The upload and download URLs are signed with a unique key that only allows access for a short time period and a Dataverse installation will only generate such a URL if the user has permission to upload/download the specific file in question.)
 
@@ -20,7 +56,6 @@ To configure these options, an administrator must set two JVM options for the Da
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.download-redirect=true"``
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.upload-redirect=true"``
-
 
 With multiple stores configured, it is possible to configure one S3 store with direct upload and/or download to support large files (in general or for specific Dataverse collections) while configuring only direct download, or no direct access for another store.
 
@@ -39,7 +74,7 @@ At present, one potential drawback for direct-upload is that files are only part
 .. _s3-direct-upload-features-disabled:
 
 Features that are Disabled if S3 Direct Upload is Enabled
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following features are disabled when S3 direct upload is enabled.
 
@@ -52,7 +87,7 @@ The following features are disabled when S3 direct upload is enabled.
 .. _cors-s3-bucket:
 
 Allow CORS for S3 Buckets
-~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 **IMPORTANT:** One additional step that is required to enable direct uploads via a Dataverse installation and for direct download to work with previewers and direct upload to work with dvwebloader (:ref:`folder-upload`) is to allow cross site (CORS) requests on your S3 store.
 The example below shows how to enable CORS rules (to support upload and download) on a bucket using the AWS CLI command line tool. Note that you may want to limit the AllowedOrigins and/or AllowedHeaders further.  https://github.com/gdcc/dataverse-previewers/wiki/Using-Previewers-with-download-redirects-from-S3 has some additional information about doing this.
@@ -85,12 +120,14 @@ Alternatively, you can enable CORS using the AWS S3 web interface, using json-en
 .. _s3-tags-and-direct-upload:
 
 S3 Tags and Direct Upload
-~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 Since the direct upload mechanism creates the final file rather than an intermediate temporary file, user actions, such as neither saving or canceling an upload session before closing the browser page, can leave an abandoned file in the store. The direct upload mechanism attempts to use S3 tags to aid in identifying/removing such files. Upon upload, files are given a "dv-state":"temp" tag which is removed when the dataset changes are saved and new files are added in the Dataverse installation. Note that not all S3 implementations support tags. Minio, for example, does not. With such stores, direct upload may not work and you might need to disable tagging. For details, see :ref:`s3-tagging` in the Installation Guide.
 
 Trusted Remote Storage with the ``remote`` Store Type
------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Best for:** Very large files that should remain in their original location
 
 For very large, and/or very sensitive data, it may not make sense to transfer or copy files to Dataverse at all. The experimental ``remote`` store type in the Dataverse software now supports this use case. 
 
@@ -151,7 +188,9 @@ To configure the options mentioned above, an administrator must set two JVM opti
 .. _globus-support:
 
 Globus File Transfer
---------------------
+~~~~~~~~~~~~~~~~~~~
+
+**Best for:** Very large files and high-performance computing environments
 
 Note: Globus file transfer is still experimental but feedback is welcome! See :ref:`support`.
 
@@ -190,3 +229,85 @@ An overview of the control and data transfer interactions between components was
 See also :ref:`Globus settings <:GlobusSettings>`.
 
 An alternative, experimental implementation of Globus polling of ongoing upload transfers has been added in v6.4. This framework does not rely on the instance staying up continuously for the duration of the transfer and saves the state information about Globus upload requests in the database. Due to its experimental nature it is not enabled by default. See the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`) and the JVM option :ref:`dataverse.files.globus-monitoring-server`.
+
+Handling High Volume of Files
+----------------------------
+
+When dealing with datasets containing thousands or millions of files, different challenges arise beyond just file size.
+
+Performance Considerations
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Database Impact**
+
+Each file in Dataverse requires database entries for metadata, permissions, and other attributes. When dealing with very large numbers of files:
+
+* Database query performance may degrade
+* Indexing operations take longer
+* Dataset versioning becomes more resource-intensive
+
+**Recommended Approaches**
+
+For datasets with extremely high file counts (10,000+), consider these strategies:
+
+1. **Use hierarchical organization** - Group files into logical directories to improve navigation
+2. **Batch operations** - Use the API for batch uploads rather than the UI
+3. **Consider file bundling** - Where appropriate, bundle related small files into archives
+4. **Use Globus for bulk transfers** - Globus is optimized for handling large numbers of files
+
+API-Based Batch Operations
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For programmatically handling large numbers of files, Dataverse provides API endpoints that support batch operations:
+
+* The `/api/datasets/:id/addFiles` endpoint allows adding multiple files in a single request
+* The `/api/datasets/:id/deleteFiles` endpoint allows removing multiple files at once
+
+See the :doc:`/api/native-api` documentation for details on these endpoints.
+
+Monitoring and Maintenance
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When working with high file volumes:
+
+* Monitor database performance regularly
+* Consider implementing scheduled maintenance windows for index optimization
+* Use the Dataverse metrics API to track system performance
+
+Storage Strategy Recommendations
+-------------------------------
+
+Based on both file size and volume considerations, here are some general recommendations:
+
+1. **For research projects with moderate data (< 2GB files, < 1000 files):**
+   * Default Dataverse storage is sufficient
+
+2. **For projects with large files but moderate file counts:**
+   * Configure S3 direct upload/download
+   * Set appropriate ingest size limits
+
+3. **For projects with very large files or sensitive data that should remain in place:**
+   * Use the remote storage option
+   * Consider implementing access controls at the remote storage level
+
+4. **For high-performance computing environments or very large datasets:**
+   * Implement Globus transfer
+   * Use batch operations via API
+   * Consider custom workflows for dataset creation and management
+
+5. **For datasets with millions of small files:**
+   * Consider file bundling where appropriate
+   * Use Globus for transfer
+   * Implement hierarchical organization
+
+Performance Tuning
+-----------------
+
+Regardless of which storage solution you choose, consider these performance tuning options:
+
+* Increase JVM heap size for Dataverse application
+* Optimize database indexes for file metadata tables
+* Configure appropriate timeouts for large file transfers
+* Consider dedicated storage nodes for high-volume installations
+
+For detailed performance tuning recommendations, see the :doc:`/installation/config` guide.
