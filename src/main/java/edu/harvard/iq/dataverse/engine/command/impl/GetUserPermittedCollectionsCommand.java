@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArgumentsException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.util.List;
 
@@ -33,6 +35,8 @@ import java.util.List;
 @RequiredPermissions({})
 public class GetUserPermittedCollectionsCommand extends AbstractCommand<List<Dataverse>> {
 
+    public static final String ANY_PERMISSION = "any";
+
     private final DataverseRequest request;
     private final AuthenticatedUser user;
     private final String permission;
@@ -47,14 +51,13 @@ public class GetUserPermittedCollectionsCommand extends AbstractCommand<List<Dat
     @Override
     public List<Dataverse> execute(CommandContext ctxt) throws CommandException {
         if (user == null) {
-            throw new CommandException("User not found.", this);
+            throw new CommandException(BundleUtil.getStringFromBundle("getUserPermittedCollectionsCommand.errors.userNotFound"), this);
         }
         int permissionBit;
         try {
-            permissionBit = permission.equalsIgnoreCase("any") ?
-                    Integer.MAX_VALUE : (1 << Permission.valueOf(permission).ordinal());
+            permissionBit = permission.equalsIgnoreCase(ANY_PERMISSION) ? Integer.MAX_VALUE : (1 << Permission.valueOf(permission).ordinal());
         } catch (IllegalArgumentException e) {
-            throw new CommandException("Permission not valid.", this);
+            throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("getUserPermittedCollectionsCommand.errors.permissionNotValid"), this);
         }
         return ctxt.permissions().findPermittedCollections(request, user, permissionBit);
     }
