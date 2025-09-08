@@ -132,21 +132,11 @@ public class InternalExportDataProvider implements ExportDataProvider {
             throw new ExportException("EJB DatasetVersionFilesService is not available");
         }
 
-        FileSearchCriteria fileSearchCriteria;
-        try {
-            fileSearchCriteria = new FileSearchCriteria(
-                    MIME_TYPE_INGESTED_FILE,
-                    isOnlyPublicMetadataRequested(context) ? FileSearchCriteria.FileAccessStatus.Public : null,
-                    null,
-                    null,
-                    null
-            );
-        } catch (IllegalArgumentException e) {
-            throw new ExportException("Failed to build a retrieval query for tabular file metadata");
-        }
-
-        fileMetadatas = datasetVersionFilesService.getFileMetadatas(dv, getLength(context), getOffset(context), fileSearchCriteria, DatasetVersionFilesServiceBean.FileOrderCriteria.NameAZ);
-
+        fileMetadatas = datasetVersionFilesService.getTabularDataFileMetadatas(dv, 
+                getLength(context), 
+                getOffset(context),
+                isOnlyPublicMetadataRequested(context));
+        
         for (FileMetadata fileMetadata : fileMetadatas) {
             DataFile dataFile = fileMetadata.getDataFile();
             jab.add(JsonPrinter.jsonDatafileWithDatatableForExport(dataFile, fileMetadata));

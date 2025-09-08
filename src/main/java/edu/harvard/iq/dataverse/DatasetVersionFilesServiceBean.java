@@ -180,6 +180,55 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         }
         return typedQuery.getResultList();
     }
+    
+    /**
+     * Similar to the above, but dedicated for retrieving FileMetadatas of only
+     * tabular datafiles in the specified DatasetVersion. Used in the metadata
+     * export subsystem. 
+     *
+     * @param datasetVersion the DatasetVersion to access
+     * @param limit          for pagination, can be null
+     * @param offset         for pagination, can be null
+     * @param publicFilesOnly  skip restricted, embargoed etc. files 
+     * @return a FileMetadata list from the specified DatasetVersion
+     */
+    public List<FileMetadata> getTabularDataFileMetadatas(DatasetVersion datasetVersion, Integer limit, Integer offset, boolean publicFilesOnly) {
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<FileMetadata> criteriaQuery = criteriaBuilder.createQuery(FileMetadata.class);
+        
+        Root<FileMetadata> fileMetadataRoot = criteriaQuery.from(FileMetadata.class);
+        Predicate basePredicate = criteriaBuilder.equal(fileMetadataRoot.get("datasetVersion").<String>get("id"), datasetVersion.getId());
+        
+        Root<DataTable> dataTableRoot = criteriaQuery.from(DataTable.class);        
+        Predicate tabularPredicate = criteriaBuilder.equal(dataTableRoot.get("dataFile"), fileMetadataRoot.get("dataFile"));
+        
+        Predicate combinedPredicate;
+        
+        if (publicFilesOnly) {
+            combinedPredicate = criteriaBuilder.and(basePredicate, tabularPredicate);
+        } else {
+            combinedPredicate = criteriaBuilder.and(basePredicate, 
+                    tabularPredicate, 
+                    createSearchCriteriaAccessStatusPredicate(FileSearchCriteria.FileAccessStatus.Public, 
+                            criteriaBuilder, 
+                            fileMetadataRoot));
+        }
+        
+        criteriaQuery
+                .select(fileMetadataRoot)
+                .where(combinedPredicate)
+                .orderBy(criteriaBuilder.asc(fileMetadataRoot.get("label")));
+        
+        TypedQuery<FileMetadata> typedQuery = em.createQuery(criteriaQuery);
+        if (limit != null) {
+            typedQuery.setMaxResults(limit);
+        }
+        if (offset != null) {
+            typedQuery.setFirstResult(offset);
+        }
+        
+        return typedQuery.getResultList();
+    }
 
     /**
      * Returns the total download size of all files for a particular DatasetVersion

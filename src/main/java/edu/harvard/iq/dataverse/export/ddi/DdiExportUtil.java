@@ -1683,7 +1683,7 @@ public class DdiExportUtil {
         try {
             while (inProgress) {
                 JsonArray tabularFileDetails = exportDataProvider.getTabularDataDetails(ExportDataContext.context().withOffset(offset).withLength(DATATABLES_BATCH_SIZE));
-                logger.info("retrieved "+tabularFileDetails.size()+" tabular file data entries");
+                logger.fine("retrieved " + tabularFileDetails.size() + " tabular file data entries");
                 
                 for (int i = 0; i < tabularFileDetails.size(); i++) {
                     JsonObject fileJson = tabularFileDetails.getJsonObject(i);
@@ -1730,7 +1730,7 @@ public class DdiExportUtil {
         }
         JsonObject dataTable = fileJson.getJsonArray("dataTables").getJsonObject(0);
         JsonArray vars = dataTable.getJsonArray("dataVariables");
-        logger.info(vars.size() + " variables retrieved for file " + fileJson.getJsonNumber("id"));
+        logger.fine(vars.size() + " variables retrieved for file " + fileJson.getJsonNumber("id"));
         if (vars != null) {
             for (int j = 0; j < vars.size(); j++) {
                 createVarDDI(xmlw, vars.getJsonObject(j), fileJson.getJsonNumber("id").toString(),
@@ -2003,11 +2003,11 @@ public class DdiExportUtil {
     }
     
  private static int createFileDscrs(XMLStreamWriter xmlw, List<FileDTO> fileDtos) throws XMLStreamException {
-     logger.info(fileDtos.size() + "files passed");
+     logger.fine("total " + fileDtos.size() + " file DTOs to process for fileDscr");
         String dataverseUrl = SystemConfig.getDataverseSiteUrlStatic();
         int counter = 0;
         for (FileDTO fileDTo : fileDtos) {
-            logger.info("processing file "+ fileDTo.getDataFile().getId());
+            logger.fine("processing file " + fileDTo.getDataFile().getId());
             if (isTabularData(fileDTo)) {
                 xmlw.writeStartElement("fileDscr");
                 
@@ -2094,7 +2094,7 @@ public class DdiExportUtil {
                 counter++; 
             }
         }
-        logger.info("produced "+counter+" fileDscr entries; returning");
+        logger.fine("produced " + counter + " fileDscr entries.");
         return counter;
     }
    
