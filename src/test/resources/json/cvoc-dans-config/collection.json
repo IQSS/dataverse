@@ -1,0 +1,51 @@
+{
+    "field-name": "dansCollection",
+    "term-uri-field": "dansCollection",
+    "cvoc-url": "https://dev.vocabs.datastations.nl/",
+    "js-url": "/custom/skosmos.js",
+    "protocol": "skosmos",
+    "retrieval-uri": "https://dev.vocabs.datastations.nl/rest/v1/data?uri={0}",
+    "term-parent-uri": "https://vocabularies.dans.knaw.nl/collections/archaeology",
+    "languages": "nl",
+    "allow-free-text": false,
+    "vocabs": {
+      "DansCollections": {
+        "vocabularyUri": "https://vocabularies.dans.knaw.nl/collections",
+        "uriSpace": "https://vocabularies.dans.knaw.nl/collections"
+      }
+    },
+    "managed-fields": {},
+    "retrieval-filtering": {
+      "@context": {
+        "termName": "https://schema.org/name",
+        "vocabularyName": "https://dataverse.org/schema/vocabularyName",
+        "vocabularyUri": "https://dataverse.org/schema/vocabularyUri",
+        "lang": "@language",
+        "value": "@value"
+      },
+      "@id": {
+        "pattern": "{0}",
+        "params": [
+          "@id"
+        ]
+      },
+      "termName": {
+        "pattern": "{0}",
+        "params": [
+          "/graph/uri=@id/prefLabel"
+        ]
+      },
+      "vocabularyName": {
+        "pattern": "{0}",
+        "params": [
+          "/graph/type=skos:ConceptScheme/prefLabel"
+        ]
+      },
+      "vocabularyUri": {
+        "pattern": "{0}",
+        "params": [
+          "/graph/type=skos:ConceptScheme/uri"
+        ]
+      }
+    }
+  }

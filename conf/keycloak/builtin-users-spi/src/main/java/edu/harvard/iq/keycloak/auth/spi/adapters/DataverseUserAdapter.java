@@ -1,6 +1,7 @@
 package edu.harvard.iq.keycloak.auth.spi.adapters;
 
 import edu.harvard.iq.keycloak.auth.spi.models.DataverseUser;
+import edu.harvard.iq.keycloak.auth.spi.providers.DataverseUserStorageProviderFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakSession;
@@ -15,10 +16,13 @@ public class DataverseUserAdapter extends AbstractUserAdapterFederatedStorage {
     protected DataverseUser dataverseUser;
     protected String keycloakId;
 
+    private static final String ATTRIBUTE_NAME_IDP = "idp";
+
     public DataverseUserAdapter(KeycloakSession session, RealmModel realm, ComponentModel model, DataverseUser dataverseUser) {
         super(session, realm, model);
         this.dataverseUser = dataverseUser;
         keycloakId = StorageId.keycloakId(model, dataverseUser.getBuiltinUser().getId().toString());
+        this.setSingleAttribute(ATTRIBUTE_NAME_IDP, DataverseUserStorageProviderFactory.PROVIDER_ID);
     }
 
     @Override

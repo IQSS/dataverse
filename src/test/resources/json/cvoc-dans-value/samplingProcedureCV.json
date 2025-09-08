@@ -1,0 +1,54 @@
+{
+  "@context": {
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "isothes": "http://purl.org/iso25964/skos-thes#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "dct": "http://purl.org/dc/terms/",
+    "dc11": "http://purl.org/dc/elements/1.1/",
+    "uri": "@id",
+    "type": "@type",
+    "lang": "@language",
+    "value": "@value",
+    "graph": "@graph",
+    "label": "rdfs:label",
+    "prefLabel": "skos:prefLabel",
+    "altLabel": "skos:altLabel",
+    "hiddenLabel": "skos:hiddenLabel",
+    "broader": "skos:broader",
+    "narrower": "skos:narrower",
+    "related": "skos:related",
+    "inScheme": "skos:inScheme",
+    "exactMatch": "skos:exactMatch",
+    "closeMatch": "skos:closeMatch",
+    "broadMatch": "skos:broadMatch",
+    "narrowMatch": "skos:narrowMatch",
+    "relatedMatch": "skos:relatedMatch"
+  },
+  "graph": [
+    {
+      "uri": "http://rdf-vocabulary.ddialliance.org/cv/SamplingProcedure/1.1/",
+      "type": "skos:ConceptScheme",
+      "skos:hasTopConcept": {
+        "uri": "http://rdf-vocabulary.ddialliance.org/cv/SamplingProcedure/1.1/#MixedProbabilityNonprobability"
+      },
+      "skos:notation": "SamplingProcedure"
+    },
+    {
+      "uri": "http://rdf-vocabulary.ddialliance.org/cv/SamplingProcedure/1.1/#MixedProbabilityNonprobability",
+      "type": "skos:Concept",
+      "skos:definition": {
+        "lang": "en",
+        "value": "Sample design that combines probability and non-probability sampling within the same sampling process. Different types of sampling may be used at different stages of creating the sample. For example, for a sample of minority students in a city, schools are randomly selected in the first stage. Then, a quota sample of students is selected within each school in the second stage. If separate samples are drawn from the same target population using different sampling methods, the type of sampling procedure used for each sample should be classified separately."
+      },
+      "inScheme": {
+        "uri": "http://rdf-vocabulary.ddialliance.org/cv/SamplingProcedure/1.1/"
+      },
+      "skos:notation": "MixedProbabilityNonprobability",
+      "prefLabel": {
+        "lang": "en",
+        "value": "Mixed probability and non-probability"
+      }
+    }
+  ]
+}
