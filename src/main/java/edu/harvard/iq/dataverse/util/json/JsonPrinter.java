@@ -293,65 +293,65 @@ public class JsonPrinter {
     
     public static JsonObjectBuilder json(Dataverse dv, boolean minimal) {
         if (!minimal){
-            return json(dv, false, false, null);
+            return json(dv, false, false, false, null);
         } else {
-            return jsonObjectBuilder()
-                .add("id", dv.getId())
-                .add("alias", dv.getAlias())
-                .add("name", dv.getName());           
+            return json(dv, false, false, true, null);        
         }
     }
 
     public static JsonObjectBuilder json(Dataverse dv) {
-        return json(dv, false, false, null);
+        return json(dv, false, false, false, null);
     }
 
     //TODO: Once we upgrade to Java EE 8 we can remove objects from the builder, and this email removal can be done in a better place.
-    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail, Boolean returnOwners, Long childCount) {
+    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail, Boolean returnOwners, Boolean minimal, Long childCount) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dv.getId())
                 .add("alias", dv.getAlias())
-                .add("name", dv.getName())
-                .add("affiliation", dv.getAffiliation());
-        if(!hideEmail) {
-            bld.add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()));
-        }
-        if (returnOwners){
-            bld.add("isPartOf", getOwnersFromDvObject(dv));
-        }
-        bld.add("permissionRoot", dv.isPermissionRoot())
-                .add("description", dv.getDescription())
-                .add("dataverseType", dv.getDataverseType().name())
-                .add("isMetadataBlockRoot", dv.isMetadataBlockRoot())
-                .add("isFacetRoot", dv.isFacetRoot());
-        if (dv.getOwner() != null) {
-            bld.add("ownerId", dv.getOwner().getId());
-        }
-        if (dv.getCreateDate() != null) {
-            bld.add("creationDate", Util.getDateTimeFormat().format(dv.getCreateDate()));
-        }
-        if (dv.getDataverseTheme() != null) {
-            bld.add("theme", JsonPrinter.json(dv.getDataverseTheme()));
-        }
-        if(dv.getStorageDriverId() != null) {
-        	bld.add("storageDriverLabel", DataAccess.getStorageDriverLabelFor(dv.getStorageDriverId()));
-        }
-        if (dv.getFilePIDsEnabled() != null) {
-            bld.add("filePIDsEnabled", dv.getFilePIDsEnabled());
-        }
-        bld.add("effectiveRequiresFilesToPublishDataset", dv.getEffectiveRequiresFilesToPublishDataset());
-        bld.add("isReleased", dv.isReleased());
+                .add("name", dv.getName());
+        //minimal refers to only returning the id alias and name for 
+        //use in selecting collections available for linking
+        if (!minimal) {
+            bld.add("affiliation", dv.getAffiliation());
+            if (!hideEmail) {
+                bld.add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()));
+            }
+            if (returnOwners) {
+                bld.add("isPartOf", getOwnersFromDvObject(dv));
+            }
+            bld.add("permissionRoot", dv.isPermissionRoot())
+                    .add("description", dv.getDescription())
+                    .add("dataverseType", dv.getDataverseType().name())
+                    .add("isMetadataBlockRoot", dv.isMetadataBlockRoot())
+                    .add("isFacetRoot", dv.isFacetRoot());
+            if (dv.getOwner() != null) {
+                bld.add("ownerId", dv.getOwner().getId());
+            }
+            if (dv.getCreateDate() != null) {
+                bld.add("creationDate", Util.getDateTimeFormat().format(dv.getCreateDate()));
+            }
+            if (dv.getDataverseTheme() != null) {
+                bld.add("theme", JsonPrinter.json(dv.getDataverseTheme()));
+            }
+            if (dv.getStorageDriverId() != null) {
+                bld.add("storageDriverLabel", DataAccess.getStorageDriverLabelFor(dv.getStorageDriverId()));
+            }
+            if (dv.getFilePIDsEnabled() != null) {
+                bld.add("filePIDsEnabled", dv.getFilePIDsEnabled());
+            }
+            bld.add("effectiveRequiresFilesToPublishDataset", dv.getEffectiveRequiresFilesToPublishDataset());
+            bld.add("isReleased", dv.isReleased());
 
-        List<DataverseFieldTypeInputLevel> inputLevels = dv.getDataverseFieldTypeInputLevels();
-        if(!inputLevels.isEmpty()) {
-            bld.add("inputLevels", JsonPrinter.jsonDataverseFieldTypeInputLevels(inputLevels));
-        }
+            List<DataverseFieldTypeInputLevel> inputLevels = dv.getDataverseFieldTypeInputLevels();
+            if (!inputLevels.isEmpty()) {
+                bld.add("inputLevels", JsonPrinter.jsonDataverseFieldTypeInputLevels(inputLevels));
+            }
 
-        if (childCount != null) {
-            bld.add("childCount", childCount);
+            if (childCount != null) {
+                bld.add("childCount", childCount);
+            }
+            addDatasetFileCountLimit(dv, bld);
         }
-        addDatasetFileCountLimit(dv, bld);
-
         return bld;
     }
 

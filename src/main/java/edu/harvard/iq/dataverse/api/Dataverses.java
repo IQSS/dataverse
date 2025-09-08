@@ -716,7 +716,7 @@ public class Dataverses extends AbstractApiBean {
         return response(req -> {
             Dataverse dataverse = execCommand(new GetDataverseCommand(req, findDataverseOrDie(idtf)));
             boolean hideEmail = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false);
-            return ok(json(dataverse, hideEmail, returnOwners, returnChildCount ? dataverseService.getChildCount(dataverse) : null));
+            return ok(json(dataverse, hideEmail, returnOwners, false, returnChildCount ? dataverseService.getChildCount(dataverse) : null));
         }, getRequestUser(crc));
     }
 
