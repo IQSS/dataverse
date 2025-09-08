@@ -3,7 +3,7 @@ Apps
 
 The introduction of Dataverse Software APIs has fostered the development of a variety of software applications that are listed in the :doc:`/admin/integrations`, :doc:`/admin/external-tools`, and :doc:`/admin/reporting-tools-and-queries` sections of the Admin Guide.
 
-The apps below are open source and demonstrate how to use Dataverse Software APIs. Some of these apps are built on :doc:`/api/client-libraries` that are available for Dataverse Software APIs in Python, Javascript, R, and Java.
+The apps below are open source and demonstrate how to use Dataverse Software APIs. Some of these apps are built on :doc:`/api/client-libraries` that are available for Dataverse Software APIs in Python, Javascript, R, Java, and Ruby.
 
 .. contents:: |toctitle|
 	:local:
@@ -165,3 +165,13 @@ OpenScholar
 The Dataverse Software module from OpenScholar allows a Dataverse installation's widgets to be easily embedded in its web pages:
 
 https://github.com/openscholar/openscholar/tree/SCHOLAR-3.x/openscholar/modules/os_features/os_dataverse
+
+Ruby
+----
+
+Open OnDemand Loop
+~~~~~~~~~~~~~~~~~~
+
+Open OnDemand Loop integrates Dataverse with Open OnDemand, as :ref:`described <ood-upload>` in the Admin Guide.
+
+https://github.com/IQSS/ondemand-loop
