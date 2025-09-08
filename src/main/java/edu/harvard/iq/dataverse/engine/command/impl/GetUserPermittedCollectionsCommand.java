@@ -13,7 +13,25 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.List;
 import java.util.logging.Logger;
 
-@RequiredPermissions({}) // No specific permission is needed to execute this command. To filter the collection a list of permissions are passed in
+/**
+ * Command that retrieves all {@link Dataverse} collections for which a given
+ * {@link AuthenticatedUser} has the specified permission.
+ * <p>
+ * The permission is provided as a string corresponding to one of the names
+ * in the {@link Permission} enumeration (e.g. {@code Permission.AddDataset.name()}).
+ * If the special value {@code "any"} is passed, all collections for which
+ * the user has at least one permission are returned.
+ * </p>
+ *
+ * <p>
+ * Example:
+ * <pre>
+ * new GetUserPermittedCollectionsCommand(request, user, Permission.AddDataset.name());
+ * </pre>
+ * will return the list of collections where the user can add datasets.
+ * </p>
+ */
+@RequiredPermissions({})
 public class GetUserPermittedCollectionsCommand extends AbstractCommand<List<Dataverse>> {
     private static final Logger logger = Logger.getLogger(GetUserPermittedCollectionsCommand.class.getCanonicalName());
 
