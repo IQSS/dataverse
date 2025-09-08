@@ -81,22 +81,6 @@ As of this writing, we optimistically add milestones to issues and pull requests
 
 Hopefully, as the release approached, the team has already decided which pull requests (that aren't related to the release) won't make the cut. If not, go ahead and bump them to the next release.
 
-Conduct Performance Testing
----------------------------
-
-|dedicated|
-
-See :doc:`/qa/performance-tests` for details.
-
-Conduct Regression Testing
----------------------------
-
-|dedicated|
-
-Regression testing should be conducted on production data.
-See :doc:`/qa/testing-approach` for details.
-Refer to the provided regression checklist for the list of items to verify during the testing process: `Regression Checklist <https://docs.google.com/document/d/1OsGJV0sMLDSmfkU9-ee8h_ozbQcUDJ1EOwNPm4dC63Q/edit?usp=sharing>`_.
-
 .. _write-release-notes:
 
 Write Release Notes
@@ -147,6 +131,23 @@ Solicit Feedback from Curation Team
 -----------------------------------
 
 Ask the curation team to test on https://qa.dataverse.org and give them five days to provide feedback.
+
+
+Conduct Performance Testing
+---------------------------
+
+|dedicated|
+
+See :doc:`/qa/performance-tests` for details.
+
+Conduct Regression Testing
+---------------------------
+
+|dedicated|
+
+Regression testing should be conducted on production data.
+See :doc:`/qa/testing-approach` for details.
+Refer to the provided regression checklist for the list of items to verify during the testing process: `Regression Checklist <https://docs.google.com/document/d/1OsGJV0sMLDSmfkU9-ee8h_ozbQcUDJ1EOwNPm4dC63Q/edit?usp=sharing>`_.
 
 Build the Guides for the Release Candidate
 ------------------------------------------
