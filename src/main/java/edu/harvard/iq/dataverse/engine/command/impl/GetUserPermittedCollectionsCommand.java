@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * Command that retrieves all {@link Dataverse} collections for which a given
@@ -33,11 +32,10 @@ import java.util.logging.Logger;
  */
 @RequiredPermissions({})
 public class GetUserPermittedCollectionsCommand extends AbstractCommand<List<Dataverse>> {
-    private static final Logger logger = Logger.getLogger(GetUserPermittedCollectionsCommand.class.getCanonicalName());
 
-    private DataverseRequest request;
-    private AuthenticatedUser user;
-    private String permission;
+    private final DataverseRequest request;
+    private final AuthenticatedUser user;
+    private final String permission;
 
     public GetUserPermittedCollectionsCommand(DataverseRequest request, AuthenticatedUser user, String permission) {
         super(request, (DvObject) null);
