@@ -3797,6 +3797,9 @@ please find all known feature flags below. Any of these flags can be activated u
     * - shibboleth-use-localhost
       - A Shibboleth-using Dataverse instance needs to make network calls to the locally-running ``shibd`` service. The default behavior is to use the address configured via the ``siteUrl`` setting. There are however situations (firewalls, etc.) where localhost would be preferable.
       - ``Off``
+    * - add-local-contexts-permission-check
+      - Adds a permission check to ensure that the user calling the /api/localcontexts/datasets/{id} API can edit the dataset with that id. This is currently the only use case - see https://github.com/gdcc/dataverse-external-vocab-support/tree/main/packages/local_contexts. The flag adds additional security to stop other uses, but would currently have to be used in conjunction with the api-session-auth feature flag (the security implications of which have not been fully investigated) to still allow adding Local Contexts metadata to a dataset.
+      - ``Off``
     * - enable-pid-failure-log
       - Turns on creation of a monthly log file (logs/PIDFailures_<yyyy-MM>.log) showing failed requests for dataset/file PIDs. Can be used directly or with scripts at https://github.com/gdcc/dataverse-recipes/python/pid_reports to alert admins.
       - ``Off``
