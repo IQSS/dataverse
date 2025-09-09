@@ -415,11 +415,14 @@ public abstract class AbstractApiBean {
             if (datasetId == null) {
                 datasetId = dvObjSvc.findIdByAltGlobalId(globalId, DvObject.DType.Dataset);
             }
-            if (datasetId == null && FeatureFlags.ENABLE_PID_FAILURE_LOG.enabled()) {
-                FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry entry = new FailedPIDResolutionEntry(persistentId, httpRequest.getRequestURI(),httpRequest.getMethod(), new DataverseRequest(null, httpRequest).getSourceAddress());
-                fprLogService.logEntry(entry);
+            if (datasetId == null) {
+                if (FeatureFlags.ENABLE_PID_FAILURE_LOG.enabled()) {
+
+                    FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry entry = new FailedPIDResolutionEntry(persistentId, httpRequest.getRequestURI(), httpRequest.getMethod(), new DataverseRequest(null, httpRequest).getSourceAddress());
+                    fprLogService.logEntry(entry);
+                }
                 throw new WrappedResponse(
-                    notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+                        notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
             }
         }
         if (deep) {
@@ -489,8 +492,11 @@ public abstract class AbstractApiBean {
             }
             datafile = fileService.findByGlobalId(persistentId);
             if (datafile == null) {
-                FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry entry = new FailedPIDResolutionEntry(persistentId, httpRequest.getRequestURI(),httpRequest.getMethod(), new DataverseRequest(null, httpRequest).getSourceAddress());
-                fprLogService.logEntry(entry);
+                if (FeatureFlags.ENABLE_PID_FAILURE_LOG.enabled()) {
+
+                    FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry entry = new FailedPIDResolutionEntry(persistentId, httpRequest.getRequestURI(), httpRequest.getMethod(), new DataverseRequest(null, httpRequest).getSourceAddress());
+                    fprLogService.logEntry(entry);
+                }
                 throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datafile.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
             }
             return datafile;
