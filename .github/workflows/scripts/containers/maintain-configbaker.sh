@@ -145,8 +145,7 @@ for BRANCH in "$@"; do
       # shellcheck disable=SC2046
       mvn -Pct -f . deploy -Ddocker.noCache -Ddocker.platforms="${PLATFORMS}" \
         -Dapp.skipBuild -Dconf.image.base="${BASE_IMAGE_REF}" \
-        -Dmaven.main.skip -Dmaven.test.skip -Dmaven.war.skip \
-        -Ddocker.imagePropertyConfiguration=override $TAG_OPTIONS \
+        -Dmaven.main.skip -Dmaven.test.skip -Dmaven.war.skip $TAG_OPTIONS \
         $( if (( DAMP_RUN )); then echo "-Ddocker.skip.push"; fi )
     else
       echo "Skipping Maven build as requested by DRY_RUN=1"
