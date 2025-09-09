@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -2288,9 +2289,11 @@ public class DataversesIT {
     public void testCreateAndGetTemplates() {
         Response createUserResponse = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String username = UtilIT.getUsernameFromResponse(createUserResponse);
 
         Response createSecondUserResponse = UtilIT.createRandomUser();
         String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
+        String secondUsername = UtilIT.getUsernameFromResponse(createSecondUserResponse);
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
@@ -2368,9 +2371,19 @@ public class DataversesIT {
                 .body("data[0].instructions[0].instructionText", equalTo("The author data"))
                 .body("data[0].dataverseAlias", equalTo(dataverseAlias));
 
-        // Templates retrieval should fail if the user lacks dataverse edit permissions
+        // Templates retrieval should fail if a secondary user lacks dataset creation permissions
+
         getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
         getTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Template retrieval should succeed if the secondary user has dataset creation permissions
+
+        UtilIT.setSuperuserStatus(username, true);
+        Response grantRoleResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, "@" + secondUsername, apiToken);
+        grantRoleResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
+        getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
     }
 
     private String getSuperuserToken() {
