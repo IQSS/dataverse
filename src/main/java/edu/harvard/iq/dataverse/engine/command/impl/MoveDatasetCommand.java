@@ -148,9 +148,10 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         }
 
         // OK, move
+        Dataverse originalOwner = moved.getOwner();
         moved.setOwner(destination);
         ctxt.em().merge(moved);
-        sendNotification(moved, ctxt);
+        sendNotification(moved, originalOwner, ctxt);
 
         boolean doNormalSolrDocCleanUp = true;
         ctxt.index().asyncIndexDataset(moved, doNormalSolrDocCleanUp);
@@ -160,14 +161,15 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
      * Sends notifications to those able to publish the dataset upon the successful move of a dataset.
      * <p>
      * This method checks if dataset move notifications are enabled. If so, it
-     * notifies all users with {@code Permission.PublishDataset} on the dataset.
+     * notifies all users with {@code Permission.PublishDataset} on the original owning Dataverse.
      * The user who initiated the action can be included or excluded from this
      * notification based on the allowSelfNotification flag.
      *
      * @param dataset The moved {@code Dataset}.
+     * @param originalOwner The original owning {@code Dataverse}.
      * @param ctxt    The {@code CommandContext} providing access to application services.
      */
-    protected void sendNotification(Dataset dataset, CommandContext ctxt) {
+    protected void sendNotification(Dataset dataset, Dataverse originalOwner, CommandContext ctxt) {
         // 1. Exit early if the SendNotificationOnDatasetMove setting is disabled.
         if (!ctxt.settings().isTrueForKey(SettingsServiceBean.Key.SendNotificationOnDatasetMove, false)) {
             return;
@@ -177,8 +179,9 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         final User user = getUser();
         final AuthenticatedUser requestor = user.isAuthenticated() ? (AuthenticatedUser) user : null;
 
-        // 3. Get all users with publish permission and notify them.
-        Map<String, AuthenticatedUser> recipients = ctxt.permissions().getDistinctUsersWithPermissionOn(Permission.PublishDataset, dataset);
+        // 3. Get all users with publish permission on the dataset's original owner (dataverse) and notify them.
+        Map<String, AuthenticatedUser> recipients = ctxt.permissions().getDistinctUsersWithPermissionOn(Permission.PublishDataset, originalOwner);
+        // make sure the requestor is in the recipient list in case they don't match the permission
         if (requestor != null) {
             recipients.put(requestor.getIdentifier(), requestor);
         }

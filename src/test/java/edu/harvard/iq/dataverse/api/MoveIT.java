@@ -159,7 +159,7 @@ public class MoveIT {
     @Test
     public void testMoveDatasetNotification() {
         sendNotificationOnDatasetMoveSetting(true);
-        // Create the first user/dataverse/dataset
+        // Create the first user/dataverse (superuser)
         Response createUser1 = UtilIT.createRandomUser();
         createUser1.prettyPrint();
         createUser1.then().assertThat()
@@ -173,12 +173,6 @@ public class MoveIT {
         createDataverse1.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
         String dataverseAlias1 = UtilIT.getAliasFromResponse(createDataverse1);
-
-        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias1, user1ApiToken);
-        createDataset.prettyPrint();
-        createDataset.then().assertThat()
-                .statusCode(CREATED.getStatusCode());
-        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
 
         // Create the second user/dataverse
         Response createUser2 = UtilIT.createRandomUser();
@@ -194,12 +188,19 @@ public class MoveIT {
                 .statusCode(CREATED.getStatusCode());
         String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverse2);
 
-        // clear existing notifications
+        // User2 creates dataset in DV2
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias2, user2ApiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+
+        // clear existing notifications (so the DATASETMOVED notification will be the only one)
         clearNotifications(user1ApiToken);
         clearNotifications(user2ApiToken);
 
-        // Move the dataset from dataverse1 to dataverse2
-        Response moveDataset = UtilIT.moveDataset(datasetId.toString(), dataverseAlias2, user1ApiToken);
+        // User1(superuser) moves the dataset from dataverse2 to dataverse1
+        Response moveDataset = UtilIT.moveDataset(datasetId.toString(), dataverseAlias1, user1ApiToken);
         moveDataset.prettyPrint();
         moveDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
