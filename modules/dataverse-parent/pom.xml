@@ -419,19 +419,25 @@
             <id>unidata-all</id>
             <name>Unidata All</name>
             <url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
         <!-- Uncomment when using snapshot releases from Maven Central -->
-        <!--
         <repository>
-            <id>oss-sonatype</id>
-            <name>oss-sonatype</name>
+            <id>central-portal-snapshots</id>
+            <name>Central Portal Snapshots</name>
             <url>
-                https://oss.sonatype.org/content/repositories/snapshots/
+                https://central.sonatype.org/repository/maven-snapshots/
             </url>
+	    <releases>
+	      <enabled>false</enabled>
+	    </releases>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+	<!--
         <repository>
             <id>s01-oss-sonatype</id>
             <name>s01-oss-sonatype</name>
@@ -441,8 +447,8 @@
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
-        </repository>
-        -->
+            </repository>
+	 -->
     </repositories>
     
     <profiles>
