@@ -478,6 +478,12 @@ public class MailServiceBean implements java.io.Serializable {
                 String[] paramArrayDatasetCreated = {getDatasetLink(dataset), dataset.getDisplayName(), userNotification.getRequestor().getName(), dataset.getOwner().getDisplayName()};
                 messageText += MessageFormat.format(pattern, paramArrayDatasetCreated);
                 return messageText;
+            case DATASETMOVED:
+                dataset = (Dataset) targetObject;
+                pattern = BundleUtil.getStringFromBundle("notification.email.datasetWasMoved");
+                String[] paramArrayDatasetMoved = {getDatasetLink(dataset), dataset.getDisplayName(), userNotification.getRequestor().getName(), dataset.getOwner().getDisplayName()};
+                messageText += MessageFormat.format(pattern, paramArrayDatasetMoved);
+                return messageText;
             case CREATEDS:
                 version =  (DatasetVersion) targetObject;
                 String datasetCreatedMessage = BundleUtil.getStringFromBundle("notification.email.createDataset", Arrays.asList(
@@ -785,6 +791,7 @@ public class MailServiceBean implements java.io.Serializable {
             case GRANTFILEACCESS:
             case REJECTFILEACCESS:
             case DATASETCREATED:
+            case DATASETMOVED:
             case DATASETMENTIONED:
                 return datasetService.find(userNotification.getObjectId());
             case CREATEDS:

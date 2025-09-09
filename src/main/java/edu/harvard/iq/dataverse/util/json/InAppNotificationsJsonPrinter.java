@@ -7,6 +7,8 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 
+import java.util.logging.Logger;
+
 import static edu.harvard.iq.dataverse.dataset.DatasetUtil.getLocaleCurationStatusLabel;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonRoleAssignments;
 
@@ -19,6 +21,7 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonRoleAssignments
 @Stateless
 public class InAppNotificationsJsonPrinter {
 
+    private static final Logger logger = Logger.getLogger(InAppNotificationsJsonPrinter.class.getCanonicalName());
     public static final String KEY_ROLE_ASSIGNMENTS = "roleAssignments";
     public static final String KEY_DATAVERSE_ALIAS = "dataverseAlias";
     public static final String KEY_DATAVERSE_DISPLAY_NAME = "dataverseDisplayName";
@@ -124,6 +127,9 @@ public class InAppNotificationsJsonPrinter {
                 break;
             case DATASETMENTIONED:
                 addDatasetMentionedFields(notificationJson, userNotification);
+                break;
+            case DATASETMOVED:
+                addDatasetMovedFields(notificationJson, userNotification, requestor);
                 break;
         }
     }
@@ -261,5 +267,10 @@ public class InAppNotificationsJsonPrinter {
     private void addDatasetMentionedFields(final NullSafeJsonBuilder notificationJson, final UserNotification userNotification) {
         addDatasetFields(notificationJson, userNotification);
         notificationJson.add(KEY_ADDITIONAL_INFO, userNotification.getAdditionalInfo());
+    }
+
+    private void addDatasetMovedFields(final NullSafeJsonBuilder notificationJson, final UserNotification userNotification, final AuthenticatedUser requestor) {
+        addDatasetFields(notificationJson, userNotification);
+        addRequestorFields(notificationJson, requestor);
     }
 }

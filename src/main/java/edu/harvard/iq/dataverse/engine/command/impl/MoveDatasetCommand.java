@@ -5,13 +5,10 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
-import edu.harvard.iq.dataverse.DatasetLock;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.Guestbook;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -21,11 +18,12 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -44,8 +42,12 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
     final Dataset moved;
     final Dataverse destination;
     final Boolean force;
+    private boolean allowSelfNotification = false;
 
     public MoveDatasetCommand(DataverseRequest aRequest, Dataset moved, Dataverse destination, Boolean force) {
+        this( aRequest, moved, destination, force, Boolean.FALSE);
+    }
+    public MoveDatasetCommand(DataverseRequest aRequest, Dataset moved, Dataverse destination, Boolean force, Boolean allowSelfNotification) {
         super(
                 aRequest,
                 dv("moved", moved),
@@ -54,6 +56,7 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         this.moved = moved;
         this.destination = destination;
         this.force= force;
+        this.allowSelfNotification = allowSelfNotification;
     }
 
     @Override
@@ -147,10 +150,50 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         // OK, move
         moved.setOwner(destination);
         ctxt.em().merge(moved);
+        sendNotification(moved, ctxt);
 
         boolean doNormalSolrDocCleanUp = true;
         ctxt.index().asyncIndexDataset(moved, doNormalSolrDocCleanUp);
 
     }
+    /**
+     * Sends notifications to those able to publish the dataset upon the successful move of a dataset.
+     * <p>
+     * This method checks if dataset move notifications are enabled. If so, it
+     * notifies all users with {@code Permission.PublishDataset} on the dataset.
+     * The user who initiated the action can be included or excluded from this
+     * notification based on the allowSelfNotification flag.
+     *
+     * @param dataset The moved {@code Dataset}.
+     * @param ctxt    The {@code CommandContext} providing access to application services.
+     */
+    protected void sendNotification(Dataset dataset, CommandContext ctxt) {
+        // 1. Exit early if the SendNotificationOnDatasetMove setting is disabled.
+        if (!ctxt.settings().isTrueForKey(SettingsServiceBean.Key.SendNotificationOnDatasetMove, false)) {
+            return;
+        }
 
+        // 2. Identify the user who initiated the action.
+        final User user = getUser();
+        final AuthenticatedUser requestor = user.isAuthenticated() ? (AuthenticatedUser) user : null;
+
+        // 3. Get all users with publish permission and notify them.
+        Map<String, AuthenticatedUser> recipients = ctxt.permissions().getDistinctUsersWithPermissionOn(Permission.PublishDataset, dataset);
+        if (requestor != null) {
+            recipients.put(requestor.getIdentifier(), requestor);
+        }
+
+        recipients.values()
+                .stream()
+                .filter(recipient -> allowSelfNotification || !recipient.equals(requestor))
+                .forEach(recipient -> ctxt.notifications().sendNotification(
+                        recipient,
+                        Timestamp.from(Instant.now()),
+                        UserNotification.Type.DATASETMOVED,
+                        dataset.getId(),
+                        null,
+                        requestor,
+                        true
+                ));
+    }
 }

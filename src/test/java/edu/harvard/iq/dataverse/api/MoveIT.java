@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import static io.restassured.path.json.JsonPath.with;
@@ -7,6 +9,7 @@ import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import java.io.StringReader;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -15,9 +18,13 @@ import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+
 import org.hamcrest.CoreMatchers;
-import static org.hamcrest.CoreMatchers.equalTo;
+
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -28,6 +35,10 @@ public class MoveIT {
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+    }
+    @AfterAll
+    public static void afterClass() {
+        sendNotificationOnDatasetMoveSetting(false);
     }
 
     @Test
@@ -143,6 +154,84 @@ public class MoveIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.message", equalTo("Dataset moved successfully."));
 
+    }
+
+    @Test
+    public void testMoveDatasetNotification() {
+        sendNotificationOnDatasetMoveSetting(true);
+        // Create the first user/dataverse/dataset
+        Response createUser1 = UtilIT.createRandomUser();
+        createUser1.prettyPrint();
+        createUser1.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String user1Username = UtilIT.getUsernameFromResponse(createUser1);
+        String user1ApiToken = UtilIT.getApiTokenFromResponse(createUser1);
+        UtilIT.setSuperuserStatus(user1Username, true);
+
+        Response createDataverse1 = UtilIT.createRandomDataverse(user1ApiToken);
+        createDataverse1.prettyPrint();
+        createDataverse1.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias1 = UtilIT.getAliasFromResponse(createDataverse1);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias1, user1ApiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+
+        // Create the second user/dataverse
+        Response createUser2 = UtilIT.createRandomUser();
+        createUser2.prettyPrint();
+        createUser2.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String user2Username = UtilIT.getUsernameFromResponse(createUser2);
+        String user2ApiToken = UtilIT.getApiTokenFromResponse(createUser2);
+
+        Response createDataverse2 = UtilIT.createRandomDataverse(user2ApiToken);
+        createDataverse2.prettyPrint();
+        createDataverse2.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverse2);
+
+        // clear existing notifications
+        clearNotifications(user1ApiToken);
+        clearNotifications(user2ApiToken);
+
+        // Move the dataset from dataverse1 to dataverse2
+        Response moveDataset = UtilIT.moveDataset(datasetId.toString(), dataverseAlias2, user1ApiToken);
+        moveDataset.prettyPrint();
+        moveDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(BundleUtil.getStringFromBundle("datasets.api.moveDataset.success")));
+
+        // verify that a notification was sent to user1
+        Response getNotifications = UtilIT.getNotifications(user1ApiToken);
+        getNotifications.prettyPrint();
+        getNotifications.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.notifications[0].type", equalTo("DATASETMOVED"))
+                .body("data.notifications[0].displayAsRead", equalTo(false))
+                .body("data.notifications[0].subjectText", containsString("has been moved"))
+                .body("data.notifications[0].messageText", startsWith(BundleUtil.getStringFromBundle("notification.email.greeting")));
+        // verify that a notification was sent to user2
+        getNotifications = UtilIT.getNotifications(user2ApiToken);
+        getNotifications.prettyPrint();
+        getNotifications.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.notifications[0].type", equalTo("DATASETMOVED"))
+                .body("data.notifications[0].displayAsRead", equalTo(false))
+                .body("data.notifications[0].subjectText", containsString("has been moved"))
+                .body("data.notifications[0].messageText", startsWith(BundleUtil.getStringFromBundle("notification.email.greeting")));
+    }
+
+    private void clearNotifications(String apiToken) {
+        Response getNotifications = UtilIT.getNotifications(apiToken);
+        List<Object> notifications = JsonPath.from(getNotifications.body().asString()).getList("data.notifications");
+        for (Object obj : notifications) {
+            Object id = ((Map) obj).get("id");
+            UtilIT.deleteNotification(Long.parseLong(id.toString()), apiToken).prettyPrint();
+        }
     }
 
     @Test
@@ -408,4 +497,15 @@ public class MoveIT {
 
     }
 
+    private static void sendNotificationOnDatasetMoveSetting(boolean enable) {
+        Response resp;
+        if (enable) {
+            resp = UtilIT.enableSetting(SettingsServiceBean.Key.SendNotificationOnDatasetMove);
+        } else {
+            resp = UtilIT.deleteSetting(SettingsServiceBean.Key.SendNotificationOnDatasetMove);
+        }
+        resp.prettyPrint();
+        resp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
 }
