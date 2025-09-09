@@ -2376,7 +2376,7 @@ public class DataversesIT {
         getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
         getTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
-        // Template retrieval should succeed if the secondary user has dataset creation permissions
+        // Templates retrieval should succeed if the secondary user has dataset creation permissions
 
         UtilIT.setSuperuserStatus(username, true);
         Response grantRoleResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, "@" + secondUsername, apiToken);
