@@ -7,8 +7,6 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 
-import java.util.logging.Logger;
-
 import static edu.harvard.iq.dataverse.dataset.DatasetUtil.getLocaleCurationStatusLabel;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonRoleAssignments;
 
@@ -21,7 +19,6 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonRoleAssignments
 @Stateless
 public class InAppNotificationsJsonPrinter {
 
-    private static final Logger logger = Logger.getLogger(InAppNotificationsJsonPrinter.class.getCanonicalName());
     public static final String KEY_ROLE_ASSIGNMENTS = "roleAssignments";
     public static final String KEY_DATAVERSE_ALIAS = "dataverseAlias";
     public static final String KEY_DATAVERSE_DISPLAY_NAME = "dataverseDisplayName";
