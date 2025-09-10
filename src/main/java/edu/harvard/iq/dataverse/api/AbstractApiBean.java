@@ -637,6 +637,9 @@ public abstract class AbstractApiBean {
             if (testForReleased){
                 DataverseFeaturedItem.validateTypeAndDvObject(dvIdtf, dvObject, dvType);
             }
+            if (dvObject == null) {
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dvo.error.dvObjectNotFound", Collections.singletonList(dvIdtf))));
+            }
             return dvObject;
         } catch (IllegalArgumentException e) {
             throw new WrappedResponse(error(Response.Status.BAD_REQUEST, e.getMessage()));

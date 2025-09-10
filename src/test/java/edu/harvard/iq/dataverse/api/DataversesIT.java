@@ -740,8 +740,15 @@ public class DataversesIT {
         getLinkableDataversesForDataversePartial.prettyPrint();
                 getLinkableDataversesForDataversePartial.then().assertThat()
                 .statusCode(OK.getStatusCode())                
-                .body("data[0].alias", equalTo(dataverseAliasForLinking));         
-                                
+                .body("data[0].alias", equalTo(dataverseAliasForLinking));  
+                
+        //Try with bad target alias       
+        searchTerm = "";
+        Response getLinkableDataversesForDataverseBadId = UtilIT.getLinkableDataverses("dataverse", "junque@#", apiToken, searchTerm);
+        getLinkableDataversesForDataverseBadId.prettyPrint();
+                getLinkableDataversesForDataverseBadId.then().assertThat()
+                .statusCode(NOT_FOUND.getStatusCode());                
+                                        
         // create new user and dataverse - the new dataverse should not be available to the first user for linking...
         Response createUserTwo = UtilIT.createRandomUser();
         String apiTokenTwo = UtilIT.getApiTokenFromResponse(createUserTwo);
