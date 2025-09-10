@@ -690,6 +690,11 @@ public class DataversesIT {
         //Create dataverse for linking
         Response createDataverseResponseForLinking = UtilIT.createRandomDataverse(apiToken);
         String dataverseAliasForLinking = UtilIT.getAliasFromResponse(createDataverseResponseForLinking);
+        
+        // Create a child of the linking DV
+        Response createLevel1a = UtilIT.createSubDataverse(UtilIT.getRandomDvAlias() + "-level1a", null, apiToken, dataverseAliasForLinking);
+        createLevel1a.prettyPrint();
+        String childLinking = UtilIT.getAliasFromResponse(createLevel1a);
 
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
@@ -747,7 +752,14 @@ public class DataversesIT {
         getLinkableDataversesForDataversePartial.prettyPrint();
                 getLinkableDataversesForDataversePartial.then().assertThat()
                 .statusCode(OK.getStatusCode())                
-                .body("data[0].alias", equalTo(dataverseAliasForLinking));          
+                .body("data[0].alias", equalTo(dataverseAliasForLinking)); 
+                
+        //Try to link the child - should not link to parent - should link to "uncle"      
+        getLinkableDataversesForDataversePartial = UtilIT.getLinkableDataverses("dataverse", childLinking, apiToken, searchTerm);
+        getLinkableDataversesForDataversePartial.prettyPrint();
+                getLinkableDataversesForDataversePartial.then().assertThat()
+                .statusCode(OK.getStatusCode())                
+                .body("data[0].alias", equalTo(dataverseAlias));          
                 
         //Try with bad target alias       
         searchTerm = "";
@@ -825,6 +837,9 @@ public class DataversesIT {
         assertEquals(200, destroyDatasetResponse.getStatusCode());
 
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+        
+        deleteDataverseResponse = UtilIT.deleteDataverse(childLinking, apiToken);
         assertEquals(200, deleteDataverseResponse.getStatusCode());
         
         deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAliasForLinking, apiToken);
