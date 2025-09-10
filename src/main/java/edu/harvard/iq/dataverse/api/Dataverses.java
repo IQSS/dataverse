@@ -1826,9 +1826,8 @@ public class Dataverses extends AbstractApiBean {
             return ok(dvBuilder);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
-        } catch (Exception e) {
-            return error(Status.BAD_REQUEST, e.getLocalizedMessage());
-        }
+        } 
+        
     }
     
     
