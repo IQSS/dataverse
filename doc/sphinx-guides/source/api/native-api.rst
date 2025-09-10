@@ -3442,10 +3442,62 @@ Archiving is an optional feature that may be configured for a Dataverse installa
 
   curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/:persistentId/$VERSION/archivalStatus?persistentId=$PERSISTENT_IDENTIFIER"
   
+Get Dataset External Tool URL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API call generates a URL for accessing an external tool (see :doc:`/installation/external-tools`) that operates at the dataset level. The URL includes necessary authentication tokens and parameters based on the user's permissions and the tool's configuration.
+
+Authentication is required for draft or deaccessioned datasets and the user must have ViewUnpublishedDataset permission.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
+  export TOOL_ID=42
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/datasets/:persistentId/externalTool/$TOOL_ID/toolUrl?persistentId=$PERSISTENT_IDENTIFIER" \
+  -H "Content-Type: application/json" \
+  -d '{"preview": false, "locale": "en"}'
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/:persistentId/externalTool/42/toolUrl?persistentId=doi:10.5072/FK2/7U7YBV" \
+  -H "Content-Type: application/json" \
+  -d '{"preview": false, "locale": "en"}'
+
+The JSON request body accepts the following optional parameters:
+
+- ``preview``: boolean flag to indicate if the tool should run in preview mode (default: false)
+- ``locale``: string specifying the locale for internationalization
+
+The response includes:
+
+- ``toolUrl``: the URL to access the external tool
+- ``toolName``: the display name of the external tool
+- ``datasetId``: the ID of the dataset
+- ``preview``: whether the URL is for preview mode
+
+Example response:
+
+.. code-block:: json
+
+  {
+    "status": "OK",
+    "data": {
+      "toolUrl": "https://example.com/tool?datasetId=1234&callback=ahr...",
+      "toolName": "My External Tool",
+      "datasetId": 1234,
+      "preview": false
+    }
+  }
+  
 Get External Tool Parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This API call is intended as a callback that can be used by :doc:`/installation/external-tools` to retrieve signed Urls  necessary for their interaction with Dataverse.
+This API call is intended as a callback that can be used by :doc:`/installation/external-tools` to retrieve signed URLs necessary for their interaction with Dataverse.
 It can be called directly as well.
 
 The response is a JSON object described in the :doc:`/api/external-tools` section of the API guide.
@@ -5280,6 +5332,82 @@ with limit parameter:
 Note the optional "limit" parameter. Without it, the API will attempt to populate the sizes for all the saved originals that don't have them in the database yet. Otherwise it will do so for the first N such datafiles. 
 
 By default, the admin API calls are blocked and can only be called from localhost. See more details in :ref:`:BlockedApiEndpoints <:BlockedApiEndpoints>` and :ref:`:BlockedApiPolicy <:BlockedApiPolicy>` settings in :doc:`/installation/config`.
+
+Get File External Tool URL
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API call generates a URL for accessing an external tool (see :doc:`/installation/external-tools`) that operates at the file level. The URL includes necessary authentication tokens and parameters based on the user's permissions and the tool's configuration.
+
+Authentication is required for draft, restricted, embargoed, or expired (retention period) files; the user must have appropriate permissions.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export FILE_ID=42
+  export TOOL_ID=3
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/files/$FILE_ID/externalTool/$TOOL_ID/toolUrl" \
+  -H "Content-Type: application/json" \
+  -d '{"preview": false, "locale": "en"}'
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/files/42/externalTool/3/toolUrl" \
+  -H "Content-Type: application/json" \
+  -d '{"preview": false, "locale": "en"}'
+
+The JSON request body accepts the following optional parameters:
+
+- ``preview``: boolean flag to indicate if the tool should run in preview mode (default: false)
+- ``locale``: string specifying the locale for internationalization
+
+The response includes:
+
+- ``toolUrl``: the URL to access the external tool
+- ``toolName``: the display name of the external tool
+- ``fileId``: the ID of the file
+- ``preview``: whether the URL is for preview mode
+
+Example response:
+
+.. code-block:: json
+
+  {
+    "status": "OK",
+    "data": {
+      "toolUrl": "https://example.com/tool?fileId=42&callback=ahr...",
+      "toolName": "File Viewer Tool",
+      "fileId": 42,
+      "preview": false
+    }
+  }
+
+Get File External Tool Parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API call is intended as a callback that can be used by :doc:`/installation/external-tools` to retrieve signed URLs necessary for their interaction with Dataverse files.
+It can be called directly as well.
+
+The response is a JSON object described in the :doc:`/api/external-tools` section of the API guide.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export FILE_ID=42
+  export FILE_METADATA_ID=123
+  export TOOL_ID=3
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/files/$FILE_ID/metadata/$FILE_METADATA_ID/toolparams/$TOOL_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Accept:application/json" "https://demo.dataverse.org/api/files/42/metadata/123/toolparams/3"
 
 Get External Tool Parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -7868,4 +7996,20 @@ Parameters:
 ``published_states`` State of the object, several possible values among:``Published`` , ``Unpublished`` , ``Draft`` , ``Deaccessioned`` & ``In+Review`` .
 
 ``per_page`` Number of results returned per page.
+
+MyData Collection List
+----------------------
+
+The MyData Collection List API is used to get a list of the collections an authenticated user can create a Dataset in.
+Param userIdentifier={userName} is used by a superuser to get the collections for a specific user.
+
+A curl example listing collections:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve/collectionList"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve/collectionList?userIdentifier=anotherUser"
 

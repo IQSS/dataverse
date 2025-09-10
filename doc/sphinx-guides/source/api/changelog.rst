@@ -14,6 +14,7 @@ v6.8
 - For PUT /api/datasets/{id}/editMetadata the query parameter "sourceInternalVersionNumber" has been removed and replaced with "sourceLastUpdateTime" to verify that the data being edited hasn't been modified and isn't stale.
 - For GET /api/dataverses/$dataverse-alias/links the Json response has changed breaking the backward compatibility of the API.
 - For PUT /api/dataverses/$dataverse-alias/inputLevels custom input levels that had been previously set will no longer be deleted.
+- For GET /api/externalTools and /api/externalTools/{id} the responses are now formatted as JSON (previously the toolParameters and allowedApiCalls were a JSON object and array (respectively) that were serialized as JSON strings) and any configured "requirements" are included.
 
 v6.7
 ----
