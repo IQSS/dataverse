@@ -572,13 +572,21 @@ public class DataverseServiceBean implements java.io.Serializable {
                 remove.add(removeIt);
             });
         }
+        
 
         if (dvo instanceof Dataverse dataverse) {
             remove.add(dataverse);
-        } else {
-            //dataset is always owned by a dataverse
-            remove.add((Dataverse) dvo.getOwner());
-        }
+        } 
+        
+        DvObject testDVO = dvo;
+        //Remove DVO's parent up to Root
+        while (testDVO != null) {
+            if (testDVO.getOwner() == null) {
+                break; // we are at the root; which by definition is metadata block root, regardless of the value
+            }           
+            remove.add((Dataverse) testDVO.getOwner());
+            testDVO = testDVO.getOwner();
+        }       
 
         for (Dataverse res : allWithPerms) {
             if (!remove.contains(res)) {
