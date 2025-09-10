@@ -2455,7 +2455,7 @@ public class DataversesIT {
         String[] newFacetIds = new String[]{"contributorName"};
         String[] newMetadataBlockNames = new String[]{"citation", "geospatial", "biomedical"};
 
-        // Assert that the error is returned for having both MetadataBlockNames and inheritMetadataBlocksFromParent
+       //Giving the new Dataverse updated metadatablocks so that it will not inherit templates 
        Response updateDataverseResponse = UtilIT.updateDataverse(
                 dataverseAlias, dataverseAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
                 null, newMetadataBlockNames, apiToken,
