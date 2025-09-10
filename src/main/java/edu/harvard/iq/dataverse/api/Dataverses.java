@@ -1786,10 +1786,18 @@ public class Dataverses extends AbstractApiBean {
             DvObject dvObject = findDvoByIdAndTypeOrDie(dvIdtf, type, false);
             List<Dataverse> dataversesForLinkingSearch = new ArrayList();
             
-            AuthenticatedUser requestUser = (AuthenticatedUser) getRequestUser(crc);
+            User requestUser = (User) getRequestUser(crc);
+            AuthenticatedUser authUser;
+            if (!requestUser.isAuthenticated()) {
+                throw new WrappedResponse(error(Response.Status.BAD_REQUEST,
+                        BundleUtil.getStringFromBundle("dataverse.link.user")));
+            } else {
+                authUser = (AuthenticatedUser) requestUser;
+            }
+            
             DataverseRequest dvReq = new DataverseRequest(requestUser, (IpAddress) null);
             List<Dataverse> dataversesForLinking;
-            dataversesForLinking = permissionService.findPermittedCollections(dvReq, requestUser, Permission.LinkDataset);
+            dataversesForLinking = permissionService.findPermittedCollections(dvReq, authUser, Permission.LinkDataset);
 
             List<Dataverse> mergedWithSearch = new ArrayList<>();
             dataversesForLinking = dataverseService.removeUnlinkableDataverses(dataversesForLinking, dvObject);
@@ -1820,7 +1828,6 @@ public class Dataverses extends AbstractApiBean {
             return wr.getResponse();
         } catch (Exception e) {
             return error(Status.BAD_REQUEST, e.getLocalizedMessage());
-
         }
     }
     

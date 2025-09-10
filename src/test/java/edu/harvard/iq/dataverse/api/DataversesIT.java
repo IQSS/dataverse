@@ -766,6 +766,11 @@ public class DataversesIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", equalTo(0));
                 
+        Response getGuestUnavailableForDataset = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, "", dataverseAliasUnavailableForLinking);
+        getGuestUnavailableForDataset.prettyPrint();
+                getGuestUnavailableForDataset.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());        
+                
         Response getUnavailableForDataverse = UtilIT.getLinkableDataverses("dataverse", dataverseAlias, apiToken, dataverseAliasUnavailableForLinking);
         getUnavailableForDataverse.prettyPrint();
                 getUnavailableForDataverse.then().assertThat()

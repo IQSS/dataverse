@@ -4729,10 +4729,16 @@ public class UtilIT {
                 optionalQueryParam = "&persistentId=" + dvObjectId;
             }
         }
+        
+        if (!apiToken.isEmpty()) {
+            return given()
+                    .header(API_TOKEN_HTTP_HEADER, apiToken)
+                    .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses?searchTerm=" + searchTerm + optionalQueryParam);
 
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses?searchTerm=" + searchTerm + optionalQueryParam);
+        } else {
+            return given()
+                    .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses?searchTerm=" + searchTerm + optionalQueryParam);
+        }
 
     }
     static Response updateDataverseFeaturedItem(long featuredItemId,
