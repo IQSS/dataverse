@@ -740,7 +740,14 @@ public class DataversesIT {
         getLinkableDataversesForDataversePartial.prettyPrint();
                 getLinkableDataversesForDataversePartial.then().assertThat()
                 .statusCode(OK.getStatusCode())                
-                .body("data[0].alias", equalTo(dataverseAliasForLinking));  
+                .body("data[0].alias", equalTo(dataverseAliasForLinking)); 
+                
+        //Should get same result if search term is null        
+        getLinkableDataversesForDataversePartial = UtilIT.getLinkableDataverses("dataverse", dataverseAlias, apiToken, null);
+        getLinkableDataversesForDataversePartial.prettyPrint();
+                getLinkableDataversesForDataversePartial.then().assertThat()
+                .statusCode(OK.getStatusCode())                
+                .body("data[0].alias", equalTo(dataverseAliasForLinking));          
                 
         //Try with bad target alias       
         searchTerm = "";

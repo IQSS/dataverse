@@ -4729,28 +4729,46 @@ public class UtilIT {
         return updateDataverseFeaturedItem(featuredItemId, content, displayOrder, keepFile, pathToFile, null, null, apiToken);
     }
     
-    static Response getLinkableDataverses (String type, String dvObjectId, String apiToken, String searchTerm) {
+    static Response getLinkableDataverses(String type, String dvObjectId, String apiToken, String searchTerm) {
 
         String idInPath = dvObjectId; // Assume it's a number to start.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (type.equals("dataset")) {
             if (!NumberUtils.isCreatable(idInPath)) {
                 idInPath = ":persistentId";
-                optionalQueryParam = "&persistentId=" + dvObjectId;
+                if (searchTerm == null) {
+                    optionalQueryParam = "?persistentId=" + dvObjectId;
+                } else {
+                    optionalQueryParam = "&persistentId=" + dvObjectId;
+                }
             }
         }
-        
-        if (!apiToken.isEmpty()) {
-            return given()
-                    .header(API_TOKEN_HTTP_HEADER, apiToken)
-                    .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses?searchTerm=" + searchTerm + optionalQueryParam);
+
+        if (searchTerm == null) {
+            if (!apiToken.isEmpty()) {
+                return given()
+                        .header(API_TOKEN_HTTP_HEADER, apiToken)
+                        .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses" + optionalQueryParam);
+
+            } else {
+                return given()
+                        .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses" + optionalQueryParam);
+            }
 
         } else {
-            return given()
-                    .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses?searchTerm=" + searchTerm + optionalQueryParam);
-        }
+            if (!apiToken.isEmpty()) {
+                return given()
+                        .header(API_TOKEN_HTTP_HEADER, apiToken)
+                        .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses?searchTerm=" + searchTerm + optionalQueryParam);
 
+            } else {
+                return given()
+                        .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses?searchTerm=" + searchTerm + optionalQueryParam);
+            }
+
+        }
     }
+    
     static Response updateDataverseFeaturedItem(long featuredItemId,
                                                 String content,
                                                 int displayOrder,

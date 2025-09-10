@@ -1803,7 +1803,7 @@ public class Dataverses extends AbstractApiBean {
             dataversesForLinking = dataverseService.removeUnlinkableDataverses(dataversesForLinking, dvObject);
             
             //Only do search lookup if search term is there. Otherwise just include the collections based on perms
-            if (!searchTerm.isEmpty()) {
+            if (searchTerm != null && !searchTerm.isEmpty()) {
                 dataversesForLinkingSearch = dataverseService.filterDataversesByNamePattern(searchTerm);
                 if (!dataversesForLinkingSearch.isEmpty()) {
                     for (Dataverse dv : dataversesForLinking) {
