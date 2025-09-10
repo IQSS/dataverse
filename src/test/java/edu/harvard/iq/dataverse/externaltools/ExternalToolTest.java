@@ -34,7 +34,7 @@ public class ExternalToolTest {
         assertEquals("myDescription", jsonObject.getString(ExternalTool.DESCRIPTION), "testToJson() with ExternalTool.DESCRIPTION");
         assertEquals("explore", jsonObject.getJsonArray(ExternalTool.TYPES).getString(0), "testToJson() with ExternalTool.TYPES");
         assertEquals("http://example.com", jsonObject.getString(ExternalTool.TOOL_URL), "testToJson() with ExternalTool.TOOL_URL");
-        assertEquals("{}", jsonObject.getString(ExternalTool.TOOL_PARAMETERS), "testToJson() with ExternalTool.TOOL_PARAMETERS");
+        assertEquals(0, jsonObject.getJsonObject(ExternalTool.TOOL_PARAMETERS).size(), "testToJson() with ExternalTool.TOOL_PARAMETERS should be empty");
         assertEquals(DataFileServiceBean.MIME_TYPE_TSV_ALT, jsonObject.getString(ExternalTool.CONTENT_TYPE), "testToJson() with ExternalTool.CONTENT_TYPE");
     }
 

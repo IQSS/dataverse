@@ -345,6 +345,21 @@ public class JsonPrinter {
         return bld;
     }
 
+    public static JsonObjectBuilder jsonArray(List<Dataverse> dataverses) {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("count", dataverses.size());
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        for (Dataverse dataverse : dataverses) {
+            NullSafeJsonBuilder jsonObject = NullSafeJsonBuilder.jsonObjectBuilder();
+            jsonObject.add("id", dataverse.getId());
+            jsonObject.add("name", dataverse.getDisplayName());
+            jsonObject.add("alias", dataverse.getAlias());
+            jsonArrayBuilder.add(jsonObject);
+        }
+        job.add("items", jsonArrayBuilder);
+        return job;
+    }
+
     public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
         JsonArrayBuilder jsonArrayOfContacts = Json.createArrayBuilder();
         for (DataverseContact dataverseContact : dataverseContacts) {
@@ -1593,6 +1608,7 @@ public class JsonPrinter {
         return jsonObjectBuilder()
                 .add("id", template.getId())
                 .add("name", template.getName())
+                .add("isDefault", template.isIsDefaultForDataverse())
                 .add("usageCount", template.getUsageCount())
                 .add("createTime", template.getCreateTime().toString())
                 .add("createDate", template.getCreateDate())
@@ -1603,9 +1619,10 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder jsonTermsOfUseAndAccess(TermsOfUseAndAccess termsOfUseAndAccess) {
+        License license = termsOfUseAndAccess.getLicense();
         return jsonObjectBuilder()
                 .add("id", termsOfUseAndAccess.getId())
-                .add("license", json(termsOfUseAndAccess.getLicense()))
+                .add("license", license != null ? json(license) : null)
                 .add("termsOfUse", termsOfUseAndAccess.getTermsOfUse())
                 .add("termsOfAccess", termsOfUseAndAccess.getTermsOfAccess())
                 .add("confidentialityDeclaration", termsOfUseAndAccess.getConfidentialityDeclaration())
@@ -1619,7 +1636,9 @@ public class JsonPrinter {
                 .add("originalArchive", termsOfUseAndAccess.getOriginalArchive())
                 .add("availabilityStatus", termsOfUseAndAccess.getAvailabilityStatus())
                 .add("sizeOfCollection", termsOfUseAndAccess.getSizeOfCollection())
-                .add("studyCompletion", termsOfUseAndAccess.getStudyCompletion());
+                .add("studyCompletion", termsOfUseAndAccess.getStudyCompletion())
+                .add("contactForAccess", termsOfUseAndAccess.getContactForAccess())
+                .add("fileAccessRequest", termsOfUseAndAccess.isFileAccessRequest());
     }
 
     public static JsonArrayBuilder jsonTemplateInstructions(Map<String, String> templateInstructions) {
