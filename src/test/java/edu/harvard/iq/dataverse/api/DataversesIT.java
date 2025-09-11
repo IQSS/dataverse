@@ -691,10 +691,6 @@ public class DataversesIT {
         Response createDataverseResponseForLinking = UtilIT.createRandomDataverse(apiToken);
         String dataverseAliasForLinking = UtilIT.getAliasFromResponse(createDataverseResponseForLinking);
         
-        // Create a child of the linking DV
-        Response createLevel1a = UtilIT.createSubDataverse(UtilIT.getRandomDvAlias() + "-level1a", null, apiToken, dataverseAliasForLinking);
-        createLevel1a.prettyPrint();
-        String childLinking = UtilIT.getAliasFromResponse(createLevel1a);
 
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
@@ -752,7 +748,12 @@ public class DataversesIT {
         getLinkableDataversesForDataversePartial.prettyPrint();
                 getLinkableDataversesForDataversePartial.then().assertThat()
                 .statusCode(OK.getStatusCode())                
-                .body("data[0].alias", equalTo(dataverseAliasForLinking)); 
+                .body("data[0].alias", equalTo(dataverseAliasForLinking));
+                
+        // Create a child of the linking DV
+        Response createLevel1a = UtilIT.createSubDataverse(UtilIT.getRandomDvAlias() + "-level1a", null, apiToken, dataverseAliasForLinking);
+        createLevel1a.prettyPrint();
+        String childLinking = UtilIT.getAliasFromResponse(createLevel1a);        
                 
         //Try to link the child - should not link to parent - should link to "uncle"      
         getLinkableDataversesForDataversePartial = UtilIT.getLinkableDataverses("dataverse", childLinking, apiToken, searchTerm);
