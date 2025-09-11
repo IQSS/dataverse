@@ -1,0 +1,3 @@
+This version of Dataverse includes a new feature flag - ``dataverse.feature.enable-pid-failure-log``. When set, Dataverse will log requests for dataset and file pages via persistentId that fail in monthly log files of the form PIDFailures_<yyyy-MM>.log. These potentially indicate when someone has shared a draft PID without publishing or cases where a '.' or other character has been added to the PID, which may be of interest to site administrators.
+
+The new log files can be used in concert with the pidreport.py script at https://github.com/gdcc/dataverse-recipes/tree/main/python/pid_reports to generate and email monthly PID failure reports.
