@@ -469,7 +469,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         private Date assignedAt;
         private String revokedBy;
         private Date revokedAt;
-        private List<Long> definitionPointIds;  // New field
+        private List<Long> definitionPointIds;
     
         public RoleAssignmentHistoryConsolidatedEntry(String assigneeIdentifier, String roleName, Long definitionPointId) {
             this.roleName = roleName;

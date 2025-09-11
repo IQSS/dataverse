@@ -1508,7 +1508,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Accept: text/csv" "https://demo.dataverse.org/api/dataverses/3/assignments/history"
 
-The CSV response has column headers mirroring the json entries. They are internationalized (when internationalization is configured).
+The CSV response has column headers mirroring the JSON entries. They are internationalized (when internationalization is configured).
 
 Note: This feature requires the "role-assignment-history" feature flag to be enabled (see :ref:`feature-flags`).
 
@@ -4199,7 +4199,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Accept: text/csv" "https://demo.dataverse.org/api/datasets/3/assignments/history"
 
-The CSV response has column headers mirroring the json entries. They are internationalized (when internationalization is configured).
+The CSV response has column headers mirroring the JSON entries. They are internationalized (when internationalization is configured).
 
 Note: This feature requires the "role-assignment-history" feature flag to be enabled (see :ref:`feature-flags`).
 
