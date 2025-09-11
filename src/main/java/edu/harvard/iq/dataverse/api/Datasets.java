@@ -6057,7 +6057,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }, getRequestUser(crc));
     }
 
-@GET
+    @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/versionNote")
     public Response getVersionCreationNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
@@ -6127,4 +6127,17 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }, getRequestUser(crc));
     }
 
+    @PUT
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/license")
+    public Response updateVersionLicense(@Context ContainerRequestContext crc,
+                               @PathParam("id") String datasetId,
+                               @PathParam("versionId") String versionId,
+                               @Context UriInfo uriInfo,
+                               @Context HttpHeaders headers) {
+        return response( req -> {
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            return ok("TODO");
+        }, getRequestUser(crc));
+    }
 }
