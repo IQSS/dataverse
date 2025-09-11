@@ -161,8 +161,16 @@ public class PermissionServiceBean {
                        AND @IPRANGESQL
                      )
                   )
-                ) @SEARCHPREDICATE
+                ) 
             """;
+        
+        private static final String SEARCH_PARAMS  = """
+                                                             and  ((LOWER(dv.name) LIKE ? and ((SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE ?)
+                                                                         or (SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE ?))) 
+                                                                     or (LOWER(dv.name) NOT LIKE ? and ((LOWER(dv.name) LIKE ?)
+                                                                     or (LOWER(dv.name) LIKE ?))))
+                                                     """;
+
     /**
      * A request-level permission query (e.g includes IP ras).
      */
@@ -968,51 +976,40 @@ public class PermissionServiceBean {
             if (user.isSuperuser()) {
                 sqlCode = LIST_ALL_DATAVERSES_SUPERUSER_HAS_PERMISSION;
             } else {
-                System.out.print("searchTerm: " + searchTerm);
-                sqlCode = LIST_ALL_DATAVERSES_USER_HAS_PERMISSION
-                        .replace("@USERID", String.valueOf(user.getId()))
-                        .replace("@PERMISSIONBIT", String.valueOf(permissionBit))
-                        .replace("@IPRANGESQL", ipRangeSQL)
-                        .replace("@SEARCHPREDICATE", getPredicateFromSearchTerm(searchTerm));
+                if (searchTerm == null || searchTerm.isEmpty()) {
+                    sqlCode = LIST_ALL_DATAVERSES_USER_HAS_PERMISSION
+                            .replace("@USERID", String.valueOf(user.getId()))
+                            .replace("@PERMISSIONBIT", String.valueOf(permissionBit))
+                            .replace("@IPRANGESQL", ipRangeSQL);
+                    return em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
+                } else {
+                    String pattern = searchTerm.toLowerCase();
+                    String pattern1 = pattern + "%";
+                    String pattern2 = "% " + pattern + "%";
+
+                    // Adjust the queries for very short, 1 
+                    if (pattern.length() == 1) {
+                        pattern1 = pattern;
+                        pattern2 = pattern + " %";
+                    }
+
+                    sqlCode = LIST_ALL_DATAVERSES_USER_HAS_PERMISSION.concat(SEARCH_PARAMS)
+                            .replace("@USERID", String.valueOf(user.getId()))
+                            .replace("@PERMISSIONBIT", String.valueOf(permissionBit))
+                            .replace("@IPRANGESQL", ipRangeSQL);
+                    
+                    Query query = em.createNativeQuery(sqlCode, Dataverse.class);
+                    query.setParameter(1, "%dataverse");
+                    query.setParameter(2, pattern1);
+                    query.setParameter(3, pattern2);
+                    query.setParameter(4, "%dataverse");
+                    query.setParameter(5, pattern1);
+                    query.setParameter(6, pattern2);
+                    return query.getResultList();
+                }
             }
-            System.out.print(sqlCode);
-            return em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
         }
         return null;
-    }
-    
-    private String getPredicateFromSearchTerm(String searchTerm){
-        
-        if (searchTerm == null || searchTerm.isEmpty()){
-            System.out.print("search term null or empty");
-            return "";
-        }
-        
-        String  pattern = searchTerm.toLowerCase();
-        
-        String pattern1 = pattern + "%";
-        String pattern2 = "% " + pattern + "%";
-
-        // Adjust the queries for very short, 1 and 2-character patterns:
-        if (pattern.length() == 1) {
-            pattern1 = pattern;
-            pattern2 = pattern + " %";
-        } 
-        /*if (pattern.length() == 2) {
-            pattern2 = pattern + "%";
-        }*/
-        
-        
-        String qstr =  "and ((LOWER(dv.name) LIKE @DATAVERSE and ((SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE @PATTERN1) "
-                + "     or (SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE @PATTERN2))) "
-                + " or (LOWER(dv.name) NOT LIKE @DATAVERSE and ((LOWER(dv.name) LIKE @PATTERN1) "
-                + "     or (LOWER(dv.name) LIKE @PATTERN2)))) ";
-        qstr = qstr.replace("@DATAVERSE", "'%dataverse'")
-                .replace("@PATTERN1", "'" + pattern1 + "'")
-                .replace("@PATTERN2", "'" + pattern2 + "'");
-
-        System.out.print("Query String: " + qstr);
-        return qstr;
     }
 
     /**

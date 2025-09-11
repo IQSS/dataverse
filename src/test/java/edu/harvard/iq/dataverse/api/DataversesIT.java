@@ -787,6 +787,12 @@ public class DataversesIT {
         String apiTokenThree = UtilIT.getApiTokenFromResponse(createUserThree);
         String usernameThree = UtilIT.getUsernameFromResponse(createUserThree);
         
+        Response getUnavailableForDatasetBadSearchTerm = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, apiToken, "xxQQQ-Batman");
+        getUnavailableForDatasetBadSearchTerm.prettyPrint();
+                getUnavailableForDatasetBadSearchTerm.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(0));
+        
         Response getUnavailableForDataset = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, apiToken, dataverseAliasUnavailableForLinking);
         getUnavailableForDataset.prettyPrint();
                 getUnavailableForDataset.then().assertThat()
