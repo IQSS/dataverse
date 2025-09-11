@@ -105,7 +105,7 @@ public class PermissionServiceBean {
                   WHERE explicitgroup_authenticateduser.containedauthenticatedusers_id = @USERID
                 )
                         
-                SELECT * FROM DATAVERSE WHERE id IN (
+                SELECT * FROM DATAVERSE dv WHERE id IN (
                   SELECT definitionpoint_id
                   FROM roleassignment
                   WHERE roleassignment.assigneeidentifier IN (
@@ -161,7 +161,7 @@ public class PermissionServiceBean {
                        AND @IPRANGESQL
                      )
                   )
-                )
+                ) @SEARCHPREDICATE
             """;
     /**
      * A request-level permission query (e.g includes IP ras).
@@ -921,12 +921,21 @@ public class PermissionServiceBean {
         Long result = em.createQuery(criteriaQuery).getSingleResult();
         return result > 0;
     }
-
+    
     public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, Permission permission) {
-        return findPermittedCollections(request, user, 1 << permission.ordinal());
+        return findPermittedCollections(request, user, 1 << permission.ordinal(), "");
+    }
+
+    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, Permission permission, String searchTerm) {
+        return findPermittedCollections(request, user, 1 << permission.ordinal(), searchTerm);
     }
     
     public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit) {
+        return findPermittedCollections(request, user, permissionBit, "");
+    }
+    
+    
+    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit, String searchTerm) {
         if (user != null) {
             // IP Group - Only check IP if a User is calling for themself
             String ipRangeSQL = "FALSE";
@@ -959,14 +968,51 @@ public class PermissionServiceBean {
             if (user.isSuperuser()) {
                 sqlCode = LIST_ALL_DATAVERSES_SUPERUSER_HAS_PERMISSION;
             } else {
+                System.out.print("searchTerm: " + searchTerm);
                 sqlCode = LIST_ALL_DATAVERSES_USER_HAS_PERMISSION
                         .replace("@USERID", String.valueOf(user.getId()))
                         .replace("@PERMISSIONBIT", String.valueOf(permissionBit))
-                        .replace("@IPRANGESQL", ipRangeSQL);
+                        .replace("@IPRANGESQL", ipRangeSQL)
+                        .replace("@SEARCHPREDICATE", getPredicateFromSearchTerm(searchTerm));
             }
+            System.out.print(sqlCode);
             return em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
         }
         return null;
+    }
+    
+    private String getPredicateFromSearchTerm(String searchTerm){
+        
+        if (searchTerm == null || searchTerm.isEmpty()){
+            System.out.print("search term null or empty");
+            return "";
+        }
+        
+        String  pattern = searchTerm.toLowerCase();
+        
+        String pattern1 = pattern + "%";
+        String pattern2 = "% " + pattern + "%";
+
+        // Adjust the queries for very short, 1 and 2-character patterns:
+        if (pattern.length() == 1) {
+            pattern1 = pattern;
+            pattern2 = pattern + " %";
+        } 
+        /*if (pattern.length() == 2) {
+            pattern2 = pattern + "%";
+        }*/
+        
+        
+        String qstr =  "and ((LOWER(dv.name) LIKE @DATAVERSE and ((SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE @PATTERN1) "
+                + "     or (SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE @PATTERN2))) "
+                + " or (LOWER(dv.name) NOT LIKE @DATAVERSE and ((LOWER(dv.name) LIKE @PATTERN1) "
+                + "     or (LOWER(dv.name) LIKE @PATTERN2)))) ";
+        qstr = qstr.replace("@DATAVERSE", "'%dataverse'")
+                .replace("@PATTERN1", "'" + pattern1 + "'")
+                .replace("@PATTERN2", "'" + pattern2 + "'");
+
+        System.out.print("Query String: " + qstr);
+        return qstr;
     }
 
     /**

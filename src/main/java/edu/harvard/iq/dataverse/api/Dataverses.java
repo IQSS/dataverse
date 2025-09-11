@@ -1797,12 +1797,19 @@ public class Dataverses extends AbstractApiBean {
             
             DataverseRequest dvReq = new DataverseRequest(requestUser, (IpAddress) null);
             List<Dataverse> dataversesForLinking;
-            dataversesForLinking = permissionService.findPermittedCollections(dvReq, authUser, Permission.LinkDataset);
+            String searchParam;
+            if(searchTerm != null){
+                searchParam = searchTerm;
+            } else {
+                searchParam = "";
+            }
+            dataversesForLinking = permissionService.findPermittedCollections(dvReq, authUser, Permission.LinkDataset, searchParam);
 
             List<Dataverse> mergedWithSearch = new ArrayList<>();
             dataversesForLinking = dataverseService.removeUnlinkableDataverses(dataversesForLinking, dvObject);
             
             //Only do search lookup if search term is there. Otherwise just include the collections based on perms
+            /*
             if (searchTerm != null && !searchTerm.isEmpty()) {
                 dataversesForLinkingSearch = dataverseService.filterDataversesByNamePattern(searchTerm);
                 if (!dataversesForLinkingSearch.isEmpty()) {
@@ -1816,7 +1823,9 @@ public class Dataverses extends AbstractApiBean {
                 //search term empty then add all based on perms
                 mergedWithSearch.addAll(dataversesForLinking);
             }
-            
+            */
+             mergedWithSearch.addAll(dataversesForLinking);
+             
             JsonArrayBuilder dvBuilder = Json.createArrayBuilder();
             if (!mergedWithSearch.isEmpty()) {
                 for (Dataverse dv : mergedWithSearch) {
