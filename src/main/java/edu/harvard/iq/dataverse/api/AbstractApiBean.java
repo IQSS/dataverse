@@ -615,11 +615,12 @@ public abstract class AbstractApiBean {
      *
      * @param dvIdtf
      * @param type
+     * @param testForReleased
      * @return DvObject if type matches or throw exception
      * @throws WrappedResponse
      */
     @NotNull
-    protected DvObject findDvoByIdAndTypeOrDie(@NotNull final String dvIdtf, String type, Boolean testForReleased) throws WrappedResponse {
+    protected DvObject findDvoByIdAndTypeOrDie(@NotNull final String dvIdtf, String type, boolean testForReleased) throws WrappedResponse {
         try {
             DataverseFeaturedItem.TYPES dvType = DataverseFeaturedItem.getDvType(type);
             DvObject dvObject = null;
