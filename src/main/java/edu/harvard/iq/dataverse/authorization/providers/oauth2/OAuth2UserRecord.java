@@ -15,6 +15,19 @@ import java.util.List;
 public class OAuth2UserRecord implements Serializable {
 
     /**
+     * The expected value for the "idp" claim, identifying users authenticated by our
+     * custom Builtin Users SPI.
+     * <p>
+     * This check is performed when the {@code API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH}
+     * feature is enabled.
+     * <p>
+     * By verifying this value, we significantly reduce the risk of impersonation by
+     * other IdPs, as they would have to be explicitly configured with this specific,
+     * non-standard identifier.
+     */
+    public static final String BUILTIN_IDP_EXPECTED_CLAIM_VALUE = "dv-builtin-users-authenticator";
+
+    /**
      * The following claim names are expected to be received when using the
      * CILogon org.cilogon.userinfo scope specification. For more details, see
      * https://www.cilogon.org/oidc
@@ -134,6 +147,10 @@ public class OAuth2UserRecord implements Serializable {
 
     public boolean hasOAuthAttributes() {
         return idp != null && oidcUserId != null;
+    }
+
+    public boolean hasBuiltinAttributes() {
+        return idp != null && idp.equals(BUILTIN_IDP_EXPECTED_CLAIM_VALUE);
     }
 
     @Override
