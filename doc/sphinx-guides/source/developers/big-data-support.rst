@@ -3,8 +3,8 @@ Scaling Dataverse with Data Size
 
 This guide is intended to help administrators configure Dataverse appropriately to handle the amount of data their installation needs to manage.
 
-Scaling is a complex subject and there are many options available in Dataverse that can improve performance with larger scale data, but some of these
-work differently than Dataverse's default configuration, potentially requiring user education, and can require additional expertise to manage.
+Scaling is a complex subject: there are many options available in Dataverse that can improve performance with larger scale data, some of which
+work differently than Dataverse's default configuration, potentially requiring user education, and some which can require additional expertise to manage.
 
 In general, there are three dimensions in which Dataverse can scale:
   
@@ -12,15 +12,88 @@ In general, there are three dimensions in which Dataverse can scale:
 2. **Number of Files per Dataset**
 3. **Storage size of individual files and aggregate storage size**
 
-This guide will primarily focus on the latter two dimensions.
+This guide will primarily focus on the latter two dimensions as the main way to scale the number of datasets is to scale the database, server, and storage resources.
 
 .. contents:: |toctitle|
         :local:
 
-Choosing the Right Approach
----------------------------
+Choosing the Right Storage
+--------------------------
 
-The table below provides guidance on which storage solution to choose based on your requirements:
+Dataverse provides several options that affect how files are transferred and stored which significantly impact the performance and scalability of your Dataverse installation.
+
+File Storage
+~~~~~~~~~~~~
+
+The default storage option in Dataverse is based on a local file system. When files are transferred to Dataverse, they are first stored in a
+temporary location on the Dataverse server. Any zip files uploaded are unzipped to create multiple individual file entries. Once an upload is completed, 
+Dataverse copies the files to permanent storage. Dataverse also takes advantage of the file being local to inspect it's bytes to determine it
+s MIME type, and, for tabular data, to 'ingest' it - extracting metadata about the variables used in the file and creating a tab-separated value (TSV) version of the file. 
+
+Benefits: This option requires no external services and can potentially handle files into the gigabyte (GB) size range. FOr smaller institutions,
+and in disciplines where datasets do not have more than a few hundred files and files are not too large, this can be the simplest option.
+Further, unzipping of zip archives can be simpler for users than having to upload many individual files and was, at one time, the only way to 
+preserve file path names when uploading.
+
+Challenges: In general file storage is not a good option for larger data sizes - both in terms of file size and number of files. Contributing factors include:
+ 
+- Local file storage must be provisioned in advance based on anticipated demand. It can involve up-front costs (for a local disk), or, when procured from a cloud provider, is likely to be more expensive than object storage (see below) 
+- Because temporary storage is used, transfers will temporarily use several times as much space as the final transfer. Unzipping also increases the final storage size of a dataset.
+- Because all uploads use the same temporary storage, temporary storage must be large enough to handle multiple users uploading data.
+- Each file is uploaded as a single HTTP request, which can cause long transfer times which, in turn, can trigger timeout errors in Dataverse or any proxy or load balancer in front of Dataverse.
+- Uploading many files at once can trigger any rate limiter (i.e. used to throttle use by AI) resulting in failures
+- Because transfers (both uploads and downloads) are handled by the Dataverse server, they add to server processing load which can affect overall performance.
+
+Object Storage via S3
+~~~~~~~~~~~~~~~~~~~~~
+
+A more scalable option for storage is to use an object store with transfers managed using the Simple Storage Service (S3) protocol. S3-compatible storage can 
+easily be bought (rented) from major cloud providers, but may also be available from institutional clouds. It is also possible to run open-source software to provide S3 storage 
+over a local file system (making it possible to enjoy the advantages discussed below while still leveraging local file storage). While Dataverse can be
+configured to handle uploads and downloads as with file storage (with zip files being unzipped, but having many of the same challenges in terms of temporary storage and server load as discussed above) 
+it can also be configured to use 'direct' upload and download. In this configuration, the actual transfer of file bytes is from/to the user's local machine to/from
+the S3 store. In this configuration, Dataverse does not attempt to unzip zip files and they are stored as a single file in the dataset.
+
+Benefits: S3 offers several advantages over file storage which :
+ 
+- Scalability: S3 is designed to handle large amounts of data. It can handle individual files up to several TB in size. 
+Because S3 supports breaking files into pieces, Dataverse can transfer a file in pieces (several in parallel, potentially thousands of pieces per file) making transfers faster
+and more robust (a failure requires only resending the failed piece). It may also be the case that users will have a faster network connection to the S3 store 
+(e.g. in a commercial cloud or High Performance Computing center) than they do to the Dataverse server, reducing transfer time.
+- High Availability: S3 provides redundancy beyond what is available with a single disk (valuable for preservation, potentially reducing the need to perform data integrity checks).
+
+Challenges: 
+- Cost: S3 offers a pricing model that allows you to pay for the storage and transfer of data based on current usage (versus long term demand) but commercial 
+providers charge more per TB than the equivalent cost of a local disk (though commercial S3 storage is cheaper than commercial file storage).
+There can also be egress and other charges. Overall, S3 storage is generally more expensive than local file storage but cheaper than cloud file storage.
+Running a local S3 storage or leveraging an institutional service can further reduce costs.
+- S3 Storage without direct upload/download provides minimal benefits with Dataverse as files still pass through the server, files are still uploaded as a single HTTP/HTTPS stream, and temporary storage is still used.
+
+Other Considerations
+^^^^^^^^^^^^^^^^^^^^
+
+- While not having files unzipped can be confusing to users who are used to it from using Dataverse with file storage, there are ways to minimize the impact. 
+For example, Dataverse can be configured to use a 'Zip File Previewer' that allows users to see the contents of a zip file and even download individual files from within it. 
+For users who still want their data stored as individual files, Dataverse can be configured with the 'DVWebloader' which allows users to select an entire folder tree of files and 
+upload them, with their relative paths intact, to dataverse. (DVWebloader can only be used with S3/direct upload, but it is much more efficient in this case than using the 
+standard upload interface in Dataverse).
+- Using direct upload stops Dataverse from inspecting the file bytes to determine the MIME type (with one exception - Stata files). Dataverse will still look at the file name and extension to determine the MIME type.
+- To perform the 'ingest' processing, Dataverse currently has to copy the file to local storage, somewhat negating the benefit of sending data directly to S3. To manage larger files, one can set a per-store
+Ingest size limit (which can be 0 bytes) to stop ingest or limit it to smaller files. 
+- Dataverse's mechanism for downloading a whole dataset or multiple selected files involves zipping those files together. Even When using S3 with direct upload/download,
+the file bytes are transferred to the Dataverse server as part of the zipping process. There are ways to reduce the performance impact of this:
+  - There is a 'ZipDownloader' app that can be run separate from Dataverse to handle the zipping process.
+  - Dataverse has a :ZipDownloadLimit that can be used to limit the amount of data that can be zipped. If a dataset is larger than this limit, Dataverse will only add some of the files to the zip and list others in the included manifest file.
+  - There are tools such as the Dataverse Dataset Downloader (https://github.com/gdcc/dataverse-recipes/tree/main/shell/download#dataverse-dataset-downloader) that can be used to download all off the files individually. This avoids sending any of the files to/through the Dataverse server when S3 direct download is enabled.  
+- Dataverse leverages S3 features that are not implemented by all servers and has several configuration options geared towards handling variations between servers. Site admins should be sure to test with their preferred S3 implementation.
+
+Remote Storage
+~~~~~~~~~~~~~~
+
+
+
+
+The table below provides basic guidance on Dataverse's which storage solution to choose based on your requirements:
 
 +------------------------+---------------------------+---------------------------+---------------------------+
 | **Solution**           | **File Size Range**       | **File Volume Support**   | **Key Benefits**          |
