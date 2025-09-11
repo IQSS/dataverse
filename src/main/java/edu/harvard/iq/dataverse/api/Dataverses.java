@@ -1783,7 +1783,6 @@ public class Dataverses extends AbstractApiBean {
         try {
 
             DvObject dvObject = findDvoByIdAndTypeOrDie(dvIdtf, type, false);
-            List<Dataverse> dataversesForLinkingSearch = new ArrayList();
             
             User requestUser = (User) getRequestUser(crc);
             AuthenticatedUser authUser;
@@ -1802,32 +1801,20 @@ public class Dataverses extends AbstractApiBean {
             } else {
                 searchParam = "";
             }
-            dataversesForLinking = permissionService.findPermittedCollections(dvReq, authUser, Permission.LinkDataset, searchParam);
-
-            List<Dataverse> mergedWithSearch = new ArrayList<>();
-            dataversesForLinking = dataverseService.removeUnlinkableDataverses(dataversesForLinking, dvObject);
-            
-            //Only do search lookup if search term is there. Otherwise just include the collections based on perms
-            /*
-            if (searchTerm != null && !searchTerm.isEmpty()) {
-                dataversesForLinkingSearch = dataverseService.filterDataversesByNamePattern(searchTerm);
-                if (!dataversesForLinkingSearch.isEmpty()) {
-                    for (Dataverse dv : dataversesForLinking) {
-                        if (dataversesForLinkingSearch.contains(dv)) {
-                            mergedWithSearch.add(dv);
-                        }
-                    }
-                }
+            //Find Permitted Collections now takes a Search Term to filter down collections the user may link
+            Permission permToCheck;
+            if (dvObject instanceof Dataset) {
+                permToCheck = Permission.LinkDataset;
             } else {
-                //search term empty then add all based on perms
-                mergedWithSearch.addAll(dataversesForLinking);
+                permToCheck = Permission.LinkDataverse;
             }
-            */
-             mergedWithSearch.addAll(dataversesForLinking);
+
+            dataversesForLinking = permissionService.findPermittedCollections(dvReq, authUser, permToCheck, searchParam);
+            dataversesForLinking = dataverseService.removeUnlinkableDataverses(dataversesForLinking, dvObject);
              
             JsonArrayBuilder dvBuilder = Json.createArrayBuilder();
-            if (!mergedWithSearch.isEmpty()) {
-                for (Dataverse dv : mergedWithSearch) {
+            if (!dataversesForLinking.isEmpty()) {
+                for (Dataverse dv : dataversesForLinking) {
                     dvBuilder.add(json(dv, true));
                 }
             }
