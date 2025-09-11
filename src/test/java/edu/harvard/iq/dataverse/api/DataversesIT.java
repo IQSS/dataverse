@@ -802,7 +802,7 @@ public class DataversesIT {
         Response getGuestUnavailableForDataset = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, "", dataverseAliasUnavailableForLinking);
         getGuestUnavailableForDataset.prettyPrint();
                 getGuestUnavailableForDataset.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode());        
+                .statusCode(FORBIDDEN.getStatusCode());        
                 
         Response getUnavailableForDataverse = UtilIT.getLinkableDataverses("dataverse", dataverseAlias, apiToken, dataverseAliasUnavailableForLinking);
         getUnavailableForDataverse.prettyPrint();

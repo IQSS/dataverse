@@ -1783,35 +1783,12 @@ public class Dataverses extends AbstractApiBean {
         try {
 
             DvObject dvObject = findDvoByIdAndTypeOrDie(dvIdtf, type, false);
-            
-            User requestUser = (User) getRequestUser(crc);
-            AuthenticatedUser authUser;
-            if (!requestUser.isAuthenticated()) {
-                throw new WrappedResponse(error(Response.Status.BAD_REQUEST,
-                        BundleUtil.getStringFromBundle("dataverse.link.user")));
-            } else {
-                authUser = (AuthenticatedUser) requestUser;
-            }
-            
-            DataverseRequest dvReq = new DataverseRequest(requestUser, (IpAddress) null);
-            List<Dataverse> dataversesForLinking;
-            String searchParam;
-            if(searchTerm != null){
-                searchParam = searchTerm;
-            } else {
-                searchParam = "";
-            }
-            //Find Permitted Collections now takes a Search Term to filter down collections the user may link
-            Permission permToCheck;
-            if (dvObject instanceof Dataset) {
-                permToCheck = Permission.LinkDataset;
-            } else {
-                permToCheck = Permission.LinkDataverse;
-            }
+            List<Dataverse> dataversesForLinking = execCommand(new GetLinkingDataverseListCommand(
+                    createDataverseRequest(getRequestUser(crc)),
+                    dvObject,
+                    searchTerm
+            ));
 
-            dataversesForLinking = permissionService.findPermittedCollections(dvReq, authUser, permToCheck, searchParam);
-            dataversesForLinking = dataverseService.removeUnlinkableDataverses(dataversesForLinking, dvObject);
-             
             JsonArrayBuilder dvBuilder = Json.createArrayBuilder();
             if (!dataversesForLinking.isEmpty()) {
                 for (Dataverse dv : dataversesForLinking) {
@@ -1821,8 +1798,8 @@ public class Dataverses extends AbstractApiBean {
             return ok(dvBuilder);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
-        } 
-        
+        }
+
     }
     
     
