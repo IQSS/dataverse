@@ -62,7 +62,8 @@ and more robust (a failure requires only resending the failed piece). It may als
 (e.g. in a commercial cloud or High Performance Computing center) than they do to the Dataverse server, reducing transfer time.
 - High Availability: S3 provides redundancy beyond what is available with a single disk (valuable for preservation, potentially reducing the need to perform data integrity checks).
 
-Challenges: 
+Challenges:
+
 - Cost: S3 offers a pricing model that allows you to pay for the storage and transfer of data based on current usage (versus long term demand) but commercial 
 providers charge more per TB than the equivalent cost of a local disk (though commercial S3 storage is cheaper than commercial file storage).
 There can also be egress and other charges. Overall, S3 storage is generally more expensive than local file storage but cheaper than cloud file storage.
@@ -90,25 +91,98 @@ the file bytes are transferred to the Dataverse server as part of the zipping pr
 Remote Storage
 ~~~~~~~~~~~~~~
 
+Note: Remote Storage is still experimental: feedback is welcome! See :ref:`support`.
+
+For very large, and/or very sensitive data, it may not make sense to transfer or copy files to Dataverse at all. The ``remote`` store type in the Dataverse software support these use cases.
+It allows Dataverse to store a URL reference for the file rather than transferring the file bytes to a store managed directly by Dataverse.
+In the most basic configuration a site administrator configures the base URL for the store, e.g. "https://thirdpartystorage.edu/long-term-storage/" and users can then create files referencing
+any URL starting with that base, e.g. "https://thirdpartystorage.edu/long-term-storage/my_file.txt". If the remote site is a public web server, the remote store in Dataverse should be configured to be 'public' which will
+disable the ability to restrict or embargo files (as they are public on the remote site and Dataverse cannot block access.) Conversely, Dataverse can be configured to sign requests to the remote server and,
+and, which the remote server, if it is capable of validating them, can use to reject requests not approved by Dataverse. In this configuration, users can restrict and embargo files and Dataverse and the remote server will cooperate to
+manage access control. Another alternative, with a more advanced remote store, would be, instead of using URLs that directly enable download of the file, to use URLs that point to 
+a landing page at the remote server that may require the user to login, or go through some other authentication/validation process before being able to access the file.
+
+Dataverse considers remote storage to be read-only, or, in cases where the remote service does not provide a way for Dataverse to download the file bytes ((due to access control or because the URL refers to a landing page), inacessible. 
+Depending on whether Dataverse can access the bytes of the file, functionality such as ingest and integrity checking may or may not be possible. If the file bytes are not accessible 
+the remote store in Dataverse should be configured to disable operations that attempt to access the file (see  files-not-accessible-by-dataverse).
+If the file bytes are accessible, Dataverse can still support features such as ingest and thumbnail creation, as well as local storage of other files  and auxilliary files. These are handled by configuring a 'base' store with the remote store
+that is used for these purposes. (This means that while the specified files remain on the remote store, other files in the dataset, and potentially the ingested TSV format of a remote file would be managed by Dataverse in some other store. If ingest is not desired, the ingest size limit for the store can be set to 0 bytes).  
+
+Benefits: 
+
+- This is a relatively simple way to off-load the management of large and/or sensitive data files to other organizations while still providing Dataverse's overall capabilities for dataset curation and publication to users.   
+- If the store has been configured with a remote-store-name or remote-store-url, the dataset file table will include this information for remote files. These provide a visual indicator that the files are not managed directly by Dataverse and are stored/managed by a remote trusted store.
+
+Challenges:
+
+- Currently, remote files can only be added via the API. (This may be addressed in future versions).
+- As Dataverse is relying on the remote service to main the integrity and availability of the files, it is likely that the Dataverse site admin will want to have a formal agreement with the remote service 
+operator about their policies.
+- Site admins need to consider carefully how to configure file size limits, ingest size limits, etc. on the remote store and it's base store, and whether the remote store is public-only, and whether it files there can be read by Dataverse to assure the
+requirements of a specific use case(s) are addressed.
+- The current remote store implementation will not prevent you from providing a relative URL that results in a 404 when resolved. (I.e. if you make a typo). You should check to make sure the file exists at the location you specify - by trying to download in Dataverse, by checking to see that Dataverse was able to get the file size (which it does by doing a HEAD call to that location), or just manually trying the URL in your browser.
+- For large files, direct-download should always be used with a remote store. (Otherwise the Dataverse will be involved in the download.)
+ 
+
+Globus Transfer
+~~~~~~~~~~~~~~~
+
+Note: Globus Transfer is still experimental: feedback is welcome! See :ref:`support`.
+
+`Globus <https://www.globus.org>`_ provides file transfer service that is widely used for the largest datasets (in terms of both file size and number of files). It provides:
+
+- robust file transfer capable of handling delays (e.g. due to the time it takes to mount tapes) and restarting after network or endpoint failures
+- parallel file transfers, potentially between clusters of computers on both ends
+- third-party transfer, which enables a user working with their desktop browser to initiate transfer of files from one remote endpoint (i.e. on a local high-performance computing cluster) to/from another (e.g. one associated with a Dataverse store)
+
+Dataverse can be configured to support Globus transfers in multiple ways:
+
+- A Dataverse-managed Globus File Endpoint: Dataverse controls user access to the endpoint, access is only via Globus
+- A Dataverse-managed Globus S3 Endpoint: Dataverse controls user access to the endpoint, access is available via S3 and via Globus
+- A Globus Endpoint treated as Remote Storage: Dataverse references files on a Globus endpoint managed by a third party
+
+Each of these options has its own advantages and disadvantages:
+Benefits: 
+
+- Globus scales to higher data volumes than any other option. Users working with large data are often familiar with Globus and are interested in transferring data to/from computational clusters rather than their local machine
+- Globus transfers can be initiated by choosing the Globus option in the dataset upload panel. Analogously, "Globus Transfer" is one of the download options in the "Access Dataset" menu.
+- For the non-S3 options, Dataverse support having a base store (e.g. a local file system or an S3-based store), which can be used internally by Dataverse (e.g. for thumbnails, etc.) and can allow users to upload smaller files (e.g. Readmes, documentation) that might not be suited to a given Globus endpoint (e.g. a tape store)
+
+Challenges: 
+- Globus is complex to manage and Dataverse installations will need to develop Globus expertise or partner with another organization (i.e. a institutional high-performance computing center) to manage Globus endpoints.
+- For users not familiar with Globus, managing transfers can be confusing. Globus does provide a free 'Globus Personal Connect' service which can be run on any machine to allow transfers to/from it.
+- Globus transfers are not enabled at dataset-creation time. Once the draft version is created, users can initiate Globus transfers to upload files from remote endpoints.
+- For Dataverse managed endpoints, a a community-developed `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ app must be installed and configured in the Dataverse instance. 
+This app manages granting and revoking access for users to upload/download files from Dataverse and handles the translation between Dataverse's internal file naming/organization to that see by the user.
+- Due to differences between Dataverse's and Globus's access control models, Dataverse cannot enforce per-file-access restrictions - restriction can only be done today at the level of providing access to all files in a dataset.
+Globus stores can be defined as public to disable Dataverse's ability to restrict and embargo files in that store. If the store is configured to support restriction and embargo,
+Dataverse and it's Dataverse-Globus app will limit users to downloading only the files they have been granted access to, but a technically knowledgeable user could access other files in the same dataset if they are give access to one.
+(Data depositors would need to be aware of this limitation and could be guided to restrict all files/only grant access to all dataset files as a work-around).
+- Dataverse-managed endpoints must be Globus 'guest collections' hosted on either a file-system-based endpoint or an S3-based endpoint (the latter requires use of the Globus
+S3 connector which requires a paid Globus subscription at the host institution). In either case, Dataverse is configured with the Globus credentials of a user account that can manage the endpoint.
+Users will need their own Globus account, which can be obtained via their institution or directly from Globus (at no cost).
+- With the file-system endpoint, Dataverse does not currently have access to the file contents. Thus, functionality related to ingest, previews, fixity hash validation, etc. are not available. (Using the S3-based endpoint, Dataverse has access via S3 and all functionality normally associated with direct uploads to S3 is available.)
+- For the reference use case, Dataverse must be configured with a list of allowed endpoint/base paths from which files may be referenced. In this case, since Dataverse is not accessing the remote endpoint itself, it does not need Globus credentials. 
+Users will also need a Globus account in this case, and the remote endpoint must be configured to allow them access (i.e. be publicly readable, or potentially involving some out-of-band mechanism to request access (that could be described in the dataset's Terms of Use and Access).
+- While Globus itself can handle many (millions of) files of any size, Dataverse cannot handle more than thousands of files per dataset (at best) and some Globus endpoints may have limits on file sizes - both maximums and minimums (e.g. for tape storage where small files are inefficient).
+Users will need to be made aware of these limitations and the possibilities for managing them (e.g. by aggregating multiple files in a single larger file).
+
+More details of the setup required to enable Globus is described in the `Community Dataverse-Globus Setup and Configuration document <https://docs.google.com/document/d/1mwY3IVv8_wTspQC0d4ddFrD2deqwr-V5iAGHgOy4Ch8/edit?usp=sharing>`_ and the references therein.
+
+As described in that document, 
+
+An overview of the control and data transfer interactions between components was presented at the 2022 Dataverse Community Meeting and can be viewed in the `Integrations and Tools Session Video <https://youtu.be/3ek7F_Dxcjk?t=5289>`_ around the 1 hr 28 min mark.
+
+See also :ref:`Globus settings <:GlobusSettings>`.
+
+An alternative, experimental implementation of Globus polling of ongoing upload transfers has been added in v6.4. This framework does not rely on the instance staying up continuously for the duration of the transfer and saves the state information about Globus upload requests in the database. Due to its experimental nature it is not enabled by default. See the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`) and the JVM option :ref:`dataverse.files.globus-monitoring-server`.
 
 
 
-The table below provides basic guidance on Dataverse's which storage solution to choose based on your requirements:
 
-+------------------------+---------------------------+---------------------------+---------------------------+
-| **Solution**           | **File Size Range**       | **File Volume Support**   | **Key Benefits**          |
-+========================+===========================+===========================+===========================+
-| Default Storage        | Up to ~2GB                | Up to thousands           | Simple, no configuration  |
-+------------------------+---------------------------+---------------------------+---------------------------+
-| S3 Direct Upload       | Up to several TB          | Up to tens of thousands   | Simple configuration,     |
-|                        |                           |                           | familiar user interface   |
-+------------------------+---------------------------+---------------------------+---------------------------+
-| Remote Storage         | Unlimited                 | Unlimited                 | No file transfer needed,  |
-|                        |                           |                           | files remain in place     |
-+------------------------+---------------------------+---------------------------+---------------------------+
-| Globus Transfer        | Unlimited                 | Millions+                 | Robust transfer,          |
-|                        |                           |                           | resumable, high-speed     |
-+------------------------+---------------------------+---------------------------+---------------------------+
+
+
+
 
 Handling Large Individual Files
 -------------------------------
@@ -262,8 +336,6 @@ To configure the options mentioned above, an administrator must set two JVM opti
 
 Globus File Transfer
 ~~~~~~~~~~~~~~~~~~~
-
-**Best for:** Very large files and high-performance computing environments
 
 Note: Globus file transfer is still experimental but feedback is welcome! See :ref:`support`.
 
