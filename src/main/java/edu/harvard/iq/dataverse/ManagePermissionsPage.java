@@ -696,9 +696,9 @@ public class ManagePermissionsPage implements java.io.Serializable {
         this.renderRoleMessages = renderRoleMessages;
     }
     
-    public String getsignedUrlForRAHistoryCsv() {
+    public String getSignedUrlForRAHistoryCsv() {
         String apiPath;
-        
+        //Including /v1 in these urls is required for the signature to validate
         if (dvObject instanceof Dataverse dv) {
             // For Dataverses, use the dataverses API endpoint with the alias
             apiPath = "/api/v1/dataverses/" + dv.getAlias() + "/permissions/history";

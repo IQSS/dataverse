@@ -4,7 +4,7 @@ Dataverse can now track the history of role assignments, allowing administrators
 
 ## Key components of this feature:
 
-- **Feature Flag**: The functionality can be enabled/disabled via the `ROLE_ASSIGNMENT_HISTORY` feature flag 
+- **Feature Flag**: The functionality can be enabled/disabled via the `ROLE_ASSIGNMENT_HISTORY` feature flag (default is `off`)
 - **UI Integration**: New history panels on permission management pages showing the complete history of role assignments/revocations
 - **CSV Export**: Administrators can download the role assignment history for a given collection or dataset (or files in a dataset) as a CSV file directly from the new panels
 - **API Access**: New API endpoints provide access to role assignment history in both JSON and CSV formats:

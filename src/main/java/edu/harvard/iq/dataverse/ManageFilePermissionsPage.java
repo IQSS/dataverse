@@ -584,7 +584,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         this.renderFileMessages = renderFileMessages;
     }
 
-    public String getsignedUrlForRAHistoryCsv() {
+    public String getSignedUrlForRAHistoryCsv() {
+        //Including /v1 is required for the signature to validate
         String apiPath = "/api/v1/datasets/" + dataset.getId() + "/files/permissions/history";
         
         try {
