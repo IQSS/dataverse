@@ -246,6 +246,8 @@ If you are running an installation with Apache and Payara on the same server, an
 
 You should **NOT** use the configuration option above if you are running in a load-balanced environment, or otherwise have the web server on a different host than the application server.
 
+.. _root-collection-permissions:
+
 Root Dataverse Collection Permissions
 -------------------------------------
 
