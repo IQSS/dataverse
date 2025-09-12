@@ -26,7 +26,7 @@ public class UpdateDatasetLicenseCommand extends AbstractVoidCommand {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         if (!license.isActive()) {
-            throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("updateDatasetVersionLicenseCommand.errors.licenseNotActive", List.of(license.getName())), this);
+            throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.licenseNotActive", List.of(license.getName())), this);
         }
 
         DatasetVersion datasetVersion = dataset.getOrCreateEditVersion();

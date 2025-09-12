@@ -79,7 +79,7 @@ public class UpdateDatasetLicenseCommandTest {
     public void execute_shouldThrowException_whenLicenseIsNotActive() {
         // Arrange
         UpdateDatasetLicenseCommand sut = new UpdateDatasetLicenseCommand(dataverseRequestStub, datasetMock, inactiveLicense);
-        String expectedMessage = BundleUtil.getStringFromBundle("updateDatasetVersionLicenseCommand.errors.licenseNotActive", List.of(inactiveLicense.getName()));
+        String expectedMessage = BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.licenseNotActive", List.of(inactiveLicense.getName()));
 
         // Act & Assert
         InvalidCommandArgumentsException exception = assertThrows(InvalidCommandArgumentsException.class, () -> sut.execute(commandContextMock));
