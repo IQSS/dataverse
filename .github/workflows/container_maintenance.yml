@@ -173,7 +173,7 @@ jobs:
         with:
           platforms: ${{ env.PLATFORMS }}
       - name: Setup Trivy binary for vulnerability scanning
-        uses: aquasecurity/setup-trivy@v0.2.3
+        uses: aquasecurity/setup-trivy@v0.2.4
         with:
           version: v0.63.0
 
@@ -199,7 +199,7 @@ jobs:
       - configbaker-image
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       ### BASE IMAGE
       - name: Render README for base image

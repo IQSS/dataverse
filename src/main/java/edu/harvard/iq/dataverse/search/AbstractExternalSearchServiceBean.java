@@ -50,7 +50,7 @@ public abstract class AbstractExternalSearchServiceBean implements ConfigurableS
      * @throws Exception
      */
     protected SolrQueryResponse postProcessResponse(String responseString, DataverseRequest dataverseRequest,
-            boolean retrieveEntities, boolean addFacets, boolean addHighlights) throws Exception {
+            boolean retrieveEntities, boolean addFacets, boolean addHighlights, boolean addCollections) throws Exception {
 
         JsonObject responseObject = JsonUtil.getJsonObject(responseString);
         JsonArray resultsArray = responseObject.getJsonArray("results");
@@ -82,7 +82,7 @@ public abstract class AbstractExternalSearchServiceBean implements ConfigurableS
         // Execute Solr query
         SolrQueryResponse solrResponse = solrSearchService.search(dataverseRequest, null, solrQuery,
                 Collections.emptyList(), null, null, 0, false, pids.size(), retrieveEntities, null, null, addFacets,
-                addHighlights);
+                addHighlights, addCollections);
 
         // Reorder results based on distance, lowest values first
         List<SolrSearchResult> reorderedResults = solrResponse.getSolrSearchResults().stream()

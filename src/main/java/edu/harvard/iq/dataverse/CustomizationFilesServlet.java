@@ -14,14 +14,18 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Logger;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import jakarta.ejb.EJB;
 import org.apache.commons.io.IOUtils;
+import org.apache.tika.Tika;
 
 /**
  *
@@ -29,7 +33,8 @@ import org.apache.commons.io.IOUtils;
  */
 @WebServlet(name = "CustomizationFilesServlet", urlPatterns = {"/CustomizationFilesServlet"})
 public class CustomizationFilesServlet extends HttpServlet {
-    
+    private static final Logger logger = Logger.getLogger(CustomizationFilesServlet.class.getCanonicalName());
+
     @EJB
     SettingsServiceBean settingsService;
             
@@ -45,7 +50,7 @@ public class CustomizationFilesServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");               
+        response.setContentType(request.getContentType());
 
         String customFileType = request.getParameter("customFileType");
         String filePath = getFilePath(customFileType);
@@ -56,6 +61,11 @@ public class CustomizationFilesServlet extends HttpServlet {
         try {
             File fileIn = physicalPath.toFile();
             if (fileIn != null) {
+                String filename = physicalPath.getFileName().toString();
+                int dotIndex = filename.lastIndexOf('.');
+                String ext = dotIndex >= 0 ? filename.substring(dotIndex) : "";
+                String mimeType = FileUtil.lookupFileTypeByExtension(ext);
+                response.setContentType(mimeType);
                 inputStream = new FileInputStream(fileIn);
 
                 in = new BufferedReader(new InputStreamReader(inputStream));
