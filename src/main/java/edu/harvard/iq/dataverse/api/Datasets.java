@@ -6131,7 +6131,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             if (license == null) {
                 return notFound(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNotFound", List.of(licenseName)));
             }
-            execCommand(new UpdateDatasetVersionLicenseCommand(req, dataset, license));
+            execCommand(new UpdateDatasetLicenseCommand(req, dataset, license));
             return ok(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success"));
         }, getRequestUser(crc));
     }

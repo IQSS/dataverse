@@ -13,11 +13,11 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.List;
 
 @RequiredPermissions(Permission.EditDataset)
-public class UpdateDatasetVersionLicenseCommand extends AbstractVoidCommand {
+public class UpdateDatasetLicenseCommand extends AbstractVoidCommand {
     private final Dataset dataset;
     private final License license;
 
-    public UpdateDatasetVersionLicenseCommand(DataverseRequest aRequest, Dataset dataset, License license) {
+    public UpdateDatasetLicenseCommand(DataverseRequest aRequest, Dataset dataset, License license) {
         super(aRequest, dataset);
         this.dataset = dataset;
         this.license = license;

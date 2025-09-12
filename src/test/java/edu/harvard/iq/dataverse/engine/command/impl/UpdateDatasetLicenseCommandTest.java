@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class UpdateDatasetVersionLicenseCommandTest {
+public class UpdateDatasetLicenseCommandTest {
 
     @Mock
     private DataverseRequest dataverseRequestStub;
@@ -64,7 +64,7 @@ public class UpdateDatasetVersionLicenseCommandTest {
     @Test
     public void execute_shouldUpdateLicenseAndSetVersionStateToDraft() throws CommandException {
         // Arrange
-        UpdateDatasetVersionLicenseCommand sut = new UpdateDatasetVersionLicenseCommand(dataverseRequestStub, datasetMock, activeLicense);
+        UpdateDatasetLicenseCommand sut = new UpdateDatasetLicenseCommand(dataverseRequestStub, datasetMock, activeLicense);
 
         // Act
         sut.execute(commandContextMock);
@@ -78,7 +78,7 @@ public class UpdateDatasetVersionLicenseCommandTest {
     @Test
     public void execute_shouldThrowException_whenLicenseIsNotActive() {
         // Arrange
-        UpdateDatasetVersionLicenseCommand sut = new UpdateDatasetVersionLicenseCommand(dataverseRequestStub, datasetMock, inactiveLicense);
+        UpdateDatasetLicenseCommand sut = new UpdateDatasetLicenseCommand(dataverseRequestStub, datasetMock, inactiveLicense);
         String expectedMessage = BundleUtil.getStringFromBundle("updateDatasetVersionLicenseCommand.errors.licenseNotActive", List.of(inactiveLicense.getName()));
 
         // Act & Assert
