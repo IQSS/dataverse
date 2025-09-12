@@ -310,48 +310,49 @@ public class JsonPrinter {
                 .add("alias", dv.getAlias())
                 .add("name", dv.getName());
         //minimal refers to only returning the id alias and name for 
-        //use in selecting collections available for linking
-        if (!minimal) {
-            bld.add("affiliation", dv.getAffiliation());
-            if (!hideEmail) {
-                bld.add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()));
-            }
-            if (returnOwners) {
-                bld.add("isPartOf", getOwnersFromDvObject(dv));
-            }
-            bld.add("permissionRoot", dv.isPermissionRoot())
-                    .add("description", dv.getDescription())
-                    .add("dataverseType", dv.getDataverseType().name())
-                    .add("isMetadataBlockRoot", dv.isMetadataBlockRoot())
-                    .add("isFacetRoot", dv.isFacetRoot());
-            if (dv.getOwner() != null) {
-                bld.add("ownerId", dv.getOwner().getId());
-            }
-            if (dv.getCreateDate() != null) {
-                bld.add("creationDate", Util.getDateTimeFormat().format(dv.getCreateDate()));
-            }
-            if (dv.getDataverseTheme() != null) {
-                bld.add("theme", JsonPrinter.json(dv.getDataverseTheme()));
-            }
-            if (dv.getStorageDriverId() != null) {
-                bld.add("storageDriverLabel", DataAccess.getStorageDriverLabelFor(dv.getStorageDriverId()));
-            }
-            if (dv.getFilePIDsEnabled() != null) {
-                bld.add("filePIDsEnabled", dv.getFilePIDsEnabled());
-            }
-            bld.add("effectiveRequiresFilesToPublishDataset", dv.getEffectiveRequiresFilesToPublishDataset());
-            bld.add("isReleased", dv.isReleased());
-
-            List<DataverseFieldTypeInputLevel> inputLevels = dv.getDataverseFieldTypeInputLevels();
-            if (!inputLevels.isEmpty()) {
-                bld.add("inputLevels", JsonPrinter.jsonDataverseFieldTypeInputLevels(inputLevels));
-            }
-
-            if (childCount != null) {
-                bld.add("childCount", childCount);
-            }
-            addDatasetFileCountLimit(dv, bld);
+        //used in selecting collections available for linking
+        if (minimal) {
+            return bld;
         }
+        bld.add("affiliation", dv.getAffiliation());
+        if (!hideEmail) {
+            bld.add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()));
+        }
+        if (returnOwners) {
+            bld.add("isPartOf", getOwnersFromDvObject(dv));
+        }
+        bld.add("permissionRoot", dv.isPermissionRoot())
+                .add("description", dv.getDescription())
+                .add("dataverseType", dv.getDataverseType().name())
+                .add("isMetadataBlockRoot", dv.isMetadataBlockRoot())
+                .add("isFacetRoot", dv.isFacetRoot());
+        if (dv.getOwner() != null) {
+            bld.add("ownerId", dv.getOwner().getId());
+        }
+        if (dv.getCreateDate() != null) {
+            bld.add("creationDate", Util.getDateTimeFormat().format(dv.getCreateDate()));
+        }
+        if (dv.getDataverseTheme() != null) {
+            bld.add("theme", JsonPrinter.json(dv.getDataverseTheme()));
+        }
+        if (dv.getStorageDriverId() != null) {
+            bld.add("storageDriverLabel", DataAccess.getStorageDriverLabelFor(dv.getStorageDriverId()));
+        }
+        if (dv.getFilePIDsEnabled() != null) {
+            bld.add("filePIDsEnabled", dv.getFilePIDsEnabled());
+        }
+        bld.add("effectiveRequiresFilesToPublishDataset", dv.getEffectiveRequiresFilesToPublishDataset());
+        bld.add("isReleased", dv.isReleased());
+
+        List<DataverseFieldTypeInputLevel> inputLevels = dv.getDataverseFieldTypeInputLevels();
+        if (!inputLevels.isEmpty()) {
+            bld.add("inputLevels", JsonPrinter.jsonDataverseFieldTypeInputLevels(inputLevels));
+        }
+
+        if (childCount != null) {
+            bld.add("childCount", childCount);
+        }
+        addDatasetFileCountLimit(dv, bld);
         return bld;
     }
 
