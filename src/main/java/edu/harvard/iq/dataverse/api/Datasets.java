@@ -6118,16 +6118,20 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
 
     @PUT
     @AuthRequired
-    @Path("{id}/versions/{versionId}/license")
+    @Path("{id}/license")
     public Response updateVersionLicense(@Context ContainerRequestContext crc,
                                          @PathParam("id") String datasetId,
-                                         @PathParam("versionId") String versionId,
-                                         String licenseName,
-                                         @Context UriInfo uriInfo,
-                                         @Context HttpHeaders headers) {
+                                         String licenseName) {
         return response(req -> {
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            execCommand(new UpdateDatasetVersionLicenseCommand(req, datasetVersion, licenseName));
+            if (licenseName.isEmpty()) {
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNameIsEmpty"));
+            }
+            Dataset dataset = findDatasetOrDie(datasetId);
+            License license = licenseSvc.getByNameOrUri(licenseName);
+            if (license == null) {
+                return notFound(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNotFound", List.of(licenseName)));
+            }
+            execCommand(new UpdateDatasetVersionLicenseCommand(req, dataset, license));
             return ok(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success"));
         }, getRequestUser(crc));
     }
