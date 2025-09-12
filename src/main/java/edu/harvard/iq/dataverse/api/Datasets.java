@@ -159,10 +159,6 @@ public class Datasets extends AbstractApiBean {
     @EJB
     SettingsServiceBean settingsService;
 
-    // TODO: Move to AbstractApiBean
-    @EJB
-    DatasetMetricsServiceBean datasetMetricsSvc;
-
     @EJB
     DatasetExternalCitationsServiceBean datasetExternalCitationsService;
 
@@ -3584,7 +3580,7 @@ public class Datasets extends AbstractApiBean {
                     return error(Response.Status.BAD_REQUEST, "Country must be one of the ISO 1366 Country Codes");
                 }
             }
-            DatasetMetrics datasetMetrics = datasetMetricsSvc.getDatasetMetricsByDatasetForDisplay(dataset, monthYear, country);
+            DatasetMetrics datasetMetrics = datasetMetricsService.getDatasetMetricsByDatasetForDisplay(dataset, monthYear, country);
             if (datasetMetrics == null) {
                 return ok("No metrics available for dataset " + dataset.getId() + " for " + yyyymm + " for country code " + country + ".");
             } else if (datasetMetrics.getDownloadsTotal() + datasetMetrics.getViewsTotal() == 0) {
