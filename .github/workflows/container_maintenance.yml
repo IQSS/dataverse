@@ -272,6 +272,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: gdcc/base
+          repository: gdcc/configbaker
           short-description: "Dataverse Config Baker Container Image providing setup tooling and more"
           readme-filepath: ./modules/container-configbaker/README.md
