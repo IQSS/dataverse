@@ -3873,7 +3873,8 @@ You might also create your own profiles and use these, please refer to the upstr
 Database Settings
 -----------------
 
-These settings are stored in the ``setting`` database table but we recommend using the Admin API (:ref:`admin-api-db-settings`) to view and modify them, as shown below.
+These settings are stored in the ``setting`` database table but we recommend using the Settings Admin API (:ref:`admin-api-db-settings`) to view and modify them, as shown below.
+If changed in the database directly, you need to reload the application to make the ORM pickup the changes.
 
 In short:
 
