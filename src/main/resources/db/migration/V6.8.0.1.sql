@@ -86,3 +86,12 @@ DO $$
             DELETE FROM setting WHERE name = 'BuiltinUsers.KEY';
         END IF;
     END $$;
+
+-- 3. Migrate WorkflowsAdmin#IP_WHITELIST_KEY to the new setting name
+DO $$
+    BEGIN
+        IF EXISTS (SELECT 1 FROM setting WHERE name = 'WorkflowsAdmin#IP_WHITELIST_KEY') THEN
+            INSERT INTO setting (name, lang, content) VALUES (':WorkflowsAdminIpWhitelist', NULL, (SELECT content FROM setting WHERE name = 'WorkflowsAdmin#IP_WHITELIST_KEY'));
+            DELETE FROM setting WHERE name = 'WorkflowsAdmin#IP_WHITELIST_KEY';
+        END IF;
+    END $$;

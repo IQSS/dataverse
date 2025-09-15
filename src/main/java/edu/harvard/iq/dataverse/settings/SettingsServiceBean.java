@@ -172,6 +172,11 @@ public class SettingsServiceBean {
         BlockedApiPolicy,
         
         /**
+         * Semicolon separated allowlist of IP addresses allowed administrative access to workflows.
+         */
+        WorkflowsAdminIpWhitelist,
+        
+        /**
          * A special secret that, if set, needs to be given when trying to manage internal users.
          * This key was formerly known as "BuiltinUsers.KEY", which never was a setting name aligning with the others.
          * At some future point this setting should be moved to JvmSettings (so we consume proper secrets)

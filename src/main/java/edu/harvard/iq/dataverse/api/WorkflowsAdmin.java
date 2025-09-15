@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.WorkflowsAdminIpWhitelist;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
@@ -30,9 +32,9 @@ import jakarta.ws.rs.core.Response;
  */
 @Path("admin/workflows")
 public class WorkflowsAdmin extends AbstractApiBean {
-      
-    // TODO: To comply with validateSettingName, prepend with a colon?
-    public static final String IP_WHITELIST_KEY="WorkflowsAdmin#IP_WHITELIST_KEY";
+    
+    public static final String IP_SEPARATOR = ";";
+    public static final String DEFAULT_IP_ALLOWLIST = "127.0.0.1" + IP_SEPARATOR + "::1";
     
     @EJB
     WorkflowServiceBean workflows;
@@ -154,14 +156,14 @@ public class WorkflowsAdmin extends AbstractApiBean {
     @Path("/ip-whitelist")
     @GET
     public Response getIpWhitelist() {
-        return ok( settingsSvc.get(IP_WHITELIST_KEY, "127.0.0.1;::1") );
+        return ok( settingsSvc.getValueForKey(WorkflowsAdminIpWhitelist, DEFAULT_IP_ALLOWLIST) );
     }
     
     @Path("/ip-whitelist")
     @PUT
     public Response setIpWhitelist(String body) {
         String ipList = body.trim();
-        String[] ips = ipList.split(";");
+        String[] ips = ipList.split(IP_SEPARATOR);
         boolean allIpsOk = Arrays.stream(ips).allMatch(ip->{
             try {
                 IpAddress.valueOf(ip);
@@ -171,18 +173,17 @@ public class WorkflowsAdmin extends AbstractApiBean {
             }
         } );
         if (allIpsOk) {
-            settingsSvc.set(IP_WHITELIST_KEY, ipList);
-            return ok( settingsSvc.get(IP_WHITELIST_KEY, "127.0.0.1;::1") );
+            settingsSvc.setValueForKey(WorkflowsAdminIpWhitelist, ipList);
+            return ok( settingsSvc.getValueForKey(WorkflowsAdminIpWhitelist, DEFAULT_IP_ALLOWLIST) );
         } else {
             return badRequest("Request contains illegal IP addresses.");
         }
-                
     }
     
     @Path("/ip-whitelist")
     @DELETE
     public Response deleteIpWhitelist() {
-        settingsSvc.delete(IP_WHITELIST_KEY);
+        settingsSvc.deleteValueForKey(WorkflowsAdminIpWhitelist);
         return ok( "Restored whitelist to default (127.0.0.1;::1)" );
     }
     

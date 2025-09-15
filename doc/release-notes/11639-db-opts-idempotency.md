@@ -5,9 +5,10 @@ With this release, we remove some legacy specialties around Database Settings an
 Most important changes:
 
 1. Setting `BuiltinUsers.KEY` was renamed to `:BuiltinUsersKey`, aligned with our general naming pattern for options.
-2. Setting `:TabularIngestSizeLimit` no longer uses suffixes for formats and becomes a JSON-based setting instead.
-3. If set, both settings will be migrated to their new form automatically for you (Flyway migration).
-4. You can no longer (accidentally) create or use arbitrary setting names or languages.
+2. Setting `WorkflowsAdmin#IP_WHITELIST_KEY` was renamed to `:WorkflowsAdminIpWhitelist`, aligned with our general naming pattern for options.
+3. Setting `:TabularIngestSizeLimit` no longer uses suffixes for formats and becomes a JSON-based setting instead.
+4. If set, all three settings will be migrated to their new form automatically for you (Flyway migration).
+5. You can no longer (accidentally) create or use arbitrary setting names or languages.
    All Admin API endpoints for settings now validate setting names and languages for existence and compliance.
 
 As an administrator of a Dataverse instance, you can now make use of enhanced Bulk Operations on the Settings Admin API:
@@ -24,20 +25,21 @@ Note: Despite the validation of setting names and languages, the content of any 
 
 The following database settings are were added to the official list within the code (to remain valid with the settings cleanup mentioned above):
 
-- :BagGeneratorThreads
-- :BagItHandlerEnabled
-- :BagItLocalPath
-- :BagValidatorJobPoolSize
-- :BagValidatorJobWaitInterval
-- :BagValidatorMaxErrors
-- :BuiltinUsersKey - formerly BuiltinUsers.KEY
-- :CreateDataFilesMaxErrorsToDisplay
-- :DRSArchiverConfig - a Harvard-specific setting
-- :DuraCloudContext
-- :DuraCloudHost
-- :DuraCloudPort
-- :FileCategories
-- :GoogleCloudBucket
-- :GoogleCloudProject
-- :LDNAnnounceRequiredFields
-- :LDNTarget
+- `:BagGeneratorThreads`
+- `:BagItHandlerEnabled`
+- `:BagItLocalPath`
+- `:BagValidatorJobPoolSize`
+- `:BagValidatorJobWaitInterval`
+- `:BagValidatorMaxErrors`
+- `:BuiltinUsersKey` - formerly `BuiltinUsers.KEY`
+- `:CreateDataFilesMaxErrorsToDisplay`
+- `:DRSArchiverConfig` - a Harvard-specific setting
+- `:DuraCloudContext`
+- `:DuraCloudHost`
+- `:DuraCloudPort`
+- `:FileCategories`
+- `:GoogleCloudBucket`
+- `:GoogleCloudProject`
+- `:LDNAnnounceRequiredFields`
+- `:LDNTarget`
+- `:WorkflowsAdminIpWhitelist` - formerly `WorkflowsAdmin#IP_WHITELIST_KEY`
