@@ -817,6 +817,7 @@ public class SettingsServiceBean {
      * @param name of the setting
      * @return the actual setting, or {@code null}.
      */
+    @Deprecated(since = "6.9", forRemoval = true)
     public String get( String name ) {
         List<Setting> tokens = em.createNamedQuery("Setting.findByName", Setting.class)
                 .setParameter("name", name )
@@ -961,11 +962,13 @@ public class SettingsServiceBean {
      * @param defaultValue The value to return if no setting is found in the DB.
      * @return Either the stored value, or the default value.
      */
+    @Deprecated(since = "6.9", forRemoval = true)
     public String get( String name, String defaultValue ) {
         String val = get(name);
         return (val!=null) ? val : defaultValue;
     }
 
+    @Deprecated(since = "6.9", forRemoval = true)
     public String get(String name, String lang, String defaultValue ) {
         // Database safeguard, as the default is an empty string
         if (lang == null) lang = "";
@@ -991,7 +994,8 @@ public class SettingsServiceBean {
         
         return get( key.toString(), lang, defaultValue );
     }
-     
+    
+    @Deprecated(since = "6.9", forRemoval = true)
     public Setting set( String name, String content ) {
         Setting s = null; 
         
@@ -1015,6 +1019,7 @@ public class SettingsServiceBean {
         return s;
     }
 
+    @Deprecated(since = "6.9", forRemoval = true)
     public Setting set( String name, String lang, String content ) {
         // Database safeguard, as the default is an empty string
         if (lang == null) lang = "";
@@ -1053,6 +1058,7 @@ public class SettingsServiceBean {
      * @param defaultValue logical value of {@code null}.
      * @return boolean value of the setting.
      */
+    @Deprecated(since = "6.9", forRemoval = true)
     public boolean isTrue( String name, boolean defaultValue ) {
         String val = get(name);
         return ( val==null ) ? defaultValue : StringUtil.isTrue(val);
@@ -1079,6 +1085,7 @@ public class SettingsServiceBean {
         delete( name.toString() );
     }
     
+    @Deprecated(since = "6.9", forRemoval = true)
     public void delete( String name ) {
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
                             .setInfo(name));
@@ -1087,6 +1094,7 @@ public class SettingsServiceBean {
                 .executeUpdate();
     }
 
+    @Deprecated(since = "6.9", forRemoval = true)
     public void delete( String name, String lang ) {
         // Database safeguard, as the default is an empty string
         if (lang == null) lang = "";
