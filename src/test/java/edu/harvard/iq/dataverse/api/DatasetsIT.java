@@ -6920,23 +6920,34 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Publish Dataset
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
 
-        UtilIT.setSetting(SettingsServiceBean.Key.ExcludeEmailFromExport, "true");
-        // User has permission to ignore the setting allowing the datasetContactEmail to be included in the response
-        Response response = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, true, false, false, true);
-        //response.prettyPrint();
-        response.then().assertThat()
-                .statusCode(OK.getStatusCode());
-
+        // Setting is not set - datasetContactEmail will NOT be excluded
+        Response response = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
         String json = response.prettyPrint();
+        assertTrue(json.contains("datasetContactName"));
         assertTrue(json.contains("datasetContactEmail"));
 
-        // User has no permission to override the setting. datasetContactEmail will be excluded
-        response = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, true, false, false, true);
-        //response.prettyPrint();
-        response.then().assertThat()
-                .statusCode(OK.getStatusCode());
+        UtilIT.setSetting(SettingsServiceBean.Key.ExcludeEmailFromExport, "true");
 
+        // User does not ignore the setting - datasetContactEmail will be excluded
+        response = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
         json = response.prettyPrint();
+        assertTrue(json.contains("datasetContactName"));
+        assertTrue(!json.contains("datasetContactEmail"));
+
+        // User has permission to ignore the setting allowing the datasetContactEmail to be included in the response
+        response = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, true, false, false, true);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+        json = response.prettyPrint();
+        assertTrue(json.contains("datasetContactName"));
+        assertTrue(json.contains("datasetContactEmail"));
+
+        // User has no permission to override the setting - datasetContactEmail will be excluded
+        response = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, true, false, false, true);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+        json = response.prettyPrint();
+        assertTrue(json.contains("datasetContactName"));
         assertTrue(!json.contains("datasetContactEmail"));
     }
 
