@@ -45,6 +45,7 @@ import java.nio.file.Files;
 import io.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
+import static org.hamcrest.Matchers.greaterThan;
 
 public class DataversesIT {
 
@@ -837,11 +838,28 @@ public class DataversesIT {
                 
         //set user api back to super user for cleanup
         UtilIT.setSuperuserStatus(username, Boolean.TRUE);
-                
+        
+        //Create dataverse that should be available for super user
+        Response createDataverseResponseAvailableForLinkingBySuperUser = UtilIT.createRandomDataverse(apiTokenTwo);
+        createDataverseResponseAvailableForLinkingBySuperUser.prettyPrint();
+        String dataverseAliasAvailableForLinkingBySuperUser = UtilIT.getAliasFromResponse(createDataverseResponseAvailableForLinkingBySuperUser);
+        publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAliasAvailableForLinkingBySuperUser, apiToken);
+        publishDataverse.prettyPrint();
+        assertEquals(200, publishDataverse.getStatusCode());
+        
+        //First see that the super user gets dataverses to link to 
+        getLinkableDataverses = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, apiToken, dataverseAliasAvailableForLinkingBySuperUser);
+        getLinkableDataverses.prettyPrint();
+                getLinkableDataverses.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1));                       
                 
         // Clean up
         Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         assertEquals(200, destroyDatasetResponse.getStatusCode());
+        
+        Response deleteDataverseResponseSuper = UtilIT.deleteDataverse(dataverseAliasAvailableForLinkingBySuperUser, apiToken);
+        assertEquals(200, deleteDataverseResponseSuper.getStatusCode());
 
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         assertEquals(200, deleteDataverseResponse.getStatusCode());
