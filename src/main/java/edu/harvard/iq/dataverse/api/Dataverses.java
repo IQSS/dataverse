@@ -1789,7 +1789,7 @@ public class Dataverses extends AbstractApiBean {
             ));
 
             JsonArrayBuilder dvBuilder = Json.createArrayBuilder();
-            if (!dataversesForLinking.isEmpty()) {
+            if (dataversesForLinking != null && !dataversesForLinking.isEmpty()) {
                 for (Dataverse dv : dataversesForLinking) {
                     dvBuilder.add(json(dv, true));
                 }
