@@ -19,6 +19,9 @@ import jakarta.ws.rs.core.Response;
 
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -64,10 +67,14 @@ public class Metadata extends AbstractApiBean {
 
     @GET
     @Path("{id}/reExportDataset")
-    public Response indexDatasetByPersistentId(@PathParam("id") String id) {
+    public Response indexDatasetByPersistentId(@PathParam("id") String id, @QueryParam("formats") String formats) {
         try {
             Dataset dataset = findDatasetOrDie(id);
-            datasetService.reExportDatasetAsync(dataset);
+            List<String> formatNames = null;
+            if (formats != null) {
+                formatNames = new ArrayList<>(Arrays.asList(formats.split(",")));
+            }
+            datasetService.reExportDatasetAsync(dataset, formatNames);
             return ok("export started");
         } catch (WrappedResponse wr) {
             return wr.getResponse();

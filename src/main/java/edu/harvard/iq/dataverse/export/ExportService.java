@@ -318,16 +318,72 @@ public class ExportService {
         }
 
     }
-
-    public void clearAllCachedFormats(Dataset dataset) throws IOException {
+    
+    public void exportFormats(Dataset dataset, List<String> formatNames) throws ExportException {
         try {
+            if (formatNames == null) {
+                clearAllCachedFormats(dataset);
+            } else {
+                clearCachedFormats(dataset, formatNames);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(ExportService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        try {
+            DatasetVersion releasedVersion = dataset.getReleasedVersion();
+            if (releasedVersion == null) {
+                throw new ExportException("No released version for dataset " + dataset.getGlobalId().toString());
+            }
+            InternalExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion);
 
             for (Exporter e : exporterMap.values()) {
                 String formatName = e.getFormatName();
+                if (formatNames == null || formatNames.contains(formatName)) {
+                    if (e.getPrerequisiteFormatName().isPresent()) {
+                        String prereqFormatName = e.getPrerequisiteFormatName().get();
+                        try (InputStream preReqStream = getExport(dataset.getReleasedVersion(), prereqFormatName)) {
+                            dataProvider.setPrerequisiteInputStream(preReqStream);
+                            cacheExport(dataset, dataProvider, formatName, e);
+                            dataProvider.setPrerequisiteInputStream(null);
+                        } catch (IOException ioe) {
+                            throw new ExportException("Could not get prerequisite " + e.getPrerequisiteFormatName() + " to create " + formatName + "export for dataset " + dataset.getId(), ioe);
+                        }
+                    } else {
+                        cacheExport(dataset, dataProvider, formatName, e);
+                    }
+                }
+            }
+            // Finally, if we have been able to successfully export in all available
+            // formats, we'll increment the "last exported" time stamp:
+            dataset.setLastExportTime(new Timestamp(new Date().getTime()));
+
+        } catch (ServiceConfigurationError serviceError) {
+            throw new ExportException("Service configuration error during export. " + serviceError.getMessage());
+        } catch (RuntimeException e) {
+            logger.log(Level.FINE, e.getMessage(), e);
+            throw new ExportException(
+                    "Unknown runtime exception exporting metadata. " + (e.getMessage() == null ? "" : e.getMessage()));
+        }
+    }
+
+    public void clearAllCachedFormats(Dataset dataset) throws IOException {
+        List<String> formatNames = new ArrayList<>();
+
+        for (Exporter e : exporterMap.values()) {
+            String formatName = e.getFormatName();
+            formatNames.add(formatName);
+            clearCachedExport(dataset, formatName);
+        }
+        clearCachedFormats(dataset, formatNames);
+        dataset.setLastExportTime(null);
+    }
+    
+    public void clearCachedFormats(Dataset dataset, List<String> formatNames) throws IOException {
+        try {
+            for (String formatName : formatNames) {
                 clearCachedExport(dataset, formatName);
             }
-
-            dataset.setLastExportTime(null);
         } catch (IOException ex) {
             // not fatal
         }

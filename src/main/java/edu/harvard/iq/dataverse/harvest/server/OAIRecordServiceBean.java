@@ -259,9 +259,14 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     
     @TransactionAttribute(REQUIRES_NEW)
     public void exportAllFormatsInNewTransaction(Dataset dataset) throws ExportException {
+        exportFormatsInNewTransaction(dataset, null);
+    }
+    
+    @TransactionAttribute(REQUIRES_NEW)
+    public void exportFormatsInNewTransaction(Dataset dataset, List<String> formatNames) throws ExportException {
         try {
             ExportService exportServiceInstance = ExportService.getInstance();
-            exportServiceInstance.exportAllFormats(dataset);
+            exportServiceInstance.exportFormats(dataset, formatNames);
             dataset = datasetService.merge(dataset);
         } catch (Exception e) {
             logger.log(Level.FINE, "Caught unknown exception while trying to export", e);
