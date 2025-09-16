@@ -356,7 +356,7 @@ public class SolrIndexServiceBean {
                 self.indexDatasetBatchInNewTransaction(batchIds, counter, fileQueryMin);
                 numObjects += batchIds.size();
 
-                logger.info("Processed batch " + (i / batchSize + 1) + " of " +
+                logger.info("Permission reindexing: Processed batch " + (i/batchSize + 1) + " of " + 
                         (int) Math.ceil(datasetIds.size() / (double) batchSize) +
                         " dataset batches for dataverse " + dataverse.getId());
             }
@@ -455,24 +455,25 @@ public class SolrIndexServiceBean {
         }
     }
 
-    private String reindexFilesInBatches(List<DataFileProxy> filesToReindexAsBatch, List<String> cachedPerms, Long versionId, String solrIdEnd) {
+    private void reindexFilesInBatches(List<DataFileProxy> filesToReindexAsBatch, List<String> cachedPerms, Long versionId, String solrIdEnd) {
         List<SolrInputDocument> docs = new ArrayList<>();
         try {
             // Assume all files have the same owner
             if (filesToReindexAsBatch.isEmpty()) {
-                return "No files to reindex";
+                logger.warning("reindexFilesInBatches called incorrectly with an empty file list");
             }
 
-                    for (DataFileProxy file : filesToReindexAsBatch) {
+            for (DataFileProxy file : filesToReindexAsBatch) {
 
-                            DvObjectSolrDoc fileSolrDoc = constructDatafileSolrDoc(file, cachedPerms, versionId, solrIdEnd);
-                            SolrInputDocument solrDoc = SearchUtil.createSolrDoc(fileSolrDoc);
-                            docs.add(solrDoc);
-                    }
+                DvObjectSolrDoc fileSolrDoc = constructDatafileSolrDoc(file, cachedPerms, versionId, solrIdEnd);
+                SolrInputDocument solrDoc = SearchUtil.createSolrDoc(fileSolrDoc);
+                docs.add(solrDoc);
+            }
             persistToSolr(docs);
-            return " " + filesToReindexAsBatch.size() + " files indexed across " + docs.size() + " Solr documents ";
+            logger.fine("Indexed " + filesToReindexAsBatch.size() + " files across " + docs.size() + " Solr documents");
         } catch (SolrServerException | IOException ex) {
-            return " tried to reindex " + filesToReindexAsBatch.size() + " files indexed across " + docs.size() + " Solr documents but caught exception: " + ex;
+            logger.log(Level.WARNING, "Failed to reindex " + filesToReindexAsBatch.size() +
+                    " files across " + docs.size() + " Solr documents", ex);
         }
     }
 
