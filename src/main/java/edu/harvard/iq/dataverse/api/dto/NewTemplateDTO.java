@@ -38,6 +38,7 @@ public class NewTemplateDTO {
         template.updateInstructions();
         template.setCreateTime(new Timestamp(new Date().getTime()));
         template.setUsageCount(0L);
+        template.setIsDefaultForDataverse(isDefault);
 
         return template;
     }
