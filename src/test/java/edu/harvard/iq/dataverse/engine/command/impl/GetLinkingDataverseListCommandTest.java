@@ -117,13 +117,14 @@ public class GetLinkingDataverseListCommandTest {
         List<Dataverse> expectedList = Collections.emptyList();
 
         Mockito.when(commandContext.permissions()).thenReturn(permissionService);
-        Mockito.when(commandContext.dataverses()).thenReturn(dataverseService);
+        // if there are none found then the remove unlinkable doesn't get run
+        //    Mockito.when(commandContext.dataverses()).thenReturn(dataverseService);
         Mockito.when(authenticatedUser.isAuthenticated()).thenReturn(true);
         // Note: verify that an empty string "" is passed instead of null
         Mockito.when(permissionService.findPermittedCollections(dataverseRequest, authenticatedUser, Permission.LinkDataset, ""))
                 .thenReturn(expectedList);
-        Mockito.when(dataverseService.removeUnlinkableDataverses(expectedList, datasetToLink))
-                .thenReturn(expectedList);
+        // if there are none found then the remove unlinkable doesn't get run
+        //    Mockito.when(dataverseService.removeUnlinkableDataverses(expectedList, datasetToLink)).thenReturn(expectedList);
 
         GetLinkingDataverseListCommand sut = new GetLinkingDataverseListCommand(dataverseRequest, datasetToLink, searchTerm);
 
@@ -143,12 +144,13 @@ public class GetLinkingDataverseListCommandTest {
         List<Dataverse> emptyList = Collections.emptyList();
 
         Mockito.when(commandContext.permissions()).thenReturn(permissionService);
-        Mockito.when(commandContext.dataverses()).thenReturn(dataverseService);
+        // if there are none found then the remove unlinkable doesn't get run
+        //    Mockito.when(commandContext.dataverses()).thenReturn(dataverseService);
         Mockito.when(authenticatedUser.isAuthenticated()).thenReturn(true);
         Mockito.when(permissionService.findPermittedCollections(dataverseRequest, authenticatedUser, Permission.LinkDataset, searchTerm))
                 .thenReturn(emptyList);
-        Mockito.when(dataverseService.removeUnlinkableDataverses(emptyList, datasetToLink))
-                .thenReturn(emptyList);
+        // if there are none found then the remove unlinkable doesn't get run
+        //    Mockito.when(dataverseService.removeUnlinkableDataverses(emptyList, datasetToLink)).thenReturn(emptyList);
 
         GetLinkingDataverseListCommand sut = new GetLinkingDataverseListCommand(dataverseRequest, datasetToLink, searchTerm);
 
