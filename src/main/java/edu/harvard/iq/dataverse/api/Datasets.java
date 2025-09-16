@@ -6121,9 +6121,9 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @PUT
     @AuthRequired
     @Path("{id}/license")
-    public Response updateVersionLicense(@Context ContainerRequestContext crc,
-                                         @PathParam("id") String datasetId,
-                                         LicenseUpdateRequest requestBody) {
+    public Response updateLicense(@Context ContainerRequestContext crc,
+                                  @PathParam("id") String datasetId,
+                                  LicenseUpdateRequest requestBody) {
         return response(req -> {
             Dataset dataset = findDatasetOrDie(datasetId);
             if (requestBody.getName() != null && !requestBody.getName().isEmpty()) {
