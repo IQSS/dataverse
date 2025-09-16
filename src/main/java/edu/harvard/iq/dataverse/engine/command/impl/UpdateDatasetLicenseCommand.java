@@ -15,7 +15,8 @@ import java.util.List;
 @RequiredPermissions(Permission.EditDataset)
 public class UpdateDatasetLicenseCommand extends AbstractVoidCommand {
     private final Dataset dataset;
-    private final License license;
+    private License license = null;
+    private TermsOfUseAndAccess customTermsOfUseAndAccess = null;
 
     public UpdateDatasetLicenseCommand(DataverseRequest aRequest, Dataset dataset, License license) {
         super(aRequest, dataset);
@@ -23,19 +24,30 @@ public class UpdateDatasetLicenseCommand extends AbstractVoidCommand {
         this.license = license;
     }
 
+    public UpdateDatasetLicenseCommand(DataverseRequest aRequest, Dataset dataset, TermsOfUseAndAccess customTermsOfUseAndAccess) {
+        super(aRequest, dataset);
+        this.dataset = dataset;
+        this.customTermsOfUseAndAccess = customTermsOfUseAndAccess;
+    }
+
+
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
-        if (!license.isActive()) {
-            throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.licenseNotActive", List.of(license.getName())), this);
-        }
-
         DatasetVersion datasetVersion = dataset.getOrCreateEditVersion();
-
-        TermsOfUseAndAccess termsOfUseAndAccess = datasetVersion.getTermsOfUseAndAccess();
-        termsOfUseAndAccess.setLicense(license);
-
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
 
-        ctxt.engine().submit(new UpdateDatasetVersionCommand(this.dataset, getRequest()));
+        if (license != null) {
+            if (!license.isActive()) {
+                throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.licenseNotActive", List.of(license.getName())), this);
+            }
+            TermsOfUseAndAccess termsOfUseAndAccess = datasetVersion.getTermsOfUseAndAccess();
+            termsOfUseAndAccess.setLicense(license);
+
+            ctxt.engine().submit(new UpdateDatasetVersionCommand(this.dataset, getRequest()));
+        } else if (customTermsOfUseAndAccess != null) {
+            datasetVersion.setTermsOfUseAndAccess(customTermsOfUseAndAccess);
+
+            ctxt.engine().submit(new UpdateDatasetVersionCommand(this.dataset, getRequest()));
+        }
     }
 }

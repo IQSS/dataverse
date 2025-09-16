@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.api.dto.CustomTermsDTO;
+import edu.harvard.iq.dataverse.api.dto.LicenseUpdateRequest;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -6121,18 +6123,24 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @Path("{id}/license")
     public Response updateVersionLicense(@Context ContainerRequestContext crc,
                                          @PathParam("id") String datasetId,
-                                         String licenseName) {
+                                         LicenseUpdateRequest requestBody) {
         return response(req -> {
-            if (licenseName.isEmpty()) {
+            Dataset dataset = findDatasetOrDie(datasetId);
+            if (requestBody.getName() != null && !requestBody.getName().isEmpty()) {
+                String licenseName = requestBody.getName();
+                License license = licenseSvc.getByNameOrUri(licenseName);
+                if (license == null) {
+                    return notFound(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNotFound", List.of(licenseName)));
+                }
+                execCommand(new UpdateDatasetLicenseCommand(req, dataset, license));
+                return ok(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success"));
+            } else if (requestBody.getCustomTerms() != null) {
+                CustomTermsDTO customTerms = requestBody.getCustomTerms();
+                execCommand(new UpdateDatasetLicenseCommand(req, dataset, customTerms.toTermsOfUseAndAccess()));
+                return ok(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success"));
+            } else {
                 return badRequest(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNameIsEmpty"));
             }
-            Dataset dataset = findDatasetOrDie(datasetId);
-            License license = licenseSvc.getByNameOrUri(licenseName);
-            if (license == null) {
-                return notFound(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNotFound", List.of(licenseName)));
-            }
-            execCommand(new UpdateDatasetLicenseCommand(req, dataset, license));
-            return ok(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success"));
         }, getRequestUser(crc));
     }
 }

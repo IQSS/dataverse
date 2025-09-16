@@ -36,6 +36,8 @@ public class UpdateDatasetLicenseCommandTest {
     @Spy
     private TermsOfUseAndAccess termsOfUseAndAccessSpy = new TermsOfUseAndAccess();
     @Mock
+    private TermsOfUseAndAccess customTermsOfUseAndAccessMock;
+    @Mock
     private DataverseEngine dataverseEngineMock;
     @Mock
     private CommandContext commandContextMock;
@@ -84,5 +86,19 @@ public class UpdateDatasetLicenseCommandTest {
         // Act & Assert
         InvalidCommandArgumentsException exception = assertThrows(InvalidCommandArgumentsException.class, () -> sut.execute(commandContextMock));
         assertEquals(expectedMessage, exception.getMessage());
+    }
+
+    @Test
+    public void execute_shouldUpdateCustomTermsAndSetVersionStateToDraft() throws CommandException {
+        // Arrange
+        UpdateDatasetLicenseCommand sut = new UpdateDatasetLicenseCommand(dataverseRequestStub, datasetMock, customTermsOfUseAndAccessMock);
+
+        // Act
+        sut.execute(commandContextMock);
+
+        // Assert
+        verify(datasetVersionMock).setVersionState(DatasetVersion.VersionState.DRAFT);
+        verify(datasetVersionMock).setTermsOfUseAndAccess(customTermsOfUseAndAccessMock);
+        verify(commandContextMock).engine();
     }
 }
