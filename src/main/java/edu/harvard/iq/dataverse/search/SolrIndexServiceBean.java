@@ -356,7 +356,7 @@ public class SolrIndexServiceBean {
                 self.indexDatasetBatchInNewTransaction(batchIds, counter, fileQueryMin);
                 numObjects += batchIds.size();
 
-                logger.info("Permission reindexing: Processed batch " + (i/batchSize + 1) + " of " + 
+                logger.fine("Permission reindexing: Processed batch " + (i/batchSize + 1) + " of " + 
                         (int) Math.ceil(datasetIds.size() / (double) batchSize) +
                         " dataset batches for dataverse " + dataverse.getId());
             }
@@ -373,7 +373,7 @@ public class SolrIndexServiceBean {
             numObjects++;
         }
 
-        logger.info("Reindexed permissions for " + counter[0] + " files and " + numObjects +
+        logger.fine("Reindexed permissions for " + counter[0] + " files and " + numObjects +
                 " datasets/collections in " + (System.currentTimeMillis() - globalStartTime) + " ms");
 
         return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint + ": " + numObjects);
