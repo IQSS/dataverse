@@ -59,6 +59,10 @@ public class GetLinkingDataverseListCommand extends AbstractCommand<List<Dataver
         }
 
         dataversesForLinking = ctxt.permissions().findPermittedCollections(getRequest(), authUser, permToCheck, searchParam);
+        //Don't bother with checking for already linked if there are none to be tested.
+        if(dataversesForLinking == null || dataversesForLinking.isEmpty()) {
+            return dataversesForLinking;
+        }
         return ctxt.dataverses().removeUnlinkableDataverses(dataversesForLinking, dvObject);
 
     }
