@@ -423,7 +423,8 @@
             </snapshots>
         </repository>
         <!-- Uncomment when using snapshot releases from Maven Central -->
-	<!-- Note the new - as of Sept. 2025 sonatype url -->
+        <!-- Note the new - as of Sept. 2025 sonatype url -->
+	<!--
         <repository>
             <id>central-portal-snapshots</id>
             <name>Central Portal Snapshots</name>
@@ -437,7 +438,6 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-	<!--
         <repository>
             <id>s01-oss-sonatype</id>
             <name>s01-oss-sonatype</name>
