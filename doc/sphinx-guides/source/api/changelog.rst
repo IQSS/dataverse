@@ -13,6 +13,7 @@ v6.8
 - For POST /api/files/{id}/metadata passing an empty string ("description":"")  or array ("categories":[]) will no longer be ignored. Empty fields will now clear out the values in the file's metadata. To ignore the fields simply do not include them in the JSON string.
 - For PUT /api/datasets/{id}/editMetadata the query parameter "sourceInternalVersionNumber" has been removed and replaced with "sourceLastUpdateTime" to verify that the data being edited hasn't been modified and isn't stale.
 - For GET /api/dataverses/$dataverse-alias/links the Json response has changed breaking the backward compatibility of the API.
+- For GET /api/externalTools and /api/externalTools/{id} the responses are now formatted as JSON (previously the toolParameters and allowedApiCalls were a JSON object and array (respectively) that were serialized as JSON strings) and any configured "requirements" are included.
 - The POST /api/admin/makeDataCount/{id}/updateCitationsForDataset processing is now asynchronous and the response no longer includes the number of citations. The response can be OK if the request is queued or 503 if the queue is full (default queue size is 1000).
 
 v6.7

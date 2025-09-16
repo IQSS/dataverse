@@ -195,9 +195,11 @@ public class InAppNotificationsJsonPrinter {
     }
 
     private void addRequestorFields(final NullSafeJsonBuilder notificationJson, final AuthenticatedUser requestor) {
-        notificationJson.add(KEY_REQUESTOR_FIRST_NAME, requestor.getFirstName());
-        notificationJson.add(KEY_REQUESTOR_LAST_NAME, requestor.getLastName());
-        notificationJson.add(KEY_REQUESTOR_EMAIL, requestor.getEmail());
+        if (requestor != null) {
+            notificationJson.add(KEY_REQUESTOR_FIRST_NAME, requestor.getFirstName());
+            notificationJson.add(KEY_REQUESTOR_LAST_NAME, requestor.getLastName());
+            notificationJson.add(KEY_REQUESTOR_EMAIL, requestor.getEmail());
+        }
     }
 
     private void addDatasetFields(final NullSafeJsonBuilder notificationJson, final UserNotification userNotification) {
