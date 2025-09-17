@@ -4981,4 +4981,12 @@ public class UtilIT {
                 .when()
                 .get(callbackUrl);
     }
+
+    public static Response updateLicense(String datasetId, String licenseOrCustomTerms, String apiToken) {
+        return given()
+                .body(licenseOrCustomTerms)
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/datasets/" + datasetId + "/license");
+    }
 }

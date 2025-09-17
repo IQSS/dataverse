@@ -45,6 +45,11 @@ public class UpdateDatasetLicenseCommand extends AbstractVoidCommand {
 
             ctxt.engine().submit(new UpdateDatasetVersionCommand(this.dataset, getRequest()));
         } else if (customTermsOfUseAndAccess != null) {
+            if (customTermsOfUseAndAccess.getTermsOfUse() == null || customTermsOfUseAndAccess.getTermsOfUse().isBlank()) {
+                throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.customTermsOfUseNotProvided"), this);
+            }
+
+            customTermsOfUseAndAccess.setDatasetVersion(datasetVersion);
             datasetVersion.setTermsOfUseAndAccess(customTermsOfUseAndAccess);
 
             ctxt.engine().submit(new UpdateDatasetVersionCommand(this.dataset, getRequest()));

@@ -12,6 +12,9 @@ import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
@@ -91,6 +94,7 @@ public class UpdateDatasetLicenseCommandTest {
     @Test
     public void execute_shouldUpdateCustomTermsAndSetVersionStateToDraft() throws CommandException {
         // Arrange
+        when(customTermsOfUseAndAccessMock.getTermsOfUse()).thenReturn("custom terms");
         UpdateDatasetLicenseCommand sut = new UpdateDatasetLicenseCommand(dataverseRequestStub, datasetMock, customTermsOfUseAndAccessMock);
 
         // Act
@@ -100,5 +104,19 @@ public class UpdateDatasetLicenseCommandTest {
         verify(datasetVersionMock).setVersionState(DatasetVersion.VersionState.DRAFT);
         verify(datasetVersionMock).setTermsOfUseAndAccess(customTermsOfUseAndAccessMock);
         verify(commandContextMock).engine();
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"", " "})
+    public void execute_shouldThrowException_whenCustomTermsOfUseAreNullOrBlank(String invalidTerms) {
+        // Arrange
+        when(customTermsOfUseAndAccessMock.getTermsOfUse()).thenReturn(invalidTerms);
+        UpdateDatasetLicenseCommand sut = new UpdateDatasetLicenseCommand(dataverseRequestStub, datasetMock, customTermsOfUseAndAccessMock);
+        String expectedMessage = BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.customTermsOfUseNotProvided");
+
+        // Act & Assert
+        InvalidCommandArgumentsException exception = assertThrows(InvalidCommandArgumentsException.class, () -> sut.execute(commandContextMock));
+        assertEquals(expectedMessage, exception.getMessage());
     }
 }

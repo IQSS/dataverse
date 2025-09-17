@@ -1,9 +1,6 @@
 package edu.harvard.iq.dataverse.api.dto;
 
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
-import edu.harvard.iq.dataverse.license.License;
-
-import java.util.List;
 
 public class CustomTermsDTO {
     private String termsOfUse;
