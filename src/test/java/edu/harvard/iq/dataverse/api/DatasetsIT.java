@@ -7017,6 +7017,14 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         updateLicenseResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo(BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.customTermsOfUseNotProvided")));
+
+        // Test case 6: The operation should return a permissions error when invoked by a user with insufficient permissions.
+        createUser = UtilIT.createRandomUser();
+        apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        updateLicenseResponse = UtilIT.updateLicense(datasetId.toString(), "{ \"name\": \"CC BY 4.0\" }", apiToken);
+        updateLicenseResponse.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
     }
 
     private String getSuperuserToken() {
