@@ -600,6 +600,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #title {font-size:36px !important;line-height:1.1;font-weight:bold;margin-top:0px;margin-bottom:0px;}
 #author, #contact {display:block; margin-bottom:.5em;}
 
+/* #11824 */
 table.metadata {
   word-break: normal;
   overflow-wrap: anywhere;
