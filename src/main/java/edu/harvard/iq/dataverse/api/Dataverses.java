@@ -1777,7 +1777,7 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{identifier}/{type}/linkingDataverses")
-    public Response getLinkingDataverseList(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("searchTerm") String searchTerm, @PathParam("type") String type) {
+    public Response getLinkingDataverseList(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("searchTerm") String searchTerm, @QueryParam("alreadyLinking") boolean alreadyLinking, @PathParam("type") String type) {
 
         try {
 
@@ -1785,7 +1785,8 @@ public class Dataverses extends AbstractApiBean {
             List<Dataverse> dataversesForLinking = execCommand(new GetLinkingDataverseListCommand(
                     createDataverseRequest(getRequestUser(crc)),
                     dvObject,
-                    searchTerm
+                    searchTerm,
+                    alreadyLinking
             ));
 
             JsonArrayBuilder dvBuilder = Json.createArrayBuilder();

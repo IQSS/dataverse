@@ -836,6 +836,14 @@ public class DataversesIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", equalTo(0));
                 
+        //if you ask for already linked you should get one       
+        getLinkableDataverses = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, apiToken, dataverseAliasForLinking, true);
+        
+        getLinkableDataverses.prettyPrint();
+                getLinkableDataverses.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1));        
+                
         //set user api back to super user for cleanup
         UtilIT.setSuperuserStatus(username, Boolean.TRUE);
         

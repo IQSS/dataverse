@@ -25,12 +25,30 @@ public class GetLinkingDataverseListCommand extends AbstractCommand<List<Dataver
 
     private final String searchTerm;
     private final DvObject dvObject;
-
+    private final boolean alreadyLinked;
+    
     public GetLinkingDataverseListCommand(DataverseRequest aRequest, DvObject dvObject, String searchTerm) {
         super(aRequest, dvObject);
         this.searchTerm = searchTerm;
         this.dvObject = dvObject;
+        this.alreadyLinked = false;
     }
+    
+    public GetLinkingDataverseListCommand(DataverseRequest aRequest, DvObject dvObject, boolean alreadyLinked) {
+        super(aRequest, dvObject);
+        this.searchTerm = "";
+        this.dvObject = dvObject;
+        this.alreadyLinked = alreadyLinked;
+    }
+    
+    public GetLinkingDataverseListCommand(DataverseRequest aRequest, DvObject dvObject, String searchTerm, boolean alreadyLinked) {
+        super(aRequest, dvObject);
+        this.searchTerm = searchTerm;
+        this.dvObject = dvObject;
+        this.alreadyLinked = alreadyLinked;
+    }
+
+
 
     @Override
     public List<Dataverse> execute(CommandContext ctxt) throws CommandException {
@@ -57,14 +75,21 @@ public class GetLinkingDataverseListCommand extends AbstractCommand<List<Dataver
         } else {
             permToCheck = Permission.LinkDataverse;
         }
-
-        dataversesForLinking = ctxt.permissions().findPermittedCollections(getRequest(), authUser, permToCheck, searchParam);
-        //Don't bother with checking for already linked if there are none to be tested.
-        if(dataversesForLinking == null || dataversesForLinking.isEmpty()) {
-            return dataversesForLinking;
+        //dependin on the already linked boolean the command will return a list of Dataverses available for linking
+        // or a list of dataverses to which the object has already been linked - for the unlink function
+        if (!alreadyLinked) {
+            dataversesForLinking = ctxt.permissions().findPermittedCollections(getRequest(), authUser, permToCheck, searchParam);
+            //Don't bother with checking for already linked if there are none to be tested.
+            if (dataversesForLinking == null || dataversesForLinking.isEmpty()) {
+                return dataversesForLinking;
+            }
+            return ctxt.dataverses().removeUnlinkableDataverses(dataversesForLinking, dvObject);
+        } else {
+            if (dvObject instanceof Dataset) {;
+                return ctxt.dsLinking().findLinkingDataverses(dvObject.getId());
+            } else {
+                return ctxt.dvLinking().findLinkingDataverses(dvObject.getId());
+            }
         }
-        return ctxt.dataverses().removeUnlinkableDataverses(dataversesForLinking, dvObject);
-
     }
-
 }
