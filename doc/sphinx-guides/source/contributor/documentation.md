@@ -154,15 +154,21 @@ If the page is written in Markdown (.md), use this form:
 
 ### Links
 
-Getting links right with .rst files can be tricky.
+Getting links right can be tricky.
 
 #### Custom Titles
 
-You can use a custom title when linking to a document like this:
+In .rst files you can use a custom title when linking to a document like this:
 
     :doc:`Custom title </api/intro>`
 
 See also <https://docs.readthedocs.io/en/stable/guides/cross-referencing-with-sphinx.html#the-doc-role>
+
+In .md files, the same pattern can be used. Here's an example of using a custom title with a ref:
+
+    {ref}`Log in <account-log-in-options>`
+
+See also <https://myst-parser.readthedocs.io/en/v0.16.1/syntax/syntax.html#targets-and-cross-referencing>
 
 ### Images
 
