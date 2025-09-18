@@ -85,7 +85,7 @@ public class GetLinkingDataverseListCommand extends AbstractCommand<List<Dataver
             }
             return ctxt.dataverses().removeUnlinkableDataverses(dataversesForLinking, dvObject);
         } else {
-            if (dvObject instanceof Dataset) {;
+            if (dvObject instanceof Dataset) {
                 return ctxt.dsLinking().findLinkingDataverses(dvObject.getId());
             } else {
                 return ctxt.dvLinking().findLinkingDataverses(dvObject.getId());
