@@ -37,7 +37,7 @@ To edit files:
 
 ## 🧾 Step 5: Add or Edit Metadata
 
-- Go to the "Metadata" tab.
+- Go to the {ref}`Metadata <dataset-metadata>` tab.
 - Click "Add + Edit Metadata".
 - Click "Save" after making changes.
 
