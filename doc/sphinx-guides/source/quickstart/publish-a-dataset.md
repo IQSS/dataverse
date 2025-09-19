@@ -45,7 +45,7 @@ To edit files:
 
 Note: once published, easy deletion of a dataset is no longer possible.
 
-- Click "Publish Dataset" or "Submit for Review" (top right).
+- Click {ref}`Publish Dataset <publish-dataset>` or {ref}`Submit for Review <submit-for-review>` (top right).
 
  - Publish Dataset: Immediately publish a dataset. This option is only available on repositories without a review phase.
 
