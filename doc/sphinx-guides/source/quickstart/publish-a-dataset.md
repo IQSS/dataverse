@@ -18,7 +18,7 @@ Note: If you don’t see the "Add Data" button, contact your repository support 
 ## 📁 Step 3: Upload or Edit Files
 
 - In the draft dataset, scroll down to the "Files" tab.
-- Click "Upload Files".
+- Click {ref}`Upload Files <upload-files>`.
 - Choose "Select Files to Add" or drag and drop files.
 - (Optional) Use "Upload Folder" if available.
 - Click "Done" when upload is completed.
