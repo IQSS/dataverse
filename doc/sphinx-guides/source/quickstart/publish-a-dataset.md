@@ -8,10 +8,12 @@
 
 Note: If you don’t see the "Add Data" button, contact your repository support team.
 
-## 📝 Step 2: Enter Basic Metadata
+## 📝Step 2: Enter Basic Metadata
 
+- See {ref}`Adding a New Dataset <adding-new-dataset>` for required fields.
 - Fill in the required metadata fields.
 - Click "Save" at the bottom to save your draft dataset.
+
 
 ## 📁 Step 3: Upload or Edit Files
 
