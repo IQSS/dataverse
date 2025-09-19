@@ -55,7 +55,7 @@ Note: once published, easy deletion of a dataset is no longer possible.
 
 - Edit the dataset and publish a new version.
 - The DOI remains the same.
-- The Versioning tab tracks all changes:
+- The {ref}`Versioning tab <dataset-versioning>` tracks all changes:
 
   - Metadata changes = minor version.
 
