@@ -30,7 +30,7 @@ To edit files:
 
 ## 📜 Step 4: Set Terms of Use
 
-- Go to the "Terms" tab.
+- Go to the {ref}`Terms <dataset-terms>` tab.
 - Click "Edit Terms Requirements".
 - Choose a license from the dropdown or select Custom Dataset Terms.
 - Click "Save changes".
