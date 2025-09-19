@@ -4749,7 +4749,7 @@ public class UtilIT {
         }
         
         if (alreadyLinked){
-            if (optionalQueryParam.isEmpty()){
+            if (optionalQueryParam.isEmpty() && (searchTerm == null ||  searchTerm.isEmpty())){
                 optionalQueryParam = "?alreadyLinking=true";
             } else {
                 optionalQueryParam = optionalQueryParam + "&alreadyLinking=true";
