@@ -77,7 +77,7 @@ public class GetLinkingDataverseListCommand extends AbstractCommand<List<Dataver
         } else {
             permToCheck = Permission.LinkDataverse;
         }
-        //dependin on the already linked boolean the command will return a list of Dataverses available for linking
+        //depending on the already linked boolean the command will return a list of Dataverses available for linking
         // or a list of dataverses to which the object has already been linked - for the unlink function
         if (!alreadyLinked) {
             dataversesForLinking = ctxt.permissions().findPermittedCollections(getRequest(), authUser, permToCheck, searchParam);
@@ -98,7 +98,6 @@ public class GetLinkingDataverseListCommand extends AbstractCommand<List<Dataver
                     }
                     return dataversesAlreadyLinkedCanUnlink;
                 }
-                //this.permissionService.requestOn(req, res).has(Permission.LinkDataverse)
             } else {
                 dataversesAlreadyLinked = ctxt.dvLinking().findLinkingDataverses(dvObject.getId(), searchParam);
                 for (Dataverse dv : dataversesAlreadyLinked) {

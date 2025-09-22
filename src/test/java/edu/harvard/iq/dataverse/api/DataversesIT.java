@@ -844,6 +844,14 @@ public class DataversesIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", equalTo(1));  
                 
+        //if you ask for already linked you should get one  unless you don't have perms     
+        getLinkableDataverses = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, apiTokenThree, dataverseAliasForLinking, true);
+        
+        getLinkableDataverses.prettyPrint();
+                getLinkableDataverses.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(0));          
+                
         //if you ask for already linked you should get one unless there's a bad search terms     
         getLinkableDataverses = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, apiToken, "QQQBatmanSymbol", true);
         
