@@ -774,7 +774,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/dataverses/:persistentId/dataset/linkingDataverses?searchTerm=searchOn&persistentId=doi:10.5072/FK2/J8SJZB" 
 
-
+You may also add an optional "alreadyLinked=true" parameter to return collections which are already linked to the given Dataset or Dataverse Collection.
 
 List Featured Collections for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
