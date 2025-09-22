@@ -850,8 +850,8 @@ public class DataversesIT {
         getLinkableDataverses.prettyPrint();
                 getLinkableDataverses.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.size()", equalTo(0));          
-                
+                .body("data.size()", equalTo(0)); 
+                       
         //set user api back to super user for cleanup
         UtilIT.setSuperuserStatus(username, Boolean.TRUE);
         

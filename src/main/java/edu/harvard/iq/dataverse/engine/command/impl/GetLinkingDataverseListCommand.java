@@ -14,6 +14,8 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -85,11 +87,28 @@ public class GetLinkingDataverseListCommand extends AbstractCommand<List<Dataver
             }
             return ctxt.dataverses().removeUnlinkableDataverses(dataversesForLinking, dvObject);
         } else {
+            List<Dataverse> dataversesAlreadyLinked;
+            List<Dataverse> dataversesAlreadyLinkedCanUnlink = new ArrayList<>();
+            //new ArrayList<>();
             if (dvObject instanceof Dataset) {
-                return ctxt.dsLinking().findLinkingDataverses(dvObject.getId(), searchParam);
+                dataversesAlreadyLinked = ctxt.dsLinking().findLinkingDataverses(dvObject.getId(), searchParam);
+                for (Dataverse dv : dataversesAlreadyLinked) {
+                    if (ctxt.permissions().hasPermissionsFor(getRequest(), dv, EnumSet.of(Permission.LinkDataset))) {
+                        dataversesAlreadyLinkedCanUnlink.add(dv);
+                    }
+                    return dataversesAlreadyLinkedCanUnlink;
+                }
+                //this.permissionService.requestOn(req, res).has(Permission.LinkDataverse)
             } else {
-                return ctxt.dvLinking().findLinkingDataverses(dvObject.getId());
+                dataversesAlreadyLinked = ctxt.dvLinking().findLinkingDataverses(dvObject.getId(), searchParam);
+                for (Dataverse dv : dataversesAlreadyLinked) {
+                    if (ctxt.permissions().hasPermissionsFor(getRequest(), dv, EnumSet.of(Permission.LinkDataverse))) {
+                        dataversesAlreadyLinkedCanUnlink.add(dv);
+                    }
+                }
+                return dataversesAlreadyLinkedCanUnlink;
             }
+            return null;
         }
     }
 }

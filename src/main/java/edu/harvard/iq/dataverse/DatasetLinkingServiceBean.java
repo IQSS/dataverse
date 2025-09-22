@@ -69,8 +69,6 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
                 pattern1 = pattern;
                 pattern2 = pattern + " %";
             }
-            System.out.print("pattern1: " + pattern1);
-            System.out.print("pattern2: " + pattern2);
             TypedQuery<Long> typedQuery
                     = em.createNamedQuery("DatasetLinkingDataverse.findByDatasetIdAndLinkingDataverseName", Long.class)
                             .setParameter(1, datasetId).setParameter(2, "%dataverse").setParameter(3, pattern1)
