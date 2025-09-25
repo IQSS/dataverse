@@ -122,15 +122,15 @@ for BRANCH in "$@"; do
   # 6. Let's put together what tags we want added to this build run
   TAG_OPTIONS=""
   if ! (( IS_DEV )); then
-    TAG_OPTIONS="-Dconf.image=$CONFIG_IMAGE_REF -Ddocker.tags.revision=$NEXT_REV_TAG"
+    TAG_OPTIONS="-Dconf.image=$CONFIG_IMAGE_REF -Dconf.image.tag.1=$NEXT_REV_TAG"
     # In case of the current release, add the "latest" tag as well.
     if (( IS_CURRENT_RELEASE )); then
-      TAG_OPTIONS="$TAG_OPTIONS -Ddocker.tags.latest=latest"
+      TAG_OPTIONS="$TAG_OPTIONS -Dconf.image.tag.2=latest"
     fi
   else
     # shellcheck disable=SC2016
     UPCOMING_TAG=$( mvn initialize help:evaluate -Pct -f . -Dexpression=conf.image.tag -Dconf.image.tag='${app.image.version}-${conf.image.flavor}' -q -DforceStdout )
-    TAG_OPTIONS="-Ddocker.tags.upcoming=$UPCOMING_TAG"
+    TAG_OPTIONS="-Dconf.image.tag.1=$UPCOMING_TAG"
 
     # For the dev branch we only have rolling tags and can add them now already
     SUPPORTED_ROLLING_TAGS+=("[\"unstable\", \"$UPCOMING_TAG\"]")
@@ -145,9 +145,8 @@ for BRANCH in "$@"; do
       # shellcheck disable=SC2046
       mvn -Pct -f . deploy -Ddocker.noCache -Ddocker.platforms="${PLATFORMS}" \
         -Dapp.skipBuild -Dconf.image.base="${BASE_IMAGE_REF}" \
-        -Dmaven.main.skip -Dmaven.test.skip -Dmaven.war.skip \
-        -Ddocker.imagePropertyConfiguration=override $TAG_OPTIONS \
-        $( if (( DAMP_RUN )); then echo "-Ddocker.skip.push -Ddocker.skip.tag"; fi )
+        -Dmaven.main.skip -Dmaven.test.skip -Dmaven.war.skip $TAG_OPTIONS \
+        $( if (( DAMP_RUN )); then echo "-Ddocker.skip.push"; fi )
     else
       echo "Skipping Maven build as requested by DRY_RUN=1"
     fi
