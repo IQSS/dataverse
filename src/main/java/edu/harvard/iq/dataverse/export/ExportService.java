@@ -134,7 +134,8 @@ public class ExportService {
 
         Dataset dataset = datasetVersion.getDataset();
         InputStream exportInputStream = null;
-
+        Date lastExportDate = dataset.getLastExportTime();
+        
         if (datasetVersion.isDraft()) {
             // For drafts we create the export on the fly rather than caching.
             Exporter exporter = exporterMap.get(formatName);
@@ -156,8 +157,9 @@ public class ExportService {
                     return new ByteArrayInputStream(outputStream.toByteArray());
                 }
             }
-        } else {
+        } else if(lastExportDate!= null) {
             // for non-drafts (published versions) we try to locate an already existing, cached export
+            // unless the lastExportDate is null (either never created so there's no cached value, or was cleared because we want a new version)
             exportInputStream = getCachedExportFormat(dataset, formatName);
         }
 
@@ -168,7 +170,6 @@ public class ExportService {
         if (formatName.equals(DDIExporter.PROVIDER_NAME) && (exportInputStream != null)) {
             // We want ddi and there was a cached version
             LocalDate exportLocalDate = null;
-            Date lastExportDate = dataset.getLastExportTime();
             // if lastExportDate == null, assume it's not set because were exporting for the
             // first time now (e.g. during publish) and therefore no changes are needed
             if (lastExportDate != null) {
