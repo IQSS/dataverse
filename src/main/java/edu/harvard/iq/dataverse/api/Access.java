@@ -189,7 +189,7 @@ public class Access extends AbstractApiBean {
         
         if (gbrecs != true && df.isReleased()){
             // Write Guestbook record if not done previously and file is released
-            gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, getUser(crc));
+            gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, getRequestor(crc));
             guestbookResponseService.save(gbr);
             MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
             mdcLogService.logEntry(entry);
@@ -285,7 +285,7 @@ public class Access extends AbstractApiBean {
 
         if (gbrecs != true && df.isReleased()){
             // Write Guestbook record if not done previously and file is released
-            gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, getUser(crc));
+            gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, getRequestor(crc));
         }
 
         DownloadInfo dInfo = new DownloadInfo(df);
@@ -798,7 +798,7 @@ public class Access extends AbstractApiBean {
         String customZipServiceUrl = settingsService.getValueForKey(SettingsServiceBean.Key.CustomZipDownloadServiceUrl);
         boolean useCustomZipService = customZipServiceUrl != null; 
 
-        User user = getUser(crc);
+        User user = getRequestor(crc);
         
         Boolean getOrig = false;
         for (String key : uriInfo.getQueryParameters().keySet()) {
@@ -1733,12 +1733,12 @@ public class Access extends AbstractApiBean {
     // checkAuthorization is a convenience method; it calls the boolean method
     // isAccessAuthorized(), the actual workhorse, and throws a 403 exception if not.
     private void checkAuthorization(ContainerRequestContext crc, DataFile df) throws WebApplicationException {
-        User user = getUser(crc);
+        User user = getRequestor(crc);
         if (!isAccessAuthorized(user, df)) {
             throw new ForbiddenException();
         }        
     }
-    private User getUser(ContainerRequestContext crc) {
+    private User getRequestor(ContainerRequestContext crc) {
         User user = getRequestUser(crc);
         // CompoundAuthMechanism should find the user by API Key/Token, Workflow, etc. And for SPA the Bearer Token
         // For JSF check if CompoundAuthMechanism couldn't find the user then try to get it from the session
