@@ -564,7 +564,7 @@ public class UsersIT {
         collectionsResp = UtilIT.getUserPermittedCollections("fakeUser", superuserApiToken, "ViewUnpublishedDataset");
         assertEquals(500, collectionsResp.getStatusCode());
         collectionsResp = UtilIT.getUserPermittedCollections(usernameOfUser, superuserApiToken, "bad");
-        assertEquals(500, collectionsResp.getStatusCode());
+        assertEquals(BAD_REQUEST.getStatusCode(), collectionsResp.getStatusCode());
 
         // Testing adding an explicit permission/role to one dataverse
         collectionsResp = UtilIT.getUserPermittedCollections(usernameOfUser, userApiToken, "DownloadFile");
