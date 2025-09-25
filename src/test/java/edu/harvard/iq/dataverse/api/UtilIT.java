@@ -3859,6 +3859,35 @@ public class UtilIT {
             .put("/api/datasets/" + datasetId + "/metadata?replace=" + replace);
         return response;
     }
+    
+    static Response updateDatasetTermsAndAccess(String idOrPersistentIdOfDataset, String apiToken, String pathToJsonFile) {
+        String idInPath = idOrPersistentIdOfDataset;
+        String optionalQueryParam = "";
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentIdOfDataset;
+        }
+
+        String jsonIn = getDatasetTerms(pathToJsonFile);
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .body(jsonIn)
+                .put("/api/datasets/" + idInPath + "/editTerms" + optionalQueryParam);
+        return response;
+    }
+    
+    public static String getDatasetTerms(String pathToJsonFile) {
+        File datasetTermsJson = new File(pathToJsonFile);
+        try {
+            String datasetTermsAsJson = new String(Files.readAllBytes(Paths.get(datasetTermsJson.getAbsolutePath())));
+            return datasetTermsAsJson;
+        } catch (IOException ex) {
+            Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+
+    }
 
     static Response deleteDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody) {
         Response response = given()

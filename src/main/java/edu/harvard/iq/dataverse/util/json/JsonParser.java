@@ -377,6 +377,22 @@ public class JsonParser {
         }
         return enums;
     }
+    
+    public TermsOfUseAndAccess parseTermsOfUseAndAccess(JsonObject obj) throws JsonParseException {
+
+        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+
+        terms.setTermsOfUse(obj.getString("termsOfUse", null));
+        terms.setConfidentialityDeclaration(obj.getString("confidentialityDeclaration", null));
+        terms.setSpecialPermissions(obj.getString("specialPermissions", null));
+        terms.setRestrictions(obj.getString("restrictions", null));
+        terms.setCitationRequirements(obj.getString("citationRequirements", null));
+        terms.setDepositorRequirements(obj.getString("depositorRequirements", null));
+        terms.setConditions(obj.getString("conditions", null));
+        terms.setDisclaimer(obj.getString("disclaimer", null));
+
+        return terms;
+    }
 
     public DatasetVersion parseDatasetVersion(JsonObject obj) throws JsonParseException {
         return parseDatasetVersion(obj, new DatasetVersion());

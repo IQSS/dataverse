@@ -1,0 +1,20 @@
+{
+    "termsOfAccess": {
+        "fileAccessRequest": "true",
+        "termsOfAccessForRestrictedFiles": "For access to restriced files please see read me file",
+        "dataAccessPlace": "dataAccessPlace",
+        "originalArchive": "originalArchive",
+        "availabilityStatus": "availabilityStatus",
+        "contactForAccess": "contactForAccess",
+        "sizeOfCollection": "sizeOfCollection",
+        "studyCompletion": "studyCompletion",
+        "termsOfUse": "termsOfUse",
+        "confidentialityDeclaration": "confidentialityDeclaration",
+        "specialPermissions": "specialPermissions",
+        "restrictions": "restrictions",
+        "citationRequirements": "citationRequirements",
+        "depositorRequirements": "depositorRequirements",
+        "conditions": "conditions",
+        "disclaimer": "disclaimer"
+    }
+}

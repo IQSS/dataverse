@@ -3969,8 +3969,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     private String getData(String body) {
             return getDataAsJsonObject(body).toString();
     }
-
-    @Test
+    
+        @Test
     public void testFilesUnchangedAfterDatasetMetadataUpdate() throws IOException {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
@@ -4016,20 +4016,59 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 .body("data.latestVersion.files[0].label", equalTo("run.sh"))
                 .body("data.latestVersion.files[0].directoryLabel", equalTo("code"));
-        
+
         String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
         Response updateTitle = UtilIT.updateDatasetMetadataViaNative(datasetPid, pathToJsonFile, apiToken);
         updateTitle.prettyPrint();
         updateTitle.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         Response getDatasetJsonAfterUpdate = UtilIT.nativeGet(datasetId, apiToken);
         getDatasetJsonAfterUpdate.prettyPrint();
         getDatasetJsonAfterUpdate.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.latestVersion.files[0].label", equalTo("run.sh"))
                 .body("data.latestVersion.files[0].directoryLabel", equalTo("code"));
-        
+
+    }
+
+    @Test
+    public void testUpdateDatasetTerms() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+        Integer datasetId = JsonPath.from(createDataset.asString()).getInt("data.id");
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getDatasetJsonBeforeUpdate = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonBeforeUpdate.prettyPrint();
+        getDatasetJsonBeforeUpdate.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String pathToJsonFile = "src/test/resources/json/update-dataset-terms-access.json";
+        Response updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPid, apiToken, pathToJsonFile);
+        updateTerms.prettyPrint();
+        updateTerms.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
     }
 
 
