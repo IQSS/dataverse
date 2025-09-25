@@ -219,7 +219,10 @@ public class ExportService {
         if (exportInputStream != null) {
             return exportInputStream;
         }
-
+        // If the date was reset, any existing cached entries are invalid and need to be cleared
+        if(lastExportDate == null) {
+            clearAllCachedFormats(dataset);
+        }
         // if it doesn't exist, we'll try to run the export:
         exportFormat(dataset, formatName);
 
@@ -466,7 +469,7 @@ public class ExportService {
     }
 
     // This method checks if the metadata has already been exported in this
-    // format and cached on disk. If it has, it'll open the file and retun
+    // format and cached on disk. If it has, it'll open the file and return
     // the file input stream. If not, it'll return null.
     private InputStream getCachedExportFormat(Dataset dataset, String formatName) throws ExportException, IOException {
 
