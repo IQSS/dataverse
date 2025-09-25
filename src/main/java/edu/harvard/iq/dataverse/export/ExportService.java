@@ -162,6 +162,11 @@ public class ExportService {
             // unless the lastExportDate is null (either never created so there's no cached value, or was cleared because we want a new version)
             exportInputStream = getCachedExportFormat(dataset, formatName);
         }
+        
+        // If the date was reset, any existing cached entries are invalid and need to be cleared
+        if(lastExportDate == null) {
+            clearAllCachedFormats(dataset);
+        }
 
         // The DDI export is limited for restricted and actively embargoed files (no
         // data/file description sections).and when an embargo ends, we need to refresh
@@ -219,10 +224,7 @@ public class ExportService {
         if (exportInputStream != null) {
             return exportInputStream;
         }
-        // If the date was reset, any existing cached entries are invalid and need to be cleared
-        if(lastExportDate == null) {
-            clearAllCachedFormats(dataset);
-        }
+
         // if it doesn't exist, we'll try to run the export:
         exportFormat(dataset, formatName);
 
@@ -363,8 +365,12 @@ public class ExportService {
                     InternalExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion);
                     cacheExport(dataset, dataProvider, formatName, e);
                 }
-                // As with exportAll, we should update the lastexporttime for the dataset
-                dataset.setLastExportTime(new Timestamp(new Date().getTime()));
+                // If the lastExportTime is null, this is the first format being recreated and we should set it.
+                // The time should not be updated again since we rely on this date to indicate that all formats are no older than this date, e.g. in getExport(datasetVersion, format)
+                // Also note - this is only saved to the db if the caller merges the dataset into a transaction - see Datasets.exportDataset()
+                if(dataset.getLastExportTime() == null) {
+                    dataset.setLastExportTime(new Timestamp(new Date().getTime()));
+                }
             } else {
                 throw new ExportException("Exporter not found");
             }

@@ -126,6 +126,12 @@ public class Dataset extends DvObjectContainer {
     @OrderBy("id")
     private List<DataFile> files = new ArrayList<>();
 
+    // lastExportTime is really the oldest export time across all export formats
+    // It is truly the lastExportTime if an exportAllFormats succeeds, but if an export fails,
+    // or clearExportTimestamps was called and an exportAll was not done, the first format exported will set this
+    // and subsequent exports will not reset it.
+    // Knowing the oldest export time is used to determine if formats need to be refreshed, e.g. due to embargos expiring which  
+    // then allows more metadata to be included.
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date lastExportTime;
 
