@@ -284,6 +284,9 @@ public class Datasets extends AbstractApiBean {
                 mdcLogService.logEntry(entry);
             }
 
+            // If the lastExportTime was updated, this assures it is persisted to the db
+            dataset = datasetService.merge(dataset);
+            
             return Response.ok()
                     .entity(is)
                     .type(mediaType).
