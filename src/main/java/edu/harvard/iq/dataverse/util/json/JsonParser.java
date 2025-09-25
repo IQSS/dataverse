@@ -379,19 +379,19 @@ public class JsonParser {
     }
     
     public TermsOfUseAndAccess parseTermsOfUseAndAccess(JsonObject obj) throws JsonParseException {
+        JsonObject terms = obj.getJsonObject("termsOfAccess");
+        TermsOfUseAndAccess toaa = new TermsOfUseAndAccess();
 
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        toaa.setTermsOfUse(terms.getString("termsOfUse", null));
+        toaa.setConfidentialityDeclaration(terms.getString("confidentialityDeclaration", null));
+        toaa.setSpecialPermissions(terms.getString("specialPermissions", null));
+        toaa.setRestrictions(terms.getString("restrictions", null));
+        toaa.setCitationRequirements(terms.getString("citationRequirements", null));
+        toaa.setDepositorRequirements(terms.getString("depositorRequirements", null));
+        toaa.setConditions(terms.getString("conditions", null));
+        toaa.setDisclaimer(terms.getString("disclaimer", null));
 
-        terms.setTermsOfUse(obj.getString("termsOfUse", null));
-        terms.setConfidentialityDeclaration(obj.getString("confidentialityDeclaration", null));
-        terms.setSpecialPermissions(obj.getString("specialPermissions", null));
-        terms.setRestrictions(obj.getString("restrictions", null));
-        terms.setCitationRequirements(obj.getString("citationRequirements", null));
-        terms.setDepositorRequirements(obj.getString("depositorRequirements", null));
-        terms.setConditions(obj.getString("conditions", null));
-        terms.setDisclaimer(obj.getString("disclaimer", null));
-
-        return terms;
+        return toaa;
     }
 
     public DatasetVersion parseDatasetVersion(JsonObject obj) throws JsonParseException {
