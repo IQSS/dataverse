@@ -8199,7 +8199,7 @@ Parameters:
 ``per_page`` Number of results returned per page.
 
 MyData Collection List
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 The MyData Collection List API is used to get a list of the collections an authenticated user can create a Dataset in.
 Param userIdentifier={userName} is used by a superuser to get the collections for a specific user.
