@@ -230,6 +230,26 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    public void testAddFieldsByType_requestFileAccess_nullRequestor() {
+        userNotification.setType(UserNotification.Type.REQUESTFILEACCESS);
+        userNotification.setObjectId(1L);
+        userNotification.setRequestor(null);
+
+        DataFile dataFile = mock(DataFile.class);
+        when(dataFile.getId()).thenReturn(1L);
+        when(dataFile.getDisplayName()).thenReturn("Test File");
+        when(dataFileService.find(1L)).thenReturn(dataFile);
+
+        sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
+
+        verify(notificationJson, never()).add(eq(KEY_REQUESTOR_FIRST_NAME), anyString());
+        verify(notificationJson, never()).add(eq(KEY_REQUESTOR_LAST_NAME), anyString());
+        verify(notificationJson, never()).add(eq(KEY_REQUESTOR_EMAIL), anyString());
+        verify(notificationJson).add(KEY_DATAFILE_ID, Long.valueOf("1"));
+        verify(notificationJson).add(KEY_DATAFILE_DISPLAY_NAME, "Test File");
+    }
+
+    @Test
     public void testAddFieldsByType_grantFileAccess() {
         userNotification.setType(UserNotification.Type.GRANTFILEACCESS);
         userNotification.setObjectId(1L);

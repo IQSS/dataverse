@@ -608,7 +608,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             datasetDirectoryPath = Paths.get(getDatasetDirectory());
         }
 
-        if (datasetDirectoryPath == null) {
+          if (datasetDirectoryPath == null) {
             throw new IOException("Could not determine the filesystem directory of the parent dataset.");
         }
         

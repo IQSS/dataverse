@@ -1,0 +1,44 @@
+--- a/pom.xml
++++ b/pom.xml
+@@ -1119,6 +1119,9 @@
+                     Note: During maintenance we will use the app.image.version setting from the DV parent POM.
+                  -->
+                 <app.image.tag>unstable</app.image.tag>
++                <!-- Additional tags. Ignored by default (empty), used by maintenance action. -->
++                <app.image.tag.1></app.image.tag.1>
++                <app.image.tag.2></app.image.tag.2>
+                 <app.skipBuild>false</app.skipBuild>
+                 <app.skipDeploy>false</app.skipDeploy>
+                 
+@@ -1133,6 +1136,9 @@
+                 <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
+                 <!-- By default, we use the same tag as the app image for development purposes. Same rules as for app.image.tag apply! -->
+                 <conf.image.tag>${app.image.tag}</conf.image.tag>
++                <!-- Additional tags. Ignored by default (empty), used by maintenance action. -->
++                <conf.image.tag.1></conf.image.tag.1>
++                <conf.image.tag.2></conf.image.tag.2>
+                 <conf.image.flavor>noble</conf.image.flavor>
+                 <conf.image.base>ubuntu:${conf.image.flavor}</conf.image.base>
+                 <conf.skipBuild>false</conf.skipBuild>
+@@ -1191,6 +1197,10 @@
+                                             <!-- Workaround for fabric8io/docker-maven-plugin#1865 -->
+                                             <APP_IMAGE_VERSION>${app.image.version}</APP_IMAGE_VERSION>
+                                         </args>
++                                        <tags>
++                                            <tag>${app.image.tag.1}</tag>
++                                            <tag>${app.image.tag.2}</tag>
++                                        </tags>
+                                         <filter>@</filter>
+                                         <assembly>
+                                             <descriptor>assembly.xml</descriptor>
+@@ -1226,6 +1236,10 @@
+                                             <!-- Workaround for fabric8io/docker-maven-plugin#1865 -->
+                                             <APP_IMAGE_VERSION>${app.image.version}</APP_IMAGE_VERSION>
+                                         </args>
++                                        <tags>
++                                            <tag>${conf.image.tag.1}</tag>
++                                            <tag>${conf.image.tag.2}</tag>
++                                        </tags>
+                                         <filter>@</filter>
+                                         <assembly>
+                                             <descriptor>${project.basedir}/modules/container-configbaker/assembly.xml</descriptor>
