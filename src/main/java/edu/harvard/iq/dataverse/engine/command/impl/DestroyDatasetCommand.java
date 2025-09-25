@@ -6,11 +6,17 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
+import edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIO;
+import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import static edu.harvard.iq.dataverse.dataset.DatasetUtil.deleteDatasetLogo;
+import static java.text.MessageFormat.format;
+
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -20,6 +26,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.search.IndexResponse;
+
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -29,7 +37,7 @@ import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import java.io.IOException;
-import java.util.concurrent.Future;
+
 import org.apache.solr.client.solrj.SolrServerException;
 
 /**
@@ -49,12 +57,13 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
     
     private List<String> datasetAndFileSolrIdsToDelete; 
     
-    private Dataverse toReIndex;
+    private List<Dataverse> toReIndex;
 
     public DestroyDatasetCommand(Dataset doomed, DataverseRequest aRequest) {
         super(aRequest, doomed);
         this.doomed = doomed;
         datasetAndFileSolrIdsToDelete = new ArrayList<>();
+        toReIndex = new ArrayList<>();
     }
 
     @Override
@@ -96,8 +105,8 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         // ROLES
         for (DataverseRole ra : ctxt.roles().findByOwnerId(managedDoomed.getId())) {
             ctxt.em().remove(ra);
-        }   
-        
+        }
+
         if (!managedDoomed.isHarvested()) {
             //also, lets delete the uploaded thumbnails!
             deleteDatasetLogo(managedDoomed);
@@ -115,8 +124,35 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
                 }
             }
         }
-        
-        toReIndex = managedDoomed.getOwner();
+
+        // CACHED EXPORTS
+        var exportService = ExportService.getInstance();
+        try {
+            exportService.clearAllCachedFormats(managedDoomed);
+        }
+        catch (IOException e) {
+            var msg = format("Failed to delete cached exports of {0}: {1} ", managedDoomed.getIdentifier(), e.getClass().getSimpleName());
+            logger.log(Level.WARNING, msg, e.getMessage());
+        }
+
+        // DIRECTORY
+        try {
+            var storageIO = DataAccess.getStorageIO(managedDoomed);
+            if (storageIO instanceof FileAccessIO<Dataset> || storageIO instanceof GlobusOverlayAccessIO<Dataset>) {
+                Files.delete(storageIO.getAuxObjectAsPath(".").getParent());
+            }
+        }
+        catch (IOException e) {
+            var msg = format("Failed to delete dataset directory of {0}: {1} ", managedDoomed.getIdentifier(), e.getClass().getSimpleName());
+            logger.log(Level.WARNING, msg, e.getMessage());
+        }
+
+        toReIndex.add(managedDoomed.getOwner());
+        toReIndex.addAll(managedDoomed.getOwner().getOwners());
+        managedDoomed.getDatasetLinkingDataverses().forEach(dld -> {
+            toReIndex.add(dld.getLinkingDataverse());
+            toReIndex.addAll(dld.getLinkingDataverse().getOwners());
+        });
 
         // add potential Solr IDs of datasets to list for deletion
         String solrIdOfPublishedDatasetVersion = IndexServiceBean.solrDocIdentifierDataset + managedDoomed.getId();
@@ -145,13 +181,15 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         logger.log(Level.FINE, "Result of attempt to delete dataset and file IDs from the search index: {0}", resultOfSolrDeletionAttempt.getMessage());
 
         // reindex
-        try {
-            ctxt.index().indexDataverse(toReIndex);                   
-        } catch (IOException | SolrServerException e) {    
-            String failureLogText = "Post-destroy dataset indexing of the owning dataverse failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + toReIndex.getId().toString();
-            failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText,  toReIndex);
-            retVal = false;
+        for (Dataverse dv : toReIndex) {
+            try {
+                    ctxt.index().indexDataverse(dv);
+            } catch (IOException | SolrServerException e) {
+                String failureLogText = "Post-destroy dataset indexing of an owning or linking dataverse failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + dv.getId().toString();
+                failureLogText += "\r\n" + e.getLocalizedMessage();
+                LoggingUtil.writeOnSuccessFailureLog(this, failureLogText,  dv);
+                retVal = false;
+            }
         }
         
         return retVal;

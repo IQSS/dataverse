@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceB
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
@@ -255,6 +256,11 @@ public class TestCommandContext implements CommandContext {
 
     @Override
     public DatasetFieldsValidator datasetFieldsValidator() {
+        return null;
+    }
+
+    @Override
+    public LicenseServiceBean licenses() {
         return null;
     }
 

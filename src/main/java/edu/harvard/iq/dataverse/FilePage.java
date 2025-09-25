@@ -1138,8 +1138,10 @@ public class FilePage implements java.io.Serializable {
     public String preview(ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
-        if (fileMetadata.getDatasetVersion().isDraft() || fileMetadata.getDatasetVersion().isDeaccessioned() || (fileMetadata.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fileMetadata))) {
-            apiToken=authService.getValidApiTokenForUser(user);
+        if (fileMetadata.getDatasetVersion().isDraft() || (fileMetadata.getDataFile().isRestricted())
+                || fileMetadata.getDatasetVersion().isDeaccessioned() || (FileUtil.isActivelyEmbargoed(fileMetadata))
+                || (FileUtil.isRetentionExpired(fileMetadata))) {
+            apiToken = authService.getValidApiTokenForUser(user);
         }
         if(externalTool == null){
             return "";
