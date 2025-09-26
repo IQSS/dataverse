@@ -21,6 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import edu.harvard.iq.dataverse.util.template.TemplateBuilder;
+
 import jakarta.json.*;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -477,6 +478,27 @@ public class JsonPrinterTest {
         
         assertNotNull(result);
         assertEquals(sut, result);
+    }
+
+    @Test
+    public void testJsonArrayDataverseCollections() {
+        List<Dataverse> collections = new ArrayList<>();
+        for (long i = 0; i < 10; i++) {
+            Dataverse dv = new Dataverse();
+            dv.setAlias("alias" + i);
+            dv.setName("Alias" + i);
+            dv.setId(i);
+            collections.add(dv);
+        }
+        JsonObjectBuilder job = JsonPrinter.jsonArray(collections);
+        JsonObject result = job.build();
+        assertNotNull(result);
+        assertEquals(10, result.getInt("count"));
+        JsonArray items = result.getJsonArray("items");
+        JsonObject item6 = items.getJsonObject(6);
+        assertEquals(6, item6.getInt("id"));
+        assertEquals("Alias6", item6.getString("name"));
+        assertEquals("alias6", item6.getString("alias"));
     }
 
     @Test
