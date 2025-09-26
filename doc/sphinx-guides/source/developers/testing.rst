@@ -169,9 +169,9 @@ different people. For our purposes, an integration test can have two flavors:
 Running the Full API Test Suite Using EC2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Prerequisite:** To run the API test suite in an EC2 instance you should first follow the steps in the :doc:`deployment` section to get set up with the AWS binary to launch EC2 instances. If you're here because you just want to spin up a branch, you'll still want to follow the AWS deployment setup steps, but may find the `ec2-create README.md <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/blob/master/ec2/README.md>`_ Quick Start section helpful.
+**Prerequisite:** To run the API test suite in an EC2 instance you should first follow the steps in the :doc:`deployment` section to get set up with the AWS binary to launch EC2 instances. If you're here because you just want to spin up a branch, you'll still want to follow the AWS deployment setup steps, but may find the `ec2-create README.md <https://github.com/gdcc/dataverse-ansible/blob/master/ec2/README.md>`_ Quick Start section helpful.
 
-You may always retrieve a current copy of the ec2-create-instance.sh script and accompanying group_var.yml file from the `dataverse-ansible repo <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/>`_. Since we want to run the test suite, let's grab the group_vars used by Jenkins:
+You may always retrieve a current copy of the ec2-create-instance.sh script and accompanying group_var.yml file from the `dataverse-ansible repo <https://github.com/gdcc/dataverse-ansible/>`_. Since we want to run the test suite, let's grab the group_vars used by Jenkins:
 
 - `ec2-create-instance.sh <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/ec2/ec2-create-instance.sh>`_
 - `jenkins.yml <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/tests/group_vars/jenkins.yml>`_
@@ -184,7 +184,7 @@ Edit ``jenkins.yml`` to set the desired GitHub repo and branch, and to adjust an
 - ``dataverse.unittests.enabled: true``
 - ``dataverse.sampledata.enabled: true``
 
-If you wish, you may pass the script a ``-l`` flag with a local relative path in which the script will `copy various logs <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/blob/master/ec2/ec2-create-instance.sh#L185>`_ at the end of the test suite for your review.
+If you wish, you may pass the script a ``-l`` flag with a local relative path in which the script will `copy various logs <https://github.com/gdcc/dataverse-ansible/blob/master/ec2/ec2-create-instance.sh#L185>`_ at the end of the test suite for your review.
 
 Finally, run the script:
 
@@ -526,7 +526,7 @@ Browser-Based Testing
 Installation Testing
 ~~~~~~~~~~~~~~~~~~~~
 
-- Work with @donsizemore to automate testing of https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible
+- Work with @donsizemore to automate testing of https://github.com/gdcc/dataverse-ansible
 
 Future Work on Load/Performance Testing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -538,4 +538,4 @@ Future Work on Load/Performance Testing
 Future Work on Accessibility Testing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Using https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible and hooks available from accessibility testing tools, automate the running of accessibility tools on PRs so that developers will receive quicker feedback on proposed code changes that reduce the accessibility of the application.
+- Using https://github.com/gdcc/dataverse-ansible and hooks available from accessibility testing tools, automate the running of accessibility tools on PRs so that developers will receive quicker feedback on proposed code changes that reduce the accessibility of the application.
