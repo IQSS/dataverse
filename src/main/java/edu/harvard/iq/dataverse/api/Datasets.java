@@ -1172,7 +1172,6 @@ public class Datasets extends AbstractApiBean {
             
             toua.setDatasetVersion(dataset.getLatestVersion());
             
-            
             DatasetVersion updatedVersion = execCommand(new UpdateDatasetTermsOfUseCommand(dataset, toua, createDataverseRequest(getRequestUser(crc)))).getLatestVersion();
 
             return ok(json(updatedVersion, true));

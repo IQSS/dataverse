@@ -4069,6 +4069,41 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         updateTerms.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        //Add another dataset with restricted files in order to get the access info to show up
+        
+        
+         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId2 = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String datasetPersistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+
+        updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPersistentId, apiToken, pathToJsonFile);
+        updateTerms.prettyPrint();
+        updateTerms.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        // Upload file
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId2), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String fileId = JsonPath.from(uploadResponse.body().asString()).getString("data.files[0].dataFile.id");
+        
+        updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPersistentId, apiToken, pathToJsonFile);
+        updateTerms.prettyPrint();
+        updateTerms.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+       // Restrict file
+        Response restrictFileResponse = UtilIT.restrictFile(fileId, true, apiToken);
+        restrictFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Publish dataset version
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+        publishDatasetResponse.prettyPrint();
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+
     }
 
 

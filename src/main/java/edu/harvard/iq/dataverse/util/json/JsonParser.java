@@ -379,9 +379,10 @@ public class JsonParser {
     }
     
     public TermsOfUseAndAccess parseTermsOfUseAndAccess(JsonObject obj) throws JsonParseException {
-        JsonObject terms = obj.getJsonObject("termsOfAccess");
+        JsonObject terms = obj.getJsonObject("termsOfUseAndAccess");
         TermsOfUseAndAccess toaa = new TermsOfUseAndAccess();
-
+        toaa.setFileAccessRequest(terms.getBoolean("fileAccessRequest", false));
+        toaa.setTermsOfAccess(terms.getString("termsOfAccess", null));
         toaa.setTermsOfUse(terms.getString("termsOfUse", null));
         toaa.setConfidentialityDeclaration(terms.getString("confidentialityDeclaration", null));
         toaa.setSpecialPermissions(terms.getString("specialPermissions", null));
@@ -390,6 +391,13 @@ public class JsonParser {
         toaa.setDepositorRequirements(terms.getString("depositorRequirements", null));
         toaa.setConditions(terms.getString("conditions", null));
         toaa.setDisclaimer(terms.getString("disclaimer", null));
+        toaa.setDataAccessPlace(terms.getString("dataAccessPlace", null));
+        toaa.setOriginalArchive(terms.getString("originalArchive", null));
+        toaa.setAvailabilityStatus(terms.getString("availabilityStatus", null)); 
+        toaa.setContactForAccess(terms.getString("contactForAccess", null));
+        toaa.setSizeOfCollection(terms.getString("sizeOfCollection", null));
+        toaa.setStudyCompletion(terms.getString("studyCompletion", null));
+        toaa.setConfidentialityDeclaration(terms.getString("confidentialityDeclaration", null));
 
         return toaa;
     }

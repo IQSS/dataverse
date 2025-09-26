@@ -48,11 +48,6 @@ public class UpdateDatasetTermsOfUseCommand  extends AbstractDatasetCommand<Data
          
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
         termsOfUseAndAccess.setDatasetVersion(datasetVersion);
-        System.out.print("From input....");
-        System.out.print(termsOfUseAndAccess.getConfidentialityDeclaration());
-        System.out.print("From DatasetVersion....");
-        System.out.print(datasetVersion.getTermsOfUseAndAccess().getConfidentialityDeclaration());
-        System.out.print("$$$$$$$$$$$$$$$$$$$$$$$$");
         return ctxt.engine().submit(updateDatasetVersionCommand == null ? new UpdateDatasetVersionCommand(this.dataset, getRequest()) : updateDatasetVersionCommand);
     }
     
