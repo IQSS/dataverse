@@ -216,22 +216,27 @@ Storage Strategy Recommendations
 Based on both file size and volume considerations, here are some general recommendations:
 
 1. **For research projects with moderate data (< 2GB files, < 100s of files/dataset):**
+
    * Default File Store is sufficient
    * Consider setting file count and size limits (see below)
 
 2. **For projects with larger files (GBs to TBs) and/or more files per dataset (100s to 1000s):**
-   * Configure an S3 store witj direct upload/download
+
+   * Configure an S3 store with direct upload/download
    * Set appropriate ingest size limits
 
 3. **For projects with very large files or sensitive data that should remain in place:**
+
    * Use the Remote Store
 
 4. **For high-performance computing environments or very large datasets (TBs+):**
+
    * Use a Globus Store
    * Work with users to size files appropriate to the underlying storage
    * Consider Globus over S3 when normal upload/download options (via the UI/API) are desired along with Globus transfer
 
 5. **For Petascale datasets, or extreme numbers of files:**
+
    * Consider a Remote Store and referencing a single URL/Globus endpoint for the entire dataset
 
 
