@@ -71,6 +71,33 @@ public enum FeatureFlags {
      * @since Dataverse @6.7:
      */
     API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH("api-bearer-auth-use-builtin-user-on-id-match"),
+
+    /**
+     * Allows the use of a Shibboleth user account when an identity match is found during API bearer authentication.
+     * This feature enables automatic association of an incoming IdP identity with an existing Shibboleth user account,
+     * bypassing the need for additional user registration steps.
+     *
+     * <p>The value of this feature flag is only considered when the feature flag
+     * {@link #API_BEARER_AUTH} is enabled.</p>
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-use-shib-user-on-id-match"
+     * @since Dataverse @TODO:
+     */
+    API_BEARER_AUTH_USE_SHIB_USER_ON_ID_MATCH("api-bearer-auth-use-shib-user-on-id-match"),
+
+    /**
+     * Allows the use of an OAuth user account (GitHub, Google, or ORCID) when an identity match is found during API bearer authentication.
+     * This feature enables automatic association of an incoming IdP identity with an existing OAuth user account,
+     * bypassing the need for additional user registration steps.
+     *
+     * <p>The value of this feature flag is only considered when the feature flag
+     * {@link #API_BEARER_AUTH} is enabled.</p>
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-use-oauth-user-on-id-match"
+     * @since Dataverse 6.8:
+     */
+    API_BEARER_AUTH_USE_OAUTH_USER_ON_ID_MATCH("api-bearer-auth-use-oauth-user-on-id-match"),
+
     /**
      * For published (public) objects, don't use a join when searching Solr. 
      * Experimental! Requires a reindex with the following feature flag enabled,
@@ -152,6 +179,31 @@ public enum FeatureFlags {
      */
     VERSION_NOTE("enable-version-note"),
     /**
+     * This flag allows an instance to use the new InCommon Shibboleth 
+     * implementation that relies on MDQ protocol for the federation metadata
+     * and the WayFinder service for the login page. As opposed to the default 
+     * behavior, that relies on the "XML"-type metadata and DiscoFeed 
+     * respectively. The majority of the Shibboleth-using instances that do not 
+     * rely on InCommon do not need this feature and will continue using the old
+     * implementation.
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.shibboleth-use-wayfinder"
+     * @since Dataverse 6.7
+     */
+    SHIBBOLETH_USE_WAYFINDER("shibboleth-use-wayfinder"),
+    /**
+     * Whether the Dataverse instance uses the "XML"-type metadata and the idp 
+     * javascript-based login page, or MDQ and WayFinder in the new implementation, 
+     * it needs to make network calls to the locally-running shibd service. 
+     * The default behavior is to use the address configured via the siteUrl 
+     * setting. There are however situations (firewalls, etc.) where localhost 
+     * would be preferable.
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.shibboleth-use-localhost"
+     * @since Dataverse 6.7
+     */
+    SHIBBOLETH_USE_LOCALHOST("shibboleth-use-localhost"),
+    /**
      * This flag adds a permission check to assure that the user calling the
      * /api/localcontexts/datasets/{id} can edit the dataset with that id. This is
      * currently the only use case - see
@@ -166,7 +218,18 @@ public enum FeatureFlags {
      * @since Dataverse 6.5
      */
     ADD_LOCAL_CONTEXTS_PERMISSION_CHECK("add-local-contexts-permission-check"),
-
+    
+    /**
+     * This flag turns on creation of a monthly log file that tracks when requests for
+     * datasets/files with PIDs fail due to the PIDs not existing. This helps in catching
+     * cases where the DOI of a draft dataset has been cited, etc.
+     * 
+     * @apiNote Raise flag by setting
+     *          "dataverse.feature.enable-pid-failure-log"
+     * @since Dataverse 6.8
+     */
+    ENABLE_PID_FAILURE_LOG("enable-pid-failure-log"),
+    
     ;
     
     final String flag;

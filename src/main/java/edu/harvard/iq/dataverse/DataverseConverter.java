@@ -13,29 +13,19 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.convert.Converter;
 import jakarta.faces.convert.FacesConverter;
 
-import java.util.logging.Logger;
-
 /**
  *
  * @author skraffmiller
  */
 @FacesConverter("dataverseConverter")
 public class DataverseConverter implements Converter {
-    private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
-
     
     //@EJB
     DataverseServiceBean dataverseService = CDI.current().select(DataverseServiceBean.class).get();
 
     @Override
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
-        if (submittedValue == null || !submittedValue.matches("[0-9]+")) {
-            logger.fine("Submitted value is not a host dataverse number but: " + submittedValue);
-            return CDI.current().select(DatasetPage.class).get().getSelectedHostDataverse();
-        }
-        else {
-            return dataverseService.find(Long.valueOf(submittedValue));
-        }
+        return dataverseService.find(new Long(submittedValue));
         //return dataverseService.findByAlias(submittedValue);
     }
 

@@ -1,0 +1,57 @@
+{
+  "@context": {
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "isothes": "http://purl.org/iso25964/skos-thes#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "dct": "http://purl.org/dc/terms/",
+    "dc11": "http://purl.org/dc/elements/1.1/",
+    "uri": "@id",
+    "type": "@type",
+    "lang": "@language",
+    "value": "@value",
+    "graph": "@graph",
+    "label": "rdfs:label",
+    "prefLabel": "skos:prefLabel",
+    "altLabel": "skos:altLabel",
+    "hiddenLabel": "skos:hiddenLabel",
+    "broader": "skos:broader",
+    "narrower": "skos:narrower",
+    "related": "skos:related",
+    "inScheme": "skos:inScheme",
+    "exactMatch": "skos:exactMatch",
+    "closeMatch": "skos:closeMatch",
+    "broadMatch": "skos:broadMatch",
+    "narrowMatch": "skos:narrowMatch",
+    "relatedMatch": "skos:relatedMatch"
+  },
+  "graph": [
+    {
+      "uri": "https://vocabularies.cessda.eu/vocabulary/TopicClassification?v=4.2",
+      "type": "skos:ConceptScheme",
+      "skos:notation": "TopicClassification"
+    },
+    {
+      "uri": "https://vocabularies.cessda.eu/vocabulary/TopicClassification?v=4.2#TradeIndustryAndMarkets",
+      "narrower": {
+        "uri": "https://vocabularies.cessda.eu/vocabulary/TopicClassification?v=4.2#TradeIndustryAndMarkets.AgricultureAndRuralIndustry"
+      }
+    },
+    {
+      "uri": "https://vocabularies.cessda.eu/vocabulary/TopicClassification?v=4.2#TradeIndustryAndMarkets.AgricultureAndRuralIndustry",
+      "type": "skos:Concept",
+      "skos:definition": {
+        "lang": "en",
+        "value": "Data on agricultural production and all rural industries which include, for example, fisheries and forestry."
+      },
+      "inScheme": {
+        "uri": "https://vocabularies.cessda.eu/vocabulary/TopicClassification?v=4.2"
+      },
+      "skos:notation": "TradeIndustryAndMarkets.AgricultureAndRuralIndustry",
+      "prefLabel": {
+        "lang": "en",
+        "value": "Agriculture and rural industry"
+      }
+    }
+  ]
+}

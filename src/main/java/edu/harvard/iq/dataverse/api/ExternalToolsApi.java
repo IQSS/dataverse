@@ -20,6 +20,7 @@ public class ExternalToolsApi extends AbstractApiBean {
 
     @GET
     public Response getExternalTools() {
+        //ToDo - allow filtering by scope, tool type, file content type, etc?
         return externalTools.getExternalTools();
     }
 

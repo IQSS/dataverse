@@ -159,6 +159,8 @@ Rather than or in addition to specifying individual Identity Providers (see :ref
 
 For example, in the United States, you would register your Dataverse installation with `InCommon <https://incommon.org>`_. For a list of federations around the world, see `REFEDS (the Research and Education FEDerations group) <https://refeds.org/federations>`_. The details of how to register with an identity federation are out of scope for this document.
 
+If you are planning to use InCommon, please note that ``shibd`` needs to be configured to use the new MDQ protocol and WayFinder `service <https://spaces.at.internet2.edu/display/federation/incommon-wayfinder-announcement>`_ `announced <https://lists.incommon.org/sympa/arc/inc-ops-notifications/2024-04/msg00000.html>`_ `by <https://incommon.org/news/incommon-federation-service-enhancements/>`_ InCommon. The sample ``shibboleth2.xml`` provided already contains commented-out sections pre-configured to work with this new InCommon framework. Please see https://spaces.at.internet2.edu/display/MDQ/how-to-configure-shib-sp-to-use-mdq and https://spaces.at.internet2.edu/display/federation/how-to-configure-service-to-use-wayfinder for more information. You will also need to set the feature flag ``dataverse.feature.shibboleth-use-wayfinder=true`` (see :ref:`feature-flags`). 
+
 For a successful login to Dataverse, certain :ref:`shibboleth-attributes` must be released by the Identity Provider (IdP). Otherwise, in the federation context, users will have the frustrating experience of selecting their IdP in the list but then getting an error like ``Problem with Identity Provider – The SAML assertion for "eppn" was null``. We definitely want to prevent this! There's even some guidance about this problem in the User Guide under the heading :ref:`fix-shib-login` that links back here.
 
 For InCommon, a decent strategy for ensuring that IdPs release the necessary attributes is to have both the SP (your Dataverse installation) and the IdP (there are many of these around the world) join the Research & Scholarship (R&S) category. The `R&S website <https://incommon.org/federation/research-and-scholarship/>`_ explains the R&S dream well:
@@ -259,13 +261,22 @@ On CentOS 6:
 
 ``chkconfig shibd on``
 
-Verify DiscoFeed and Metadata URLs
-----------------------------------
+Verify the Metadata URL
+-----------------------
 
-As a sanity check, visit the following URLs (substituting your hostname) to make sure you see JSON and XML:
+Substitute your hostname and verify that you are seeing your service provider metadata in XML format:
+
+- https://dataverse.example.edu/Shibboleth.sso/Metadata
+
+
+If Your Instance is Using Discofeed: Verify DiscoFeed URL
+---------------------------------------------------------
+
+As another sanity check, substitute your hostname and make sure you see well-formed JSON:
 
 - https://dataverse.example.edu/Shibboleth.sso/DiscoFeed
-- https://dataverse.example.edu/Shibboleth.sso/Metadata
+
+(Skip this step if you'll be using Shibboleth as a registered member of InCommon federation, since the DiscoFeed will not be part of the workflow.)
 
 The JSON in ``DiscoFeed`` comes from the list of IdPs you configured in the ``MetadataProvider`` section of ``shibboleth2.xml`` and will form a dropdown list on the Login Page.
 
