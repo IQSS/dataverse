@@ -36,9 +36,9 @@ version of the file.
 Benefits: 
 
 - This option requires no external services and can potentially handle files into the gigabyte (GB) size range. For smaller institutions,
-and in disciplines where datasets do not have more than a few hundred files and files are not too large, this can be the simplest option.
+  and in disciplines where datasets do not have more than a few hundred files and files are not too large, this can be the simplest option.
 - Unzipping of zip archives can be simpler for users than having to upload many individual files and was, at one time, the only way to 
-preserve file path names when uploading.
+  preserve file path names when uploading.
 
 Challenges: In general file storage is not a good option for larger data sizes - both in terms of file size and number of files. Contributing factors include:
  
@@ -65,18 +65,18 @@ the S3 store. In this configuration, files are never stored on the Dataverse ser
 Benefits: S3 offers several advantages over file storage which :
  
 - Scalability: S3 is designed to handle large amounts of data. It can handle individual files up to several TB in size. 
-Because S3 supports breaking files into pieces, Dataverse can transfer a file in pieces (several in parallel, potentially thousands of pieces per file) making transfers faster
-and more robust (a failure requires only resending the failed piece). It may also be the case that users will have a faster network connection to the S3 store 
-(e.g. in a commercial cloud or High Performance Computing center) than they do to the Dataverse server, reducing transfer time.
+  Because S3 supports breaking files into pieces, Dataverse can transfer a file in pieces (several in parallel, potentially thousands of pieces per file) making transfers faster
+  and more robust (a failure requires only resending the failed piece). It may also be the case that users will have a faster network connection to the S3 store 
+  (e.g. in a commercial cloud or High Performance Computing center) than they do to the Dataverse server, reducing transfer time.
 - High Availability: S3 provides redundancy beyond what is available with a single disk (valuable for preservation, potentially reducing the need to perform data integrity checks).
 
 Challenges:
 
 - One additional step that is required to enable direct uploads via a Dataverse installation and for direct download to work with previewers and direct upload to work with dvwebloader (:ref:`folder-upload`) is to allow cross site (CORS) requests on your S3 store.
 - Cost: S3 offers a pricing model that allows you to pay for the storage and transfer of data based on current usage (versus long term demand) but commercial 
-providers charge more per TB than the equivalent cost of a local disk (though commercial S3 storage is cheaper than commercial file storage).
-There can also be egress and other charges. Overall, S3 storage is generally more expensive than local file storage but cheaper than cloud file storage.
-Running a local S3 storage or leveraging an institutional service can further reduce costs.
+  providers charge more per TB than the equivalent cost of a local disk (though commercial S3 storage is cheaper than commercial file storage).
+  There can also be egress and other charges. Overall, S3 storage is generally more expensive than local file storage but cheaper than cloud file storage.
+  Running a local S3 storage or leveraging an institutional service can further reduce costs.
 - Direct upload via S3 is a multi-step process: Dataverse provides URLs for the uploads, the user's browser or other app uses the URLs to transfer files to the S3 store,
   possibly in many pieces per file, and finally, Dataverse is told that one or more files are in place and should be added to the dataset. If the last step fails, or if
   all parts of a file cannot be transferred, orphaned files or parts of files can be left on S3. These files are not accessible via Dataverse but do use space (for which there is a monetary cost)
@@ -87,24 +87,26 @@ Other Considerations
 
 - S3 Storage without direct upload/download provides minimal benefits with Dataverse as files still pass through the server, files are still uploaded as a single HTTP/HTTPS stream, and temporary storage is still used.
 - While not having files unzipped can be confusing to users who are used to it from using Dataverse with file storage, there are ways to minimize the impact. 
-For example, Dataverse can be configured to use a 'Zip File Previewer' that allows users to see the contents of a zip file and even download individual files from within it. 
-For users who still want their data stored as individual files with their relative folder paths, Dataverse can be configured with the 'DVWebloader' which allows users to select an entire folder tree of files and 
-upload them, with their relative paths intact, to Dataverse. (DVWebloader can only be used with S3/direct upload, but it is much more efficient with many files than using the 
-standard upload interface in Dataverse (which also does not retain path information)).
+  For example, Dataverse can be configured to use a 'Zip File Previewer' that allows users to see the contents of a zip file and even download individual files from within it. 
+  For users who still want their data stored as individual files with their relative folder paths, Dataverse can be configured with the 'DVWebloader' which allows users to select an entire folder tree of files and 
+  upload them, with their relative paths intact, to Dataverse. (DVWebloader can only be used with S3/direct upload, but it is much more efficient with many files than using the 
+  standard upload interface in Dataverse (which also does not retain path information)).
 - The following features are disabled when S3 direct upload is enabled.
   - Unzipping of zip files. (See :ref:`compressed-files`.)
   - Detection of file type based on JHOVE and custom code that reads the first few bytes except for the refinement of Stata file types to include the version. (See :ref:`redetect-file-type`.)
   - Extraction of metadata from FITS files. (See :ref:`fits`.)
   - Creation of NcML auxiliary files (See :ref:`netcdf-and-hdf5`.)
   - Extraction of a geospatial bounding box from NetCDF and HDF5 files (see :ref:`netcdf-and-hdf5`) unless :ref:`dataverse.netcdf.geo-extract-s3-direct-upload` is set to true.
+
 - Using direct upload stops Dataverse from inspecting the file bytes to determine the MIME type (with one exception - Stata files). Dataverse will still look at the file name and extension to determine the MIME type.
 - To perform the 'ingest' processing, Dataverse currently has to copy the file to local storage, somewhat negating the benefit of sending data directly to S3. To manage larger files, one can set a per-store
-ingest size limit (which can be 0 bytes) to stop ingest or limit it to smaller files. 
+  ingest size limit (which can be 0 bytes) to stop ingest or limit it to smaller files. 
 - Dataverse's mechanism for downloading a whole dataset or multiple selected files involves zipping those files together. Even When using S3 with direct upload/download,
-the file bytes are transferred to the Dataverse server as part of the zipping process. There are ways to reduce the performance impact of this:
+  the file bytes are transferred to the Dataverse server as part of the zipping process. There are ways to reduce the performance impact of this:
   - There is a 'ZipDownloader' app that can be run separate from Dataverse to handle the zipping process.
   - Dataverse has a :ZipDownloadLimit that can be used to limit the amount of data that can be zipped. If a dataset is larger than this limit, Dataverse will only add some of the files to the zip and list others in the included manifest file.
   - There are tools such as the Dataverse Dataset Downloader (https://github.com/gdcc/dataverse-recipes/tree/main/shell/download#dataverse-dataset-downloader) that can be used to download all off the files individually. This avoids sending any of the files to/through the Dataverse server when S3 direct download is enabled.  
+
 - Dataverse leverages S3 features that are not implemented by all servers and has several configuration options geared towards handling variations between servers. Site admins should be sure to test with their preferred S3 implementation.
 - The part-size used when directly transferring files to S3 is configurable (at AWS, from 5 MiB to 5GiB). The default in Dataverse is 1 GiB (1024^3). If the primary use case is with smaller files than that, decreasing the part size may improve upload speeds.
 
@@ -145,9 +147,9 @@ Challenges:
 - Currently, remote files can only be added via the API. (This may be addressed in future versions).
 - Remote files can only be added after the dataset is created in the UI (and therefore has an id and PID for use with the API). However, the UI will still allow upload of files to the base store (at dataset creation and when editing), which could be confusing.
 - As Dataverse is relying on the remote service to main the integrity and availability of the files, it is likely that the Dataverse site admin will want to have a formal agreement with the remote service 
-operator about their policies.
+  operator about their policies.
 - Site admins need to consider carefully how to configure file size limits, ingest size limits, etc. on the remote store and it's base store, and whether the remote store is public-only, and whether files there can be read by Dataverse to assure the
-requirements of a specific use case(s) are addressed.
+  requirements of a specific use case(s) are addressed.
 - The current remote store implementation will not prevent you from providing a relative URL that results in a 404 when resolved. (I.e. if you make a typo). You should check to make sure the file exists at the location you specify - by trying to download in Dataverse, by checking to see that Dataverse was able to get the file size (which it does by doing a HEAD call to that location), or just manually trying the URL in your browser.
 - For large files, direct-download should always be used with a remote store. (Otherwise the Dataverse will be involved in the download.)
 - When multiple files are selected for download, Dataverse will try to include remote files in the zip file being created (up to the max zip size limit) which is inefficient, and will not be able to include remote files that are inaccessible (possibly confusing). 
@@ -181,24 +183,24 @@ Challenges:
 - For users not familiar with Globus, managing transfers can be confusing. For the non-S3 options, users cannot just download files - they must have access to a destination Globus endpoint and have a Globus account. Globus does provide free accounts and a free 'Globus Personal Connect' service which installed on any machine to allow transfers to/from it.
 - Globus transfers are not enabled at dataset-creation time. Once the draft version is created, users can initiate Globus transfers to upload files from remote endpoints.
 - For Dataverse-managed endpoints, a community-developed `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ app must be installed and configured in the Dataverse instance. 
-This app manages granting and revoking access for users to upload/download files from Dataverse and handles the translation between Dataverse's internal file naming/organization to that see by the user.
+  This app manages granting and revoking access for users to upload/download files from Dataverse and handles the translation between Dataverse's internal file naming/organization to that see by the user.
 - Users familiar with Globus sometimes expect to be able to find the Dataverse endpoint in Globus' online service and download files from there. Due to the fact that Dataverse is managing permissions and handling file naming, this doesn't work.
 - Due to differences between Dataverse's and Globus's access control models, Dataverse cannot enforce per-file-access restrictions - restriction can only be done today at the level of providing access to all files in a dataset.
-Globus stores can be defined as public to disable Dataverse's ability to restrict and embargo files in that store. If the store is configured to support restriction and embargo,
-Dataverse and it's Dataverse-Globus app will limit users to downloading only the files they have been granted access to, but a technically knowledgeable user could access other files in the same dataset if they are give access to one.
-(Data depositors would need to be aware of this limitation and could be guided to restrict all files/only grant access to all dataset files in Globus as a work-around).
+  Globus stores can be defined as public to disable Dataverse's ability to restrict and embargo files in that store. If the store is configured to support restriction and embargo,
+  Dataverse and it's Dataverse-Globus app will limit users to downloading only the files they have been granted access to, but a technically knowledgeable user could access other files in the same dataset if they are give access to one.
+  (Data depositors would need to be aware of this limitation and could be guided to restrict all files/only grant access to all dataset files in Globus as a work-around).
 - Dataverse-managed endpoints must be Globus 'guest collections' hosted on either a file-system-based endpoint or an S3-based endpoint (the latter requires use of the Globus
-S3 connector which requires a paid Globus subscription at the host institution). In either case, Dataverse is configured with the Globus credentials of a user account that can manage the endpoint.
-Users will need their own Globus account, which can be obtained via their institution or directly from Globus (at no cost).
+  S3 connector which requires a paid Globus subscription at the host institution). In either case, Dataverse is configured with the Globus credentials of a user account that can manage the endpoint.
+  Users will need their own Globus account, which can be obtained via their institution or directly from Globus (at no cost).
 - With the file-system endpoint, Dataverse does not currently have access to the file contents. Thus, functionality related to ingest, previews, fixity hash validation, etc. are not available. 
-(Using the S3-based endpoint, Dataverse has access via S3 and all functionality normally associated with direct uploads to S3 is available. In this case admins should be sure to set the maximum size for ingest and avoid requiring hash validation at publication, etc.)
+  (Using the S3-based endpoint, Dataverse has access via S3 and all functionality normally associated with direct uploads to S3 is available. In this case admins should be sure to set the maximum size for ingest and avoid requiring hash validation at publication, etc.)
 - For the reference use case, Dataverse must be configured with a list of allowed endpoint/base paths from which files may be referenced. In this case, since Dataverse is not accessing the remote endpoint itself, it does not need Globus credentials. 
-Users will also need a Globus account in this case, and the remote endpoint must be configured to allow them access (i.e. be publicly readable, or potentially involving some out-of-band mechanism to request access (that could be described, for example, in the dataset's Terms of Use and Access).
+  Users will also need a Globus account in this case, and the remote endpoint must be configured to allow them access (i.e. be publicly readable, or potentially involving some out-of-band mechanism to request access (that could be described, for example, in the dataset's Terms of Use and Access).
 - As with remote stores, files can only be added in the Globus reference case via the Dataverse API.
 - While Globus itself can handle many (millions of) files of any size, Dataverse cannot handle more than thousands of files per dataset (at best) and some Globus endpoints may have limits on file sizes - both maximums and minimums (e.g. for tape storage where small files are inefficient).
-Users will need to be made aware of these limitations and the possibilities for managing them (e.g. by aggregating multiple files in a single larger file, or storing smaller files in the base-store via the normal Dataverse upload UI).
+  Users will need to be made aware of these limitations and the possibilities for managing them (e.g. by aggregating multiple files in a single larger file, or storing smaller files in the base-store via the normal Dataverse upload UI).
 - There is currently (a bug)[https://github.com/gdcc/dataverse-globus/issues/2] that won't allow users to transfer files from/to endpoints where they do not have permission to list the overall file tree (i.e. an institution manages <endpoint>/institution_name but the user only has access to <endpoint>/institution_name/my_dir.)
-Until that is fixed, a work-around is to first transfer data to an endpoint without this restriction.
+  Until that is fixed, a work-around is to first transfer data to an endpoint without this restriction.
 - An alternative, experimental implementation of Globus polling of ongoing upload transfers has been added in v6.4. This framework does not rely on the instance staying up continuously for the duration of the transfer and saves the state information about Globus upload requests in the database. While it is now the recommended option, it is not enabled by default. See the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`) and the JVM option :ref:`dataverse.files.globus-monitoring-server`.
 
 More details of the setup required to enable Globus is described in the `Community Dataverse-Globus Setup and Configuration document <https://docs.google.com/document/d/1mwY3IVv8_wTspQC0d4ddFrD2deqwr-V5iAGHgOy4Ch8/edit?usp=sharing>`_ and the references therein.
@@ -209,7 +211,7 @@ See also :ref:`Globus settings <:GlobusSettings>`.
 
 
 Storage Strategy Recommendations
--------------------------------
+--------------------------------
 
 Based on both file size and volume considerations, here are some general recommendations:
 
@@ -254,7 +256,6 @@ There are a number of settings to limit how many files can be uploaded:
 - ZipUploadFilesLimit - the maximum number of files allowed in an uploaded zip file - only relevant for file stores and S3 when direct upload is not used.
 - MultipleUploadFilesLimit - the number of files the GUI user is allowed to upload in one batch, via drag-and-drop, or through the file select dialog
 - MaxFileUploadSizeInBytes - limit the size of files that can be uploaded
-
 - UseStorageQuotas - once enabled, super users can set per-collection quotas (in bytes) to limit the aggregate size of all files in the collection
 - dataverse.files.default-dataset-file-count-limit - directly limits the number of files per dataset, can be changed per dataset via API (by super users)
 
