@@ -184,7 +184,7 @@ Edit ``jenkins.yml`` to set the desired GitHub repo and branch, and to adjust an
 - ``dataverse.unittests.enabled: true``
 - ``dataverse.sampledata.enabled: true``
 
-If you wish, you may pass the script a ``-l`` flag with a local relative path in which the script will `copy various logs <https://github.com/gdcc/dataverse-ansible/blob/develop/ec2/ec2-create-instance.sh#L185>`_ at the end of the test suite for your review.
+If you wish, you may pass the script a ``-l`` flag with a local relative path in which the script will `copy various logs <https://github.com/gdcc/dataverse-ansible/blob/develop/ec2/ec2-create-instance.sh>`_ at the end of the test suite for your review.
 
 Finally, run the script:
 
