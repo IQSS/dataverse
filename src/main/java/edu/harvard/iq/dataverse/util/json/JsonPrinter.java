@@ -344,6 +344,21 @@ public class JsonPrinter {
         return bld;
     }
 
+    public static JsonObjectBuilder jsonArray(List<Dataverse> dataverses) {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("count", dataverses.size());
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        for (Dataverse dataverse : dataverses) {
+            NullSafeJsonBuilder jsonObject = NullSafeJsonBuilder.jsonObjectBuilder();
+            jsonObject.add("id", dataverse.getId());
+            jsonObject.add("name", dataverse.getDisplayName());
+            jsonObject.add("alias", dataverse.getAlias());
+            jsonArrayBuilder.add(jsonObject);
+        }
+        job.add("items", jsonArrayBuilder);
+        return job;
+    }
+
     public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
         JsonArrayBuilder jsonArrayOfContacts = Json.createArrayBuilder();
         for (DataverseContact dataverseContact : dataverseContacts) {
