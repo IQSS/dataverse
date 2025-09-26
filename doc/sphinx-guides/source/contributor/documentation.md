@@ -56,30 +56,31 @@ Before we worry about pushing changes to the code, let's make sure we can build 
 
 Go to <https://github.com/IQSS/dataverse> and click "Code" and then follow the instructions to clone the code locally.
 
-### Makefile and Docker
+### Docker
 
-From a terminal, switch to the "dataverse" directory you just cloned.
+Install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+
+From a terminal, switch to the "dataverse" directory you just cloned. This is the root of the git repo.
 
 `cd dataverse`
 
-Then try building the HTML version of the guides.
+Then try running this command:
 
-`make docs-html`
+`docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx:7.2.6 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make html"`
 
 If all goes well, you should be able open `doc/sphinx-guides/build/html/index.html` to see the guides you just built.
 
-Here is the complete list of commands.
+#### Docker with a Makefile
 
-- `make docs-html`
-- `make docs-pdf`
-- `make docs-epub`
-- `make docs-all`
+Once you've confirmed you have Docker working, if you have [make](https://en.wikipedia.org/wiki/Make_(software)) installed, you can try the following commands:
 
-### Docker
+`make docs-html`
 
-Also from the "dataverse" directory (the root of the git repo), you can try this command:
+`make docs-pdf`
 
-`docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx:7.2.6 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make html"`
+`make docs-epub`
+
+`make docs-all`
 
 ### Sphinx Installed Locally
 
