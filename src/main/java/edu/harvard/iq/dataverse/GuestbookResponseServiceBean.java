@@ -762,30 +762,13 @@ public class GuestbookResponseServiceBean {
         }
     }
     
-    private void setUserDefaultResponses(GuestbookResponse guestbookResponse, DataverseSession session, User userIn) {
-        User user;
-        User sessionUser = session.getUser();
-        
-        if (userIn != null){
-            user = userIn;
-        } else{
-            user = sessionUser;
-        }
-         
-        if (user != null) {
-            guestbookResponse.setEmail(getUserEMail(user));
-            guestbookResponse.setName(getUserName(user));
-            guestbookResponse.setInstitution(getUserInstitution(user));
-            guestbookResponse.setPosition(getUserPosition(user));
-            guestbookResponse.setAuthenticatedUser(getAuthenticatedUser(user));
-        } else {
-            guestbookResponse.setEmail("");
-            guestbookResponse.setName("");
-            guestbookResponse.setInstitution("");
-            guestbookResponse.setPosition("");
-            guestbookResponse.setAuthenticatedUser(null);
-        }
-        guestbookResponse.setSessionId(session.toString());
+    private void setUserDefaultResponses(GuestbookResponse guestbookResponse, DataverseSession session, User user) {
+        guestbookResponse.setEmail(getUserEMail(user));
+        guestbookResponse.setName(getUserName(user));
+        guestbookResponse.setInstitution(getUserInstitution(user));
+        guestbookResponse.setPosition(getUserPosition(user));
+        guestbookResponse.setAuthenticatedUser(getAuthenticatedUser(user));
+        guestbookResponse.setSessionId(session != null ? session.toString() : "");
     }
     
     private void setUserDefaultResponses(GuestbookResponse guestbookResponse, DataverseSession session) {
