@@ -8,6 +8,7 @@ A dataset in a Dataverse installation is a container for your data, documentatio
 .. contents:: |toctitle|
 	:local:
 
+.. _metadata-supported:
 
 Supported Metadata
 ==================
@@ -415,8 +416,12 @@ Differentially Private (DP) Metadata can be accessed for restricted tabular file
 
 See also :ref:`terms-of-access` and :ref:`permissions`.
 
+.. _edit-files:
+
 Edit Files
 ==========
+
+.. _edit-file-metadata:
 
 Edit File Metadata
 ------------------
@@ -470,6 +475,8 @@ Terms
 
 Dataset terms can be viewed and edited from the Terms tab of the dataset page, or under the Edit dropdown button of a Dataset. There, you can set up how users can use your data once they have downloaded it (via a standard license or, if allowed, custom terms), how they can access your data if you have files that are restricted (terms of access), and enable a Guestbook for your dataset so that you can track who is using your data and for what purposes. These are explained in further detail below:
 
+.. _choosing-license:
+
 Choosing a License
 ------------------
 
@@ -499,6 +506,8 @@ This is true of other licenses as well - users should cite data as appropriate e
 The `Dataverse Community Norms <https://dataverse.org/best-practices/dataverse-community-norms>`_\* detail additional areas where data users should follow societal norms and scientific best practices.
 
 \* **Legal Disclaimer:** these `Community Norms <https://dataverse.org/best-practices/dataverse-community-norms>`_ are not a substitute for the CC0 waiver or custom terms and licenses applicable to each dataset. The Community Norms are not a binding contractual agreement, and downloading datasets from a Dataverse installation does not create a legal obligation to follow these policies.
+
+.. _custom-terms:
 
 Custom Terms of Use for Datasets
 --------------------------------
@@ -682,6 +691,8 @@ Adding Widgets to an OpenScholar Website
 #. Click on the Settings Cog and select Layout
 #. At the top right, select Add New Widget and under Misc. you will see the Dataverse Collection and the Dataverse Dataset Citation Widgets. Click on the widget you would like to add, fill out the form, and then drag it to where you would like it to display in the page.
 
+.. _publish-dataset:
+
 Publish Dataset
 ===============
 
@@ -693,6 +704,8 @@ Whenever you edit your dataset, you are able to publish a new version of the dat
 
 Note: Prior to publishing your dataset the Data Citation will indicate that this is a draft but the "DRAFT VERSION" text
 will be removed as soon as you Publish.
+
+.. _submit-for-review:
 
 Submit for Review
 =================
@@ -749,6 +762,8 @@ Support for file-level retention periods can also be configured in a Dataverse i
 
 Retention periods are intended to support use cases where files must be made unavailable - and in most cases destroyed, e.g. to meet legal requirements - after a certain period or date.
 Actual destruction is not automatically handled, but would have to be done on the storage if needed.
+
+.. _dataset-versions:
 
 Dataset Versions
 ================
