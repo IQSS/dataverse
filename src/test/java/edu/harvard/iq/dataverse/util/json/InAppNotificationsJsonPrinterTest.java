@@ -215,9 +215,14 @@ public class InAppNotificationsJsonPrinterTest {
         when(requestor.getLastName()).thenReturn("Doe");
         when(requestor.getEmail()).thenReturn("johndoe@example.com");
 
+        Dataset dataset = mock(Dataset.class);
+        when(dataset.getDisplayName()).thenReturn("Test Dataset");
+        when(dataset.getIdentifier()).thenReturn("Test Identifier");
+
         DataFile dataFile = mock(DataFile.class);
         when(dataFile.getId()).thenReturn(1L);
         when(dataFile.getDisplayName()).thenReturn("Test File");
+        when(dataFile.getOwner()).thenReturn(dataset);
         when(dataFileService.find(1L)).thenReturn(dataFile);
 
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
@@ -227,6 +232,8 @@ public class InAppNotificationsJsonPrinterTest {
         verify(notificationJson).add(KEY_REQUESTOR_EMAIL, "johndoe@example.com");
         verify(notificationJson).add(KEY_DATAFILE_ID, Long.valueOf("1"));
         verify(notificationJson).add(KEY_DATAFILE_DISPLAY_NAME, "Test File");
+        verify(notificationJson).add(KEY_DATASET_DISPLAY_NAME, "Test Dataset");
+        verify(notificationJson).add(KEY_DATASET_PERSISTENT_ID, "Test Identifier");
     }
 
     @Test
@@ -235,9 +242,14 @@ public class InAppNotificationsJsonPrinterTest {
         userNotification.setObjectId(1L);
         userNotification.setRequestor(null);
 
+        Dataset dataset = mock(Dataset.class);
+        when(dataset.getDisplayName()).thenReturn("Test Dataset");
+        when(dataset.getIdentifier()).thenReturn("Test Identifier");
+
         DataFile dataFile = mock(DataFile.class);
         when(dataFile.getId()).thenReturn(1L);
         when(dataFile.getDisplayName()).thenReturn("Test File");
+        when(dataFile.getOwner()).thenReturn(dataset);
         when(dataFileService.find(1L)).thenReturn(dataFile);
 
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
@@ -247,6 +259,8 @@ public class InAppNotificationsJsonPrinterTest {
         verify(notificationJson, never()).add(eq(KEY_REQUESTOR_EMAIL), anyString());
         verify(notificationJson).add(KEY_DATAFILE_ID, Long.valueOf("1"));
         verify(notificationJson).add(KEY_DATAFILE_DISPLAY_NAME, "Test File");
+        verify(notificationJson).add(KEY_DATASET_DISPLAY_NAME, "Test Dataset");
+        verify(notificationJson).add(KEY_DATASET_PERSISTENT_ID, "Test Identifier");
     }
 
     @Test
@@ -254,9 +268,14 @@ public class InAppNotificationsJsonPrinterTest {
         userNotification.setType(UserNotification.Type.GRANTFILEACCESS);
         userNotification.setObjectId(1L);
 
+        Dataset dataset = mock(Dataset.class);
+        when(dataset.getDisplayName()).thenReturn("Test Dataset");
+        when(dataset.getIdentifier()).thenReturn("Test Identifier");
+
         DataFile dataFile = mock(DataFile.class);
         when(dataFile.getId()).thenReturn(1L);
         when(dataFile.getDisplayName()).thenReturn("Granted File");
+        when(dataFile.getOwner()).thenReturn(dataset);
         when(dataFileService.find(1L)).thenReturn(dataFile);
 
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
@@ -264,6 +283,8 @@ public class InAppNotificationsJsonPrinterTest {
         verify(notificationJson).add(KEY_DATAFILE_ID, Long.valueOf("1"));
         verify(notificationJson).add(KEY_DATAFILE_DISPLAY_NAME, "Granted File");
         verify(notificationJson, never()).add(eq(KEY_REQUESTOR_FIRST_NAME), anyString());
+        verify(notificationJson).add(KEY_DATASET_DISPLAY_NAME, "Test Dataset");
+        verify(notificationJson).add(KEY_DATASET_PERSISTENT_ID, "Test Identifier");
     }
 
     @Test
