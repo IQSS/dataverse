@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -309,13 +310,17 @@ public class ExternalTool implements Serializable {
         jab.add(TYPES, types);
         jab.add(SCOPE, getScope().text);
         jab.add(TOOL_URL, getToolUrl());
-        jab.add(TOOL_PARAMETERS, getToolParameters());
+        jab.add(TOOL_PARAMETERS, JsonUtil.getJsonObject(getToolParameters()));
         if (getContentType() != null) {
             jab.add(CONTENT_TYPE, getContentType());
         }
         if (getAllowedApiCalls()!= null) {
-            jab.add(ALLOWED_API_CALLS,getAllowedApiCalls());
+            jab.add(ALLOWED_API_CALLS,JsonUtil.getJsonArray(getAllowedApiCalls()));
         }
+        if(getRequirements()!= null) {
+            jab.add(REQUIREMENTS, JsonUtil.getJsonObject(getRequirements()));
+        }
+        
         return jab;
     }
 

@@ -9,7 +9,7 @@ jobs:
         name: Duplicate Keys
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
             - name: Run duplicates detection script
               shell: bash
               run: tests/check_duplicate_properties.sh
@@ -18,7 +18,7 @@ jobs:
         name: Metadata Blocks Properties
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
             - name: Setup GraalVM + Native Image
               uses: graalvm/setup-graalvm@v1
               with:
