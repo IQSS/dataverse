@@ -45,7 +45,8 @@ public class CorsFilter implements Filter {
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         // Parse allowed origins list (optional)
-        List<String> originTokens = JvmSettings.CORS_ORIGIN.lookupCsvList();
+        // Treat CORS origin list as optional: when absent, CORS is disabled (see CorsFilterTest.disabledCors_skipsHeaders)
+        List<String> originTokens = JvmSettings.CORS_ORIGIN.lookupCsvListOptional().orElse(List.of());
         allowCors = !originTokens.isEmpty();
 
         if (allowCors) {
