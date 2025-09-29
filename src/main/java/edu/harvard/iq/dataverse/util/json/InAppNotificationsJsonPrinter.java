@@ -4,8 +4,15 @@ import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonValue;
+
+import java.io.StringReader;
 
 import static edu.harvard.iq.dataverse.dataset.DatasetUtil.getLocaleCurationStatusLabel;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonRoleAssignments;
@@ -262,6 +269,24 @@ public class InAppNotificationsJsonPrinter {
 
     private void addDatasetMentionedFields(final NullSafeJsonBuilder notificationJson, final UserNotification userNotification) {
         addDatasetFields(notificationJson, userNotification);
-        notificationJson.add(KEY_ADDITIONAL_INFO, userNotification.getAdditionalInfo());
+
+        final String additionalInfo = userNotification.getAdditionalInfo();
+
+        if (additionalInfo != null && !additionalInfo.isEmpty()) {
+            try (StringReader stringReader = new StringReader(additionalInfo);
+                 JsonReader jsonReader = Json.createReader(stringReader)) {
+
+                // Try to parse the string into a JSON value
+                JsonValue additionalInfoJson = jsonReader.readValue();
+
+                // If successful, add the parsed JSON value.
+                notificationJson.add(KEY_ADDITIONAL_INFO, additionalInfoJson);
+
+            } catch (JsonException e) {
+                // If parsing fails, it's not a valid JSON string.
+                // Fall back to adding it as a simple string.
+                notificationJson.add(KEY_ADDITIONAL_INFO, additionalInfo);
+            }
+        }
     }
 }

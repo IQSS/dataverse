@@ -5,18 +5,23 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+
 import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
+
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static edu.harvard.iq.dataverse.util.json.InAppNotificationsJsonPrinter.*;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -46,6 +51,9 @@ public class InAppNotificationsJsonPrinterTest {
     private AuthenticatedUser authenticatedUser;
     @Mock
     private AuthenticatedUser requestor;
+
+    @Captor
+    private ArgumentCaptor<JsonValue> jsonValueCaptor;
 
     private UserNotification userNotification;
 
@@ -503,6 +511,113 @@ public class InAppNotificationsJsonPrinterTest {
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
         verify(notificationJson).add(KEY_GUIDES_VERSION, "1.0");
         verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_DATASET_MANAGEMENT_TABULAR_FILES_HTML);
+    }
+
+    @Test
+    public void testAddFieldsByType_datasetMentioned_withJsonString() {
+        // Arrange
+        userNotification.setType(UserNotification.Type.DATASETMENTIONED);
+        userNotification.setObjectId(1L);
+        String jsonInfo = "{\"key\":\"value\", \"number\":123}";
+        userNotification.setAdditionalInfo(jsonInfo);
+
+        Dataset dataset = mock(Dataset.class);
+        Dataverse owner = mock(Dataverse.class);
+
+        when(dataset.getGlobalId()).thenReturn(testGlobalId);
+        when(dataset.getDisplayName()).thenReturn("Mentioned Dataset");
+        when(dataset.getOwner()).thenReturn(owner);
+        when(datasetService.find(1L)).thenReturn(dataset);
+
+        when(owner.getAlias()).thenReturn("ownerDv");
+        when(owner.getDisplayName()).thenReturn("Owner Dataverse");
+
+        // Act
+        sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
+
+        // Assert
+        // Verify standard fields are still added
+        verify(notificationJson).add(KEY_DATASET_PERSISTENT_ID, testGlobalId.toString());
+        verify(notificationJson).add(KEY_DATASET_DISPLAY_NAME, "Mentioned Dataset");
+        verify(notificationJson).add(KEY_OWNER_ALIAS, "ownerDv");
+        verify(notificationJson).add(KEY_OWNER_DISPLAY_NAME, "Owner Dataverse");
+
+        // Capture the JsonValue passed for the additional info
+        verify(notificationJson).add(eq(KEY_ADDITIONAL_INFO), jsonValueCaptor.capture());
+        JsonValue capturedValue = jsonValueCaptor.getValue();
+
+        // Assert that the parsed object is a JsonObject with the correct properties
+        assertInstanceOf(JsonObject.class, capturedValue, "The parsed value should be a JsonObject.");
+        JsonObject capturedObject = (JsonObject) capturedValue;
+        assertEquals("value", capturedObject.getString("key"));
+        assertEquals(123, capturedObject.getInt("number"));
+
+        // Explicitly verify it was NOT added as a plain string
+        verify(notificationJson, never()).add(KEY_ADDITIONAL_INFO, jsonInfo);
+    }
+
+    @Test
+    public void testAddFieldsByType_datasetMentioned_withRegularString() {
+        // Arrange
+        userNotification.setType(UserNotification.Type.DATASETMENTIONED);
+        userNotification.setObjectId(1L);
+        String regularStringInfo = "This is just a regular string, not JSON.";
+        userNotification.setAdditionalInfo(regularStringInfo);
+
+        Dataset dataset = mock(Dataset.class);
+        Dataverse owner = mock(Dataverse.class);
+
+        when(dataset.getGlobalId()).thenReturn(testGlobalId);
+        when(dataset.getDisplayName()).thenReturn("Mentioned Dataset");
+        when(dataset.getOwner()).thenReturn(owner);
+        when(datasetService.find(1L)).thenReturn(dataset);
+
+        when(owner.getAlias()).thenReturn("ownerDv");
+        when(owner.getDisplayName()).thenReturn("Owner Dataverse");
+
+        // Act
+        sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
+
+        // Assert
+        verify(notificationJson).add(KEY_DATASET_PERSISTENT_ID, testGlobalId.toString());
+        verify(notificationJson).add(KEY_DATASET_DISPLAY_NAME, "Mentioned Dataset");
+        verify(notificationJson).add(KEY_OWNER_ALIAS, "ownerDv");
+        verify(notificationJson).add(KEY_OWNER_DISPLAY_NAME, "Owner Dataverse");
+
+        // Verify it falls back to adding a plain String
+        verify(notificationJson).add(KEY_ADDITIONAL_INFO, regularStringInfo);
+    }
+
+    @Test
+    public void testAddFieldsByType_datasetMentioned_withNullInfo() {
+        // Arrange
+        userNotification.setType(UserNotification.Type.DATASETMENTIONED);
+        userNotification.setObjectId(1L);
+        userNotification.setAdditionalInfo(null); // Set additionalInfo to null
+
+        Dataset dataset = mock(Dataset.class);
+        Dataverse owner = mock(Dataverse.class);
+
+        when(dataset.getGlobalId()).thenReturn(testGlobalId);
+        when(dataset.getDisplayName()).thenReturn("Mentioned Dataset");
+        when(dataset.getOwner()).thenReturn(owner);
+        when(datasetService.find(1L)).thenReturn(dataset);
+
+        when(owner.getAlias()).thenReturn("ownerDv");
+        when(owner.getDisplayName()).thenReturn("Owner Dataverse");
+
+        // Act
+        sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
+
+        // Assert
+        verify(notificationJson).add(KEY_DATASET_PERSISTENT_ID, testGlobalId.toString());
+        verify(notificationJson).add(KEY_DATASET_DISPLAY_NAME, "Mentioned Dataset");
+        verify(notificationJson).add(KEY_OWNER_ALIAS, "ownerDv");
+        verify(notificationJson).add(KEY_OWNER_DISPLAY_NAME, "Owner Dataverse");
+
+        // Verify that the additional info key is never added
+        verify(notificationJson, never()).add(eq(KEY_ADDITIONAL_INFO), (JsonValue) any());
+        verify(notificationJson, never()).add(eq(KEY_ADDITIONAL_INFO), (String) any());
     }
 
     @Test
