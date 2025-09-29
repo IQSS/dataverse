@@ -34,7 +34,7 @@ Early on, make sure it's clear what type of release this is. The steps below des
 Ensure Issues Have Been Created
 -------------------------------
 
-We have a "create release issues" script at https://github.com/IQSS/sabo that should be run a week or so before code freeze.
+We have a "create release issues" script at https://github.com/IQSS/dv-project-metrics that should be run a week or so before code freeze.
 
 For each issue that is created by the script there is likely a corresponding step in this document that has "dedicated" label on it like this:
 
