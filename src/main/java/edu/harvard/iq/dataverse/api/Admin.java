@@ -111,6 +111,7 @@ import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.CsvUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
@@ -2167,7 +2168,7 @@ public class Admin extends AbstractApiBean {
         boolean inheritAllRoles = false;
         String rolesString = settingsSvc.getValueForKey(SettingsServiceBean.Key.InheritParentRoleAssignments, "");
         if (rolesString.length() > 0) {
-            ArrayList<String> rolesToInherit = new ArrayList<String>(Arrays.asList(rolesString.split("\\s*,\\s*")));
+            ArrayList<String> rolesToInherit = new ArrayList<>(CsvUtil.split(rolesString));
             if (!rolesToInherit.isEmpty()) {
                 if (rolesToInherit.contains("*")) {
                     inheritAllRoles = true;

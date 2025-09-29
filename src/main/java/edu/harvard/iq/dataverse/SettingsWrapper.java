@@ -14,7 +14,7 @@ import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.MailUtil;
+import edu.harvard.iq.dataverse.util.CsvUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.UserNotification.Type;
@@ -396,7 +396,7 @@ public class SettingsWrapper implements java.io.Serializable {
                 if (uploadMethods==null){
                     rsyncOnly = false;
                 } else {
-                    rsyncOnly = Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+                    rsyncOnly = CsvUtil.split(uploadMethods).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
                 }
             }
         }
@@ -428,7 +428,7 @@ public class SettingsWrapper implements java.io.Serializable {
             if (uploadMethods==null){
                 uploadMethodsCount = 0;
             } else {
-                uploadMethodsCount = Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
+                uploadMethodsCount = CsvUtil.split(uploadMethods).size();
             } 
         }
         return uploadMethodsCount;
@@ -502,7 +502,8 @@ public class SettingsWrapper implements java.io.Serializable {
         if (anonymizedFieldTypes == null) {
             anonymizedFieldTypes = new ArrayList<String>();
             String names = get(SettingsServiceBean.Key.AnonymizedFieldTypeNames.toString(), "");
-            anonymizedFieldTypes.addAll(Arrays.asList(names.split(",\\s")));
+            // Use CsvUtil for consistent CSV parsing instead of raw regex split
+            anonymizedFieldTypes.addAll(CsvUtil.split(names));
         }
         return anonymizedFieldTypes.contains(df.getDatasetFieldType().getName());
     }
@@ -830,7 +831,7 @@ public class SettingsWrapper implements java.io.Serializable {
         if (uploadMethods==null){
             return false;
         } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
+           return CsvUtil.splitToLowerCaseSet(uploadMethods).contains(method);
         }
     }
 

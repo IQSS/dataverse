@@ -119,8 +119,9 @@ public class CSLUtil {
 
     private static String[] getCommonStyles() {
         if (commonStyles == null) {
-            commonStyles = JvmSettings.CSL_COMMON_STYLES.lookupOptional().orElse("chicago-author-date, ieee")
-                    .split("\\s*,\\s*");
+            commonStyles = CsvUtil.split(
+                JvmSettings.CSL_COMMON_STYLES.lookupOptional().orElse("chicago-author-date, ieee")
+            ).toArray(new String[0]);
         }
         return commonStyles;
     }

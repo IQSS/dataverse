@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
+import java.util.List;
+
+import edu.harvard.iq.dataverse.util.CsvUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
@@ -38,10 +41,12 @@ public interface GlobusAccessibleStore {
     }
 
     public static JsonArray getReferenceEndpointsWithPaths(String driverId) {
-        String[] endpoints = StorageIO.getConfigParamForDriver(driverId, AbstractRemoteOverlayAccessIO.REFERENCE_ENDPOINTS_WITH_BASEPATHS).split("\\s*,\\s*");
+        List<String> endpoints = CsvUtil.split(
+            StorageIO.getConfigParamForDriver(driverId, AbstractRemoteOverlayAccessIO.REFERENCE_ENDPOINTS_WITH_BASEPATHS)
+        );
         JsonArrayBuilder builder = Json.createArrayBuilder();
-        for(int i=0;i<endpoints.length;i++) {
-            builder.add(endpoints[i]);
+        for(final String endpoint : endpoints) {
+            builder.add(endpoint);
         }
         return builder.build();
     }

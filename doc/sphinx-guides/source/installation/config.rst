@@ -3667,16 +3667,21 @@ The following settings control Cross-Origin Resource Sharing (CORS) for your Dat
 dataverse.cors.origin
 +++++++++++++++++++++
 
-Allowed origins for CORS requests. The default with no value set is to not include CORS headers. However, if the deprecated :AllowCors setting is explicitly set to true the default is "\*" (all origins).
-When the :AllowsCors setting is not used, you must set this setting to "\*" or a list of origins to enable CORS headers.
+Allowed origins for CORS requests. If this setting is not defined, CORS headers are not added. Set to ``*`` to allow all origins (note that browsers will not allow credentialed requests with ``*``) or provide a comma-separated list of explicit origins.
 
-Multiple origins can be specified as a comma-separated list.
+Multiple origins can be specified as a comma-separated list (whitespace is ignored):
 
 Example:
 
 ``./asadmin create-jvm-options '-Ddataverse.cors.origin=https://example.com,https://subdomain.example.com'``
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_CORS_ORIGIN``.
+
+Behavior:
+
+* When a list of origins is configured, Dataverse echoes the single matching request ``Origin`` value in ``Access-Control-Allow-Origin`` and adds ``Vary: Origin`` to support correct proxy/CDN caching.
+* When ``*`` is configured, ``Access-Control-Allow-Origin: *`` is sent and ``Vary`` is not modified.
+* The legacy database setting ``:AllowCors`` is deprecated and no longer enables CORS automatically; you must configure ``dataverse.cors.origin``.
 
 .. _dataverse.cors.methods:
 
@@ -4917,19 +4922,17 @@ This can be helpful in situations where multiple organizations are sharing one D
 or
 ``curl -X PUT -d '*' http://localhost:8080/api/admin/settings/:InheritParentRoleAssignments``
 
-:AllowCors (Deprecated)
-+++++++++++++++++++++++
+:AllowCors (Deprecated – no longer used once dataverse.cors.* settings exist)
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. note::
-   This setting is deprecated. Please use the JVM settings above instead.
-   This legacy setting will only be used if the newer JVM settings are not set.
+  This legacy database setting has been superseded by the ``dataverse.cors.*`` JVM/MicroProfile settings. In current versions CORS is only enabled when ``dataverse.cors.origin`` is explicitly set. Existing values of ``:AllowCors`` are ignored if ``dataverse.cors.origin`` is unset.
 
-Enable or disable support for Cross-Origin Resource Sharing (CORS) by setting ``:AllowCors`` to ``true`` or ``false``.
+Historical behavior (prior versions) allowed setting ``:AllowCors`` to ``true``/``false``. Administrators should migrate to the JVM/MicroProfile setting:
 
-``curl -X PUT -d true http://localhost:8080/api/admin/settings/:AllowCors``
+``./asadmin create-jvm-options '-Ddataverse.cors.origin=*'``
 
-.. note::
-   New values for this setting will only be used after a server restart.
+or a comma-separated list of allowed origins.
 
 :ChronologicalDateFacets
 ++++++++++++++++++++++++

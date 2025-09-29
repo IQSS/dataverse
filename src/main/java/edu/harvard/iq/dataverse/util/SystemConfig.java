@@ -937,7 +937,7 @@ public class SystemConfig {
         if (uploadMethods==null){
             return false;
         } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+           return CsvUtil.split(uploadMethods).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
         }
     }
 
@@ -969,7 +969,7 @@ public class SystemConfig {
         if (methods == null) {
             return false;
         } else {
-            return Arrays.asList(methods.toLowerCase().split("\\s*,\\s*")).contains(method);
+            return CsvUtil.split(methods.toLowerCase()).contains(method);
         }
     }
     
@@ -978,7 +978,7 @@ public class SystemConfig {
         if (uploadMethods==null){
             return 0;
         } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
+           return CsvUtil.split(uploadMethods).size();
         }       
     }
 

@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.util.CsvUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
@@ -124,8 +125,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
         DatasetVersion dv = ctxt.getDataset().getReleasedVersion();
         List<DatasetField> dvf = dv.getDatasetFields();
         Map<String, DatasetField> fields = new HashMap<String, DatasetField>();
-        String[] requiredFields = ((String) ctxt.getSettings().getOrDefault(REQUIRED_FIELDS, "")).split(",\\s*");
-        for (String field : requiredFields) {
+        for (String field : CsvUtil.split((String) ctxt.getSettings().getOrDefault(REQUIRED_FIELDS, ""))) {
             fields.put(field, null);
         }
         Set<String> reqFields = fields.keySet();

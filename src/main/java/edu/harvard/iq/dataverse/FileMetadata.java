@@ -48,6 +48,7 @@ import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
+import edu.harvard.iq.dataverse.util.CsvUtil;
 import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.HashSet;
@@ -609,7 +610,7 @@ public class FileMetadata implements Serializable {
     public static void setCategorySortOrder(String categories) {
        categoryMap=new HashMap<String, Long>();
        long i=1;
-       for(String cat: categories.split(",\\s*")) {
+       for(String cat: CsvUtil.split(categories)) {
            categoryMap.put(cat.toUpperCase(), i);
            i++;
        }

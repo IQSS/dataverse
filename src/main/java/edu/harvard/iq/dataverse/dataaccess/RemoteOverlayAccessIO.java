@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.util.CsvUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 
 import java.io.FileNotFoundException;
@@ -317,7 +318,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
         baseUrl = getConfigParam(BASE_URL);
         if (baseUrl == null) {
             //Will accept the first endpoint using the newer setting
-            baseUrl = getConfigParam(REFERENCE_ENDPOINTS_WITH_BASEPATHS).split("\\s*,\\s*")[0];
+            baseUrl = CsvUtil.split(getConfigParam(REFERENCE_ENDPOINTS_WITH_BASEPATHS)).stream().findFirst().orElse(baseUrl);
             if (baseUrl == null) {
                 throw new IOException("dataverse.files." + this.driverId + ".base-url is required");
             }

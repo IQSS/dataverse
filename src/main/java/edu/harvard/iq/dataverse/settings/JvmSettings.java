@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.settings;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 
+import edu.harvard.iq.dataverse.util.CsvUtil;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -599,4 +601,20 @@ public enum JvmSettings {
         return String.format(this.getScopedKey(), (Object[]) arguments);
     }
     
+    /** Lookup optional CSV value and return immutable List of tokens. */
+    public java.util.Optional<java.util.List<String>> lookupCsvListOptional() {
+        return lookupOptional().map(CsvUtil::split);
+    }
+    /** Lookup required CSV value and return immutable List of tokens (throws if missing). */
+    public java.util.List<String> lookupCsvList() {
+        return CsvUtil.split(lookup());
+    }
+    /** Lookup optional CSV value and return lowercased Set (deduplicated, insertion order). */
+    public java.util.Optional<java.util.Set<String>> lookupCsvLowercaseSetOptional() {
+        return lookupOptional().map(CsvUtil::splitToLowerCaseSet);
+    }
+    /** Lookup required CSV value and return lowercased Set (deduplicated, insertion order). */
+    public java.util.Set<String> lookupCsvLowercaseSet() {
+        return CsvUtil.splitToLowerCaseSet(lookup());
+    }
 }

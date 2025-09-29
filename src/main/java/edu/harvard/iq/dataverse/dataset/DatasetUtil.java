@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.dataaccess.InputStreamIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.CsvUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -531,7 +532,7 @@ public class DatasetUtil {
         } else {
             summaryFieldNames = customFieldNames;
         }
-        return summaryFieldNames.split("\\s*,\\s*");
+        return CsvUtil.split(summaryFieldNames).toArray(new String[0]);
     }
 
     public static boolean isRsyncAppropriateStorageDriver(Dataset dataset){

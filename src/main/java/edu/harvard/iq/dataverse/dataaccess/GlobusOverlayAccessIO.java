@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.globus.AccessToken;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
+import edu.harvard.iq.dataverse.util.CsvUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
@@ -403,9 +404,11 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
         } else {
             String rawEndpoints = getConfigParamForDriver(driverId, REFERENCE_ENDPOINTS_WITH_BASEPATHS);
             if (rawEndpoints != null) {
-                allowedEndpoints = getConfigParamForDriver(driverId, REFERENCE_ENDPOINTS_WITH_BASEPATHS).split("\\s*,\\s*");
+                allowedEndpoints = CsvUtil.split(
+                    getConfigParamForDriver(driverId, REFERENCE_ENDPOINTS_WITH_BASEPATHS)
+                ).toArray(new String[0]);
             }
-            if (rawEndpoints == null || allowedEndpoints.length == 0) {
+            if (rawEndpoints == null || allowedEndpoints == null || allowedEndpoints.length == 0) {
                 throw new IOException("dataverse.files." + driverId + ".base-url is required");
             }
         }

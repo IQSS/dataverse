@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
@@ -23,11 +22,9 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import jakarta.inject.Inject;
-import jakarta.json.JsonObject;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
@@ -121,14 +118,12 @@ public class PidProviderFactoryBean {
     }
 
     private void loadProviders() {
-        Optional<String[]> providers = JvmSettings.PID_PROVIDERS.lookupOptional(String[].class);
-        if (!providers.isPresent()) {
+        var providersOpt = JvmSettings.PID_PROVIDERS.lookupCsvListOptional();
+        if (!providersOpt.isPresent() || providersOpt.get().isEmpty()) {
             logger.warning(
                     "No PidProviders configured via dataverse.pid.providers. Please consider updating as older PIDProvider configuration mechanisms will be removed in a future version of Dataverse.");
         } else {
-            for (String id : providers.get()) {
-                //Allows spaces in PID_PROVIDERS setting
-                id=id.trim();
+            for (String id : providersOpt.get()) {
                 Optional<String> type = JvmSettings.PID_PROVIDER_TYPE.lookupOptional(id);
                 if (!type.isPresent()) {
                     logger.warning("PidProvider " + id

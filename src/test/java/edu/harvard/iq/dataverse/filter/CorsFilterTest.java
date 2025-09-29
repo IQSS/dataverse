@@ -14,6 +14,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class CorsFilterTest {
@@ -111,6 +116,61 @@ class CorsFilterTest {
     }
 
     @Test
+    void whitespaceAndMixedCasingParsing() throws Exception {
+        System.setProperty("dataverse.cors.origin",
+                "  https://one.example  ,\n\t https://two.example  ,  https://three.example  ");
+
+        CorsFilter sut = new CorsFilter();
+        sut.init(null);
+
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        when(req.getHeader("Origin")).thenReturn("https://two.example");
+        HttpServletResponse res = mock(HttpServletResponse.class);
+        when(res.getHeader("Vary")).thenReturn("Accept-Encoding");
+
+        sut.doFilter(req, res, mock(FilterChain.class));
+
+        verify(res).setHeader("Access-Control-Allow-Origin", "https://two.example");
+        // ensure existing Vary preserved and Origin added
+        verify(res).setHeader(eq("Vary"), argThat(v -> v.contains("Origin") && v.contains("Accept-Encoding")));
+    }
+
+    @Test
+    void wildcardAmongOthersTreatsAsWildcard() throws Exception {
+        System.setProperty("dataverse.cors.origin", "https://a.example,*,https://b.example");
+
+        CorsFilter sut = new CorsFilter();
+        sut.init(null);
+
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        when(req.getHeader("Origin")).thenReturn("https://random.example");
+        HttpServletResponse res = mock(HttpServletResponse.class);
+
+        sut.doFilter(req, res, mock(FilterChain.class));
+
+        verify(res).setHeader("Access-Control-Allow-Origin", "*");
+        verify(res, never()).setHeader(eq("Vary"), anyString());
+    }
+
+    @Test
+    void existingVaryMergedWithoutDuplication() throws Exception {
+        System.setProperty("dataverse.cors.origin", "https://merge.example");
+
+        CorsFilter sut = new CorsFilter();
+        sut.init(null);
+
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        when(req.getHeader("Origin")).thenReturn("https://merge.example");
+        HttpServletResponse res = mock(HttpServletResponse.class);
+        when(res.getHeader("Vary")).thenReturn("Accept-Encoding, Origin");
+
+        sut.doFilter(req, res, mock(FilterChain.class));
+
+        // Origin should not be duplicated
+        verify(res).setHeader(eq("Vary"), argThat(v -> v.indexOf("Origin") == v.lastIndexOf("Origin")));
+    }
+
+    @Test
     void sanitizesQuotedHeaderLists() throws Exception {
         System.setProperty("dataverse.cors.origin", "https://x.example");
         System.setProperty("dataverse.cors.headers.allow", "\"Accept, X-Dataverse-key\"");
@@ -151,7 +211,8 @@ class CorsFilterTest {
     }
 
     // No-op since filter no longer depends on SettingsServiceBean
-    private void injectSettingsAllowCors(CorsFilter sut, boolean allowCors) { /* legacy path removed */ }
+    private void injectSettingsAllowCors(CorsFilter sut, boolean allowCors) {
+        /* legacy path removed */ }
 
     private void backupAndClear(String key) {
         String old = System.getProperty(key);

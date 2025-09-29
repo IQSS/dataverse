@@ -25,6 +25,8 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.CsvUtil;
+
 import org.apache.commons.io.filefilter.NotFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 
@@ -43,7 +45,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -153,7 +154,10 @@ public class FileRecordReader extends AbstractItemReader {
      */
     private List<File> getFiles(final File directory) {
         // create filter from job xml excludes property
-        FileFilter excludeFilter = new NotFileFilter(new WildcardFileFilter(Arrays.asList(excludes.split("\\s*,\\s*"))));
+        // Convert list to array to use non-deprecated constructor
+        FileFilter excludeFilter = new NotFileFilter(new WildcardFileFilter(
+            CsvUtil.split(excludes).toArray(new String[0])
+        ));
         List<File> files = new ArrayList<>();
         File[] filesList = directory.listFiles(excludeFilter);
         if (filesList != null) {

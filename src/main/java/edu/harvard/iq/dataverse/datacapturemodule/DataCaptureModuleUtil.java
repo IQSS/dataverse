@@ -5,8 +5,8 @@ import com.mashape.unirest.http.JsonNode;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.CsvUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.util.Arrays;
 import java.util.logging.Logger;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -23,7 +23,7 @@ public class DataCaptureModuleUtil {
         if (uploadMethodsSettings==null){
             return false;
         } else {
-           return  Arrays.asList(uploadMethodsSettings.toLowerCase().split("\\s*,\\s*")).contains(SystemConfig.FileUploadMethods.RSYNC.toString());
+            return CsvUtil.splitToLowerCaseSet(uploadMethodsSettings).contains(SystemConfig.FileUploadMethods.RSYNC.toString());
         }
     }
 

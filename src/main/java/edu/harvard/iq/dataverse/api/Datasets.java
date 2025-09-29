@@ -5222,7 +5222,8 @@ public class Datasets extends AbstractApiBean {
         }
         JsonObjectBuilder responseJson;
         if (isAnonymizedAccess) {
-            List<String> anonymizedFieldTypeNamesList = new ArrayList<>(Arrays.asList(anonymizedFieldTypeNames.split(",\\s")));
+            // Use CsvUtil for consistent CSV parsing
+            List<String> anonymizedFieldTypeNamesList = new ArrayList<>(CsvUtil.split(anonymizedFieldTypeNames));
             responseJson = json(dsv, anonymizedFieldTypeNamesList, true, returnOwners);
         } else {
             responseJson = json(dsv, null, true, returnOwners);
@@ -5248,7 +5249,8 @@ public class Datasets extends AbstractApiBean {
         }
         JsonObjectBuilder responseJson;
         if (isAnonymizedAccess) {
-            List<String> anonymizedFieldTypeNamesList = new ArrayList<>(Arrays.asList(anonymizedFieldTypeNames.split(",\\s")));
+            // Use CsvUtil for consistent CSV parsing
+            List<String> anonymizedFieldTypeNamesList = new ArrayList<>(CsvUtil.split(anonymizedFieldTypeNames));
             responseJson = json(dsv, anonymizedFieldTypeNamesList, true, returnOwners);
         } else {
             responseJson = json(dsv, null, true, returnOwners);

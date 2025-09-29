@@ -11,6 +11,9 @@ Introduction
 
 External tools are additional applications the user can access or open from your Dataverse installation to preview, explore, and manipulate data files and datasets. The term "external" is used to indicate that the tool is not part of the main Dataverse Software.
 
+.. note::
+  Browser-based preview or explore tools that make XHR/fetch calls back to the Dataverse API must have CORS explicitly enabled on the Dataverse installation via :ref:`dataverse.cors.origin <dataverse.cors.origin>`. The legacy ``:AllowCors`` database setting is deprecated and no longer enables CORS by itself. Be sure the origins hosting your tool (or ``*`` when appropriate) are included in ``dataverse.cors.origin``; otherwise requests from your tool will be blocked by the browser even if the tool itself loads correctly.
+
 Once you have created the external tool itself (which is most of the work!), you need to teach a Dataverse installation how to construct URLs that your tool needs to operate. For example, if you've deployed your tool to fabulousfiletool.com your tool might want the ID of a file and the siteUrl of the Dataverse installation like this: https://fabulousfiletool.com?fileId=42&siteUrl=https://demo.dataverse.org
 
 In short, you will be creating a manifest in JSON format that describes not only how to construct URLs for your tool, but also what types of files your tool operates on, where it should appear in the Dataverse installation web interfaces, etc. 
