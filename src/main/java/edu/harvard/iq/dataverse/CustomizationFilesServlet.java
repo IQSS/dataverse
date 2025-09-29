@@ -22,6 +22,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import jakarta.ejb.EJB;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.Tika;
@@ -60,13 +61,11 @@ public class CustomizationFilesServlet extends HttpServlet {
         try {
             File fileIn = physicalPath.toFile();
             if (fileIn != null) {
-                Tika tika = new Tika();
-                try {
-                    String mimeType = tika.detect(fileIn);
-                    response.setContentType(mimeType);
-                } catch (Exception e) {
-                    logger.info("Error getting MIME Type for " + filePath + " : " + e.getMessage());
-                }
+                String filename = physicalPath.getFileName().toString();
+                int dotIndex = filename.lastIndexOf('.');
+                String ext = dotIndex >= 0 ? filename.substring(dotIndex) : "";
+                String mimeType = FileUtil.lookupFileTypeByExtension(ext);
+                response.setContentType(mimeType);
                 inputStream = new FileInputStream(fileIn);
 
                 in = new BufferedReader(new InputStreamReader(inputStream));

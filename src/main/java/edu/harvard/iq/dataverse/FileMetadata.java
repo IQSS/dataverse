@@ -95,9 +95,10 @@ import jakarta.validation.constraints.Pattern;
                 "        )",
                 resultSetMapping = "IdToLongMapping"
     )
+/* When this mapping was to Long.class, Postgres was still returning an Integer, causing indexing failures - see #11776 */ 
 @SqlResultSetMapping(
         name = "IdToLongMapping",
-        columns = @ColumnResult(name = "id", type = Long.class)
+        columns = @ColumnResult(name = "id", type = Integer.class)
     )
 @Entity
 public class FileMetadata implements Serializable {

@@ -36,6 +36,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
+import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 
@@ -76,11 +77,24 @@ public class JsonPrinter {
 
     @EJB
     static DatasetServiceBean datasetService;
+
+    @EJB
+    static MailServiceBean mailService;
+
+    @EJB
+    static InAppNotificationsJsonPrinter inAppNotificationsJsonPrinter;
     
-    public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb, DataverseFieldTypeInputLevelServiceBean dfils, DatasetServiceBean ds) {
+    public static void injectSettingsService(SettingsServiceBean ssb,
+                                             DatasetFieldServiceBean dfsb,
+                                             DataverseFieldTypeInputLevelServiceBean dfils,
+                                             DatasetServiceBean ds,
+                                             MailServiceBean ms,
+                                             InAppNotificationsJsonPrinter njp) {
             settingsService = ssb;
             datasetFieldService = dfsb;
             datasetService = ds;
+            mailService = ms;
+            inAppNotificationsJsonPrinter = njp;
     }
 
     public JsonPrinter() {
@@ -128,11 +142,18 @@ public class JsonPrinter {
         return builder;
     }
 
+    public static JsonArrayBuilder jsonRoleAssignments(List<RoleAssignment> roleAssignments) {
+        JsonArrayBuilder bld = Json.createArrayBuilder();
+        roleAssignments.forEach(roleAssignment -> bld.add(json(roleAssignment)));
+        return bld;
+    }
+
     public static JsonObjectBuilder json(RoleAssignment ra) {
         return jsonObjectBuilder()
                 .add("id", ra.getId())
                 .add("assignee", ra.getAssigneeIdentifier())
                 .add("roleId", ra.getRole().getId())
+                .add("roleName", ra.getRole().getName())
                 .add("_roleAlias", ra.getRole().getAlias())
                 .add("privateUrlToken", ra.getPrivateUrlToken())
                 .add("definitionPointId", ra.getDefinitionPoint().getId());
@@ -321,6 +342,21 @@ public class JsonPrinter {
         addDatasetFileCountLimit(dv, bld);
 
         return bld;
+    }
+
+    public static JsonObjectBuilder jsonArray(List<Dataverse> dataverses) {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("count", dataverses.size());
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        for (Dataverse dataverse : dataverses) {
+            NullSafeJsonBuilder jsonObject = NullSafeJsonBuilder.jsonObjectBuilder();
+            jsonObject.add("id", dataverse.getId());
+            jsonObject.add("name", dataverse.getDisplayName());
+            jsonObject.add("alias", dataverse.getAlias());
+            jsonArrayBuilder.add(jsonObject);
+        }
+        job.add("items", jsonArrayBuilder);
+        return job;
     }
 
     public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
@@ -864,6 +900,7 @@ public class JsonPrinter {
         }
 
         fileName = fileMetadata.getLabel();
+        String directoryLabel = fileMetadata.getDirectoryLabel();
         GlobalId filePid = df.getGlobalId();
         String pidURL = (filePid!=null)? filePid.asURL(): null;
         //For backward compatibility - prior to #8674, asString() returned "" for the value when no PID exists.
@@ -907,6 +944,7 @@ public class JsonPrinter {
                 .add("tabularTags", getTabularFileTags(df))
                 .add("creationDate", df.getCreateDateFormattedYYYYMMDD())
                 .add("publicationDate",  df.getPublicationDateFormattedYYYYMMDD())
+                .add("directoryLabel", directoryLabel)
                 .add("lastUpdateTime", format(fileMetadata.getDatasetVersion().getLastUpdateTime()));
         Dataset dfOwner = df.getOwner();
         if (dfOwner != null) {
@@ -1569,6 +1607,7 @@ public class JsonPrinter {
         return jsonObjectBuilder()
                 .add("id", template.getId())
                 .add("name", template.getName())
+                .add("isDefault", template.isIsDefaultForDataverse())
                 .add("usageCount", template.getUsageCount())
                 .add("createTime", template.getCreateTime().toString())
                 .add("createDate", template.getCreateDate())
@@ -1579,9 +1618,10 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder jsonTermsOfUseAndAccess(TermsOfUseAndAccess termsOfUseAndAccess) {
+        License license = termsOfUseAndAccess.getLicense();
         return jsonObjectBuilder()
                 .add("id", termsOfUseAndAccess.getId())
-                .add("license", json(termsOfUseAndAccess.getLicense()))
+                .add("license", license != null ? json(license) : null)
                 .add("termsOfUse", termsOfUseAndAccess.getTermsOfUse())
                 .add("termsOfAccess", termsOfUseAndAccess.getTermsOfAccess())
                 .add("confidentialityDeclaration", termsOfUseAndAccess.getConfidentialityDeclaration())
@@ -1595,7 +1635,9 @@ public class JsonPrinter {
                 .add("originalArchive", termsOfUseAndAccess.getOriginalArchive())
                 .add("availabilityStatus", termsOfUseAndAccess.getAvailabilityStatus())
                 .add("sizeOfCollection", termsOfUseAndAccess.getSizeOfCollection())
-                .add("studyCompletion", termsOfUseAndAccess.getStudyCompletion());
+                .add("studyCompletion", termsOfUseAndAccess.getStudyCompletion())
+                .add("contactForAccess", termsOfUseAndAccess.getContactForAccess())
+                .add("fileAccessRequest", termsOfUseAndAccess.isFileAccessRequest());
     }
 
     public static JsonArrayBuilder jsonTemplateInstructions(Map<String, String> templateInstructions) {
@@ -1609,5 +1651,38 @@ public class JsonPrinter {
         }
 
         return jsonArrayBuilder;
+    }
+
+    public static JsonArrayBuilder json(List<UserNotification> notifications, AuthenticatedUser authenticatedUser, boolean inAppNotificationFormat) {
+        JsonArrayBuilder notificationsArray = Json.createArrayBuilder();
+
+        for (UserNotification notification : notifications) {
+            NullSafeJsonBuilder notificationJson = jsonObjectBuilder();
+            UserNotification.Type type = notification.getType();
+
+            notificationJson.add("id", notification.getId());
+            notificationJson.add("type", type.toString());
+            notificationJson.add("displayAsRead", notification.isReadNotification());
+            notificationJson.add("sentTimestamp", notification.getSendDateTimestamp());
+
+            if (inAppNotificationFormat) {
+                inAppNotificationsJsonPrinter.addFieldsByType(notificationJson, authenticatedUser, notification);
+            } else {
+                Object relatedObject = mailService.getObjectOfNotification(notification);
+                if (relatedObject != null) {
+                    String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, relatedObject);
+                    String messageText = mailService.getMessageTextBasedOnNotification(
+                            notification, relatedObject, null, notification.getRequestor()
+                    );
+
+                    notificationJson.add("subjectText", subjectText);
+                    notificationJson.add("messageText", messageText);
+                }
+            }
+
+            notificationsArray.add(notificationJson);
+        }
+
+        return notificationsArray;
     }
 }
