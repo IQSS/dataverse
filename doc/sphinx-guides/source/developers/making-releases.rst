@@ -245,7 +245,7 @@ Add Milestone to Pull Requests and Issues
 
 Often someone is making sure that the proper milestone (e.g. 5.10.1) is being applied to pull requests and issues, but sometimes this falls between the cracks.
 
-Check for merged pull requests that have no milestone by going to https://github.com/IQSS/dataverse/pulls and entering `is:pr is:merged no:milestone <https://github.com/IQSS/dataverse/pulls?q=is%3Apr+is%3Amerged+no%3Amilestone>`_ as a query. If you find any, add the milestone to the pull request and any issues it closes. This includes the "merge develop into master" pull request above.
+Check for merged pull requests that have no milestone by going to https://github.com/IQSS/dataverse/pulls and entering `is:pr is:merged no:milestone <https://github.com/IQSS/dataverse/pulls?q=is%3Apr+is%3Amerged+no%3Amilestone>`_ as a query. If you find any, first check if those pull requests are against open pull requests. If so, do nothing. Otherwise, add the milestone to the pull request and any issues it closes. This includes the "merge develop into master" pull request above.
 
 (Optional) Test Docker Images
 -----------------------------
