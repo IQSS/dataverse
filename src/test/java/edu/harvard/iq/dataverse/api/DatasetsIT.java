@@ -3871,6 +3871,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        
         Response setCurationLabelSets = UtilIT.setSetting(SettingsServiceBean.Key.AllowedCurationLabels, "{\"StandardProcess\":[\"Author contacted\", \"Privacy Review\", \"Awaiting paper publication\", \"Final Approval\"],\"AlternateProcess\":[\"State 1\",\"State 2\",\"State 3\"]}");
         setCurationLabelSets.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -3881,7 +3883,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response setDataverseCurationLabelSetResponse = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "AlternateProcess");
         setDataverseCurationLabelSetResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
         
-        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
         assertEquals(200, makeSuperUser.getStatusCode());
 
         //Non-existent option
@@ -3940,8 +3942,66 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response setInvalidStatus = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "Invalid Status");
         setInvalidStatus.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     
+        // Publish the dataset
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        // Verify that the current curation label is now empty after publishing
+        Response getStatusAfterPublish = UtilIT.getDatasetCurationStatus(datasetId, apiToken, false);
+        getStatusAfterPublish.then().assertThat().statusCode(OK.getStatusCode());
+        JsonObject statusAfterPublish = Json.createReader(new StringReader(getStatusAfterPublish.body().asString())).readObject();
+        JsonObject dataObject = statusAfterPublish.getJsonObject("data");
+        assertFalse(dataObject.containsKey("label"), "Curation label should be empty after publishing");
+          
+        //Cause a new draft version
+        String jsonLDTerms = "{\"https://dataverse.org/schema/core#fileTermsOfAccess\":{\"https://dataverse.org/schema/core#dataAccessPlace\":\"Somewhere\"}}";
+        Response updateTerms = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, jsonLDTerms, true);
+        updateTerms.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        // Add a new valid curation label
+        Response setNewStatus = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 2");
+        setNewStatus.then().assertThat().statusCode(OK.getStatusCode());
+        
+        // Verify the label was set
+        Response getStatusAfterSet = UtilIT.getDatasetCurationStatus(datasetId, apiToken, false);
+        getStatusAfterSet.then().assertThat().statusCode(OK.getStatusCode());
+        JsonObject statusAfterSet = Json.createReader(new StringReader(getStatusAfterSet.body().asString())).readObject();
+        JsonObject dataInSecondDraft = statusAfterSet.getJsonObject("data");
+        assertEquals("State 2", dataInSecondDraft.getString("label"), "Curation label should be set to State 2");
+        
+        // Publish the dataset again using updatecurrent as superuser
+        Response updateCurrentResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "updatecurrent", apiToken);
+        updateCurrentResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        // Verify that the current curation label is now empty after updatecurrent
+        Response getStatusAfterUpdateCurrent = UtilIT.getDatasetCurationStatus(datasetId, apiToken, false);
+        getStatusAfterUpdateCurrent.then().assertThat().statusCode(OK.getStatusCode());
+        JsonObject statusAfterUpdateCurrent = Json.createReader(new StringReader(getStatusAfterUpdateCurrent.body().asString())).readObject();
+        JsonObject dataAfterUpdateCurrent = statusAfterUpdateCurrent.getJsonObject("data");
+        assertFalse(dataAfterUpdateCurrent.containsKey("label"), "Curation label should be empty after updatecurrent");
+        
+        // Verify that the history contains the previously added label
+        Response getHistoryAfterUpdateCurrent = UtilIT.getDatasetCurationStatus(datasetId, apiToken, true);
+        getHistoryAfterUpdateCurrent.then().assertThat().statusCode(OK.getStatusCode());
+        
+        // Extract the data array from the response
+        JsonObject responseObj = Json.createReader(new StringReader(getHistoryAfterUpdateCurrent.body().asString())).readObject();
+        JsonArray historyAfterUpdateCurrent = responseObj.getJsonArray("data");
+        
+        // Verify history contains the State 2 label
+        boolean foundState2 = false;
+        for (int i = 0; i < historyAfterUpdateCurrent.size(); i++) {
+            JsonObject entry = historyAfterUpdateCurrent.getJsonObject(i);
+            if (entry.containsKey("label") && "State 2".equals(entry.getString("label"))) {
+                foundState2 = true;
+                break;
+            }
+        }
+        assertTrue(foundState2, "History should contain the State 2 label after updatecurrent");        
+       
         // Clean up
-        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         assertEquals(200, deleteDatasetResponse.getStatusCode());
     
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
