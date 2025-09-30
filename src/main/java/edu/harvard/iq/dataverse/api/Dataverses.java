@@ -1974,16 +1974,10 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/metadataLanguage")
     public Response getMetadataLanguage(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
-        try {
-            Map<String, String> langMap = settingsService.getBaseMetadataLanguageMap(null, true);
+        return response(req -> {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            String dvMetadataLanguage = dataverse.getMetadataLanguage();
-            if (!dvMetadataLanguage.equals(DvObjectContainer.UNDEFINED_CODE)) {
-                return ok(Json.createArrayBuilder().add(jsonLanguage(dvMetadataLanguage, langMap.get(dvMetadataLanguage))));
-            }
-            return ok(jsonLanguage(langMap));
-        } catch (WrappedResponse e) {
-            return e.getResponse();
-        }
+            return ok(jsonLanguage(execCommand(
+                    new GetDataverseMetadataLanguageCommand(req, dataverse))));
+        }, getRequestUser(crc));
     }
 }
