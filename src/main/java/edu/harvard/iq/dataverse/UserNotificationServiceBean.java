@@ -18,7 +18,6 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
-import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -44,11 +43,23 @@ public class UserNotificationServiceBean {
     SettingsServiceBean settingsService;
     
     public List<UserNotification> findByUser(Long userId) {
-        TypedQuery<UserNotification> query = em.createQuery("select un from UserNotification un where un.user.id =:userId order by un.sendDate desc", UserNotification.class);
+        return findByUser(userId, false);
+    }
+
+    public List<UserNotification> findByUser(Long userId, boolean onlyUnread) {
+        TypedQuery<UserNotification> query = em.createQuery(
+                "select un from UserNotification un " +
+                        "where un.user.id = :userId and (:onlyUnread = false or un.readNotification = false) " +
+                        "order by un.sendDate desc",
+                UserNotification.class
+        );
+
         query.setParameter("userId", userId);
+        query.setParameter("onlyUnread", onlyUnread);
+
         return query.getResultList();
     }
-    
+
     public List<UserNotification> findByRequestor(Long userId) {
         TypedQuery<UserNotification> query = em.createQuery("select un from UserNotification un where un.requestor.id =:userId order by un.sendDate desc", UserNotification.class);
         query.setParameter("userId", userId);

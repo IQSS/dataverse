@@ -87,6 +87,15 @@ public class NotificationsIT {
         Response markRead = UtilIT.markNotificationAsRead(createAccountId, authorApiToken);
         markRead.then().assertThat().statusCode(OK.getStatusCode());
 
+        // Retrieve only unread notifications
+        getNotifications = UtilIT.getNotifications(authorApiToken, false, true);
+        getNotifications.then().assertThat()
+                .body("data.notifications[0].type", equalTo(CREATEDV.toString()))
+                .body("data.notifications[0].displayAsRead", equalTo(false))
+                .body("data.notifications.size()", equalTo(1))
+                .statusCode(OK.getStatusCode());
+
+        // Retrieve all notifications
         Response getNotifications2 = UtilIT.getNotifications(authorApiToken);
         getNotifications2.then().assertThat()
                 .body("data.notifications.size()", equalTo(2))
@@ -184,7 +193,7 @@ public class NotificationsIT {
                 .statusCode(OK.getStatusCode());
         authorApiToken = UtilIT.getApiTokenFromResponse(createAuthor);
 
-        getNotifications = UtilIT.getNotifications(authorApiToken, true);
+        getNotifications = UtilIT.getNotifications(authorApiToken, true, false);
         getNotifications.then().assertThat()
                 .body("data.notifications[0].displayAsRead", equalTo(false))
                 .body("data.notifications.size()", equalTo(1))
