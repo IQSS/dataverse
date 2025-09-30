@@ -43,10 +43,10 @@ public class UserNotificationServiceBean {
     SettingsServiceBean settingsService;
     
     public List<UserNotification> findByUser(Long userId) {
-        return findByUser(userId, false);
+        return findByUser(userId, false, null, null);
     }
 
-    public List<UserNotification> findByUser(Long userId, boolean onlyUnread) {
+    public List<UserNotification> findByUser(Long userId, boolean onlyUnread, Integer limit, Integer offset) {
         TypedQuery<UserNotification> query = em.createQuery(
                 "select un from UserNotification un " +
                         "where un.user.id = :userId and (:onlyUnread = false or un.readNotification = false) " +
@@ -56,6 +56,13 @@ public class UserNotificationServiceBean {
 
         query.setParameter("userId", userId);
         query.setParameter("onlyUnread", onlyUnread);
+
+        if (offset != null) {
+            query.setFirstResult(offset);
+        }
+        if (limit != null) {
+            query.setMaxResults(limit);
+        }
 
         return query.getResultList();
     }

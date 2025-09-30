@@ -88,7 +88,7 @@ public class NotificationsIT {
         markRead.then().assertThat().statusCode(OK.getStatusCode());
 
         // Retrieve only unread notifications
-        getNotifications = UtilIT.getNotifications(authorApiToken, false, true);
+        getNotifications = UtilIT.getNotifications(authorApiToken, false, true, null, null);
         getNotifications.then().assertThat()
                 .body("data.notifications[0].type", equalTo(CREATEDV.toString()))
                 .body("data.notifications[0].displayAsRead", equalTo(false))
@@ -193,7 +193,7 @@ public class NotificationsIT {
                 .statusCode(OK.getStatusCode());
         authorApiToken = UtilIT.getApiTokenFromResponse(createAuthor);
 
-        getNotifications = UtilIT.getNotifications(authorApiToken, true, false);
+        getNotifications = UtilIT.getNotifications(authorApiToken, true, false, null, null);
         getNotifications.then().assertThat()
                 .body("data.notifications[0].displayAsRead", equalTo(false))
                 .body("data.notifications.size()", equalTo(1))
@@ -206,6 +206,65 @@ public class NotificationsIT {
                 .body("data.notifications[0].subjectText", equalTo(null))
                 .body("data.notifications[0].messageText", equalTo(null))
                 .statusCode(OK.getStatusCode());
+
+        // Test pagination
+
+        Response authorForPagination = UtilIT.createRandomUser();
+        authorForPagination.then().assertThat().statusCode(OK.getStatusCode());
+        String paginationApiToken = UtilIT.getApiTokenFromResponse(authorForPagination);
+
+        // Create 4 more notifications to have a total of 5 (1 from CREATEACC, 4 from CREATEDV)
+        for (int i = 0; i < 4; i++) {
+            Response dvResponse = UtilIT.createRandomDataverse(paginationApiToken);
+            dvResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        }
+
+        // Case 1: Test limit
+        // Get first 2 notifications out of 5
+        Response limitedNotifications = UtilIT.getNotifications(paginationApiToken, false, false, 2, 0);
+        limitedNotifications.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.notifications[0].type", equalTo(CREATEDV.toString()))
+                .body("data.notifications[1].type", equalTo(CREATEDV.toString()))
+                .body("data.notifications.size()", equalTo(2));
+
+        // Case 2: Test offset
+        // Skip first 3 notifications and get the remaining 2
+        Response offsetNotifications = UtilIT.getNotifications(paginationApiToken, false, false, null, 3);
+        offsetNotifications.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.notifications[0].type", equalTo(CREATEDV.toString()))
+                .body("data.notifications[1].type", equalTo(CREATEACC.toString()))
+                .body("data.notifications.size()", equalTo(2));
+
+        // Case 3: Test limit and offset together
+        // Get 2 notifications, starting from the 2nd one (index 1)
+        Response limitedAndOffsetNotifications = UtilIT.getNotifications(paginationApiToken, false, false, 2, 1);
+        limitedAndOffsetNotifications.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.notifications[0].type", equalTo(CREATEDV.toString()))
+                .body("data.notifications[1].type", equalTo(CREATEDV.toString()))
+                .body("data.notifications.size()", equalTo(2));
+
+        long firstId = JsonPath.from(limitedAndOffsetNotifications.body().asString()).getLong("data.notifications[0].id");
+        long secondId = JsonPath.from(limitedAndOffsetNotifications.body().asString()).getLong("data.notifications[1].id");
+
+        // Verify we got the correct slice of data
+        Response allNotifications = UtilIT.getNotifications(paginationApiToken);
+        allNotifications.then().assertThat().statusCode(OK.getStatusCode());
+
+        long secondNotificationInAll = JsonPath.from(allNotifications.body().asString()).getLong("data.notifications[1].id");
+        long thirdNotificationInAll = JsonPath.from(allNotifications.body().asString()).getLong("data.notifications[2].id");
+
+        assertEquals(secondNotificationInAll, firstId);
+        assertEquals(thirdNotificationInAll, secondId);
+
+        // Case 4: Test limit larger than available notifications
+        // Ask for 10, but should only get the 5 that exist
+        Response excessiveLimitNotifications = UtilIT.getNotifications(paginationApiToken, false, false, 10, 0);
+        excessiveLimitNotifications.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.notifications.size()", equalTo(5));
     }
 
     private static void disableSendNotificationOnDatasetCreationSetting() {
