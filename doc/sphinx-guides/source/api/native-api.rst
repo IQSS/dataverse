@@ -6129,13 +6129,33 @@ The expected OK (200) response looks something like this:
               }
   ...
 
-This endpoint supports an optional query parameter ``inAppNotificationFormat`` which, if sent as ``true``, retrieves the fields needed to build the in-app notifications for the Notifications section of the Dataverse UI, omitting fields related to email notifications.
+This endpoint supports several optional query parameters to filter and paginate the results.
+
+The ``inAppNotificationFormat`` parameter, if sent as ``true``, retrieves the fields needed to build the in-app notifications for the Notifications section of the Dataverse UI, omitting fields related to email notifications.
 
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all?inAppNotificationFormat=true"
 
-The expected OK (200) response looks something like this:
+The ``onlyUnread`` parameter, if sent as ``true``, filters the results to include only notifications that have not been marked as read.
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all?onlyUnread=true"
+
+The ``limit`` and ``offset`` parameters can be used for pagination. ``limit`` specifies the maximum number of notifications to return, and ``offset`` specifies the number of notifications to skip from the beginning of the list. For example, to retrieve notifications 11 through 15:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all?limit=5&offset=10"
+
+All parameters can be combined. For instance, to get the first page of 10 unread notifications in the in-app format:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all?inAppNotificationFormat=true&onlyUnread=true&limit=10&offset=0"
+
+The expected OK (200) response for an in-app format request looks something like this:
 
 .. code-block:: text
 
