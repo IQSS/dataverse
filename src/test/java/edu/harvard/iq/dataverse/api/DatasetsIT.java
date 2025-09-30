@@ -4092,7 +4092,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPersistentId, apiToken, pathToJsonFile);
         updateTerms.prettyPrint();
         updateTerms.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode())
+                .body("data.termsOfAccess", equalTo("For access to restriced files please see read me file"));
 
        // Restrict file
         Response restrictFileResponse = UtilIT.restrictFile(fileId, true, apiToken);
