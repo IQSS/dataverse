@@ -149,7 +149,7 @@ Tips:
 - Use **Enhanced Monitoring**. Enhanced Monitoring gathers its metrics from an agent on the instance. See `Enhanced Monitoring docs <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Monitoring.OS.html>`_.
 - It's possible to view and act on **RDS Events** such as snapshots, parameter changes, etc. See `Working with Amazon RDS events <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.access-control.html>`_ for details.
 - RDS monitoring is available via API and the ``aws`` command line tool. For example, see `Retrieving metrics with the Performance Insights API <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.API.html>`_.
-- To play with monitoring RDS using a server configured by `dataverse-ansible <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible>`_ set ``use_rds`` to true to skip some steps that aren't necessary when using RDS. See also the :doc:`/developers/deployment` section of the Developer Guide.
+- To play with monitoring RDS using a server configured by `dataverse-ansible <https://github.com/gdcc/dataverse-ansible>`_ set ``use_rds`` to true to skip some steps that aren't necessary when using RDS. See also the :doc:`/developers/deployment` section of the Developer Guide.
 
 MicroProfile Metrics endpoint
 -----------------------------
