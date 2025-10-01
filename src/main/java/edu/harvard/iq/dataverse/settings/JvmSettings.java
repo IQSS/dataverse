@@ -610,16 +610,9 @@ public enum JvmSettings {
     public java.util.Optional<java.util.List<String>> lookupCsvListOptional() {
         return lookupOptional().map(CsvUtil::split);
     }
+    
     /** Lookup required CSV value and return immutable List of tokens (throws if missing). */
     public java.util.List<String> lookupCsvList() {
         return CsvUtil.split(lookup());
-    }
-    /** Lookup optional CSV value and return lowercased Set (deduplicated, insertion order). */
-    public java.util.Optional<java.util.Set<String>> lookupCsvLowercaseSetOptional() {
-        return lookupOptional().map(CsvUtil::splitToLowerCaseSet);
-    }
-    /** Lookup required CSV value and return lowercased Set (deduplicated, insertion order). */
-    public java.util.Set<String> lookupCsvLowercaseSet() {
-        return CsvUtil.splitToLowerCaseSet(lookup());
     }
 }
