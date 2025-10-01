@@ -606,12 +606,12 @@ public enum JvmSettings {
         return String.format(this.getScopedKey(), (Object[]) arguments);
     }
     
-    /** Lookup optional CSV value and return immutable List of tokens. */
+    /** Lookup optional CSV value and return a List of tokens. */
     public java.util.Optional<java.util.List<String>> lookupCsvListOptional() {
         return lookupOptional().map(CsvUtil::split);
     }
-    
-    /** Lookup required CSV value and return immutable List of tokens (throws if missing). */
+
+    /** Lookup required CSV value and return a List of tokens (throws if missing). */
     public java.util.List<String> lookupCsvList() {
         return CsvUtil.split(lookup());
     }
