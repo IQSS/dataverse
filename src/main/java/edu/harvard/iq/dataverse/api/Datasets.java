@@ -1159,6 +1159,9 @@ public class Datasets extends AbstractApiBean {
     public Response editVersionTermsOfUse(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id,
                                         @QueryParam("sourceLastUpdateTime") String sourceLastUpdateTime) {
         try {
+            
+            boolean publicInstall = settingsSvc.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false);
+            
             Dataset dataset = findDatasetOrDie(id);
 
             if (sourceLastUpdateTime != null) {
@@ -1166,8 +1169,12 @@ public class Datasets extends AbstractApiBean {
             }
 
             JsonObject json = JsonUtil.getJsonObject(jsonBody);
-            System.out.print(jsonBody);
+
             TermsOfUseAndAccess toua = jsonParser().parseTermsOfUseAndAccess(json);
+            
+            if (publicInstall && (toua.isFileAccessRequest() || !toua.getTermsOfAccess().isEmpty())){
+                return error(BAD_REQUEST, "Setting File Access Request or Terms of Access is not permitted on a public installation.");
+            }
             
             
             toua.setDatasetVersion(dataset.getLatestVersion());

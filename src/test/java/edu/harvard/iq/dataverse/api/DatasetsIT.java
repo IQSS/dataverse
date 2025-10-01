@@ -4094,6 +4094,15 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
     @Test
     public void testUpdateDatasetTerms() throws IOException {
+        
+        //get publicInstall setting so we can change it back
+        Response publicInstallResponse = UtilIT.getSetting(SettingsServiceBean.Key.PublicInstall);
+        //TODO: fix this its a little hacky
+        String publicInstall = String.valueOf(publicInstallResponse.getBody().asString().contains("true"));
+
+        // make sure this is not a public installation
+        UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, "false");
+        
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         createUser.then().assertThat()
@@ -4163,7 +4172,25 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         publishDatasetResponse.prettyPrint();
         publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
-
+        
+        //Make installation "public install" to see that terms of access may not be set
+        UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, "true");
+        
+        createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        
+        updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPid, apiToken, pathToJsonFile);
+        updateTerms.prettyPrint();
+        // should fail because its now a public install
+        updateTerms.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Setting File Access Request or Terms of Access is not permitted on a public installation."));
+        //Setting File Access Request or Terms of Access is not permitted on a public installation.
+        
+        //reset public install
+        UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, publicInstall);
 
     }
 
