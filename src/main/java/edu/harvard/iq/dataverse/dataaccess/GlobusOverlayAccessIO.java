@@ -393,26 +393,24 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
     }
     
     private static String[] getAllowedEndpoints(String driverId) throws IOException {
-        String[] allowedEndpoints = null;
         if (GlobusAccessibleStore.isDataverseManaged(driverId)) {
-            allowedEndpoints = new String[1];
-            allowedEndpoints[0] = getConfigParamForDriver(driverId, TRANSFER_ENDPOINT_WITH_BASEPATH);
-            if (allowedEndpoints[0] == null) {
-                throw new IOException(
-                        "dataverse.files." + driverId + "." + TRANSFER_ENDPOINT_WITH_BASEPATH + " is required");
+            final String value = getConfigParamForDriver(driverId, TRANSFER_ENDPOINT_WITH_BASEPATH);
+            if (value == null) {
+                throw new IOException("dataverse.files." + driverId + "." + TRANSFER_ENDPOINT_WITH_BASEPATH + " is required");
             }
+            return new String[] { value };
         } else {
-            String rawEndpoints = getConfigParamForDriver(driverId, REFERENCE_ENDPOINTS_WITH_BASEPATHS);
-            if (rawEndpoints != null) {
-                allowedEndpoints = CsvUtil.split(
-                    getConfigParamForDriver(driverId, REFERENCE_ENDPOINTS_WITH_BASEPATHS)
-                ).toArray(new String[0]);
-            }
-            if (rawEndpoints == null || allowedEndpoints == null || allowedEndpoints.length == 0) {
+            final String raw = getConfigParamForDriver(driverId, REFERENCE_ENDPOINTS_WITH_BASEPATHS);
+            if (raw == null) {
                 throw new IOException("dataverse.files." + driverId + ".base-url is required");
             }
+            // CsvUtil.split never returns null; may return empty list if raw is blank.
+            final List<String> list = CsvUtil.split(raw);
+            if (list.isEmpty()) {
+                throw new IOException("dataverse.files." + driverId + ".base-url is required");
+            }
+            return list.toArray(new String[0]);
         }
-        return allowedEndpoints;
     }
 
 

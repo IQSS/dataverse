@@ -1,19 +1,23 @@
 package edu.harvard.iq.dataverse.filter;
 
-import jakarta.servlet.*;
-import jakarta.servlet.annotation.WebFilter;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Set;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.util.CsvUtil;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * CorsFilter is a servlet filter that handles Cross-Origin Resource Sharing
@@ -43,10 +47,10 @@ public class CorsFilter implements Filter {
     private boolean allowAllOrigins = false;
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+    public void init(final FilterConfig filterConfig) throws ServletException {
         // Parse allowed origins list (optional)
         // Treat CORS origin list as optional: when absent, CORS is disabled (see CorsFilterTest.disabledCors_skipsHeaders)
-        List<String> originTokens = JvmSettings.CORS_ORIGIN.lookupCsvListOptional().orElse(List.of());
+        final List<String> originTokens = JvmSettings.CORS_ORIGIN.lookupCsvListOptional().orElse(List.of());
         allowCors = !originTokens.isEmpty();
 
         if (allowCors) {
@@ -55,8 +59,7 @@ public class CorsFilter implements Filter {
                 allowAllOrigins = true;
                 allowedOrigins = Collections.emptySet();
             } else {
-                allowedOrigins = originTokens.stream().map(CsvUtil::sanitize)
-                        .collect(Collectors.toCollection(HashSet::new));
+                allowedOrigins = Set.copyOf(originTokens);
             }
 
             methods = JvmSettings.CORS_METHODS.lookupCsvListOptional()
@@ -72,13 +75,14 @@ public class CorsFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain)
+    public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse, final FilterChain chain)
             throws IOException, ServletException {
         if (allowCors) {
-            HttpServletRequest request = (HttpServletRequest) servletRequest;
-            HttpServletResponse response = (HttpServletResponse) servletResponse;
+            final HttpServletRequest request = (HttpServletRequest) servletRequest;
+            final HttpServletResponse response = (HttpServletResponse) servletResponse;
 
-            String requestOrigin = CsvUtil.sanitize(request.getHeader("Origin"));
+            final String originHeader = request.getHeader("Origin");
+            final String requestOrigin = originHeader == null ? null : originHeader.trim();
 
             // Decide ACAO value
             if (allowAllOrigins) {
@@ -97,12 +101,12 @@ public class CorsFilter implements Filter {
         chain.doFilter(servletRequest, servletResponse);
     }
 
-    private String appendVary(String existing, String token) {
+    private String appendVary(final String existing, final String token) {
         if (existing == null || existing.isEmpty()) {
             return token;
         }
         // Avoid duplicate tokens in Vary
-        Set<String> tokens = Arrays.stream(existing.split(","))
+        final Set<String> tokens = Arrays.stream(existing.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .collect(Collectors.toCollection(HashSet::new));
