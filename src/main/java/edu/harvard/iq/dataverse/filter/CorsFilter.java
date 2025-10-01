@@ -59,6 +59,7 @@ public class CorsFilter implements Filter {
                 allowAllOrigins = true;
                 allowedOrigins = Collections.emptySet();
             } else {
+                // Origin tokens already had surrounding comma-whitespace removed by CsvUtil; we only trim here when reading the header.
                 allowedOrigins = Set.copyOf(originTokens);
             }
 
