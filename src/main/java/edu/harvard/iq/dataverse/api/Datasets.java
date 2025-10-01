@@ -3138,8 +3138,15 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/compareSummary")
-    public Response getCompareVersionsSummary(@Context ContainerRequestContext crc, @PathParam("id") String id,
-                                      @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getCompareVersionsSummary(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+        return response(req -> {
+            try {
+                return ok(json(execCommand(new GetDatasetVersionSummariesCommand(req, findDatasetOrDie(id)))));
+            } catch (WrappedResponse wr) {
+                return wr.getResponse();
+            }
+        }, getRequestUser(crc));
+        /*
         try {
             Dataset dataset = findDatasetOrDie(id);
             User user = getRequestUser(crc);
@@ -3188,7 +3195,7 @@ public class Datasets extends AbstractApiBean {
             return ok(differenceSummaries);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
-        }
+        }*/
     }
 
     private JsonObject getDeaccessionJson(DatasetVersion dv) {

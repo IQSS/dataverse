@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.datasetversionsummaries.DatasetVersionSummary;
 import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
@@ -1684,5 +1685,10 @@ public class JsonPrinter {
         }
 
         return notificationsArray;
+    }
+
+    public static JsonArrayBuilder json(List<DatasetVersionSummary> datasetVersionSummaries) {
+        // TODO
+        return Json.createArrayBuilder();
     }
 }
