@@ -1150,7 +1150,8 @@ Update Collection Input Levels
 
 Updates the dataset field type input levels in a collection.
 
-Please note that this endpoint overwrites all the input levels of the collection page, so if you want to keep the existing ones, you will need to add them to the JSON request body.
+Please note that this endpoint does not change previously updated input levels of the collection page, so if you want to add new levels or modify existing ones, you will need to include them in the JSON request body.
+In order to delete input levels you must call this API with an empty list to delete all of the input levels, then call this API with the new list of input levels.
 
 If one of the input levels corresponds to a dataset field type belonging to a metadata block that does not exist in the collection, the metadata block will be added to the collection.
 
