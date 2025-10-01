@@ -4543,12 +4543,32 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
     }
+    
+     public static Response updateDataverseInputLevels(String dataverseAlias, String[] inputLevelNames, boolean[] requiredInputLevels, boolean[] includedInputLevels, boolean[] displayOnCreate, String apiToken) {
+        JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
+        for (int i = 0; i < inputLevelNames.length; i++) {
+            inputLevelsArrayBuilder.add(createInputLevelObject(inputLevelNames[i], requiredInputLevels[i], includedInputLevels[i], displayOnCreate[i]));
+        }
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(inputLevelsArrayBuilder.build().toString())
+                .contentType(ContentType.JSON)
+                .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
+    }
 
     private static JsonObjectBuilder createInputLevelObject(String name, boolean required, boolean include) {
         return Json.createObjectBuilder()
                 .add("datasetFieldTypeName", name)
                 .add("required", required)
                 .add("include", include);
+    }
+    
+    private static JsonObjectBuilder createInputLevelObject(String name, boolean required, boolean include, boolean displayOnCreate) {
+        return Json.createObjectBuilder()
+                .add("datasetFieldTypeName", name)
+                .add("required", required)
+                .add("include", include)
+                .add("displayOnCreate", displayOnCreate);
     }
 
     public static Response getOpenAPI(String accept, String format) {
