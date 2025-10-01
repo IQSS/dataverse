@@ -2641,7 +2641,7 @@ public class Datasets extends AbstractApiBean {
                 canSeeStatus = permissionSvc.requestOn(createDataverseRequest(user), ds).has(Permission.PublishDataset);
             }
 
-            if (dsv.isDraft() && (canSeeStatus)) {
+            if (canSeeStatus) {
                 List<CurationStatus> statuses = includeHistory ? dsv.getCurationStatuses() : Collections.singletonList(dsv.getCurrentCurationStatus());
                 if (includeHistory) {
                     JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
