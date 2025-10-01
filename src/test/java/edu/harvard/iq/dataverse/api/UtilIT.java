@@ -5001,4 +5001,12 @@ public class UtilIT {
                 .when()
                 .get(callbackUrl);
     }
+
+    public static Response getDataverseMetadataLanguage(String alias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/"
+                        + alias
+                        + "/metadataLanguage");
+    }
 }

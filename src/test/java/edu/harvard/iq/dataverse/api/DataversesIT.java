@@ -2457,4 +2457,35 @@ public class DataversesIT {
         UtilIT.makeSuperUser(username);
         return adminApiToken;
     }
+    
+    @Test
+    public void testGetDataverseMetadataLanguage() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        UtilIT.deleteSetting(":MetadataLanguages");
+        Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken);
+
+        createDataverse1Response.prettyPrint();
+        createDataverse1Response.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        String alias = UtilIT.getAliasFromResponse(createDataverse1Response);
+
+        Response noLang = UtilIT.getDataverseMetadataLanguage(alias, apiToken);
+        noLang.prettyPrint();
+
+        noLang.then().assertThat().body("data", equalTo(List.of()));
+
+        UtilIT.setSetting(":MetadataLanguages",
+                        "[{\"locale\":\"en\",\"title\":\"English\"},{\"locale\":\"hu\",\"title\":\"magyar\"}]");
+        Response allLangs = UtilIT.getDataverseMetadataLanguage(alias, apiToken);
+        allLangs.prettyPrint();
+        allLangs.then().assertThat()
+                        .body("data.size()", equalTo(2))
+                        .and().body("data[0].locale", equalTo("en"))
+                        .and().body("data[1].locale", equalTo("hu"));
+
+    }
+
 }
