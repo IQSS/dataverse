@@ -171,7 +171,7 @@ class CorsFilterTest {
     }
 
     @Test
-    void sanitizesQuotedHeaderLists() throws Exception {
+    void quotedHeaderListsPreserved() throws Exception {
         System.setProperty("dataverse.cors.origin", "https://x.example");
         System.setProperty("dataverse.cors.headers.allow", "\"Accept, X-Dataverse-key\"");
         System.setProperty("dataverse.cors.headers.expose", "\"Accept-Ranges, Content-Range\"");
@@ -186,9 +186,10 @@ class CorsFilterTest {
         HttpServletResponse res = mock(HttpServletResponse.class);
 
         sut.doFilter(req, res, mock(FilterChain.class));
-
-        verify(res).setHeader("Access-Control-Allow-Headers", "Accept, X-Dataverse-key");
-        verify(res).setHeader("Access-Control-Expose-Headers", "Accept-Ranges, Content-Range");
+        
+        // With simplified CsvUtil we now preserve surrounding quotes provided by admin config.
+        verify(res).setHeader("Access-Control-Allow-Headers", "\"Accept, X-Dataverse-key\"");
+        verify(res).setHeader("Access-Control-Expose-Headers", "\"Accept-Ranges, Content-Range\"");
         verify(res).setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     }
 

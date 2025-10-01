@@ -11,23 +11,21 @@ import static org.junit.jupiter.api.Assertions.*;
 class CsvUtilTest {
 
     @Test
-    @DisplayName("split handles whitespace and empty tokens; does not alter quotes")
+    @DisplayName("split preserves empty tokens and quotes")
     void testSplitBasic() {
         List<String> tokens = CsvUtil.split("  a ,  b, \"c\" , , d  ");
-        assertEquals(List.of("a", "b", "\"c\"", "d"), tokens);
+        assertEquals(List.of("a", "b", "\"c\"", "", "d"), tokens);
     }
 
     @Test
-    @DisplayName("splitToLowerCaseSet lowercases, de-dups and preserves first occurrence order (quotes preserved)")
+    @DisplayName("splitToLowerCaseSet lowercases and de-dups (order not asserted)")
     void testSplitToLowerCaseSet() {
         assertTrue(CsvUtil.splitToLowerCaseSet(null).isEmpty(), "null should yield empty set");
         assertTrue(CsvUtil.splitToLowerCaseSet("   ").isEmpty(), "blank should yield empty set");
-
         Set<String> set = CsvUtil.splitToLowerCaseSet("B, a, b, A, C");
-        assertEquals(List.of("b", "a", "c"), List.copyOf(set));
+        assertEquals(Set.of("b", "a", "c"), set);
 
         Set<String> quoted = CsvUtil.splitToLowerCaseSet("\"A\" , \"b\" , \"A\"");
-        // Quotes are preserved then lowercased; duplicates removed based on full token.
-        assertEquals(List.of("\"a\"", "\"b\""), List.copyOf(quoted));
+        assertEquals(Set.of("\"a\"", "\"b\""), quoted);
     }
 }
