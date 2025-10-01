@@ -57,7 +57,7 @@ Allow CORS for S3 Buckets
 **IMPORTANT:** One additional step that is required to enable direct uploads via a Dataverse installation and for direct download to work with previewers and direct upload to work with dvwebloader (:ref:`folder-upload`) is to allow cross site (CORS) requests on your S3 store.
 The example below shows how to enable CORS rules (to support upload and download) on a bucket using the AWS CLI command line tool. Note that you may want to limit the AllowedOrigins and/or AllowedHeaders further.  https://github.com/gdcc/dataverse-previewers/wiki/Using-Previewers-with-download-redirects-from-S3 has some additional information about doing this.
 
-Dataverse itself will only emit the necessary ``Access-Control-*`` headers to browsers when CORS has been explicitly enabled via the JVM/MicroProfile setting :ref:`dataverse.cors.origin <dataverse.cors.origin>`. The legacy database setting ``:AllowCors`` no longer turns CORS on. You must both:
+Dataverse itself will only emit the necessary ``Access-Control-*`` headers to browsers when CORS has been explicitly enabled via the JVM/MicroProfile setting :ref:`dataverse.cors.origin <dataverse.cors.origin>`. You must both:
 
 * Configure an appropriate ``dataverse.cors.origin`` value (single origin, comma-separated list, or ``*``) on the Dataverse application server; and
 * Configure a matching/compatible CORS policy on each S3 bucket (and any CDN/proxy in front of it) that will be used for direct upload or for redirect (download-redirect) operations consumed by previewers.

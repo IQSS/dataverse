@@ -3692,7 +3692,6 @@ Behavior:
 
 * When a list of origins is configured, Dataverse echoes the single matching request ``Origin`` value in ``Access-Control-Allow-Origin`` and adds ``Vary: Origin`` to support correct proxy/CDN caching.
 * When ``*`` is configured, ``Access-Control-Allow-Origin: *`` is sent and ``Vary`` is not modified.
-* The legacy database setting ``:AllowCors`` is deprecated and no longer enables CORS automatically; you must configure ``dataverse.cors.origin``.
 
 .. _dataverse.cors.methods:
 
