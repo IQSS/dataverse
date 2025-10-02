@@ -3137,10 +3137,13 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/compareSummary")
-    public Response getCompareVersionsSummary(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+    public Response getCompareVersionsSummary(@Context ContainerRequestContext crc,
+                                              @PathParam("id") String id,
+                                              @QueryParam("limit") Integer limit,
+                                              @QueryParam("offset") Integer offset) {
         return response(req -> {
             try {
-                return ok(jsonDatasetVersionSummaries(execCommand(new GetDatasetVersionSummariesCommand(req, findDatasetOrDie(id)))));
+                return ok(jsonDatasetVersionSummaries(execCommand(new GetDatasetVersionSummariesCommand(req, findDatasetOrDie(id), limit, offset))));
             } catch (WrappedResponse wr) {
                 return wr.getResponse();
             }

@@ -14,14 +14,21 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * A command that retrieves a paginated list of {@link DatasetVersionSummary} for the versions of a given {@link Dataset}.
+ **/
 @RequiredPermissions({})
 public class GetDatasetVersionSummariesCommand extends AbstractCommand<List<DatasetVersionSummary>> {
 
     private final Dataset dataset;
+    private final Integer limit;
+    private final Integer offset;
 
-    public GetDatasetVersionSummariesCommand(DataverseRequest request, Dataset dataset) {
+    public GetDatasetVersionSummariesCommand(DataverseRequest request, Dataset dataset, Integer limit, Integer offset) {
         super(request, dataset);
         this.dataset = dataset;
+        this.limit = limit;
+        this.offset = offset;
     }
 
     @Override
@@ -34,8 +41,8 @@ public class GetDatasetVersionSummariesCommand extends AbstractCommand<List<Data
 
         List<DatasetVersion> versions = ctxt.datasetVersion().findVersions(
                 dataset.getId(),
-                null,
-                null,
+                offset,
+                limit,
                 canViewUnpublished,
                 true
         );
