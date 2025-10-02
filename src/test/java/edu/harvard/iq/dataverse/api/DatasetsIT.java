@@ -4189,6 +4189,15 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("message", equalTo("Setting File Access Request or Terms of Access is not permitted on a public installation."));
         //Setting File Access Request or Terms of Access is not permitted on a public installation.
         
+        
+       pathToJsonFile = "src/test/resources/json/update-dataset-terms-no-access.json"; 
+        
+        updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPid, apiToken, pathToJsonFile);
+        updateTerms.prettyPrint();
+        // should be ok because it doesn't update request or terms of access
+        updateTerms.then().assertThat()
+                .statusCode(OK.getStatusCode());        
+                
         //reset public install
         UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, publicInstall);
 
