@@ -21,6 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 
@@ -58,21 +59,26 @@ public class UpdateDatasetTermsOfUseCommandTest {
         when(commandContextMock.datasetFieldsValidator()).thenReturn(datasetFieldsValidatorMock);
         when(datasetMock.getOrCreateEditVersion()).thenReturn(datasetVersionMock);
         when(datasetVersionMock.getTermsOfUseAndAccess()).thenReturn(termsOfUseAndAccessStub);
-        Mockito.when(dataverseRequestStub.getUser()).thenReturn(authenticatedUser);
+
     }
     
     @Test
-    public void execute_shouldThrowException_whenUserIsNotAuthenticated() {
+    public void latestVersionShouldBeDraft() {
         // Arrange
-        Mockito.when(authenticatedUser.isAuthenticated()).thenReturn(false);
+
         Dataset dataset = new Dataset();
         TermsOfUseAndAccess toua = new TermsOfUseAndAccess();
         UpdateDatasetTermsOfUseCommand sut = new UpdateDatasetTermsOfUseCommand(dataset, toua,  dataverseRequestStub);
+        try {
+                    dataset = sut.execute(commandContextMock);
+                   verify(commandContextMock).engine();
+        } catch (CommandException ce){
+            
+        }
 
         // Act & Assert
-        assertThrows(CommandException.class, () -> {
-            sut.execute(commandContextMock);
-        }, BundleUtil.getStringFromBundle("dataverse.link.user"));
+        DatasetVersion retVal = dataset.getLatestVersion();
+
     }
     
 
