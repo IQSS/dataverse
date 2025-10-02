@@ -37,7 +37,7 @@ jobs:
         steps:
           # TODO: As part of #10618 change to setup-maven custom action
           # Basic setup chores
-          - uses: actions/checkout@v4
+          - uses: actions/checkout@v5
           - name: Set up JDK ${{ matrix.jdk }}
             uses: actions/setup-java@v5
             with:
@@ -103,7 +103,7 @@ jobs:
         steps:
             # TODO: As part of #10618 change to setup-maven custom action
             # Basic setup chores
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
             - name: Set up JDK ${{ matrix.jdk }}
               uses: actions/setup-java@v5
               with:
@@ -137,7 +137,7 @@ jobs:
         steps:
             # TODO: As part of #10618 change to setup-maven custom action
             # Basic setup chores
-          - uses: actions/checkout@v4
+          - uses: actions/checkout@v5
           - uses: actions/setup-java@v5
             with:
                 java-version: '17'
