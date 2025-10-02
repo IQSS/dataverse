@@ -4127,11 +4127,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
 
-        Response getDatasetJsonBeforeUpdate = UtilIT.nativeGet(datasetId, apiToken);
-        getDatasetJsonBeforeUpdate.prettyPrint();
-        getDatasetJsonBeforeUpdate.then().assertThat()
-                .statusCode(OK.getStatusCode());
-
         String pathToJsonFile = "src/test/resources/json/update-dataset-terms-access.json";
         Response updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPid, apiToken, pathToJsonFile);
         updateTerms.prettyPrint();
@@ -4175,18 +4170,12 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         //Make installation "public install" to see that terms of access may not be set
         UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, "true");
 
-        createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
-        createDataset.prettyPrint();
-        createDataset.then().assertThat()
-                .statusCode(CREATED.getStatusCode());
-
         updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPid, apiToken, pathToJsonFile);
         updateTerms.prettyPrint();
         // should fail because its now a public install
         updateTerms.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo("Setting File Access Request or Terms of Access is not permitted on a public installation."));
-        //Setting File Access Request or Terms of Access is not permitted on a public installation.
 
         pathToJsonFile = "src/test/resources/json/update-dataset-terms-no-access.json";
 
@@ -4196,9 +4185,39 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         updateTerms.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.fileAccessRequest", equalTo(false));
+        
+        String badPID = "QQQAndABatmanSymbol";
+        updateTerms = UtilIT.updateDatasetTermsAndAccess(badPID, apiToken, pathToJsonFile);
+        updateTerms.prettyPrint();
+        // should get bad Request Dataset not found....
+        updateTerms.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                 .body("message", containsString("QQQ"));;
 
         //reset public install
         UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, publicInstall);
+        
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        //for cleanup
+        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
+        
+        // Clean up
+        
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        destroyDatasetResponse.prettyPrint();
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+        
+        destroyDatasetResponse = UtilIT.destroyDataset(datasetId2, apiToken);
+        destroyDatasetResponse.prettyPrint();
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+        
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+        
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());
 
     }
 
