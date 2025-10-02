@@ -19,7 +19,7 @@ import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
-import edu.harvard.iq.dataverse.datasetversionsummaries.DatasetVersionSummary;
+import edu.harvard.iq.dataverse.datasetversionsummaries.*;
 import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
@@ -1687,8 +1687,45 @@ public class JsonPrinter {
         return notificationsArray;
     }
 
-    public static JsonArrayBuilder json(List<DatasetVersionSummary> datasetVersionSummaries) {
-        // TODO
-        return Json.createArrayBuilder();
+    public static JsonArray jsonDatasetVersionSummaries(List<DatasetVersionSummary> summaries) {
+        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        summaries.stream()
+                .filter(Objects::nonNull)
+                .map(JsonPrinter::json)
+                .forEach(arrayBuilder::add);
+
+        return arrayBuilder.build();
+    }
+
+    private static JsonObjectBuilder json(DatasetVersionSummary summary) {
+        JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder()
+                .add("id", summary.id())
+                .add("versionNumber", summary.versionNumber())
+                .add("versionNote", summary.versionNote())
+                .add("contributors", summary.contributorNames())
+                .add("publishedOn", summary.publicationDate());
+
+        DatasetVersionSummaryContent content = summary.content();
+        if (content instanceof DatasetVersionSummaryContentDeaccessioned deaccessioned) {
+            JsonObject deaccessionedDetailsJsonObject = jsonObjectBuilder()
+                    .add("reason", deaccessioned.getDeaccessionNote())
+                    .add("url", deaccessioned.getDeaccessionLink())
+                    .build();
+            JsonObject deaccessionedJsonObject = jsonObjectBuilder()
+                    .add("deaccessioned", deaccessionedDetailsJsonObject)
+                    .build();
+            jsonObjectBuilder.add("summary", deaccessionedJsonObject
+            );
+        } else if (content instanceof DatasetVersionSummaryContentSimple simple) {
+            jsonObjectBuilder.add("summary", simple.getValue().name());
+
+        } else if (content instanceof DatasetVersionSummaryContentDifferences differences) {
+            jsonObjectBuilder.add("summary", differences
+                    .getDatasetVersionDifference()
+                    .getSummaryDifferenceAsJson()
+                    .build());
+        }
+
+        return jsonObjectBuilder;
     }
 }

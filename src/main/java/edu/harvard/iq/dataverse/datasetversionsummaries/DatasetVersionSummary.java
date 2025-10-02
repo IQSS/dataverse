@@ -10,7 +10,8 @@ import java.util.Optional;
  * An immutable data carrier representing a summary of a DatasetVersion.
  */
 public record DatasetVersionSummary(
-        String versionId,
+        Long id,
+        String versionNumber,
         String versionNote,
         String contributorNames,
         String publicationDate,
@@ -28,6 +29,7 @@ public record DatasetVersionSummary(
      */
     public static Optional<DatasetVersionSummary> from(DatasetVersion datasetVersion) {
         return Optional.ofNullable(datasetVersion).map(version -> new DatasetVersionSummary(
+                version.getId(),
                 version.getFriendlyVersionNumber(),
                 version.getVersionNote(),
                 version.getContributorNames(),
@@ -46,8 +48,7 @@ public record DatasetVersionSummary(
     private static DatasetVersionSummaryContent determineContent(DatasetVersion version) {
         // Priority 1: The version has explicit differences calculated.
         if (version.getDefaultVersionDifference() != null) {
-            // TODO
-            return new DatasetVersionSummaryContentDifferences();
+            return new DatasetVersionSummaryContentDifferences(version.getDefaultVersionDifference());
         }
 
         // Priority 2: Deaccessioned status is a critical override.

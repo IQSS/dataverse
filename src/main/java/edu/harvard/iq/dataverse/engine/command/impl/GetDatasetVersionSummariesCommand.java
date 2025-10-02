@@ -7,12 +7,14 @@ import edu.harvard.iq.dataverse.datasetversionsummaries.DatasetVersionSummary;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 
+@RequiredPermissions({})
 public class GetDatasetVersionSummariesCommand extends AbstractCommand<List<DatasetVersionSummary>> {
 
     private final Dataset dataset;
