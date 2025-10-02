@@ -4094,7 +4094,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
     @Test
     public void testUpdateDatasetTerms() throws IOException {
-        
+
         //get publicInstall setting so we can change it back
         Response publicInstallResponse = UtilIT.getSetting(SettingsServiceBean.Key.PublicInstall);
         //TODO: fix this its a little hacky
@@ -4102,7 +4102,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // make sure this is not a public installation
         UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, "false");
-        
+
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         createUser.then().assertThat()
@@ -4139,9 +4139,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode());
 
         //Add another dataset with restricted files in order to get the access info to show up
-        
-        
-         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         int datasetId2 = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
         String datasetPersistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
@@ -4149,22 +4147,23 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPersistentId, apiToken, pathToJsonFile);
         updateTerms.prettyPrint();
         updateTerms.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        
-        // Upload file
+                .statusCode(OK.getStatusCode())
+                .body("data.fileAccessRequest", equalTo(true));
+
         String pathToTestFile = "src/test/resources/images/coffeeshop.png";
         Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId2), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         String fileId = JsonPath.from(uploadResponse.body().asString()).getString("data.files[0].dataFile.id");
-        
+
         updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPersistentId, apiToken, pathToJsonFile);
         updateTerms.prettyPrint();
         updateTerms.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.termsOfAccess", equalTo("For access to restriced files please see read me file"));
+                .body("data.fileAccessRequest", equalTo(true))
+                .body("data.termsOfAccess", equalTo("For access to restricted files please see read me file"));
 
-       // Restrict file
+        // Restrict file
         Response restrictFileResponse = UtilIT.restrictFile(fileId, true, apiToken);
         restrictFileResponse.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -4172,15 +4171,15 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         publishDatasetResponse.prettyPrint();
         publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
-        
+
         //Make installation "public install" to see that terms of access may not be set
         UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, "true");
-        
+
         createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDataset.prettyPrint();
         createDataset.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
-        
+
         updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPid, apiToken, pathToJsonFile);
         updateTerms.prettyPrint();
         // should fail because its now a public install
@@ -4188,16 +4187,16 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo("Setting File Access Request or Terms of Access is not permitted on a public installation."));
         //Setting File Access Request or Terms of Access is not permitted on a public installation.
-        
-        
-       pathToJsonFile = "src/test/resources/json/update-dataset-terms-no-access.json"; 
-        
+
+        pathToJsonFile = "src/test/resources/json/update-dataset-terms-no-access.json";
+
         updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPid, apiToken, pathToJsonFile);
         updateTerms.prettyPrint();
         // should be ok because it doesn't update request or terms of access
         updateTerms.then().assertThat()
-                .statusCode(OK.getStatusCode());        
-                
+                .statusCode(OK.getStatusCode())
+                .body("data.fileAccessRequest", equalTo(false));
+
         //reset public install
         UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, publicInstall);
 

@@ -1,7 +1,7 @@
 {
     "termsOfUseAndAccess": {
-        "fileAccessRequest": "true",
-        "termsOfAccess": "For access to restriced files please see read me file",
+        "fileAccessRequest": true,
+        "termsOfAccess": "For access to restricted files please see read me file",
         "dataAccessPlace": "dataAccessPlace",
         "originalArchive": "originalArchive",
         "availabilityStatus": "availabilityStatus",

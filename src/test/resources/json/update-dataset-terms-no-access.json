@@ -1,6 +1,6 @@
 {
     "termsOfUseAndAccess": {
-        "fileAccessRequest": "false",
+        "fileAccessRequest": false,
         "termsOfAccess": "",
         "dataAccessPlace": "dataAccessPlace",
         "originalArchive": "originalArchive",
