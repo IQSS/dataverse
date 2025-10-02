@@ -20,6 +20,7 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import jakarta.json.Json;
@@ -30,6 +31,8 @@ import jakarta.ws.rs.core.Response.Status;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.CoreMatchers.*;
@@ -2459,10 +2462,10 @@ public class DataversesIT {
     }
     
     @Test
-    public void testGetDataverseMetadataLanguage() {
+    @ResourceLock(value = "")
+    public void testDataverseMetadataLanguage() {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
-        String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         UtilIT.deleteSetting(":MetadataLanguages");
         Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken);
@@ -2485,7 +2488,12 @@ public class DataversesIT {
                         .body("data.size()", equalTo(2))
                         .and().body("data[0].locale", equalTo("en"))
                         .and().body("data[1].locale", equalTo("hu"));
-
+        
+        Response english = UtilIT.setDataverseMetadataLanguage(alias, apiToken, "en");
+        english.then().assertThat().body("data", equalTo(List.of(Map.of("locale", "en", "title", "English"))));
+        Response singleLang = UtilIT.getDataverseMetadataLanguage(alias, apiToken);
+        singleLang.then().assertThat().body("data", equalTo(List.of(Map.of("locale", "en", "title", "English"))));
+        UtilIT.deleteSetting(":MetadataLanguages");
     }
 
 }
