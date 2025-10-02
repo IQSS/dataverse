@@ -171,41 +171,66 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataFileTags")
             .getSingleResult();
     }
-    
+
     /**
-     * Performs the same database lookup as the one behind Dataset.getVersions().
-     * Additionally, provides the arguments for selecting a partial list of 
-     * (length-offset) versions for pagination, plus the ability to pre-select 
-     * only the publicly-viewable versions. 
-     * It is recommended that individual software components utilize the 
-     * ListVersionsCommand, instead of calling this service method directly.
-     * @param datasetId
-     * @param offset for pagination through long lists of versions
-     * @param length for pagination through long lists of versions
-     * @param includeUnpublished retrieves all the versions, including drafts and deaccessioned. 
-     * @return (partial) list of versions
+     * Performs the same database lookup as the one behind {@code Dataset.getVersions()}.
+     * <p>
+     * Additionally, supports:
+     * <ul>
+     *   <li>Pagination via {@code offset} and {@code length}</li>
+     *   <li>Filtering by visibility (all, released only, or released + deaccessioned)</li>
+     * </ul>
+     * <p>
+     * It is recommended that individual software components utilize
+     * {@link edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand},
+     * instead of calling this service method directly.
+     *
+     * @param datasetId the dataset identifier
+     * @param offset    pagination offset (nullable)
+     * @param length    pagination length (nullable)
+     * @param includeAllVersions if {@code true}, retrieves all versions (drafts, released, and deaccessioned)
+     * @param includeDeaccessioned if {@code true}, includes deaccessioned versions
+     *                             when {@code includeAll} is {@code false}
+     * @return a (possibly partial) list of dataset versions
      */
-    public List<DatasetVersion> findVersions(Long datasetId, Integer offset, Integer length, boolean includeUnpublished) {
-        TypedQuery<DatasetVersion> query;  
-        if (includeUnpublished) {
+    public List<DatasetVersion> findVersions(Long datasetId,
+                                             Integer offset,
+                                             Integer length,
+                                             boolean includeAllVersions,
+                                             boolean includeDeaccessioned) {
+        TypedQuery<DatasetVersion> query;
+
+        if (includeAllVersions) {
             query = em.createNamedQuery("DatasetVersion.findByDataset", DatasetVersion.class);
+        } else if (includeDeaccessioned) {
+            query = em.createNamedQuery("DatasetVersion.findByDesiredStatesAndDataset", DatasetVersion.class);
+            query.setParameter("states", List.of(
+                    VersionState.RELEASED,
+                    VersionState.DEACCESSIONED
+            ));
         } else {
-            query = em.createNamedQuery("DatasetVersion.findReleasedByDataset", DatasetVersion.class)
-                    .setParameter("datasetId", datasetId);
+            query = em.createNamedQuery("DatasetVersion.findReleasedByDataset", DatasetVersion.class);
         }
-        
+
         query.setParameter("datasetId", datasetId);
-        
+
         if (offset != null) {
             query.setFirstResult(offset);
         }
         if (length != null) {
             query.setMaxResults(length);
         }
-        
+
         return query.getResultList();
     }
-    
+
+    public List<DatasetVersion> findVersions(Long datasetId,
+                                             Integer offset,
+                                             Integer length,
+                                             boolean includeAllVersions) {
+        return findVersions(datasetId, offset, length, includeAllVersions, false);
+    }
+
     public DatasetVersion findByFriendlyVersionNumber(Long datasetId, String friendlyVersionNumber) {
         Long majorVersionNumber = null;
         Long minorVersionNumber = null;

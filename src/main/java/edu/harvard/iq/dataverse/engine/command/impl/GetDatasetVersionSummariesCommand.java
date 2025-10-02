@@ -26,16 +26,23 @@ public class GetDatasetVersionSummariesCommand extends AbstractCommand<List<Data
 
     @Override
     public List<DatasetVersionSummary> execute(CommandContext ctxt) throws CommandException {
-        return dataset.getVersions().stream()
-                .filter(dv -> versionRequiresSummary(ctxt, dv))
+        boolean canViewUnpublished = ctxt.permissions().hasPermissionsFor(
+                getRequest().getUser(),
+                dataset,
+                EnumSet.of(Permission.ViewUnpublishedDataset)
+        );
+
+        List<DatasetVersion> versions = ctxt.datasetVersion().findVersions(
+                dataset.getId(),
+                null,
+                null,
+                canViewUnpublished,
+                true
+        );
+
+        return versions.stream()
                 .map(DatasetVersionSummary::from)
                 .flatMap(Optional::stream)
                 .toList();
-    }
-
-    private boolean versionRequiresSummary(CommandContext ctxt, DatasetVersion dv) {
-        return dv.isPublished()
-                || dv.isDeaccessioned()
-                || ctxt.permissions().hasPermissionsFor(getRequest().getUser(), dv.getDataset(), EnumSet.of(Permission.ViewUnpublishedDataset));
     }
 }
