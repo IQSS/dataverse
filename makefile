@@ -1,5 +1,5 @@
-
-SPHINX_VERSION = $(shell grep "Sphinx" ./doc/sphinx-guides/requirements.txt | awk -F'==' '{print $$2}')
+# We use "Sphinx=" to avoid packages like Sphinx-Substitution-Extensions
+SPHINX_VERSION = $(shell grep "Sphinx=" ./doc/sphinx-guides/requirements.txt | awk -F'==' '{print $$2}')
 docs-html:
 	docker run -it --rm -v $$(pwd):/docs sphinxdoc/sphinx:$(SPHINX_VERSION) bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make clean && make html"
 
