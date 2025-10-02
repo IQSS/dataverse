@@ -7,13 +7,22 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.8
+----
+
+- For POST /api/files/{id}/metadata passing an empty string ("description":"")  or array ("categories":[]) will no longer be ignored. Empty fields will now clear out the values in the file's metadata. To ignore the fields simply do not include them in the JSON string.
+- For PUT /api/datasets/{id}/editMetadata the query parameter "sourceInternalVersionNumber" has been removed and replaced with "sourceLastUpdateTime" to verify that the data being edited hasn't been modified and isn't stale.
+- For GET /api/dataverses/$dataverse-alias/links the Json response has changed breaking the backward compatibility of the API.
+- For PUT /api/dataverses/$dataverse-alias/inputLevels custom input levels that had been previously set will no longer be deleted. To delete input levels send an empty list (deletes all), then send the new/modified list.
+- For GET /api/externalTools and /api/externalTools/{id} the responses are now formatted as JSON (previously the toolParameters and allowedApiCalls were a JSON object and array (respectively) that were serialized as JSON strings) and any configured "requirements" are included.
+
 v6.7
 ----
 
 - An undocumented :doc:`search` parameter called "show_my_data" has been removed. It was never exercised by tests and is believed to be unused. API users should use the :ref:`api-mydata` API instead.
 - /api/datasets/{id}/curationStatus API now includes a JSON object with curation label, createtime, and assigner rather than a string 'label' and it supports a new boolean includeHistory parameter (default false) that returns a JSON array of statuses
 - /api/datasets/{id}/listCurationStates includes new columns "Status Set Time" and "Status Set By" columns listing the time the current status was applied and by whom. It also supports the boolean includeHistory parameter. 
-- Due to updates in libraries used by Dataverse, XML serialization may have changed slightly with respect to whether self-closing tags are used for empty elements. This primiarily affects XML-based metadata exports. The XML structure of the export itself has not changed, so this is only an incompatibility if you are not using an XML parser.
+- Due to updates in libraries used by Dataverse, XML serialization may have changed slightly with respect to whether self-closing tags are used for empty elements. This primarily affects XML-based metadata exports. The XML structure of the export itself has not changed, so this is only an incompatibility if you are not using an XML parser.
 
 v6.6
 ----

@@ -679,7 +679,15 @@ public class SettingsServiceBean {
          */
         StoreIngestedTabularFilesWithVarHeaders,
 
-        ContactFeedbackMessageSizeLimit
+        ContactFeedbackMessageSizeLimit,
+        //Experimental setting to allow connecting to a GET external search service expecting a GET request with query parameter mirroring the search API query parameters (without search_service) 
+        GetExternalSearchUrl,
+        //Experimental setting to provide a display name for the GET external search service
+        GetExternalSearchName,
+        //Experimental setting to allow connecting to a POST external search service expecting a POST request with a JSON payload mirroring the search API query parameters 
+        PostExternalSearchUrl,
+        //Experimental setting to provide a display name for the POST external search service
+        PostExternalSearchName,
         ;
 
         @Override

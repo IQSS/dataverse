@@ -246,6 +246,8 @@ If you are running an installation with Apache and Payara on the same server, an
 
 You should **NOT** use the configuration option above if you are running in a load-balanced environment, or otherwise have the web server on a different host than the application server.
 
+.. _root-collection-permissions:
+
 Root Dataverse Collection Permissions
 -------------------------------------
 
@@ -957,7 +959,28 @@ Logging & Slow Performance
      - When set to true, all JDBC calls will be logged allowing tracing of all JDBC interactions including SQL.
      - ``false``
 
+Database Configuration Tips
++++++++++++++++++++++++++++
 
+In this section you can find some example scenarios of advanced configuration for the database connection that can improve service performance and availability.
+
+Database Connection Recovery
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Consider the following scenario: if there is no advanced configuration for the database connection and the Dataverse server loses that connection, for example if the database host is down, the server will be "dead" even after the database server is back to normal.
+The only solution to recover Dataverse would be to restart the service. To avoid this situation, the following settings can be used to configure validation of the database connection. 
+This way, the database connection can be automatically recovered after a failure, improving the server availability. For a Docker installation, it is suggested to create an init.d script so that if the container needs to be recreated, these settings will always be configured.
+
+.. code-block:: bash
+
+  # Enable database connection validation
+  asadmin create-jvm-options "-Ddataverse.db.is-connection-validation-required=true"
+  # Configure to use a database table as the validation method
+  asadmin create-jvm-options "-Ddataverse.db.connection-validation-method=table"
+  # Configure the "setting" table to be used for connection validation, but any tables can be used
+  asadmin create-jvm-options "-Ddataverse.db.validation-table-name=setting"
+  # Configure a validation period of 60 seconds, but different values may be used
+  asadmin create-jvm-options "-Ddataverse.db.validate-atmost-once-period-in-seconds=60"
 
 .. _file-storage:
 
@@ -1419,6 +1442,11 @@ And lastly, to start up the SeaweedFS server and various components you could us
 .. code-block:: bash
 
   weed server -s3 -metricsPort=9327 -dir=/data -s3.config=/config.json
+
+`VAST DataStore <https://www.vastdata.com/platform/datastore>`_
+  VAST DataStore must be configured with an S3 gateway. A Dataverse bucket must be created. 
+  Follow `VAST DataStore documentation <https://support.vastdata.com/s/document-item?bundleId=vast-cluster-administrator-s-guide4.7&topicId=managing-access-protocols/s3-object-storage-protocol.html&_LANG=enus>`_ to configure the S3 gateway.
+  Set ``dataverse.files.<id>.path-style-access=true`` since VAST DataStore uses path style access.
 
 **Additional Reported Working S3-Compatible Storage**
 
@@ -3137,27 +3165,36 @@ This setting is useful in cases such as running your Dataverse installation behi
 	"HTTP_VIA",
 	"REMOTE_ADDR"
 	
-.. _dataverse.personOrOrg.assumeCommaInPersonName:
+.. _dataverse.person-or-org.assume-comma-in-person-name:
 
-dataverse.personOrOrg.assumeCommaInPersonName
-+++++++++++++++++++++++++++++++++++++++++++++
+dataverse.person-or-org.assume-comma-in-person-name
++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Please note that this setting is experimental.
 
 The Schema.org metadata and OpenAIRE exports and the Schema.org metadata included in DatasetPages try to infer whether each entry in the various fields (e.g. Author, Contributor) is a Person or Organization. If you are sure that
 users are following the guidance to add people in the recommended family name, given name order, with a comma, you can set this true to always assume entries without a comma are for Organizations. The default is false.
 
-.. _dataverse.personOrOrg.orgPhraseArray:
+``./asadmin create-jvm-options '-Ddataverse.person-or-org.assume-comma-in-person-name=true'``
 
-dataverse.personOrOrg.orgPhraseArray
-++++++++++++++++++++++++++++++++++++
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_PERSON_OR_ORG_ASSUME_COMMA_IN_PERSON_NAME``.
+
+**Note:** This setting was previously called `dataverse.personOrOrg.assumeCommaInPersonName`, which is still available as an alias for backwards compatiblity.
+
+.. _dataverse.person-or-org.org-phrase-array:
+
+dataverse.person-or-org.org-phrase-array
+++++++++++++++++++++++++++++++++++++++++
 
 Please note that this setting is experimental.
 
 The Schema.org metadata and OpenAIRE exports and the Schema.org metadata included in DatasetPages try to infer whether each entry in the various fields (e.g. Author, Contributor) is a Person or Organization.
-If you have examples where an orgization name is being inferred to belong to a person, you can use this setting to force it to be recognized as an organization.
-The value is expected to be a JsonArray of strings. Any name that contains one of the strings is assumed to be an organization. For example, "Project" is a word that is not otherwise associated with being an organization. 
+If you have examples where an organization name is being inferred to belong to a person, you can use this setting to force it to be recognized as an organization.
+The value is expected to be a comma-separated list of strings. Any name that contains one of the strings is assumed to be an organization. For example, "Project" is a word that is not otherwise associated with being an organization.
 
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_PERSON_OR_ORG_ORG_PHRASE_ARRAY``.
+
+**Note:** This setting was previously called `dataverse.personOrOrg.orgPhraseArray` and expected a JsonArray of strings. Please update both the name and value format if using the old setting.
 
 .. _dataverse.api.signature-secret:
 
@@ -3594,6 +3631,41 @@ This setting allows admins to highlight a few of the 1000+ CSL citation styles a
 These will be listed above the alphabetical list of all styles in the "View Styled Citations" pop-up.
 The default value when not set is "chicago-author-date, ieee". 
 
+.. _localcontexts:
+
+localcontexts.url
++++++++++++++++++
+
+.. note::
+   For more information about LocalContexts integration, see :doc:`/installation/localcontexts`.
+
+The URL for the Local Contexts Hub API.
+
+| Example: ``https://localcontextshub.org/``
+| The sandbox URL ``https://sandbox.localcontextshub.org/`` can be used for testing.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_LOCALCONTEXTS_URL``.
+
+localcontexts.api-key
++++++++++++++++++++++
+
+The API key for accessing the Local Contexts Hub.
+
+| Example: ``your_api_key_here``
+| It's recommended to use a password alias for this setting, as described in the :ref:`secure-password-storage` section.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_LOCALCONTEXTS_API_KEY``.
+
+dataverse.search.services.directory
++++++++++++++++++++++++++++++++++++
+
+Experimental. See :doc:`/developers/search-services`.
+
+dataverse.search.default-service
+++++++++++++++++++++++++++++++++
+
+Experimental. See :doc:`/developers/search-services`.
+
 .. _dataverse.cors:
 
 CORS Settings
@@ -3689,7 +3761,13 @@ please find all known feature flags below. Any of these flags can be activated u
       - Specifies that Terms of Service acceptance is handled by the IdP, eliminating the need to include ToS acceptance boolean parameter (termsAccepted) in the OIDC user registration request body. This feature only works when the feature flag ``api-bearer-auth`` is also enabled.
       - ``Off``
     * - api-bearer-auth-use-builtin-user-on-id-match
-      - Allows the use of a built-in user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing built-in user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this feature flag exposes the installation to potential user impersonation issues depending on the specifics of the IdP configured (For example, if it is configured such that an attacker can create a new account in the IdP, or configured social login account, matching a Dataverse built-in account).**
+      - Allows the use of a built-in user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing built-in user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
+      - ``Off``
+    * - api-bearer-auth-use-shib-user-on-id-match
+      - Allows the use of a Shibboleth user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing Shibboleth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
+      - ``Off``
+    * - api-bearer-auth-use-oauth-user-on-id-match
+      - Allows the use of an OAuth user account (GitHub, Google, or ORCID) when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing OAuth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
       - ``Off``
     * - avoid-expensive-solr-join
       - Changes the way Solr queries are constructed for public content (published Collections, Datasets and Files). It removes a very expensive Solr join on all such documents, improving overall performance, especially for large instances under heavy load. Before this feature flag is enabled, the corresponding indexing feature (see next feature flag) must be turned on and a full reindex performed (otherwise public objects are not going to be shown in search results). See :doc:`/admin/solr-search-index`. 
@@ -3714,6 +3792,18 @@ please find all known feature flags below. Any of these flags can be activated u
       - ``Off``
     * - enable-version-note
       - Turns on the ability to add/view/edit/delete per-dataset-version notes intended to provide :ref:`provenance` information about why the dataset/version was created.  
+      - ``Off``
+    * - shibboleth-use-wayfinder
+      - This flag allows an instance to use Shibboleth with InCommon federation services. Our original Shibboleth implementation that relies on DiscoFeed can no longer be used since InCommon discontinued their old-style metadata feed. An alternative mechanism had to be implemented in order to use WayFinder service, their recommended replacements, instead.
+      - ``Off``
+    * - shibboleth-use-localhost
+      - A Shibboleth-using Dataverse instance needs to make network calls to the locally-running ``shibd`` service. The default behavior is to use the address configured via the ``siteUrl`` setting. There are however situations (firewalls, etc.) where localhost would be preferable.
+      - ``Off``
+    * - add-local-contexts-permission-check
+      - Adds a permission check to ensure that the user calling the /api/localcontexts/datasets/{id} API can edit the dataset with that id. This is currently the only use case - see https://github.com/gdcc/dataverse-external-vocab-support/tree/main/packages/local_contexts. The flag adds additional security to stop other uses, but would currently have to be used in conjunction with the api-session-auth feature flag (the security implications of which have not been fully investigated) to still allow adding Local Contexts metadata to a dataset.
+      - ``Off``
+    * - enable-pid-failure-log
+      - Turns on creation of a monthly log file (logs/PIDFailures_<yyyy-MM>.log) showing failed requests for dataset/file PIDs. Can be used directly or with scripts at https://github.com/gdcc/dataverse-recipes/python/pid_reports to alert admins.
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
@@ -5356,3 +5446,14 @@ See also :ref:`cache-rate-limiting`.
 .. _property expression: https://download.eclipse.org/microprofile/microprofile-config-3.1/microprofile-config-spec-3.1.html#property-expressions
 .. _directory config source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Directory.html
 .. _cloud sources: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Cloud/Overview.html
+
+
+:GetExternalSearchUrl
++++++++++++++++++++++
+:GetExternalSearchName
+++++++++++++++++++++++
+:PostExternalSearchUrl
+++++++++++++++++++++++
+:PostExternalSearchName
++++++++++++++++++++++++
+Experimental - settings for Search Services. See :doc:`/developers/search-services`.

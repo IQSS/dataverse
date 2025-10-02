@@ -75,7 +75,7 @@ public enum JvmSettings {
     // INDEX CONCURENCY
     SCOPE_SOLR_CONCURENCY(SCOPE_SOLR, "concurrency"),
     MAX_ASYNC_INDEXES(SCOPE_SOLR_CONCURENCY, "max-async-indexes"),
-    
+
     // RSERVE CONNECTION
     SCOPE_RSERVE(PREFIX, "rserve"),
     RSERVE_HOST(SCOPE_RSERVE, "host"),
@@ -217,6 +217,12 @@ public enum JvmSettings {
     SCOPE_PIDPROVIDERS(SCOPE_SPI, "pidproviders"),
     PIDPROVIDERS_DIRECTORY(SCOPE_PIDPROVIDERS, "directory"),
     
+    // SEARCH SERVICES SETTINGS
+    SCOPE_SEARCH(PREFIX, "search"),
+    SCOPE_SEARCHSERVICES(SCOPE_SEARCH, "services"),
+    SEARCHSERVICES_DIRECTORY(SCOPE_SEARCHSERVICES, "directory"),
+    DEFAULT_SEARCH_SERVICE(SCOPE_SEARCH, "default-service"),
+    
     // MAIL SETTINGS
     SCOPE_MAIL(PREFIX, "mail"),
     SYSTEM_EMAIL(SCOPE_MAIL, "system-email"),
@@ -273,7 +279,12 @@ public enum JvmSettings {
     //CSL CITATION SETTINGS
     SCOPE_CSL(PREFIX, "csl"),
     CSL_COMMON_STYLES(SCOPE_CSL, "common-styles"),
-    
+
+    // PersonOrOrgUtil SETTINGS
+    SCOPE_PERSONORORG(PREFIX, "person-or-org"),
+    ASSUME_COMMA_IN_PERSON_NAME(SCOPE_PERSONORORG, "assume-comma-in-person-name", "dataverse.personOrOrg.assumeCommaInPersonName"),
+    ORG_PHRASE_ARRAY(SCOPE_PERSONORORG, "org-phrase-array"),
+
     // CORS SETTINGS
     SCOPE_CORS(PREFIX, "cors"),
     CORS_ORIGIN(SCOPE_CORS, "origin"),
@@ -281,6 +292,11 @@ public enum JvmSettings {
     SCOPE_CORS_HEADERS(SCOPE_CORS, "headers"),
     CORS_ALLOW_HEADERS(SCOPE_CORS_HEADERS, "allow"),
     CORS_EXPOSE_HEADERS(SCOPE_CORS_HEADERS, "expose"),
+    
+    // LOCALCONTEXTS
+    SCOPE_LOCALCONTEXTS(PREFIX, "localcontexts"),
+    LOCALCONTEXTS_URL(SCOPE_LOCALCONTEXTS, "url"),
+    LOCALCONTEXTS_API_KEY(SCOPE_LOCALCONTEXTS, "api-key"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";

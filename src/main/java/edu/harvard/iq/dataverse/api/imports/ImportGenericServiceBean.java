@@ -23,6 +23,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -106,7 +108,7 @@ public class ImportGenericServiceBean {
         
         try {
             reader = new StringReader(xmlToParse);
-            XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
+            XMLInputFactory xmlFactory = XmlUtil.getSecureXMLInputFactory();
             xmlr =  xmlFactory.createXMLStreamReader(reader);
             DatasetDTO datasetDTO = processXML(xmlr, mappingSupported);
         
@@ -173,7 +175,7 @@ public class ImportGenericServiceBean {
 
         try {
             reader = new StringReader(DcXmlToParse);
-            XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
+            XMLInputFactory xmlFactory = XmlUtil.getSecureXMLInputFactory();
             xmlr = xmlFactory.createXMLStreamReader(reader);
 
             //while (xmlr.next() == XMLStreamConstants.COMMENT); // skip pre root comments
@@ -184,6 +186,13 @@ public class ImportGenericServiceBean {
             processXMLElement(xmlr, ":", OAI_DC_OPENING_TAG, dublinCoreMapping, datasetDTO);
         } catch (XMLStreamException ex) {
             throw new EJBException("ERROR occurred while parsing XML fragment  (" + DcXmlToParse.substring(0, 64) + "...); ", ex);
+        } finally {
+            if (xmlr != null) {
+                try {
+                    xmlr.close();
+                } catch (XMLStreamException ex) {
+                }
+            }
         }
 
         
@@ -555,9 +564,7 @@ public class ImportGenericServiceBean {
      
     public ImportGenericServiceBean(ImportType importType) {
         this.importType=importType;
-        xmlInputFactory = javax.xml.stream.XMLInputFactory.newInstance();
-        xmlInputFactory.setProperty("javax.xml.stream.isCoalescing", java.lang.Boolean.TRUE);
-
+        xmlInputFactory = XmlUtil.getSecureXMLInputFactory();
     }
     
       
@@ -583,21 +590,24 @@ public class ImportGenericServiceBean {
         Map<String, String> filesMap = new HashMap<>();
         StringReader reader = new StringReader(xmlToParse);
         XMLStreamReader xmlr = null;
-        XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
+        XMLInputFactory xmlFactory = XmlUtil.getSecureXMLInputFactory();
         xmlr = xmlFactory.createXMLStreamReader(reader);
         processDCTerms(xmlr, datasetDTO, filesMap);
-
+        if (xmlr != null) {
+            try {
+                xmlr.close();
+            } catch (XMLStreamException ex) {
+            }
+        }
         return filesMap;
     }
    
  
     public Map<String, String> mapDCTerms(File ddiFile, DatasetDTO datasetDTO) {
-        FileInputStream in = null;
         XMLStreamReader xmlr = null;
         Map<String, String> filesMap = new HashMap<>();
 
-        try {
-            in = new FileInputStream(ddiFile);
+        try (FileInputStream in = new FileInputStream(ddiFile)) {
             xmlr =  xmlInputFactory.createXMLStreamReader(in);
             processDCTerms( xmlr,  datasetDTO , filesMap );
         } catch (FileNotFoundException ex) {
@@ -606,14 +616,11 @@ public class ImportGenericServiceBean {
         } catch (XMLStreamException ex) {
             Logger.getLogger("global").log(Level.SEVERE, null, ex);
             throw new EJBException("ERROR occurred in mapDDI.", ex);
+        } catch (IOException e) {
         } finally {
             try {
                 if (xmlr != null) { xmlr.close(); }
             } catch (XMLStreamException ex) {}
-
-            try {
-                if (in != null) { in.close();}
-            } catch (IOException ex) {}
         }
 
         return filesMap;

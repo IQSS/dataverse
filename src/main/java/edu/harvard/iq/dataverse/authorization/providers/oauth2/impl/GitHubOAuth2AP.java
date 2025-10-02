@@ -18,9 +18,11 @@ import jakarta.json.JsonReader;
  * @author michael
  */
 public class GitHubOAuth2AP extends AbstractOAuth2AuthenticationProvider {
-    
+
+    public static final String PROVIDER_ID = "github";
+
     public GitHubOAuth2AP(String aClientId, String aClientSecret) {
-        id = "github";
+        id = PROVIDER_ID;
         title = BundleUtil.getStringFromBundle("auth.providers.title.github");
         clientId = aClientId;
         clientSecret = aClientSecret;

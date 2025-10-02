@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
@@ -47,9 +47,7 @@ import org.hamcrest.Matcher;
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static io.restassured.path.xml.XmlPath.from;
 import static io.restassured.RestAssured.given;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
+
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
@@ -465,8 +463,10 @@ public class UtilIT {
                 .add("dataverseContacts", contactArrayBuilder)
                 .add("dataverseType", newDataverseType)
                 .add("affiliation", newAffiliation)
-                .add("datasetFileCountLimit", datasetFileCountLimit)
                 ;
+        if (datasetFileCountLimit != null) {
+            jsonBuilder.add("datasetFileCountLimit", datasetFileCountLimit);
+        }
 
         updateDataverseRequestJsonWithMetadataBlocksConfiguration(newInputLevelNames, newFacetIds, newMetadataBlockNames,
                 inheritMetadataBlocksFromParent, inheritFacetsFromParent, jsonBuilder);
@@ -805,7 +805,7 @@ public class UtilIT {
         return editVersionMetadataFromJsonStr(persistentId, jsonString, apiToken, null);
     }
 
-    static Response editVersionMetadataFromJsonStr(String persistentId, String jsonString, String apiToken, Integer sourceInternalVersionNumber) {
+    static Response editVersionMetadataFromJsonStr(String persistentId, String jsonString, String apiToken, String sourceLastUpdateTime) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
@@ -813,7 +813,7 @@ public class UtilIT {
                 .put("/api/datasets/:persistentId/editMetadata/?persistentId="
                         + persistentId
                         + "&replace=true"
-                        + (sourceInternalVersionNumber != null ? "&sourceInternalVersionNumber=" + sourceInternalVersionNumber : ""));
+                        + (sourceLastUpdateTime != null ? "&sourceLastUpdateTime=" + sourceLastUpdateTime : ""));
     }
 
     static Response updateDatasetPIDMetadata(String persistentId,  String apiToken) {
@@ -1122,13 +1122,19 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/files/" + fileId);
     }
-    
+
     static Response updateFileMetadata(String fileIdOrPersistentId, String jsonAsString, String apiToken) {
+        return updateFileMetadata(fileIdOrPersistentId, jsonAsString,apiToken, null);
+    }
+    static Response updateFileMetadata(String fileIdOrPersistentId, String jsonAsString, String apiToken, String sourceLastUpdateTime) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
+        if (sourceLastUpdateTime != null) {
+            optionalQueryParam = optionalQueryParam + (optionalQueryParam.isEmpty() ? "?" : "&") + "sourceLastUpdateTime=" + sourceLastUpdateTime;
         }
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken);
@@ -1694,12 +1700,34 @@ public class UtilIT {
     }
 
     static Response getNotifications(String apiToken) {
+        return getNotifications(apiToken, false);
+    }
+
+    static Response getNotifications(String apiToken, boolean inAppNotificationFormat) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
-        return requestSpecification.get("/api/notifications/all");
+        return requestSpecification.get("/api/notifications/all?inAppNotificationFormat=" + inAppNotificationFormat);
+    }
+
+    static Response getUnreadNotificationsCount(String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/notifications/unreadCount");
+    }
+
+    static Response markNotificationAsRead(long id, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.put("/api/notifications/" + id + "/markAsRead");
     }
 
     static Response deleteNotification(long id, String apiToken) {
@@ -1774,6 +1802,14 @@ public class UtilIT {
                         + "?persistentId="
                         + persistentId
                         + (returnOwners ? "&returnOwners=true" : ""));
+    }
+    
+    public static Response getDatasetAvailableCategories(String persistentId) {
+        Response response = given()
+                .get("/api/datasets/:persistentId/availableFileCategories"
+                        + "?persistentId="
+                        + persistentId);
+        return response;
     }
     
     static Response getFileWithOwners(String datafileId,  String apiToken, boolean returnOwners) {
@@ -2087,16 +2123,25 @@ public class UtilIT {
     }
 
     static Response getDatasetLinks(String datasetToLinkPid, String apiToken) {
-        Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("api/datasets/:persistentId/links" + "?persistentId=" + datasetToLinkPid);
-        return response;
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("api/datasets/:persistentId/links" + "?persistentId=" + datasetToLinkPid);
     }
 
     static Response createDataverseLink(String linkedDataverseAlias, String linkingDataverseAlias, String apiToken) {
         Response response = given()
             .header(API_TOKEN_HTTP_HEADER, apiToken)
             .put("api/dataverses/" + linkedDataverseAlias + "/link/" + linkingDataverseAlias);
+        return response;
+    }
+
+    static Response getDataverseLinks(String dataverseAlias, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("api/dataverses/"+ dataverseAlias + "/links");
         return response;
     }
     
@@ -2748,65 +2793,6 @@ public class UtilIT {
         return requestSpecification.delete("/api/externalTools/" + externalToolid);
     }
 
-    static Response getExternalToolsForDataset(String idOrPersistentIdOfDataset, String type, String apiToken) {
-        String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
-        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
-            idInPath = ":persistentId";
-            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
-        }
-        RequestSpecification requestSpecification = given();
-        if (apiToken != null) {
-            requestSpecification = given()
-                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
-        }
-        return requestSpecification.get("/api/admin/test/datasets/" + idInPath + "/externalTools?type=" + type + optionalQueryParam);
-    }
-    
-    static Response getExternalToolForDatasetById(String idOrPersistentIdOfDataset, String type, String apiToken, String toolId) {
-        String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
-        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
-            idInPath = ":persistentId";
-            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
-        }
-        RequestSpecification requestSpecification = given();
-        if (apiToken != null) {
-            requestSpecification = given()
-                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
-        }
-        return requestSpecification.get("/api/admin/test/datasets/" + idInPath + "/externalTool/" + toolId + "?type=" + type + optionalQueryParam);
-    }
-
-    static Response getExternalToolsForFile(String idOrPersistentIdOfFile, String type, String apiToken) {
-        String idInPath = idOrPersistentIdOfFile; // Assume it's a number.
-        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isCreatable(idOrPersistentIdOfFile)) {
-            idInPath = ":persistentId";
-            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfFile;
-        }
-        RequestSpecification requestSpecification = given();
-        if (apiToken != null) {
-            requestSpecification = given()
-                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
-        }
-        return requestSpecification.get("/api/admin/test/files/" + idInPath + "/externalTools?type=" + type + optionalQueryParam);
-    }
-    
-    static Response getExternalToolForFileById(String idOrPersistentIdOfFile, String type, String apiToken, String toolId) {
-        String idInPath = idOrPersistentIdOfFile; // Assume it's a number.
-        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isCreatable(idOrPersistentIdOfFile)) {
-            idInPath = ":persistentId";
-            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfFile;
-        }
-        RequestSpecification requestSpecification = given();
-        if (apiToken != null) {
-            requestSpecification = given()
-                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
-        }
-        return requestSpecification.get("/api/admin/test/files/" + idInPath + "/externalTool/" + toolId + "?type=" + type + optionalQueryParam);
-    }
 
     static Response submitFeedback(JsonObjectBuilder job) {
         return given()
@@ -3919,14 +3905,14 @@ public class UtilIT {
                 .delete("/api/datasets/" + datasetId + "/curationStatus");
         return response;
     }
-    
+
     static Response getDatasetCurationStatus(Integer datasetId, String apiToken, boolean includeHistory) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/datasets/" + datasetId + "/curationStatus?includeHistory=" + includeHistory);
         return response;
     }
-    
+
     static Response getDatasetVersionArchivalStatus(Integer datasetId, String version, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -4063,6 +4049,18 @@ public class UtilIT {
                 .queryParam("published_states", MyDataFilterParams.defaultPublishedStates)
                 .get("/api/mydata/retrieve?userIdentifier=" + userIdentifier);
         return response;
+    }
+
+    static Response retrieveMyCollectionList(String apiToken, String userIdentifier) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (userIdentifier != null) {
+            requestSpecification.queryParam("userIdentifier", userIdentifier);
+        }
+
+        return requestSpecification.get("/api/mydata/retrieve/collectionList");
     }
 
     static Response createSignedUrl(String apiToken, String apiPath, String username) {
@@ -4535,12 +4533,32 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
     }
+    
+     public static Response updateDataverseInputLevels(String dataverseAlias, String[] inputLevelNames, boolean[] requiredInputLevels, boolean[] includedInputLevels, boolean[] displayOnCreate, String apiToken) {
+        JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
+        for (int i = 0; i < inputLevelNames.length; i++) {
+            inputLevelsArrayBuilder.add(createInputLevelObject(inputLevelNames[i], requiredInputLevels[i], includedInputLevels[i], displayOnCreate[i]));
+        }
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(inputLevelsArrayBuilder.build().toString())
+                .contentType(ContentType.JSON)
+                .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
+    }
 
     private static JsonObjectBuilder createInputLevelObject(String name, boolean required, boolean include) {
         return Json.createObjectBuilder()
                 .add("datasetFieldTypeName", name)
                 .add("required", required)
                 .add("include", include);
+    }
+    
+    private static JsonObjectBuilder createInputLevelObject(String name, boolean required, boolean include, boolean displayOnCreate) {
+        return Json.createObjectBuilder()
+                .add("datasetFieldTypeName", name)
+                .add("required", required)
+                .add("include", include)
+                .add("displayOnCreate", displayOnCreate);
     }
 
     public static Response getOpenAPI(String accept, String format) {
@@ -4871,10 +4889,116 @@ public class UtilIT {
                 .post("/api/datasets/" + idInPath + "/files/metadata" + optionalQueryParam);
     }
 
+    public static Response getCustomizationFile(String fileType) {
+        RequestSpecification requestSpec = given();
+
+        Response resp = requestSpec.contentType("text/html; charset=UTF-8")
+                .get("/api/info/settings/customization/" + fileType);
+
+        return resp;
+    }
+
     static Response getUserSelectableRoles(String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType("application/json")
                 .get("/api/roles/userSelectable");
+    }
+
+    public static Response searchLocalContexts(String datasetIdOrPersistentId, String apiToken) {
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/localcontexts/datasets/" + idInPath + optionalQueryParam);
+    }
+
+    public static Response getLocalContextsProject(String datasetIdOrPersistentId, String projectId, String apiToken) {
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/localcontexts/datasets/" + idInPath + "/" +projectId + optionalQueryParam);
+    }
+
+    public static Response createTemplate(String dataverseAlias, String jsonString, String apiToken) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .post("/api/dataverses/" + dataverseAlias + "/templates");
+    }
+
+    public static Response getTemplates(String dataverseAlias, String apiToken) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/" + dataverseAlias + "/templates");
+    }
+    
+    /**
+     * Gets the tool URL for a dataset with optional parameters
+     * @param datasetId The ID of the dataset
+     * @param toolId The ID of the external tool
+     * @param apiToken The API token for authentication
+     * @param params Optional parameters (can be null). preview: boolean flag to
+     * indicate if the tool should run in preview mode (default: false), locale:
+     * string specifying the locale for internationalization
+     * @return Response from the API
+     */
+    public static Response getDatasetToolUrl(String datasetId, String toolId, String apiToken, JsonObject params) {
+        RequestSpecification request = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.JSON);
+        
+        if (params != null) {
+            request = request.body(params.toString());
+        }
+        
+        return request.post("/api/datasets/" + datasetId + "/externalTool/" + toolId + "/toolUrl");
+    }
+
+    /**
+     * Gets the tool URL for a file with optional parameters
+     * @param fileId The ID of the file
+     * @param toolId The ID of the external tool
+     * @param apiToken The API token for authentication
+     * @param params Optional parameters (can be null). preview: boolean flag to
+     * indicate if the tool should run in preview mode (default: false), locale:
+     * string specifying the locale for internationalization
+     * @return Response from the API
+     */
+    public static Response getFileToolUrl(String fileId, String toolId, String apiToken, JsonObject params) {
+        RequestSpecification request = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.JSON);
+        
+        if (params != null) {
+            request = request.body(params.toString());
+        }
+        
+        return request.post("/api/files/" + fileId + "/externalTool/" + toolId + "/toolUrl");
+    }
+
+    /**
+     * This simple does a get of the URL sent. It's initial use is to try the
+     * (potentially signed) callback URL sent to external tools.
+     * 
+     * 
+     * @param callbackUrl
+     * @return the response from the API
+     */
+    public static Response callCallbackUrl(String callbackUrl) {
+        return given()
+                .when()
+                .get(callbackUrl);
     }
 }

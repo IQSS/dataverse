@@ -1,0 +1,47 @@
+{
+  "allow-free-text": false,
+  "cvoc-url": "https://dev.vocabs.datastations.nl/",
+  "field-name": "dansTimeMethod",
+  "js-url": "/custom/skosmos.js",
+  "languages": "en",
+  "managed-fields": {},
+  "protocol": "skosmos",
+  "retrieval-filtering": {
+    "@context": {
+      "lang": "@language",
+      "termName": "https://schema.org/name",
+      "value": "@value",
+      "vocabularyName": "https://dataverse.org/schema/vocabularyName",
+      "vocabularyUri": "https://dataverse.org/schema/vocabularyUri"
+    },
+    "@id": {
+      "params": [
+        "@id"
+      ],
+      "pattern": "{0}"
+    },
+    "termName": {
+      "params": [
+        "/graph/uri=@id/prefLabel"
+      ],
+      "pattern": "{0}"
+    },
+    "vocabularyName": {
+      "pattern": "DDI Alliance Controlled Vocabulary for Time Method 1.2",
+      "params": []
+    },
+    "vocabularyUri": {
+      "pattern": "http://rdf-vocabulary.ddialliance.org/cv/TimeMethod/1.2/",
+      "params": []
+    }
+  },
+  "retrieval-uri": "https://dev.vocabs.datastations.nl/rest/v1/data?uri={0}",
+  "term-parent-uri": "",
+  "term-uri-field": "dansTimeMethod",
+  "vocabs": {
+    "TimeMethod_1_2": {
+      "uriSpace": "http://rdf-vocabulary.ddialliance.org/cv/TimeMethod/1.2/",
+      "vocabularyUri": "http://rdf-vocabulary.ddialliance.org/cv/TimeMethod/1.2/"
+    }
+  }
+}

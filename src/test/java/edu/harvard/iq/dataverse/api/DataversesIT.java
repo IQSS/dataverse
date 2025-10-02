@@ -1255,6 +1255,77 @@ public class DataversesIT {
         updateDataverseInputLevelsResponse.then().assertThat()
                 .body("message", equalTo("Error while updating dataverse input levels: Input level list cannot be null or empty"))
                 .statusCode(INTERNAL_SERVER_ERROR.getStatusCode());
+        
+        //Add new types and see that previously changed ones remain as before... #11387
+        testInputLevelNames = new String[]{"subtitle", "relatedMaterial"};
+       
+        testRequiredInputLevels = new boolean[] {false, false};
+        testIncludedInputLevels = new boolean[] {true, true};
+        boolean [] testDisplayOnCreate = new boolean[] {true, false};
+         updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, testDisplayOnCreate, apiToken);
+         updateDataverseInputLevelsResponse.prettyPrint();
+         int subtitleInputLevelIndex = -1;
+         int relatedMaterialInputLevelIndex = -1;
+         int i = 0;
+         
+         while (updateDataverseInputLevelsResponse.then().extract().path(String.format("data.inputLevels[%d].datasetFieldTypeName", i)) != null){
+             actualInputLevelName = updateDataverseInputLevelsResponse.then().extract().path(String.format("data.inputLevels[%d].datasetFieldTypeName", i)).toString();
+             if (actualInputLevelName.equals("subtitle")){
+                 subtitleInputLevelIndex = i;
+             }
+             if (actualInputLevelName.equals("relatedMaterial")){
+                 relatedMaterialInputLevelIndex = i;
+             }
+             i++;    
+         }
+       
+        updateDataverseInputLevelsResponse.then().assertThat()
+                .body(String.format("data.inputLevels[%d].include", subtitleInputLevelIndex), equalTo(true))
+                .body(String.format("data.inputLevels[%d].required", subtitleInputLevelIndex), equalTo(false))
+                .body(String.format("data.inputLevels[%d].displayOnCreate", subtitleInputLevelIndex), equalTo(true))
+                .body(String.format("data.inputLevels[%d].include", relatedMaterialInputLevelIndex), equalTo(true))
+                .body(String.format("data.inputLevels[%d].required", relatedMaterialInputLevelIndex), equalTo(false))
+                .body(String.format("data.inputLevels[%d].displayOnCreate", relatedMaterialInputLevelIndex), equalTo(false))
+                .statusCode(OK.getStatusCode());
+        
+         actualFieldTypeName1 = updateDataverseInputLevelsResponse.then().extract().path(String.format("data.inputLevels[%d].datasetFieldTypeName", subtitleInputLevelIndex));
+         actualFieldTypeName2 = updateDataverseInputLevelsResponse.then().extract().path(String.format("data.inputLevels[%d].datasetFieldTypeName", relatedMaterialInputLevelIndex));
+        assertNotEquals(actualFieldTypeName1, actualFieldTypeName2);
+        assertThat(testInputLevelNames, hasItemInArray(actualFieldTypeName1));
+        assertThat(testInputLevelNames, hasItemInArray(actualFieldTypeName2));
+        
+ 
+        testInputLevelNames = new String[]{"subtitle", "otherReferences"};
+        testRequiredInputLevels = new boolean[] {false, false};
+        testIncludedInputLevels = new boolean[] {true, true};
+        testDisplayOnCreate = new boolean[] {false, true};
+        
+        updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, testDisplayOnCreate, apiToken);
+        updateDataverseInputLevelsResponse.prettyPrint();
+        
+        subtitleInputLevelIndex = 0;
+        i = 0;
+
+        while (updateDataverseInputLevelsResponse.then().extract().path(String.format("data.inputLevels[%d].datasetFieldTypeName", i)) != null) {
+            actualInputLevelName = updateDataverseInputLevelsResponse.then().extract().path(String.format("data.inputLevels[%d].datasetFieldTypeName", i)).toString();
+            if (actualInputLevelName.equals("subtitle")) {
+                subtitleInputLevelIndex = i;
+            }
+            i++;
+        }
+         
+        //make sure subtitle got changed to false
+        updateDataverseInputLevelsResponse.then().assertThat()
+                .body(String.format("data.inputLevels[%d].displayOnCreate", subtitleInputLevelIndex), equalTo(false))
+                .statusCode(OK.getStatusCode());
+      
+        //make superuser for cleanup
+        String username = UtilIT.getUsernameFromResponse(createUserResponse);
+        UtilIT.setSuperuserStatus(username, Boolean.TRUE);
+        Response deleteDataverse1Response = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverse1Response.prettyPrint();
+        assertEquals(200, deleteDataverse1Response.getStatusCode());
+        
     }
 
     @Test
@@ -1355,6 +1426,7 @@ public class DataversesIT {
 
     @Test
     public void testUpdateDataverse() throws JsonParseException {
+        String adminApiToken = getSuperuserToken();
         Response createUser = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         String testAliasSuffix = "-update-dataverse";
@@ -1372,7 +1444,7 @@ public class DataversesIT {
         JsonParser parser = new JsonParser();
         Dataverse dv = parser.parseDataverse(data.getJsonObject("data"));
         dv.setDatasetFileCountLimit(500);
-        Response updateDataverseResponse = UtilIT.updateDataverse(testDataverseAlias, dv, apiToken);
+        Response updateDataverseResponse = UtilIT.updateDataverse(testDataverseAlias, dv, adminApiToken);
         updateDataverseResponse.prettyPrint();
         updateDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -2255,12 +2327,17 @@ public class DataversesIT {
                 .body("data.inputLevels[0].displayOnCreate", equalTo(true))
                 .body("data.inputLevels[0].datasetFieldTypeName", equalTo("notesText"));
         
+
         updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
             dataverseAlias, "subtitle", true, apiToken);
+        
+        String actualInputLevelName = updateResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");        
+        int subtitleInputLevelIndex = actualInputLevelName.equals("subtitle") ? 0 : 1;
+        updateResponse.prettyPrint();
         updateResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.inputLevels[0].displayOnCreate", equalTo(true))
-                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("subtitle"));
+                .body(String.format("data.inputLevels[%d].displayOnCreate", subtitleInputLevelIndex), equalTo(true))
+                .body(String.format("data.inputLevels[%d].datasetFieldTypeName", subtitleInputLevelIndex), equalTo("subtitle"));
         
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
         listMetadataBlocksResponse.prettyPrint();
@@ -2273,13 +2350,111 @@ public class DataversesIT {
                 .body("data[0].displayName", equalTo("Citation Metadata"))
                 .body("data.size()", equalTo(expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks))
                 .body("data[0].fields.author.childFields.size()", is(4));
-        
-        updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
-            dataverseAlias, "subtitle", false, apiToken);
+
+        updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(dataverseAlias, "subtitle", false, apiToken);
+        actualInputLevelName = updateResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");
+        int subtitleIndex = actualInputLevelName.equals("subtitle") ? 0 : 1;
         updateResponse.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.inputLevels[0].displayOnCreate", equalTo(false))
-                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("subtitle"));
-        
+                .body(String.format("data.inputLevels[%d].displayOnCreate", subtitleIndex), equalTo(false))
+                .body(String.format("data.inputLevels[%d].datasetFieldTypeName", subtitleIndex), equalTo("subtitle"))
+                .statusCode(OK.getStatusCode());
+
+    }
+
+    @Test
+    public void testCreateAndGetTemplates() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        Response createSecondUserResponse = UtilIT.createRandomUser();
+        String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Create a template
+
+        String jsonString = """
+                {
+                  "name": "Dataverse template",
+                  "isDefault": true,
+                  "fields": [
+                    {
+                      "typeName": "author",
+                      "value": [
+                        {
+                          "authorName": {
+                            "typeName": "authorName",
+                            "value": "Belicheck, Bill"
+                          },
+                          "authorAffiliation": {
+                            "typeName": "authorIdentifierScheme",
+                            "value": "ORCID"
+                          }
+                        }
+                      ]
+                    }
+                  ],
+                  "instructions": [
+                    {
+                        "instructionField": "author",
+                        "instructionText": "The author data"
+                    }
+                  ]
+                }
+                """;
+
+        Response createTemplateResponse = UtilIT.createTemplate(
+                dataverseAlias,
+                jsonString,
+                apiToken
+        );
+        createTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.name", equalTo("Dataverse template"))
+                .body("data.isDefault", equalTo(true))
+                .body("data.usageCount", equalTo(0))
+                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.datasetFields.citation.fields.size()", equalTo(1))
+                .body("data.instructions.size()", equalTo(1))
+                .body("data.instructions[0].instructionField", equalTo("author"))
+                .body("data.instructions[0].instructionText", equalTo("The author data"))
+                .body("data.dataverseAlias", equalTo(dataverseAlias));
+
+        // Template creation should fail if the user lacks dataverse edit permissions
+
+        createTemplateResponse = UtilIT.createTemplate(
+                dataverseAlias,
+                jsonString,
+                secondApiToken
+        );
+        createTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Get templates
+
+        Response getTemplateResponse = UtilIT.getTemplates(dataverseAlias, apiToken);
+        getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
+                .body("data[0].name", equalTo("Dataverse template"))
+                .body("data[0].isDefault", equalTo(true))
+                .body("data[0].usageCount", equalTo(0))
+                .body("data[0].termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data[0].datasetFields.citation.fields.size()", equalTo(1))
+                .body("data[0].instructions.size()", equalTo(1))
+                .body("data[0].instructions[0].instructionField", equalTo("author"))
+                .body("data[0].instructions[0].instructionText", equalTo("The author data"))
+                .body("data[0].dataverseAlias", equalTo(dataverseAlias));
+
+        // Templates retrieval should fail if the user lacks dataverse edit permissions
+        getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
+        getTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+    }
+
+    private String getSuperuserToken() {
+        Response createResponse = UtilIT.createRandomUser();
+        String adminApiToken = UtilIT.getApiTokenFromResponse(createResponse);
+        String username = UtilIT.getUsernameFromResponse(createResponse);
+        UtilIT.makeSuperUser(username);
+        return adminApiToken;
     }
 }

@@ -155,7 +155,6 @@ import org.primefaces.event.data.PageEvent;
 import edu.harvard.iq.dataverse.search.FacetLabel;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -223,8 +222,6 @@ public class DatasetPage implements java.io.Serializable {
     DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;
     @EJB
     SettingsServiceBean settingsService;
-    @EJB
-    SearchServiceBean searchService;
     @EJB
     AuthenticationServiceBean authService;
     @EJB
@@ -306,6 +303,7 @@ public class DatasetPage implements java.io.Serializable {
     private String dropBoxSelection = "";
     private String deaccessionReasonText = "";
     private String displayCitation;
+    private String displayTitle;
     private String deaccessionForwardURLFor = "";
     private String showVersionList = "false";
     private List<Template> dataverseTemplates = new ArrayList<>();
@@ -334,7 +332,6 @@ public class DatasetPage implements java.io.Serializable {
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
     private Dataverse selectedHostDataverse;
-    private boolean hasDataversesToChoose;
 
     public Dataverse getSelectedHostDataverse() {
         return selectedHostDataverse;
@@ -1653,6 +1650,14 @@ public class DatasetPage implements java.io.Serializable {
         this.displayCitation = displayCitation;
     }
 
+    public String getDisplayTitle() {
+        return displayTitle;
+    }
+
+    public void setDisplayTitle(String displayTitle) {
+        this.displayTitle = displayTitle;
+    }
+
     public String getDropBoxSelection() {
         return dropBoxSelection;
     }
@@ -1774,11 +1779,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setDataverseTemplates(List<Template> dataverseTemplates) {
         this.dataverseTemplates = dataverseTemplates;
-    }
-
-    public boolean isHasDataversesToChoose() {
-        this.hasDataversesToChoose = dataverseService.findAll().size() > 1;
-        return this.hasDataversesToChoose;
     }
 
     public Template getDefaultTemplate() {
@@ -2120,6 +2120,8 @@ public class DatasetPage implements java.io.Serializable {
                 //msg("checkit " + retrieveDatasetVersionResponse.getDifferentVersionMessage());
                 JsfHelper.addWarningMessage(retrieveDatasetVersionResponse.getDifferentVersionMessage());//BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
             }
+
+            displayTitle = workingVersion.getTitle();
 
             // init the citation
             displayCitation = dataset.getCitation(true, workingVersion, isAnonymizedAccess());

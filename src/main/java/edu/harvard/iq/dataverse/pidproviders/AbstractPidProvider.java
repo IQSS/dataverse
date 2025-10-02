@@ -196,7 +196,7 @@ public abstract class AbstractPidProvider implements PidProvider {
                         + ") doesn't match that of the provider, id: " + getId());
             }
         }
-        if (dvObject.getAuthority() == null) {
+        if (dvObject.getAuthority() == null) {            
             dvObject.setAuthority(getAuthority());
         } else {
             if (!dvObject.getAuthority().equals(getAuthority())) {
@@ -209,11 +209,19 @@ public abstract class AbstractPidProvider implements PidProvider {
         if (dvObject.getSeparator() == null) {
             dvObject.setSeparator(getSeparator());
         } else {
-            if (!dvObject.getSeparator().equals(getSeparator())) {
+            //only check separator if identifier is not null because a null authority would be set above...
+            //SEK 06/26/25 #11546
+            if (dvObject.getIdentifier() != null
+                    && !dvObject.getSeparator().equals(getSeparator())) {
                 logger.warning("The separator of the DvObject (" + dvObject.getSeparator()
                         + ") does not match the configured separator (" + getSeparator() + ")");
                 throw new IllegalArgumentException("The separator of the DvObject (" + dvObject.getSeparator()
                         + ") doesn't match that of the provider, id: " + getId());
+            } else {
+                //we know it's not null so fill it if it's empty
+                if (dvObject.getSeparator().isEmpty()) {
+                    dvObject.setSeparator(getSeparator());
+                }
             }
         }
         if (dvObject.isInstanceofDataset()) {
@@ -335,8 +343,13 @@ public abstract class AbstractPidProvider implements PidProvider {
         if (!PidProvider.isValidGlobalId(protocol, authority, identifier)) {
             return null;
         }
+        String comparableShoulder = getShoulder();
+        
         if(isCaseInsensitive) {
             identifier = identifier.toUpperCase();
+            if(comparableShoulder != null) {
+                comparableShoulder = comparableShoulder.toUpperCase();
+            }
         }
         // Check authority/identifier if this is a provider that manages specific
         // identifiers
@@ -354,7 +367,7 @@ public abstract class AbstractPidProvider implements PidProvider {
             logger.fine("managed in " + getId() + ": " + getManagedSet().contains(cleanIdentifier));
             logger.fine("excluded from " + getId() + ": " + getExcludedSet().contains(cleanIdentifier));
 
-            if (!(((authority.equals(getAuthority()) && identifier.startsWith(getShoulder().toUpperCase()))
+            if (!(((authority.equals(getAuthority()) && identifier.startsWith(comparableShoulder))
                     || getManagedSet().contains(cleanIdentifier)) && !getExcludedSet().contains(cleanIdentifier))) {
                 return null;
             }

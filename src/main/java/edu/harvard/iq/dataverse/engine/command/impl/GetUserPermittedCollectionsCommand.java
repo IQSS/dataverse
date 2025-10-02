@@ -3,29 +3,44 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObjectBuilder;
+import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArgumentsException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.util.List;
-import java.util.logging.Logger;
 
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-
+/**
+ * Command that retrieves all {@link Dataverse} collections for which a given
+ * {@link AuthenticatedUser} has the specified permission.
+ * <p>
+ * The permission is provided as a string corresponding to one of the names
+ * in the {@link Permission} enumeration (e.g. {@code Permission.AddDataset.name()}).
+ * If the special value {@code "any"} is passed, all collections for which
+ * the user has at least one permission are returned.
+ * </p>
+ *
+ * <p>
+ * Example:
+ * <pre>
+ * new GetUserPermittedCollectionsCommand(request, user, Permission.AddDataset.name());
+ * </pre>
+ * will return the list of collections where the user can add datasets.
+ * </p>
+ */
 @RequiredPermissions({})
-public class GetUserPermittedCollectionsCommand extends AbstractCommand<JsonObjectBuilder> {
-    private static final Logger logger = Logger.getLogger(GetUserPermittedCollectionsCommand.class.getCanonicalName());
+public class GetUserPermittedCollectionsCommand extends AbstractCommand<List<Dataverse>> {
 
-    private DataverseRequest request;
-    private AuthenticatedUser user;
-    private String permission;
+    public static final String ANY_PERMISSION = "any";
+
+    private final DataverseRequest request;
+    private final AuthenticatedUser user;
+    private final String permission;
+
     public GetUserPermittedCollectionsCommand(DataverseRequest request, AuthenticatedUser user, String permission) {
         super(request, (DvObject) null);
         this.request = request;
@@ -34,28 +49,16 @@ public class GetUserPermittedCollectionsCommand extends AbstractCommand<JsonObje
     }
 
     @Override
-    public JsonObjectBuilder execute(CommandContext ctxt) throws CommandException {
+    public List<Dataverse> execute(CommandContext ctxt) throws CommandException {
         if (user == null) {
-            throw new CommandException("User not found.", this);
+            throw new CommandException(BundleUtil.getStringFromBundle("getUserPermittedCollectionsCommand.errors.userNotFound"), this);
         }
         int permissionBit;
         try {
-            permissionBit = permission.equalsIgnoreCase("any") ?
-                    Integer.MAX_VALUE : (1 << Permission.valueOf(permission).ordinal());
+            permissionBit = permission.equalsIgnoreCase(ANY_PERMISSION) ? Integer.MAX_VALUE : (1 << Permission.valueOf(permission).ordinal());
         } catch (IllegalArgumentException e) {
-            throw new CommandException("Permission not valid.", this);
+            throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("getUserPermittedCollectionsCommand.errors.permissionNotValid"), this);
         }
-        List<Dataverse> collections = ctxt.permissions().findPermittedCollections(request, user, permissionBit);
-        if (collections != null) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            JsonArrayBuilder jab = Json.createArrayBuilder();
-            for (Dataverse dv : collections) {
-                jab.add(json(dv));
-            }
-            job.add("count", collections.size());
-            job.add("items", jab);
-            return job;
-        }
-        return null;
+        return ctxt.permissions().findPermittedCollections(request, user, permissionBit);
     }
 }

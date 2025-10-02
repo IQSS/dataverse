@@ -31,7 +31,7 @@
         <auto-service.version>1.1.1</auto-service.version>
         <jhove.version>1.20.1</jhove.version>
         <poi.version>5.4.0</poi.version>
-        <tika.version>2.9.2</tika.version>
+        <tika.version>3.2.2</tika.version>
         <netcdf.version>5.5.3</netcdf.version>
         
         <openapi.infoTitle>Dataverse API</openapi.infoTitle>
@@ -60,6 +60,10 @@
                   <exclusion>
                     <groupId>org.apache.james</groupId>
                     <artifactId>apache-mime4j-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
                 </exclusion>
                 </exclusions>
             </dependency>
@@ -101,6 +105,11 @@
                 <groupId>org.apache.james</groupId>
                 <artifactId>apache-mime4j-dom</artifactId>
                 <version>0.8.7</version>
+            </dependency>
+            <dependency>
+                <groupId>xerces</groupId>
+                <artifactId>xercesImpl</artifactId>
+                <version>2.12.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -506,7 +515,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
-            <version>1.2</version>
+            <version>1.14.0</version>
         </dependency>
         <!-- OAuth2 authentication. -->
         <dependency>
@@ -892,6 +901,13 @@
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                     </archive>
+                    <!-- Keep these excludes in sync with the ones in src/main/docker/assembly.xml. -->
+                    <packagingExcludes>
+                        WEB-INF/classes/edu/harvard/iq/dataverse/search/GetExternalSearchServiceBean.class,
+                        WEB-INF/classes/edu/harvard/iq/dataverse/search/PostExternalSearchServiceBean.class,
+                        WEB-INF/classes/edu/harvard/iq/dataverse/search/GoldenOldiesSearchServiceBean.class,
+                        WEB-INF/classes/edu/harvard/iq/dataverse/search/OddlyEnoughSearchServiceBean.class
+                    </packagingExcludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -1112,6 +1128,9 @@
                     Note: During maintenance we will use the app.image.version setting from the DV parent POM.
                  -->
                 <app.image.tag>unstable</app.image.tag>
+                <!-- Additional tags. Ignored by default (empty), used by maintenance action. -->
+                <app.image.tag.1></app.image.tag.1>
+                <app.image.tag.2></app.image.tag.2>
                 <app.skipBuild>false</app.skipBuild>
                 <app.skipDeploy>false</app.skipDeploy>
                 
@@ -1126,6 +1145,9 @@
                 <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
                 <!-- By default, we use the same tag as the app image for development purposes. Same rules as for app.image.tag apply! -->
                 <conf.image.tag>${app.image.tag}</conf.image.tag>
+                <!-- Additional tags. Ignored by default (empty), used by maintenance action. -->
+                <conf.image.tag.1></conf.image.tag.1>
+                <conf.image.tag.2></conf.image.tag.2>
                 <conf.image.flavor>noble</conf.image.flavor>
                 <conf.image.base>ubuntu:${conf.image.flavor}</conf.image.base>
                 <conf.skipBuild>false</conf.skipBuild>
@@ -1184,6 +1206,10 @@
                                             <!-- Workaround for fabric8io/docker-maven-plugin#1865 -->
                                             <APP_IMAGE_VERSION>${app.image.version}</APP_IMAGE_VERSION>
                                         </args>
+                                        <tags>
+                                            <tag>${app.image.tag.1}</tag>
+                                            <tag>${app.image.tag.2}</tag>
+                                        </tags>
                                         <filter>@</filter>
                                         <assembly>
                                             <descriptor>assembly.xml</descriptor>
@@ -1219,6 +1245,10 @@
                                             <!-- Workaround for fabric8io/docker-maven-plugin#1865 -->
                                             <APP_IMAGE_VERSION>${app.image.version}</APP_IMAGE_VERSION>
                                         </args>
+                                        <tags>
+                                            <tag>${conf.image.tag.1}</tag>
+                                            <tag>${conf.image.tag.2}</tag>
+                                        </tags>
                                         <filter>@</filter>
                                         <assembly>
                                             <descriptor>${project.basedir}/modules/container-configbaker/assembly.xml</descriptor>
@@ -1261,5 +1291,78 @@
                 </plugins>
             </build>
         </profile>
-    </profiles>
+        <profile>
+            <id>external-search-get</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>external-search-get-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>src/assembly/external-search-get.xml</descriptor>
+                                    </descriptors>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>external-search-post</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>external-search-post-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>src/assembly/external-search-post.xml</descriptor>
+                                    </descriptors>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>trivial-search-examples</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>trivial-search-examples-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>src/assembly/trivial-search-examples.xml</descriptor>
+                                    </descriptors>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+  </profiles>
 </project>

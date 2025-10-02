@@ -134,7 +134,9 @@ public class JsonParser {
         dv.setPermissionRoot(jobj.getBoolean("permissionRoot", false));
         dv.setFacetRoot(jobj.getBoolean("facetRoot", false));
         dv.setAffiliation(jobj.getString("affiliation", null));
-        dv.setDatasetFileCountLimit(jobj.getInt("datasetFileCountLimit", -1));
+        if (jobj.containsKey("datasetFileCountLimit")) {
+            dv.setDatasetFileCountLimit(jobj.getInt("datasetFileCountLimit", -1));
+        }
 
         if (jobj.containsKey("dataverseContacts")) {
             JsonArray dvContacts = jobj.getJsonArray("dataverseContacts");
