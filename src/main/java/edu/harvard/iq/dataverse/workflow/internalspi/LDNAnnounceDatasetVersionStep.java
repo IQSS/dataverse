@@ -176,20 +176,26 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
 
     private JsonObject getRelationshipObject(DatasetFieldType dft, JsonValue jval, Dataset d,
             Map<String, String> localContext) {
-        String id = getBestId(dft, jval);
-        return Json.createObjectBuilder().add("object", id).add("relationship", dft.getJsonLDTerm().getUrl())
-                .add("subject", d.getGlobalId().asURL().toString()).add("id", "urn:uuid:" + UUID.randomUUID().toString()).add("type","Relationship").build();
+        String[] answers = getBestIdAndType(dft, jval);
+        String id = answers[0];
+        String type = answers[1];
+        return Json.createObjectBuilder().add("as:object", id).add("as:relationship", type)
+                .add("as:subject", d.getGlobalId().asURL().toString()).add("id", "urn:uuid:" + UUID.randomUUID().toString()).add("type","Relationship").build();
     }
 
     HttpPost buildAnnouncement(Dataset d, JsonObject rel, JsonObject target) throws URISyntaxException {
 
         JsonObjectBuilder job = Json.createObjectBuilder();
-        JsonArrayBuilder context = Json.createArrayBuilder().add("https://purl.org/coar/notify")
-                .add("https://www.w3.org/ns/activitystreams");
+        JsonArrayBuilder context = Json.createArrayBuilder()
+                .add("https://www.w3.org/ns/activitystreams")
+                .add("https://coar-notify.net");
         job.add("@context", context);
         job.add("id", "urn:uuid:" + UUID.randomUUID().toString());
         job.add("actor", Json.createObjectBuilder().add("id", SystemConfig.getDataverseSiteUrlStatic())
                 .add("name", BrandingUtil.getInstallationBrandName()).add("type", "Service"));
+        JsonObjectBuilder coarContextBuilder = Json.createObjectBuilder();
+        coarContextBuilder.add("id", rel.getString("as:object"));
+        job.add("context", coarContextBuilder.build());
         job.add("object", rel);
         job.add("origin", Json.createObjectBuilder().add("id", SystemConfig.getDataverseSiteUrlStatic())
                 .add("inbox", SystemConfig.getDataverseSiteUrlStatic() + "/api/inbox").add("type", "Service"));
@@ -205,10 +211,12 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
         return annPost;
     }
 
-    private String getBestId(DatasetFieldType dft, JsonValue jv) {
+    private String[] getBestIdAndType(DatasetFieldType dft, JsonValue jv) {
+        
+        String type = "https://purl.org/datacite/ontology#isSupplementTo";
         // Primitive value
         if (jv instanceof JsonString) {
-            return ((JsonString) jv).getString();
+            return new String[] { ((JsonString) jv).getString(), type };
         }
         // Compound - apply type specific logic to get best Id
         JsonObject jo = jv.asJsonObject();
@@ -218,6 +226,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
             JsonLDTerm publicationIDType = null;
             JsonLDTerm publicationIDNumber = null;
             JsonLDTerm publicationURL = null;
+            JsonLDTerm publicationRelationType = null;
 
             Collection<DatasetFieldType> childTypes = dft.getChildDatasetFieldTypes();
             for (DatasetFieldType cdft : childTypes) {
@@ -231,6 +240,8 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
                 case "publicationIDNumber":
                     publicationIDNumber = cdft.getJsonLDTerm();
                     break;
+                case "publicationRelationType":
+                    publicationRelationType = cdft.getJsonLDTerm();
                 }
             }
             if (jo.containsKey(publicationURL.getLabel())) {
@@ -250,13 +261,17 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
                             id = "https://doi.org/" + number;
                         }
                         break;
-                    case "DASH-URN":
+                    case "DASH-NRS":
                         if (number.startsWith("http")) {
                             id = number;
                         }
                         break;
                     }
                 }
+            }
+            if(jo.containsKey(publicationRelationType.getLabel())) {
+                type = jo.getString(publicationRelationType.getLabel());
+                type = "https://purl.org/datacite/ontology#" + type.substring(0,1).toLowerCase() + type.substring(1); 
             }
             break;
         default:
@@ -300,7 +315,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
             }
             id = jo.getString(jo.keySet().iterator().next());
         }
-        return id;
+        return new String[] {id, type};
     }
 
     String process(String template, Map<String, String> values) {
