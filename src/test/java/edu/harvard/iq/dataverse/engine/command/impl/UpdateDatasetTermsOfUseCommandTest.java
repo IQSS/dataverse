@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.ArrayList;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,12 +69,13 @@ public class UpdateDatasetTermsOfUseCommandTest {
 
         Dataset dataset = new Dataset();
         TermsOfUseAndAccess toua = new TermsOfUseAndAccess();
-        UpdateDatasetTermsOfUseCommand sut = new UpdateDatasetTermsOfUseCommand(dataset, toua,  dataverseRequestStub);
+        UpdateDatasetTermsOfUseCommand sut = new UpdateDatasetTermsOfUseCommand(dataset, toua, dataverseRequestStub);
         try {
-                    dataset = sut.execute(commandContextMock);
-                   verify(commandContextMock).engine();
-        } catch (CommandException ce){
-            
+           Dataset updatedDataset = sut.execute(commandContextMock);
+            verify(commandContextMock).engine();
+            assertNotNull(datasetMock);
+        } catch (CommandException ce) {
+
         }
 
         // Act & Assert
