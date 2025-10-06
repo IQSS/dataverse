@@ -6374,11 +6374,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         compareResponse = UtilIT.compareDatasetVersions(datasetPersistentId,  ":latest-published", ":draft", apiToken, true);
         compareResponse.prettyPrint();
         compareResponse.then().assertThat().statusCode(OK.getStatusCode());
-
-        
-        
     }
-    
+
     @Test
     public void testSummaryDatasetVersionsDifferencesAPI() throws InterruptedException {
 
@@ -6477,11 +6474,10 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response updateTerms = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, jsonLDTerms, true);
         updateTerms.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
-        
+
 
         Response compareResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, apiToken);
-        compareResponse.prettyPrint(); 
+        compareResponse.prettyPrint();
 
         compareResponse.then().assertThat()
                 .body("data[1].versionNumber", equalTo("1.0"))
@@ -6498,32 +6494,66 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode());
 
         //user with no privileges will only see the published version
-        
+
         Response createUsernoPriv = UtilIT.createRandomUser();
         assertEquals(200, createUsernoPriv.getStatusCode());
         String apiTokenNoPriv = UtilIT.getApiTokenFromResponse(createUsernoPriv);
-        
+
         Response compareResponse2 = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, apiTokenNoPriv);
         compareResponse2.prettyPrint();
         compareResponse2.then().assertThat()
                 .body("data[0].versionNumber", CoreMatchers.equalTo("1.0"))
                 .body("data[0].summary", CoreMatchers.equalTo("firstPublished"))
                 .statusCode(OK.getStatusCode());
-        
+
         Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
         deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
-        
+
         compareResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, apiToken);
-        compareResponse.prettyPrint(); 
-        
+        compareResponse.prettyPrint();
+
         compareResponse.then().assertThat()
                 .body("data[1].versionNumber", equalTo("1.0"))
                 .body("data[1].summary.deaccessioned.reason", equalTo("Test deaccession reason."))
                 .body("data[0].versionNumber", equalTo("DRAFT"))
                 .body("data[0].summary.", equalTo("previousVersionDeaccessioned"))
                 .statusCode(OK.getStatusCode());
-        
-        
+
+        // Pagination tests
+
+        // Publish the current DRAFT as a minor version to create version 2.0
+        // This will give us more versions to test pagination against.
+
+        publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+        publishDataset.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Make one file change to create a new DRAFT on top of version 2.0
+        pathToJsonFilePostPub = "doc/sphinx-guides/source/_static/api/dataset-add-metadata-after-pub.json";
+        addDataToPublishedVersion = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFilePostPub, apiToken);
+        addDataToPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
+
+        // TEST 1: No pagination. Should return all 3 version differences (DRAFT, 2.0, 1.0).
+        Response compareAllResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, apiToken);
+        compareAllResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", is(3))
+                .body("data[0].versionNumber", equalTo("DRAFT"))
+                .body("data[1].versionNumber", equalTo("2.0"))
+                .body("data[2].versionNumber", equalTo("1.0"));
+
+        // TEST 2: Use limit=1. Should return only the latest difference (DRAFT).
+        Response compareLimitResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, 1, null, apiToken);
+        compareLimitResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", is(1))
+                .body("data[0].versionNumber", equalTo("DRAFT"));
+
+        // TEST 3: Use limit=1 and offset=1. Should skip the first result and return the second (2.0).
+        Response compareOffsetResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, 1, 1, apiToken);
+        compareOffsetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", is(1))
+                .body("data[0].versionNumber", equalTo("2.0"));
     }
     
     @Test

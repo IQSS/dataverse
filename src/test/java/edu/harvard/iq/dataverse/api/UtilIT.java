@@ -1787,14 +1787,21 @@ public class UtilIT {
                         + "&includeDeaccessioned="
                         + includeDeaccessioned);
     }
+
+    static Response summaryDatasetVersionDifferences(String persistentId, String apiToken) {
+        return summaryDatasetVersionDifferences(persistentId, null, null, apiToken);
+    }
     
-    static Response summaryDatasetVersionDifferences(String persistentId,  String apiToken) {
+    static Response summaryDatasetVersionDifferences(String persistentId, Integer limit, Integer offset, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("limit", limit)
+                .queryParam("offset", offset)
                 .get("/api/datasets/:persistentId/versions/compareSummary"
                         + "?persistentId="
                         + persistentId);
     }
+
     static Response getDatasetWithOwners(String persistentId,  String apiToken, boolean returnOwners) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
