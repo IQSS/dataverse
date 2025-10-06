@@ -56,6 +56,8 @@ import org.apache.http.impl.client.HttpClients;
 
 public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
     private static final Logger logger = Logger.getLogger(LDNAnnounceDatasetVersionStep.class.getName());
+    //ToDo - not required fields at this point - each results in a message, so a) change to LDNAnnounceFields, and b) consider settings
+    // connecting field and targets (only DB settings are supported in workflows at present)
     private static final String REQUIRED_FIELDS = ":LDNAnnounceRequiredFields";
     private static final String LDN_TARGET = ":LDNTarget";
     private static final String RELATED_PUBLICATION = "publication";
@@ -274,7 +276,10 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
                 type = "https://purl.org/datacite/ontology#" + type.substring(0,1).toLowerCase() + type.substring(1); 
             }
             break;
-        default:
+        default:  
+            //ToDo - handle primary field
+            //ToDo - handle "Identifier" vs "IdentifierType"
+            //ToDo - check for URL form
             Collection<DatasetFieldType> childDFTs = dft.getChildDatasetFieldTypes();
             // Loop through child fields and select one
             // The order of preference is for a field with URL in the name, followed by one
