@@ -2107,6 +2107,16 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/:persistentId/versions/compareSummary?persistentId=doi:10.5072/FK2/BCCP9Z"
 
+You can control pagination of the results using the following optional query parameters.
+
+* ``limit``: The maximum number of version differences to return.
+* ``offset``: The number of version differences to skip from the beginning of the list. Used for retrieving subsequent pages of results.
+
+For example, to get the second page of results, with 2 items per page, you would use ``limit=2`` and ``offset=2`` (skipping the first two results).
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/:persistentId/versions/compareSummary?persistentId=doi:10.5072/FK2/BCCP9Z&limit=2&offset=2"
 
 Update Metadata For a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
