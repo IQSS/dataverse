@@ -794,7 +794,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 }
 
             } else {
-                if (NumberUtils.isCreatable(pathParts[index])) {
+                if ((curPath instanceof JsonArray) && NumberUtils.isCreatable(pathParts[index])) {
                     try {
                         int indexNumber = Integer.parseInt(pathParts[index]);
                         curPath = ((JsonArray) curPath).get(indexNumber);
@@ -805,7 +805,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     curPath = ((JsonObject) curPath).get(pathParts[index]);
                 }
                 // curPath = ((JsonObject) curPath).get(pathParts[index]);
-                logger.fine("Found next Path object " + curPath.toString());
+                logger.fine("Found next Path object " + ((curPath == null) ? "null" : curPath.toString()));
                 return processPathSegment(index + 1, pathParts, curPath, termUri);
             }
         } else {
