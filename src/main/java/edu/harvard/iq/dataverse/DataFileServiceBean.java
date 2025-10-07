@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
@@ -40,6 +42,7 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
 
 /**
  *
@@ -374,6 +377,74 @@ public class DataFileServiceBean implements java.io.Serializable {
         } catch(Exception ex) {
             return null;
         }
+    }
+
+    /**
+     * Finds the concise history of a file, returning an entry only for each
+     * version where the file's metadata was created or changed.
+     * <p>
+     * This method correctly handles file replacements by searching for all files
+     * sharing the same {@code rootDataFileId}.
+     *
+     * @param datasetId     The ID of the parent dataset.
+     * @param dataFile      The DataFile entity to find the history for.
+     * @param canViewUnpublishedVersions A boolean indicating if the user has permission to view non-released versions.
+     * @return A chronologically sorted list of the file's version history. Returns an empty list if the dataFile is null.
+     */
+    public List<VersionedFileMetadata> findFileMetadataHistory(Long datasetId, DataFile dataFile, boolean canViewUnpublishedVersions) {
+        // Guard clause: Return early if there's no file to search for.
+        if (dataFile == null) {
+            return Collections.emptyList();
+        }
+
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<FileMetadata> criteriaQuery = cb.createQuery(FileMetadata.class);
+        Root<FileMetadata> fileMetadata = criteriaQuery.from(FileMetadata.class);
+
+        // --- Joins ---
+        // Define relationships for filtering and ordering.
+        Join<FileMetadata, DatasetVersion> version = fileMetadata.join("datasetVersion");
+        Join<DatasetVersion, Dataset> dataset = version.join("dataset");
+        Join<FileMetadata, DataFile> file = fileMetadata.join("dataFile");
+
+        // --- Predicates (WHERE clause) ---
+        // Build a list of conditions for the query.
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Filter by the parent dataset.
+        predicates.add(cb.equal(dataset.get("id"), datasetId));
+
+        // Filter by the file's lineage, handling both new and replaced files.
+        if (dataFile.getRootDataFileId() < 0) {
+            // For a new file, match by its specific ID.
+            predicates.add(cb.equal(file.get("id"), dataFile.getId()));
+        } else {
+            // For a replaced file, match the entire history via its root ID.
+            predicates.add(cb.equal(file.get("rootDataFileId"), dataFile.getRootDataFileId()));
+        }
+
+        // Add permission-based filter for version states.
+        if (!canViewUnpublishedVersions) {
+            predicates.add(version.get("versionState").in(
+                    VersionState.RELEASED, VersionState.DEACCESSIONED));
+        }
+
+        criteriaQuery.where(predicates.toArray(new Predicate[0]));
+
+        // --- Ordering ---
+        // Order results from newest to oldest version.
+        criteriaQuery.orderBy(
+                cb.desc(version.get("versionNumber")),
+                cb.desc(version.get("minorVersionNumber"))
+        );
+
+        // --- Execution & Transformation ---
+        // Execute the query and map the results to the VersionedFileMetadata list.
+        List<FileMetadata> results = em.createQuery(criteriaQuery).getResultList();
+
+        return results.stream()
+                .map(metadata -> new VersionedFileMetadata(metadata.getDatasetVersion(), metadata))
+                .collect(Collectors.toList());
     }
 
     public FileMetadata findMostRecentVersionFileIsIn(DataFile file) {
