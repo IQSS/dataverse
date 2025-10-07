@@ -61,8 +61,9 @@ public class FileMetadataVersionsHelper {
         return retList;
     }
 
-    public JsonObjectBuilder jsonDataFileVersions(FileMetadata fileMetadata) {
+    public JsonObjectBuilder jsonDataFileVersions(FileVersionDifference fileVersionDifference) {
         JsonObjectBuilder job = jsonObjectBuilder();
+        FileMetadata fileMetadata = fileVersionDifference.getNewFileMetadata();
         if (fileMetadata.getDatasetVersion() != null) {
             job.add("datasetVersion", fileMetadata.getDatasetVersion().getFriendlyVersionNumber());
             if (fileMetadata.getDatasetVersion().getVersionNumber() != null) {
@@ -78,14 +79,14 @@ public class FileMetadataVersionsHelper {
                 .add("versionState", fileMetadata.getDatasetVersion().getVersionState().name())
                 .add("summary", fileMetadata.getDatasetVersion().getVersionNote())
                 .add("contributors", fileMetadata.getContributorNames())
-                .add("publishedDate", fileMetadata.getDataFile().getPublicationDate() != null ? fileMetadata.getDataFile().getPublicationDate().toString() : null)
+                .add("publishedDate", fileMetadata.getDataFile() != null ? (fileMetadata.getDataFile().getPublicationDate() != null ? fileMetadata.getDataFile().getPublicationDate().toString() : null) : null)
             ;
         }
         if (fileMetadata.getDataFile() != null) {
             job.add("datafileId", fileMetadata.getDataFile().getId());
             job.add("persistentId", (fileMetadata.getDataFile().getGlobalId() != null ? fileMetadata.getDataFile().getGlobalId().asString() : ""));
         }
-        FileVersionDifference fvd = fileMetadata.getFileVersionDifference();
+        FileVersionDifference fvd = fileVersionDifference;
         if (fvd != null) {
             List<FileVersionDifference.FileDifferenceSummaryGroup> groups = fvd.getDifferenceSummaryGroups();
             JsonObjectBuilder fileDifferenceSummary = jsonObjectBuilder()
@@ -191,7 +192,7 @@ public class FileMetadataVersionsHelper {
     }
 
     //TODO: this could use some refactoring to cut down on the number of for loops!
-    private FileMetadata getPreviousFileMetadata(FileMetadata fileMetadata, DatasetVersion currentversion) {
+    public FileMetadata getPreviousFileMetadata(FileMetadata fileMetadata, DatasetVersion currentversion) {
         List<DataFile> allfiles = allRelatedFiles(fileMetadata);
         boolean foundCurrent = false;
         DatasetVersion priorVersion = null;

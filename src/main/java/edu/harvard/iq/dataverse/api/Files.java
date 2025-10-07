@@ -1182,10 +1182,10 @@ public class Files extends AbstractApiBean {
             if (fm == null) {
                 return notFound(BundleUtil.getStringFromBundle("files.api.fileNotFound"));
             }
-            List<FileMetadata> fileMetadataList = fileMetadataVersionsHelper.loadFileVersionList(req, fm);
+            List<FileVersionDifference> fileVersionDifferences = execCommand(new GetFileVersionDifferencesCommand(req, fm, null, null, fileMetadataVersionsHelper));
             JsonArrayBuilder jab = Json.createArrayBuilder();
-            for (FileMetadata fileMetadata : fileMetadataList) {
-                jab.add(fileMetadataVersionsHelper.jsonDataFileVersions(fileMetadata).build());
+            for (FileVersionDifference fileVersionDifference : fileVersionDifferences) {
+                jab.add(fileMetadataVersionsHelper.jsonDataFileVersions(fileVersionDifference).build());
             }
             return Response.ok()
                     .entity(Json.createObjectBuilder()
