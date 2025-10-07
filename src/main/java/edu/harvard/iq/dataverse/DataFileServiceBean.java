@@ -386,12 +386,18 @@ public class DataFileServiceBean implements java.io.Serializable {
      * This method correctly handles file replacements by searching for all files
      * sharing the same {@code rootDataFileId}.
      *
-     * @param datasetId     The ID of the parent dataset.
-     * @param dataFile      The DataFile entity to find the history for.
+     * @param datasetId                  The ID of the parent dataset.
+     * @param dataFile                   The DataFile entity to find the history for.
      * @param canViewUnpublishedVersions A boolean indicating if the user has permission to view non-released versions.
-     * @return A chronologically sorted list of the file's version history. Returns an empty list if the dataFile is null.
+     * @param limit                      (Optional) The maximum number of results to return.
+     * @param offset                     (Optional) The starting point of the result list.
+     * @return A chronologically sorted, paginated list of the file's version history.
      */
-    public List<VersionedFileMetadata> findFileMetadataHistory(Long datasetId, DataFile dataFile, boolean canViewUnpublishedVersions) {
+    public List<VersionedFileMetadata> findFileMetadataHistory(Long datasetId,
+                                                               DataFile dataFile,
+                                                               boolean canViewUnpublishedVersions,
+                                                               Integer limit,
+                                                               Integer offset) {
         // Guard clause: Return early if there's no file to search for.
         if (dataFile == null) {
             return Collections.emptyList();
@@ -439,8 +445,20 @@ public class DataFileServiceBean implements java.io.Serializable {
         );
 
         // --- Execution & Transformation ---
+        // Create the query object from the criteria definition.
+        TypedQuery<FileMetadata> typedQuery = em.createQuery(criteriaQuery);
+
+        // --- Pagination ---
+        // Apply pagination if limit and/or offset are provided.
+        if (limit != null) {
+            typedQuery.setMaxResults(limit);
+        }
+        if (offset != null) {
+            typedQuery.setFirstResult(offset);
+        }
+
         // Execute the query and map the results to the VersionedFileMetadata list.
-        List<FileMetadata> results = em.createQuery(criteriaQuery).getResultList();
+        List<FileMetadata> results = typedQuery.getResultList();
 
         return results.stream()
                 .map(metadata -> new VersionedFileMetadata(metadata.getDatasetVersion(), metadata))
