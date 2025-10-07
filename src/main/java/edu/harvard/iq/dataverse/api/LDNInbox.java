@@ -119,8 +119,8 @@ public class LDNInbox extends AbstractApiBean {
                 if (new JsonLDTerm(activityStreams, "Relationship").getUrl().equals(msgObject.getString("@type"))) {
                     // We have a relationship message - need to get the subject and object and
                     // relationship type
-                    String subjectId = msgObject.getJsonObject(new JsonLDTerm(activityStreams, "subject").getUrl()).getString("@id");
-                    String objectId = msgObject.getJsonObject(new JsonLDTerm(activityStreams, "object").getUrl()).getString("@id");
+                    String subjectId = msgObject.getString(new JsonLDTerm(activityStreams, "subject").getUrl());
+                    String objectId = msgObject.getString(new JsonLDTerm(activityStreams, "object").getUrl());
                     // Best-effort to get name by following redirects and looing for a 'name' field in the returned json
                     try (CloseableHttpClient client = HttpClients.createDefault()) {
                         logger.info("Getting " + subjectId);
@@ -156,7 +156,7 @@ public class LDNInbox extends AbstractApiBean {
                         logger.info(e.getLocalizedMessage());
                     }
                     String relationshipId = msgObject
-                            .getJsonObject(new JsonLDTerm(activityStreams, "relationship").getUrl()).getString("@id");
+                            .getString(new JsonLDTerm(activityStreams, "relationship").getUrl());
                     if (subjectId != null && objectId != null && relationshipId != null) {
                         // Strip the URL part from a relationship ID/URL assuming a usable label exists
                         // after a # char. Default is to use the whole URI.
@@ -178,11 +178,7 @@ public class LDNInbox extends AbstractApiBean {
                                     citingResourceBuilder.add("@type",itemType.substring(0,1).toUpperCase() + itemType.substring(1));
                                 }
                                 JsonObject citingResource  = citingResourceBuilder.build();
-                                StringWriter sw = new StringWriter(128);
-                                try (JsonWriter jw = Json.createWriter(sw)) {
-                                    jw.write(citingResource);
-                                }
-                                String jsonstring = sw.toString();
+                                String jsonstring = JsonUtil.prettyPrint(citingResource);
                                 logger.info("Storing: " + jsonstring);
                                 //Set<RoleAssignment> ras = roleService.rolesAssignments(dataset);
 
