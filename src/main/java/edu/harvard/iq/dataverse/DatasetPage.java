@@ -334,7 +334,7 @@ public class DatasetPage implements java.io.Serializable {
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
     private Dataverse selectedHostDataverse;
-    private boolean hasDataversesToChoose;
+    private Boolean hasDataversesToChoose;
 
     public Dataverse getSelectedHostDataverse() {
         return selectedHostDataverse;
@@ -1785,7 +1785,10 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isHasDataversesToChoose() {
-        this.hasDataversesToChoose = dataverseService.getDataverseCount() > 1;
+        // TODO we actually need to look for dataverses where a user has permission to add a dataset
+        if (this.hasDataversesToChoose == null) {
+            this.hasDataversesToChoose = dataverseService.getDataverseCount() > 1;
+        }
         return this.hasDataversesToChoose;
     }
 
