@@ -2609,7 +2609,7 @@ public class Datasets extends AbstractApiBean {
                 canSeeStatus = permissionSvc.requestOn(createDataverseRequest(user), ds).has(Permission.PublishDataset);
             }
 
-            if (dsv.isDraft() && (canSeeStatus)) {
+            if (canSeeStatus) {
                 List<CurationStatus> statuses = includeHistory ? dsv.getCurationStatuses() : Collections.singletonList(dsv.getCurrentCurationStatus());
                 if (includeHistory) {
                     JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
@@ -5152,6 +5152,129 @@ public class Datasets extends AbstractApiBean {
         }
         return false;
     }
+
+    /**
+     * API endpoint to retrieve a URL for a dataset-level external tool.
+     * 
+     * This endpoint allows clients to get a URL for accessing an external tool
+     * that operates at the dataset level. The URL includes necessary authentication tokens and
+     * parameters based on the user's permissions and the tool's configuration.
+     * 
+     * The endpoint accepts JSON input with optional parameters:
+     * - preview: boolean flag to indicate if the tool should run in preview mode (preview mode, if supported by the tool, suppresses showing metadata (i.e. item name/PID) and is intended for cases where the tool is embedded in the dataset/file page and this metadata is not needed. The current JSF UI never embeds a dataset-level tool in an iframe, so this is param is not currently useful (and may not be supported in dataset tools yet)
+     * - locale: string specifying the locale for internationalization
+     * 
+     * The response includes:
+     * - toolUrl: the URL to access the external tool
+     * - toolName: the display name of the external tool
+     * - datasetId: the ID of the dataset
+     * - preview: whether the URL is for preview mode
+     * 
+     * Authentication is required, and appropriate permissions are checked before generating the URL.
+     * For restricted datasets (draft or deaccessioned), the user must have ViewUnpublishedDataset permission.
+     * 
+     * @param crc The container request context for authentication
+     * @param datasetId The ID of the dataset
+     * @param externalToolId The ID of the external tool
+     * @param jsonBody JSON containing optional parameters
+     * @return A Response with the external tool URL and related information
+     */
+@POST
+@AuthRequired
+@Path("{id}/externalTool/{tid}/toolUrl")
+@Consumes(MediaType.APPLICATION_JSON)
+public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
+        @PathParam("tid") long externalToolId, String jsonBody) {
+
+    boolean preview = false;
+    String locale = null;
+
+    // Parse request body for parameters
+    if (StringUtils.isNotBlank(jsonBody)) {
+        try {
+            jakarta.json.JsonObject jsonObject = JsonUtil.getJsonObject(jsonBody);
+            if (jsonObject.containsKey("preview")) {
+                preview = jsonObject.getBoolean("preview");
+            }
+            if (jsonObject.containsKey("locale")) {
+                locale = jsonObject.getString("locale");
+            }
+        } catch (JsonParsingException | NullPointerException e) {
+            logger.warning("Error parsing JSON: " + e.getMessage());
+            // Return an error response for malformed JSON
+            return error(Response.Status.BAD_REQUEST, "Invalid JSON format in request body");
+        }
+    }
+
+    try {
+        // Find the dataset
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse ex) {
+            return notFound("Dataset not found for given id: " + datasetId);
+        }
+
+        // Find the external tool
+        ExternalTool externalTool = externalToolService.findById(externalToolId);
+        if (externalTool == null) {
+            return error(BAD_REQUEST, "External tool not found with id: " + externalToolId);
+        }
+
+        // Check if the tool has dataset scope
+        if (!ExternalTool.Scope.DATASET.equals(externalTool.getScope())) {
+            return error(BAD_REQUEST, "External tool does not have dataset scope.");
+        }
+
+        // Get the current user and create a request object
+        User user = getRequestUser(crc);
+        DataverseRequest req = createDataverseRequest(user);
+
+        // Get the latest dataset version
+        DatasetVersion datasetVersion = dataset.getLatestVersion();
+        if (datasetVersion == null) {
+            return error(BAD_REQUEST, "Dataset version not found.");
+        }
+
+        // Check if the dataset is restricted or draft
+        boolean isRestricted = datasetVersion.isDraft() || datasetVersion.isDeaccessioned();
+
+        // Check if user has permission to access the dataset if it's restricted
+        if (isRestricted) {
+            boolean hasPermission = permissionSvc.requestOn(req, dataset).has(Permission.ViewUnpublishedDataset);
+            if (!hasPermission) {
+                return error(Response.Status.FORBIDDEN,
+                        "You do not have permission to access this dataset with the requested external tool.");
+            }
+        }
+
+        // Determine if we need an API token for authentication
+        ApiToken apiToken = null;
+        if (user.isAuthenticated() && isRestricted) {
+            apiToken = authSvc.getValidApiTokenForUser(user);
+        }
+
+        // Create the external tool handler
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataset, apiToken, locale);
+
+        // Get the tool URL
+        String toolUrl;
+        if (preview) {
+            toolUrl = externalToolHandler.getToolUrlForPreviewMode();
+        } else {
+            toolUrl = externalToolHandler.getToolUrlWithQueryParams();
+        }
+
+        // Return the URL in a JSON response
+        return ok(Json.createObjectBuilder().add("toolUrl", toolUrl).add("displayName", externalTool.getDisplayName())
+                .add("datasetId", dataset.getId()).add("preview", preview));
+
+    } catch (Exception ex) {
+        logger.log(Level.SEVERE, "Error getting dataset external tool URL: " + ex.getMessage(), ex);
+        return error(Response.Status.INTERNAL_SERVER_ERROR,
+                "An error occurred while generating the external tool URL.");
+    }
+}
 
     // This method provides a callback for an external tool to retrieve it's
     // parameters/api URLs. If the request is authenticated, e.g. by it being
