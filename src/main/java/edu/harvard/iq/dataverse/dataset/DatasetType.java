@@ -56,7 +56,7 @@ public class DatasetType implements Serializable {
     /**
      * Human readable name to show in the UI.
      */
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(255) DEFAULT ''")
     private String displayName;
 
     /**
