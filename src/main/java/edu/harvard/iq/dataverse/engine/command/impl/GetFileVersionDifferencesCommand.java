@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -55,7 +56,11 @@ public class GetFileVersionDifferencesCommand extends AbstractCommand<List<FileV
      * Determines if the user has permission to view non-released versions of the dataset.
      */
     private boolean canViewUnpublishedVersions(CommandContext ctxt, Dataset dataset) {
-        return ctxt.permissions().requestOn(getRequest(), dataset).has(Permission.ViewUnpublishedDataset);
+        return ctxt.permissions().hasPermissionsFor(
+                getRequest().getUser(),
+                dataset,
+                EnumSet.of(Permission.ViewUnpublishedDataset)
+        );
     }
 
     /**
