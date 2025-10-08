@@ -2242,6 +2242,42 @@ For these deletes your JSON file must include an exact match of those dataset fi
 
 .. _publish-dataset-api:
 
+Update Dataset Terms of Access
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates the terms of access for the restricted files of a dataset by applying it to the draft version, or by creating a draft if none exists.
+
+
+To define custom terms of access, provide a JSON body with the following properties. All fields within ``customTermsOfAccess`` are optional, except if there are restricted files in your dataset then ``fileAccessRequest`` must be set to true or ``termsOfAccess`` must be provided:
+
+  {
+    "customTermsOfAccess": {
+        "fileAccessRequest": true,
+        "termsOfAccess": "Your terms of access for restricted files",
+        "dataAccessPlace": "Your data access place",
+        "originalArchive": "Your original archive",
+        "availabilityStatus": "Your availability status",
+        "contactForAccess": "Your contact for access",
+        "sizeOfCollection": "Your size of collection",
+        "studyCompletion": "Your study completion"
+    }
+  }
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=3
+  export FILE_PATH=access.json
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/datasets/$ID/license" -H "Content-type:application/json" --upload-file $FILE_PATH
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/3/access" -H "Content-type:application/json" --upload-file access.json
+
 Publish a Dataset
 ~~~~~~~~~~~~~~~~~
 
