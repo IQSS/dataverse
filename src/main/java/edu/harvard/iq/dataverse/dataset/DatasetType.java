@@ -46,9 +46,18 @@ public class DatasetType implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Machine readable name to use via API.
+     */
     // Any constraints? @Pattern regexp?
     @Column(nullable = false)
     private String name;
+
+    /**
+     * Human readable name to show in the UI.
+     */
+    @Column(nullable = false)
+    private String displayName;
 
     /**
      * The metadata blocks this dataset type is linked to.
@@ -81,6 +90,14 @@ public class DatasetType implements Serializable {
         this.name = name;
     }
 
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
     public List<MetadataBlock> getMetadataBlocks() {
         return metadataBlocks;
     }
@@ -109,6 +126,7 @@ public class DatasetType implements Serializable {
         return Json.createObjectBuilder()
                 .add("id", getId())
                 .add("name", getName())
+                .add("displayName", getDisplayName())
                 .add("linkedMetadataBlocks", linkedMetadataBlocks)
                 .add("availableLicenses", availableLicenses);
     }
