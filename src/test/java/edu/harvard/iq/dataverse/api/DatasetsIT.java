@@ -4193,12 +4193,16 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         updateTerms.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                  .body("message", containsString("QQQ"));
+ 
+        //Make installation "public install"  tp false to see that terms of access can be set
+        UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, "false");
         
         createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDataset.prettyPrint();
         createDataset.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
         datasetPersistentId = JsonPath.from(createDataset.body().asString()).getString("data.persistentId");
+        int datasetId3 = JsonPath.from(createDataset.body().asString()).getInt("data.id");
         
         pathToJsonFile = "src/test/resources/json/update-dataset-access-only.json";
         updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPersistentId, apiToken, pathToJsonFile);
@@ -4224,6 +4228,9 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         destroyDatasetResponse.prettyPrint();
         assertEquals(200, destroyDatasetResponse.getStatusCode());
         
+        destroyDatasetResponse = UtilIT.destroyDataset(datasetId3, apiToken);
+        destroyDatasetResponse.prettyPrint();
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
 
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteDataverseResponse.prettyPrint();
