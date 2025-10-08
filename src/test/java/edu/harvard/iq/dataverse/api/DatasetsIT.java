@@ -4192,7 +4192,20 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // should get bad Request Dataset not found....
         updateTerms.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                 .body("message", containsString("QQQ"));;
+                 .body("message", containsString("QQQ"));
+        
+        createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        datasetPersistentId = JsonPath.from(createDataset.body().asString()).getString("data.persistentId");
+        
+        pathToJsonFile = "src/test/resources/json/update-dataset-access-only.json";
+        updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPersistentId, apiToken, pathToJsonFile);
+        updateTerms.prettyPrint();
+        updateTerms.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.fileAccessRequest", equalTo(true));
 
         //reset public install
         UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, publicInstall);
@@ -4202,7 +4215,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
         
         // Clean up
-        
+
         Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         destroyDatasetResponse.prettyPrint();
         assertEquals(200, destroyDatasetResponse.getStatusCode());
@@ -4218,7 +4231,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         
         Response deleteUserResponse = UtilIT.deleteUser(username);
         assertEquals(200, deleteUserResponse.getStatusCode());
-
+        
     }
 
 
