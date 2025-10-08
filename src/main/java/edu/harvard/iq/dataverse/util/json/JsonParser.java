@@ -405,7 +405,7 @@ public class JsonParser {
         //This only gets values associated with the terms of access for restricted files
         // the return of this partial terms of use and access is merged with the existing 
         // terms of use in the dataset's most recent version
-        JsonObject terms = obj.getJsonObject("termsOfUseAndAccess");
+        JsonObject terms = obj.getJsonObject("customTermsOfAccess");
         TermsOfUseAndAccess toaa = new TermsOfUseAndAccess();
         toaa.setFileAccessRequest(terms.getBoolean("fileAccessRequest", false));
         toaa.setTermsOfAccess(terms.getString("termsOfAccess", null));
