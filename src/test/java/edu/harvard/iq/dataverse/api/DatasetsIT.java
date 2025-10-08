@@ -4151,13 +4151,16 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         String fileId = JsonPath.from(uploadResponse.body().asString()).getString("data.files[0].dataFile.id");
 
+        //verify that terms of access have been updated but license remains unchanged
         updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPersistentId, apiToken, pathToJsonFile);
         updateTerms.prettyPrint();
         updateTerms.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.fileAccessRequest", equalTo(true))
                 .body("data.termsOfAccess", equalTo("For access to restricted files please see read me file"))
-                .body("data.dataAccessPlace", equalTo("dataAccessPlace"));
+                .body("data.dataAccessPlace", equalTo("dataAccessPlace"))
+                .body("data.license.name", equalTo("CC0 1.0"));
+        
 
         // Restrict file
         Response restrictFileResponse = UtilIT.restrictFile(fileId, true, apiToken);

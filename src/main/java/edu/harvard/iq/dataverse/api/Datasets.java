@@ -1170,13 +1170,12 @@ public class Datasets extends AbstractApiBean {
 
             JsonObject json = JsonUtil.getJsonObject(jsonBody);
 
-            TermsOfUseAndAccess toua = jsonParser().parseTermsOfUseAndAccess(json);
+            TermsOfUseAndAccess toua = jsonParser().parseTermsOfAccess(json);
             
             if (publicInstall && (toua.isFileAccessRequest() || !toua.getTermsOfAccess().isEmpty())){
                 return error(BAD_REQUEST, "Setting File Access Request or Terms of Access is not permitted on a public installation.");
             }
-            
-            
+                       
             DatasetVersion updatedVersion = execCommand(new UpdateDatasetTermsOfAccessCommand(dataset, toua, createDataverseRequest(getRequestUser(crc)))).getLatestVersion();
 
             return ok(json(updatedVersion, true));
