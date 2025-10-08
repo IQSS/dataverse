@@ -21,7 +21,7 @@ import org.mockito.MockitoAnnotations;
  *
  * @author stephenkraffmiller
  */
-public class UpdateDatasetTermsOfUseCommandTest {
+public class UpdateDatasetTermsOfAccessCommandTest {
 
     @Mock
     private CommandContext ctxt;
@@ -40,6 +40,9 @@ public class UpdateDatasetTermsOfUseCommandTest {
 
     @Mock
     private CommandContext commandContextMock;
+    
+    @Mock
+    private TermsOfUseAndAccess termsOfUseAndAccessMock;
 
     @Mock
     private DatasetVersion datasetVersionMock;
@@ -47,7 +50,7 @@ public class UpdateDatasetTermsOfUseCommandTest {
     private Dataset dataset = new Dataset();
     private TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
 
-    private UpdateDatasetTermsOfUseCommand command;
+    private UpdateDatasetTermsOfAccessCommand command;
 
     @BeforeEach
     public void setUp() throws CommandException {
@@ -55,12 +58,12 @@ public class UpdateDatasetTermsOfUseCommandTest {
         when(dataverseEngineMock.submit(updateDatasetVersionCommand)).thenReturn(datasetMock);
         when(commandContextMock.engine()).thenReturn(dataverseEngineMock);
         when(datasetMock.getOrCreateEditVersion()).thenReturn(datasetVersionMock);
-        dataset.getOrCreateEditVersion();
+        when(datasetVersionMock.getTermsOfUseAndAccess()).thenReturn(termsOfUseAndAccessMock);
         dataset = new Dataset();
-        dataset.getOrCreateEditVersion();
+        dataset.getOrCreateEditVersion().setTermsOfUseAndAccess(new TermsOfUseAndAccess());
         terms = new TermsOfUseAndAccess();
 
-        command = new UpdateDatasetTermsOfUseCommand(dataset, terms, request, updateDatasetVersionCommand);
+        command = new UpdateDatasetTermsOfAccessCommand(dataset, terms, request, updateDatasetVersionCommand);
     }
 
     @Test
@@ -68,13 +71,14 @@ public class UpdateDatasetTermsOfUseCommandTest {
         when(ctxt.engine()).thenReturn(dataverseEngineMock);
         Dataset expectedDataset = new Dataset();
         when(dataverseEngineMock.submit(updateDatasetVersionCommand)).thenReturn(expectedDataset);
+        when(datasetMock.getOrCreateEditVersion()).thenReturn(datasetVersionMock);
+        when(datasetVersionMock.getTermsOfUseAndAccess()).thenReturn(termsOfUseAndAccessMock);
 
         Dataset result = command.execute(ctxt);
 
         DatasetVersion version = dataset.getOrCreateEditVersion();
         assertEquals(terms, version.getTermsOfUseAndAccess());
         assertEquals(DatasetVersion.VersionState.DRAFT, version.getVersionState());
-        assertSame(version, terms.getDatasetVersion());
 
         verify(dataverseEngineMock).submit(updateDatasetVersionCommand);
         assertSame(expectedDataset, result);

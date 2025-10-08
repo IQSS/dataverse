@@ -1155,8 +1155,8 @@ public class Datasets extends AbstractApiBean {
     
     @PUT
     @AuthRequired
-    @Path("{id}/editTerms")
-    public Response editVersionTermsOfUse(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id,
+    @Path("{id}/access")
+    public Response editVersionTermsOfAccess(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id,
                                         @QueryParam("sourceLastUpdateTime") String sourceLastUpdateTime) {
         try {
             
@@ -1177,9 +1177,7 @@ public class Datasets extends AbstractApiBean {
             }
             
             
-            toua.setDatasetVersion(dataset.getLatestVersion());
-            
-            DatasetVersion updatedVersion = execCommand(new UpdateDatasetTermsOfUseCommand(dataset, toua, createDataverseRequest(getRequestUser(crc)))).getLatestVersion();
+            DatasetVersion updatedVersion = execCommand(new UpdateDatasetTermsOfAccessCommand(dataset, toua, createDataverseRequest(getRequestUser(crc)))).getLatestVersion();
 
             return ok(json(updatedVersion, true));
 

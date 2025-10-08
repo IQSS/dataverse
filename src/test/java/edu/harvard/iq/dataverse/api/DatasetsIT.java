@@ -4093,7 +4093,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     @Test
-    public void testUpdateDatasetTerms() throws IOException {
+    public void testUpdateDatasetTermsOfAccess() throws IOException {
 
         //get publicInstall setting so we can change it back
         Response publicInstallResponse = UtilIT.getSetting(SettingsServiceBean.Key.PublicInstall);
@@ -4156,7 +4156,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         updateTerms.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.fileAccessRequest", equalTo(true))
-                .body("data.termsOfAccess", equalTo("For access to restricted files please see read me file"));
+                .body("data.termsOfAccess", equalTo("For access to restricted files please see read me file"))
+                .body("data.dataAccessPlace", equalTo("dataAccessPlace"));
 
         // Restrict file
         Response restrictFileResponse = UtilIT.restrictFile(fileId, true, apiToken);

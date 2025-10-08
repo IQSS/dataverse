@@ -3873,7 +3873,7 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType("application/json")
                 .body(jsonIn)
-                .put("/api/datasets/" + idInPath + "/editTerms" + optionalQueryParam);
+                .put("/api/datasets/" + idInPath + "/access" + optionalQueryParam);
         return response;
     }
     
