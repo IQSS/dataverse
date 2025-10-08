@@ -58,10 +58,18 @@ public class DatasetTypesIT {
             return;
         }
         System.out.println("The " + datasetType + "type wasn't found. Create it.");
-        String jsonIn = Json.createObjectBuilder().add("name", datasetType).build().toString();
+        String displayName = capitalize(datasetType);
+        String jsonIn = Json.createObjectBuilder()
+                        .add("name", datasetType)
+                        .add("displayName", displayName)
+                        .build().toString();
         Response typeAdded = UtilIT.addDatasetType(jsonIn, apiToken);
         typeAdded.prettyPrint();
         typeAdded.then().assertThat().statusCode(OK.getStatusCode());
+    }
+
+    private static String capitalize(String stringIn) {
+        return stringIn.substring(0, 1).toUpperCase() + stringIn.substring(1);
     }
 
     @Test
@@ -262,7 +270,11 @@ public class DatasetTypesIT {
 
         //Avoid all-numeric names (which are not allowed)
         String randomName = "A" + UUID.randomUUID().toString().substring(0, 8);
-        String jsonIn = Json.createObjectBuilder().add("name", randomName).build().toString();
+        String displayName = capitalize(randomName);
+        String jsonIn = Json.createObjectBuilder()
+                        .add("name", randomName)
+                        .add("displayName", displayName)
+                        .build().toString();
 
         System.out.println("adding type with name " + randomName);
         Response typeAdded = UtilIT.addDatasetType(jsonIn, apiToken);
@@ -295,6 +307,7 @@ public class DatasetTypesIT {
 
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("name", "testDatasetType");
+        job.add("displayName", "testDatasetType");
         job.add("linkedMetadataBlocks", Json.createArrayBuilder().add("geospatial"));
         job.add("availableLicenses", Json.createArrayBuilder().add("CC0 1.0"));
 
@@ -352,6 +365,7 @@ public class DatasetTypesIT {
 
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("name", "testDatasetType");
+        job.add("displayName", "testDatasetType");
 
         Response typeAdded = UtilIT.addDatasetType(job.build(), apiToken);
         typeAdded.prettyPrint();
@@ -420,7 +434,11 @@ public class DatasetTypesIT {
 
         //Avoid all-numeric names (which are not allowed)
         String randomName = "zzz" + UUID.randomUUID().toString().substring(0, 8);
-        String jsonIn = Json.createObjectBuilder().add("name", randomName).build().toString();
+        String displayName = capitalize(randomName);
+        String jsonIn = Json.createObjectBuilder()
+                        .add("name", randomName)
+                        .add("displayName", displayName)
+                        .build().toString();
 
         System.out.println("adding type with name " + randomName);
         Response typeAdded = UtilIT.addDatasetType(jsonIn, apiToken);
@@ -655,6 +673,7 @@ public class DatasetTypesIT {
    
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("name", "testDatasetType");
+        job.add("displayName", "testDatasetType");
         job.add("linkedMetadataBlocks", Json.createArrayBuilder().add("geospatial"));
         job.add("availableLicenses", Json.createArrayBuilder().add("CC0 1.0"));
         
