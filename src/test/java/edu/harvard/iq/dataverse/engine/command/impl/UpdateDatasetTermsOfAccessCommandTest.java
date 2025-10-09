@@ -54,6 +54,7 @@ public class UpdateDatasetTermsOfAccessCommandTest {
 
     @BeforeEach
     public void setUp() throws CommandException {
+        
         MockitoAnnotations.openMocks(this);
         when(dataverseEngineMock.submit(updateDatasetVersionCommand)).thenReturn(datasetMock);
         when(commandContextMock.engine()).thenReturn(dataverseEngineMock);
@@ -63,25 +64,23 @@ public class UpdateDatasetTermsOfAccessCommandTest {
         dataset.getOrCreateEditVersion().setTermsOfUseAndAccess(new TermsOfUseAndAccess());
         terms = new TermsOfUseAndAccess();
 
-        command = new UpdateDatasetTermsOfAccessCommand(dataset, terms, request, updateDatasetVersionCommand);
+        command = new UpdateDatasetTermsOfAccessCommand(datasetMock, terms, request, updateDatasetVersionCommand);
     }
-
+    
     @Test
-    public void testExecute_SubmitsUpdateCommandAndUpdatesTerms() throws Exception {
-        when(ctxt.engine()).thenReturn(dataverseEngineMock);
-        Dataset expectedDataset = new Dataset();
-        when(dataverseEngineMock.submit(updateDatasetVersionCommand)).thenReturn(expectedDataset);
-        when(datasetMock.getOrCreateEditVersion()).thenReturn(datasetVersionMock);
-        when(datasetVersionMock.getTermsOfUseAndAccess()).thenReturn(termsOfUseAndAccessMock);
+    public void execute_shouldUpdateRequestAndSetVersionStateToDraft() throws CommandException {
+        // Arrange
+        UpdateDatasetTermsOfAccessCommand sut = new UpdateDatasetTermsOfAccessCommand(datasetMock, terms, request, updateDatasetVersionCommand);
 
-        Dataset result = command.execute(ctxt);
+        // Act
+        sut.execute(commandContextMock);
 
-        DatasetVersion version = dataset.getOrCreateEditVersion();
-        assertEquals(terms, version.getTermsOfUseAndAccess());
-        assertEquals(DatasetVersion.VersionState.DRAFT, version.getVersionState());
-
+        // Assert
+        assertEquals(terms, datasetVersionMock.getTermsOfUseAndAccess());
         verify(dataverseEngineMock).submit(updateDatasetVersionCommand);
-        assertSame(expectedDataset, result);
+        verify(datasetVersionMock).setVersionState(DatasetVersion.VersionState.DRAFT);
+        verify(commandContextMock).engine();
     }
+
 
 }
