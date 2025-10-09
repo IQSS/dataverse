@@ -2250,8 +2250,11 @@ Updates the terms of access for the restricted files of a dataset by applying it
 
 To define custom terms of access, provide a JSON body with the following properties. All fields within ``customTermsOfAccess`` are optional, except if there are restricted files in your dataset then ``fileAccessRequest`` must be set to true or ``termsOfAccess`` must be provided:
 
-  {
-    "customTermsOfAccess": {
+.. code-block:: json
+
+  [
+    {
+      "customTermsOfAccess": {
         "fileAccessRequest": true,
         "termsOfAccess": "Your terms of access for restricted files",
         "dataAccessPlace": "Your data access place",
@@ -2260,8 +2263,9 @@ To define custom terms of access, provide a JSON body with the following propert
         "contactForAccess": "Your contact for access",
         "sizeOfCollection": "Your size of collection",
         "studyCompletion": "Your study completion"
+      }
     }
-  }
+  ]
 
 .. code-block:: bash
 
