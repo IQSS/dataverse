@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.globus.Permissions;
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -1783,9 +1786,17 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isHasDataversesToChoose() {
-        // TODO we actually need to look for dataverses where a user has permission to add a dataset
+
         if (this.hasDataversesToChoose == null) {
-            this.hasDataversesToChoose = dataverseService.getDataverseCount() > 1;
+            var user = this.session.getUser();
+            if (!user.isAuthenticated()) {
+                this.hasDataversesToChoose = false;
+            } else {
+                var req = dvRequestService.getDataverseRequest();
+                var permissionBit = 1 << Permission.AddDataset.ordinal();
+                var authenticatedUser = (AuthenticatedUser) user;
+                this.hasDataversesToChoose = permissionService.hasMultiplePermittedCollections(req, authenticatedUser, permissionBit);
+            }
         }
         return this.hasDataversesToChoose;
     }

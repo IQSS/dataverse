@@ -1276,6 +1276,16 @@ public class DataverseServiceBean implements java.io.Serializable {
         return em.createNamedQuery("Dataverse.countAll", Long.class).getSingleResult();
     }
 
+    public boolean getHasRolesOnMultipleDataverses(String assignee) {
+        return em.createQuery("SELECT dv "
+                              + "FROM roleassignment ra "
+                              + "JOIN dataverse      dv "
+                              + "  ON dv.id = ra.definitionpoint_id "
+                              + "WHERE ra.assigneeidentifier = '@user001' OR ra.assigneeidentifier = ':authenticated-users' limit 2", Dataverse.class)
+                   .setParameter("assignee", assignee)
+                   .getResultList().size() > 1;
+    }
+
     /**
      * Returns the total number of published datasets within a Dataverse collection. The number includes harvested and
      * linked datasets. Datasets in subcollections are also counted.
