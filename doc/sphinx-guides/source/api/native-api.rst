@@ -2270,7 +2270,7 @@ To define custom terms of access, provide a JSON body with the following propert
   export ID=3
   export FILE_PATH=access.json
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/datasets/$ID/license" -H "Content-type:application/json" --upload-file $FILE_PATH
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/datasets/$ID/access" -H "Content-type:application/json" --upload-file $FILE_PATH
 
 The fully expanded example above (without environment variables) looks like this:
 
