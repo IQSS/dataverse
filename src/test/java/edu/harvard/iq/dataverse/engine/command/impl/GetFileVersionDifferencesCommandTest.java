@@ -21,8 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GetFileVersionDifferencesCommandTest {
@@ -33,8 +32,6 @@ class GetFileVersionDifferencesCommandTest {
     private DataverseRequest requestMock;
     @Mock
     private FileMetadata fileMetadataMock;
-    @Mock
-    private FileMetadataVersionsHelper versionsHelperMock;
     @Mock
     private PermissionServiceBean permissionsMock;
     @Mock
@@ -50,11 +47,9 @@ class GetFileVersionDifferencesCommandTest {
 
     @BeforeEach
     void setUp() {
-        // Mock the context to return our mock services
         when(contextMock.permissions()).thenReturn(permissionsMock);
         when(contextMock.files()).thenReturn(fileServiceMock);
 
-        // Mock the chain of objects from FileMetadata -> Dataset
         when(fileMetadataMock.getDatasetVersion()).thenReturn(datasetVersionMock);
         when(datasetVersionMock.getDataset()).thenReturn(datasetMock);
         when(datasetMock.getId()).thenReturn(DATASET_ID);
@@ -70,7 +65,7 @@ class GetFileVersionDifferencesCommandTest {
         when(fileServiceMock.findFileMetadataHistory(any(), any(), anyBoolean(), any(), any()))
                 .thenReturn(Collections.emptyList());
 
-        GetFileVersionDifferencesCommand command = new GetFileVersionDifferencesCommand(requestMock, fileMetadataMock, null, null, versionsHelperMock);
+        GetFileVersionDifferencesCommand command = new GetFileVersionDifferencesCommand(requestMock, fileMetadataMock, null, null);
 
         // Act
         command.execute(contextMock);
@@ -96,7 +91,7 @@ class GetFileVersionDifferencesCommandTest {
         when(fileServiceMock.findFileMetadataHistory(any(), any(), anyBoolean(), any(), any()))
                 .thenReturn(Collections.emptyList());
 
-        GetFileVersionDifferencesCommand command = new GetFileVersionDifferencesCommand(requestMock, fileMetadataMock, null, null, versionsHelperMock);
+        GetFileVersionDifferencesCommand command = new GetFileVersionDifferencesCommand(requestMock, fileMetadataMock, null, null);
 
         // Act
         command.execute(contextMock);
@@ -122,7 +117,7 @@ class GetFileVersionDifferencesCommandTest {
         when(fileServiceMock.findFileMetadataHistory(any(), any(), anyBoolean(), any(), any()))
                 .thenReturn(Collections.emptyList());
 
-        GetFileVersionDifferencesCommand command = new GetFileVersionDifferencesCommand(requestMock, fileMetadataMock, expectedLimit, expectedOffset, versionsHelperMock);
+        GetFileVersionDifferencesCommand command = new GetFileVersionDifferencesCommand(requestMock, fileMetadataMock, expectedLimit, expectedOffset);
 
         // Act
         command.execute(contextMock);
@@ -139,73 +134,50 @@ class GetFileVersionDifferencesCommandTest {
 
     @Test
     @DisplayName("execute should correctly convert file history to FileVersionDifference list")
-    void execute_should_convert_history_to_differences(
-            // Mocks for a version with METADATA CHANGES
-            @Mock VersionedFileMetadata vfm_changed, @Mock FileMetadata currentFm_changed,
-            @Mock FileMetadata previousFm_changed, @Mock DatasetVersion version_changed,
-            // Mocks for a version with NO METADATA CHANGES
-            @Mock VersionedFileMetadata vfm_same, @Mock FileMetadata currentFm_same,
-            @Mock FileMetadata previousFm_same, @Mock DatasetVersion version_same,
-            // Mocks for underlying file objects
-            @Mock DataFile dataFile1, @Mock DataFile dataFile2
-    ) throws CommandException {
+    void execute_should_convert_history_to_differences() throws CommandException {
+        // Arrange
+        // Create mock history: 3 versions of a file's metadata
+        FileMetadata fm3 = new FileMetadata(); // Newest
+        fm3.setId(3L);
+        FileMetadata fm2 = new FileMetadata(); // Middle
+        fm2.setId(2L);
+        FileMetadata fm1 = new FileMetadata(); // Oldest
+        fm1.setId(1L);
 
-        // Arrange: Prepare a history list with two entries.
+        VersionedFileMetadata vfm3 = mock(VersionedFileMetadata.class);
+        VersionedFileMetadata vfm2 = mock(VersionedFileMetadata.class);
+        VersionedFileMetadata vfm1 = mock(VersionedFileMetadata.class);
+        when(vfm3.getFileMetadata()).thenReturn(fm3);
+        when(vfm2.getFileMetadata()).thenReturn(fm2);
+        when(vfm1.getFileMetadata()).thenReturn(fm1);
 
-        // --- Scenario 1: A version where file metadata (e.g., the label) has changed. ---
-        when(vfm_changed.getFileMetadata()).thenReturn(currentFm_changed);
-        when(vfm_changed.getDatasetVersion()).thenReturn(version_changed);
-        when(versionsHelperMock.getPreviousFileMetadata(fileMetadataMock, version_changed)).thenReturn(previousFm_changed);
-        // Mock the underlying data to trigger a difference in compareMetadata()
-        when(currentFm_changed.getLabel()).thenReturn("new_name.txt");
-        when(previousFm_changed.getLabel()).thenReturn("old_name.txt");
-        when(currentFm_changed.getDataFile()).thenReturn(dataFile1);
-        when(previousFm_changed.getDataFile()).thenReturn(dataFile1);
-
-        // --- Scenario 2: A version where the file exists but its metadata is identical to the previous version. ---
-        when(vfm_same.getFileMetadata()).thenReturn(currentFm_same);
-        when(vfm_same.getDatasetVersion()).thenReturn(version_same);
-        when(versionsHelperMock.getPreviousFileMetadata(fileMetadataMock, version_same)).thenReturn(previousFm_same);
-        // Mock the underlying data to be identical in compareMetadata()
-        when(currentFm_same.isRestricted()).thenReturn(false);
-        when(previousFm_same.isRestricted()).thenReturn(false);
-        when(currentFm_same.getLabel()).thenReturn("file.txt");
-        when(previousFm_same.getLabel()).thenReturn("file.txt");
-        when(currentFm_same.getDescription()).thenReturn("description");
-        when(previousFm_same.getDescription()).thenReturn("description");
-        when(currentFm_same.getProvFreeForm()).thenReturn(null);
-        when(previousFm_same.getProvFreeForm()).thenReturn(null);
-        when(currentFm_same.getCategoriesByName()).thenReturn(Collections.emptyList());
-        when(previousFm_same.getCategoriesByName()).thenReturn(Collections.emptyList());
-        when(currentFm_same.getDataFile()).thenReturn(dataFile2);
-        when(previousFm_same.getDataFile()).thenReturn(dataFile2);
-
-        // Mock the service to return our prepared history list.
+        List<VersionedFileMetadata> history = List.of(vfm3, vfm2, vfm1);
         when(fileServiceMock.findFileMetadataHistory(any(), any(), anyBoolean(), any(), any()))
-                .thenReturn(List.of(vfm_changed, vfm_same));
+                .thenReturn(history);
 
-        GetFileVersionDifferencesCommand command = new GetFileVersionDifferencesCommand(requestMock, fileMetadataMock, null, null, versionsHelperMock);
+        // Mock the logic to find the direct predecessor of each version
+        when(fileServiceMock.getPreviousFileMetadata(fm3)).thenReturn(fm2);
+        when(fileServiceMock.getPreviousFileMetadata(fm2)).thenReturn(fm1);
+        when(fileServiceMock.getPreviousFileMetadata(fm1)).thenReturn(null); // The oldest has no predecessor
+
+        GetFileVersionDifferencesCommand command = new GetFileVersionDifferencesCommand(requestMock, fileMetadataMock, null, null);
 
         // Act
-        List<FileVersionDifference> result = command.execute(contextMock);
+        List<FileVersionDifference> differences = command.execute(contextMock);
 
         // Assert
-        assertThat(result).hasSize(2);
+        assertThat(differences).hasSize(3);
 
-        // --- Verify the first difference object (METADATA HAS CHANGED) ---
-        FileVersionDifference diff1 = result.get(0);
-        // Assert the correct FileMetadata objects were passed to the constructor.
-        assertThat(diff1.getNewFileMetadata()).isEqualTo(currentFm_changed);
-        assertThat(diff1.getOriginalFileMetadata()).isEqualTo(previousFm_changed);
-        // Assert that compareMetadata() correctly identified a difference.
-        assertThat(diff1.isSame()).isFalse();
+        // Check the difference for the newest version (v3 vs v2)
+        assertThat(differences.get(0).getNewFileMetadata()).isEqualTo(fm3);
+        assertThat(differences.get(0).getOriginalFileMetadata()).isEqualTo(fm2);
 
-        // --- Verify the second difference object (METADATA IS THE SAME) ---
-        FileVersionDifference diff2 = result.get(1);
-        // Assert the correct FileMetadata objects were passed to the constructor.
-        assertThat(diff2.getNewFileMetadata()).isEqualTo(currentFm_same);
-        assertThat(diff2.getOriginalFileMetadata()).isEqualTo(previousFm_same);
-        // Assert that compareMetadata() correctly identified the metadata as identical.
-        assertThat(diff2.isSame()).isTrue();
+        // Check the difference for the middle version (v2 vs v1)
+        assertThat(differences.get(1).getNewFileMetadata()).isEqualTo(fm2);
+        assertThat(differences.get(1).getOriginalFileMetadata()).isEqualTo(fm1);
+
+        // Check the difference for the oldest version (v1 vs null)
+        assertThat(differences.get(2).getNewFileMetadata()).isEqualTo(fm1);
+        assertThat(differences.get(2).getOriginalFileMetadata()).isNull();
     }
 }

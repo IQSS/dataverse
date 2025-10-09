@@ -398,7 +398,6 @@ public class DataFileServiceBean implements java.io.Serializable {
                                                                boolean canViewUnpublishedVersions,
                                                                Integer limit,
                                                                Integer offset) {
-        // Guard clause: Return early if there's no file to search for.
         if (dataFile == null) {
             return Collections.emptyList();
         }
@@ -463,6 +462,45 @@ public class DataFileServiceBean implements java.io.Serializable {
         return results.stream()
                 .map(metadata -> new VersionedFileMetadata(metadata.getDatasetVersion(), metadata))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Finds the FileMetadata for a given file in the version immediately preceding a specified version.
+     *
+     * @param fileMetadata   The FileMetadata instance from the current version, used to identify the file's lineage.
+     * @return The FileMetadata from the immediately prior version, or {@code null} if this is the first version of the file.
+     */
+    public FileMetadata getPreviousFileMetadata(FileMetadata fileMetadata) {
+        if (fileMetadata == null || fileMetadata.getDataFile() == null) {
+            return null;
+        }
+
+        // 1. Get the ID of the file that was replaced.
+        Long previousId = fileMetadata.getDataFile().getPreviousDataFileId();
+
+        // If there's no previous ID, this is the first version of the file.
+        if (previousId == null) {
+            return null;
+        }
+
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<FileMetadata> cq = cb.createQuery(FileMetadata.class);
+        Root<FileMetadata> fileMetadataRoot = cq.from(FileMetadata.class);
+
+        // 2. Join FileMetadata to DataFile to access the ID.
+        Join<FileMetadata, DataFile> dataFileJoin = fileMetadataRoot.join("dataFile");
+
+        // 3. Find the FileMetadata whose DataFile ID matches the previousId.
+        cq.where(cb.equal(dataFileJoin.get("id"), previousId));
+
+        // --- Execution ---
+        TypedQuery<FileMetadata> query = em.createQuery(cq);
+        try {
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            // If no result is found, return null.
+            return null;
+        }
     }
 
     public FileMetadata findMostRecentVersionFileIsIn(DataFile file) {

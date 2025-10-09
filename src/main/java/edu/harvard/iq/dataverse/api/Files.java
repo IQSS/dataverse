@@ -1182,7 +1182,7 @@ public class Files extends AbstractApiBean {
             if (fm == null) {
                 return notFound(BundleUtil.getStringFromBundle("files.api.fileNotFound"));
             }
-            List<FileVersionDifference> fileVersionDifferences = execCommand(new GetFileVersionDifferencesCommand(req, fm, null, null, fileMetadataVersionsHelper));
+            List<FileVersionDifference> fileVersionDifferences = execCommand(new GetFileVersionDifferencesCommand(req, fm, null, null));
             JsonArrayBuilder jab = Json.createArrayBuilder();
             for (FileVersionDifference fileVersionDifference : fileVersionDifferences) {
                 jab.add(fileMetadataVersionsHelper.jsonDataFileVersions(fileVersionDifference).build());

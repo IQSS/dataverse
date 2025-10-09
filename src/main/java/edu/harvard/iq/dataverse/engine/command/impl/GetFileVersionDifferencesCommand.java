@@ -23,12 +23,10 @@ public class GetFileVersionDifferencesCommand extends AbstractCommand<List<FileV
     private final FileMetadata fileMetadata;
     private final Integer limit;
     private final Integer offset;
-    private final FileMetadataVersionsHelper versionsHelper;
 
-    public GetFileVersionDifferencesCommand(DataverseRequest request, FileMetadata fileMetadata, Integer limit, Integer offset, FileMetadataVersionsHelper fileMetadataVersionsHelper) {
+    public GetFileVersionDifferencesCommand(DataverseRequest request, FileMetadata fileMetadata, Integer limit, Integer offset) {
         super(request, fileMetadata.getDataFile());
         this.fileMetadata = Objects.requireNonNull(fileMetadata);
-        this.versionsHelper = Objects.requireNonNull(fileMetadataVersionsHelper);
         this.limit = limit;
         this.offset = offset;
     }
@@ -38,12 +36,12 @@ public class GetFileVersionDifferencesCommand extends AbstractCommand<List<FileV
         List<VersionedFileMetadata> fileHistory = findFileHistory(ctxt);
 
         return fileHistory.stream()
-                .map(this::createDifferenceFromHistory)
+                .map(versionedFileMetadata -> createDifferenceFromHistory(ctxt, versionedFileMetadata))
                 .collect(Collectors.toList());
     }
 
     /**
-     * Fetches the file's version history from the database, respecting user permissions.
+     * Fetches the file's version history, respecting user permissions.
      */
     private List<VersionedFileMetadata> findFileHistory(CommandContext ctxt) {
         Dataset dataset = fileMetadata.getDatasetVersion().getDataset();
@@ -66,15 +64,13 @@ public class GetFileVersionDifferencesCommand extends AbstractCommand<List<FileV
     /**
      * Transforms a single historical entry into a FileVersionDifference object.
      */
-    private FileVersionDifference createDifferenceFromHistory(VersionedFileMetadata versionedFileMetadata) {
+    private FileVersionDifference createDifferenceFromHistory(CommandContext ctxt, VersionedFileMetadata versionedFileMetadata) {
         FileMetadata current = versionedFileMetadata.getFileMetadata();
-        DatasetVersion version = versionedFileMetadata.getDatasetVersion();
-
-        FileMetadata previous = versionsHelper.getPreviousFileMetadata(this.fileMetadata, version);
+        FileMetadata previous = ctxt.files().getPreviousFileMetadata(current);
 
         return (current != null)
                 ? new FileVersionDifference(current, previous, false)
-                : createDifferenceForNonexistentFile(version, previous);
+                : createDifferenceForNonexistentFile(versionedFileMetadata.getDatasetVersion(), previous);
     }
 
     /**
