@@ -35,7 +35,7 @@ import edu.harvard.iq.dataverse.util.URLTokenUtil;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
@@ -61,7 +61,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonDT;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 
@@ -104,8 +104,6 @@ public class Files extends AbstractApiBean {
     GuestbookResponseServiceBean guestbookResponseService;
     @Inject
     DataFileServiceBean dataFileServiceBean;
-    @Inject
-    FileMetadataVersionsHelper fileMetadataVersionsHelper;
 
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
@@ -1182,16 +1180,7 @@ public class Files extends AbstractApiBean {
             if (fm == null) {
                 return notFound(BundleUtil.getStringFromBundle("files.api.fileNotFound"));
             }
-            List<FileVersionDifference> fileVersionDifferences = execCommand(new GetFileVersionDifferencesCommand(req, fm, null, null));
-            JsonArrayBuilder jab = Json.createArrayBuilder();
-            for (FileVersionDifference fileVersionDifference : fileVersionDifferences) {
-                jab.add(fileMetadataVersionsHelper.jsonDataFileVersions(fileVersionDifference).build());
-            }
-            return Response.ok()
-                    .entity(Json.createObjectBuilder()
-                            .add("status", STATUS_OK)
-                            .add("data", jab.build()).build()
-                    ).build();
+            return ok(jsonFileVersionSummaries(execCommand(new GetFileVersionDifferencesCommand(req, fm, null, null))));
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
