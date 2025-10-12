@@ -43,6 +43,7 @@ import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 
+import java.io.IOException;
 import java.util.*;
 
 import jakarta.json.Json;
@@ -1655,6 +1656,23 @@ public class JsonPrinter {
         }
 
         return jsonArrayBuilder;
+    }
+
+    public static JsonObjectBuilder jsonStorageDriver(String storageDriverId, Dataset dataset) {
+        JsonObjectBuilder jsonObjectBuilder = new NullSafeJsonBuilder();
+        jsonObjectBuilder.add("name", storageDriverId);
+        jsonObjectBuilder.add("type", DataAccess.getDriverType(storageDriverId));
+        jsonObjectBuilder.add("label", DataAccess.getStorageDriverLabelFor(storageDriverId));
+        if (dataset != null) {
+            jsonObjectBuilder.add("directUpload", DataAccess.uploadToDatasetAllowed(dataset, storageDriverId));
+            try {
+                jsonObjectBuilder.add("directDownload", DataAccess.getStorageIO(dataset).downloadRedirectEnabled());
+            } catch (IOException ex) {
+                logger.fine("Failed to get Storage IO for dataset " + ex.getMessage());
+            }
+        }
+
+        return jsonObjectBuilder;
     }
 
     public static JsonArrayBuilder json(List<UserNotification> notifications, AuthenticatedUser authenticatedUser, boolean inAppNotificationFormat) {

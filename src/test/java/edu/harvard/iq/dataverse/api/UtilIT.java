@@ -2857,9 +2857,13 @@ public class UtilIT {
     }
 
     static Response getStorageDriver(String dvAlias, String apiToken) {
+        return getStorageDriver(dvAlias, apiToken, null);
+    }
+    static Response getStorageDriver(String dvAlias, String apiToken, Boolean getEffective) {
+        String params = getEffective != null ? "?getEffective=" + getEffective : "";
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/admin/dataverse/" + dvAlias + "/storageDriver");
+                .get("/api/admin/dataverse/" + dvAlias + "/storageDriver" + params);
     }
 
     static Response setStorageDriver(String dvAlias, String label, String apiToken) {
@@ -4465,6 +4469,12 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(driverLabel)
                 .put("/api/datasets/" + datasetId + "/storageDriver");
+    }
+
+    static Response getDatasetStorageDriver(Integer datasetId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/storageDriver");
     }
 
     /** GET on /api/admin/savedsearches/list */
