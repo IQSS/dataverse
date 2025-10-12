@@ -9,6 +9,10 @@ import java.util.*;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
+/**
+ * Utility class responsible for producing JSON representations of {@link edu.harvard.iq.dataverse.FileVersionDifference} objects.
+ * TODO: The logic in this class was originally extracted from {@code FileMetadataVersionHelper}. Further refactoring and testing is required.
+ */
 public class FileVersionDifferenceJsonPrinter {
 
     private static final String ACTION_ADDED = "Added";
