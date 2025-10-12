@@ -35,16 +35,16 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
+
+import static edu.harvard.iq.dataverse.util.json.FileVersionDifferenceJsonPrinter.jsonFileVersionDifference;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 import edu.harvard.iq.dataverse.util.MailUtil;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 
 import java.util.*;
 
-import jakarta.inject.Inject;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
@@ -88,9 +88,6 @@ public class JsonPrinter {
     @EJB
     static InAppNotificationsJsonPrinter inAppNotificationsJsonPrinter;
 
-    @EJB
-    static FileMetadataVersionsHelper fileMetadataVersionsHelper;
-    
     public static void injectSettingsService(SettingsServiceBean ssb,
                                              DatasetFieldServiceBean dfsb,
                                              DataverseFieldTypeInputLevelServiceBean dfils,
@@ -1739,135 +1736,9 @@ public class JsonPrinter {
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
         differences.stream()
                 .filter(Objects::nonNull)
-                .map(diff -> jsonDataFileVersions(diff).build())
+                .map(diff -> jsonFileVersionDifference(diff).build())
                 .forEach(arrayBuilder::add);
 
         return arrayBuilder.build();
     }
-
-    private static JsonObjectBuilder jsonDataFileVersions(FileVersionDifference fileVersionDifference) {
-        JsonObjectBuilder job = jsonObjectBuilder();
-        FileMetadata fileMetadata = fileVersionDifference.getNewFileMetadata();
-        if (fileMetadata.getDatasetVersion() != null) {
-            job.add("datasetVersion", fileMetadata.getDatasetVersion().getFriendlyVersionNumber());
-            if (fileMetadata.getDatasetVersion().getVersionNumber() != null) {
-                job
-                        .add("versionNumber", fileMetadata.getDatasetVersion().getVersionNumber())
-                        .add("versionMinorNumber", fileMetadata.getDatasetVersion().getMinorVersionNumber());
-            }
-
-            job
-                    .add("isDraft", fileMetadata.getDatasetVersion().isDraft())
-                    .add("isReleased", fileMetadata.getDatasetVersion().isReleased())
-                    .add("isDeaccessioned", fileMetadata.getDatasetVersion().isDeaccessioned())
-                    .add("versionState", fileMetadata.getDatasetVersion().getVersionState().name())
-                    .add("summary", fileMetadata.getDatasetVersion().getVersionNote())
-                    .add("contributors", fileMetadata.getContributorNames())
-                    .add("publishedDate", fileMetadata.getDataFile() != null ? (fileMetadata.getDataFile().getPublicationDate() != null ? fileMetadata.getDataFile().getPublicationDate().toString() : null) : null)
-            ;
-        }
-        if (fileMetadata.getDataFile() != null) {
-            job.add("datafileId", fileMetadata.getDataFile().getId());
-            job.add("persistentId", (fileMetadata.getDataFile().getGlobalId() != null ? fileMetadata.getDataFile().getGlobalId().asString() : ""));
-        }
-        FileVersionDifference fvd = fileVersionDifference;
-        if (fvd != null) {
-            List<FileVersionDifference.FileDifferenceSummaryGroup> groups = fvd.getDifferenceSummaryGroups();
-            JsonObjectBuilder fileDifferenceSummary = jsonObjectBuilder()
-                    .add("versionNote", fileMetadata.getDatasetVersion().getVersionNote())
-                    .add("deaccessionedReason", fileMetadata.getDatasetVersion().getDeaccessionNote())
-                    .add("file", getFileAction(fvd.getOriginalFileMetadata(), fvd.getNewFileMetadata()));
-
-            if (groups != null && !groups.isEmpty()) {
-                List<FileVersionDifference.FileDifferenceSummaryGroup> sortedGroups = groups.stream()
-                        .sorted(Comparator.comparing(FileVersionDifference.FileDifferenceSummaryGroup::getName))
-                        .collect(Collectors.toList());
-                String groupName = null;
-                final JsonArrayBuilder groupsArrayBuilder = Json.createArrayBuilder();
-                final JsonObjectBuilder groupsObjectBuilder = jsonObjectBuilder();
-                Map<String, Integer> itemCounts = new HashMap<>();
-
-                for (FileVersionDifference.FileDifferenceSummaryGroup group : sortedGroups) {
-                    if (!StringUtil.isEmpty(group.getName())) {
-                        // if the group name changed then add its data to the fileDifferenceSummary and reset list for next group
-                        if (groupName != null && groupName.compareTo(group.getName()) != 0) {
-                            addJsonGroupObject(fileDifferenceSummary, groupName, groupsObjectBuilder.build(), groupsArrayBuilder.build(), itemCounts);
-                            // Note: groupsArrayBuilder.build() also clears the data within it
-                            itemCounts.clear();
-                        }
-                        groupName = group.getName();
-
-                        group.getFileDifferenceSummaryItems().forEach(item -> {
-                            JsonObjectBuilder itemObjectBuilder = jsonObjectBuilder();
-                            if (item.getName().isEmpty()) {
-                                // 'groupName': {'Added'=#, 'Changed'=#, ...}
-                                // accumulate the counts since we can't make a separate array item
-                                itemCounts.merge("Added", item.getAdded(), Integer::sum);
-                                itemCounts.merge("Changed", item.getChanged(), Integer::sum);
-                                itemCounts.merge("Deleted", item.getDeleted(), Integer::sum);
-                                itemCounts.merge("Replaced", item.getReplaced(), Integer::sum);
-                            } else if (List.of("File Access").contains(group.getName())) {
-                                // 'groupName': 'getNameValue'
-                                groupsObjectBuilder.add(group.getName(), group.getFileDifferenceSummaryItems().get(0).getName());
-                            } else {
-                                // 'groupName': [{name='', action=''}, {name='', action=''}]
-                                String action = item.getAdded() > 0 ? "Added" : item.getChanged() > 0 ? "Changed" :
-                                        item.getDeleted() > 0 ? "Deleted" : item.getReplaced() > 0 ? "Replaced" : "";
-                                itemObjectBuilder.add("name", item.getName());
-                                if (!action.isEmpty()) {
-                                    itemObjectBuilder.add("action", action);
-                                }
-                                groupsArrayBuilder.add(itemObjectBuilder.build());
-                            }
-                        });
-                    }
-                }
-                // process last group
-                addJsonGroupObject(fileDifferenceSummary, groupName, groupsObjectBuilder.build(), groupsArrayBuilder.build(), itemCounts);
-            }
-            JsonObject fileDifferenceSummaryObject = fileDifferenceSummary.build();
-            if (!fileDifferenceSummaryObject.isEmpty()) {
-                job.add("fileDifferenceSummary", fileDifferenceSummaryObject);
-            }
-        }
-        return job;
-    }
-
-    private static String getFileAction(FileMetadata originalFileMetadata, FileMetadata newFileMetadata) {
-        if (newFileMetadata.getDataFile() != null && originalFileMetadata == null) {
-            return "Added";
-        } else if (newFileMetadata.getDataFile() == null && originalFileMetadata != null) {
-            return "Deleted";
-        } else if (originalFileMetadata != null &&
-                newFileMetadata.getDataFile() != null && originalFileMetadata.getDataFile() != null &&!originalFileMetadata.getDataFile().equals(newFileMetadata.getDataFile())) {
-            return "Replaced";
-        } else {
-            return null;
-        }
-    }
-
-    private static void addJsonGroupObject(JsonObjectBuilder jsonObjectBuilder, String key, JsonObject jsonObjectValue, JsonArray jsonArrayValue, Map<String, Integer> itemCounts) {
-        if (key != null && !key.isEmpty()) {
-            String sanitizedKey = key.replaceAll("\\s+", "");
-            if (itemCounts.isEmpty()) {
-                if (jsonArrayValue.isEmpty()) {
-                    // add the object
-                    jsonObjectBuilder.add(sanitizedKey, jsonObjectValue.getValue("/"+key));
-                } else {
-                    // add the array
-                    jsonObjectBuilder.add(sanitizedKey, jsonArrayValue);
-                }
-            } else {
-                // add the accumulated totals
-                JsonObjectBuilder accumulatedTotalsObjectBuilder = jsonObjectBuilder();
-                itemCounts.forEach((k, v) -> {
-                    if (v != 0) {
-                        accumulatedTotalsObjectBuilder.add(k, v);
-                    }
-                });
-                jsonObjectBuilder.add(sanitizedKey, accumulatedTotalsObjectBuilder.build());
-            }
-        }
-    }
-
 }
