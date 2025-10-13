@@ -31,7 +31,7 @@ dataverse.cors.methods=GET, POST, OPTIONS, PUT, DELETE
 
 ## Compatibility
 
-- Must configure `dataverse.cors.origin`; `:AllowCors` no longer sufficient.
+- Must configure `dataverse.cors.origin`; `:AllowCors` was deprecated and has now been removed.
 - Any `*` triggers wildcard (no per-origin echo / no Vary header).
 
 ## Docs
