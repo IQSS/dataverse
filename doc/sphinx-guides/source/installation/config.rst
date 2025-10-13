@@ -4968,18 +4968,6 @@ This can be helpful in situations where multiple organizations are sharing one D
 or
 ``curl -X PUT -d '*' http://localhost:8080/api/admin/settings/:InheritParentRoleAssignments``
 
-:AllowCors (Deprecated – no longer used once dataverse.cors.* settings exist)
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-.. note::
-  This legacy database setting has been superseded by the ``dataverse.cors.*`` JVM/MicroProfile settings. In current versions CORS is only enabled when ``dataverse.cors.origin`` is explicitly set. Existing values of ``:AllowCors`` are ignored if ``dataverse.cors.origin`` is unset.
-
-Historical behavior (prior versions) allowed setting ``:AllowCors`` to ``true``/``false``. Administrators should migrate to the JVM/MicroProfile setting:
-
-``./asadmin create-jvm-options '-Ddataverse.cors.origin=*'``
-
-or a comma-separated list of allowed origins.
-
 :ChronologicalDateFacets
 ++++++++++++++++++++++++
 
