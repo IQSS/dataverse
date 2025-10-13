@@ -2,12 +2,9 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArgumentsException;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -19,45 +16,22 @@ import java.util.stream.Collectors;
  * highlighting the differences between each version.
  */
 @RequiredPermissions({})
-public class GetFileVersionDifferencesCommand extends AbstractCommand<List<FileVersionDifference>> {
+public class GetFileVersionDifferencesCommand extends AbstractPaginatedCommand<List<FileVersionDifference>> {
 
     private final FileMetadata fileMetadata;
-    private final Integer limit;
-    private final Integer offset;
 
     public GetFileVersionDifferencesCommand(DataverseRequest request, FileMetadata fileMetadata, Integer limit, Integer offset) {
-        super(request, fileMetadata.getDataFile());
+        super(request, fileMetadata.getDataFile(), limit, offset);
         this.fileMetadata = Objects.requireNonNull(fileMetadata);
-        this.limit = limit;
-        this.offset = offset;
     }
 
     @Override
-    public List<FileVersionDifference> execute(CommandContext ctxt) throws InvalidCommandArgumentsException {
-        validatePaginationParameter(limit, "limit");
-        validatePaginationParameter(offset, "offset");
-
+    public List<FileVersionDifference> executeCommand(CommandContext ctxt) {
         List<VersionedFileMetadata> fileHistory = findFileHistory(ctxt);
 
         return fileHistory.stream()
                 .map(versionedFileMetadata -> createDifferenceFromHistory(ctxt, versionedFileMetadata))
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Validates that a given pagination parameter is not negative.
-     *
-     * @param value The parameter's value.
-     * @param name  The parameter's name, used for the error message.
-     * @throws InvalidCommandArgumentsException if the value is negative.
-     */
-    private void validatePaginationParameter(Integer value, String name) throws InvalidCommandArgumentsException {
-        if (value != null && value < 0) {
-            throw new InvalidCommandArgumentsException(
-                    BundleUtil.getStringFromBundle("getFileVersionDifferencesCommand.errors.negativePaginationParam", List.of(name)),
-                    this
-            );
-        }
     }
 
     /**
