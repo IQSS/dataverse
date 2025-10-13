@@ -6586,7 +6586,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         addDataToPublishedVersion = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFilePostPub, apiToken);
         addDataToPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
 
-        // TEST 1: No pagination. Should return all 3 version differences (DRAFT, 2.0, 1.0).
+        // Test pagination: No pagination. Should return all 3 version differences (DRAFT, 2.0, 1.0).
         Response compareAllResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, apiToken);
         compareAllResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -6595,19 +6595,33 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data[1].versionNumber", equalTo("2.0"))
                 .body("data[2].versionNumber", equalTo("1.0"));
 
-        // TEST 2: Use limit=1. Should return only the latest difference (DRAFT).
+        // Test pagination: Use limit=1. Should return only the latest difference (DRAFT).
         Response compareLimitResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, 1, null, apiToken);
         compareLimitResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", is(1))
                 .body("data[0].versionNumber", equalTo("DRAFT"));
 
-        // TEST 3: Use limit=1 and offset=1. Should skip the first result and return the second (2.0).
+        // Test pagination: Use limit=1 and offset=1. Should skip the first result and return the second (2.0).
         Response compareOffsetResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, 1, 1, apiToken);
         compareOffsetResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", is(1))
                 .body("data[0].versionNumber", equalTo("2.0"));
+
+        // Test invalid pagination: limit=-1 (should return a bad request error)
+        compareAllResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, -1, 1, apiToken);
+        compareAllResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("status", equalTo("ERROR"))
+                .body("message", containsString("The limit parameter cannot be negative."));
+
+        // Test invalid pagination: offset=-1 (should return a bad request error)
+        compareAllResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, 1, -1, apiToken);
+        compareAllResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("status", equalTo("ERROR"))
+                .body("message", containsString("The offset parameter cannot be negative."));
     }
     
     @Test

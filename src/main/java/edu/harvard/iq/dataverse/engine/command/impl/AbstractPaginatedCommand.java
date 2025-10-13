@@ -54,9 +54,8 @@ public abstract class AbstractPaginatedCommand<T> extends AbstractCommand<T> {
      */
     private void validatePaginationParameter(Integer value, String name) throws InvalidCommandArgumentsException {
         if (value != null && value < 0) {
-            // Both original commands used this specific bundle key. A more generic one could be introduced later.
             throw new InvalidCommandArgumentsException(
-                    BundleUtil.getStringFromBundle("getFileVersionDifferencesCommand.errors.negativePaginationParam", List.of(name)),
+                    BundleUtil.getStringFromBundle("abstractPaginatedCommand.errors.negativePaginationParam", List.of(name)),
                     this
             );
         }
