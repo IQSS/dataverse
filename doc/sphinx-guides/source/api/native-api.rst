@@ -4288,8 +4288,19 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl  -X GET "https://demo.dataverse.org/api/files/1234/versionDifferences"
-  curl  -X GET "https://demo.dataverse.org/api/files/:persistentId/versionDifferences?persistentId=doi:10.5072/FK2/J8SJZB"
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/files/1234/versionDifferences"
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/files/:persistentId/versionDifferences?persistentId=doi:10.5072/FK2/J8SJZB"
+
+You can control pagination of the results using the following optional query parameters.
+
+* ``limit``: The maximum number of version differences to return.
+* ``offset``: The number of version differences to skip from the beginning of the list. Used for retrieving subsequent pages of results.
+
+For example, to get the second page of results, with 2 items per page, you would use ``limit=2`` and ``offset=2`` (skipping the first two results).
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/files/1234/versionDifferences?limit=2&offset=2"
 
 Adding Files
 ~~~~~~~~~~~~
