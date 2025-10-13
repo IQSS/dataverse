@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.datasetversionsummaries.DatasetVersionSummary;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import org.junit.jupiter.api.BeforeEach;
+import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArgumentsException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -53,16 +54,13 @@ class GetDatasetVersionSummariesCommandTest {
 
     private static final Long DATASET_ID = 42L;
 
-    @BeforeEach
-    void setUp() {
-        // Mock the context to return our mock services
+    /**
+     * Helper method to set up mocks required for tests that execute the full command logic.
+     */
+    private void setupMocksForSuccessfulExecution() {
         when(contextMock.permissions()).thenReturn(permissionsMock);
         when(contextMock.datasetVersion()).thenReturn(versionServiceMock);
-
-        // Mock the request to return a user
         when(requestMock.getUser()).thenReturn(userMock);
-
-        // Mock the dataset to have a specific ID
         when(datasetMock.getId()).thenReturn(DATASET_ID);
     }
 
@@ -70,6 +68,7 @@ class GetDatasetVersionSummariesCommandTest {
     @DisplayName("execute should call findVersions with 'canViewUnpublished' as TRUE when user has permission")
     void execute_should_call_findVersions_with_true_when_user_has_permission() throws CommandException {
         // Arrange
+        setupMocksForSuccessfulExecution();
         when(permissionsMock.hasPermissionsFor(requestMock.getUser(), datasetMock, EnumSet.of(Permission.ViewUnpublishedDataset)))
                 .thenReturn(true);
         when(versionServiceMock.findVersions(anyLong(), any(), any(), anyBoolean(), anyBoolean()))
@@ -96,6 +95,7 @@ class GetDatasetVersionSummariesCommandTest {
     @DisplayName("execute should call findVersions with 'canViewUnpublished' as FALSE when user lacks permission")
     void execute_should_call_findVersions_with_false_when_user_lacks_permission() throws CommandException {
         // Arrange
+        setupMocksForSuccessfulExecution();
         when(permissionsMock.hasPermissionsFor(requestMock.getUser(), datasetMock, EnumSet.of(Permission.ViewUnpublishedDataset)))
                 .thenReturn(false);
         when(versionServiceMock.findVersions(anyLong(), any(), any(), anyBoolean(), anyBoolean()))
@@ -122,6 +122,7 @@ class GetDatasetVersionSummariesCommandTest {
     @DisplayName("execute should pass pagination parameters correctly to findVersions")
     void execute_should_pass_pagination_parameters_correctly() throws CommandException {
         // Arrange
+        setupMocksForSuccessfulExecution();
         Integer expectedLimit = 10;
         Integer expectedOffset = 20;
         when(versionServiceMock.findVersions(anyLong(), any(), any(), anyBoolean(), anyBoolean()))
@@ -145,7 +146,8 @@ class GetDatasetVersionSummariesCommandTest {
     @Test
     @DisplayName("execute should correctly convert DatasetVersion list to DatasetVersionSummary list")
     void execute_should_convert_versions_to_summaries() throws CommandException {
-        // Arrange: Mock the service to return a list with one version
+        // Arrange
+        setupMocksForSuccessfulExecution();
         when(versionServiceMock.findVersions(anyLong(), any(), any(), anyBoolean(), anyBoolean()))
                 .thenReturn(List.of(versionMock));
 
@@ -168,5 +170,25 @@ class GetDatasetVersionSummariesCommandTest {
                     .hasSize(1)
                     .containsExactly(dummySummary);
         }
+    }
+
+    @Test
+    @DisplayName("execute should throw InvalidCommandArgumentsException for negative limit")
+    void execute_should_throw_exception_for_negative_limit() {
+        // Arrange
+        GetDatasetVersionSummariesCommand command = new GetDatasetVersionSummariesCommand(requestMock, datasetMock, -1, 0);
+
+        // Act & Assert
+        assertThrows(InvalidCommandArgumentsException.class, () -> command.execute(contextMock));
+    }
+
+    @Test
+    @DisplayName("execute should throw InvalidCommandArgumentsException for negative offset")
+    void execute_should_throw_exception_for_negative_offset() {
+        // Arrange
+        GetDatasetVersionSummariesCommand command = new GetDatasetVersionSummariesCommand(requestMock, datasetMock, 10, -1);
+
+        // Act & Assert
+        assertThrows(InvalidCommandArgumentsException.class, () -> command.execute(contextMock));
     }
 }

@@ -53,7 +53,7 @@ class GetFileVersionDifferencesCommandTest {
     }
 
     /**
-     * Helper method to set up mocks required for tests that execute the full command logic,
+     * Helper method to set up mocks required for tests that execute the full command logic.
      */
     private void setupMocksForSuccessfulExecution() {
         when(contextMock.permissions()).thenReturn(permissionsMock);
