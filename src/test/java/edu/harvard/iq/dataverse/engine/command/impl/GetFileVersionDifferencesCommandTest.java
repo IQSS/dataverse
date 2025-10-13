@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArgumentsException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
@@ -47,19 +49,25 @@ class GetFileVersionDifferencesCommandTest {
 
     @BeforeEach
     void setUp() {
+        when(fileMetadataMock.getDataFile()).thenReturn(dataFileMock);
+    }
+
+    /**
+     * Helper method to set up mocks required for tests that execute the full command logic,
+     */
+    private void setupMocksForSuccessfulExecution() {
         when(contextMock.permissions()).thenReturn(permissionsMock);
         when(contextMock.files()).thenReturn(fileServiceMock);
-
         when(fileMetadataMock.getDatasetVersion()).thenReturn(datasetVersionMock);
         when(datasetVersionMock.getDataset()).thenReturn(datasetMock);
         when(datasetMock.getId()).thenReturn(DATASET_ID);
-        when(fileMetadataMock.getDataFile()).thenReturn(dataFileMock);
     }
 
     @Test
     @DisplayName("execute should call findFileMetadataHistory with 'canViewUnpublished' as TRUE when user has permission")
     void execute_should_call_history_with_true_when_user_has_permission() throws CommandException {
         // Arrange
+        setupMocksForSuccessfulExecution();
         when(permissionsMock.hasPermissionsFor(requestMock.getUser(), datasetMock, EnumSet.of(Permission.ViewUnpublishedDataset)))
                 .thenReturn(true);
         when(fileServiceMock.findFileMetadataHistory(any(), any(), anyBoolean(), any(), any()))
@@ -86,6 +94,7 @@ class GetFileVersionDifferencesCommandTest {
     @DisplayName("execute should call findFileMetadataHistory with 'canViewUnpublished' as FALSE when user lacks permission")
     void execute_should_call_history_with_false_when_user_lacks_permission() throws CommandException {
         // Arrange
+        setupMocksForSuccessfulExecution();
         when(permissionsMock.hasPermissionsFor(requestMock.getUser(), datasetMock, EnumSet.of(Permission.ViewUnpublishedDataset)))
                 .thenReturn(false);
         when(fileServiceMock.findFileMetadataHistory(any(), any(), anyBoolean(), any(), any()))
@@ -112,6 +121,7 @@ class GetFileVersionDifferencesCommandTest {
     @DisplayName("execute should pass pagination parameters correctly to findFileMetadataHistory")
     void execute_should_pass_pagination_parameters_correctly() throws CommandException {
         // Arrange
+        setupMocksForSuccessfulExecution();
         Integer expectedLimit = 10;
         Integer expectedOffset = 20;
         when(fileServiceMock.findFileMetadataHistory(any(), any(), anyBoolean(), any(), any()))
@@ -136,6 +146,7 @@ class GetFileVersionDifferencesCommandTest {
     @DisplayName("execute should correctly convert file history to FileVersionDifference list")
     void execute_should_convert_history_to_differences() throws CommandException {
         // Arrange
+        setupMocksForSuccessfulExecution();
         // Create mock history: 3 versions of a file's metadata
         FileMetadata fm3 = new FileMetadata(); // Newest
         fm3.setId(3L);
@@ -179,5 +190,27 @@ class GetFileVersionDifferencesCommandTest {
         // Check the difference for the oldest version (v1 vs null)
         assertThat(differences.get(2).getNewFileMetadata()).isEqualTo(fm1);
         assertThat(differences.get(2).getOriginalFileMetadata()).isNull();
+    }
+
+    @Test
+    @DisplayName("execute should throw InvalidCommandArgumentsException for negative limit")
+    void execute_should_throw_exception_for_negative_limit() {
+        // Arrange
+        Integer invalidLimit = -1;
+        GetFileVersionDifferencesCommand command = new GetFileVersionDifferencesCommand(requestMock, fileMetadataMock, invalidLimit, 0);
+
+        // Act & Assert
+        assertThrows(InvalidCommandArgumentsException.class, () -> command.execute(contextMock));
+    }
+
+    @Test
+    @DisplayName("execute should throw InvalidCommandArgumentsException for negative offset")
+    void execute_should_throw_exception_for_negative_offset() {
+        // Arrange
+        Integer invalidOffset = -1;
+        GetFileVersionDifferencesCommand command = new GetFileVersionDifferencesCommand(requestMock, fileMetadataMock, 10, invalidOffset);
+
+        // Act & Assert
+        assertThrows(InvalidCommandArgumentsException.class, () -> command.execute(contextMock));
     }
 }
