@@ -1172,7 +1172,10 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/versionDifferences")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getFileVersionsList(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId) {
+    public Response getFileVersionsList(@Context ContainerRequestContext crc,
+                                        @PathParam("id") String fileIdOrPersistentId,
+                                        @QueryParam("limit") Integer limit,
+                                        @QueryParam("offset") Integer offset) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
@@ -1180,7 +1183,7 @@ public class Files extends AbstractApiBean {
             if (fm == null) {
                 return notFound(BundleUtil.getStringFromBundle("files.api.fileNotFound"));
             }
-            return ok(jsonFileVersionSummaries(execCommand(new GetFileVersionDifferencesCommand(req, fm, null, null))));
+            return ok(jsonFileVersionSummaries(execCommand(new GetFileVersionDifferencesCommand(req, fm, limit, offset))));
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }

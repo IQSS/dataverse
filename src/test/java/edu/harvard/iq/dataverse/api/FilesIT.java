@@ -1448,7 +1448,7 @@ public class FilesIT {
     }
 
     @Test
-    public void GetFileVersionDifferences() {
+    public void getFileVersionDifferences() {
         // Create superuser and regular user
         Response createUser = UtilIT.createRandomUser();
         String superUserUsername = UtilIT.getUsernameFromResponse(createUser);
@@ -1525,6 +1525,58 @@ public class FilesIT {
                 .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
                 .statusCode(OK.getStatusCode());
 
+        // Test pagination: limit=1, offset=0 (should get the first item: DRAFT)
+        Response paginatedResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken, 1, 0);
+        paginatedResponse.prettyPrint();
+        paginatedResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("status", equalTo("OK"))
+                .body("data.size()", is(1))
+                .body("data[0].datasetVersion", equalTo("DRAFT"));
+
+        // Test pagination: limit=1, offset=1 (should skip 1 and get the second item: 1.0)
+        paginatedResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken, 1, 1);
+        paginatedResponse.prettyPrint();
+        paginatedResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("status", equalTo("OK"))
+                .body("data.size()", is(1))
+                .body("data[0].datasetVersion", equalTo("1.0"));
+
+        // Test pagination: limit=1, offset=2 (out of bounds, should get an empty list)
+        paginatedResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken, 1, 2);
+        paginatedResponse.prettyPrint();
+        paginatedResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("status", equalTo("OK"))
+                .body("data.size()", is(0));
+
+        // Test pagination: limit=2, offset=0 (should get both items)
+        paginatedResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken, 2, 0);
+        paginatedResponse.prettyPrint();
+        paginatedResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("status", equalTo("OK"))
+                .body("data.size()", is(2))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[1].datasetVersion", equalTo("1.0"));
+
+        // Test invalid pagination: limit=-1 (should return a bad request error)
+        paginatedResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken, -1, 0);
+        paginatedResponse.prettyPrint();
+        paginatedResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("status", equalTo("ERROR"))
+                .body("message", containsString("The limit parameter cannot be negative."));
+
+        // Test invalid pagination: offset=-1 (should return a bad request error)
+        paginatedResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken, 1, -1);
+        paginatedResponse.prettyPrint();
+        paginatedResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("status", equalTo("ERROR"))
+                .body("message", containsString("The offset parameter cannot be negative."));
+
         // test replace file
         pathToFile = "src/test/resources/images/coffeeshop.png";
         Response replaceFileResponse = UtilIT.replaceFile(dataFileId, pathToFile, superUserApiToken);
@@ -1567,6 +1619,7 @@ public class FilesIT {
                 .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
                 .statusCode(OK.getStatusCode());
     }
+
     @Test
     public void testGetFileInfo() {
         Response createUser = UtilIT.createRandomUser();

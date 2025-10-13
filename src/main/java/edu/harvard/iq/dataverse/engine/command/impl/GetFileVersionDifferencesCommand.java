@@ -6,7 +6,8 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArgumentsException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -32,12 +33,31 @@ public class GetFileVersionDifferencesCommand extends AbstractCommand<List<FileV
     }
 
     @Override
-    public List<FileVersionDifference> execute(CommandContext ctxt) throws CommandException {
+    public List<FileVersionDifference> execute(CommandContext ctxt) throws InvalidCommandArgumentsException {
+        validatePaginationParameter(limit, "limit");
+        validatePaginationParameter(offset, "offset");
+
         List<VersionedFileMetadata> fileHistory = findFileHistory(ctxt);
 
         return fileHistory.stream()
                 .map(versionedFileMetadata -> createDifferenceFromHistory(ctxt, versionedFileMetadata))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Validates that a given pagination parameter is not negative.
+     *
+     * @param value The parameter's value.
+     * @param name  The parameter's name, used for the error message.
+     * @throws InvalidCommandArgumentsException if the value is negative.
+     */
+    private void validatePaginationParameter(Integer value, String name) throws InvalidCommandArgumentsException {
+        if (value != null && value < 0) {
+            throw new InvalidCommandArgumentsException(
+                    BundleUtil.getStringFromBundle("getFileVersionDifferencesCommand.errors.negativePaginationParam", List.of(name)),
+                    this
+            );
+        }
     }
 
     /**
