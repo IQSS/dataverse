@@ -161,9 +161,6 @@ public class FileVersionDifferenceJsonPrinter {
     /**
      * Builds the final JSON structure for a completed group and adds it to the parent builder.
      */
-    /**
-     * Builds the final JSON structure for a completed group and adds it to the parent builder.
-     */
     private static void addGroupDataToJson(JsonObjectBuilder parentBuilder, String groupName, GroupDataAccumulator accumulator) {
         if (groupName == null || groupName.isEmpty()) {
             return;
