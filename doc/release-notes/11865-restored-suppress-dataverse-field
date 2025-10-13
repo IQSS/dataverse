@@ -1,6 +1,6 @@
 ### Restored suppression of the host dataverse field
 
-When creating/editing a dataset, the _host dataverse_ field is not shown when there is no other dataverse than the root dataverse.
+When creating/editing a dataset, the _host dataverse_ field is not shown when the user can only add datasets to one collection.
 
 This was introduced in 6.7 with PR #11301 and reverted in 6.7.1 with PR #11700.
 A performance penalty was observed in instances with a large number of dataverses.
