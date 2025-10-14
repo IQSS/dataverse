@@ -91,7 +91,7 @@ public class DdiExportUtilTest {
         PidUtil.clearPidProviders();
 
         //Read list of providers to add
-        List<String> providers = JvmSettings.PID_PROVIDERS.lookupCsvList();
+        List<String> providers = JvmSettings.PID_PROVIDERS.lookupSplittedList();
         //Iterate through the list of providers and add them using the PidProviderFactory of the appropriate type
         for (String providerId : providers) {
             System.out.println("Loading provider: " + providerId);

@@ -50,7 +50,7 @@ public class CorsFilter implements Filter {
     public void init(final FilterConfig filterConfig) throws ServletException {
         // Parse allowed origins list (optional)
         // Treat CORS origin list as optional: when absent, CORS is disabled (see CorsFilterTest.disabledCors_skipsHeaders)
-        final List<String> originTokens = JvmSettings.CORS_ORIGIN.lookupCsvListOptional().orElse(List.of());
+        final List<String> originTokens = JvmSettings.CORS_ORIGIN.lookupSplittedListOptional().orElse(List.of());
         allowCors = !originTokens.isEmpty();
 
         if (allowCors) {
@@ -63,13 +63,13 @@ public class CorsFilter implements Filter {
                 allowedOrigins = Set.copyOf(originTokens);
             }
 
-            methods = JvmSettings.CORS_METHODS.lookupCsvListOptional()
+            methods = JvmSettings.CORS_METHODS.lookupSplittedListOptional()
                     .map(l -> String.join(", ", l))
                     .orElse("GET, POST, OPTIONS, PUT, DELETE");
-            allowHeaders = JvmSettings.CORS_ALLOW_HEADERS.lookupCsvListOptional()
+            allowHeaders = JvmSettings.CORS_ALLOW_HEADERS.lookupSplittedListOptional()
                     .map(l -> String.join(", ", l))
                     .orElse("Accept, Content-Type, X-Dataverse-key, Range");
-            exposeHeaders = JvmSettings.CORS_EXPOSE_HEADERS.lookupCsvListOptional()
+            exposeHeaders = JvmSettings.CORS_EXPOSE_HEADERS.lookupSplittedListOptional()
                     .map(l -> String.join(", ", l))
                     .orElse("Accept-Ranges, Content-Range, Content-Encoding");
         }

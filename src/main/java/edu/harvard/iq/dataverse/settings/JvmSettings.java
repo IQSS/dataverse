@@ -609,12 +609,12 @@ public enum JvmSettings {
     }
 
     /** Lookup optional CSV value and return a List of tokens. */
-    public java.util.Optional<java.util.List<String>> lookupCsvListOptional() {
+    public java.util.Optional<java.util.List<String>> lookupSplittedListOptional() {
         return lookupOptional(String[].class).map(splitted -> ListSplitUtil.split(String.join(",", splitted)));
     }
 
     /** Lookup required CSV value and return a List of tokens (throws if missing). */
-    public java.util.List<String> lookupCsvList() {
+    public java.util.List<String> lookupSplittedList() {
         return ListSplitUtil.split(String.join(",", lookup(String[].class)));
     }
 }
