@@ -20,18 +20,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * CorsFilter is a servlet filter that handles Cross-Origin Resource Sharing
- * (CORS) for the Dataverse application.
- * It configures and applies CORS headers to HTTP responses based on application
- * settings.
+ * CorsFilter is a servlet filter that handles Cross-Origin Resource Sharing (CORS) for the Dataverse application.
+ * It configures and applies CORS headers to HTTP responses based on application settings.
  * 
  * This filter:
- * 1. Reads CORS configuration from JVM options/Microprofile settings (e.g.
- * dataverse.cors.*).
+ * 1. Reads CORS configuration from JVM settings (dataverse.cors.*). See the Dataverse Configuration Guide for more details.
  * 2. Determines whether CORS should be allowed based on these settings.
- * 3. If CORS is allowed, it adds the appropriate CORS headers to all HTTP
- * responses. The JvmSettings allow customization of the header contents if
- * desired.
+ * 3. If CORS is allowed, it adds the appropriate CORS headers to all HTTP responses. The JVMSettings allow customization of the header contents if desired.
  * 
  * The filter is applied to all paths ("/*") in the application.
  */
@@ -40,58 +35,50 @@ import jakarta.servlet.http.HttpServletResponse;
 public class CorsFilter implements Filter {
 
     private boolean allowCors;
+    private boolean allowAllOrigins;
+    private Set<String> allowedOrigins = Collections.emptySet();
     private String methods;
     private String allowHeaders;
     private String exposeHeaders;
-    private Set<String> allowedOrigins = Collections.emptySet();
-    private boolean allowAllOrigins = false;
 
     @Override
-    public void init(final FilterConfig filterConfig) throws ServletException {
-        // Parse allowed origins list (optional)
-        // Treat CORS origin list as optional: when absent, CORS is disabled (see CorsFilterTest.disabledCors_skipsHeaders)
-        final List<String> originTokens = JvmSettings.CORS_ORIGIN.lookupSplittedListOptional().orElse(List.of());
-        allowCors = !originTokens.isEmpty();
+    public void init(FilterConfig filterConfig) throws ServletException {
+        List<String> origins = JvmSettings.CORS_ORIGIN.lookupSplittedListOptional().orElse(List.of());
+        allowCors = !origins.isEmpty();
 
         if (allowCors) {
-            // '*' anywhere means all origins
-            if (originTokens.contains("*")) {
+            if (origins.contains("*")) {
                 allowAllOrigins = true;
-                allowedOrigins = Collections.emptySet();
             } else {
-                // Origin tokens already had surrounding comma-whitespace removed by CsvUtil; we only trim here when reading the header.
-                allowedOrigins = Set.copyOf(originTokens);
+                allowedOrigins = Set.copyOf(origins);
             }
 
             methods = JvmSettings.CORS_METHODS.lookupSplittedListOptional()
-                    .map(l -> String.join(", ", l))
+                    .map(values -> String.join(", ", values))
                     .orElse("GET, POST, OPTIONS, PUT, DELETE");
             allowHeaders = JvmSettings.CORS_ALLOW_HEADERS.lookupSplittedListOptional()
-                    .map(l -> String.join(", ", l))
+                    .map(values -> String.join(", ", values))
                     .orElse("Accept, Content-Type, X-Dataverse-key, Range");
             exposeHeaders = JvmSettings.CORS_EXPOSE_HEADERS.lookupSplittedListOptional()
-                    .map(l -> String.join(", ", l))
+                    .map(values -> String.join(", ", values))
                     .orElse("Accept-Ranges, Content-Range, Content-Encoding");
         }
     }
 
     @Override
-    public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse, final FilterChain chain)
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain)
             throws IOException, ServletException {
         if (allowCors) {
-            final HttpServletRequest request = (HttpServletRequest) servletRequest;
-            final HttpServletResponse response = (HttpServletResponse) servletResponse;
+            HttpServletRequest request = (HttpServletRequest) servletRequest;
+            HttpServletResponse response = (HttpServletResponse) servletResponse;
 
-            final String originHeader = request.getHeader("Origin");
-            final String requestOrigin = originHeader == null ? null : originHeader.trim();
+            String originHeader = request.getHeader("Origin");
+            String requestOrigin = originHeader == null ? null : originHeader.trim();
 
-            // Decide ACAO value
             if (allowAllOrigins) {
-                // Note: Browsers will reject '*' for credentialed requests; this is by design.
                 response.setHeader("Access-Control-Allow-Origin", "*");
             } else if (requestOrigin != null && allowedOrigins.contains(requestOrigin)) {
                 response.setHeader("Access-Control-Allow-Origin", requestOrigin);
-                // Help caches vary based on Origin
                 response.setHeader("Vary", appendVary(response.getHeader("Vary"), "Origin"));
             }
 
@@ -102,16 +89,15 @@ public class CorsFilter implements Filter {
         chain.doFilter(servletRequest, servletResponse);
     }
 
-    private String appendVary(final String existing, final String token) {
+    private String appendVary(String existing, String value) {
         if (existing == null || existing.isEmpty()) {
-            return token;
+            return value;
         }
-        // Avoid duplicate tokens in Vary
-        final Set<String> tokens = Arrays.stream(existing.split(","))
+        Set<String> tokens = Arrays.stream(existing.split(","))
                 .map(String::trim)
-                .filter(s -> !s.isEmpty())
+                .filter(token -> !token.isEmpty())
                 .collect(Collectors.toCollection(HashSet::new));
-        tokens.add(token);
+        tokens.add(value);
         return String.join(", ", tokens);
     }
 }
