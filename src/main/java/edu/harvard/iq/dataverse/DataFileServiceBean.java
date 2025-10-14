@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -37,11 +38,7 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.*;
 import jakarta.persistence.criteria.*;
 
 /**
@@ -380,18 +377,20 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
     /**
-     * Finds the concise history of a file, returning an entry only for each
-     * version where the file's metadata was created or changed.
+     * Finds the complete history of a file's presence across all dataset versions.
      * <p>
-     * This method correctly handles file replacements by searching for all files
-     * sharing the same {@code rootDataFileId}.
+     * This method returns a {@link VersionedFileMetadata} entry for every version
+     * of the specified dataset. If a version does not contain the file, the
+     * {@code fileMetadata} field in the corresponding DTO will be {@code null}.
+     * It correctly handles file replacements by searching for all files sharing the
+     * same {@code rootDataFileId}.
      *
      * @param datasetId                  The ID of the parent dataset.
      * @param dataFile                   The DataFile entity to find the history for.
      * @param canViewUnpublishedVersions A boolean indicating if the user has permission to view non-released versions.
      * @param limit                      (Optional) The maximum number of results to return.
      * @param offset                     (Optional) The starting point of the result list.
-     * @return A chronologically sorted, paginated list of the file's version history.
+     * @return A chronologically sorted, paginated list of the file's version history, including versions where the file is absent.
      */
     public List<VersionedFileMetadata> findFileMetadataHistory(Long datasetId,
                                                                DataFile dataFile,
@@ -402,65 +401,66 @@ public class DataFileServiceBean implements java.io.Serializable {
             return Collections.emptyList();
         }
 
+        // Query 1: Get the paginated list of relevant DatasetVersions
         CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<FileMetadata> criteriaQuery = cb.createQuery(FileMetadata.class);
-        Root<FileMetadata> fileMetadata = criteriaQuery.from(FileMetadata.class);
+        CriteriaQuery<DatasetVersion> versionQuery = cb.createQuery(DatasetVersion.class);
+        Root<DatasetVersion> versionRoot = versionQuery.from(DatasetVersion.class);
 
-        // --- Joins ---
-        // Define relationships for filtering and ordering.
-        Join<FileMetadata, DatasetVersion> version = fileMetadata.join("datasetVersion");
-        Join<DatasetVersion, Dataset> dataset = version.join("dataset");
-        Join<FileMetadata, DataFile> file = fileMetadata.join("dataFile");
-
-        // --- Predicates (WHERE clause) ---
-        // Build a list of conditions for the query.
-        List<Predicate> predicates = new ArrayList<>();
-
-        // Filter by the parent dataset.
-        predicates.add(cb.equal(dataset.get("id"), datasetId));
-
-        // Filter by the file's lineage, handling both new and replaced files.
-        if (dataFile.getRootDataFileId() < 0) {
-            // For a new file, match by its specific ID.
-            predicates.add(cb.equal(file.get("id"), dataFile.getId()));
-        } else {
-            // For a replaced file, match the entire history via its root ID.
-            predicates.add(cb.equal(file.get("rootDataFileId"), dataFile.getRootDataFileId()));
-        }
-
-        // Add permission-based filter for version states.
+        List<Predicate> versionPredicates = new ArrayList<>();
+        versionPredicates.add(cb.equal(versionRoot.join("dataset").get("id"), datasetId));
         if (!canViewUnpublishedVersions) {
-            predicates.add(version.get("versionState").in(
+            versionPredicates.add(versionRoot.get("versionState").in(
                     VersionState.RELEASED, VersionState.DEACCESSIONED));
         }
-
-        criteriaQuery.where(predicates.toArray(new Predicate[0]));
-
-        // --- Ordering ---
-        // Order results from newest to oldest version.
-        criteriaQuery.orderBy(
-                cb.desc(version.get("versionNumber")),
-                cb.desc(version.get("minorVersionNumber"))
+        versionQuery.where(versionPredicates.toArray(new Predicate[0]));
+        versionQuery.orderBy(
+                cb.desc(versionRoot.get("versionNumber")),
+                cb.desc(versionRoot.get("minorVersionNumber"))
         );
 
-        // --- Execution & Transformation ---
-        // Create the query object from the criteria definition.
-        TypedQuery<FileMetadata> typedQuery = em.createQuery(criteriaQuery);
-
-        // --- Pagination ---
-        // Apply pagination if limit and/or offset are provided.
+        TypedQuery<DatasetVersion> typedVersionQuery = em.createQuery(versionQuery);
         if (limit != null) {
-            typedQuery.setMaxResults(limit);
+            typedVersionQuery.setMaxResults(limit);
         }
         if (offset != null) {
-            typedQuery.setFirstResult(offset);
+            typedVersionQuery.setFirstResult(offset);
+        }
+        List<DatasetVersion> datasetVersions = typedVersionQuery.getResultList();
+
+        if (datasetVersions.isEmpty()) {
+            return Collections.emptyList();
         }
 
-        // Execute the query and map the results to the VersionedFileMetadata list.
-        List<FileMetadata> results = typedQuery.getResultList();
+        // Query 2: Get all FileMetadata for this file's history in this dataset
+        CriteriaQuery<FileMetadata> fmQuery = cb.createQuery(FileMetadata.class);
+        Root<FileMetadata> fmRoot = fmQuery.from(FileMetadata.class);
 
-        return results.stream()
-                .map(metadata -> new VersionedFileMetadata(metadata.getDatasetVersion(), metadata))
+        List<Predicate> fmPredicates = new ArrayList<>();
+        fmPredicates.add(cb.equal(fmRoot.get("datasetVersion").get("dataset").get("id"), datasetId));
+
+        // Find the file by its entire lineage
+        if (dataFile.getRootDataFileId() < 0) {
+            fmPredicates.add(cb.equal(fmRoot.get("dataFile").get("id"), dataFile.getId()));
+        } else {
+            fmPredicates.add(cb.equal(fmRoot.get("dataFile").get("rootDataFileId"), dataFile.getRootDataFileId()));
+        }
+        fmQuery.where(fmPredicates.toArray(new Predicate[0]));
+
+        List<FileMetadata> fileHistory = em.createQuery(fmQuery).getResultList();
+
+        // Combine results
+        Map<Long, FileMetadata> fmMap = fileHistory.stream()
+                .collect(Collectors.toMap(
+                        fm -> fm.getDatasetVersion().getId(),
+                        Function.identity()
+                ));
+
+        // Create the final list, looking up the FileMetadata for each version
+        return datasetVersions.stream()
+                .map(version -> new VersionedFileMetadata(
+                        version,
+                        fmMap.get(version.getId()) // This will be null if no entry exists for that version ID
+                ))
                 .collect(Collectors.toList());
     }
 
