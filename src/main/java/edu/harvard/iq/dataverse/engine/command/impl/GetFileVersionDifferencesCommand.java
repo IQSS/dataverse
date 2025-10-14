@@ -57,6 +57,7 @@ public class GetFileVersionDifferencesCommand extends AbstractPaginatedCommand<L
 
     /**
      * Transforms a single historical entry into a FileVersionDifference object.
+     * As part of this process, it also enriches the file metadata with contributor names from that version.
      */
     private FileVersionDifference createDifferenceFromHistory(CommandContext ctxt, VersionedFileMetadata versionedFileMetadata) {
         FileMetadata fileMetadata = versionedFileMetadata.getFileMetadata();
