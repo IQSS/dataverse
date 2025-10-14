@@ -5155,24 +5155,24 @@ public class Datasets extends AbstractApiBean {
 
     /**
      * API endpoint to retrieve a URL for a dataset-level external tool.
-     *
+     * 
      * This endpoint allows clients to get a URL for accessing an external tool
      * that operates at the dataset level. The URL includes necessary authentication tokens and
      * parameters based on the user's permissions and the tool's configuration.
-     *
+     * 
      * The endpoint accepts JSON input with optional parameters:
      * - preview: boolean flag to indicate if the tool should run in preview mode (preview mode, if supported by the tool, suppresses showing metadata (i.e. item name/PID) and is intended for cases where the tool is embedded in the dataset/file page and this metadata is not needed. The current JSF UI never embeds a dataset-level tool in an iframe, so this is param is not currently useful (and may not be supported in dataset tools yet)
      * - locale: string specifying the locale for internationalization
-     *
+     * 
      * The response includes:
      * - toolUrl: the URL to access the external tool
      * - toolName: the display name of the external tool
      * - datasetId: the ID of the dataset
      * - preview: whether the URL is for preview mode
-     *
+     * 
      * Authentication is required, and appropriate permissions are checked before generating the URL.
      * For restricted datasets (draft or deaccessioned), the user must have ViewUnpublishedDataset permission.
-     *
+     * 
      * @param crc The container request context for authentication
      * @param datasetId The ID of the dataset
      * @param externalToolId The ID of the external tool
@@ -5345,7 +5345,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }
         JsonObjectBuilder responseJson;
         if (isAnonymizedAccess) {
-            // Use CsvUtil for consistent CSV parsing
+            // Use ListSplitUtil for consistent CSV parsing
             List<String> anonymizedFieldTypeNamesList = new ArrayList<>(ListSplitUtil.split(anonymizedFieldTypeNames));
             responseJson = json(dsv, anonymizedFieldTypeNamesList, true, returnOwners);
         } else {
@@ -5372,7 +5372,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }
         JsonObjectBuilder responseJson;
         if (isAnonymizedAccess) {
-            // Use CsvUtil for consistent CSV parsing
+            // Use ListSplitUtil for consistent CSV parsing
             List<String> anonymizedFieldTypeNamesList = new ArrayList<>(ListSplitUtil.split(anonymizedFieldTypeNames));
             responseJson = json(dsv, anonymizedFieldTypeNamesList, true, returnOwners);
         } else {

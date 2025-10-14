@@ -1041,7 +1041,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 ? criteriaBuilder.or(
                 // 1. Field marked as displayOnCreate in input level
                 displayOnCreateInputLevelPredicate,
-
+                
                 // 2. Field without input level that is marked as displayOnCreate or required
                 criteriaBuilder.and(
                     hasNoInputLevelPredicate,
@@ -1050,7 +1050,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         fieldRequiredInTheInstallation
                     )
                 ),
-
+                
                 // 3. Field required by input level
                 requiredAsInputLevelPredicate
         )

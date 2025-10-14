@@ -37,31 +37,31 @@ import jakarta.json.JsonObjectBuilder;
 
 /**
  * @author qqmyers
- *
+ * 
  * This class implements three related use cases, all of which leverage the underlying idea of using a base store (as with the Https RemoteOverlay store):
  *   Managed - where Dataverse has control of the specified Globus endpoint and can set/remove permissions as needed to allow file transfers in/out:
  *      File/generic endpoint - assumes Dataverse does not have access to the datafile contents
  *      S3-Connector endpoint - assumes the datafiles are accessible via Globus and via S3 such that Dataverse can access to the datafile contents when needed.
  *   Remote - where Dataverse references files that remain at remote Globus endpoints (as with the Https RemoteOverlay store) and cannot access to the datafile contents.
- *
- *   Note that Globus endpoints can provide Http URLs to get file contents, so a future enhancement could potentially support datafile contents access in the Managed/File and Remote cases.
- *
+ *   
+ *   Note that Globus endpoints can provide Http URLs to get file contents, so a future enhancement could potentially support datafile contents access in the Managed/File and Remote cases. 
+ *   
  *    */
 /*
  * Globus Overlay Driver storageIdentifer format:
- *
+ * 
  * Remote: StorageIdentifier format:
- * <globusDriverId>://<baseStorageIdentifier>//<relativePath>
- *
+ * <globusDriverId>://<baseStorageIdentifier>//<relativePath> 
+ * 
  * Storage location:
- * <globusendpointId/basepath>/<relPath>
- *
+ * <globusendpointId/basepath>/<relPath> 
+ * 
  * Internal StorageIdentifier format:
- * <globusDriverId>://<baseStorageIdentifier>
- *
+ * <globusDriverId>://<baseStorageIdentifier> 
+ * 
  * Storage location:
  * <globusEndpointId/basepath>/<dataset authority>/<dataset identifier>/<baseStorageIdentifier>
- *
+ * 
  */
 public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOverlayAccessIO<T> implements GlobusAccessibleStore {
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIO");
@@ -74,9 +74,9 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
     private Boolean dataverseManaged = null;
 
     private String relativeDirectoryPath;
-
+    
     private String endpointPath;
-
+    
     private String filename;
 
     private String[] allowedEndpoints;
@@ -108,17 +108,17 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
             logger.fine("Referenced path: " + path);
         }
     }
-
+    
     private boolean isManaged() {
         if(dataverseManaged==null) {
             dataverseManaged = GlobusAccessibleStore.isDataverseManaged(this.driverId);
         }
         return dataverseManaged;
     }
-
+    
     private String retrieveGlobusAccessToken() {
         String globusToken = getConfigParam(GlobusAccessibleStore.GLOBUS_TOKEN);
-
+        
 
         AccessToken accessToken = GlobusServiceBean.getClientToken(globusToken);
         return accessToken.getOtherTokens().get(0).getAccessToken();
@@ -137,10 +137,10 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
         logger.fine("endpointWithBasePath: " + endpointWithBasePath);
         endpointPath = "/" + (pathStart > 0 ? endpointWithBasePath.substring(pathStart + 1) : "");
         logger.fine("endpointPath: " + endpointPath);
-
+        
 
         if (isManaged() && (dvObject!=null)) {
-
+            
             Dataset ds = null;
             if (dvObject instanceof Dataset) {
                 ds = (Dataset) dvObject;
@@ -158,7 +158,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
         filename = path.substring(filenameStart);
         endpoint = pathStart > 0 ? endpointWithBasePath.substring(0, pathStart) : endpointWithBasePath;
 
-
+        
     }
 
     private static String findMatchingEndpoint(String path, String[] allowedEndpoints) {
@@ -236,7 +236,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
         return -1;
     }
 
-
+    
     @Override
     public InputStream getInputStream() throws IOException {
         //Currently only supported when using an S3 store with the Globus S3Connector.
@@ -247,7 +247,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
             return null;
         }
     }
-
+    
     @Override
     public void delete() throws IOException {
 
@@ -340,9 +340,9 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
     static boolean isValidIdentifier(String driverId, String storageId) {
         String baseIdentifier = storageId.substring(storageId.lastIndexOf("//") + 2);
         try {
-
+            
         String[] allowedEndpoints =getAllowedEndpoints(driverId);
-
+            
         // Internally managed endpoints require standard name pattern (submitted via
         // /addFile(s) api)
         if (GlobusAccessibleStore.isDataverseManaged(driverId)) {
@@ -357,7 +357,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
         // Remote endpoints require a valid URI within the baseUrl
         try {
             String endpoint = findMatchingEndpoint(baseIdentifier, allowedEndpoints);
-
+            
             if(endpoint==null || !Paths.get(endpoint, baseIdentifier).normalize().startsWith(endpoint)) {
                 logger.warning("storageidentifier doesn't start with one of " + driverId + "'s allowed endpoints");
                 return false;
@@ -370,7 +370,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
         } catch (IOException e) {
             return false;
         }
-
+        
     }
 
     @Override
@@ -382,7 +382,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
             return super.getStorageLocation();
         }
     }
-
+    
     /** This endpoint configures all the endpoints the store is allowed to reference data from. At present, the RemoteOverlayAccessIO only supports a single endpoint but
      * the derived GlobusOverlayAccessIO can support multiple endpoints.
      * @throws IOException
@@ -391,26 +391,26 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
         allowedEndpoints = getAllowedEndpoints(this.driverId);
         logger.fine("Set allowed endpoints: " + Arrays.toString(allowedEndpoints));
     }
-
+    
     private static String[] getAllowedEndpoints(String driverId) throws IOException {
         if (GlobusAccessibleStore.isDataverseManaged(driverId)) {
-            final String value = getConfigParamForDriver(driverId, TRANSFER_ENDPOINT_WITH_BASEPATH);
-            if (value == null) {
+            final String endpoint = getConfigParamForDriver(driverId, TRANSFER_ENDPOINT_WITH_BASEPATH);
+            if (endpoint == null) {
                 throw new IOException("dataverse.files." + driverId + "." + TRANSFER_ENDPOINT_WITH_BASEPATH + " is required");
             }
-            return new String[] { value };
-        } else {
-            final String raw = getConfigParamForDriver(driverId, REFERENCE_ENDPOINTS_WITH_BASEPATHS);
-            if (raw == null) {
-                throw new IOException("dataverse.files." + driverId + ".base-url is required");
-            }
-            // CsvUtil.split never returns null; may return empty list if raw is blank.
-            final List<String> list = ListSplitUtil.split(raw);
-            if (list.isEmpty()) {
-                throw new IOException("dataverse.files." + driverId + ".base-url is required");
-            }
-            return list.toArray(new String[0]);
+            return new String[] { endpoint };
         }
+
+        final String rawEndpoints = getConfigParamForDriver(driverId, REFERENCE_ENDPOINTS_WITH_BASEPATHS);
+        if (rawEndpoints == null) {
+            throw new IOException("dataverse.files." + driverId + ".base-url is required");
+        }
+
+        final List<String> allowedEndpoints = ListSplitUtil.split(rawEndpoints);
+        if (allowedEndpoints.isEmpty()) {
+            throw new IOException("dataverse.files." + driverId + ".base-url is required");
+        }
+        return allowedEndpoints.toArray(new String[0]);
     }
 
 
@@ -452,10 +452,10 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
                     this.setSize(retrieveSizeFromMedia());
                 }
                 // Only applies for the S3 Connector case (where we could have run an ingest)
-                if (dataFile.getContentType() != null
+                if (dataFile.getContentType() != null 
                         && dataFile.getContentType().equals("text/tab-separated-values")
-                        && dataFile.isTabularData()
-                        && dataFile.getDataTable() != null
+                        && dataFile.isTabularData() 
+                        && dataFile.getDataTable() != null 
                         && (!this.noVarHeader())
                         && (!dataFile.getDataTable().isStoredWithVariableHeader())) {
 
@@ -505,7 +505,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
         throw new UnsupportedDataAccessOperationException(
                 this.getClass().getName() + ": savePath() not implemented in this storage driver.");
     }
-
+    
     @Override
     public boolean isDataverseAccessible() {
         return isDataverseAccessible(this.driverId);
