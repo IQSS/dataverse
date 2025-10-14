@@ -59,12 +59,15 @@ public class GetFileVersionDifferencesCommand extends AbstractPaginatedCommand<L
      * Transforms a single historical entry into a FileVersionDifference object.
      */
     private FileVersionDifference createDifferenceFromHistory(CommandContext ctxt, VersionedFileMetadata versionedFileMetadata) {
-        FileMetadata current = versionedFileMetadata.getFileMetadata();
-        FileMetadata previous = ctxt.files().getPreviousFileMetadata(current);
+        FileMetadata fileMetadata = versionedFileMetadata.getFileMetadata();
+        FileMetadata previous = ctxt.files().getPreviousFileMetadata(fileMetadata);
 
-        return (current != null)
-                ? new FileVersionDifference(current, previous, false)
-                : createDifferenceForNonexistentFile(versionedFileMetadata.getDatasetVersion(), previous);
+        if (fileMetadata != null) {
+            fileMetadata.setContributorNames(ctxt.datasetVersion().getContributorsNames(fileMetadata.getDatasetVersion()));
+            return new FileVersionDifference(fileMetadata, previous, false);
+        }
+
+        return createDifferenceForNonexistentFile(versionedFileMetadata.getDatasetVersion(), previous);
     }
 
     /**

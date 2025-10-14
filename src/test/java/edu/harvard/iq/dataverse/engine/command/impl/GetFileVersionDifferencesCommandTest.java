@@ -39,6 +39,8 @@ class GetFileVersionDifferencesCommandTest {
     @Mock
     private DataFileServiceBean fileServiceMock;
     @Mock
+    private DatasetVersionServiceBean datasetVersionServiceMock;
+    @Mock
     private Dataset datasetMock;
     @Mock
     private DatasetVersion datasetVersionMock;
@@ -147,13 +149,19 @@ class GetFileVersionDifferencesCommandTest {
     void execute_should_convert_history_to_differences() throws CommandException {
         // Arrange
         setupMocksForSuccessfulExecution();
+        // This test needs an extra mock because it processes items from the history list
+        when(contextMock.datasetVersion()).thenReturn(datasetVersionServiceMock);
+
         // Create mock history: 3 versions of a file's metadata
         FileMetadata fm3 = new FileMetadata(); // Newest
         fm3.setId(3L);
+        fm3.setDatasetVersion(datasetVersionMock);
         FileMetadata fm2 = new FileMetadata(); // Middle
         fm2.setId(2L);
+        fm2.setDatasetVersion(datasetVersionMock);
         FileMetadata fm1 = new FileMetadata(); // Oldest
         fm1.setId(1L);
+        fm1.setDatasetVersion(datasetVersionMock);
 
         VersionedFileMetadata vfm3 = mock(VersionedFileMetadata.class);
         VersionedFileMetadata vfm2 = mock(VersionedFileMetadata.class);
@@ -170,6 +178,9 @@ class GetFileVersionDifferencesCommandTest {
         when(fileServiceMock.getPreviousFileMetadata(fm3)).thenReturn(fm2);
         when(fileServiceMock.getPreviousFileMetadata(fm2)).thenReturn(fm1);
         when(fileServiceMock.getPreviousFileMetadata(fm1)).thenReturn(null); // The oldest has no predecessor
+
+        // Mock the logic to retrieve contributor names
+        when(datasetVersionServiceMock.getContributorsNames(any(DatasetVersion.class))).thenReturn(Collections.emptyList().toString());
 
         GetFileVersionDifferencesCommand command = new GetFileVersionDifferencesCommand(requestMock, fileMetadataMock, null, null);
 
@@ -190,6 +201,9 @@ class GetFileVersionDifferencesCommandTest {
         // Check the difference for the oldest version (v1 vs null)
         assertThat(differences.get(2).getNewFileMetadata()).isEqualTo(fm1);
         assertThat(differences.get(2).getOriginalFileMetadata()).isNull();
+
+        // Verify setting contributor for each file metadata
+        verify(datasetVersionServiceMock, times(3)).getContributorsNames(datasetVersionMock);
     }
 
     @Test
