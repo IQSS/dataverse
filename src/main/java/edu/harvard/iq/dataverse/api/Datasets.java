@@ -2609,7 +2609,7 @@ public class Datasets extends AbstractApiBean {
                 canSeeStatus = permissionSvc.requestOn(createDataverseRequest(user), ds).has(Permission.PublishDataset);
             }
 
-            if (dsv.isDraft() && (canSeeStatus)) {
+            if (canSeeStatus) {
                 List<CurationStatus> statuses = includeHistory ? dsv.getCurationStatuses() : Collections.singletonList(dsv.getCurrentCurationStatus());
                 if (includeHistory) {
                     JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
@@ -3690,7 +3690,7 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
 
-        return response(req -> ok(dataset.getEffectiveStorageDriverId()), getRequestUser(crc));
+        return ok(JsonPrinter.jsonStorageDriver(dataset.getEffectiveStorageDriverId(), dataset));
     }
 
     @PUT

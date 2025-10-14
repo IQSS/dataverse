@@ -78,7 +78,7 @@ Amazon offers instructions on using an IAM role to grant permissions to applicat
 Configure Ansible File (Optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order to configure Dataverse installation settings such as the password of the dataverseAdmin user, download https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/defaults/main.yml and edit the file to your liking.
+In order to configure Dataverse installation settings such as the password of the dataverseAdmin user, download https://raw.githubusercontent.com/gdcc/dataverse-ansible/develop/defaults/main.yml and edit the file to your liking.
 
 You can skip this step if you're fine with the values in the "main.yml" file in the link above.
 
@@ -89,7 +89,7 @@ Once you have done the configuration above, you are ready to try running the "ec
 
 Download `ec2-create-instance.sh`_ and put it somewhere reasonable. For the purpose of these instructions we'll assume it's in the "Downloads" directory in your home directory.
 
-.. _ec2-create-instance.sh: https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/ec2/ec2-create-instance.sh
+.. _ec2-create-instance.sh: https://raw.githubusercontent.com/gdcc/dataverse-ansible/develop/ec2/ec2-create-instance.sh
 
 To run the script, you can make it executable (``chmod 755 ec2-create-instance.sh``) or run it with bash, like this with ``-h`` as an argument to print the help:
 
