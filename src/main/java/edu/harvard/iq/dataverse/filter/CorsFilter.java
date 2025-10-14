@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.filter;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -9,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -93,7 +93,7 @@ public class CorsFilter implements Filter {
         if (existing == null || existing.isEmpty()) {
             return value;
         }
-        Set<String> tokens = Arrays.stream(existing.split(","))
+        Set<String> tokens = ListSplitUtil.split(existing).stream()
                 .map(String::trim)
                 .filter(token -> !token.isEmpty())
                 .collect(Collectors.toCollection(HashSet::new));
