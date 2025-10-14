@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.settings;
 
+import org.apache.poi.ss.formula.functions.T;
 import org.eclipse.microprofile.config.ConfigProvider;
 
 import edu.harvard.iq.dataverse.util.ListSplitUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -608,11 +610,11 @@ public enum JvmSettings {
 
     /** Lookup optional CSV value and return a List of tokens. */
     public java.util.Optional<java.util.List<String>> lookupCsvListOptional() {
-        return lookupOptional().map(ListSplitUtil::split);
+        return lookupOptional(String[].class).map(splitted -> ListSplitUtil.split(String.join(",", splitted)));
     }
 
     /** Lookup required CSV value and return a List of tokens (throws if missing). */
     public java.util.List<String> lookupCsvList() {
-        return ListSplitUtil.split(lookup());
+        return ListSplitUtil.split(String.join(",", lookup(String[].class)));
     }
 }
