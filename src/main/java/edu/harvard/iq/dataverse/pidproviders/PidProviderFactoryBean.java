@@ -118,7 +118,7 @@ public class PidProviderFactoryBean {
     }
 
     private void loadProviders() {
-        var providersOpt = JvmSettings.PID_PROVIDERS.lookupSplittedListOptional();
+        Optional<List<String>> providersOpt = JvmSettings.PID_PROVIDERS.lookupSplittedListOptional();
         if (!providersOpt.isPresent() || providersOpt.get().isEmpty()) {
             logger.warning(
                     "No PidProviders configured via dataverse.pid.providers. Please consider updating as older PIDProvider configuration mechanisms will be removed in a future version of Dataverse.");
