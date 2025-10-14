@@ -47,7 +47,6 @@ class CorsFilterTest {
         System.setProperty("dataverse.cors.origin", "*");
 
         CorsFilter sut = new CorsFilter();
-        injectSettingsAllowCors(sut, true);
         sut.init(null);
 
         HttpServletRequest req = mock(HttpServletRequest.class);
@@ -68,7 +67,6 @@ class CorsFilterTest {
         System.setProperty("dataverse.cors.origin", "https://libis.github.io");
 
         CorsFilter sut = new CorsFilter();
-        injectSettingsAllowCors(sut, true);
         sut.init(null);
 
         HttpServletRequest req = mock(HttpServletRequest.class);
@@ -93,7 +91,6 @@ class CorsFilterTest {
         System.setProperty("dataverse.cors.origin", "https://a.example, https://b.example");
 
         CorsFilter sut = new CorsFilter();
-        injectSettingsAllowCors(sut, true);
         sut.init(null);
 
         // allowed origin
@@ -178,7 +175,6 @@ class CorsFilterTest {
         System.setProperty("dataverse.cors.methods", "GET, POST, OPTIONS");
 
         CorsFilter sut = new CorsFilter();
-        injectSettingsAllowCors(sut, true);
         sut.init(null);
 
         HttpServletRequest req = mock(HttpServletRequest.class);
@@ -210,10 +206,6 @@ class CorsFilterTest {
         verify(res, never()).setHeader(eq("Access-Control-Allow-Headers"), anyString());
         verify(res, never()).setHeader(eq("Access-Control-Expose-Headers"), anyString());
     }
-
-    // No-op since filter no longer depends on SettingsServiceBean
-    private void injectSettingsAllowCors(CorsFilter sut, boolean allowCors) {
-        /* legacy path removed */ }
 
     private void backupAndClear(String key) {
         String old = System.getProperty(key);
