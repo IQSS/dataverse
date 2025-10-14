@@ -48,8 +48,8 @@ import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
-import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.DateUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.HashSet;
 import java.util.Set;
@@ -95,7 +95,7 @@ import jakarta.validation.constraints.Pattern;
                 "        )",
                 resultSetMapping = "IdToLongMapping"
     )
-/* When this mapping was to Long.class, Postgres was still returning an Integer, causing indexing failures - see #11776 */
+/* When this mapping was to Long.class, Postgres was still returning an Integer, causing indexing failures - see #11776 */ 
 @SqlResultSetMapping(
         name = "IdToLongMapping",
         columns = @ColumnResult(name = "id", type = Integer.class)
@@ -107,13 +107,13 @@ public class FileMetadata implements Serializable {
 
 
     @Expose
-    @Pattern(regexp="^[^:<>;#/\"\\*\\|\\?\\\\]*$",
+    @Pattern(regexp="^[^:<>;#/\"\\*\\|\\?\\\\]*$", 
             message = "{filename.illegalCharacters}")
     @NotBlank(message = "{filename.blank}")
     @Column( nullable=false )
     private String label = "";
-
-
+    
+    
     @ValidateDataFileDirectoryName(message = "{directoryname.illegalCharacters}")
     @Expose
     @Column ( nullable=true )
@@ -122,7 +122,7 @@ public class FileMetadata implements Serializable {
     @Expose
     @Column(columnDefinition = "TEXT")
     private String description = "";
-
+    
     /**
      * At the FileMetadata level, "restricted" is a historical indication of the
      * data owner's intent for the file by version. Permissions are actually
@@ -136,7 +136,7 @@ public class FileMetadata implements Serializable {
     @ManyToOne
     @JoinColumn(nullable=false)
     private DatasetVersion datasetVersion;
-
+    
     @ManyToOne
     @JoinColumn(nullable=false)
     private DataFile dataFile;
@@ -152,11 +152,11 @@ public class FileMetadata implements Serializable {
 
     @OneToMany (mappedBy="fileMetadata", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
     private Collection<VariableMetadata> variableMetadatas;
-
+        
     /**
      * Creates a copy of {@code this}, with identical business logic fields.
      * E.g., {@link #label} would be duplicated; {@link #version} will not.
-     *
+     * 
      * @return A copy of {@code this}, except for the DB-related data.
      */
     public FileMetadata createCopy() {
@@ -168,14 +168,14 @@ public class FileMetadata implements Serializable {
         fmd.setLabel( getLabel() );
         fmd.setRestricted( isRestricted() );
         fmd.setDirectoryLabel(getDirectoryLabel());
-
+        
         return fmd;
     }
-
+    
     public String getLabel() {
         return label;
     }
-
+    
     public void setLabel(String label) {
         this.label = label;
     }
@@ -235,14 +235,14 @@ public class FileMetadata implements Serializable {
     }
 
     /*
-     * File Categories to which this version of the DataFile belongs:
+     * File Categories to which this version of the DataFile belongs: 
      */
     @SerializedName("categories") //Used for OptionalFileParams serialization
     @ManyToMany
     @JoinTable(indexes = {@Index(columnList="filecategories_id"),@Index(columnList="filemetadatas_id")})
     @OrderBy("name")
     private List<DataFileCategory> fileCategories;
-
+    
     public List<DataFileCategory> getCategories() {
         if (fileCategories != null) {
             /*
@@ -265,11 +265,11 @@ public class FileMetadata implements Serializable {
         }
         return fileCategories;
     }
-
+    
     public void setCategories(List<DataFileCategory> fileCategories) {
-        this.fileCategories = fileCategories;
+        this.fileCategories = fileCategories; 
     }
-
+    
     public void addCategory(DataFileCategory category) {
         if (fileCategories == null) {
             fileCategories = new ArrayList<>();
@@ -278,25 +278,25 @@ public class FileMetadata implements Serializable {
     }
 
     /**
-     * Retrieve categories
-     * @return
+     * Retrieve categories 
+     * @return 
      */
     public List<String> getCategoriesByName() {
         ArrayList<String> ret = new ArrayList<>();
-
+             
         if (fileCategories == null) {
             return ret;
         }
-
+        
         for (DataFileCategory fileCategory : getCategories()) {
             ret.add(fileCategory.getName());
         }
         // fileCategories.stream()
         //              .map(x -> ret.add(x.getName()));
-
+       
         return ret;
     }
-
+    
     public JsonArrayBuilder getCategoryNamesAsJsonArrayBuilder() {
 
         JsonArrayBuilder builder = Json.createArrayBuilder();
@@ -304,35 +304,35 @@ public class FileMetadata implements Serializable {
         if (fileCategories == null) {
             return builder;
         }
-
+        
         for (DataFileCategory fileCategory : fileCategories) {
             builder.add(fileCategory.getName());
         }
 
         //fileCategories.stream()
         //              .map(x -> builder.add(x.getName()));
-
+        
         return builder;
-
+        
     }
-
-
-    // alternative, experimental method:
+    
+    
+    // alternative, experimental method: 
 
     public void setCategoriesByName(List<String> newCategoryNames) {
-        setCategories(null); // ?? TODO: investigate!
+        setCategories(null); // ?? TODO: investigate! 
 
         if (newCategoryNames != null) {
 
             for (String newCategoryName : newCategoryNames) {
-                // Dataset.getCategoryByName() will check if such a category
-                // already exists for the parent dataset; it will be created
-                // if not. The method will return null if the supplied
+                // Dataset.getCategoryByName() will check if such a category 
+                // already exists for the parent dataset; it will be created 
+                // if not. The method will return null if the supplied 
                 // category name is null or empty. -- L.A. 4.0 beta 10
                 DataFileCategory fileCategory;
                 try {
-                    // Using "try {}" to catch any null pointer exceptions,
-                    // just in case:
+                    // Using "try {}" to catch any null pointer exceptions, 
+                    // just in case: 
                     fileCategory = this.getDatasetVersion().getDataset().getCategoryByName(newCategoryName);
                 } catch (Exception ex) {
                     fileCategory = null;
@@ -344,51 +344,51 @@ public class FileMetadata implements Serializable {
             }
         }
     }
-
-    /*
-        note that this version only *adds* new categories, but does not
+    
+    /* 
+        note that this version only *adds* new categories, but does not 
         remove the ones that has been unchecked!
     public void setCategoriesByName(List<String> newCategoryNames) {
         if (newCategoryNames != null) {
             Collection<String> oldCategoryNames = getCategoriesByName();
-
-
+            
+            
             for (int i = 0; i < newCategoryNames.size(); i++) {
                 if (!oldCategoryNames.contains(newCategoryNames.get(i))) {
-                    // Dataset.getCategoryByName() will check if such a category
-                    // already exists for the parent dataset; it will be created
-                    // if not. The method will return null if the supplied
+                    // Dataset.getCategoryByName() will check if such a category 
+                    // already exists for the parent dataset; it will be created 
+                    // if not. The method will return null if the supplied 
                     // category name is null or empty. -- L.A. 4.0 beta 10
-                    DataFileCategory fileCategory = null;
-                    try {
-                        // Using "try {}" to catch any null pointer exceptions,
-                        // just in case:
+                    DataFileCategory fileCategory = null; 
+                    try { 
+                        // Using "try {}" to catch any null pointer exceptions, 
+                        // just in case: 
                         fileCategory = this.getDatasetVersion().getDataset().getCategoryByName(newCategoryNames.get(i));
                     } catch (Exception ex) {
-                        fileCategory = null;
+                        fileCategory = null; 
                     }
-                    if (fileCategory != null) {
+                    if (fileCategory != null) { 
                         this.addCategory(fileCategory);
                         fileCategory.addFileMetadata(this);
                     }
-                }
+                } 
             }
         }
     }
     */
-
+    
     public void addCategoryByName(String newCategoryName) {
         if (newCategoryName != null && !newCategoryName.isEmpty()) {
             Collection<String> oldCategoryNames = getCategoriesByName();
             if (!oldCategoryNames.contains(newCategoryName)) {
                 DataFileCategory fileCategory;
-                // Dataset.getCategoryByName() will check if such a category
-                // already exists for the parent dataset; it will be created
-                // if not. The method will return null if the supplied
+                // Dataset.getCategoryByName() will check if such a category 
+                // already exists for the parent dataset; it will be created 
+                // if not. The method will return null if the supplied 
                 // category name is null or empty. -- L.A. 4.0 beta 10
                 try {
-                    // Using "try {}" to catch any null pointer exceptions,
-                    // just in case:
+                    // Using "try {}" to catch any null pointer exceptions, 
+                    // just in case: 
                     fileCategory = this.getDatasetVersion().getDataset().getCategoryByName(newCategoryName);
                 } catch (Exception ex) {
                     // If we failed to obtain an existing category, we'll create a new one:
@@ -396,7 +396,7 @@ public class FileMetadata implements Serializable {
                     fileCategory.setName(newCategoryName);
                 }
 
-
+                
                 if (fileCategory != null) {
                     logger.log(Level.FINE, "Found file category for {0}", newCategoryName);
 
@@ -411,7 +411,7 @@ public class FileMetadata implements Serializable {
             }
         }
     }
-
+    
      public String getFileDateToDisplay() {
         Date fileDate = null;
         DataFile datafile = this.getDataFile();
@@ -505,7 +505,7 @@ public class FileMetadata implements Serializable {
     public void setVersion(Long version) {
         this.version = version;
     }
-
+    
     @Transient
     private boolean inPriorVersion;
 
@@ -527,8 +527,8 @@ public class FileMetadata implements Serializable {
     public void setSelected(boolean selected) {
         this.selected = selected;
     }
-
-
+    
+    
     @Transient
     private boolean restrictedUI;
 
@@ -539,7 +539,7 @@ public class FileMetadata implements Serializable {
     public void setRestrictedUI(boolean restrictedUI) {
         this.restrictedUI = restrictedUI;
     }
-
+    
     @Transient
     private FileVersionDifference fileVersionDifference ;
 
@@ -550,7 +550,7 @@ public class FileMetadata implements Serializable {
     public void setFileVersionDifference(FileVersionDifference fileVersionDifference) {
         this.fileVersionDifference = fileVersionDifference;
     }
-
+    
     @Transient
     private String contributorNames;
 
@@ -561,7 +561,7 @@ public class FileMetadata implements Serializable {
     public void setContributorNames(String contributorNames) {
         this.contributorNames = contributorNames;
     }
-
+        
 
     @Override
     public int hashCode() {
@@ -576,58 +576,58 @@ public class FileMetadata implements Serializable {
             return false;
         }
         FileMetadata other = (FileMetadata) object;
-
+        
         return !((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id)));
     }
-
+    
     public boolean contentEquals(FileMetadata other) {
-    /*
+    /* 
        This method now invokes the logic contained in the FileVersionDifference compareMetadata method
        so that the logic is in a single place
     */
         return compareContent(other);
     }
 
-
+    
     public boolean compareContent(FileMetadata other){
          FileVersionDifference diffObj = new FileVersionDifference(this, other, false);
          return diffObj.isSame();
     }
-
+    
     @Override
     public String toString() {
         return "edu.harvard.iq.dataverse.FileMetadata[id=" + id + "]";
     }
-
+    
     public static final Comparator<FileMetadata> compareByLabel = new Comparator<FileMetadata>() {
         @Override
         public int compare(FileMetadata o1, FileMetadata o2) {
             return o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
         }
     };
-
-    static Map<String,Long> categoryMap=null;
-
+    
+    static Map<String, Long> categoryMap = null;
+    
     public static void setCategorySortOrder(String categories) {
-       categoryMap=new HashMap<String, Long>();
-       long i=1;
-       for(String cat: ListSplitUtil.split(categories)) {
-           categoryMap.put(cat.toUpperCase(), i);
-           i++;
-       }
+        categoryMap = new HashMap<String, Long>();
+        long i = 1;
+        for (String cat : ListSplitUtil.split(categories)) {
+            categoryMap.put(cat.toUpperCase(), i);
+            i++;
+        }
     }
-
-    public static Map<String,Long> getCategorySortOrder() {
+    
+    public static Map<String, Long> getCategorySortOrder() {
         return categoryMap;
     }
-
-
+    
+    
     public static final Comparator<DataFileCategory> compareByNameWithSortCategories = new Comparator<DataFileCategory>() {
         @Override
         public int compare(DataFileCategory o1, DataFileCategory o2) {
             if (categoryMap != null) {
                 //If one is in the map and one is not, the former is first, otherwise sort by name
-                boolean o1InMap = categoryMap.containsKey(o1.getName().toUpperCase());
+                boolean o1InMap = categoryMap.containsKey(o1.getName().toUpperCase()); 
                 boolean o2InMap = categoryMap.containsKey(o2.getName().toUpperCase());
                 if(o1InMap && !o2InMap) {
                     return (-1);
@@ -639,55 +639,55 @@ public class FileMetadata implements Serializable {
             return(o1.getName().toUpperCase().compareTo(o2.getName().toUpperCase()));
         }
     };
-
+    
     public static final Comparator<FileMetadata> compareByFullPath = new Comparator<FileMetadata>() {
         @Override
         public int compare(FileMetadata o1, FileMetadata o2) {
             String folder1 = StringUtil.isEmpty(o1.getDirectoryLabel()) ? "" : o1.getDirectoryLabel().toUpperCase() + "/";
             String folder2 = StringUtil.isEmpty(o2.getDirectoryLabel()) ? "" : o2.getDirectoryLabel().toUpperCase() + "/";
-
+            
             return folder1.concat(o1.getLabel().toUpperCase()).compareTo(folder2.concat(o2.getLabel().toUpperCase()));
         }
     };
-
-
+    
+    
     public String toPrettyJSON(){
-
+        
         return serializeAsJSON(true);
     }
 
     public String toJSON(){
-
+        
         return serializeAsJSON(false);
     }
-
+    
      /**
-     *
+     * 
      * @param prettyPrint
-     * @return
+     * @return 
      */
     private String serializeAsJSON(boolean prettyPrint){
-
+        
         JsonObject jsonObj = asGsonObject(prettyPrint);
-
+                
         return jsonObj.toString();
-
+       
     }
 
-
+    
     public JsonObject asGsonObject(boolean prettyPrint){
-
+        
         GsonBuilder builder;
         if (prettyPrint){  // Add pretty printing
             builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting();
         } else {
-            builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation();
+            builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation();                        
         }
-
+        
         Gson gson = builder.create();
-
+        
         JsonElement jsonObj = gson.toJsonTree(this);
-
+        
         //Add categories without the "name"
         List<String> cats = this.getCategoriesByName();
         JsonArray jsonCats = new JsonArray();
@@ -697,7 +697,7 @@ public class FileMetadata implements Serializable {
         if(jsonCats.size() > 0) {
             jsonObj.getAsJsonObject().add(OptionalFileParams.CATEGORIES_ATTR_NAME, jsonCats);
         }
-
+        
         //Add tags without the "name"
         List<String> tags = this.getDataFile().getTagLabels();
         JsonArray jsonTags = new JsonArray();
@@ -709,10 +709,10 @@ public class FileMetadata implements Serializable {
         }
 
         jsonObj.getAsJsonObject().addProperty("id", this.getId());
-
+        
         return jsonObj.getAsJsonObject();
     }
-
+    
     public String getProvFreeForm() {
         return provFreeForm;
     }
@@ -790,7 +790,7 @@ public class FileMetadata implements Serializable {
         }
 
     }
-
+    
     public Set<ConstraintViolation> validate() {
         Set<ConstraintViolation> returnSet = new HashSet<>();
 
@@ -809,5 +809,5 @@ public class FileMetadata implements Serializable {
 
         return returnSet;
     }
-
+    
 }

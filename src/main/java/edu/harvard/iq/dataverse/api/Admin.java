@@ -112,8 +112,8 @@ import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
@@ -139,7 +139,7 @@ import java.util.TreeMap;
 
 /**
  * Where the secure, setup API calls live.
- *
+ * 
  * @author michael
  */
 @Stateless
@@ -240,11 +240,11 @@ public class Admin extends AbstractApiBean {
         settingsSvc.delete(name, lang);
         return ok("Setting " + name + " - " + lang + " deleted.");
     }
-
+        
     @Path("template/{id}")
     @DELETE
     public Response deleteTemplate(@PathParam("id") long id) {
-
+        
         AuthenticatedUser superuser = authSvc.getAdminUser();
         if (superuser == null) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, "Cannot find superuser to execute DeleteTemplateCommand.");
@@ -267,14 +267,14 @@ public class Admin extends AbstractApiBean {
 
         return ok("Template " + doomed.getName() + " deleted.");
     }
-
-
+    
+    
     @Path("templates")
     @GET
     public Response findAllTemplates() {
         return findTemplates("");
     }
-
+    
     @Path("templates/{alias}")
     @GET
     public Response findTemplates(@PathParam("alias") String alias) {
@@ -307,7 +307,7 @@ public class Admin extends AbstractApiBean {
 
             return ok(container);
 
-
+        
     }
 
     @Path("authenticationProviderFactories")
@@ -454,7 +454,7 @@ public class Admin extends AbstractApiBean {
         }
         return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
     }
-
+    
     @DELETE
     @Path("authenticatedUsers/id/{id}/")
     public Response deleteAuthenticatedUserById(@PathParam("id") Long id) {
@@ -466,21 +466,21 @@ public class Admin extends AbstractApiBean {
     }
 
     private Response deleteAuthenticatedUser(AuthenticatedUser au) {
-
+        
         //getDeleteUserErrorMessages does all of the tests to see
-        //if the user is 'deletable' if it returns an empty string the user
+        //if the user is 'deletable' if it returns an empty string the user 
         //can be safely deleted.
-
+        
         String errorMessages = authSvc.getDeleteUserErrorMessages(au);
-
+        
         if (!errorMessages.isEmpty()) {
             return badRequest(errorMessages);
         }
-
+        
         //if the user is deletable we will delete access requests and group membership
         // many-to-many relationships that couldn't be cascade deleted
         authSvc.removeAuthentictedUserItems(au);
-
+        
         authSvc.deleteAuthenticatedUser(au.getId());
         return ok("AuthenticatedUser " + au.getIdentifier() + " deleted.");
     }
@@ -1106,37 +1106,37 @@ public class Admin extends AbstractApiBean {
     @Path("validate/datasets")
     @Produces({"application/json"})
     public Response validateAllDatasets(@QueryParam("variables") boolean includeVariables) {
-
-        // Streaming output: the API will start producing
-        // the output right away, as it goes through the list
-        // of the datasets; there's potentially a lot of content
-        // to validate, so we don't want to wait for the process
-        // to finish. Or to wait to encounter the first invalid
+        
+        // Streaming output: the API will start producing 
+        // the output right away, as it goes through the list 
+        // of the datasets; there's potentially a lot of content 
+        // to validate, so we don't want to wait for the process 
+        // to finish. Or to wait to encounter the first invalid 
         // object - so we'll be reporting both the success and failure
         // outcomes for all the validated datasets, to give the user
-        // an indication of the progress.
-        // This is the first streaming API that produces json that
-        // we have; there may be better ways to stream json - but
-        // what I have put together below works. -- L.A.
+        // an indication of the progress. 
+        // This is the first streaming API that produces json that 
+        // we have; there may be better ways to stream json - but 
+        // what I have put together below works. -- L.A. 
         StreamingOutput stream = new StreamingOutput() {
 
             @Override
             public void write(OutputStream os) throws IOException,
                     WebApplicationException {
                 os.write("{\"datasets\": [\n".getBytes());
-
+                
                 boolean wroteObject = false;
                 for (Long datasetId : datasetService.findAllLocalDatasetIds()) {
-                    // Potentially, there's a godzillion datasets in this Dataverse.
-                    // This is why we go through the list of ids here, and instantiate
-                    // only one dataset at a time.
+                    // Potentially, there's a godzillion datasets in this Dataverse. 
+                    // This is why we go through the list of ids here, and instantiate 
+                    // only one dataset at a time. 
                     boolean success = false;
                     boolean constraintViolationDetected = false;
-
+                     
                     JsonObjectBuilder output = Json.createObjectBuilder();
                     output.add("datasetId", datasetId);
 
-
+                    
                     try {
                         datasetService.instantiateDatasetInNewTransaction(datasetId, includeVariables);
                         success = true;
@@ -1157,45 +1157,45 @@ public class Admin extends AbstractApiBean {
                                     output.add("entityClassDatabaseTableRowId", databaseRow);
                                     output.add("field", field);
                                     output.add("invalidValue", invalidValue == null ? "NULL" : invalidValue);
-
-                                    constraintViolationDetected = true;
-
-                                    break;
-
+                                    
+                                    constraintViolationDetected = true; 
+                                    
+                                    break; 
+                                    
                                 }
                             }
                             cause = cause.getCause();
                         }
                     }
-
-
+                    
+                    
                     if (success) {
                         output.add("status", "valid");
                     } else if (!constraintViolationDetected) {
                         output.add("status", "unknown");
                     }
-
+                    
                     // write it out:
-
+                    
                     if (wroteObject) {
                         os.write(",\n".getBytes());
                     }
 
                     os.write(output.build().toString().getBytes(StandardCharsets.UTF_8));
-
+                    
                     if (!wroteObject) {
                         wroteObject = true;
                     }
                 }
-
-
+                
+                
                 os.write("\n]\n}\n".getBytes());
             }
-
+            
         };
         return Response.ok(stream).build();
     }
-
+        
     @Path("validate/dataset/{id}")
     @GET
     public Response validateDataset(@PathParam("id") String id, @QueryParam("variables") boolean includeVariables) {
@@ -1221,7 +1221,7 @@ public class Admin extends AbstractApiBean {
                             .getConstraintViolations()) {
                         String databaseRow = constraintViolation.getLeafBean().toString();
                         String field = constraintViolation.getPropertyPath().toString();
-                        String invalidValue = null;
+                        String invalidValue = null; 
                         if (constraintViolation.getInvalidValue() != null) {
                             invalidValue = constraintViolation.getInvalidValue().toString();
                         }
@@ -1237,14 +1237,14 @@ public class Admin extends AbstractApiBean {
         }
         return ok(msg);
     }
-
-    // This API does the same thing as /validateDataFileHashValue/{fileId},
+    
+    // This API does the same thing as /validateDataFileHashValue/{fileId}, 
     // but for all the files in the dataset, with streaming output.
     @GET
     @Path("validate/dataset/files/{id}")
     @Produces({"application/json"})
     public Response validateDatasetDatafiles(@PathParam("id") String id) {
-
+        
         Dataset dataset;
         // First check if the dataset exists before starting the streaming output
         try {
@@ -1252,9 +1252,9 @@ public class Admin extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse(); // This will return the proper 404 Not Found response
         }
-
-        // Streaming output: the API will start producing
-        // the output right away, as it goes through the list
+        
+        // Streaming output: the API will start producing 
+        // the output right away, as it goes through the list 
         // of the datafiles in the dataset.
         // The streaming mechanism is modeled after validate/datasets API.
         StreamingOutput stream = new StreamingOutput() {
@@ -1262,19 +1262,19 @@ public class Admin extends AbstractApiBean {
             @Override
             public void write(OutputStream os) throws IOException,
                     WebApplicationException {
-
+                
                 os.write("{\"dataFiles\": [\n".getBytes());
-
+                
                 boolean wroteObject = false;
                 for (DataFile dataFile : dataset.getFiles()) {
 
                     boolean success = false;
-
+                     
                     JsonObjectBuilder output = Json.createObjectBuilder();
                     output.add("datafileId", dataFile.getId());
                     output.add("storageIdentifier", dataFile.getStorageIdentifier());
 
-
+                    
                     try {
                         FileUtil.validateDataFileChecksum(dataFile);
                         success = true;
@@ -1282,27 +1282,27 @@ public class Admin extends AbstractApiBean {
                         output.add("status", "invalid");
                         output.add("errorMessage", ex.getMessage());
                     }
-
+                    
                     if (success) {
                         output.add("status", "valid");
-                    }
-
+                    } 
+                    
                     // write it out:
-
+                    
                     if (wroteObject) {
                         os.write(",\n".getBytes());
                     }
 
                     os.write(output.build().toString().getBytes(StandardCharsets.UTF_8));
-
+                    
                     if (!wroteObject) {
                         wroteObject = true;
                     }
                 }
-
+                
                 os.write("\n]\n}\n".getBytes());
             }
-
+            
         };
         return Response.ok(stream).build();
     }
@@ -1435,7 +1435,7 @@ public class Admin extends AbstractApiBean {
 
         return ok(info);
     }
-
+        
     @Path("datafiles/integrity/fixmissingoriginalsizes")
     @GET
     public Response fixMissingOriginalSizes(@QueryParam("limit") Integer limit) {
@@ -1447,15 +1447,15 @@ public class Admin extends AbstractApiBean {
             info.add("message",
                     "All the tabular files in the database already have the original sizes set correctly; exiting.");
         } else {
-
+            
             int howmany = affectedFileIds.size();
-            String message = "Found " + howmany + " tabular files with missing original sizes. ";
-
+            String message = "Found " + howmany + " tabular files with missing original sizes. "; 
+            
             if (limit == null || howmany <= limit) {
                 message = message.concat(" Kicking off an async job that will repair the files in the background.");
             } else {
                 affectedFileIds.subList(limit, howmany-1).clear();
-                message = message.concat(" Kicking off an async job that will repair the " + limit + " files in the background.");
+                message = message.concat(" Kicking off an async job that will repair the " + limit + " files in the background.");                        
             }
             info.add("message", message);
         }
@@ -1523,7 +1523,7 @@ public class Admin extends AbstractApiBean {
         logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
         try {
 
-
+            
             User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
                 logger.info("Bad Request Unauthor " );
@@ -1532,7 +1532,7 @@ public class Admin extends AbstractApiBean {
 
             DataverseRequest r = createDataverseRequest(u);
             Dataset ds = findDatasetOrDie(id);
-
+            
             if (HandlePidProvider.HDL_PROTOCOL.equals(dvObjectService.getEffectivePidGenerator(ds).getProtocol())) {
                 logger.info("Bad Request protocol set to handle  " );
                 return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.set.for.doi"));
@@ -1551,7 +1551,7 @@ public class Admin extends AbstractApiBean {
             List<String> args = Arrays.asList(id,e.getMessage());
             return badRequest(BundleUtil.getStringFromBundle("admin.api.migrateHDL.failureWithException", args));
         }
-
+        
         return ok(BundleUtil.getStringFromBundle("admin.api.migrateHDL.success"));
     }
 
@@ -1639,7 +1639,7 @@ public class Admin extends AbstractApiBean {
             } catch (Exception e) {
                 logger.info("Unexpected Exception: " + e.getMessage());
             }
-
+            
 
         }
         logger.info("Final Results:");
@@ -1653,7 +1653,7 @@ public class Admin extends AbstractApiBean {
         return ok("Datafile registration complete." + successes + " of  " + released
                 + " unregistered, published files registered successfully.");
     }
-
+    
     @GET
     @AuthRequired
     @Path("/registerDataFiles/{alias}")
@@ -1664,34 +1664,34 @@ public class Admin extends AbstractApiBean {
         } catch (WrappedResponse r) {
             return r.getResponse();
         }
-
+        
         AuthenticatedUser superuser = authSvc.getAdminUser();
         if (superuser == null) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, "Cannot find the superuser to execute /admin/registerDataFiles.");
         }
-
+        
         if (!systemConfig.isFilePIDsEnabledForCollection(collection)) {
             return ok("Registration of file-level pid is disabled in collection "+alias+"; nothing to do");
         }
-
+        
         List<DataFile> dataFiles = fileService.findByDirectCollectionOwner(collection.getId());
         Integer count = dataFiles.size();
         Integer countSuccesses = 0;
         Integer countAlreadyRegistered = 0;
         Integer countReleased = 0;
         Integer countDrafts = 0;
-
+        
         if (sleepInterval == null) {
-            sleepInterval = 1;
+            sleepInterval = 1; 
         } else if (sleepInterval.intValue() < 1) {
             return error(Response.Status.BAD_REQUEST, "Invalid sleep interval: "+sleepInterval);
         }
-
+        
         logger.info("Starting to register: analyzing " + count + " files. " + new Date());
         logger.info("Only unregistered, published files will be registered.");
-
-
-
+        
+        
+        
         for (DataFile df : dataFiles) {
             try {
                 if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
@@ -1724,7 +1724,7 @@ public class Admin extends AbstractApiBean {
                 logger.info("Unexpected Exception: " + e.getMessage());
             }
         }
-
+        
         logger.info(countAlreadyRegistered + " out of " + count + " files were already registered. " + new Date());
         logger.info(countDrafts + " out of " + count + " files are not yet published. " + new Date());
         logger.info(countReleased + " out of " + count + " unregistered, published files to register. " + new Date());
@@ -1846,7 +1846,7 @@ public class Admin extends AbstractApiBean {
 
         return ok("Datafile rehashing complete." + successes + " of  " + rehashed + " files successfully rehashed.");
     }
-
+        
     @POST
     @AuthRequired
     @Path("/computeDataFileHashValue/{fileId}/algorithm/{alg}")
@@ -1908,7 +1908,7 @@ public class Admin extends AbstractApiBean {
 
         return ok("Datafile rehashing complete. " + fileId + "  successfully rehashed. New hash value is: " + newChecksum);
     }
-
+    
     @POST
     @AuthRequired
     @Path("/validateDataFileHashValue/{fileId}")
@@ -2008,7 +2008,7 @@ public class Admin extends AbstractApiBean {
                             if ((dv != version) && version.getArchivalCopyLocation() != null) {
                                 return error(Status.CONFLICT, "Dataset already archived.");
                             }
-                        }
+                        } 
                     }
                     new Thread(new Runnable() {
                         public void run() {
@@ -2040,7 +2040,7 @@ public class Admin extends AbstractApiBean {
         }
     }
 
-
+    
     /**
      * Iteratively archives all unarchived dataset versions
      * @param
@@ -2073,7 +2073,7 @@ public class Admin extends AbstractApiBean {
                             current++;
                         }
                     }
-                    return ok(jab);
+                    return ok(jab); 
                 }
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
                 // Note - the user is being sent via the createDataverseRequest(au) call to the
@@ -2131,7 +2131,7 @@ public class Admin extends AbstractApiBean {
             return e1.getResponse();
         }
     }
-
+    
     @DELETE
     @Path("/clearMetricsCache")
     public Response clearMetricsCache() {
@@ -2178,7 +2178,7 @@ public class Admin extends AbstractApiBean {
         return error(Response.Status.BAD_REQUEST,
                 "InheritParentRoleAssignments does not list any roles on this instance");
     }
-
+    
     @GET
     @AuthRequired
     @Path("/dataverse/{alias}/storageDriver")
@@ -2203,7 +2203,7 @@ public class Admin extends AbstractApiBean {
             return ok(JsonPrinter.jsonStorageDriver(dataverse.getStorageDriverId(), null));
         }
     }
-
+    
     @PUT
     @AuthRequired
     @Path("/dataverse/{alias}/storageDriver")
@@ -2249,7 +2249,7 @@ public class Admin extends AbstractApiBean {
         dataverse.setStorageDriverId("");
         return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
     }
-
+    
     @GET
     @AuthRequired
     @Path("/dataverse/storageDrivers")
@@ -2266,7 +2266,7 @@ public class Admin extends AbstractApiBean {
         DataAccess.getStorageDriverLabels().entrySet().forEach(s -> bld.add(s.getKey(), s.getValue()));
         return ok(bld);
     }
-
+    
     @GET
     @AuthRequired
     @Path("/dataverse/{alias}/curationLabelSet")
@@ -2361,7 +2361,7 @@ public class Admin extends AbstractApiBean {
         });
         return ok(bld);
     }
-
+    
     @POST
     @Path("/bannerMessage")
     public Response addBannerMessage(JsonObject jsonObject) throws WrappedResponse {
@@ -2403,21 +2403,21 @@ public class Admin extends AbstractApiBean {
         }
 
     }
-
+    
     @DELETE
     @Path("/bannerMessage/{id}")
     public Response deleteBannerMessage(@PathParam("id") Long id) throws WrappedResponse {
-
+ 
         BannerMessage message = em.find(BannerMessage.class, id);
         if (message == null){
             return error(Response.Status.NOT_FOUND, "Message id = "  + id + " not found.");
         }
         bannerMessageService.deleteBannerMessage(id);
-
+        
         return ok("Message id =  " + id + " deleted.");
 
     }
-
+    
     @PUT
     @Path("/bannerMessage/{id}/deactivate")
     public Response deactivateBannerMessage(@PathParam("id") Long id) throws WrappedResponse {
@@ -2426,11 +2426,11 @@ public class Admin extends AbstractApiBean {
             return error(Response.Status.NOT_FOUND, "Message id = "  + id + " not found.");
         }
         bannerMessageService.deactivateBannerMessage(id);
-
+        
         return ok("Message id =  " + id + " deactivated.");
 
     }
-
+    
     @GET
     @Path("/bannerMessage")
     public Response getBannerMessages(@PathParam("id") Long id) throws WrappedResponse {
@@ -2446,10 +2446,10 @@ public class Admin extends AbstractApiBean {
         JsonArrayBuilder messages = messagesList.stream()
         .map(m -> jsonObjectBuilder().add("id", m.getId()).add("displayValue", m.getDisplayValue()))
         .collect(toJsonArray());
-
+        
         return ok(messages);
     }
-
+    
     @POST
     @AuthRequired
     @Consumes("application/json")
@@ -2464,7 +2464,7 @@ public class Admin extends AbstractApiBean {
         if (superuser == null || !superuser.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, "Requesting signed URLs is restricted to superusers.");
         }
-
+        
         String userId = urlInfo.getString("user");
         String key=null;
         if (userId != null) {
@@ -2488,23 +2488,23 @@ public class Admin extends AbstractApiBean {
             }
             key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
         }
-
+        
         String baseUrl = urlInfo.getString("url");
         int timeout = urlInfo.getInt(URLTokenUtil.TIMEOUT, 10);
         String method = urlInfo.getString(URLTokenUtil.HTTP_METHOD, "GET");
-
-        String signedUrl = UrlSignerUtil.signUrl(baseUrl, timeout, userId, method, key);
-
+        
+        String signedUrl = UrlSignerUtil.signUrl(baseUrl, timeout, userId, method, key); 
+        
         return ok(Json.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
     }
-
+ 
     @DELETE
     @Path("/clearThumbnailFailureFlag")
     public Response clearThumbnailFailureFlag() {
         em.createNativeQuery("UPDATE dvobject SET previewimagefail = FALSE").executeUpdate();
         return ok("Thumbnail Failure Flags cleared.");
     }
-
+    
     @DELETE
     @Path("/clearThumbnailFailureFlag/{id}")
     public Response clearThumbnailFailureFlagByDatafile(@PathParam("id") String fileId) {
