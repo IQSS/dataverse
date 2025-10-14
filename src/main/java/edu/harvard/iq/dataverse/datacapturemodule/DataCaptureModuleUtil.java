@@ -5,7 +5,7 @@ import com.mashape.unirest.http.JsonNode;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.util.CsvUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.logging.Logger;
 import jakarta.json.Json;
@@ -19,11 +19,11 @@ public class DataCaptureModuleUtil {
 
     @Deprecated(forRemoval = true, since = "2024-07-07")
     public static boolean rsyncSupportEnabled(String uploadMethodsSettings) {
-        logger.fine("uploadMethodsSettings: " + uploadMethodsSettings);; 
+        logger.fine("uploadMethodsSettings: " + uploadMethodsSettings);;
         if (uploadMethodsSettings==null){
             return false;
         } else {
-            return CsvUtil.splitToLowerCaseSet(uploadMethodsSettings).contains(SystemConfig.FileUploadMethods.RSYNC.toString());
+            return ListSplitUtil.splitToLowerCaseSet(uploadMethodsSettings).contains(SystemConfig.FileUploadMethods.RSYNC.toString());
         }
     }
 

@@ -12,7 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.CsvUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -107,7 +107,7 @@ public class CreateDataverseCommand extends AbstractWriteDataverseCommand {
         // Add additional role assignments if inheritance is set
         boolean inheritAllRoles = false;
         String rolesString = ctxt.settings().getValueForKey(SettingsServiceBean.Key.InheritParentRoleAssignments, "");
-        ArrayList<String> rolesToInherit = new ArrayList<>(CsvUtil.split(rolesString));
+        ArrayList<String> rolesToInherit = new ArrayList<>(ListSplitUtil.split(rolesString));
         if (rolesString.length() > 0) {
             if (!rolesToInherit.isEmpty()) {
                 if (rolesToInherit.contains("*")) {

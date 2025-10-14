@@ -5,7 +5,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.util.CsvUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 
 import java.io.FileNotFoundException;
@@ -34,10 +34,10 @@ import org.apache.http.util.EntityUtils;
  */
 /*
  * Remote Overlay Driver
- * 
+ *
  * StorageIdentifier format:
  * <remoteDriverId>://<baseStorageIdentifier>//<relativePath>
- * 
+ *
  * baseUrl: http(s)://<host(:port)/basePath>
  */
 public class RemoteOverlayAccessIO<T extends DvObject> extends AbstractRemoteOverlayAccessIO<T> {
@@ -49,7 +49,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
     public RemoteOverlayAccessIO() {
         super();
     }
-    
+
     public RemoteOverlayAccessIO(T dvObject, DataAccessRequest req, String driverId) throws IOException {
         super(dvObject, req, driverId);
         this.setIsLocalFile(false);
@@ -125,10 +125,10 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
                     logger.fine("Setting size");
                     this.setSize(retrieveSizeFromMedia());
                 }
-                if (dataFile.getContentType() != null 
+                if (dataFile.getContentType() != null
                         && dataFile.getContentType().equals("text/tab-separated-values")
-                        && dataFile.isTabularData() 
-                        && dataFile.getDataTable() != null 
+                        && dataFile.isTabularData()
+                        && dataFile.getDataTable() != null
                         && (!this.noVarHeader())
                         && (!dataFile.getDataTable().isStoredWithVariableHeader())) {
 
@@ -318,7 +318,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
         baseUrl = getConfigParam(BASE_URL);
         if (baseUrl == null) {
             //Will accept the first endpoint using the newer setting
-            baseUrl = CsvUtil.split(getConfigParam(REFERENCE_ENDPOINTS_WITH_BASEPATHS)).stream().findFirst().orElse(baseUrl);
+            baseUrl = ListSplitUtil.split(getConfigParam(REFERENCE_ENDPOINTS_WITH_BASEPATHS)).stream().findFirst().orElse(baseUrl);
             if (baseUrl == null) {
                 throw new IOException("dataverse.files." + this.driverId + ".base-url is required");
             }

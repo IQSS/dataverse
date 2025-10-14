@@ -25,7 +25,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.util.CsvUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 
 import org.apache.commons.io.filefilter.NotFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
@@ -55,7 +55,7 @@ import java.util.logging.Logger;
 @Named
 @Dependent
 public class FileRecordReader extends AbstractItemReader {
-    
+
     public static final String SEP = File.separator;
 
     @Inject
@@ -67,7 +67,7 @@ public class FileRecordReader extends AbstractItemReader {
     @Inject
     @BatchProperty
     String excludes;
-    
+
     @EJB
     DatasetServiceBean datasetServiceBean;
 
@@ -98,22 +98,22 @@ public class FileRecordReader extends AbstractItemReader {
 
     @Override
     public void open(Serializable checkpoint) throws Exception {
-    
+
         // Retrieve via MPCONFIG. Has sane default /tmp/dataverse from META-INF/microprofile-config.properties
         String baseDir = JvmSettings.FILES_DIRECTORY.lookup();
-        
+
         directory = new File(baseDir + SEP + dataset.getAuthority() + SEP + dataset.getIdentifier() + SEP + uploadFolder);
-        // TODO: 
-        // The above goes directly to the filesystem directory configured by the 
+        // TODO:
+        // The above goes directly to the filesystem directory configured by the
         // old "dataverse.files.directory" JVM option (otherwise used for temp
-        // files only, after the Multistore implementation (#6488). 
+        // files only, after the Multistore implementation (#6488).
         // We probably want package files to be able to use specific stores instead.
         // More importantly perhaps, the approach above does not take into account
-        // if the dataset may have an AlternativePersistentIdentifier, that may be 
+        // if the dataset may have an AlternativePersistentIdentifier, that may be
         // designated isStorageLocationDesignator() - i.e., if a different identifier
         // needs to be used to name the storage directory, instead of the main/current
-        // persistent identifier above. 
-        getJobLogger().log(Level.INFO, "Reading dataset directory: " + directory.getAbsolutePath() 
+        // persistent identifier above.
+        getJobLogger().log(Level.INFO, "Reading dataset directory: " + directory.getAbsolutePath()
                 + " (excluding: " + excludes + ")");
         if (isValidDirectory(directory)) {
             files = getFiles(directory);
@@ -156,7 +156,7 @@ public class FileRecordReader extends AbstractItemReader {
         // create filter from job xml excludes property
         // Convert list to array to use non-deprecated constructor
         FileFilter excludeFilter = new NotFileFilter(new WildcardFileFilter(
-            CsvUtil.split(excludes).toArray(new String[0])
+            ListSplitUtil.split(excludes).toArray(new String[0])
         ));
         List<File> files = new ArrayList<>();
         File[] filesList = directory.listFiles(excludeFilter);
@@ -192,9 +192,9 @@ public class FileRecordReader extends AbstractItemReader {
         }
         return true;
     }
-    
+
     private Logger getJobLogger() {
         return Logger.getLogger("job-"+jobContext.getInstanceId());
     }
-    
+
 }

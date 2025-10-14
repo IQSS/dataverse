@@ -52,7 +52,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.CsvUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 
 /**
  *
@@ -887,7 +887,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         // If the fields list of supported languages contains the current locale (e.g.
         // the lang of the UI, or the current metadata input/display lang (tbd)), use
         // that. Otherwise, return the first in the list
-        final List<String> langStrings = CsvUtil.split(languages);
+        final List<String> langStrings = ListSplitUtil.split(languages);
         if (!langStrings.isEmpty()) {
             if (langStrings.contains(localeCode)) {
                 return localeCode;
@@ -1041,7 +1041,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 ? criteriaBuilder.or(
                 // 1. Field marked as displayOnCreate in input level
                 displayOnCreateInputLevelPredicate,
-                
+
                 // 2. Field without input level that is marked as displayOnCreate or required
                 criteriaBuilder.and(
                     hasNoInputLevelPredicate,
@@ -1050,7 +1050,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         fieldRequiredInTheInstallation
                     )
                 ),
-                
+
                 // 3. Field required by input level
                 requiredAsInputLevelPredicate
         )

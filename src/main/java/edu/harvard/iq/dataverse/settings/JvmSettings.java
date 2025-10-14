@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.settings;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 
-import edu.harvard.iq.dataverse.util.CsvUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,13 +39,13 @@ import java.util.stream.Collectors;
 public enum JvmSettings {
     // the upmost root scope - every setting shall start with it.
     PREFIX("dataverse"),
-    
+
     // GENERAL SETTINGS
     VERSION(PREFIX, "version"),
     BUILD(PREFIX, "build"),
     FQDN(PREFIX, "fqdn"),
     SITE_URL(PREFIX, "siteUrl"),
-    
+
     // FILES SETTINGS
     SCOPE_FILES(PREFIX, "files"),
     FILES_DIRECTORY(SCOPE_FILES, "directory"),
@@ -63,7 +63,7 @@ public enum JvmSettings {
     //STORAGE DRIVER SETTINGS
     SCOPE_DRIVER(SCOPE_FILES),
     DISABLE_S3_TAGGING(SCOPE_DRIVER, "disable-tagging"),
-    
+
     // SOLR INDEX SETTINGS
     SCOPE_SOLR(PREFIX, "solr"),
     SOLR_HOST(SCOPE_SOLR, "host"),
@@ -85,7 +85,7 @@ public enum JvmSettings {
     RSERVE_USER(SCOPE_RSERVE, "user"),
     RSERVE_PASSWORD(SCOPE_RSERVE, "password"),
     RSERVE_TEMPDIR(SCOPE_RSERVE, "tempdir"),
-    
+
     // API SETTINGS
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
@@ -106,7 +106,7 @@ public enum JvmSettings {
     // This is a special placeholder-type setting entry, to be filled in by FeatureFlag entries during lookup.
     // Avoids adding flag entries twice.
     FEATURE_FLAG(SCOPE_FLAGS),
-    
+
     // METADATA SETTINGS
     SCOPE_METADATA(PREFIX, "metadata"),
     MDB_SYSTEM_METADATA_KEYS(SCOPE_METADATA, "block-system-metadata-keys"),
@@ -126,13 +126,13 @@ public enum JvmSettings {
     PID_PROVIDER_MANAGED_LIST(SCOPE_PID_PROVIDER, "managed-list"),
     PID_PROVIDER_EXCLUDED_LIST(SCOPE_PID_PROVIDER, "excluded-list"),
 
-        
+
     // PROVIDER EZID - these settings were formerly kept together with DataCite ones
     SCOPE_PID_EZID(SCOPE_PID_PROVIDER, "ezid"),
     EZID_API_URL(SCOPE_PID_EZID, "api-url"),
     EZID_USERNAME(SCOPE_PID_EZID, "username"),
     EZID_PASSWORD(SCOPE_PID_EZID, "password"),
-    
+
     // PROVIDER DATACITE
     SCOPE_PID_DATACITE(SCOPE_PID_PROVIDER, "datacite"),
     DATACITE_MDS_API_URL(SCOPE_PID_DATACITE, "mds-api-url"),
@@ -153,7 +153,7 @@ public enum JvmSettings {
     SCOPE_PID_PERMALINK(SCOPE_PID_PROVIDER, "permalink"),
     PERMALINK_BASE_URL(SCOPE_PID_PERMALINK, "base-url"),
     PERMALINK_SEPARATOR(SCOPE_PID_PERMALINK, "separator"),
-    
+
     // PROVIDER HANDLE
     SCOPE_PID_HANDLENET(SCOPE_PID_PROVIDER, "handlenet"),
     HANDLENET_INDEX(SCOPE_PID_HANDLENET, "index"),
@@ -170,7 +170,7 @@ public enum JvmSettings {
      */
     /**
      * DEPRECATED PROVIDER DATACITE
-     * 
+     *
      * @deprecated - legacy single provider setting providing backward compatibility
      */
     @Deprecated(forRemoval = true, since = "2024-02-13")
@@ -183,7 +183,7 @@ public enum JvmSettings {
 
     /**
      * DEPRECATED PROVIDER EZID
-     * 
+     *
      * @deprecated - legacy single provider setting providing backward compatibility
      */
     @Deprecated(forRemoval = true, since = "2024-02-13")
@@ -192,7 +192,7 @@ public enum JvmSettings {
 
     /**
      * DEPRECATED PROVIDER PERMALINK
-     * 
+     *
      * @deprecated - legacy single provider setting providing backward compatibility
      */
     @Deprecated(forRemoval = true, since = "2024-02-13")
@@ -201,7 +201,7 @@ public enum JvmSettings {
 
     /**
      * DEPRECATED PROVIDER HANDLE
-     * 
+     *
      * @deprecated - legacy single provider setting providing backward compatibility
      */
     @Deprecated(forRemoval = true, since = "2024-02-13")
@@ -218,13 +218,13 @@ public enum JvmSettings {
     EXPORTERS_DIRECTORY(SCOPE_EXPORTERS, "directory"),
     SCOPE_PIDPROVIDERS(SCOPE_SPI, "pidproviders"),
     PIDPROVIDERS_DIRECTORY(SCOPE_PIDPROVIDERS, "directory"),
-    
+
     // SEARCH SERVICES SETTINGS
     SCOPE_SEARCH(PREFIX, "search"),
     SCOPE_SEARCHSERVICES(SCOPE_SEARCH, "services"),
     SEARCHSERVICES_DIRECTORY(SCOPE_SEARCHSERVICES, "directory"),
     DEFAULT_SEARCH_SERVICE(SCOPE_SEARCH, "default-service"),
-    
+
     // MAIL SETTINGS
     SCOPE_MAIL(PREFIX, "mail"),
     SYSTEM_EMAIL(SCOPE_MAIL, "system-email"),
@@ -239,7 +239,7 @@ public enum JvmSettings {
     MAIL_MTA_SUPPORT_UTF8(SCOPE_MAIL_MTA, "allow-utf8-addresses"),
     // Placeholder setting for a large list of extra settings
     MAIL_MTA_SETTING(SCOPE_MAIL_MTA),
-    
+
     // AUTH SETTINGS
     SCOPE_AUTH(PREFIX, "auth"),
     // AUTH: OIDC SETTINGS
@@ -277,7 +277,7 @@ public enum JvmSettings {
     // STORAGE USE SETTINGS
     SCOPE_STORAGEUSE(PREFIX, "storageuse"),
     STORAGEUSE_DISABLE_UPDATES(SCOPE_STORAGEUSE, "disable-storageuse-increments"),
-    
+
     //CSL CITATION SETTINGS
     SCOPE_CSL(PREFIX, "csl"),
     CSL_COMMON_STYLES(SCOPE_CSL, "common-styles"),
@@ -294,7 +294,7 @@ public enum JvmSettings {
     SCOPE_CORS_HEADERS(SCOPE_CORS, "headers"),
     CORS_ALLOW_HEADERS(SCOPE_CORS_HEADERS, "allow"),
     CORS_EXPOSE_HEADERS(SCOPE_CORS_HEADERS, "expose"),
-    
+
     // LOCALCONTEXTS
     SCOPE_LOCALCONTEXTS(PREFIX, "localcontexts"),
     LOCALCONTEXTS_URL(SCOPE_LOCALCONTEXTS, "url"),
@@ -304,13 +304,13 @@ public enum JvmSettings {
     private static final String SCOPE_SEPARATOR = ".";
     public static final String PLACEHOLDER_KEY = "%s";
     private static final Pattern OLD_NAME_PLACEHOLDER_PATTERN = Pattern.compile("%(\\d\\$)?s");
-    
+
     private final String key;
     private final String scopedKey;
     private final JvmSettings parent;
     private final List<String> oldNames;
     private final int placeholders;
-    
+
     /**
      * Create a root scope.
      * @param key The scopes name.
@@ -322,7 +322,7 @@ public enum JvmSettings {
         this.oldNames = List.of();
         this.placeholders = 0;
     }
-    
+
     /**
      * Create a scope or setting with a placeholder for a variable argument in it.
      * Used to create "configurable objects" with certain attributes using dynamic, programmatic lookup.
@@ -339,7 +339,7 @@ public enum JvmSettings {
         this.oldNames = List.of();
         this.placeholders = scope.placeholders + 1;
     }
-    
+
     /**
      * Create a scope or setting with name it and associate with a parent scope.
      * @param scope The parent scope.
@@ -352,7 +352,7 @@ public enum JvmSettings {
         this.oldNames = List.of();
         this.placeholders = scope.placeholders;
     }
-    
+
     /**
      * Create a setting with name it and associate with a parent scope.
      * (Could also be a scope, but old names for scopes aren't the way this is designed.)
@@ -374,7 +374,7 @@ public enum JvmSettings {
         this.oldNames = Arrays.stream(oldNames).collect(Collectors.toUnmodifiableList());
         this.placeholders = scope.placeholders;
     }
-    
+
     private static final List<JvmSettings> aliased = new ArrayList<>();
     static {
         for (JvmSettings setting : JvmSettings.values()) {
@@ -383,7 +383,7 @@ public enum JvmSettings {
             }
         }
     }
-    
+
     /**
      * Get all settings having old names to include them in {@link edu.harvard.iq.dataverse.settings.source.AliasConfigSource}
      * @return List of settings with old alias names. Can be empty, but will not be null.
@@ -391,7 +391,7 @@ public enum JvmSettings {
     public static List<JvmSettings> getAliasedSettings() {
         return Collections.unmodifiableList(aliased);
     }
-    
+
     /**
      * Return a list of old names to be used as aliases for backward compatibility.
      * Will return empty list if no old names present.
@@ -411,7 +411,7 @@ public enum JvmSettings {
         if (needsVarArgs()) {
             for (String name : oldNames) {
                 long matches = OLD_NAME_PLACEHOLDER_PATTERN.matcher(name).results().count();
-                
+
                 if (matches == 0) {
                     throw new IllegalArgumentException("JvmSettings." + this.name() + "'s old name '" +
                         name + "' needs at least one placeholder");
@@ -423,10 +423,10 @@ public enum JvmSettings {
         } else if (! this.oldNames.stream().noneMatch(OLD_NAME_PLACEHOLDER_PATTERN.asPredicate())) {
             throw new IllegalArgumentException("JvmSettings." + this.name() + " has no placeholder but old name requires it");
         }
-        
+
         return oldNames;
     }
-    
+
     /**
      * Retrieve the scoped key for this setting. Scopes are separated by dots.
      * If the setting contains placeholders, these will be represented as {@link #PLACEHOLDER_KEY}.
@@ -436,15 +436,15 @@ public enum JvmSettings {
     public String getScopedKey() {
         return this.scopedKey;
     }
-    
+
     public Pattern getPatternizedKey() {
         return Pattern.compile(
             getScopedKey()
                 .replace(SCOPE_SEPARATOR, "\\.")
                 .replace(PLACEHOLDER_KEY, "(.+?)"));
     }
-    
-    
+
+
     /**
      * Does this setting carry and placeholders for variable arguments?
      * @return True if so, False otherwise.
@@ -452,7 +452,7 @@ public enum JvmSettings {
     public boolean needsVarArgs() {
         return this.placeholders > 0;
     }
-    
+
     /**
      * Return the number of placeholders / variable arguments are necessary to lookup this setting.
      * An exact match in the number of arguments will be necessary for a successful lookup.
@@ -461,7 +461,7 @@ public enum JvmSettings {
     public int numberOfVarArgs() {
         return placeholders;
     }
-    
+
     /**
      * Lookup this setting via MicroProfile Config as a required option (it will fail if not present).
      * @throws java.util.NoSuchElementException - if the property is not defined or is defined as an empty string
@@ -470,7 +470,7 @@ public enum JvmSettings {
     public String lookup() {
         return lookup(String.class);
     }
-    
+
     /**
      * Lookup this setting via MicroProfile Config as an optional setting.
      * @return The setting as String wrapped in a (potentially empty) Optional
@@ -478,7 +478,7 @@ public enum JvmSettings {
     public Optional<String> lookupOptional() {
         return lookupOptional(String.class);
     }
-    
+
     /**
      * Lookup this setting via MicroProfile Config as a required option (it will fail if not present).
      *
@@ -493,13 +493,13 @@ public enum JvmSettings {
         if (needsVarArgs()) {
             throw new IllegalArgumentException("Cannot lookup a setting containing placeholders with this method.");
         }
-        
+
         // This must be done with the full-fledged lookup, as we cannot store the config in an instance or static
         // variable, as the alias config source depends on this enum (circular dependency). This is easiest
         // avoided by looking up the static cached config at the cost of a method invocation.
         return ConfigProvider.getConfig().getValue(this.getScopedKey(), klass);
     }
-    
+
     /**
      * Lookup this setting via MicroProfile Config as an optional setting.
      *
@@ -513,13 +513,13 @@ public enum JvmSettings {
         if (needsVarArgs()) {
             throw new IllegalArgumentException("Cannot lookup a setting containing variable arguments with this method.");
         }
-        
+
         // This must be done with the full-fledged lookup, as we cannot store the config in an instance or static
         // variable, as the alias config source depends on this enum (circular dependency). This is easiest
         // avoided by looking up the static cached config at the cost of a method invocation.
         return ConfigProvider.getConfig().getOptionalValue(this.getScopedKey(), klass);
     }
-    
+
     /**
      * Lookup a required setting containing placeholders for arguments like a name and return as plain String.
      * To use type conversion, use {@link #lookup(Class, String...)}.
@@ -534,7 +534,7 @@ public enum JvmSettings {
     public String lookup(String... arguments) {
         return lookup(String.class, arguments);
     }
-    
+
     /**
      * Lookup an optional setting containing placeholders for arguments like a name and return as plain String.
      * To use type conversion, use {@link #lookupOptional(Class, String...)}.
@@ -548,7 +548,7 @@ public enum JvmSettings {
     public Optional<String> lookupOptional(String... arguments) {
         return lookupOptional(String.class, arguments);
     }
-    
+
     /**
      * Lookup a required setting containing placeholders for arguments like a name and return as converted type.
      * To avoid type conversion, use {@link #lookup(String...)}.
@@ -572,7 +572,7 @@ public enum JvmSettings {
         }
         throw new IllegalArgumentException("Cannot lookup a setting without variable arguments with this method.");
     }
-    
+
     /**
      * Lookup an optional setting containing placeholders for arguments like a name and return as converted type.
      * To avoid type conversion, use {@link #lookupOptional(String...)}.
@@ -595,7 +595,7 @@ public enum JvmSettings {
         }
         throw new IllegalArgumentException("Cannot lookup a setting without variable arguments with this method.");
     }
-    
+
     /**
      * Inject arguments into the placeholders of this setting. Will not do anything when no placeholders present.
      *
@@ -605,14 +605,14 @@ public enum JvmSettings {
     public String insert(String... arguments) {
         return String.format(this.getScopedKey(), (Object[]) arguments);
     }
-    
+
     /** Lookup optional CSV value and return a List of tokens. */
     public java.util.Optional<java.util.List<String>> lookupCsvListOptional() {
-        return lookupOptional().map(CsvUtil::split);
+        return lookupOptional().map(ListSplitUtil::split);
     }
 
     /** Lookup required CSV value and return a List of tokens (throws if missing). */
     public java.util.List<String> lookupCsvList() {
-        return CsvUtil.split(lookup());
+        return ListSplitUtil.split(lookup());
     }
 }

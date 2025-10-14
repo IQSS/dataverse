@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  * - Tokens are otherwise preserved exactly as typed (no quote stripping, no escape processing).
  * Not a full CSV parser: embedded commas, quoted fields with separators, and newlines inside tokens are NOT supported.
  */
-public final class CsvUtil {
+public final class ListSplitUtil {
     /** Split on commas, trimming any adjacent to comma whitespace. */
     private static final Pattern SPLIT = Pattern.compile("\\s*,\\s*");
 

@@ -7,7 +7,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.util.CsvUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -62,10 +62,10 @@ public abstract class AbstractPidProvider implements PidProvider {
         this.identifierGenerationStyle = identifierGenerationStyle;
         this.datafilePidFormat = datafilePidFormat;
         if(!managedList.isEmpty()) {
-            this.managedSet.addAll(CsvUtil.split(managedList));
+            this.managedSet.addAll(ListSplitUtil.split(managedList));
         }
         if(!excludedList.isEmpty()) {
-            this.excludedSet.addAll(CsvUtil.split(excludedList));
+            this.excludedSet.addAll(ListSplitUtil.split(excludedList));
         }
         if (logger.isLoggable(Level.FINE)) {
             Iterator<String> iter = managedSet.iterator();
@@ -197,7 +197,7 @@ public abstract class AbstractPidProvider implements PidProvider {
                         + ") doesn't match that of the provider, id: " + getId());
             }
         }
-        if (dvObject.getAuthority() == null) {            
+        if (dvObject.getAuthority() == null) {
             dvObject.setAuthority(getAuthority());
         } else {
             if (!dvObject.getAuthority().equals(getAuthority())) {
@@ -251,7 +251,7 @@ public abstract class AbstractPidProvider implements PidProvider {
      * Check that a identifier entered by the user is unique (not currently used for
      * any other study in this Dataverse Network) also check for duplicate in EZID
      * if needed
-     * 
+     *
      * @param userIdentifier
      * @param dataset
      * @return {@code true} if the identifier is unique, {@code false} otherwise.
@@ -273,10 +273,10 @@ public abstract class AbstractPidProvider implements PidProvider {
 
     /**
      * Parse a Persistent Id and set the protocol, authority, and identifier
-     * 
+     *
      * Example 1: doi:10.5072/FK2/BYM3IW protocol: doi authority: 10.5072
      * identifier: FK2/BYM3IW
-     * 
+     *
      * Example 2: hdl:1902.1/111012 protocol: hdl authority: 1902.1 identifier:
      * 111012
      *
@@ -338,14 +338,14 @@ public abstract class AbstractPidProvider implements PidProvider {
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
         return parsePersistentId(protocol, authority, identifier, false);
     }
-    
+
     public GlobalId parsePersistentId(String protocol, String authority, String identifier, boolean isCaseInsensitive) {
         logger.fine("Parsing: " + protocol + ":" + authority + getSeparator() + identifier + " in " + getId());
         if (!PidProvider.isValidGlobalId(protocol, authority, identifier)) {
             return null;
         }
         String comparableShoulder = getShoulder();
-        
+
         if(isCaseInsensitive) {
             identifier = identifier.toUpperCase();
             if(comparableShoulder != null) {
@@ -415,10 +415,10 @@ public abstract class AbstractPidProvider implements PidProvider {
     /*
      * This method checks locally for a DvObject with the same PID and if that is
      * OK, checks with the PID service.
-     * 
+     *
      * @param dvo - the object to check (ToDo - get protocol/authority from this
      * PidProvider object)
-     * 
+     *
      * @param prepend - for Datasets, this is always the shoulder, for DataFiles, it
      * could be the shoulder or the parent Dataset identifier
      */
@@ -435,10 +435,10 @@ public abstract class AbstractPidProvider implements PidProvider {
     /*
      * This method checks locally for a DvObject with the same PID and if that is
      * OK, checks with the PID service.
-     * 
+     *
      * @param dvo - the object to check (ToDo - get protocol/authority from this
      * PidProvider object)
-     * 
+     *
      * @param prepend - for Datasets, this is always the shoulder, for DataFiles, it
      * could be the shoulder or the parent Dataset identifier
      */
@@ -462,7 +462,7 @@ public abstract class AbstractPidProvider implements PidProvider {
     /*
      * This method is only used for DataFiles with DEPENDENT Pids. It is not for
      * Datasets
-     * 
+     *
      */
     private String generateIdentifierFromStoredProcedureDependent(DataFile datafile, String prepend) {
         String identifier;
@@ -558,7 +558,7 @@ public abstract class AbstractPidProvider implements PidProvider {
      * clause covers the potential case where the effective pid provider/generator
      * for the dataset is set to a different one that handles the dataset's pid
      * itself. In this case, we can create file PIDs if they are independent.
-     * 
+     *
      * @param pid - the related pid to check
      * @return true if this provider can manage PIDs like the one supplied
      */
@@ -566,7 +566,7 @@ public abstract class AbstractPidProvider implements PidProvider {
         return canManagePID() && !managedSet.contains(pid.asString())
                 && (getIdentifierGenerationStyle().equals("INDEPENDENT") || getId().equals(pid.getProviderId()));
     }
-    
+
     @Override
     public JsonObject getProviderSpecification() {
         JsonObjectBuilder providerSpecification = Json.createObjectBuilder();
@@ -582,13 +582,13 @@ public abstract class AbstractPidProvider implements PidProvider {
         providerSpecification.add("excludedSet", Strings.join(",", excludedSet.toArray()));
         return providerSpecification.build();
     }
-    
+
     @Override
     public boolean updateIdentifier(DvObject dvObject) {
         //By default, these are the same
         return publicizeIdentifier(dvObject);
     }
-    
+
     /** By default, this is not implemented */
     @Override
     public JsonObject getCSLJson(DatasetVersion datasetVersion) {
