@@ -10,8 +10,6 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import edu.harvard.iq.dataverse.util.ListSplitUtil;
-
 /**
  * Enum to store each and every JVM-based setting as a reference,
  * much like the enum {@link SettingsServiceBean.Key} for DB settings.
@@ -307,6 +305,7 @@ public enum JvmSettings {
     
     private final String key;
     private final String scopedKey;
+    @SuppressWarnings("unused")
     private final JvmSettings parent;
     private final List<String> oldNames;
     private final int placeholders;
@@ -608,13 +607,15 @@ public enum JvmSettings {
     
     /** Lookup optional comma-separated value and return tokens as a List. */
     public Optional<List<String>> lookupSplittedListOptional() {
-        return lookupOptional(String[].class)
-                .map(values -> ListSplitUtil.split(String.join(",", values)));
+    return lookupOptional(String[].class)
+        .map(values -> Arrays.stream(values).map(String::trim).toList());
     }
 
     /** Lookup required comma-separated value and return tokens as a List. */
     public List<String> lookupSplittedList() {
-        return ListSplitUtil.split(String.join(",", lookup(String[].class)));
+        return Arrays.stream(lookup(String[].class))
+                .map(String::trim)
+                .toList();
     }
 
 }
