@@ -406,7 +406,7 @@
     <field name="relatedDatasets" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="relatedMaterial" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="researchInstrument" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="resolution" type="plong" multiValued="true" stored="true" indexed="true"/>
+    <field name="resolution" type="pdouble" multiValued="true" stored="true" indexed="true"/>
     <field name="resolution.Redshift" type="pdouble" multiValued="false" stored="true" indexed="true"/>
     <field name="resolution.Spatial" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="resolution.Spectral" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -432,7 +432,7 @@
     <field name="spatialRepresentationType" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="spatialResolution" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="spatialResolutionType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="spatialResolutionValue" type="plong" multiValued="true" stored="true" indexed="true"/>
+    <field name="spatialResolutionValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayCellType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayMeasurementType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayOrganism" type="text_en" multiValued="true" stored="true" indexed="true"/>

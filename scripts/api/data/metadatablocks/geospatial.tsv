@@ -1,13 +1,13 @@
 #metadataBlock	name	dataverseAlias	displayName												
 	geospatial		Geospatial Metadata												
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
+#datasetField	name	title	description	watermark	fieldType	display order	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
 	geographicCoverage	Geographic Coverage	Information on the geographic coverage of the data. Includes the total geographic scope of the data.		none	0		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
-	country	Country / Nation	The country or nation that the Dataset is about.		text	1	#VALUE, 	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
-	state	State / Province	The state or province that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	2	#VALUE, 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
-	city	City	The name of the city that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	3	#VALUE, 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
-	otherGeographicCoverage	Other	Other information on the geographic coverage of the data.		text	4	#VALUE, 	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
+	country	Country / Nation	The country or nation that the Dataset is about.		text	1	#VALUE,	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
+	state	State / Province	The state or province that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	2	#VALUE,	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
+	city	City	The name of the city that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	3	#VALUE,	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
+	otherGeographicCoverage	Other	Other information on the geographic coverage of the data.		text	4	#VALUE,	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
 	geographicUnit	Geographic Unit	Lowest level of geographic aggregation covered by the Dataset, e.g., village, county, region.		text	5		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		geospatial
-	geographicBoundingBox	Geographic Bounding Box	The fundamental geometric description for any Dataset that models geography is the geographic bounding box. It describes the minimum box, defined by west and east longitudes and north and south latitudes, which includes the largest geographic extent of the  Dataset's geographic coverage. This element is used in the first pass of a coordinate-based search. Inclusion of this element in the codebook is recommended, but is required if the bound polygon box is included. 		none	6		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
+	geographicBoundingBox	Geographic Bounding Box	The fundamental geometric description for any Dataset that models geography is the geographic bounding box. It describes the minimum box, defined by west and east longitudes and north and south latitudes, which includes the largest geographic extent of the  Dataset's geographic coverage. This element is used in the first pass of a coordinate-based search. Inclusion of this element in the codebook is recommended, but is required if the bound polygon box is included.		none	6		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
 	westLongitude	Westernmost (Left) Longitude	Westernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -180.0 <= West  Bounding Longitude Value <= 180.0.		text	7		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
 	eastLongitude	Easternmost (Right) Longitude	Easternmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -180.0 <= East Bounding Longitude Value <= 180.0.		text	8		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
 	northLatitude	Northernmost (Top) Latitude	Northernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -90.0 <= North Bounding Latitude Value <= 90.0.		text	9		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
@@ -23,7 +23,7 @@
 	referenceSystemCode	Code	Alphanumeric value identifying the source reference system.	Alphanumeric value identifying the source reference system.	text	19	#VALUE	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE	referenceSystemInfo	geospatial
 	referenceSystemCodeSpace	Code Space	Identifier/ namespace of the system in which the code is valid.	Identifier/ namespace of the system in which the code is valid.	text	20	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	referenceSystemInfo	geospatial
 	spatialResolution	Spatial Resolution	Factor which provides a general understanding of the density of spatial data in the resource or describes the range of resolutions in which a digital resource may be used. NOTE: This element should be repeated when describing upper and lower range.		none	21		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
-	spatialResolutionValue	Value	Level of detail expressed as a scale factor, a distance or an angle	Level of detail expressed as a scale factor, a distance or an angle	int	22	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	spatialResolution	geospatial
+	spatialResolutionValue	Value	Level of detail expressed as a scale factor, a distance or an angle	Level of detail expressed as a scale factor, a distance or an angle	text	22	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	spatialResolution	geospatial
 	spatialResolutionType	Type	distance, vertical, angularDistance, levelOfDetail	distance, vertical, angularDistance, levelOfDetail	text	23	(#VALUE)	FALSE	TRUE	FALSE	TRUE	FALSE	FALSE	spatialResolution	geospatial
 	spatialRepresentationType	Spatial Representation Type	Object(s) used to represent the geographic (spatial) information.		text	24	#VALUE	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		geospatial
 	vectorSpatialRepresentation	Vector Spatial Representation	Information about vector spatial objects in the resource.		none	25		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		geospatial
@@ -35,7 +35,7 @@
 	axisDimensionProperties	Axis Dimension Properties	Information about spatial-temporal axis properties (dimensions).		none	31		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
 	dimensionNameType	Name Type	Axis name.	Axis name.	text	32	#VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	axisDimensionProperties	geospatial
 	dimensionSize	Size	Number of elements along the axis.	Number of elements along the axis.	int	33		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	axisDimensionProperties	geospatial
-	resolution	Resolution	Degree of detail in the grid dataset.	Degree of detail in the grid dataset.	int	34	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	axisDimensionProperties	geospatial
+	resolution	Resolution	Degree of detail in the grid dataset.	Degree of detail in the grid dataset.	float	34	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	axisDimensionProperties	geospatial
 	resolutionUnitOfMeasure	Resolution Unit of Measure	Resolution unit of measure (e.g. 'cm', 'm', 'km', etc.)	Resolution unit of measure (e.g. 'm', 'km', etc.)	text	35	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	axisDimensionProperties	geospatial
 	distribution	Distribution Link	Distribution Links		none	36		TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
 	distributionLinkLabel	Label	A descriptive label for the distribution link	A descriptive label for the distribution link	text	37	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	distribution	geospatial
@@ -145,7 +145,7 @@
 	country	Iceland		100											
 	country	India		101	INDIA										
 	country	Indonesia		102	Sumatra										
-	country	Iran, Islamic Republic of		103	Iran	Iran (Islamic Republic of)									
+	country	Iran, Islamic Republic of		103	Iran										
 	country	Iraq		104	IRAQ										
 	country	Ireland		105											
 	country	Isle of Man		106											
@@ -276,7 +276,7 @@
 	country	Ukraine		231											
 	country	United Arab Emirates		232	UAE										
 	country	United Kingdom		233											
-	country	United States		234	U.S.A	USA	United States of America	U.S.A.							
+	country	United States		234	U.S.A		United States of America	U.S.A.							
 	country	United States Minor Outlying Islands		235											
 	country	Uruguay		236											
 	country	Uzbekistan		237											
@@ -290,7 +290,7 @@
 	country	Yemen		245	YEMEN										
 	country	Zambia		246											
 	country	Zimbabwe		247											
-	country	Åland Islands		248	
+	country	Åland Islands		248											
 	geometricObjectType	curve	curve	0											
 	geometricObjectType	composite	composite	1											
 	geometricObjectType	complex	complex	2											
@@ -332,4 +332,4 @@
 	spatialResolutionType	distance	distance	1											
 	spatialResolutionType	vertical	vertical	2											
 	spatialResolutionType	angularDistance	angularDistance	3											
-	spatialResolutionType	levelOfDetail	levelOfDetail	4
+	spatialResolutionType	levelOfDetail	levelOfDetail	4											
