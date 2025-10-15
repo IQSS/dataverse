@@ -48,7 +48,14 @@ public class CreateTemplateCommand extends AbstractCommand<Template> {
             DatasetFieldUtil.tidyUpFields(template.getDatasetFields(), false);
         }
 
-        return ctxt.templates().save(template);
+        Template createdTemplate = ctxt.templates().save(template);
+
+        if (initialize && template.isIsDefaultForDataverse()) {
+            dataverse.setDefaultTemplate(createdTemplate);
+            ctxt.em().merge(dataverse);
+        }
+
+        return template;
     }
 
     private static void updateTermsOfUseAndAccess(CommandContext ctxt, Template template) {

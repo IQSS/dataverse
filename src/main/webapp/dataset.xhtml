@@ -161,8 +161,8 @@
                         <div class="row" jsf:rendered="#{empty DatasetPage.editMode}">
                             <div class="col-xs-12">
                                 <div id="datasetVersionBlock" class="row">
-                                    <div id="title-block" class="col-xs-12 margin-bottom-half" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
-                                        <h1 id="title">#{DatasetPage.datasetVersionUI.title.value}</h1>
+                                    <div id="title-block" class="col-xs-12 margin-bottom-half" jsf:rendered="#{!empty DatasetPage.displayTitle}">
+                                        <h1 id="title">#{DatasetPage.displayTitle}</h1>
                                         <div id="title-label-block" class="margin-top-half">
                                             <!-- DATASET Publication Status -->
                                             <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{version.draft}"/>
@@ -525,7 +525,7 @@
                                                     #{bundle['dataset.curationStatusMenu']} <span class="caret"></span>
                                                 </button>
                                                 <ul class="dropdown-menu multi-level pull-right text-left">
-                                                    <ui:fragment rendered="#{(not empty DatasetPage.allowedCurationStatuses) and DatasetPage.canPublishDataset()}">
+                                                    <ui:fragment rendered="#{(not empty DatasetPage.allowedCurationStatuses) and DatasetPage.canPublishDataset() and version.draft}">
                                                     <li class="dropdown-submenu pull-left">
                                                         <a tabindex="0">#{bundle['dataset.changestatus']}</a>
                                                         <ul class="dropdown-menu">

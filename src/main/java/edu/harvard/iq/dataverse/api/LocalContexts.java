@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
 import jakarta.json.JsonObject;
@@ -72,8 +73,12 @@ public class LocalContexts extends AbstractApiBean {
             logger.fine("URL used: " + apiUrl);
             try {
                 HttpClient client = HttpClient.newHttpClient();
-                HttpRequest request = HttpRequest.newBuilder().uri(new URI(apiUrl))
-                        .header("X-Api-Key", localContextsApiKey).GET().build();
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(new URI(apiUrl))
+                        .header("X-Api-Key", localContextsApiKey)
+                        .header("Origin", SystemConfig.getDataverseSiteUrlStatic())
+                        .GET()
+                        .build();
 
                 HttpResponse<String> response;
 
@@ -119,8 +124,12 @@ public class LocalContexts extends AbstractApiBean {
             logger.fine("URL used: " + apiUrl);
             try {
                 HttpClient client = HttpClient.newHttpClient();
-                HttpRequest request = HttpRequest.newBuilder().uri(new URI(apiUrl))
-                        .header("X-Api-Key", localContextsApiKey).GET().build();
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(new URI(apiUrl))
+                        .header("X-Api-Key", localContextsApiKey)
+                        .header("Origin", SystemConfig.getDataverseSiteUrlStatic())
+                        .GET()
+                        .build();
 
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 

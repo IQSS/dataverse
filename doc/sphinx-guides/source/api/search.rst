@@ -41,7 +41,7 @@ metadata_fields  string   Includes the requested fields for each dataset in the 
 geo_point        string   Latitude and longitude in the form ``geo_point=42.3,-71.1``. You must supply ``geo_radius`` as well. See also :ref:`geospatial-search`.
 geo_radius       string   Radial distance in kilometers from ``geo_point`` (which must be supplied as well) such as ``geo_radius=1.5``.
 show_type_counts boolean  Whether or not to include total_count_per_object_type for types: Dataverse, Dataset, and Files.
-show_collections boolean  Whether or not to include a list of Dataverse collections for each dataset search result.
+show_collections boolean  Whether or not to include a list of parent and linked collections for each dataset search result.
 search_service   string   The name of the search service to use for this query. If omitted, the default search service will be used. For available search services, see :ref:`discovering-available-search-services`.
 ================ =======  ===========
 

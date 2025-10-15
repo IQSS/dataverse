@@ -40,6 +40,7 @@ import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 
+import java.io.IOException;
 import java.util.*;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
@@ -290,22 +291,35 @@ public class JsonPrinter {
 
         return bld;
     }
+    
+    public static JsonObjectBuilder json(Dataverse dv, boolean minimal) {
+        if (!minimal){
+            return json(dv, false, false, false, null);
+        } else {
+            return json(dv, false, false, true, null);        
+        }
+    }
 
     public static JsonObjectBuilder json(Dataverse dv) {
-        return json(dv, false, false, null);
+        return json(dv, false, false, false, null);
     }
 
     //TODO: Once we upgrade to Java EE 8 we can remove objects from the builder, and this email removal can be done in a better place.
-    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail, Boolean returnOwners, Long childCount) {
+    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail, Boolean returnOwners, Boolean minimal, Long childCount) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dv.getId())
                 .add("alias", dv.getAlias())
-                .add("name", dv.getName())
-                .add("affiliation", dv.getAffiliation());
-        if(!hideEmail) {
+                .add("name", dv.getName());
+        //minimal refers to only returning the id alias and name for 
+        //used in selecting collections available for linking
+        if (minimal) {
+            return bld;
+        }
+        bld.add("affiliation", dv.getAffiliation());
+        if (!hideEmail) {
             bld.add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()));
         }
-        if (returnOwners){
+        if (returnOwners) {
             bld.add("isPartOf", getOwnersFromDvObject(dv));
         }
         bld.add("permissionRoot", dv.isPermissionRoot())
@@ -322,8 +336,8 @@ public class JsonPrinter {
         if (dv.getDataverseTheme() != null) {
             bld.add("theme", JsonPrinter.json(dv.getDataverseTheme()));
         }
-        if(dv.getStorageDriverId() != null) {
-        	bld.add("storageDriverLabel", DataAccess.getStorageDriverLabelFor(dv.getStorageDriverId()));
+        if (dv.getStorageDriverId() != null) {
+            bld.add("storageDriverLabel", DataAccess.getStorageDriverLabelFor(dv.getStorageDriverId()));
         }
         if (dv.getFilePIDsEnabled() != null) {
             bld.add("filePIDsEnabled", dv.getFilePIDsEnabled());
@@ -332,7 +346,7 @@ public class JsonPrinter {
         bld.add("isReleased", dv.isReleased());
 
         List<DataverseFieldTypeInputLevel> inputLevels = dv.getDataverseFieldTypeInputLevels();
-        if(!inputLevels.isEmpty()) {
+        if (!inputLevels.isEmpty()) {
             bld.add("inputLevels", JsonPrinter.jsonDataverseFieldTypeInputLevels(inputLevels));
         }
 
@@ -340,8 +354,22 @@ public class JsonPrinter {
             bld.add("childCount", childCount);
         }
         addDatasetFileCountLimit(dv, bld);
-
         return bld;
+    }
+
+    public static JsonObjectBuilder jsonArray(List<Dataverse> dataverses) {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("count", dataverses.size());
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        for (Dataverse dataverse : dataverses) {
+            NullSafeJsonBuilder jsonObject = NullSafeJsonBuilder.jsonObjectBuilder();
+            jsonObject.add("id", dataverse.getId());
+            jsonObject.add("name", dataverse.getDisplayName());
+            jsonObject.add("alias", dataverse.getAlias());
+            jsonArrayBuilder.add(jsonObject);
+        }
+        job.add("items", jsonArrayBuilder);
+        return job;
     }
 
     public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
@@ -1592,6 +1620,7 @@ public class JsonPrinter {
         return jsonObjectBuilder()
                 .add("id", template.getId())
                 .add("name", template.getName())
+                .add("isDefault", template.isIsDefaultForDataverse())
                 .add("usageCount", template.getUsageCount())
                 .add("createTime", template.getCreateTime().toString())
                 .add("createDate", template.getCreateDate())
@@ -1602,9 +1631,10 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder jsonTermsOfUseAndAccess(TermsOfUseAndAccess termsOfUseAndAccess) {
+        License license = termsOfUseAndAccess.getLicense();
         return jsonObjectBuilder()
                 .add("id", termsOfUseAndAccess.getId())
-                .add("license", json(termsOfUseAndAccess.getLicense()))
+                .add("license", license != null ? json(license) : null)
                 .add("termsOfUse", termsOfUseAndAccess.getTermsOfUse())
                 .add("termsOfAccess", termsOfUseAndAccess.getTermsOfAccess())
                 .add("confidentialityDeclaration", termsOfUseAndAccess.getConfidentialityDeclaration())
@@ -1618,7 +1648,9 @@ public class JsonPrinter {
                 .add("originalArchive", termsOfUseAndAccess.getOriginalArchive())
                 .add("availabilityStatus", termsOfUseAndAccess.getAvailabilityStatus())
                 .add("sizeOfCollection", termsOfUseAndAccess.getSizeOfCollection())
-                .add("studyCompletion", termsOfUseAndAccess.getStudyCompletion());
+                .add("studyCompletion", termsOfUseAndAccess.getStudyCompletion())
+                .add("contactForAccess", termsOfUseAndAccess.getContactForAccess())
+                .add("fileAccessRequest", termsOfUseAndAccess.isFileAccessRequest());
     }
 
     public static JsonArrayBuilder jsonTemplateInstructions(Map<String, String> templateInstructions) {
@@ -1632,6 +1664,23 @@ public class JsonPrinter {
         }
 
         return jsonArrayBuilder;
+    }
+
+    public static JsonObjectBuilder jsonStorageDriver(String storageDriverId, Dataset dataset) {
+        JsonObjectBuilder jsonObjectBuilder = new NullSafeJsonBuilder();
+        jsonObjectBuilder.add("name", storageDriverId);
+        jsonObjectBuilder.add("type", DataAccess.getDriverType(storageDriverId));
+        jsonObjectBuilder.add("label", DataAccess.getStorageDriverLabelFor(storageDriverId));
+        if (dataset != null) {
+            jsonObjectBuilder.add("directUpload", DataAccess.uploadToDatasetAllowed(dataset, storageDriverId));
+            try {
+                jsonObjectBuilder.add("directDownload", DataAccess.getStorageIO(dataset).downloadRedirectEnabled());
+            } catch (IOException ex) {
+                logger.fine("Failed to get Storage IO for dataset " + ex.getMessage());
+            }
+        }
+
+        return jsonObjectBuilder;
     }
 
     public static JsonArrayBuilder json(List<UserNotification> notifications, AuthenticatedUser authenticatedUser, boolean inAppNotificationFormat) {
