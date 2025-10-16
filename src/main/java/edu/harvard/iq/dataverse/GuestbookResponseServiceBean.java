@@ -954,7 +954,7 @@ public class GuestbookResponseServiceBean {
         try {        
             StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("GuestbookResponse.estimateGuestBookResponseTableSize");
             query.execute();
-            Long totalCount = (Long) query.getOutputParameterValue(1);
+            Long totalCount = (Long) query.getSingleResult();
         
             if (totalCount != null) {
                 return totalCount;

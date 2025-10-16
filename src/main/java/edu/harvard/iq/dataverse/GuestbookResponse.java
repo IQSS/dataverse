@@ -29,9 +29,7 @@ import java.util.Comparator;
 @NamedStoredProcedureQuery(
         name = "GuestbookResponse.estimateGuestBookResponseTableSize",
         procedureName = "estimateGuestBookResponseTableSize",
-        parameters = {
-            @StoredProcedureParameter(mode = ParameterMode.OUT, type = Long.class)
-        }
+        resultClasses = Long.class
 )
 @Entity
 @Table(indexes = {
