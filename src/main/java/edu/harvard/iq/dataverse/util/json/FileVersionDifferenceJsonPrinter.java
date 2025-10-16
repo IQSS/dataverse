@@ -70,11 +70,8 @@ public class FileVersionDifferenceJsonPrinter {
                 .add("isReleased", datasetVersion.isReleased())
                 .add("isDeaccessioned", datasetVersion.isDeaccessioned())
                 .add("summary", datasetVersion.getVersionNote())
-                .add("contributors", fileMetadata.getContributorNames());
-
-        if (fileMetadata.getDataFile() != null && fileMetadata.getDataFile().getPublicationDate() != null) {
-            jsonBuilder.add("publishedDate", fileMetadata.getDataFile().getPublicationDate().toString());
-        }
+                .add("contributors", fileMetadata.getContributorNames())
+                .add("publishedDate", fileMetadata.getDatasetVersion().getPublicationDateAsString());
     }
 
     /**

@@ -48,6 +48,7 @@ class FileVersionDifferenceJsonPrinterTest {
         when(dataFile.getId()).thenReturn(42L);
         when(datasetVersion.getFriendlyVersionNumber()).thenReturn("V1");
         when(datasetVersion.getVersionState()).thenReturn(DatasetVersion.VersionState.RELEASED);
+        when(datasetVersion.getPublicationDateAsString()).thenReturn("2025-10-16");
         when(fileVersionDifference.getDifferenceSummaryGroups()).thenReturn(Collections.emptyList());
 
         // Act
@@ -56,6 +57,7 @@ class FileVersionDifferenceJsonPrinterTest {
         // Assert
         assertEquals("V1", result.getString("datasetVersion"));
         assertEquals("RELEASED", result.getString("versionState"));
+        assertEquals("2025-10-16", result.getString("publishedDate"));
         assertEquals(42, result.getInt("datafileId"));
         assertNotNull(result.getJsonObject("fileDifferenceSummary"));
         assertEquals("Test Version Note", result.getJsonObject("fileDifferenceSummary").getString("versionNote"));
