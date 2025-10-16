@@ -68,7 +68,7 @@ Then try running this command:
 
 `docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx:7.2.6 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make html"`
 
-If all goes well, you should be able open `doc/sphinx-guides/build/html/index.html` to see the guides you just built.
+If all goes well, you should be able to open `doc/sphinx-guides/build/html/index.html` to see the guides you just built.
 
 #### Docker with a Makefile
 
@@ -106,7 +106,7 @@ Finally, you can try building the guides with the following command.
 
 `make html`
 
-If all goes well, you should be able open `doc/sphinx-guides/build/html/index.html` to see the guides you just built.
+If all goes well, you should be able to open `doc/sphinx-guides/build/html/index.html` to see the guides you just built.
 
 ## Editing, Building, and Previewing the Guides
 
