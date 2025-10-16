@@ -7,6 +7,9 @@ html {
 body {
   /* Sticky footer Margin bottom by footer height */
   margin-bottom:160px;
+  /* #11824 */
+  word-break: normal;
+  overflow-wrap: anywhere;
 }
 body.widget-view {margin-bottom:44px;}
 body .ui-widget {font-size: inherit;}
