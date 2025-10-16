@@ -174,10 +174,18 @@ class GetFileVersionDifferencesCommandTest {
         when(fileServiceMock.findFileMetadataHistory(any(), any(), anyBoolean(), any(), any()))
                 .thenReturn(history);
 
-        // Mock the logic to find the direct predecessor of each version
-        when(fileServiceMock.getPreviousFileMetadata(fm3)).thenReturn(fm2);
-        when(fileServiceMock.getPreviousFileMetadata(fm2)).thenReturn(fm1);
-        when(fileServiceMock.getPreviousFileMetadata(fm1)).thenReturn(null); // The oldest has no predecessor
+        when(fileServiceMock.getPreviousFileMetadata(any(FileMetadata.class))).thenAnswer(
+                invocation -> {
+                    FileMetadata current = invocation.getArgument(0);
+                    if (current != null && current.getId().equals(3L)) {
+                        return fm2;
+                    }
+                    if (current != null && current.getId().equals(2L)) {
+                        return fm1;
+                    }
+                    return null;
+                }
+        );
 
         // Mock the logic to retrieve contributor names
         when(datasetVersionServiceMock.getContributorsNames(any(DatasetVersion.class))).thenReturn(Collections.emptyList().toString());
