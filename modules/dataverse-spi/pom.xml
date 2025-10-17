@@ -67,12 +67,6 @@
             <id>central</id>
             <url>https://central.sonatype.com/repository/maven-snapshots/</url>
         </snapshotRepository>
-        <repository>
-            <!--TODO: change this from ossrh to central?-->
-            <id>ossrh</id>
-            <!--TODO: change this url?-->
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
     </distributionManagement>
     
     <properties>
@@ -80,6 +74,7 @@
         <project.version.suffix></project.version.suffix>
         <javadoc.lint>none</javadoc.lint>
         <skipDeploy>false</skipDeploy>
+        <skipRelease>false</skipRelease>
     </properties>
     
     <dependencies>
@@ -108,15 +103,14 @@
             
             <!-- RELEASING -->
             <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
-                    <!--TODO: change this from ossrh to central?-->
-                    <serverId>ossrh</serverId>
-                    <!--TODO: change this URL?-->
-                    <nexusUrl>https://s01.oss.sonatype.org</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    <publishingServerId>central</publishingServerId>
+                    <autoPublish>true</autoPublish>
+                    <deploymentName>${project.name}</deploymentName>
+                    <skipPublishing>${skipRelease}</skipPublishing>
                 </configuration>
             </plugin>
             <plugin>
