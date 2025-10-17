@@ -36,6 +36,10 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -1284,5 +1288,49 @@ w
             logger.log(Level.WARNING, "EJBException exception: {0}", e.getMessage());
             return null;
         }
-    } // end getUnarchivedDatasetVersions
-} // end class
+    }
+
+    /**
+     * Calculates the total number of versions for a specified dataset.
+     * <p>
+     * This method provides a flexible way to count dataset versions. It can either
+     * return a total count of all versions or restrict the count to only those
+     * that are publicly visible (i.e., {@code RELEASED} or {@code DEACCESSIONED}).
+     * This is particularly useful for displaying different counts to users with
+     * different permission levels.
+     *
+     * @param datasetId The unique identifier of the dataset for which to count versions.
+     * Must not be {@code null}.
+     * @param canViewUnpublishedVersions A boolean flag that controls the scope of the count:
+     * <ul>
+     * <li>{@code true} - All versions of the dataset are counted,
+     * regardless of their {@link VersionState}.</li>
+     * <li>{@code false} - Only versions with a state of
+     * {@link VersionState#RELEASED} or
+     * {@link VersionState#DEACCESSIONED} are counted.</li>
+     * </ul>
+     * @return A {@code Long} representing the total count of matching dataset versions.
+     * This will be {@code 0L} if the dataset has no versions or does not exist.
+     */
+    public Long getDatasetVersionCount(Long datasetId, boolean canViewUnpublishedVersions) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+        Root<DatasetVersion> versionRoot = cq.from(DatasetVersion.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Add the primary predicate to filter by the dataset's ID.
+        predicates.add(cb.equal(versionRoot.join("dataset").get("id"), datasetId));
+
+        // Conditionally add a predicate to filter for public versions only.
+        if (!canViewUnpublishedVersions) {
+            predicates.add(versionRoot.get("versionState").in(
+                    VersionState.RELEASED, VersionState.DEACCESSIONED));
+        }
+
+        cq.select(cb.count(versionRoot))
+                .where(predicates.toArray(new Predicate[0]));
+
+        return em.createQuery(cq).getSingleResult();
+    }
+}
