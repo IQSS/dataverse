@@ -1472,6 +1472,8 @@ public class FilesIT {
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
+                .body("totalCount", is(1))
+                .body("data.size()", is(1))
                 .body("data[0].datasetVersion", equalTo("DRAFT"))
                 .body("data[0].fileDifferenceSummary.file", equalTo("Added"))
                 .statusCode(OK.getStatusCode());
@@ -1492,6 +1494,8 @@ public class FilesIT {
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
+                .body("totalCount", is(1))
+                .body("data.size()", is(1))
                 .body("data[0].datasetVersion", equalTo("1.0"))
                 .body("data[0].fileDifferenceSummary.file", equalTo("Added"))
                 .statusCode(OK.getStatusCode());
@@ -1506,6 +1510,8 @@ public class FilesIT {
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
+                .body("totalCount", is(1))
+                .body("data.size()", is(1))
                 .body("data[0].datasetVersion", equalTo("1.0"))
                 .body("data[0].fileDifferenceSummary.file", equalTo("Added"))
                 .statusCode(OK.getStatusCode());
@@ -1520,7 +1526,10 @@ public class FilesIT {
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
+                .body("totalCount", is(2))
+                .body("data.size()", is(2))
                 .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.file", equalTo(null))
                 .body("data[1].datasetVersion", equalTo("1.0"))
                 .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
                 .statusCode(OK.getStatusCode());
@@ -1531,6 +1540,7 @@ public class FilesIT {
         paginatedResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo("OK"))
+                .body("totalCount", is(2))
                 .body("data.size()", is(1))
                 .body("data[0].datasetVersion", equalTo("DRAFT"));
 
@@ -1540,6 +1550,7 @@ public class FilesIT {
         paginatedResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo("OK"))
+                .body("totalCount", is(2))
                 .body("data.size()", is(1))
                 .body("data[0].datasetVersion", equalTo("1.0"));
 
@@ -1549,6 +1560,7 @@ public class FilesIT {
         paginatedResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo("OK"))
+                .body("totalCount", is(2))
                 .body("data.size()", is(0));
 
         // Test pagination: limit=2, offset=0 (should get both items)
@@ -1557,6 +1569,7 @@ public class FilesIT {
         paginatedResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo("OK"))
+                .body("totalCount", is(2))
                 .body("data.size()", is(2))
                 .body("data[0].datasetVersion", equalTo("DRAFT"))
                 .body("data[1].datasetVersion", equalTo("1.0"));
@@ -1588,6 +1601,8 @@ public class FilesIT {
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
+                .body("totalCount", is(2))
+                .body("data.size()", is(2))
                 .body("data[0].datasetVersion", equalTo("DRAFT"))
                 .body("data[0].fileDifferenceSummary.file", equalTo("Replaced"))
                 .body("data[0].datafileId", equalTo(Integer.parseInt(replacedDataFileId)))
@@ -1614,6 +1629,8 @@ public class FilesIT {
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
+                .body("totalCount", is(2))
+                .body("data.size()", is(2))
                 .body("data[1].datasetVersion", equalTo("1.0"))
                 .body("data[1].fileDifferenceSummary.deaccessionedReason", equalTo("Test reason"))
                 .body("data[1].fileDifferenceSummary.file", equalTo("Added"))

@@ -1183,7 +1183,10 @@ public class Files extends AbstractApiBean {
             if (fm == null) {
                 return notFound(BundleUtil.getStringFromBundle("files.api.fileNotFound"));
             }
-            return ok(jsonFileVersionSummaries(execCommand(new GetFileVersionDifferencesCommand(req, fm, limit, offset))));
+            List<FileVersionDifference> versionDifferences = execCommand(new GetFileVersionDifferencesCommand(req, fm, limit, offset));
+            JsonArrayBuilder versionDifferencesArrayBuilder = jsonFileVersionSummaries(versionDifferences);
+            long datasetVersionTotalCount = execCommand(new GetDatasetVersionCountCommand(req, fm.getDatasetVersion().getDataset()));
+            return ok(versionDifferencesArrayBuilder, datasetVersionTotalCount);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
