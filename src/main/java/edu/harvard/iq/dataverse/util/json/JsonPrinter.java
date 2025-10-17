@@ -1720,14 +1720,14 @@ public class JsonPrinter {
         return notificationsArray;
     }
 
-    public static JsonArray jsonDatasetVersionSummaries(List<DatasetVersionSummary> summaries) {
+    public static JsonArrayBuilder jsonDatasetVersionSummaries(List<DatasetVersionSummary> summaries) {
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
         summaries.stream()
                 .filter(Objects::nonNull)
                 .map(JsonPrinter::json)
                 .forEach(arrayBuilder::add);
 
-        return arrayBuilder.build();
+        return arrayBuilder;
     }
 
     private static JsonObjectBuilder json(DatasetVersionSummary summary) {
@@ -1762,13 +1762,13 @@ public class JsonPrinter {
         return jsonObjectBuilder;
     }
 
-    public static JsonArray jsonFileVersionSummaries(List<FileVersionDifference> differences) {
+    public static JsonArrayBuilder jsonFileVersionSummaries(List<FileVersionDifference> differences) {
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
         differences.stream()
                 .filter(Objects::nonNull)
                 .map(diff -> jsonFileVersionDifference(diff).build())
                 .forEach(arrayBuilder::add);
 
-        return arrayBuilder.build();
+        return arrayBuilder;
     }
 }

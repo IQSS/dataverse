@@ -6534,6 +6534,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         compareResponse.prettyPrint();
 
         compareResponse.then().assertThat()
+                .body("totalCount", is(2))
+                .body("data.size()", is(2))
                 .body("data[1].versionNumber", equalTo("1.0"))
                 .body("data[1].summary", equalTo("firstPublished"))
                 .body("data[0].versionNumber", equalTo("DRAFT"))
@@ -6556,6 +6558,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response compareResponse2 = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, apiTokenNoPriv);
         compareResponse2.prettyPrint();
         compareResponse2.then().assertThat()
+                .body("totalCount", is(1))
+                .body("data.size()", is(1))
                 .body("data[0].versionNumber", CoreMatchers.equalTo("1.0"))
                 .body("data[0].summary", CoreMatchers.equalTo("firstPublished"))
                 .statusCode(OK.getStatusCode());
@@ -6567,6 +6571,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         compareResponse.prettyPrint();
 
         compareResponse.then().assertThat()
+                .body("totalCount", is(2))
+                .body("data.size()", is(2))
                 .body("data[1].versionNumber", equalTo("1.0"))
                 .body("data[1].summary.deaccessioned.reason", equalTo("Test deaccession reason."))
                 .body("data[0].versionNumber", equalTo("DRAFT"))
@@ -6591,6 +6597,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         compareAllResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", is(3))
+                .body("totalCount", is(3))
                 .body("data[0].versionNumber", equalTo("DRAFT"))
                 .body("data[1].versionNumber", equalTo("2.0"))
                 .body("data[2].versionNumber", equalTo("1.0"));
@@ -6600,6 +6607,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         compareLimitResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", is(1))
+                .body("totalCount", is(3))
                 .body("data[0].versionNumber", equalTo("DRAFT"));
 
         // Test pagination: Use limit=1 and offset=1. Should skip the first result and return the second (2.0).
@@ -6607,6 +6615,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         compareOffsetResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", is(1))
+                .body("totalCount", is(3))
                 .body("data[0].versionNumber", equalTo("2.0"));
 
         // Test invalid pagination: limit=-1 (should return a bad request error)
