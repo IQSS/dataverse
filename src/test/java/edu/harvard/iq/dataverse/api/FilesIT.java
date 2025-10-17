@@ -1461,7 +1461,8 @@ public class FilesIT {
         // Create dataverse and dataset. Upload 1 file
         String dataverseAlias = createDataverseGetAlias(superUserApiToken);
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, superUserApiToken);
-        Integer datasetId = createDatasetGetId(dataverseAlias, superUserApiToken);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, superUserApiToken);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
         String pathToFile = "scripts/search/data/binary/trees.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, superUserApiToken);
         addResponse.prettyPrint();
@@ -1635,6 +1636,75 @@ public class FilesIT {
                 .body("data[1].fileDifferenceSummary.deaccessionedReason", equalTo("Test reason"))
                 .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
                 .statusCode(OK.getStatusCode());
+
+        // Test when the file was not present on previous versions
+
+        pathToFile = "src/test/resources/images/coffeeshop.png";
+        addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, superUserApiToken);
+        addResponse.then().assertThat().statusCode(OK.getStatusCode());
+        dataFileId = addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, superUserApiToken);
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("totalCount", is(2))
+                .body("data.size()", is(2))
+                .body("data[0].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].versionState", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.file", equalTo("Added"))
+                .body("data[0].isDraft", equalTo(true))
+                .body("data[0].isDeaccessioned", equalTo(false))
+                .body("data[0].publishedDate", equalTo(""))
+                // Since the file was not present on the previous version, datafileId should be null
+                .body("data[1].datafileId", equalTo(null))
+                .body("data[1].datasetVersion", equalTo("1.0"))
+                .body("data[1].versionState", equalTo("DEACCESSIONED"))
+                .body("data[1].fileDifferenceSummary.deaccessionedReason", equalTo("Test reason"))
+                // No differences to report at this stage since we are requesting differences for a newly added file
+                .body("data[1].fileDifferenceSummary.file", equalTo(null))
+                .body("data[1].isDraft", equalTo(false))
+                .body("data[1].isDeaccessioned", equalTo(true))
+                .body("data[1].publishedDate", not(equalTo("")));
+
+        // Test when no changes were made to the file in a new version
+
+        // First, publish the current DRAFT version
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", superUserApiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        // Second, generate a new version by updating the dataset title, and publish it
+        String newTitle = "I am changing the title";
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        UtilIT.updateDatasetTitleViaSword(datasetPersistentId, newTitle, superUserApiToken).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", superUserApiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, superUserApiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("totalCount", is(3))
+                .body("data.size()", is(3))
+                .body("data[0].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .body("data[0].datasetVersion", equalTo("3.0"))
+                .body("data[0].versionState", equalTo("RELEASED"))
+                .body("data[0].fileDifferenceSummary", equalTo(null))
+                .body("data[0].isDraft", equalTo(false))
+                .body("data[0].isDeaccessioned", equalTo(false))
+                .body("data[0].publishedDate", not(equalTo("")))
+                // Since the file was already present in the previous version, datafileId should be present
+                .body("data[1].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .body("data[1].datasetVersion", equalTo("2.0"))
+                .body("data[1].versionState", equalTo("RELEASED"))
+                .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
+                .body("data[1].isDraft", equalTo(false))
+                .body("data[1].isDeaccessioned", equalTo(false))
+                .body("data[1].publishedDate", not(equalTo("")))
+                .body("data[2].fileDifferenceSummary.file", equalTo(null))
+                .body("data[2].isDraft", equalTo(false))
+                // Since the file was not present in this version, datafileId should be null
+                .body("data[2].datafileId", equalTo(null))
+                .body("data[2].isDeaccessioned", equalTo(true))
+                .body("data[2].publishedDate", not(equalTo("")));
     }
 
     @Test
