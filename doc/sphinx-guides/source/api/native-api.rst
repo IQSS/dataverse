@@ -2156,6 +2156,8 @@ You can control pagination of the results using the following optional query par
 * ``limit``: The maximum number of version differences to return.
 * ``offset``: The number of version differences to skip from the beginning of the list. Used for retrieving subsequent pages of results.
 
+To aid in pagination the JSON response also includes the total number of rows (totalCount) available.
+
 For example, to get the second page of results, with 2 items per page, you would use ``limit=2`` and ``offset=2`` (skipping the first two results).
 
 .. code-block:: bash
@@ -4339,6 +4341,8 @@ You can control pagination of the results using the following optional query par
 
 * ``limit``: The maximum number of version differences to return.
 * ``offset``: The number of version differences to skip from the beginning of the list. Used for retrieving subsequent pages of results.
+
+To aid in pagination the JSON response also includes the total number of rows (totalCount) available.
 
 For example, to get the second page of results, with 2 items per page, you would use ``limit=2`` and ``offset=2`` (skipping the first two results).
 
