@@ -1,1 +1,1 @@
-This release adds indexing of guestbook response and prevents nulls in dataset version state to speed up Dataset deletes.
+This release adds database indexes on GuestbookResponse and DatasetMetrtics, speeding up Dataset deletes. It also adds a constraint preventing null VersionState, as a matter of good housekeeping practice. 
