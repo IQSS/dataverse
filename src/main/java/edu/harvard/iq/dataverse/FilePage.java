@@ -420,6 +420,11 @@ public class FilePage implements java.io.Serializable {
         DatasetVersion workingVersion = fileMetadata.getDatasetVersion();
         return FileUtil.isGuestbookPopupRequired(workingVersion) && !workingVersion.getDataset().getEffectiveGuestbookEntryAtRequest();
     }
+    
+    public boolean isGuestbookPopupRequired(){
+        DatasetVersion workingVersion = fileMetadata.getDatasetVersion();
+        return FileUtil.isGuestbookPopupRequired(workingVersion);
+    }
 
     public void setFileMetadata(FileMetadata fileMetadata) {
         this.fileMetadata = fileMetadata;
