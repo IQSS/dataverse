@@ -37,6 +37,7 @@ import java.util.Comparator;
 @Table(indexes = {
         @Index(columnList = "guestbook_id"),
         @Index(columnList = "datafile_id"),
+        @Index(columnList = "datasetversion_id"),
         @Index(columnList = "dataset_id")
 })
 
