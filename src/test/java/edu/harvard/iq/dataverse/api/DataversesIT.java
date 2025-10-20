@@ -72,7 +72,7 @@ public class DataversesIT {
     }
 
     @AfterEach
-    public static void afterEach() {
+    public void afterEach() {
         UtilIT.deleteSetting(SettingsServiceBean.Key.MetadataLanguages);
     }
 
