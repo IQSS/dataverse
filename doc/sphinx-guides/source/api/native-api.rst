@@ -6118,16 +6118,16 @@ The expected OK (200) response looks something like this:
 
   {
       "status": "OK",
-      "data": {
-          "notifications": [
-              {
-                  "id": 38,
-                  "type": "CREATEACC",
-                  "displayAsRead": true,
-                  "subjectText": "Root: Your account has been created",
-                  "messageText": "Hello, \nWelcome to...",
-                  "sentTimestamp": "2025-07-21T19:15:37Z"
-              }
+      "totalCount": 15,
+      "data": [
+        {
+            "id": 38,
+            "type": "CREATEACC",
+            "displayAsRead": true,
+            "subjectText": "Root: Your account has been created",
+            "messageText": "Hello, \nWelcome to...",
+            "sentTimestamp": "2025-07-21T19:15:37Z"
+        }
   ...
 
 This endpoint supports several optional query parameters to filter and paginate the results.
@@ -6146,6 +6146,8 @@ The ``onlyUnread`` parameter, if sent as ``true``, filters the results to includ
 
 The ``limit`` and ``offset`` parameters can be used for pagination. ``limit`` specifies the maximum number of notifications to return, and ``offset`` specifies the number of notifications to skip from the beginning of the list. For example, to retrieve notifications 11 through 15:
 
+To aid in pagination the JSON response also includes the total number of rows (totalCount) available.
+
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all?limit=5&offset=10"
@@ -6154,7 +6156,7 @@ All parameters can be combined. For instance, to get the first page of 10 unread
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all?inAppNotificationFormat=true&onlyUnread=true&limit=10&offset=0"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all?inAppNotificationFormat=true&onlyUnread=true&limit=1&offset=0"
 
 The expected OK (200) response for an in-app format request looks something like this:
 
@@ -6162,20 +6164,19 @@ The expected OK (200) response for an in-app format request looks something like
 
   {
       "status": "OK",
-      "data": {
-          "notifications": [
-              {
-                  "id": 79,
-                  "type": "CREATEACC",
-                  "displayAsRead": false,
-                  "sentTimestamp": "2025-08-08T08:00:16Z",
-                  "installationBrandName": "Your Installation Name",
-                  "userGuidesBaseUrl": "https://guides.dataverse.org",
-                  "userGuidesVersion": "6.7.1",
-                  "userGuidesSectionPath": "user/index.html"
-              }
-          ]
-      }
+      "totalCount": 15,
+      "data": [
+        {
+            "id": 79,
+            "type": "CREATEACC",
+            "displayAsRead": false,
+            "sentTimestamp": "2025-08-08T08:00:16Z",
+            "installationBrandName": "Your Installation Name",
+            "userGuidesBaseUrl": "https://guides.dataverse.org",
+            "userGuidesVersion": "6.7.1",
+            "userGuidesSectionPath": "user/index.html"
+        }
+      ]
   }
   ...
 
