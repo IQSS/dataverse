@@ -35,7 +35,8 @@ public class Notifications extends AbstractApiBean {
         try {
             AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             List<UserNotification> userNotifications = userNotificationSvc.findByUser(authenticatedUser.getId(), onlyUnread, limit, offset);
-            return ok(Json.createObjectBuilder().add("notifications", json(userNotifications, authenticatedUser, inAppNotificationFormat)));
+            long userNotificationTotalCount = userNotificationSvc.findTotalCountByUser(authenticatedUser.getId(), onlyUnread);
+            return ok(json(userNotifications, authenticatedUser, inAppNotificationFormat), userNotificationTotalCount);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

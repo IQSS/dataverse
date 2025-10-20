@@ -58,20 +58,21 @@ public class NotificationsIT {
 
         Response getNotifications = UtilIT.getNotifications(authorApiToken);
         getNotifications.then().assertThat()
-                .body("data.notifications[0].displayAsRead", equalTo(false))
-                .body("data.notifications[1].displayAsRead", equalTo(false))
-                .body("data.notifications.size()", equalTo(2))
+                .body("data[0].displayAsRead", equalTo(false))
+                .body("data[1].displayAsRead", equalTo(false))
+                .body("totalCount", equalTo(2))
+                .body("data.size()", equalTo(2))
                 .statusCode(OK.getStatusCode());
 
-        String firstNotificationType = JsonPath.from(getNotifications.body().asString()).getString("data.notifications[0].type");
-        String secondNotificationType = JsonPath.from(getNotifications.body().asString()).getString("data.notifications[1].type");
+        String firstNotificationType = JsonPath.from(getNotifications.body().asString()).getString("data[0].type");
+        String secondNotificationType = JsonPath.from(getNotifications.body().asString()).getString("data[1].type");
         long createAccountId = 0L;
         if (firstNotificationType.equals(CREATEDV.toString())) {
             assertEquals(CREATEACC.toString(), secondNotificationType);
-            createAccountId = JsonPath.from(getNotifications.getBody().asString()).getLong("data.notifications[1].id");
+            createAccountId = JsonPath.from(getNotifications.getBody().asString()).getLong("data[1].id");
         } else if (firstNotificationType.equals(CREATEACC.toString())) {
             assertEquals(CREATEDV.toString(), secondNotificationType);
-            createAccountId = JsonPath.from(getNotifications.getBody().asString()).getLong("data.notifications[0].id");
+            createAccountId = JsonPath.from(getNotifications.getBody().asString()).getLong("data[0].id");
         } else {
             fail("Unexpected notification type: " + firstNotificationType);
         }
@@ -90,27 +91,29 @@ public class NotificationsIT {
         // Retrieve only unread notifications
         getNotifications = UtilIT.getNotifications(authorApiToken, false, true, null, null);
         getNotifications.then().assertThat()
-                .body("data.notifications[0].type", equalTo(CREATEDV.toString()))
-                .body("data.notifications[0].displayAsRead", equalTo(false))
-                .body("data.notifications.size()", equalTo(1))
+                .body("data[0].type", equalTo(CREATEDV.toString()))
+                .body("data[0].displayAsRead", equalTo(false))
+                .body("totalCount", equalTo(1))
+                .body("data.size()", equalTo(1))
                 .statusCode(OK.getStatusCode());
 
         // Retrieve all notifications
         Response getNotifications2 = UtilIT.getNotifications(authorApiToken);
         getNotifications2.then().assertThat()
-                .body("data.notifications.size()", equalTo(2))
+                .body("totalCount", equalTo(2))
+                .body("data.size()", equalTo(2))
                 .statusCode(OK.getStatusCode());
 
-        firstNotificationType = JsonPath.from(getNotifications2.body().asString()).getString("data.notifications[0].type");
-        secondNotificationType = JsonPath.from(getNotifications2.body().asString()).getString("data.notifications[1].type");
+        firstNotificationType = JsonPath.from(getNotifications2.body().asString()).getString("data[0].type");
+        secondNotificationType = JsonPath.from(getNotifications2.body().asString()).getString("data[1].type");
         if (firstNotificationType.equals(CREATEDV.toString())) {
             assertEquals(CREATEACC.toString(), secondNotificationType);
-            assertTrue(JsonPath.from(getNotifications2.body().asString()).getBoolean("data.notifications[1].displayAsRead"));
-            assertFalse(JsonPath.from(getNotifications2.body().asString()).getBoolean("data.notifications[0].displayAsRead"));
+            assertTrue(JsonPath.from(getNotifications2.body().asString()).getBoolean("data[1].displayAsRead"));
+            assertFalse(JsonPath.from(getNotifications2.body().asString()).getBoolean("data[0].displayAsRead"));
         } else if (firstNotificationType.equals(CREATEACC.toString())) {
             assertEquals(CREATEDV.toString(), secondNotificationType);
-            assertTrue(JsonPath.from(getNotifications2.body().asString()).getBoolean("data.notifications[0].displayAsRead"));
-            assertFalse(JsonPath.from(getNotifications2.body().asString()).getBoolean("data.notifications[1].displayAsRead"));
+            assertTrue(JsonPath.from(getNotifications2.body().asString()).getBoolean("data[0].displayAsRead"));
+            assertFalse(JsonPath.from(getNotifications2.body().asString()).getBoolean("data[1].displayAsRead"));
         } else {
             fail("Unexpected notification type: " + firstNotificationType);
         }
@@ -123,8 +126,9 @@ public class NotificationsIT {
 
         Response getNotifications3 = UtilIT.getNotifications(authorApiToken);
         getNotifications3.then().assertThat()
-                .body("data.notifications[0].type", equalTo(CREATEDV.toString()))
-                .body("data.notifications.size()", equalTo(1))
+                .body("data[0].type", equalTo(CREATEDV.toString()))
+                .body("totalCount", equalTo(1))
+                .body("data.size()", equalTo(1))
                 .statusCode(OK.getStatusCode());
 
         // SendNotificationOnDatasetCreation setting is true
@@ -149,13 +153,14 @@ public class NotificationsIT {
 
         getNotifications = UtilIT.getNotifications(authorApiToken);
         getNotifications.then().assertThat()
-                .body("data.notifications[0].displayAsRead", equalTo(false))
-                .body("data.notifications[1].displayAsRead", equalTo(false))
-                .body("data.notifications[2].displayAsRead", equalTo(false))
-                .body("data.notifications.size()", equalTo(3))
+                .body("data[0].displayAsRead", equalTo(false))
+                .body("data[1].displayAsRead", equalTo(false))
+                .body("data[2].displayAsRead", equalTo(false))
+                .body("totalCount", equalTo(3))
+                .body("data.size()", equalTo(3))
                 .statusCode(OK.getStatusCode());
 
-        List<String> notificationTypes = JsonPath.from(getNotifications.body().asString()).getList("data.notifications.type");
+        List<String> notificationTypes = JsonPath.from(getNotifications.body().asString()).getList("data.type");
 
         List<String> expectedTypes = Arrays.asList(CREATEACC.toString(), CREATEDV.toString(), DATASETCREATED.toString());
 
@@ -174,16 +179,17 @@ public class NotificationsIT {
 
         getNotifications = UtilIT.getNotifications(authorApiToken);
         getNotifications.then().assertThat()
-                .body("data.notifications[0].displayAsRead", equalTo(false))
-                .body("data.notifications.size()", equalTo(1))
+                .body("data[0].displayAsRead", equalTo(false))
+                .body("totalCount", equalTo(1))
+                .body("data.size()", equalTo(1))
                 // In-App fields should be null
-                .body("data.notifications[0].installationBrandName", equalTo(null))
-                .body("data.notifications[0].userGuidesBaseUrl", equalTo(null))
-                .body("data.notifications[0].userGuidesVersion", equalTo(null))
-                .body("data.notifications[0].userGuidesSectionPath", equalTo(null))
+                .body("data[0].installationBrandName", equalTo(null))
+                .body("data[0].userGuidesBaseUrl", equalTo(null))
+                .body("data[0].userGuidesVersion", equalTo(null))
+                .body("data[0].userGuidesSectionPath", equalTo(null))
                 // Email-related fields should be present
-                .body("data.notifications[0].subjectText", equalTo("Root: Your account has been created"))
-                .body("data.notifications[0].messageText", containsString("Hello,"))
+                .body("data[0].subjectText", equalTo("Root: Your account has been created"))
+                .body("data[0].messageText", containsString("Hello,"))
                 .statusCode(OK.getStatusCode());
 
         // inAppNotificationFormat = true
@@ -195,16 +201,17 @@ public class NotificationsIT {
 
         getNotifications = UtilIT.getNotifications(authorApiToken, true, false, null, null);
         getNotifications.then().assertThat()
-                .body("data.notifications[0].displayAsRead", equalTo(false))
-                .body("data.notifications.size()", equalTo(1))
+                .body("data[0].displayAsRead", equalTo(false))
+                .body("totalCount", equalTo(1))
+                .body("data.size()", equalTo(1))
                 // In-App fields should be present
-                .body("data.notifications[0].installationBrandName", equalTo("Root"))
-                .body("data.notifications[0].userGuidesBaseUrl", equalTo("https://guides.dataverse.org"))
-                .body("data.notifications[0].userGuidesSectionPath", equalTo("user/index.html"))
-                .body("data.notifications[0].userGuidesVersion", not(equalTo(null)))
+                .body("data[0].installationBrandName", equalTo("Root"))
+                .body("data[0].userGuidesBaseUrl", equalTo("https://guides.dataverse.org"))
+                .body("data[0].userGuidesSectionPath", equalTo("user/index.html"))
+                .body("data[0].userGuidesVersion", not(equalTo(null)))
                 // Email-related fields should be null
-                .body("data.notifications[0].subjectText", equalTo(null))
-                .body("data.notifications[0].messageText", equalTo(null))
+                .body("data[0].subjectText", equalTo(null))
+                .body("data[0].messageText", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
         // Test pagination
@@ -224,37 +231,40 @@ public class NotificationsIT {
         Response limitedNotifications = UtilIT.getNotifications(paginationApiToken, false, false, 2, 0);
         limitedNotifications.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.notifications[0].type", equalTo(CREATEDV.toString()))
-                .body("data.notifications[1].type", equalTo(CREATEDV.toString()))
-                .body("data.notifications.size()", equalTo(2));
+                .body("data[0].type", equalTo(CREATEDV.toString()))
+                .body("data[1].type", equalTo(CREATEDV.toString()))
+                .body("totalCount", equalTo(5))
+                .body("data.size()", equalTo(2));
 
         // Case 2: Test offset
         // Skip first 3 notifications and get the remaining 2
         Response offsetNotifications = UtilIT.getNotifications(paginationApiToken, false, false, null, 3);
         offsetNotifications.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.notifications[0].type", equalTo(CREATEDV.toString()))
-                .body("data.notifications[1].type", equalTo(CREATEACC.toString()))
-                .body("data.notifications.size()", equalTo(2));
+                .body("data[0].type", equalTo(CREATEDV.toString()))
+                .body("data[1].type", equalTo(CREATEACC.toString()))
+                .body("totalCount", equalTo(5))
+                .body("data.size()", equalTo(2));
 
         // Case 3: Test limit and offset together
         // Get 2 notifications, starting from the 2nd one (index 1)
         Response limitedAndOffsetNotifications = UtilIT.getNotifications(paginationApiToken, false, false, 2, 1);
         limitedAndOffsetNotifications.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.notifications[0].type", equalTo(CREATEDV.toString()))
-                .body("data.notifications[1].type", equalTo(CREATEDV.toString()))
-                .body("data.notifications.size()", equalTo(2));
+                .body("data[0].type", equalTo(CREATEDV.toString()))
+                .body("data[1].type", equalTo(CREATEDV.toString()))
+                .body("totalCount", equalTo(5))
+                .body("data.size()", equalTo(2));
 
-        long firstId = JsonPath.from(limitedAndOffsetNotifications.body().asString()).getLong("data.notifications[0].id");
-        long secondId = JsonPath.from(limitedAndOffsetNotifications.body().asString()).getLong("data.notifications[1].id");
+        long firstId = JsonPath.from(limitedAndOffsetNotifications.body().asString()).getLong("data[0].id");
+        long secondId = JsonPath.from(limitedAndOffsetNotifications.body().asString()).getLong("data[1].id");
 
         // Verify we got the correct slice of data
         Response allNotifications = UtilIT.getNotifications(paginationApiToken);
         allNotifications.then().assertThat().statusCode(OK.getStatusCode());
 
-        long secondNotificationInAll = JsonPath.from(allNotifications.body().asString()).getLong("data.notifications[1].id");
-        long thirdNotificationInAll = JsonPath.from(allNotifications.body().asString()).getLong("data.notifications[2].id");
+        long secondNotificationInAll = JsonPath.from(allNotifications.body().asString()).getLong("data[1].id");
+        long thirdNotificationInAll = JsonPath.from(allNotifications.body().asString()).getLong("data[2].id");
 
         assertEquals(secondNotificationInAll, firstId);
         assertEquals(thirdNotificationInAll, secondId);
@@ -264,7 +274,8 @@ public class NotificationsIT {
         Response excessiveLimitNotifications = UtilIT.getNotifications(paginationApiToken, false, false, 10, 0);
         excessiveLimitNotifications.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.notifications.size()", equalTo(5));
+                .body("totalCount", equalTo(5))
+                .body("data.size()", equalTo(5));
     }
 
     private static void disableSendNotificationOnDatasetCreationSetting() {
