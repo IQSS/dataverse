@@ -7,6 +7,10 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.9
+----
+- The POST /api/admin/makeDataCount/{id}/updateCitationsForDataset processing is now asynchronous and the response no longer includes the number of citations. The response can be OK if the request is queued or 503 if the queue is full (default queue size is 1000).
+
 v6.8
 ----
 
