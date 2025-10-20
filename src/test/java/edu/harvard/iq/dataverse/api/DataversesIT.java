@@ -30,9 +30,11 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.core.Response.Status;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.api.parallel.ResourceAccessMode;
 import org.junit.jupiter.api.parallel.ResourceLock;
 
 import static jakarta.ws.rs.core.Response.Status.*;
@@ -51,6 +53,8 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import static org.hamcrest.Matchers.greaterThan;
 
+@ResourceLock(value = "MetadataLanguages", mode = ResourceAccessMode.READ_WRITE)
+@Isolated
 public class DataversesIT {
 
     private static final Logger logger = Logger.getLogger(DataversesIT.class.getCanonicalName());
@@ -58,11 +62,18 @@ public class DataversesIT {
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+        UtilIT.deleteSetting(SettingsServiceBean.Key.MetadataLanguages);
     }
 
     @AfterAll
     public static void afterClass() {
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
+        UtilIT.deleteSetting(SettingsServiceBean.Key.MetadataLanguages);
+    }
+
+    @AfterEach
+    public static void afterEach() {
+        UtilIT.deleteSetting(SettingsServiceBean.Key.MetadataLanguages);
     }
 
     @Test
@@ -2736,12 +2747,10 @@ public class DataversesIT {
     }
     
     @Test
-    @ResourceLock(value = "")
     public void testDataverseMetadataLanguage() {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        UtilIT.deleteSetting(":MetadataLanguages");
         Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken);
 
         createDataverse1Response.prettyPrint();
@@ -2754,7 +2763,7 @@ public class DataversesIT {
 
         noLang.then().assertThat().body("data", equalTo(List.of()));
 
-        UtilIT.setSetting(":MetadataLanguages",
+        UtilIT.setSetting(SettingsServiceBean.Key.MetadataLanguages,
                         "[{\"locale\":\"en\",\"title\":\"English\"},{\"locale\":\"hu\",\"title\":\"magyar\"}]");
         Response allLangs = UtilIT.getDataverseMetadataLanguage(alias, apiToken);
         allLangs.prettyPrint();
@@ -2767,7 +2776,6 @@ public class DataversesIT {
         english.then().assertThat().body("data", equalTo(List.of(Map.of("locale", "en", "title", "English"))));
         Response singleLang = UtilIT.getDataverseMetadataLanguage(alias, apiToken);
         singleLang.then().assertThat().body("data", equalTo(List.of(Map.of("locale", "en", "title", "English"))));
-        UtilIT.deleteSetting(":MetadataLanguages");
     }
 
 }
