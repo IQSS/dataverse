@@ -78,6 +78,7 @@ public class UserNotificationServiceBean {
 
     /**
      * Finds the total count of notifications for a user, with an option to count only unread notifications.
+     *
      * @param userId The ID of the user.
      * @param onlyUnread If true, counts only unread notifications. If false, counts all notifications.
      * @return The total count as a Long.
