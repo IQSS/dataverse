@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import static org.junit.jupiter.api.Assertions.assertSame;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -23,8 +22,6 @@ import org.mockito.MockitoAnnotations;
  */
 public class UpdateDatasetTermsOfAccessCommandTest {
 
-    @Mock
-    private CommandContext ctxt;
 
     @Mock
     private DataverseEngine dataverseEngineMock;

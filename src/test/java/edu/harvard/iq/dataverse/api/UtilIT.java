@@ -3872,7 +3872,7 @@ public class UtilIT {
             optionalQueryParam = "?persistentId=" + idOrPersistentIdOfDataset;
         }
 
-        String jsonIn = getDatasetTerms(pathToJsonFile);
+        String jsonIn = getDatasetTermsFromFile(pathToJsonFile);
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType("application/json")
@@ -3881,7 +3881,7 @@ public class UtilIT {
         return response;
     }
     
-    public static String getDatasetTerms(String pathToJsonFile) {
+    public static String getDatasetTermsFromFile(String pathToJsonFile) {
         File datasetTermsJson = new File(pathToJsonFile);
         try {
             String datasetTermsAsJson = new String(Files.readAllBytes(Paths.get(datasetTermsJson.getAbsolutePath())));

@@ -47,16 +47,16 @@ public class UpdateDatasetTermsOfAccessCommand  extends AbstractDatasetCommand<D
     
     private TermsOfUseAndAccess merge(DatasetVersion editVersion, TermsOfUseAndAccess incoming) {
         //only update the access parts
-        TermsOfUseAndAccess original = editVersion.getTermsOfUseAndAccess();
-        original.setFileAccessRequest(incoming.isFileAccessRequest());
-        original.setTermsOfAccess(incoming.getTermsOfAccess());
-        original.setDataAccessPlace(incoming.getDataAccessPlace());
-        original.setOriginalArchive(incoming.getOriginalArchive());
-        original.setAvailabilityStatus(incoming.getAvailabilityStatus());
-        original.setContactForAccess(incoming.getContactForAccess());
-        original.setSizeOfCollection(incoming.getSizeOfCollection());
-        original.setStudyCompletion(incoming.getStudyCompletion());
-        return original;
+        TermsOfUseAndAccess termsToUpdate = editVersion.getTermsOfUseAndAccess();
+        termsToUpdate.setFileAccessRequest(incoming.isFileAccessRequest());
+        termsToUpdate.setTermsOfAccess(incoming.getTermsOfAccess());
+        termsToUpdate.setDataAccessPlace(incoming.getDataAccessPlace());
+        termsToUpdate.setOriginalArchive(incoming.getOriginalArchive());
+        termsToUpdate.setAvailabilityStatus(incoming.getAvailabilityStatus());
+        termsToUpdate.setContactForAccess(incoming.getContactForAccess());
+        termsToUpdate.setSizeOfCollection(incoming.getSizeOfCollection());
+        termsToUpdate.setStudyCompletion(incoming.getStudyCompletion());
+        return termsToUpdate;
     }
     
     
