@@ -96,7 +96,7 @@ public class PermissionServiceBean {
     DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
 
     private static final String LIST_ALL_DATAVERSES_SUPERUSER_HAS_PERMISSION = """
-        SELECT id, name, alias FROM DATAVERSE
+        SELECT id, name, alias FROM DATAVERSE dv
     """;
 
     private static final String LIST_ALL_DATAVERSES_USER_HAS_PERMISSION = """
@@ -105,7 +105,7 @@ public class PermissionServiceBean {
                   WHERE explicitgroup_authenticateduser.containedauthenticatedusers_id = @USERID
                 )
                         
-                SELECT * FROM DATAVERSE WHERE id IN (
+                SELECT * FROM DATAVERSE dv WHERE id IN (
                   SELECT definitionpoint_id
                   FROM roleassignment
                   WHERE roleassignment.assigneeidentifier IN (
@@ -161,8 +161,24 @@ public class PermissionServiceBean {
                        AND @IPRANGESQL
                      )
                   )
-                )
+                ) 
             """;
+    
+        private static final String AND = """
+                                          and
+                                          """;
+        
+        private static final String WHERE = """
+                                          where
+                                          """;
+        
+        private static final String SEARCH_PARAMS  = """
+                                                             ((LOWER(dv.name) LIKE ? and ((SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE ?)
+                                                                         or (SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE ?))) 
+                                                                     or (LOWER(dv.name) NOT LIKE ? and ((LOWER(dv.name) LIKE ?)
+                                                                     or (LOWER(dv.name) LIKE ?))))
+                                                     """;
+
     /**
      * A request-level permission query (e.g includes IP ras).
      */
@@ -921,12 +937,21 @@ public class PermissionServiceBean {
         Long result = em.createQuery(criteriaQuery).getSingleResult();
         return result > 0;
     }
-
+    
     public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, Permission permission) {
-        return findPermittedCollections(request, user, 1 << permission.ordinal());
+        return findPermittedCollections(request, user, 1 << permission.ordinal(), "");
     }
 
+    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, Permission permission, String searchTerm) {
+        return findPermittedCollections(request, user, 1 << permission.ordinal(), searchTerm);
+    }
+    
     public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit) {
+        return findPermittedCollections(request, user, permissionBit, "");
+    }
+    
+    
+    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit, String searchTerm) {
         if (user != null) {
             // IP Group - Only check IP if a User is calling for themself
             String ipRangeSQL = "FALSE";
@@ -958,13 +983,64 @@ public class PermissionServiceBean {
             String sqlCode;
             if (user.isSuperuser()) {
                 sqlCode = LIST_ALL_DATAVERSES_SUPERUSER_HAS_PERMISSION;
+
+                if (searchTerm == null || searchTerm.isEmpty()) {
+                    return em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
+                } else {
+                    sqlCode = LIST_ALL_DATAVERSES_SUPERUSER_HAS_PERMISSION.concat(WHERE).concat(SEARCH_PARAMS);
+
+                    String pattern = searchTerm.toLowerCase();
+                    String pattern1 = pattern + "%";
+                    String pattern2 = "% " + pattern + "%";
+
+                    // Adjust the queries for very short, 1 
+                    if (pattern.length() == 1) {
+                        pattern1 = pattern;
+                        pattern2 = pattern + " %";
+                    }
+                    Query query = em.createNativeQuery(sqlCode, Dataverse.class);
+                    query.setParameter(1, "%dataverse");
+                    query.setParameter(2, pattern1);
+                    query.setParameter(3, pattern2);
+                    query.setParameter(4, "%dataverse");
+                    query.setParameter(5, pattern1);
+                    query.setParameter(6, pattern2);
+                    return query.getResultList();
+
+                }
             } else {
-                sqlCode = LIST_ALL_DATAVERSES_USER_HAS_PERMISSION
-                        .replace("@USERID", String.valueOf(user.getId()))
-                        .replace("@PERMISSIONBIT", String.valueOf(permissionBit))
-                        .replace("@IPRANGESQL", ipRangeSQL);
+                if (searchTerm == null || searchTerm.isEmpty()) {
+                    sqlCode = LIST_ALL_DATAVERSES_USER_HAS_PERMISSION
+                            .replace("@USERID", String.valueOf(user.getId()))
+                            .replace("@PERMISSIONBIT", String.valueOf(permissionBit))
+                            .replace("@IPRANGESQL", ipRangeSQL);
+                    return em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
+                } else {
+                    String pattern = searchTerm.toLowerCase();
+                    String pattern1 = pattern + "%";
+                    String pattern2 = "% " + pattern + "%";
+
+                    // Adjust the queries for very short, 1 
+                    if (pattern.length() == 1) {
+                        pattern1 = pattern;
+                        pattern2 = pattern + " %";
+                    }
+
+                    sqlCode = LIST_ALL_DATAVERSES_USER_HAS_PERMISSION.concat(AND).concat(SEARCH_PARAMS)
+                            .replace("@USERID", String.valueOf(user.getId()))
+                            .replace("@PERMISSIONBIT", String.valueOf(permissionBit))
+                            .replace("@IPRANGESQL", ipRangeSQL);
+                    
+                    Query query = em.createNativeQuery(sqlCode, Dataverse.class);
+                    query.setParameter(1, "%dataverse");
+                    query.setParameter(2, pattern1);
+                    query.setParameter(3, pattern2);
+                    query.setParameter(4, "%dataverse");
+                    query.setParameter(5, pattern1);
+                    query.setParameter(6, pattern2);
+                    return query.getResultList();
+                }
             }
-            return em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
         }
         return null;
     }

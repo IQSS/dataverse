@@ -732,6 +732,50 @@ Note: you must have "Add Dataset" permission in the given collection to invoke t
 
 .. _featured-collections:
 
+List Dataverse Collections to Which a Given Dataset or Dataverse Collection May Be Linked
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The user may provide a search term to limit the list of Dataverse Collections returned. The search term will be compared to the name of the Dataverse Collections.
+The response is a JSON array of the ids, aliases, and names of the Dataverse collections to which a given Dataset or Dataverse Collection may be linked:
+
+For a given Dataverse Collection:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export OBJECT_TYPE=dataverse
+  export ID=collectionAlias
+  export SEARCH_TERM=searchOn
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/dataverses/$ID/$OBJECT_TYPE/linkingDataverses?searchTerm=$SEARCH_TERM" 
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/dataverses/collectionAlias/dataverse/linkingDataverses?searchTerm=searchOn" 
+
+For a given Dataset:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export OBJECT_TYPE=dataset
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
+  export SEARCH_TERM=searchOn
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/dataverses/:persistentId/$OBJECT_TYPE/linkingDataverses?searchTerm=SEARCH_TERM&persistentId=$PERSISTENT_IDENTIFIER" 
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/dataverses/:persistentId/dataset/linkingDataverses?searchTerm=searchOn&persistentId=doi:10.5072/FK2/J8SJZB" 
+
+You may also add an optional "alreadyLinked=true" parameter to return collections which are already linked to the given Dataset or Dataverse Collection.
+
 List Featured Collections for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

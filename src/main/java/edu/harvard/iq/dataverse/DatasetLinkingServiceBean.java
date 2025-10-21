@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import jakarta.ejb.EJB;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -13,7 +14,6 @@ import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
 /**
@@ -28,6 +28,9 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
+    @EJB
+    DataverseServiceBean dataverseService;
+    
 
 
     public List<Dataset> findLinkedDatasets(Long dataverseId) {
@@ -41,13 +44,42 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
     }
 
     public List<Dataverse> findLinkingDataverses(Long datasetId) {
+        return findLinkingDataverses(datasetId, "");
+    }
+    
+    public List<Dataverse> findLinkingDataverses(Long datasetId, String searchTerm) {
         List<Dataverse> retList = new ArrayList<>();
-        TypedQuery<DatasetLinkingDataverse> typedQuery = em.createNamedQuery("DatasetLinkingDataverse.findByDatasetId", DatasetLinkingDataverse.class)
-            .setParameter("datasetId", datasetId);
-        for (DatasetLinkingDataverse datasetLinkingDataverse : typedQuery.getResultList()) {
-            retList.add(datasetLinkingDataverse.getLinkingDataverse());
+        if (searchTerm == null || searchTerm.isEmpty()) {
+            TypedQuery<DatasetLinkingDataverse> typedQuery = em.createNamedQuery("DatasetLinkingDataverse.findByDatasetId", DatasetLinkingDataverse.class)
+                    .setParameter("datasetId", datasetId);
+            for (DatasetLinkingDataverse datasetLinkingDataverse : typedQuery.getResultList()) {
+                retList.add(datasetLinkingDataverse.getLinkingDataverse());
+            }
+            return retList;
+
+        } else {
+
+            String pattern = searchTerm.toLowerCase();
+
+            String pattern1 = pattern + "%";
+            String pattern2 = "% " + pattern + "%";
+
+            // Adjust the queries for very short, 1 and 2-character patterns:
+            if (pattern.length() == 1) {
+                pattern1 = pattern;
+                pattern2 = pattern + " %";
+            }
+            TypedQuery<Long> typedQuery
+                    = em.createNamedQuery("DatasetLinkingDataverse.findByDatasetIdAndLinkingDataverseName", Long.class)
+                            .setParameter(1, datasetId).setParameter(2, "%dataverse").setParameter(3, pattern1)
+                            .setParameter(4, pattern2).setParameter(5, "%dataverse").setParameter(6, pattern1).setParameter(7, pattern2);
+
+            for (Long id : typedQuery.getResultList()) {
+                retList.add(dataverseService.find(id));
+            }
+            return retList;
         }
-        return retList;
+
     }
     
     public void save(DatasetLinkingDataverse datasetLinkingDataverse) {
