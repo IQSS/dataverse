@@ -166,6 +166,8 @@ The example :download:`counter_weekly.sh <../_static/util/counter_weekly.sh>` wi
 
 Citations will be retrieved for each published dataset and recorded in the your Dataverse installation's database.
 
+Note that the :ref:`dataverse.api.mdc.min-delay-ms` setting can be used to avoid getting rate-limit errors from DataCite.
+
 For how to get the citations out of your Dataverse installation, see "Retrieving Citations for a Dataset" under :ref:`Dataset Metrics <dataset-metrics-api>` in the :doc:`/api/native-api` section of the API Guide.
   
 Please note that while the Dataverse Software has a metadata field for "Related Dataset" this information is not currently sent as a citation to Crossref.
