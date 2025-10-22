@@ -261,7 +261,7 @@ You should be able to see the new fields from the metadata block you added in th
 
 ``curl http://localhost:8983/solr/collection1/schema/fields``
 
-At this point you can proceed with testing the metadata block in the Dataverse UI. First you'll need to enable it for a collection (see :ref:`general-information` in the User Guide section about collection). Afterwards, create a new dataset, save it, and then edit the metadata for that dataset. Your metadata block should appear.
+At this point you can proceed with testing the metadata block in the Dataverse UI. First you'll need to enable it for a collection (see :ref:`general-information` in the User Guide section about collections). Afterwards, create a new dataset, save it, and then edit the metadata for that dataset. Your metadata block should appear.
 
 Next Steps
 ----------
