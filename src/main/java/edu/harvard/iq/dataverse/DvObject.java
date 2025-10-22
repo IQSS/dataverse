@@ -140,7 +140,9 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     
     @Column(insertable = false, updatable = false) private String dtype;
 
-    public String getDtype() { return dtype; }
+    public String getDtype() {
+        return dtype;
+    }
 
     @OneToMany(mappedBy="dvobject",fetch = FetchType.LAZY,cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     private List<DataverseFeaturedItem> dataverseFeaturedItems;
