@@ -1,0 +1,3 @@
+There are two new API endpoints that list the roles a user can assign to others for a specific dataset or dataverse (`/api/datasets/$ID/assignments/userAssignableRoles` and `/api/dataverses/$ID/assignments/userAssignableRoles`).
+They return only roles that the user is permitted to assign and that are relevant to the target dataset or dataverse.
+Roles with higher permissions than the requesting user are excluded, and when querying for a dataset, roles that apply only at the dataverse level are filtered out.
