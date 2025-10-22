@@ -1842,6 +1842,8 @@ Create the zip file
 
 ``zip languages.zip *.properties``
 
+.. _load-langs:
+
 Load the languages.zip file into your Dataverse Installation
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

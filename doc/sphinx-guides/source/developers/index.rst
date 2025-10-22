@@ -30,6 +30,7 @@ Developer Guide
    containers
    making-releases
    making-library-releases
+   i18n
    metadataexport
    tools
    unf/index
