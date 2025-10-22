@@ -2195,6 +2195,13 @@ public class Datasets extends AbstractApiBean {
 
     @GET
     @AuthRequired
+    @Path("{identifier}/assignments/userAssignableRoles")
+    public Response getAssignableRoles(@Context ContainerRequestContext crc, @PathParam("identifier") String id) {
+        return response(req -> ok(jsonDataverseRoles(roleAssigneeSvc.getAssignableDataverseRolesFor(req, findDatasetOrDie(id)))), getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
     @Deprecated(forRemoval = true, since = "2024-10-17")
     @Path("{id}/privateUrl")
     public Response getPrivateUrlData(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {

@@ -25,6 +25,7 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import edu.harvard.iq.dataverse.util.BitSet;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
@@ -58,6 +59,9 @@ public class RoleAssigneeServiceBean {
 
     @EJB
     DataverseRoleServiceBean dataverseRoleService;
+
+    @EJB
+    PermissionServiceBean permissionService;
 
     protected Map<String, RoleAssignee> predefinedRoleAssignees = new TreeMap<>();
 
@@ -185,6 +189,23 @@ public class RoleAssigneeServiceBean {
         List<DataverseRole> assignedRoles = getAssigneeDataverseRoleFor(request);
 
         return assignedRoles.isEmpty() ? dataverseRoleService.findAll() : assignedRoles;
+    }
+
+    public List<DataverseRole> getAssignableDataverseRolesFor(DataverseRequest request, DvObject dvo) {
+        // Get permissions the requesting user has for the dataset
+        Set<Permission> granted = permissionService.permissionsFor(request, dvo);
+        BitSet grantedPermissionBits = new BitSet();
+        for (Permission p : granted) {
+            grantedPermissionBits.set(p.ordinal());
+        }
+
+        // Get assignable roles (all roles that have AT MOST the granted permission bits set)
+        List<DataverseRole> retList = new ArrayList<>();
+        String qstr = "select r.id from dataverserole r where (r.permissionbits & ?) = r.permissionbits";
+        for (Object o : em.createNativeQuery(qstr).setParameter(1, grantedPermissionBits.getBits()).getResultList()) {
+            retList.add(dataverseRoleService.find(Long.valueOf((Integer) o)));
+        }
+        return retList;
     }
 
     public List<DataverseRole> getAssigneeDataverseRoleFor(DataverseRequest dataverseRequest) {
@@ -449,5 +470,4 @@ public class RoleAssigneeServiceBean {
         msg(s);
         msg("-------------------------------");
     }
-
 }

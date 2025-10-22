@@ -1318,6 +1318,13 @@ public class Dataverses extends AbstractApiBean {
         ), getRequestUser(crc));
     }
 
+    @GET
+    @AuthRequired
+    @Path("{identifier}/assignments/userAssignableRoles")
+    public Response getAssignableRoles(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+        return response(req -> ok(jsonDataverseRoles(roleAssigneeSvc.getAssignableDataverseRolesFor(req, findDataverseOrDie(dvIdtf)))), getRequestUser(crc));
+    }
+
     /**
      * This code for setting a dataverse logo via API was started when initially
      * investigating https://github.com/IQSS/dataverse/issues/3559 but it isn't
