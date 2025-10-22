@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.event.ActionEvent;
@@ -402,40 +404,13 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
 
     public List<DataverseRole> getAvailableRoles() {
-        List<DataverseRole> roles = new LinkedList<>();
-        if (dvObject != null && dvObject.getId() != null) {
-
-            if (dvObject instanceof Dataverse) {
-                roles.addAll(roleService.availableRoles(dvObject.getId()));
-
-            } else if (dvObject instanceof Dataset) {
-                // don't show roles that only have Dataverse level permissions
-                // current the available roles for a dataset are gotten from its parent
-                for (DataverseRole role : roleService.availableRoles(dvObject.getOwner().getId())) {
-                    for (Permission permission : role.permissions()) {
-                        if (permission.appliesTo(Dataset.class) || permission.appliesTo(DataFile.class)) {
-                            roles.add(role);
-                            break;
-                        }
-                    }
-                }
-
-            } else if (dvObject instanceof DataFile) {
-                // only show roles that have File level permissions
-                // current the available roles for a file are gotten from its parent's parent                
-                for (DataverseRole role : roleService.availableRoles(dvObject.getOwner().getOwner().getId())) {
-                    for (Permission permission : role.permissions()) {
-                        if (permission.appliesTo(DataFile.class)) {
-                            roles.add(role);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            Collections.sort(roles, DataverseRole.CMP_BY_NAME);
+        if (dvObject == null || dvObject.getId() == null) {
+            return List.of();
         }
-        return roles;
+
+        return roleService.availableRoles(dvObject).stream()
+                .sorted(DataverseRole.CMP_BY_NAME)
+                .collect(Collectors.toList());
     }
 
     public DataverseRole getAssignedRole() {

@@ -191,23 +191,6 @@ public class RoleAssigneeServiceBean {
         return assignedRoles.isEmpty() ? dataverseRoleService.findAll() : assignedRoles;
     }
 
-    public List<DataverseRole> getAssignableDataverseRolesFor(DataverseRequest request, DvObject dvo) {
-        // Get permissions the requesting user has for the dataset
-        Set<Permission> granted = permissionService.permissionsFor(request, dvo);
-        BitSet grantedPermissionBits = new BitSet();
-        for (Permission p : granted) {
-            grantedPermissionBits.set(p.ordinal());
-        }
-
-        // Get assignable roles (all roles that have AT MOST the granted permission bits set)
-        List<DataverseRole> retList = new ArrayList<>();
-        String qstr = "select r.id from dataverserole r where (r.permissionbits & ?) = r.permissionbits";
-        for (Object o : em.createNativeQuery(qstr).setParameter(1, grantedPermissionBits.getBits()).getResultList()) {
-            retList.add(dataverseRoleService.find(Long.valueOf((Integer) o)));
-        }
-        return retList;
-    }
-
     public List<DataverseRole> getAssigneeDataverseRoleFor(DataverseRequest dataverseRequest) {
         
         if (dataverseRequest == null){

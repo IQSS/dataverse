@@ -120,6 +120,9 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
+
+    @EJB
+    DataverseRoleServiceBean dataverseRoleService;
     
     @POST
     @AuthRequired
@@ -1322,7 +1325,7 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/assignments/userAssignableRoles")
     public Response getAssignableRoles(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
-        return response(req -> ok(jsonDataverseRoles(roleAssigneeSvc.getAssignableDataverseRolesFor(req, findDataverseOrDie(dvIdtf)))), getRequestUser(crc));
+        return response(req -> ok(jsonDataverseRoles(new ArrayList<>(dataverseRoleService.availableRoles(findDataverseOrDie(dvIdtf), req.getUser())))), getRequestUser(crc));
     }
 
     /**

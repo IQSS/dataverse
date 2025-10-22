@@ -9,12 +9,8 @@ import edu.harvard.iq.dataverse.search.IndexAsync;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jakarta.ejb.EJB;
@@ -46,6 +42,8 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     IndexServiceBean indexService;
     @EJB
     SolrIndexServiceBean solrIndexService;
+    @EJB
+    PermissionServiceBean permissionService;
     @EJB
     IndexAsync indexAsync;
 
@@ -294,12 +292,10 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     }
 
     /**
-     * Get all the available roles in a given dataverse, mapped by the dataverse
-     * that defines them. Map entries are ordered by reversed hierarchy (root is
-     * always last).
+     * Get all the available roles in a given dataverse.
      *
      * @param dvId The id of dataverse whose available roles we query
-     * @return map of available roles.
+     * @return Set of available roles
      */
     public Set<DataverseRole> availableRoles(Long dvId) {
         Dataverse dv = em.find(Dataverse.class, dvId);
@@ -310,6 +306,61 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             dv = dv.getOwner();
             roles.addAll(dv.getRoles());
         }
+
+        return roles;
+    }
+
+    /**
+     * Get all the available roles for a given Dataset, DataFile or Dataverse.
+     * This excludes roles that are not relevant to the given DvObject type (e.g. for Datasets, this excludes roles that
+     * only have Dataverse-level permissions).
+     * Currently, the available roles for Datasets and DataFiles are gotten from the collection they are in.
+     *
+     * @param dvo The Dataset, DataFile or Dataverse whose available roles we query
+     * @return Set of available roles
+     */
+    public Set<DataverseRole> availableRoles(DvObject dvo) {
+        Set<DataverseRole> roles = new HashSet<>();
+
+        // Get roles available for given DvObject
+        if (dvo instanceof Dataverse) {
+            roles = availableRoles(dvo.getId());
+
+        } else if (dvo instanceof Dataset) {
+            roles = availableRoles(dvo.getOwner().getId()).stream()
+                    .filter(role -> role.permissions().stream()
+                            .anyMatch(p -> p.appliesTo(Dataset.class)
+                                    || p.appliesTo(DataFile.class)))
+                    .collect(Collectors.toSet());
+
+        } else if (dvo instanceof DataFile) {
+            roles = availableRoles(dvo.getOwner().getOwner().getId()).stream()
+                    .filter(role -> role.permissions().stream()
+                            .anyMatch(p -> p.appliesTo(DataFile.class)))
+                    .collect(Collectors.toSet());
+        }
+
+        return roles;
+    }
+
+    /**
+     * Get all the available roles for a given Dataset, DataFile or Dataverse that can be assigned by a given User.
+     * This excludes roles that are not relevant to the given DvObject type (e.g. for Datasets, this excludes roles that
+     * only have Dataverse-level permissions).
+     * Currently, the available roles for Datasets and DataFiles are gotten from the collection they are in.
+     *
+     * @param dvo The Dataset, DataFile or Dataverse whose available roles we query
+     * @param user The user whose available roles we query
+     * @return Set of available roles
+     */
+    public Set<DataverseRole> availableRoles(DvObject dvo, User user) {
+        Set<DataverseRole> roles = availableRoles(dvo);
+
+        // Filter roles assignable by given user
+        Set<Permission> granted = permissionService.permissionsFor(user, dvo);
+        roles = roles.stream()
+                 .filter(role -> granted.containsAll(role.permissions()))
+                 .collect(Collectors.toSet());
 
         return roles;
     }

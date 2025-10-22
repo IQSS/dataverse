@@ -2197,7 +2197,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/assignments/userAssignableRoles")
     public Response getAssignableRoles(@Context ContainerRequestContext crc, @PathParam("identifier") String id) {
-        return response(req -> ok(jsonDataverseRoles(roleAssigneeSvc.getAssignableDataverseRolesFor(req, findDatasetOrDie(id)))), getRequestUser(crc));
+        return response(req -> ok(jsonDataverseRoles(new ArrayList<>(dataverseRoleService.availableRoles(findDatasetOrDie(id), req.getUser())))), getRequestUser(crc));
     }
 
     @GET
