@@ -1709,6 +1709,7 @@ public class FilesIT {
         // Test FileAccess restricted
 
         UtilIT.allowAccessRequests(datasetPersistentId, true, superUserApiToken).then().assertThat().statusCode(OK.getStatusCode());
+
         UtilIT.restrictFile(dataFileId, true, superUserApiToken).then().assertThat().statusCode(OK.getStatusCode());
         getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, superUserApiToken);
         getFileDataResponse.then().assertThat()
@@ -1737,6 +1738,48 @@ public class FilesIT {
                 .body("data[0].datasetVersion", equalTo("DRAFT"))
                 .body("data[0].versionState", equalTo("DRAFT"))
                 .body("data[0].fileDifferenceSummary.FileAccess", equalTo("Unrestricted"))
+                .body("data[0].isDraft", equalTo(true))
+                .body("data[0].isDeaccessioned", equalTo(false))
+                .body("data[0].publishedDate", equalTo(""));
+
+        // Test FileMetadata update
+
+        JsonObjectBuilder updateFileMetadata = Json.createObjectBuilder()
+                .add("label", "new_name.png");
+        UtilIT.updateFileMetadata(dataFileId, updateFileMetadata.build().toString(), superUserApiToken).then().statusCode(OK.getStatusCode());
+
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, superUserApiToken);
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("totalCount", is(5))
+                .body("data.size()", is(5))
+                .body("data[0].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].versionState", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.FileAccess", equalTo("Unrestricted"))
+                .body("data[0].fileDifferenceSummary.FileMetadata[0].name", equalTo("File Name"))
+                .body("data[0].fileDifferenceSummary.FileMetadata[0].action", equalTo("Changed"))
+                .body("data[0].isDraft", equalTo(true))
+                .body("data[0].isDeaccessioned", equalTo(false))
+                .body("data[0].publishedDate", equalTo(""));
+
+        // Test FileTags update
+
+        Response setFileCategoriesResponse = UtilIT.setFileCategories(dataFileId, superUserApiToken, List.of("Category"));
+        setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, superUserApiToken);
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("totalCount", is(5))
+                .body("data.size()", is(5))
+                .body("data[0].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].versionState", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.FileAccess", equalTo("Unrestricted"))
+                .body("data[0].fileDifferenceSummary.FileMetadata[0].name", equalTo("File Name"))
+                .body("data[0].fileDifferenceSummary.FileMetadata[0].action", equalTo("Changed"))
+                .body("data[0].fileDifferenceSummary.FileTags.Added", equalTo(1))
                 .body("data[0].isDraft", equalTo(true))
                 .body("data[0].isDeaccessioned", equalTo(false))
                 .body("data[0].publishedDate", equalTo(""));
