@@ -2454,7 +2454,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"  "https://demo.dataverse.org/api/datasets/2347/assignments"
 
-.. _list-assignable-roles-on-a-dataverse-api:
+.. _list-assignable-roles-on-a-dataset-api:
 
 List Assignable Roles in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
