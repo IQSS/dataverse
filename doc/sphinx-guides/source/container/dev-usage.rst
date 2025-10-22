@@ -224,6 +224,10 @@ Hotswapping methods requires using JDWP (Debug Mode), but does not allow switchi
 #. Install Payara Tools plugin in your IDE:
 
    .. tabs::
+     .. group-tab:: VS Code
+
+       As described in `Payara VS Code extension docs <https://docs.payara.fish/enterprise/docs/Technical%20Documentation/Ecosystem/IDE%20Integration/VSCode%20Extension/Overview.html>`_, open the Extensions panel on the left-most menu of the editor (Ctrl + Shift + X), search for "payara tools", and install the extension.
+
      .. group-tab:: Netbeans
 
        This step is not necessary for Netbeans. The feature is builtin.
@@ -238,6 +242,42 @@ Hotswapping methods requires using JDWP (Debug Mode), but does not allow switchi
 #. Configure a connection to Payara:
 
    .. tabs::
+     .. group-tab:: VS Code
+
+       First, gather some information about your running containers. Run the following:
+
+       ``docker inspect -f '{{ .Mounts }}' dataverse-1``
+
+       You should see something like this:
+
+       ``[{bind  /Users/pdurbin/github/iqss/dataverse/docker-dev-volumes/app/secrets /secrets   true rprivate} {bind  /Users/pdurbin/github/iqss/dataverse/target/dataverse /opt/payara/deployments/dataverse  ro false rprivate} {bind  /Users/pdurbin/github/iqss/dataverse/docker-dev-volumes/app/data /dv   true rprivate}]``
+       
+       As described in `Payara docs <https://docs.payara.fish/enterprise/docs/Technical%20Documentation/Ecosystem/IDE%20Integration/VSCode%20Extension/Payara%20Server.html>`_, open the command pallet using Ctrl + Shift + P, type "Payara" and select the "Add Payara Server" option.
+       
+       Select "remote domain", then "Docker".
+
+       For "host path" enter something similar to the following, adjusting to where you cloned the main "dataverse" repo:
+
+       ``/Users/pdurbin/github/iqss/dataverse/docker-dev-volumes/app/data``
+
+       For the "container path", enter the following:
+
+       ``/opt/payara``
+
+       For the domain, use "domain1"
+
+       Select "yes" for the default ports.
+
+       For the hostname, use "localhost".
+
+       Pick a name for the server. Any will do.
+
+       Switch to the "Explorer" view of VS Code, expand "Payara Servers", right click the server you just added and click "deployment settings". Choose "hot reload". Click "connect". If you get this error, something is misconfigured:
+
+       ``Error running command payara.server.remote.connect: Channel has been closed. This is likely caused by the extension that contributes payara.server.remote.connect.``
+
+       Under "Java Projects", right click "dataverse" and choose "debug on payara server".
+
      .. group-tab:: Netbeans
 
         Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Payara Server" and set the installation location to ``/usr/local/payara6`` (or wherever you unzipped Payara). Choose "Remote Domain". Use the settings in the screenshot below. Most of the defaults are fine.
