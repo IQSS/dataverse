@@ -25,7 +25,6 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import edu.harvard.iq.dataverse.util.BitSet;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
@@ -59,9 +58,6 @@ public class RoleAssigneeServiceBean {
 
     @EJB
     DataverseRoleServiceBean dataverseRoleService;
-
-    @EJB
-    PermissionServiceBean permissionService;
 
     protected Map<String, RoleAssignee> predefinedRoleAssignees = new TreeMap<>();
 
@@ -453,4 +449,5 @@ public class RoleAssigneeServiceBean {
         msg(s);
         msg("-------------------------------");
     }
+
 }
