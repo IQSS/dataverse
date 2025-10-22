@@ -7019,6 +7019,113 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode());
     }
 
+    @Test
+    public void testListAssignableRoles() {
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        // Create a collection (under root)
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String dvAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Create dataset in that collection
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dvAlias, apiToken);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+
+        // List user-assignable roles for new dataset
+        Response listUserAssignableRolesResponse = UtilIT.getUserAssignableRolesForDataset(datasetId, apiToken);
+        listUserAssignableRolesResponse.prettyPrint();
+        // All roles should be user-assignable, since the requesting user is admin of the collection
+        listUserAssignableRolesResponse.then().assertThat()
+                                              .statusCode(OK.getStatusCode())
+                                              .body("data.size()", equalTo(5))
+                                              .body("data[0].alias", equalTo(DataverseRole.ADMIN))
+                                              .body("data[1].alias", equalTo(DataverseRole.FILE_DOWNLOADER))
+                                              .body("data[2].alias", equalTo(DataverseRole.EDITOR))
+                                              .body("data[3].alias", equalTo(DataverseRole.CURATOR))
+                                              .body("data[4].alias", equalTo(DataverseRole.MEMBER));
+
+        // Create second user
+        Response createUser2 = UtilIT.createRandomUser();
+        String username2 = UtilIT.getUsernameFromResponse(createUser2);
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+
+        // List user-assignable roles for second user
+        Response listUser2AssignableRolesResponse = UtilIT.getUserAssignableRolesForDataset(datasetId, apiToken2);
+        listUser2AssignableRolesResponse.prettyPrint();
+        // No roles should be user-assignable, since the requesting user has no permissions for the dataset
+        listUser2AssignableRolesResponse.then().assertThat()
+                                               .statusCode(OK.getStatusCode())
+                                               .body("data.size()", equalTo(0));
+
+        // Assign role to second user for the dataset
+        Response grantRoleResponse = UtilIT.grantRoleOnDataset(datasetPersistentId, "member", "@" + username2, apiToken);
+        grantRoleResponse.prettyPrint();
+        assertEquals(200, grantRoleResponse.getStatusCode());
+
+        // List user-assignable roles for second user again
+        Response listUser2AssignableRolesResponse2 = UtilIT.getUserAssignableRolesForDataset(datasetId, apiToken2);
+        listUser2AssignableRolesResponse2.prettyPrint();
+        // Now two roles should be user-assignable, since the requesting user has received some permissions for the dataset
+        listUser2AssignableRolesResponse2.then().assertThat()
+                                                .statusCode(OK.getStatusCode())
+                                                .body("data.size()", equalTo(2))
+                                                .body("data[0].alias", equalTo(DataverseRole.FILE_DOWNLOADER))
+                                                .body("data[1].alias", equalTo(DataverseRole.MEMBER));
+
+        // Create a second collection (under root)
+        Response createDataverse2Response = UtilIT.createRandomDataverse(apiToken);
+        String dvAlias2 = UtilIT.getAliasFromResponse(createDataverse2Response);
+
+        // Create dataset in that collection
+        Response createDataset2Response = UtilIT.createRandomDatasetViaNativeApi(dvAlias2, apiToken);
+        Integer datasetId2 = UtilIT.getDatasetIdFromResponse(createDataset2Response);
+
+        // List user-assignable roles for second user
+        Response listUser2AssignableRolesResponse3 = UtilIT.getUserAssignableRolesForDataset(datasetId2, apiToken2);
+        listUser2AssignableRolesResponse3.prettyPrint();
+        // No roles should be user-assignable, since the requesting user has no permissions for the dataset
+        listUser2AssignableRolesResponse3.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(0));
+
+        // Assign role to second user for the new collection
+        Response grantRoleResponse2 = UtilIT.grantRoleOnDataverse(dvAlias2, "member", "@" + username2, apiToken);
+        grantRoleResponse2.prettyPrint();
+        assertEquals(200, grantRoleResponse2.getStatusCode());
+
+        // List user-assignable roles for second user again
+        Response listUser2AssignableRolesResponse4 = UtilIT.getUserAssignableRolesForDataset(datasetId2, apiToken2);
+        listUser2AssignableRolesResponse4.prettyPrint();
+        // Now two roles should be user-assignable, since the requesting user has received some permissions for the collection containing the dataset
+        listUser2AssignableRolesResponse4.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(2))
+                .body("data[0].alias", equalTo(DataverseRole.FILE_DOWNLOADER))
+                .body("data[1].alias", equalTo(DataverseRole.MEMBER));
+
+        // Clean up
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+
+        Response destroyDataset2Response = UtilIT.destroyDataset(datasetId2, apiToken);
+        assertEquals(200, destroyDataset2Response.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dvAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteDataverse2Response = UtilIT.deleteDataverse(dvAlias2, apiToken);
+        assertEquals(200, deleteDataverse2Response.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());
+
+        Response deleteUser2Response = UtilIT.deleteUser(username2);
+        assertEquals(200, deleteUserResponse.getStatusCode());
+    }
+
     private String getSuperuserToken() {
         Response createResponse = UtilIT.createRandomUser();
         String adminApiToken = UtilIT.getApiTokenFromResponse(createResponse);
