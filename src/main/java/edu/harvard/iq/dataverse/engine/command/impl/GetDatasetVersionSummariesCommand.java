@@ -30,8 +30,9 @@ public class GetDatasetVersionSummariesCommand extends AbstractPaginatedCommand<
      * <p>
      * This method first checks if the user has permission to view unpublished
      * versions of the dataset. It then fetches the appropriate {@link DatasetVersion}s,
-     * respecting pagination parameters (limit and offset), and converts each
-     * version into a {@link DatasetVersionSummary}.
+     * respecting pagination parameters (limit and offset). Each version is then
+     * enriched with its contributor names before being converted into a
+     * {@link DatasetVersionSummary}.
      *
      * @param ctxt The command context.
      * @return A list of {@link DatasetVersionSummary} objects.
@@ -51,6 +52,10 @@ public class GetDatasetVersionSummariesCommand extends AbstractPaginatedCommand<
                 canViewUnpublished,
                 true
         );
+
+        for (DatasetVersion version : versions) {
+            version.setContributorNames(ctxt.datasetVersion().getContributorsNames(version));
+        }
 
         return versions.stream()
                 .map(DatasetVersionSummary::from)

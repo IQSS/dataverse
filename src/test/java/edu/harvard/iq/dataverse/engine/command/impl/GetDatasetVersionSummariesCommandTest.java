@@ -144,12 +144,16 @@ class GetDatasetVersionSummariesCommandTest {
     }
 
     @Test
-    @DisplayName("execute should correctly convert DatasetVersion list to DatasetVersionSummary list")
-    void execute_should_convert_versions_to_summaries() throws CommandException {
+    @DisplayName("execute should enrich contributors and convert versions to summaries")
+    void execute_should_enrich_contributors_and_convert_to_summaries() throws CommandException {
         // Arrange
         setupMocksForSuccessfulExecution();
         when(versionServiceMock.findVersions(anyLong(), any(), any(), anyBoolean(), anyBoolean()))
                 .thenReturn(List.of(versionMock));
+
+        // Arrange: Mock contributor names retrieval
+        String expectedContributors = "Contributor";
+        when(versionServiceMock.getContributorsNames(versionMock)).thenReturn(expectedContributors);
 
         // Arrange: Prepare a dummy summary object
         DatasetVersionSummary dummySummary = new DatasetVersionSummary(1L, "V1", null, null, null, null);
@@ -165,6 +169,10 @@ class GetDatasetVersionSummariesCommandTest {
             List<DatasetVersionSummary> result = command.execute(contextMock);
 
             // Assert
+            verify(versionServiceMock).getContributorsNames(versionMock);
+            verify(versionMock).setContributorNames(expectedContributors);
+
+            // Verify final conversion
             assertThat(result)
                     .isNotNull()
                     .hasSize(1)
