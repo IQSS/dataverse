@@ -1705,6 +1705,41 @@ public class FilesIT {
                 .body("data[2].datafileId", equalTo(null))
                 .body("data[2].isDeaccessioned", equalTo(true))
                 .body("data[2].publishedDate", not(equalTo("")));
+
+        // Test FileAccess restricted
+
+        UtilIT.allowAccessRequests(datasetPersistentId, true, superUserApiToken).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.restrictFile(dataFileId, true, superUserApiToken).then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, superUserApiToken);
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("totalCount", is(4))
+                .body("data.size()", is(4))
+                .body("data[0].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].versionState", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.FileAccess", equalTo("Restricted"))
+                .body("data[0].isDraft", equalTo(true))
+                .body("data[0].isDeaccessioned", equalTo(false))
+                .body("data[0].publishedDate", equalTo(""));
+
+        // Test FileAccess unrestricted
+
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", superUserApiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.restrictFile(dataFileId, false, superUserApiToken).then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, superUserApiToken);
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("totalCount", is(5))
+                .body("data.size()", is(5))
+                .body("data[0].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].versionState", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.FileAccess", equalTo("Unrestricted"))
+                .body("data[0].isDraft", equalTo(true))
+                .body("data[0].isDeaccessioned", equalTo(false))
+                .body("data[0].publishedDate", equalTo(""));
     }
 
     @Test

@@ -89,7 +89,7 @@ public class GetFileVersionDifferencesCommand extends AbstractPaginatedCommand<L
      */
     private FileVersionDifference createDifferenceForExistingFile(CommandContext ctxt, FileMetadata current, FileMetadata previous) {
         current.setContributorNames(ctxt.datasetVersion().getContributorsNames(current.getDatasetVersion()));
-        return new FileVersionDifference(current, previous, false);
+        return new FileVersionDifference(current, previous, true);
     }
 
     /**
