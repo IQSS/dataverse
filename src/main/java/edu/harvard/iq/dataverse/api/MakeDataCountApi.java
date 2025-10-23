@@ -21,9 +21,15 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import jakarta.annotation.Resource;
 import jakarta.ejb.EJB;
+import jakarta.enterprise.concurrent.ManagedExecutorService;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
@@ -52,6 +58,13 @@ public class MakeDataCountApi extends AbstractApiBean {
     @EJB
     DatasetExternalCitationsServiceBean datasetExternalCitationsService;
 
+    // Inject the managed executor service provided by the container
+    @Resource(name = "concurrent/CitationUpdateExecutor")
+    private ManagedExecutorService executorService;
+    
+    // Track the last execution time to implement rate limiting during Citation updates
+    private static final AtomicLong lastExecutionTime = new AtomicLong(0);
+    
     /**
      * TODO: For each dataset, send the following:
      *
@@ -131,34 +144,109 @@ public class MakeDataCountApi extends AbstractApiBean {
 
     @POST
     @Path("{id}/updateCitationsForDataset")
-    public Response updateCitationsForDataset(@PathParam("id") String id) throws IOException {
+    public Response updateCitationsForDataset(@PathParam("id") String id) {
         try {
-            Dataset dataset = findDatasetOrDie(id);
-            GlobalId pid = dataset.getGlobalId();
-            PidProvider pidProvider = PidUtil.getPidProvider(pid.getProviderId());
+            // First validate that the dataset exists and has a valid DOI
+            final Dataset dataset = findDatasetOrDie(id);
+            final GlobalId pid = dataset.getGlobalId();
+            final PidProvider pidProvider = PidUtil.getPidProvider(pid.getProviderId());
+
             // Only supported for DOIs and for DataCite DOI providers
-            if(!DataCiteDOIProvider.TYPE.equals(pidProvider.getProviderType())) {
+            if (!DataCiteDOIProvider.TYPE.equals(pidProvider.getProviderType())) {
                 return error(Status.BAD_REQUEST, "Only DataCite DOI providers are supported");
             }
-            String persistentId = pid.toString();
 
-            // DataCite wants "doi=", not "doi:".
-            String authorityPlusIdentifier = persistentId.replaceFirst("doi:", "");
-            // Request max page size and then loop to handle multiple pages
-            URL url = null;
+            // Submit the task to the managed executor service
+            Future<?> future;
             try {
-                url = new URI(JvmSettings.DATACITE_REST_API_URL.lookup(pidProvider.getId()) +
-                              "/events?doi=" +
-                              authorityPlusIdentifier +
-                              "&source=crossref&page[size]=1000&page[cursor]=1").toURL();
-            } catch (URISyntaxException e) {
-                //Nominally this means a config error/ bad DATACITE_REST_API_URL for this provider
-                logger.warning("Unable to create URL for " + persistentId + ", pidProvider " + pidProvider.getId());
-                return error(Status.INTERNAL_SERVER_ERROR, "Unable to create DataCite URL to retrieve citations.");
+                future = executorService.submit(() -> {
+                    try {
+                        // Apply rate limiting if enabled
+                        applyRateLimit();
+
+                        // Process the citation update
+                        boolean success = processCitationUpdate(dataset, pid, pidProvider);
+
+                        // Update the last execution time after processing
+                        lastExecutionTime.set(System.currentTimeMillis());
+
+                        if (success) {
+                            logger.fine("Successfully processed citation update for dataset " + id);
+                        } else {
+                            logger.warning("Failed to process citation update for dataset " + id);
+                        }
+                    } catch (Exception e) {
+                        logger.log(Level.SEVERE, "Error processing citation update for dataset " + id, e);
+                    }
+                });
+
+                JsonObjectBuilder output = Json.createObjectBuilder();
+                output.add("status", "queued");
+                output.add("message", "Citation update for dataset " + id + " has been queued for processing");
+                return ok(output);
+            } catch (RejectedExecutionException ree) {
+                logger.warning("Citation update for dataset " + id + " was rejected: Queue is full");
+                return error(Status.SERVICE_UNAVAILABLE,
+                        "Citation update service is currently at capacity. Please try again later.");
             }
-            logger.fine("Retrieving Citations from " + url.toString());
-            boolean nextPage = true;
-            JsonArrayBuilder dataBuilder = Json.createArrayBuilder();
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+    
+    /**
+     * Apply rate limiting by waiting if necessary
+     */
+    private void applyRateLimit() {
+        // Check if rate limiting is enabled
+        long minDelay = JvmSettings.API_MDC_UPDATE_MIN_DELAY_MS.lookupOptional(Long.class).orElse(0l);
+        if(minDelay ==0) {
+            return;
+        }
+        // Calculate how long to wait
+        long lastExecution = lastExecutionTime.get();
+        long currentTime = System.currentTimeMillis();
+        long elapsedTime = currentTime - lastExecution;
+        
+        // If not enough time has passed since the last execution, wait
+        if (lastExecution > 0 && elapsedTime < minDelay) {
+            long waitTime = minDelay - elapsedTime;
+            logger.fine("Rate limiting: waiting " + waitTime + " ms before processing next citation update");
+            try {
+                Thread.sleep(waitTime);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.warning("Rate limiting sleep interrupted: " + e.getMessage());
+            }
+        }
+    }
+    
+    /**
+     * Process the citation update for a dataset
+     * This method contains the logic that was previously in updateCitationsForDataset
+     * @return true if processing was successful, false otherwise
+     */
+    private boolean processCitationUpdate(Dataset dataset, GlobalId pid, PidProvider pidProvider) {
+        String persistentId = pid.asRawIdentifier();
+        
+        // Request max page size and then loop to handle multiple pages
+        URL url = null;
+        try {
+            url = new URI(JvmSettings.DATACITE_REST_API_URL.lookup(pidProvider.getId()) +
+                          "/events?doi=" +
+                          persistentId +
+                          "&source=crossref&page[size]=1000&page[cursor]=1").toURL();
+        } catch (URISyntaxException | MalformedURLException e) {
+            //Nominally this means a config error/ bad DATACITE_REST_API_URL for this provider
+            logger.warning("Unable to create URL for " + persistentId + ", pidProvider " + pidProvider.getId());
+            return false;
+        }
+        
+        logger.fine("Retrieving Citations from " + url.toString());
+        boolean nextPage = true;
+        JsonArrayBuilder dataBuilder = Json.createArrayBuilder();
+        
+        try {
             do {
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
@@ -166,34 +254,56 @@ public class MakeDataCountApi extends AbstractApiBean {
                 if (status != 200) {
                     logger.warning("Failed to get citations from " + url.toString());
                     connection.disconnect();
-                    return error(Status.fromStatusCode(status), "Failed to get citations from " + url.toString());
+                    return false;
                 }
+                
                 JsonObject report;
                 try (InputStream inStream = connection.getInputStream()) {
                     report = JsonUtil.getJsonObject(inStream);
                 } finally {
                     connection.disconnect();
                 }
+                
                 JsonObject links = report.getJsonObject("links");
                 JsonArray data = report.getJsonArray("data");
                 Iterator<JsonValue> iter = data.iterator();
                 while (iter.hasNext()) {
-                    dataBuilder.add(iter.next());
+                    JsonValue citationValue = iter.next();
+                    JsonObject citation = (JsonObject) citationValue;
+                    
+                    // Filter out relations we don't use (e.g. hasPart) to lower memory req. with many files
+                    if (citation.containsKey("attributes")) {
+                        JsonObject attributes = citation.getJsonObject("attributes");
+                        if (attributes.containsKey("relation-type-id")) {
+                            String relationshipType = attributes.getString("relation-type-id");
+                            
+                            // Only add citations with relationship types we care about
+                            if (DatasetExternalCitationsServiceBean.inboundRelationships.contains(relationshipType) ||
+                                    DatasetExternalCitationsServiceBean.outboundRelationships.contains(relationshipType)) {
+                                dataBuilder.add(citationValue);
+                            }
+                        }
+                    }
                 }
+                
                 if (links.containsKey("next")) {
                     try {
                         url = new URI(links.getString("next")).toURL();
+                        applyRateLimit();
                     } catch (URISyntaxException e) {
                         logger.warning("Unable to create URL from DataCite response: " + links.getString("next"));
-                        return error(Status.INTERNAL_SERVER_ERROR, "Unable to retrieve all results from DataCite");
+                        return false;
                     }
                 } else {
                     nextPage = false;
                 }
+                
                 logger.fine("body of citation response: " + report.toString());
             } while (nextPage == true);
+            
             JsonArray allData = dataBuilder.build();
             List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(allData);
+            
             /*
              * ToDo: If this is the only source of citations, we should remove all the existing ones for the dataset and repopulate them.
              * As is, this call doesn't remove old citations if there are now none (legacy issue if we decide to stop counting certain types of citation
@@ -206,14 +316,16 @@ public class MakeDataCountApi extends AbstractApiBean {
                     datasetExternalCitationsService.save(dm);
                 }
             }
-
-            JsonObjectBuilder output = Json.createObjectBuilder();
-            output.add("citationCount", datasetExternalCitations.size());
-            return ok(output);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
+            
+            logger.fine("Citation update completed for dataset " + dataset.getId() + 
+                       " with " + datasetExternalCitations.size() + " citations");
+            return true;
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Error processing citation update for dataset " + dataset.getId(), e);
+            return false;
         }
     }
+    
     @GET
     @Path("{yearMonth}/processingState")
     public Response getProcessingState(@PathParam("yearMonth") String yearMonth) {
