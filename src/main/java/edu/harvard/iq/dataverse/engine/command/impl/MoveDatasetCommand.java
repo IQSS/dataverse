@@ -32,8 +32,8 @@ import java.util.logging.Logger;
  * @author skraffmi
  */
 @RequiredPermissionsMap({
-    @RequiredPermissions(dataverseName = "moved", value = {Permission.PublishDataset})
-    ,	@RequiredPermissions(dataverseName = "destination", value = {Permission.AddDataset, Permission.PublishDataset})
+        @RequiredPermissions(dataverseName = "moved", value = {Permission.PublishDataset})
+        ,	@RequiredPermissions(dataverseName = "destination", value = {Permission.AddDataset, Permission.PublishDataset})
 })
 public class MoveDatasetCommand extends AbstractVoidCommand {
 
@@ -42,10 +42,11 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
     final Dataset moved;
     final Dataverse destination;
     final Boolean force;
-    private boolean allowSelfNotification = false;
+    final Boolean allowSelfNotification;
+    final Dataverse originalOwner;
 
     public MoveDatasetCommand(DataverseRequest aRequest, Dataset moved, Dataverse destination, Boolean force) {
-        this( aRequest, moved, destination, force, Boolean.FALSE);
+        this( aRequest, moved, destination, force, null);
     }
     public MoveDatasetCommand(DataverseRequest aRequest, Dataset moved, Dataverse destination, Boolean force, Boolean allowSelfNotification) {
         super(
@@ -57,6 +58,7 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         this.destination = destination;
         this.force= force;
         this.allowSelfNotification = allowSelfNotification;
+        this.originalOwner = moved.getOwner();
     }
 
     @Override
@@ -75,13 +77,13 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         if (moved.getOwner().equals(destination)) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dashboard.move.dataset.command.error.targetDataverseSameAsOriginalDataverse"), this);
         }
-        
+
         // if dataset is published make sure that its target is published
-        
+
         if (moved.isReleased() && !destination.isReleased()){
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dashboard.move.dataset.command.error.targetDataverseUnpublishedDatasetPublished", Arrays.asList(destination.getDisplayName())), this);
         }
-                
+
         //if the datasets guestbook is not contained in the new dataverse then remove it
         if (moved.getGuestbook() != null) {
             Guestbook gb = moved.getGuestbook();
@@ -100,15 +102,15 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
                 }
             }
         }
-        
+
         // generate list of all possible parent dataverses to check against
         List<Dataverse> ownersToCheck = new ArrayList<>();
         ownersToCheck.add(destination);
         if (destination.getOwners() != null) {
             ownersToCheck.addAll(destination.getOwners());
         }
-        
-        // if the dataset is linked to the new dataverse or any of 
+
+        // if the dataset is linked to the new dataverse or any of
         // its parent dataverses then remove the link
         List<DatasetLinkingDataverse> linkingDatasets = new ArrayList<>();
         if (moved.getDatasetLinkingDataverses() != null) {
@@ -127,7 +129,7 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
                 }
             }
         }
-        
+
         if (removeGuestbook || removeLinkDs) {
             StringBuilder errorString = new StringBuilder();
             if (removeGuestbook) {
@@ -138,25 +140,30 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
             }
             throw new UnforcedCommandException(errorString.toString(), this);
         }
-        
+
         // 6575 if dataset is submitted for review and the default contributor
         // role includes dataset publish then remove the lock
-        
+
         if (moved.isLockedFor(DatasetLock.Reason.InReview)
                 && destination.getDefaultContributorRole().permissions().contains(Permission.PublishDataset)) {
             ctxt.datasets().removeDatasetLocks(moved, DatasetLock.Reason.InReview);
         }
 
         // OK, move
-        Dataverse originalOwner = moved.getOwner();
         moved.setOwner(destination);
         ctxt.em().merge(moved);
-        sendNotification(moved, originalOwner, ctxt);
 
         boolean doNormalSolrDocCleanUp = true;
         ctxt.index().asyncIndexDataset(moved, doNormalSolrDocCleanUp);
 
     }
+
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        sendNotification(moved, originalOwner, ctxt);
+        return true;
+    }
+
     /**
      * Sends notifications to those able to publish the dataset upon the successful move of a dataset.
      * <p>
@@ -181,14 +188,17 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
 
         // 3. Get all users with publish permission on the dataset's original owner (dataverse) and notify them.
         Map<String, AuthenticatedUser> recipients = ctxt.permissions().getDistinctUsersWithPermissionOn(Permission.PublishDataset, originalOwner);
-        // make sure the requestor is in the recipient list in case they don't match the permission
+        // make sure the requestor is in the recipient list in case they don't match the permission but only if allowSelfNotification is true
         if (requestor != null) {
-            recipients.put(requestor.getIdentifier(), requestor);
+            if (Boolean.TRUE.equals(allowSelfNotification)) {
+                recipients.put(requestor.getIdentifier(), requestor);
+            } else {
+                recipients.remove(requestor.getIdentifier());
+            }
         }
 
         recipients.values()
                 .stream()
-                .filter(recipient -> allowSelfNotification || !recipient.equals(requestor))
                 .forEach(recipient -> ctxt.notifications().sendNotification(
                         recipient,
                         Timestamp.from(Instant.now()),
@@ -200,3 +210,4 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
                 ));
     }
 }
+
