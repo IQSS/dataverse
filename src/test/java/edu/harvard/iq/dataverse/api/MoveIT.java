@@ -23,7 +23,6 @@ import org.hamcrest.CoreMatchers;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -196,6 +195,10 @@ public class MoveIT {
                 .statusCode(CREATED.getStatusCode());
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
 
+        // clear existing notifications (so the DATASETMOVED notification will be the only one)
+        clearNotifications(user1ApiToken);
+        clearNotifications(user2ApiToken);
+
         // User1(superuser) moves the dataset from dataverse2 to dataverse1
         Response moveDataset = UtilIT.moveDataset(datasetId.toString(), dataverseAlias1, user1ApiToken);
         moveDataset.prettyPrint();
@@ -206,30 +209,30 @@ public class MoveIT {
         // verify that a notification was sent to user1
         Response getNotifications = UtilIT.getNotifications(user1ApiToken);
         getNotifications.prettyPrint();
-        verifyNotification(getNotifications, dataverseAlias1);
-
+        getNotifications.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.notifications[0].type", equalTo("DATASETMOVED"))
+                .body("data.notifications[0].displayAsRead", equalTo(false))
+                .body("data.notifications[0].subjectText", containsString("has been moved"))
+                .body("data.notifications[0].messageText", startsWith(BundleUtil.getStringFromBundle("notification.email.greeting")));
         // verify that a notification was sent to user2
         getNotifications = UtilIT.getNotifications(user2ApiToken);
         getNotifications.prettyPrint();
-        verifyNotification(getNotifications, dataverseAlias1);
+        getNotifications.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.notifications[0].type", equalTo("DATASETMOVED"))
+                .body("data.notifications[0].displayAsRead", equalTo(false))
+                .body("data.notifications[0].subjectText", containsString("has been moved"))
+                .body("data.notifications[0].messageText", startsWith(BundleUtil.getStringFromBundle("notification.email.greeting")));
     }
 
-    private void verifyNotification(Response notificationListResponse, String dataverseAlias) {
-        notificationListResponse.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        boolean found = false;
-        List<Map<String, String>> notifications = notificationListResponse.body().jsonPath().getList("data.notifications");
-
-        for (Map<String, String> notification : notifications) {
-            if ("DATASETMOVED".equalsIgnoreCase(notification.get("type"))) {
-                if (notification.get("messageText") != null && notification.get("messageText").contains(dataverseAlias)) {
-                    found = true;
-                    assertTrue(notification.get("subjectText") != null && notification.get("subjectText").contains("has been moved"));
-                    assertTrue(notification.get("messageText") != null && notification.get("messageText").startsWith(BundleUtil.getStringFromBundle("notification.email.greeting")));
-                }
-            }
+    private void clearNotifications(String apiToken) {
+        Response getNotifications = UtilIT.getNotifications(apiToken);
+        List<Object> notifications = JsonPath.from(getNotifications.body().asString()).getList("data.notifications");
+        for (Object obj : notifications) {
+            Object id = ((Map) obj).get("id");
+            UtilIT.deleteNotification(Long.parseLong(id.toString()), apiToken).prettyPrint();
         }
-        assertTrue(found);
     }
 
     @Test

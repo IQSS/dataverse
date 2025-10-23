@@ -42,11 +42,10 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
     final Dataset moved;
     final Dataverse destination;
     final Boolean force;
-    final Boolean allowSelfNotification;
-    final Dataverse originalOwner;
+    private boolean allowSelfNotification = false;
 
     public MoveDatasetCommand(DataverseRequest aRequest, Dataset moved, Dataverse destination, Boolean force) {
-        this( aRequest, moved, destination, force, null);
+        this( aRequest, moved, destination, force, Boolean.FALSE);
     }
     public MoveDatasetCommand(DataverseRequest aRequest, Dataset moved, Dataverse destination, Boolean force, Boolean allowSelfNotification) {
         super(
@@ -58,7 +57,6 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         this.destination = destination;
         this.force= force;
         this.allowSelfNotification = allowSelfNotification;
-        this.originalOwner = moved.getOwner();
     }
 
     @Override
@@ -150,20 +148,15 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         }
 
         // OK, move
+        Dataverse originalOwner = moved.getOwner();
         moved.setOwner(destination);
         ctxt.em().merge(moved);
+        sendNotification(moved, originalOwner, ctxt);
 
         boolean doNormalSolrDocCleanUp = true;
         ctxt.index().asyncIndexDataset(moved, doNormalSolrDocCleanUp);
 
     }
-
-    @Override
-    public boolean onSuccess(CommandContext ctxt, Object r) {
-        sendNotification(moved, originalOwner, ctxt);
-        return true;
-    }
-
     /**
      * Sends notifications to those able to publish the dataset upon the successful move of a dataset.
      * <p>
@@ -188,17 +181,14 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
 
         // 3. Get all users with publish permission on the dataset's original owner (dataverse) and notify them.
         Map<String, AuthenticatedUser> recipients = ctxt.permissions().getDistinctUsersWithPermissionOn(Permission.PublishDataset, originalOwner);
-        // make sure the requestor is in the recipient list in case they don't match the permission but only if allowSelfNotification is true
+        // make sure the requestor is in the recipient list in case they don't match the permission
         if (requestor != null) {
-            if (Boolean.TRUE.equals(allowSelfNotification)) {
-                recipients.put(requestor.getIdentifier(), requestor);
-            } else {
-                recipients.remove(requestor.getIdentifier());
-            }
+            recipients.put(requestor.getIdentifier(), requestor);
         }
 
         recipients.values()
                 .stream()
+                .filter(recipient -> allowSelfNotification || !recipient.equals(requestor))
                 .forEach(recipient -> ctxt.notifications().sendNotification(
                         recipient,
                         Timestamp.from(Instant.now()),
