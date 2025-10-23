@@ -615,12 +615,11 @@ public abstract class AbstractApiBean {
      *
      * @param dvIdtf
      * @param type
-     * @param testForReleased
      * @return DvObject if type matches or throw exception
      * @throws WrappedResponse
      */
     @NotNull
-    protected DvObject findDvoByIdAndTypeOrDie(@NotNull final String dvIdtf, String type, boolean testForReleased) throws WrappedResponse {
+    protected DvObject findDvoByIdAndFeaturedItemTypeOrDie(@NotNull final String dvIdtf, String type) throws WrappedResponse {
         try {
             DataverseFeaturedItem.TYPES dvType = DataverseFeaturedItem.getDvType(type);
             DvObject dvObject = null;
@@ -653,12 +652,7 @@ public abstract class AbstractApiBean {
                     }
                 }
             }
-            if (testForReleased){
-                DataverseFeaturedItem.validateTypeAndDvObject(dvIdtf, dvObject, dvType);
-            }
-            if (dvObject == null) {
-                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dvo.error.dvObjectNotFound", Collections.singletonList(dvIdtf))));
-            }
+            DataverseFeaturedItem.validateTypeAndDvObject(dvIdtf, dvObject, dvType);
             return dvObject;
         } catch (IllegalArgumentException e) {
             throw new WrappedResponse(error(Response.Status.BAD_REQUEST, e.getMessage()));

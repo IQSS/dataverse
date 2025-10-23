@@ -23,7 +23,7 @@ runs:
         echo "JAVA_VERSION=$(grep '<target.java.version>' ${GITHUB_WORKSPACE}/modules/dataverse-parent/pom.xml | cut -f2 -d'>' | cut -f1 -d'<')" | tee -a ${GITHUB_ENV}
     - name: Set up JDK ${{ env.JAVA_VERSION }}
       id: setup-java
-      uses: actions/setup-java@v5
+      uses: actions/setup-java@v4
       with:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: 'temurin'

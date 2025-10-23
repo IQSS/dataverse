@@ -36,32 +36,6 @@ Releasing a Snapshot Version to Maven Central
 
 That is to say, to make a snapshot release, you only need to get one or more commits into the default branch.
 
-It's possible, of course, to make snapshot releases outside of GitHub Actions, from environments such as your laptop. Generally, you'll want to look at the GitHub Action and try to do the equivalent. You'll need a file set up locally at ``~/.m2/settings.xml`` with the following (contact a core developer for the redacted bits):
-
-.. code-block:: bash
-
-  <settings>
-    <servers>
-      <server>
-        <id>central</id>
-        <username>REDACTED</username>
-        <password>REDACTED</password>
-      </server>
-    </servers>
-  </settings>
-
-Then, study the GitHub Action and perform similar commands from your local environment. For example, as of this writing, for the dataverse-spi project, you can run the following commands, substituting the suffix you need:
-
-``mvn -f modules/dataverse-spi -Dproject.version.suffix="2.1.0-PR11767-SNAPSHOT" verify``
-
-``mvn -f modules/dataverse-spi -Dproject.version.suffix="2.1.0-PR11767-SNAPSHOT" deploy``
-
-This will upload the snapshot here, for example: https://central.sonatype.com/repository/maven-snapshots/io/gdcc/dataverse-spi/2.1.02.1.0-PR11767-SNAPSHOT/dataverse-spi-2.1.02.1.0-PR11767-20250827.182026-1.jar
-
-Before OSSRH was retired, you could browse through snapshot jars you published at https://s01.oss.sonatype.org/content/repositories/snapshots/io/gdcc/dataverse-spi/2.0.0-PR9685-SNAPSHOT/, for example. Now, even though you may see the URL of the jar as shown above during the "deploy" step, if you try to browse the various snapshot jars at https://central.sonatype.com/repository/maven-snapshots/io/gdcc/dataverse-spi/2.1.02.1.0-PR11767-SNAPSHOT/ you'll see "This maven2 hosted repository is not directly browseable at this URL. Please use the browse or HTML index views to inspect the contents of this repository." Sadly, the "browse" and "HTML index" links don't work, as noted in a `question <https://community.sonatype.com/t/this-maven2-group-repository-is-not-directly-browseable-at-this-url/8991>`_ on the Sonatype Community forum. Below is a suggestion for confirming that the jar was uploaded properly, which is to use Maven to copy the jar to your local directory. You could then compare checksums.
-
-``mvn dependency:copy -DrepoUrl=https://central.sonatype.com/repository/maven-snapshots/ -Dartifact=io.gdcc:dataverse-spi:2.1.02.1.0-PR11767-SNAPSHOT -DoutputDirectory=.``
-
 Releasing a Release (Non-Snapshot) Version to Maven Central
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -85,6 +85,7 @@ public interface Exporter {
         return Optional.empty();
     }
 
+
     /**
      * Harvestable Exporters will be available as options in Dataverse's Harvesting mechanism.
      * @return true to make this exporter available as a harvesting option.

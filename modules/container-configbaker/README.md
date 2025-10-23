@@ -19,7 +19,7 @@ provides information about this image.
 **Where to get help and ask questions:**
 
 IQSS will not offer support on how to deploy or run it. Please reach out to the community for help on using it.
-You can join the Community Chat at https://chat.dataverse.org and https://groups.google.com/g/dataverse-community
+You can join the Community Chat on Matrix at https://chat.dataverse.org and https://groups.google.com/g/dataverse-community
 to ask for help and guidance.
 
 ## Supported Image Tags

@@ -93,10 +93,6 @@ public enum JvmSettings {
     API_BLOCKED_ENDPOINTS(SCOPE_API_BLOCKED, "endpoints"),
     API_BLOCKED_POLICY(SCOPE_API_BLOCKED, "policy"),
     API_BLOCKED_KEY(SCOPE_API_BLOCKED, "key"),
-    // API: MDC Citation updates
-    SCOPE_API_MDC(SCOPE_API, "mdc"),
-    API_MDC_UPDATE_MIN_DELAY_MS(SCOPE_API_MDC, "min-delay-ms"),
-    
 
     // SIGNPOSTING SETTINGS
     SCOPE_SIGNPOSTING(PREFIX, "signposting"),

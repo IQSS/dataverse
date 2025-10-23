@@ -312,7 +312,6 @@ public class ExportService {
         } catch (ServiceConfigurationError serviceError) {
             throw new ExportException("Service configuration error during export. " + serviceError.getMessage());
         } catch (RuntimeException e) {
-            e.printStackTrace();
             logger.log(Level.FINE, e.getMessage(), e);
             throw new ExportException(
                     "Unknown runtime exception exporting metadata. " + (e.getMessage() == null ? "" : e.getMessage()));

@@ -52,7 +52,7 @@ public class ShibServiceBean {
     private static final String INCOMMON_MDQ_API_BASE = "https://mdq.incommon.org";
     private static final String INCOMMON_MDQ_API_ENTITIES_URL = INCOMMON_MDQ_API_BASE + "/entities/";
     private static final String INCOMMON_WAYFINDER_URL = "https://wayfinder.incommon.org";
-    private static final String INCOMMON_ORGANIZATION_ATTRIBUTE = "OrganizationDisplayName";
+    
     /**
      * "Production" means "don't mess with the HTTP request".
      */
@@ -233,7 +233,7 @@ public class ShibServiceBean {
                 if (event == XMLStreamConstants.START_ELEMENT) {
                     String currentElement = xmlr.getLocalName();
                     
-                    if (INCOMMON_ORGANIZATION_ATTRIBUTE.equals(currentElement)) {
+                    if ("".equals(currentElement)) {
                         int eventType = xmlr.next();
                         if (eventType == XMLStreamConstants.CHARACTERS) {
                             String affiliation = xmlr.getText();

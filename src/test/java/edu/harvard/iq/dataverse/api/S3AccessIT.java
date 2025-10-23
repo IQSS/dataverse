@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-import org.hamcrest.CoreMatchers;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.ResponseInputStream;
@@ -143,7 +142,7 @@ public class S3AccessIT {
         Response originalStorageDriver = UtilIT.getStorageDriver(dataverseAlias, superuserApiToken);
         originalStorageDriver.prettyPrint();
         originalStorageDriver.then().assertThat()
-                .body("data.name", equalTo("undefined"))
+                .body("data.message", equalTo("undefined"))
                 .statusCode(200);
 
         Response setStorageDriverToS3 = UtilIT.setStorageDriver(dataverseAlias, driverLabel, superuserApiToken);
@@ -154,9 +153,6 @@ public class S3AccessIT {
         Response updatedStorageDriver = UtilIT.getStorageDriver(dataverseAlias, superuserApiToken);
         updatedStorageDriver.prettyPrint();
         updatedStorageDriver.then().assertThat()
-                .body("data.type", CoreMatchers.notNullValue())
-                .body("data.label", CoreMatchers.notNullValue())
-                .body("data.directUpload", CoreMatchers.nullValue())
                 .statusCode(200);
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
@@ -277,7 +273,7 @@ public class S3AccessIT {
         Response originalStorageDriver = UtilIT.getStorageDriver(dataverseAlias, superuserApiToken);
         originalStorageDriver.prettyPrint();
         originalStorageDriver.then().assertThat()
-                .body("data.name", equalTo("undefined"))
+                .body("data.message", equalTo("undefined"))
                 .statusCode(200);
 
         Response setStorageDriverToS3 = UtilIT.setStorageDriver(dataverseAlias, driverLabel, superuserApiToken);
@@ -495,7 +491,7 @@ public class S3AccessIT {
         Response originalStorageDriver = UtilIT.getStorageDriver(dataverseAlias, superuserApiToken);
         originalStorageDriver.prettyPrint();
         originalStorageDriver.then().assertThat()
-                .body("data.name", equalTo("undefined"))
+                .body("data.message", equalTo("undefined"))
                 .statusCode(200);
 
         Response setStorageDriverToS3 = UtilIT.setStorageDriver(dataverseAlias, driverLabel, superuserApiToken);
@@ -693,7 +689,7 @@ public class S3AccessIT {
         Response originalStorageDriver = UtilIT.getStorageDriver(dataverseAlias, superuserApiToken);
         originalStorageDriver.prettyPrint();
         originalStorageDriver.then().assertThat()
-                .body("data.name", equalTo("undefined"))
+                .body("data.message", equalTo("undefined"))
                 .statusCode(200);
 
         Response setStorageDriverToS3 = UtilIT.setStorageDriver(dataverseAlias, driverLabel, superuserApiToken);

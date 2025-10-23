@@ -13,7 +13,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToOne;
@@ -40,16 +39,6 @@ import jakarta.persistence.TemporalType;
     @NamedQuery(name = "DataverseLinkingDataverse.findIdsByLinkingDataverseId",
                query = "SELECT o.dataverse.id FROM DataverseLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkingDataverseId")
 })
-    @NamedNativeQuery(
-        name = "DataverseLinkingDataverse.findByDataverseIdAndLinkingDataverseName",
-        query = """
-                select o.linkingDataverse_id  from DataverseLinkingDataverse as o  
-                LEFT JOIN dataverse dv ON dv.id = o.linkingDataverse_id 
-                WHERE o.dataverse_id =? AND ((LOWER(dv.name) LIKE ? and ((SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE ?)
-                or (SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE ?))) 
-                or (LOWER(dv.name) NOT LIKE ? and ((LOWER(dv.name) LIKE ?)
-                or (LOWER(dv.name) LIKE ?))))""" 
-    )
 public class DataverseLinkingDataverse implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

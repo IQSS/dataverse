@@ -202,7 +202,7 @@ Testing Your External Tool
 
 As the author of an external tool, you are not expected to learn how to install and operate a Dataverse installation. There's a very good chance your tool can be added to a server Dataverse Community developers use for testing if you reach out on any of the channels listed under :ref:`getting-help-developers` in the Developer Guide.
 
-By all means, if you'd like to install a Dataverse installation yourself, a number of developer-centric options are available. For example, there's a script to spin up a Dataverse installation on EC2 at https://github.com/gdcc/dataverse-ansible . The process for using curl to add your external tool to your Dataverse installation is documented under :ref:`managing-external-tools` in the Admin Guide.
+By all means, if you'd like to install a Dataverse installation yourself, a number of developer-centric options are available. For example, there's a script to spin up a Dataverse installation on EC2 at https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible . The process for using curl to add your external tool to your Dataverse installation is documented under :ref:`managing-external-tools` in the Admin Guide.
 
 Spreading the Word About Your External Tool
 -------------------------------------------
@@ -219,7 +219,7 @@ If you've thought to yourself that there ought to be an app store for Dataverse 
 Demoing Your External Tool
 ++++++++++++++++++++++++++
 
-https://demo.dataverse.org is the place to play around with the Dataverse Software and your tool can be included. Please email support@dataverse.org to start the conversation about adding your tool. Additionally, you are welcome to open an issue at https://github.com/gdcc/dataverse-ansible which already includes a number of the tools listed above.
+https://demo.dataverse.org is the place to play around with the Dataverse Software and your tool can be included. Please email support@dataverse.org to start the conversation about adding your tool. Additionally, you are welcome to open an issue at https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible which already includes a number of the tools listed above.
 
 Announcing Your External Tool
 +++++++++++++++++++++++++++++

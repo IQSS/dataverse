@@ -26,7 +26,7 @@ Advanced Installation
 
 There are some community-lead projects to use configuration management tools such as Ansible and Puppet to automate the installation and configuration of the Dataverse Software, but support for these solutions is limited to what the Dataverse Community can offer as described in each project's webpage:
 
-- https://github.com/gdcc/dataverse-ansible
+- https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible
 - https://gitlab.com/lip-computing/dataverse
 - https://github.com/IQSS/dataverse-puppet
 

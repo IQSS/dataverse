@@ -60,10 +60,6 @@ The current driver can be seen using::
 
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
 
-Or to recurse the chain of parents to find the effective storageDriver::
-
-    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver?getEffective=true
-
 (Note that for ``dataverse.files.store1.label=MyLabel``, ``store1`` will be returned.)
 
 and can be reset to the default store with::

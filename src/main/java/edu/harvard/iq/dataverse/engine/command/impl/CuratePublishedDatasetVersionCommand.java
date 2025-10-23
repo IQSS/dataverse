@@ -15,7 +15,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
-import edu.harvard.iq.dataverse.CurationStatus;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -27,8 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -76,7 +73,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         newTerms.setDatasetVersion(updateVersion);
         updateVersion.setTermsOfUseAndAccess(newTerms);
         
-        //Version Note
+        //Creation Note
         updateVersion.setVersionNote(newVersion.getVersionNote());
         
         // Clear unnecessary terms relationships ....
@@ -99,24 +96,6 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             updateVersion.getWorkflowComments().addAll(newComments);
         }
 
-        // Transfer curation status entries from draft to published version
-        List<CurationStatus> draftCurationStatuses = newVersion.getCurationStatuses();
-        if (draftCurationStatuses != null && !draftCurationStatuses.isEmpty()) {
-            for (CurationStatus cs : draftCurationStatuses) {
-                // Update the dataset version reference
-                //This call sets the version in the curationstatus object as well
-                updateVersion.addCurationStatus(cs);
-            }
-            // Clear the list from the draft version
-            newVersion.getCurationStatuses().clear();
-        }
-
-        // Add a new empty curation status to clear the status in the published version (as done in the FinalizeDatasetPublicationCommand)
-        CurationStatus status = updateVersion.getCurrentCurationStatus();
-        if (status != null && StringUtils.isNotBlank(status.getLabel())) {
-            updateVersion.addCurationStatus(new CurationStatus(null, updateVersion, getRequest().getAuthenticatedUser()));
-        }
-        
         // we have to merge to update the database but not flush because
         // we don't want to create two draft versions!
         Dataset tempDataset = getDataset();
@@ -222,7 +201,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             // This can be corrected by running the update PID API later, but who will look in the log?
             // With the change to not use the DeleteDatasetVersionCommand above and other
             // fixes, this error may now cleanly restore the initial state
-            // with the draft and last published versions unchanged, but this has not yet been tested.
+            // with the draft and last published versions unchanged, but this has not yet bee tested.
             // (Alternately this could move to onSuccess if we intend it to stay non-fatal.)
             logger.log(Level.WARNING, "Curate Published DatasetVersion: exception while updating PID metadata:{0}", ex.getMessage());
         }

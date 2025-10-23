@@ -525,7 +525,7 @@
                                                     #{bundle['dataset.curationStatusMenu']} <span class="caret"></span>
                                                 </button>
                                                 <ul class="dropdown-menu multi-level pull-right text-left">
-                                                    <ui:fragment rendered="#{(not empty DatasetPage.allowedCurationStatuses) and DatasetPage.canPublishDataset() and version.draft}">
+                                                    <ui:fragment rendered="#{(not empty DatasetPage.allowedCurationStatuses) and DatasetPage.canPublishDataset()}">
                                                     <li class="dropdown-submenu pull-left">
                                                         <a tabindex="0">#{bundle['dataset.changestatus']}</a>
                                                         <ul class="dropdown-menu">

@@ -1,2 +1,0 @@
-This release fixes problems with guestbook questions being displayed at download when files are selected from the dataset files table
-when guestbook-at-request is enabled and not displaying when they should when access is requested from the file page. 

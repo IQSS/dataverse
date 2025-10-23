@@ -43,41 +43,12 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
     }
 
     public List<Dataverse> findLinkingDataverses(Long dataverseId) {
-
-        return findLinkingDataverses(dataverseId, "");
-    }
-    
-    public List<Dataverse> findLinkingDataverses(Long dataverseId, String searchTerm) {
         List<Dataverse> retList = new ArrayList<>();
-        if (searchTerm == null || searchTerm.isEmpty()) {
-            TypedQuery<DataverseLinkingDataverse> typedQuery = em.createNamedQuery("DataverseLinkingDataverse.findByDataverseId", DataverseLinkingDataverse.class)
-                    .setParameter("dataverseId", dataverseId);
-            for (DataverseLinkingDataverse dataverseLinkingDataverse : typedQuery.getResultList()) {
-                retList.add(dataverseLinkingDataverse.getLinkingDataverse());
-            }
-
-        } else {
-            
-            String pattern = searchTerm.toLowerCase();
-
-            String pattern1 = pattern + "%";
-            String pattern2 = "% " + pattern + "%";
-
-            // Adjust the queries for very short, 1 and 2-character patterns:
-            if (pattern.length() == 1) {
-                pattern1 = pattern;
-                pattern2 = pattern + " %";
-            }
-            TypedQuery<Long> typedQuery
-                    = em.createNamedQuery("DataverseLinkingDataverse.findByDataverseIdAndLinkingDataverseName", Long.class)
-                            .setParameter(1, dataverseId).setParameter(2, "%dataverse").setParameter(3, pattern1)
-                            .setParameter(4, pattern2).setParameter(5, "%dataverse").setParameter(6, pattern1).setParameter(7, pattern2);
-
-            for (Long id : typedQuery.getResultList()) {
-                retList.add(dataverseService.find(id));
-            }
+        TypedQuery<DataverseLinkingDataverse> typedQuery = em.createNamedQuery("DataverseLinkingDataverse.findByDataverseId", DataverseLinkingDataverse.class)
+            .setParameter("dataverseId", dataverseId);
+        for (DataverseLinkingDataverse dataverseLinkingDataverse : typedQuery.getResultList()) {
+            retList.add(dataverseLinkingDataverse.getLinkingDataverse());
         }
-
         return retList;
     }
     
