@@ -433,6 +433,7 @@
     <field name="spatialResolution" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="spatialResolutionType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="spatialResolutionValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="spatialResolutionUnitOfMeasure" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayCellType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayMeasurementType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayOrganism" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -719,6 +720,7 @@
     <copyField source="spatialRepresentationType" dest="_text_" maxChars="3000"/>
     <copyField source="spatialResolution" dest="_text_" maxChars="3000"/>
     <copyField source="spatialResolutionType" dest="_text_" maxChars="3000"/>
+    <copyField source="spatialResolutionUnitOfMeasure" dest="_text_" maxChars="3000"/>
     <copyField source="spatialResolutionValue" dest="_text_" maxChars="3000"/>
     <copyField source="state" dest="_text_" maxChars="3000"/>
     <copyField source="studyAssayCellType" dest="_text_" maxChars="3000"/>
