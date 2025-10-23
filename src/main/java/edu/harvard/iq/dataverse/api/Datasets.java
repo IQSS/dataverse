@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
-import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
@@ -17,6 +16,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
+import edu.harvard.iq.dataverse.datasetversionsummaries.DatasetVersionSummary;
 import software.amazon.awssdk.services.s3.model.CompletedPart;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.*;
@@ -3137,76 +3137,21 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/compareSummary")
-    public Response getCompareVersionsSummary(@Context ContainerRequestContext crc, @PathParam("id") String id,
-                                      @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        try {
-            Dataset dataset = findDatasetOrDie(id);
-            User user = getRequestUser(crc);
-            JsonArrayBuilder differenceSummaries = Json.createArrayBuilder();
-
-            for (DatasetVersion dv : dataset.getVersions()) {
-                //only get summaries of draft is user may view unpublished
-
-                if (dv.isPublished() ||dv.isDeaccessioned() || permissionService.hasPermissionsFor(user, dv.getDataset(),
-                        EnumSet.of(Permission.ViewUnpublishedDataset))) {
-
-                    JsonObjectBuilder versionBuilder = new NullSafeJsonBuilder();
-                    versionBuilder.add("id", dv.getId());
-                    versionBuilder.add("versionNumber", dv.getFriendlyVersionNumber());
-                    DatasetVersionDifference dvdiff = dv.getDefaultVersionDifference();
-                    if (dvdiff == null) {
-                        if (dv.isReleased()) {
-                            if (dv.getPriorVersionState() == null) {
-                                versionBuilder.add("summary", "firstPublished");
-                            }
-                            if (dv.getPriorVersionState() != null && dv.getPriorVersionState().equals(VersionState.DEACCESSIONED)) {
-                                versionBuilder.add("summary", "previousVersionDeaccessioned");
-                            }
-                        }
-                        if (dv.isDraft()) {
-                            if (dv.getPriorVersionState() == null) {
-                                versionBuilder.add("summary", "firstDraft");
-                            }
-                            if (dv.getPriorVersionState() != null && dv.getPriorVersionState().equals(VersionState.DEACCESSIONED)) {
-                                versionBuilder.add("summary", "previousVersionDeaccessioned");
-                            }
-                        }
-                        if (dv.isDeaccessioned()) {
-                            versionBuilder.add("summary", getDeaccessionJson(dv));
-                        }
-
-                    } else {
-                        versionBuilder.add("summary", dvdiff.getSummaryDifferenceAsJson());
-                    }
-                    versionBuilder.add("versionNote", dv.getVersionNote());
-                    versionBuilder.add("contributors", datasetversionService.getContributorsNames(dv));
-                    versionBuilder.add("publishedOn", !dv.isDraft() ? dv.getPublicationDateAsString() : "");
-                    differenceSummaries.add(versionBuilder);
-                }
+    public Response getCompareVersionsSummary(@Context ContainerRequestContext crc,
+                                              @PathParam("id") String id,
+                                              @QueryParam("limit") Integer limit,
+                                              @QueryParam("offset") Integer offset) {
+        return response(req -> {
+            try {
+                Dataset dataset = findDatasetOrDie(id);
+                List<DatasetVersionSummary> versionSummaries = execCommand(new GetDatasetVersionSummariesCommand(req, dataset, limit, offset));
+                JsonArrayBuilder versionSummariesArrayBuilder = jsonDatasetVersionSummaries(versionSummaries);
+                long datasetVersionTotalCount = execCommand(new GetDatasetVersionCountCommand(req, dataset));
+                return ok(versionSummariesArrayBuilder, datasetVersionTotalCount);
+            } catch (WrappedResponse wr) {
+                return wr.getResponse();
             }
-            return ok(differenceSummaries);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-    }
-
-    private JsonObject getDeaccessionJson(DatasetVersion dv) {
-
-        JsonObjectBuilder compositionBuilder = Json.createObjectBuilder();
-
-        if (dv.getDeaccessionNote() != null && !dv.getDeaccessionNote().isEmpty()) {
-            compositionBuilder.add("reason", dv.getDeaccessionNote());
-        }
-
-        if (dv.getDeaccessionLink() != null && !dv.getDeaccessionLink().isEmpty()) {
-            compositionBuilder.add("url", dv.getDeaccessionLink());
-        }
-
-        JsonObject json = Json.createObjectBuilder()
-                .add("deaccessioned", compositionBuilder)
-                .build();
-
-        return json;
+        }, getRequestUser(crc));
     }
 
     private static Set<String> getDatasetFilenames(Dataset dataset) {

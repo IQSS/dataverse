@@ -35,7 +35,7 @@ import edu.harvard.iq.dataverse.util.URLTokenUtil;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
@@ -61,7 +61,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonDT;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 
@@ -104,8 +104,6 @@ public class Files extends AbstractApiBean {
     GuestbookResponseServiceBean guestbookResponseService;
     @Inject
     DataFileServiceBean dataFileServiceBean;
-    @Inject
-    FileMetadataVersionsHelper fileMetadataVersionsHelper;
 
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
@@ -1174,7 +1172,10 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/versionDifferences")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getFileVersionsList(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId) {
+    public Response getFileVersionsList(@Context ContainerRequestContext crc,
+                                        @PathParam("id") String fileIdOrPersistentId,
+                                        @QueryParam("limit") Integer limit,
+                                        @QueryParam("offset") Integer offset) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
@@ -1182,16 +1183,10 @@ public class Files extends AbstractApiBean {
             if (fm == null) {
                 return notFound(BundleUtil.getStringFromBundle("files.api.fileNotFound"));
             }
-            List<FileMetadata> fileMetadataList = fileMetadataVersionsHelper.loadFileVersionList(req, fm);
-            JsonArrayBuilder jab = Json.createArrayBuilder();
-            for (FileMetadata fileMetadata : fileMetadataList) {
-                jab.add(fileMetadataVersionsHelper.jsonDataFileVersions(fileMetadata).build());
-            }
-            return Response.ok()
-                    .entity(Json.createObjectBuilder()
-                            .add("status", STATUS_OK)
-                            .add("data", jab.build()).build()
-                    ).build();
+            List<FileVersionDifference> versionDifferences = execCommand(new GetFileVersionDifferencesCommand(req, fm, limit, offset));
+            JsonArrayBuilder versionDifferencesArrayBuilder = jsonFileVersionSummaries(versionDifferences);
+            long datasetVersionTotalCount = execCommand(new GetDatasetVersionCountCommand(req, fm.getDatasetVersion().getDataset()));
+            return ok(versionDifferencesArrayBuilder, datasetVersionTotalCount);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
