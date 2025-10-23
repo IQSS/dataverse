@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_LATEST_PUBLISHED;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import static io.restassured.path.json.JsonPath.with;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -12,6 +13,8 @@ import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.OK;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -900,6 +903,68 @@ public class DatasetTypesIT {
 
         UtilIT.publishDataverseViaNativeApi(collectionOfReviewsAlias, apiTokenReviewer).then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.publishDatasetViaNativeApi(reviewPid, "major", apiTokenReviewer).then().assertThat().statusCode(OK.getStatusCode());
+    }
+
+    @Test
+    public void testInternationalization() {
+        Response getDatasetType = UtilIT.getDatasetType("software");
+        getDatasetType.prettyPrint();
+        getDatasetType.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.name", is("software"))
+                .body("data.displayName", is("Software"));
+
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Accept-Language
+        getDatasetType = UtilIT.getDatasetType("software", "en-US,en;q=0.5");
+        getDatasetType.prettyPrint();
+        getDatasetType.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.name", is("software"))
+                .body("data.displayName", is("Software"));
+
+        getDatasetType = UtilIT.getDatasetType("software", "en-US");
+        getDatasetType.prettyPrint();
+        getDatasetType.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.name", is("software"))
+                .body("data.displayName", is("Software"));
+
+        getDatasetType = UtilIT.getDatasetType("software", "");
+        getDatasetType.prettyPrint();
+        getDatasetType.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.name", is("software"))
+                .body("data.displayName", is("Software"));
+
+        boolean i18nIsConfigured = false;
+        if (!i18nIsConfigured) {
+            System.out.println("i18n is not configured; skipping test of non-English languages");
+            return;
+        }
+
+        getDatasetType = UtilIT.getDatasetType("software", "fr-CA,fr;q=0.8,en-US;q=0.6,en;q=0.4");
+        getDatasetType.prettyPrint();
+        getDatasetType.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.name", is("software"))
+                .body("data.displayName", is("Logiciel"));
+
+        getDatasetType = UtilIT.getDatasetTypes("fr-CA,fr;q=0.8,en-US;q=0.6,en;q=0.4");
+        getDatasetType.prettyPrint();
+        getDatasetType.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Messy but the only way we've figured out ¯\_(ツ)_/¯
+        List<Map<String, Object>> dataset = with(getDatasetType.body().asString()).param("dataset", "dataset")
+                .getList("data.findAll { data -> data.name == dataset }");
+        Map<String, Object> firstDataset = dataset.get(0);
+        assertEquals("Ensemble de données", firstDataset.get("displayName"));
+
+        List<Map<String, Object>> instrument = with(getDatasetType.body().asString()).param("instrument", "instrument")
+                .getList("data.findAll { data -> data.name == instrument }");
+        Map<String, Object> firstInstrument = instrument.get(0);
+        // Instrument isn't translated in the French properties file; should fall back to English
+        assertEquals("Instrument", firstInstrument.get("displayName"));
     }
 
 }

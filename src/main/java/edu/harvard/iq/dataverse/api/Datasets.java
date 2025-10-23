@@ -34,6 +34,7 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.globus.GlobusUtil;
+import edu.harvard.iq.dataverse.i18n.i18nUtil;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.makedatacount.*;
@@ -99,13 +100,12 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 
-import edu.harvard.iq.dataverse.dataset.DatasetType;
-import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.license.License;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
+import static jakarta.ws.rs.core.HttpHeaders.ACCEPT_LANGUAGE;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
@@ -5684,17 +5684,19 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
 
     @GET
     @Path("datasetTypes")
-    public Response getDatasetTypes() {
+    public Response getDatasetTypes(@HeaderParam(ACCEPT_LANGUAGE) String acceptLanguage) {
+        Locale locale = i18nUtil.parseAcceptLanguageHeader(acceptLanguage);
         JsonArrayBuilder jab = Json.createArrayBuilder();
         for (DatasetType datasetType : datasetTypeSvc.listAll()) {
-            jab.add(datasetType.toJson());
+            jab.add(datasetType.toJson(locale));
         }
         return ok(jab);
     }
 
     @GET
     @Path("datasetTypes/{idOrName}")
-    public Response getDatasetTypes(@PathParam("idOrName") String idOrName) {
+    public Response getDatasetTypes(@PathParam("idOrName") String idOrName, @HeaderParam(ACCEPT_LANGUAGE) String acceptLanguage) {
+        Locale locale = i18nUtil.parseAcceptLanguageHeader(acceptLanguage);
         DatasetType datasetType = null;
         if (StringUtils.isNumeric(idOrName)) {
             try {
@@ -5707,7 +5709,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             datasetType = datasetTypeSvc.getByName(idOrName);
         }
         if (datasetType != null) {
-            return ok(datasetType.toJson());
+            return ok(datasetType.toJson(locale));
         } else {
             return error(NOT_FOUND, "Could not find a dataset type with name " + idOrName);
         }
@@ -5796,7 +5798,10 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             DatasetType saved = datasetTypeSvc.save(datasetType);
             Long typeId = saved.getId();
             String name = saved.getName();
-            return ok(saved.toJson());
+            // Locale is null because when creating the dataset type we are relying entirely
+            // on the database. The new dataset type has not yet been localized in a
+            // properties file.
+            return ok(saved.toJson(null));
         } catch (WrappedResponse ex) {
             return error(BAD_REQUEST, ex.getMessage());
         }
