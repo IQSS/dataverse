@@ -18,6 +18,7 @@ import java.util.List;
 
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,6 +41,8 @@ public class AdminIT {
     private static final Logger logger = Logger.getLogger(AdminIT.class.getCanonicalName());
 
     private final String testNonSuperuserApiToken = createTestNonSuperuserApiToken();
+    static final String clientId = "test";
+    static final String clientSecret = "94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8";
 
     @BeforeAll
     public static void setUp() {
@@ -960,5 +963,41 @@ public class AdminIT {
         Response toggleSuperuser = UtilIT.setSuperuserStatus(username, status);
         toggleSuperuser.then().assertThat()
                 .statusCode(OK.getStatusCode());
+    }
+
+    // Testing creating an OIDC Provider not intended for use in JSF UI
+    @Test
+    public void testAddAuthProviders() {
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response getAuthProviders = UtilIT.getAuthProviders(superuserApiToken);
+        getAuthProviders.prettyPrint();
+
+        String factoryData = String.format("type: oidc | issuer: http://keycloak.mydomain.com:8090/realms/test | clientId: %s | clientSecret: %s | jsfBlocked: true", clientId, clientSecret);
+        JsonObject jsonObject = Json.createObjectBuilder()
+                .add("id", "oidc1")
+                .add("factoryAlias", "oidc")
+                .add("title", "Open ID Connect SPA")
+                .add("subtitle", "SPA OIDC Provider")
+                .add("factoryData", factoryData)
+                .add("enabled", true)
+                .build();
+        Response addAuthProviders = UtilIT.addAuthProviders(superuserApiToken, jsonObject);
+        addAuthProviders.prettyPrint();
+        addAuthProviders.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        getAuthProviders = UtilIT.getAuthProviders(superuserApiToken);
+        getAuthProviders.prettyPrint();
+        getAuthProviders.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[1].id", equalTo("oidc1"))
+                .body("data[1].factoryData", containsString("jsfBlocked: true"));
+
     }
 }

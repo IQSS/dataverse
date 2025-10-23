@@ -135,7 +135,13 @@ public class LoginPage implements java.io.Serializable {
      * Retrieve information about all enabled identity providers in a sorted order to be displayed to the user.
      * @return list of display information for each provider
      */
+    public List<AuthenticationProviderDisplayInfo> listAuthenticationProvidersJSF() {
+        return listAuthenticationProviders(false);
+    }
     public List<AuthenticationProviderDisplayInfo> listAuthenticationProviders() {
+        return listAuthenticationProviders(true);
+    }
+    public List<AuthenticationProviderDisplayInfo> listAuthenticationProviders(boolean ignoreBlocked) {
         List<AuthenticationProviderDisplayInfo> infos = new LinkedList<>();
         List<AuthenticationProvider> idps = new ArrayList<>(authSvc.getAuthenticationProviders());
         
@@ -143,7 +149,7 @@ public class LoginPage implements java.io.Serializable {
         Collections.sort(idps, Comparator.comparing(AuthenticationProvider::getOrder).thenComparing(AuthenticationProvider::getId));
         
         for (AuthenticationProvider idp : idps) {
-            if (idp != null) {
+            if (idp != null && (ignoreBlocked || !idp.isJsfBlocked())) {
                 infos.add(idp.getInfo());
             }
         }
