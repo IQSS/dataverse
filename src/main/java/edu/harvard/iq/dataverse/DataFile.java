@@ -304,15 +304,8 @@ public class DataFile extends DvObject implements Comparable {
         this.deleted = deleted;
     }
 
-    @Transient
-    private boolean unpublished;
-
     public boolean getUnpublished() {
-        return unpublished;
-    }
-
-    public void setUnpublished(boolean unpublished) {
-        this.unpublished = unpublished;
+        return !isReleased();
     }
 
     /*
@@ -607,14 +600,11 @@ public class DataFile extends DvObject implements Comparable {
         FileMetadata resultFileMetadata = null;
 
         if (fileMetadatas.size() == 1) {
-            setUnpublished(fileMetadatas.get(0).getDatasetVersion() == null || fileMetadatas.get(0).getDatasetVersion().getVersionState().equals(VersionState.DRAFT));
             return fileMetadatas.get(0);
-        } else {
-            setUnpublished(false); // Since only one can be in Draft assume there is a published version
         }
 
         for (FileMetadata fileMetadata : fileMetadatas) {
-            if (fileMetadata.getDatasetVersion().getVersionState().equals(VersionState.DRAFT)) {
+            if (fileMetadata.getDatasetVersion() != null && VersionState.DRAFT.equals(fileMetadata.getDatasetVersion().getVersionState())) {
                 return fileMetadata;
             }
             resultFileMetadata = getTheNewerFileMetadata(resultFileMetadata, fileMetadata);
