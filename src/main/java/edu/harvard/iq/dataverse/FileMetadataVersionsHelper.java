@@ -93,7 +93,7 @@ public class FileMetadataVersionsHelper {
     }
 
     //TODO: this could use some refactoring to cut down on the number of for loops!
-    public FileMetadata getPreviousFileMetadata(FileMetadata fileMetadata, DatasetVersion currentversion) {
+    private FileMetadata getPreviousFileMetadata(FileMetadata fileMetadata, DatasetVersion currentversion) {
         List<DataFile> allfiles = allRelatedFiles(fileMetadata);
         boolean foundCurrent = false;
         DatasetVersion priorVersion = null;
