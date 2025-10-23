@@ -3189,7 +3189,7 @@ dataverse.person-or-org.org-phrase-array
 Please note that this setting is experimental.
 
 The Schema.org metadata and OpenAIRE exports and the Schema.org metadata included in DatasetPages try to infer whether each entry in the various fields (e.g. Author, Contributor) is a Person or Organization.
-If you have examples where an orgization name is being inferred to belong to a person, you can use this setting to force it to be recognized as an organization.
+If you have examples where an organization name is being inferred to belong to a person, you can use this setting to force it to be recognized as an organization.
 The value is expected to be a comma-separated list of strings. Any name that contains one of the strings is assumed to be an organization. For example, "Project" is a word that is not otherwise associated with being an organization.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_PERSON_OR_ORG_ORG_PHRASE_ARRAY``.
@@ -3730,6 +3730,22 @@ Example:
 ``./asadmin create-jvm-options '-Ddataverse.cors.headers.expose=Accept-Ranges,Content-Range,X-Custom-Header'``
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_CORS_HEADERS_EXPOSE``.
+
+
+.. _dataverse.api.mdc.min-delay-ms:
+
+dataverse.api.mdc.min-delay-ms
+++++++++++++++++++++++++++++++
+
+Minimum delay in milliseconds between Make Data Count (MDC) API requests from the /api/admin/makeDataCount/{id}/updateCitationsForDataset api.
+This setting helps prevent overloading the MDC service by enforcing a minimum time interval between consecutive requests.
+If a request arrives before this interval has elapsed since the previous request, it will be rate-limited.
+
+Default: ``0`` (no delay enforced)
+
+Example: ``dataverse.api.mdc.min-delay-ms=100`` (enforces a minimum 100ms delay between MDC API requests)
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_MDC_MIN_DELAY_MS``.
 
 .. _feature-flags:
 

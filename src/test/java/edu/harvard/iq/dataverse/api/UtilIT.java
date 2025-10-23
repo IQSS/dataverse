@@ -1339,9 +1339,21 @@ public class UtilIT {
     }
 
     static Response getFileVersionDifferences(String fileId, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/files/" + fileId + "/versionDifferences");
+        return getFileVersionDifferences(fileId, apiToken, null, null);
+    }
+
+    static Response getFileVersionDifferences(String fileId, String apiToken, Integer limit, Integer offset) {
+        RequestSpecification request = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+
+        if (limit != null) {
+            request.queryParam("limit", limit);
+        }
+        if (offset != null) {
+            request.queryParam("offset", offset);
+        }
+
+        return request.get("/api/files/" + fileId + "/versionDifferences");
     }
 
     static Response testIngest(String fileName, String fileType) {
@@ -1787,14 +1799,21 @@ public class UtilIT {
                         + "&includeDeaccessioned="
                         + includeDeaccessioned);
     }
+
+    static Response summaryDatasetVersionDifferences(String persistentId, String apiToken) {
+        return summaryDatasetVersionDifferences(persistentId, null, null, apiToken);
+    }
     
-    static Response summaryDatasetVersionDifferences(String persistentId,  String apiToken) {
+    static Response summaryDatasetVersionDifferences(String persistentId, Integer limit, Integer offset, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("limit", limit)
+                .queryParam("offset", offset)
                 .get("/api/datasets/:persistentId/versions/compareSummary"
                         + "?persistentId="
                         + persistentId);
     }
+
     static Response getDatasetWithOwners(String persistentId,  String apiToken, boolean returnOwners) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -2850,9 +2869,13 @@ public class UtilIT {
     }
 
     static Response getStorageDriver(String dvAlias, String apiToken) {
+        return getStorageDriver(dvAlias, apiToken, null);
+    }
+    static Response getStorageDriver(String dvAlias, String apiToken, Boolean getEffective) {
+        String params = getEffective != null ? "?getEffective=" + getEffective : "";
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/admin/dataverse/" + dvAlias + "/storageDriver");
+                .get("/api/admin/dataverse/" + dvAlias + "/storageDriver" + params);
     }
 
     static Response setStorageDriver(String dvAlias, String label, String apiToken) {
@@ -4460,6 +4483,12 @@ public class UtilIT {
                 .put("/api/datasets/" + datasetId + "/storageDriver");
     }
 
+    static Response getDatasetStorageDriver(Integer datasetId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/storageDriver");
+    }
+
     /** GET on /api/admin/savedsearches/list */
     static Response getSavedSearchList() {
         return given().get("/api/admin/savedsearches/list");
@@ -4533,12 +4562,32 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
     }
+    
+     public static Response updateDataverseInputLevels(String dataverseAlias, String[] inputLevelNames, boolean[] requiredInputLevels, boolean[] includedInputLevels, boolean[] displayOnCreate, String apiToken) {
+        JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
+        for (int i = 0; i < inputLevelNames.length; i++) {
+            inputLevelsArrayBuilder.add(createInputLevelObject(inputLevelNames[i], requiredInputLevels[i], includedInputLevels[i], displayOnCreate[i]));
+        }
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(inputLevelsArrayBuilder.build().toString())
+                .contentType(ContentType.JSON)
+                .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
+    }
 
     private static JsonObjectBuilder createInputLevelObject(String name, boolean required, boolean include) {
         return Json.createObjectBuilder()
                 .add("datasetFieldTypeName", name)
                 .add("required", required)
                 .add("include", include);
+    }
+    
+    private static JsonObjectBuilder createInputLevelObject(String name, boolean required, boolean include, boolean displayOnCreate) {
+        return Json.createObjectBuilder()
+                .add("datasetFieldTypeName", name)
+                .add("required", required)
+                .add("include", include)
+                .add("displayOnCreate", displayOnCreate);
     }
 
     public static Response getOpenAPI(String accept, String format) {
@@ -4728,6 +4777,59 @@ public class UtilIT {
                                                 String apiToken) {
         return updateDataverseFeaturedItem(featuredItemId, content, displayOrder, keepFile, pathToFile, null, null, apiToken);
     }
+    
+    static Response getLinkableDataverses(String type, String dvObjectId, String apiToken, String searchTerm) {
+        return getLinkableDataverses(type, dvObjectId, apiToken, searchTerm, false);
+    }
+   
+    static Response getLinkableDataverses(String type, String dvObjectId, String apiToken, String searchTerm, boolean alreadyLinked) {
+
+        String idInPath = dvObjectId; // Assume it's a number to start.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (type.equals("dataset")) {
+            if (!NumberUtils.isCreatable(idInPath)) {
+                idInPath = ":persistentId";
+                if (searchTerm == null ||  searchTerm.isEmpty() ) {                    
+                    optionalQueryParam = "?persistentId=" + dvObjectId;
+                } else {
+                    optionalQueryParam = "&persistentId=" + dvObjectId;
+                }
+            }
+        }
+        
+        if (alreadyLinked){
+            if (optionalQueryParam.isEmpty() && (searchTerm == null ||  searchTerm.isEmpty())){
+                optionalQueryParam = "?alreadyLinking=true";
+            } else {
+                optionalQueryParam = optionalQueryParam + "&alreadyLinking=true";
+            }           
+        }
+
+        if (searchTerm == null) {
+            if (!apiToken.isEmpty()) {
+                return given()
+                        .header(API_TOKEN_HTTP_HEADER, apiToken)
+                        .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses" + optionalQueryParam);
+
+            } else {
+                return given()
+                        .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses" + optionalQueryParam);
+            }
+
+        } else {
+            if (!apiToken.isEmpty()) {
+                return given()
+                        .header(API_TOKEN_HTTP_HEADER, apiToken)
+                        .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses?searchTerm=" + searchTerm + optionalQueryParam);
+
+            } else {
+                return given()
+                        .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses?searchTerm=" + searchTerm + optionalQueryParam);
+            }
+
+        }
+    }
+    
     static Response updateDataverseFeaturedItem(long featuredItemId,
                                                 String content,
                                                 int displayOrder,

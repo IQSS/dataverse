@@ -307,7 +307,7 @@ public class CreateDataverseCommandTest {
             i++;
         }
         
-        assertTrue( dftilsDeleted );
+       // assertTrue( dftilsDeleted ); we no longer delete when adding new input levels to preserve previously created
         for ( DataverseFieldTypeInputLevel dftil : createdDftils ) {
             assertEquals( result, dftil.getDataverse() );
         }
