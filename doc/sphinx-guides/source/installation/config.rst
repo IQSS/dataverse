@@ -3731,6 +3731,22 @@ Example:
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_CORS_HEADERS_EXPOSE``.
 
+
+.. _dataverse.api.mdc.min-delay-ms:
+
+dataverse.api.mdc.min-delay-ms
+++++++++++++++++++++++++++++++
+
+Minimum delay in milliseconds between Make Data Count (MDC) API requests from the /api/admin/makeDataCount/{id}/updateCitationsForDataset api.
+This setting helps prevent overloading the MDC service by enforcing a minimum time interval between consecutive requests.
+If a request arrives before this interval has elapsed since the previous request, it will be rate-limited.
+
+Default: ``0`` (no delay enforced)
+
+Example: ``dataverse.api.mdc.min-delay-ms=100`` (enforces a minimum 100ms delay between MDC API requests)
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_MDC_MIN_DELAY_MS``.
+
 .. _feature-flags:
 
 Feature Flags
