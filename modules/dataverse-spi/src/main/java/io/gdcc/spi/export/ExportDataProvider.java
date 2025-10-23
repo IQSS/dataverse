@@ -21,8 +21,14 @@ public interface ExportDataProvider {
      *          OAI_ORE export are the only two that provide 'complete'
      *          dataset-level metadata along with basic file metadata for each file
      *          in the dataset.
+     * @param context - supplies optional parameters. Needs to support 
+     *               context.isDatasetMetadataOnly(). In a situation where we 
+     *               need to generate a format like DC that has no use for the 
+     *               file-level metadata, it makes sense to skip retrieving and 
+     *               formatting it, since there can be a very large number of 
+     *               files in a dataset.
      */
-    JsonObject getDatasetJson();
+    JsonObject getDatasetJson(ExportDataContext... context);    
 
     /**
      * 
@@ -32,14 +38,15 @@ public interface ExportDataProvider {
      * @apiNote - THis, and the JSON format are the only two that provide complete
      *          dataset-level metadata along with basic file metadata for each file
      *          in the dataset.
+     * @param context - supplies optional parameters.
      */
-    JsonObject getDatasetORE();
+    JsonObject getDatasetORE(ExportDataContext... context);
 
     /**
      * Dataverse is capable of extracting DDI-centric metadata from tabular
      * datafiles. This detailed metadata, which is only available for successfully
      * "ingested" tabular files, is not included in the output of any other methods
-     * in this interface.
+     * in this interface. 
      * 
      * @return - a JSONArray with one entry per ingested tabular dataset file.
      * @apiNote - there is no JSON schema available for this output and the format
@@ -47,9 +54,26 @@ public interface ExportDataProvider {
      *          edu.harvard.iq.dataverse.export.DDIExporter and the @see
      *          edu.harvard.iq.dataverse.util.json.JSONPrinter classes where this
      *          output is used/generated (respectively).
+     * @param context - supplies optional parameters.
      */
-    JsonArray getDatasetFileDetails();
+    JsonArray getDatasetFileDetails(ExportDataContext... context);
 
+    /**
+     * Similar to the above, but 
+     * a) retrieves the information for the ingested/tabular data files _only_
+     * b) provides an option for retrieving this stuff in batches 
+     * c) provides an option for skipping restricted/embargoed etc. files.
+     * Intended for datasets with massive numbers of tabular files and datavariables. 
+     * @param context - supplies optional parameters.
+     * current (2.1.0) known use cases:
+     *    context.isPublicFilesOnly();
+     *    context.getOffset();
+     *    context.getLength();
+     * @return json array containing the datafile/filemetadata->datatable->datavariable metadata
+     * @throws ExportException
+     */
+    JsonArray getTabularDataDetails(ExportDataContext ... context) throws ExportException;
+    
     /**
      * 
      * @return - the subset of metadata conforming to the schema.org standard as
@@ -58,8 +82,9 @@ public interface ExportDataProvider {
      * @apiNote - as this metadata export is not complete, it should only be used as
      *          a starting point for an Exporter if it simplifies your exporter
      *          relative to using the JSON or OAI_ORE exports.
+     * @param context - supplies optional parameters.
      */
-    JsonObject getDatasetSchemaDotOrg();
+    JsonObject getDatasetSchemaDotOrg(ExportDataContext... context);
 
     /**
      * 
@@ -68,8 +93,9 @@ public interface ExportDataProvider {
      * @apiNote - as this metadata export is not complete, it should only be used as
      *          a starting point for an Exporter if it simplifies your exporter
      *          relative to using the JSON or OAI_ORE exports.
+     * @param context - supplies optional parameters.
      */
-    String getDataCiteXml();
+    String getDataCiteXml(ExportDataContext... context);
 
     /**
      * If an Exporter has specified a prerequisite format name via the
@@ -88,9 +114,10 @@ public interface ExportDataProvider {
      *          malfunction, e.g. if you depend on format "ddi" and a third party
      *          Exporter is configured to replace the internal ddi Exporter in
      *          Dataverse.
+     * @param context - supplies optional parameters.
      */
-    default Optional<InputStream> getPrerequisiteInputStream() {
+    default Optional<InputStream> getPrerequisiteInputStream(ExportDataContext... context) {
         return Optional.empty();
     }
-
-}
+   
+ }
