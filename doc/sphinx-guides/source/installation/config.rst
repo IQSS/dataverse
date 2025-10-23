@@ -3634,7 +3634,7 @@ The default value when not set is "chicago-author-date, ieee".
 .. _localcontexts:
 
 dataverse.localcontexts.url
-+++++++++++++++++
++++++++++++++++++++++++++++
 
 .. note::
    For more information about LocalContexts integration, see :doc:`/installation/localcontexts`.
@@ -3647,7 +3647,7 @@ The URL for the Local Contexts Hub API.
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_LOCALCONTEXTS_URL``.
 
 dataverse.localcontexts.api-key
-+++++++++++++++++++++
++++++++++++++++++++++++++++++++
 
 The API key for accessing the Local Contexts Hub.
 
