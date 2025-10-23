@@ -8,6 +8,6 @@ If you have enabled the Croissant dataset metadata exporter, you should upgrade 
 
 - Stop Payara.
 - Delete the old Croissant exporter jar file. It will be located in the directory defined by the `dataverse.spi.exporters.directory` setting.
-- Download the updated Croissant jar from https://repo1.maven.org/maven2/io/gdcc/export/croissant/ and place it the same directory.
+- Download the updated Croissant jar from https://repo1.maven.org/maven2/io/gdcc/export/croissant/ and place it in the same directory.
 - Restart Payara.
 - Run reExportAll.
