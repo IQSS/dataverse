@@ -772,22 +772,7 @@ public class GuestbookResponseServiceBean {
     }
     
     private void setUserDefaultResponses(GuestbookResponse guestbookResponse, DataverseSession session) {
-        User user = session.getUser();
-        
-        if (user != null) {
-            guestbookResponse.setEmail(getUserEMail(user));
-            guestbookResponse.setName(getUserName(user));
-            guestbookResponse.setInstitution(getUserInstitution(user));
-            guestbookResponse.setPosition(getUserPosition(user));
-            guestbookResponse.setAuthenticatedUser(getAuthenticatedUser(user));
-        } else {
-            guestbookResponse.setEmail("");
-            guestbookResponse.setName("");
-            guestbookResponse.setInstitution("");
-            guestbookResponse.setPosition("");
-            guestbookResponse.setAuthenticatedUser(null);
-        }
-        guestbookResponse.setSessionId(session.toString());
+        setUserDefaultResponses(guestbookResponse, session, session.getUser());
     }
 
     public GuestbookResponse initDefaultGuestbookResponse(Dataset dataset, DataFile dataFile, DataverseSession session) {
