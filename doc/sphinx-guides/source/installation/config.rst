@@ -96,7 +96,7 @@ Still feel like activating this option in your configuration? - Have fun and be 
 
 .. _signed-urls-forwarded-proto-header:
 
-Using X-Forwarded-Proto for Signed Urls
+Using X-Forwarded-Proto for Signed URLs
 +++++++++++++++++++++++++++++++++++++++
 
 If you use a proxy such as Apache or Nginx, or have a firewall such as Anubis, and they are configured to forward traffic to Dataverse over HTTP
