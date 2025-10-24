@@ -1339,9 +1339,21 @@ public class UtilIT {
     }
 
     static Response getFileVersionDifferences(String fileId, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/files/" + fileId + "/versionDifferences");
+        return getFileVersionDifferences(fileId, apiToken, null, null);
+    }
+
+    static Response getFileVersionDifferences(String fileId, String apiToken, Integer limit, Integer offset) {
+        RequestSpecification request = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+
+        if (limit != null) {
+            request.queryParam("limit", limit);
+        }
+        if (offset != null) {
+            request.queryParam("offset", offset);
+        }
+
+        return request.get("/api/files/" + fileId + "/versionDifferences");
     }
 
     static Response testIngest(String fileName, String fileType) {
@@ -1787,14 +1799,21 @@ public class UtilIT {
                         + "&includeDeaccessioned="
                         + includeDeaccessioned);
     }
+
+    static Response summaryDatasetVersionDifferences(String persistentId, String apiToken) {
+        return summaryDatasetVersionDifferences(persistentId, null, null, apiToken);
+    }
     
-    static Response summaryDatasetVersionDifferences(String persistentId,  String apiToken) {
+    static Response summaryDatasetVersionDifferences(String persistentId, Integer limit, Integer offset, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("limit", limit)
+                .queryParam("offset", offset)
                 .get("/api/datasets/:persistentId/versions/compareSummary"
                         + "?persistentId="
                         + persistentId);
     }
+
     static Response getDatasetWithOwners(String persistentId,  String apiToken, boolean returnOwners) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -3862,6 +3881,35 @@ public class UtilIT {
             .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
             .put("/api/datasets/" + datasetId + "/metadata?replace=" + replace);
         return response;
+    }
+    
+    static Response updateDatasetTermsAndAccess(String idOrPersistentIdOfDataset, String apiToken, String pathToJsonFile) {
+        String idInPath = idOrPersistentIdOfDataset;
+        String optionalQueryParam = "";
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentIdOfDataset;
+        }
+
+        String jsonIn = getDatasetTermsFromFile(pathToJsonFile);
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .body(jsonIn)
+                .put("/api/datasets/" + idInPath + "/access" + optionalQueryParam);
+        return response;
+    }
+    
+    public static String getDatasetTermsFromFile(String pathToJsonFile) {
+        File datasetTermsJson = new File(pathToJsonFile);
+        try {
+            String datasetTermsAsJson = new String(Files.readAllBytes(Paths.get(datasetTermsJson.getAbsolutePath())));
+            return datasetTermsAsJson;
+        } catch (IOException ex) {
+            Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+
     }
 
     static Response deleteDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody) {
