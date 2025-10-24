@@ -3,7 +3,9 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -17,6 +19,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
+import edu.harvard.iq.dataverse.datasetversionsummaries.DatasetVersionSummary;
 import software.amazon.awssdk.services.s3.model.CompletedPart;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.*;
@@ -1149,6 +1152,42 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.editMetadata.error.parseUpdate", List.of(ex.getMessage())));
         } catch (WrappedResponse ex) {
             logger.log(Level.SEVERE, "Update metadata error: " + ex.getMessage(), ex);
+            return ex.getResponse();
+        }
+    }
+    
+    @PUT
+    @AuthRequired
+    @Path("{id}/access")
+    public Response editVersionTermsOfAccess(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id,
+                                        @QueryParam("sourceLastUpdateTime") String sourceLastUpdateTime) {
+        try {
+            
+            boolean publicInstall = settingsSvc.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false);
+            
+            Dataset dataset = findDatasetOrDie(id);
+
+            if (sourceLastUpdateTime != null) {
+                validateInternalTimestampIsNotOutdated(dataset, sourceLastUpdateTime);
+            }
+
+            JsonObject json = JsonUtil.getJsonObject(jsonBody);
+
+            TermsOfUseAndAccess toua = jsonParser().parseTermsOfAccess(json);
+            
+            if (publicInstall && (toua.isFileAccessRequest() || !toua.getTermsOfAccess().isEmpty())){
+                return error(BAD_REQUEST, "Setting File Access Request or Terms of Access is not permitted on a public installation.");
+            }
+                       
+            DatasetVersion updatedVersion = execCommand(new UpdateDatasetTermsOfAccessCommand(dataset, toua, createDataverseRequest(getRequestUser(crc)))).getLatestVersion();
+
+            return ok(json(updatedVersion, true));
+
+        } catch (JsonParseException ex) {
+            logger.log(Level.SEVERE, "Semantic error parsing dataset terms update Json: " + ex.getMessage(), ex);
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.editMetadata.error.parseUpdate", List.of(ex.getMessage())));
+        } catch (WrappedResponse ex) {
+            logger.log(Level.SEVERE, "Update terms of use error: " + ex.getMessage(), ex);
             return ex.getResponse();
         }
     }
@@ -3138,76 +3177,21 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/compareSummary")
-    public Response getCompareVersionsSummary(@Context ContainerRequestContext crc, @PathParam("id") String id,
-                                      @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        try {
-            Dataset dataset = findDatasetOrDie(id);
-            User user = getRequestUser(crc);
-            JsonArrayBuilder differenceSummaries = Json.createArrayBuilder();
-
-            for (DatasetVersion dv : dataset.getVersions()) {
-                //only get summaries of draft is user may view unpublished
-
-                if (dv.isPublished() ||dv.isDeaccessioned() || permissionService.hasPermissionsFor(user, dv.getDataset(),
-                        EnumSet.of(Permission.ViewUnpublishedDataset))) {
-
-                    JsonObjectBuilder versionBuilder = new NullSafeJsonBuilder();
-                    versionBuilder.add("id", dv.getId());
-                    versionBuilder.add("versionNumber", dv.getFriendlyVersionNumber());
-                    DatasetVersionDifference dvdiff = dv.getDefaultVersionDifference();
-                    if (dvdiff == null) {
-                        if (dv.isReleased()) {
-                            if (dv.getPriorVersionState() == null) {
-                                versionBuilder.add("summary", "firstPublished");
-                            }
-                            if (dv.getPriorVersionState() != null && dv.getPriorVersionState().equals(VersionState.DEACCESSIONED)) {
-                                versionBuilder.add("summary", "previousVersionDeaccessioned");
-                            }
-                        }
-                        if (dv.isDraft()) {
-                            if (dv.getPriorVersionState() == null) {
-                                versionBuilder.add("summary", "firstDraft");
-                            }
-                            if (dv.getPriorVersionState() != null && dv.getPriorVersionState().equals(VersionState.DEACCESSIONED)) {
-                                versionBuilder.add("summary", "previousVersionDeaccessioned");
-                            }
-                        }
-                        if (dv.isDeaccessioned()) {
-                            versionBuilder.add("summary", getDeaccessionJson(dv));
-                        }
-
-                    } else {
-                        versionBuilder.add("summary", dvdiff.getSummaryDifferenceAsJson());
-                    }
-                    versionBuilder.add("versionNote", dv.getVersionNote());
-                    versionBuilder.add("contributors", datasetversionService.getContributorsNames(dv));
-                    versionBuilder.add("publishedOn", !dv.isDraft() ? dv.getPublicationDateAsString() : "");
-                    differenceSummaries.add(versionBuilder);
-                }
+    public Response getCompareVersionsSummary(@Context ContainerRequestContext crc,
+                                              @PathParam("id") String id,
+                                              @QueryParam("limit") Integer limit,
+                                              @QueryParam("offset") Integer offset) {
+        return response(req -> {
+            try {
+                Dataset dataset = findDatasetOrDie(id);
+                List<DatasetVersionSummary> versionSummaries = execCommand(new GetDatasetVersionSummariesCommand(req, dataset, limit, offset));
+                JsonArrayBuilder versionSummariesArrayBuilder = jsonDatasetVersionSummaries(versionSummaries);
+                long datasetVersionTotalCount = execCommand(new GetDatasetVersionCountCommand(req, dataset));
+                return ok(versionSummariesArrayBuilder, datasetVersionTotalCount);
+            } catch (WrappedResponse wr) {
+                return wr.getResponse();
             }
-            return ok(differenceSummaries);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-    }
-
-    private JsonObject getDeaccessionJson(DatasetVersion dv) {
-
-        JsonObjectBuilder compositionBuilder = Json.createObjectBuilder();
-
-        if (dv.getDeaccessionNote() != null && !dv.getDeaccessionNote().isEmpty()) {
-            compositionBuilder.add("reason", dv.getDeaccessionNote());
-        }
-
-        if (dv.getDeaccessionLink() != null && !dv.getDeaccessionLink().isEmpty()) {
-            compositionBuilder.add("url", dv.getDeaccessionLink());
-        }
-
-        JsonObject json = Json.createObjectBuilder()
-                .add("deaccessioned", compositionBuilder)
-                .build();
-
-        return json;
+        }, getRequestUser(crc));
     }
 
     private static Set<String> getDatasetFilenames(Dataset dataset) {
@@ -3690,7 +3674,7 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
 
-        return response(req -> ok(dataset.getEffectiveStorageDriverId()), getRequestUser(crc));
+        return ok(JsonPrinter.jsonStorageDriver(dataset.getEffectiveStorageDriverId(), dataset));
     }
 
     @PUT
@@ -6126,5 +6110,36 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             return ok("Note deleted");
         }, getRequestUser(crc));
     }
+    
+    @GET
+    @AuthRequired
+    @Path("{identifier}/assignments/history")
+    @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
+    public Response getRoleAssignmentHistory(@Context ContainerRequestContext crc, @PathParam("identifier") String id, @Context HttpHeaders headers) {
+        return response(req -> {
+            Dataset dataset = findDatasetOrDie(id);
+            
+            // user is authenticated
+            AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
 
+            return getRoleAssignmentHistoryResponse(dataset, authenticatedUser, false, headers);
+        }, getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/files/assignments/history")
+    @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
+    public Response getFilesRoleAssignmentHistory(@Context ContainerRequestContext crc,
+            @PathParam("identifier") String id,
+            @Context HttpHeaders headers) {
+        return response(req -> {
+            Dataset dataset = findDatasetOrDie(id);
+            
+            // user is authenticated
+            AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+
+            return getRoleAssignmentHistoryResponse(dataset, authenticatedUser, true, headers);
+        }, getRequestUser(crc));
+    }
 }
