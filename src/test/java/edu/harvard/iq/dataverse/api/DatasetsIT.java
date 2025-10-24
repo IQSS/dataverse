@@ -76,10 +76,6 @@ public class DatasetsIT {
         removeIdentifierGenerationStyle.then().assertThat()
                 .statusCode(200);
 
-        Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
-        removeExcludeEmail.then().assertThat()
-                .statusCode(200);
-
         Response removeAnonymizedFieldTypeNames = UtilIT.deleteSetting(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
         removeAnonymizedFieldTypeNames.then().assertThat()
                 .statusCode(200);
@@ -108,10 +104,6 @@ public class DatasetsIT {
 
         Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
         removeIdentifierGenerationStyle.then().assertThat()
-                .statusCode(200);
-
-        Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
-        removeExcludeEmail.then().assertThat()
                 .statusCode(200);
 
         Response removeAnonymizedFieldTypeNames = UtilIT.deleteSetting(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
