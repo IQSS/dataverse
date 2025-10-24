@@ -1339,9 +1339,21 @@ public class UtilIT {
     }
 
     static Response getFileVersionDifferences(String fileId, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/files/" + fileId + "/versionDifferences");
+        return getFileVersionDifferences(fileId, apiToken, null, null);
+    }
+
+    static Response getFileVersionDifferences(String fileId, String apiToken, Integer limit, Integer offset) {
+        RequestSpecification request = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+
+        if (limit != null) {
+            request.queryParam("limit", limit);
+        }
+        if (offset != null) {
+            request.queryParam("offset", offset);
+        }
+
+        return request.get("/api/files/" + fileId + "/versionDifferences");
     }
 
     static Response testIngest(String fileName, String fileType) {
@@ -1796,14 +1808,21 @@ public class UtilIT {
                         + "&includeDeaccessioned="
                         + includeDeaccessioned);
     }
+
+    static Response summaryDatasetVersionDifferences(String persistentId, String apiToken) {
+        return summaryDatasetVersionDifferences(persistentId, null, null, apiToken);
+    }
     
-    static Response summaryDatasetVersionDifferences(String persistentId,  String apiToken) {
+    static Response summaryDatasetVersionDifferences(String persistentId, Integer limit, Integer offset, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("limit", limit)
+                .queryParam("offset", offset)
                 .get("/api/datasets/:persistentId/versions/compareSummary"
                         + "?persistentId="
                         + persistentId);
     }
+
     static Response getDatasetWithOwners(String persistentId,  String apiToken, boolean returnOwners) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -4767,6 +4786,59 @@ public class UtilIT {
                                                 String apiToken) {
         return updateDataverseFeaturedItem(featuredItemId, content, displayOrder, keepFile, pathToFile, null, null, apiToken);
     }
+    
+    static Response getLinkableDataverses(String type, String dvObjectId, String apiToken, String searchTerm) {
+        return getLinkableDataverses(type, dvObjectId, apiToken, searchTerm, false);
+    }
+   
+    static Response getLinkableDataverses(String type, String dvObjectId, String apiToken, String searchTerm, boolean alreadyLinked) {
+
+        String idInPath = dvObjectId; // Assume it's a number to start.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (type.equals("dataset")) {
+            if (!NumberUtils.isCreatable(idInPath)) {
+                idInPath = ":persistentId";
+                if (searchTerm == null ||  searchTerm.isEmpty() ) {                    
+                    optionalQueryParam = "?persistentId=" + dvObjectId;
+                } else {
+                    optionalQueryParam = "&persistentId=" + dvObjectId;
+                }
+            }
+        }
+        
+        if (alreadyLinked){
+            if (optionalQueryParam.isEmpty() && (searchTerm == null ||  searchTerm.isEmpty())){
+                optionalQueryParam = "?alreadyLinking=true";
+            } else {
+                optionalQueryParam = optionalQueryParam + "&alreadyLinking=true";
+            }           
+        }
+
+        if (searchTerm == null) {
+            if (!apiToken.isEmpty()) {
+                return given()
+                        .header(API_TOKEN_HTTP_HEADER, apiToken)
+                        .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses" + optionalQueryParam);
+
+            } else {
+                return given()
+                        .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses" + optionalQueryParam);
+            }
+
+        } else {
+            if (!apiToken.isEmpty()) {
+                return given()
+                        .header(API_TOKEN_HTTP_HEADER, apiToken)
+                        .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses?searchTerm=" + searchTerm + optionalQueryParam);
+
+            } else {
+                return given()
+                        .get("/api/dataverses/" + idInPath + "/" + type + "/linkingDataverses?searchTerm=" + searchTerm + optionalQueryParam);
+            }
+
+        }
+    }
+    
     static Response updateDataverseFeaturedItem(long featuredItemId,
                                                 String content,
                                                 int displayOrder,
