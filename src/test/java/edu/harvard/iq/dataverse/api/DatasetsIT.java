@@ -3875,6 +3875,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        
         Response setCurationLabelSets = UtilIT.setSetting(SettingsServiceBean.Key.AllowedCurationLabels, "{\"StandardProcess\":[\"Author contacted\", \"Privacy Review\", \"Awaiting paper publication\", \"Final Approval\"],\"AlternateProcess\":[\"State 1\",\"State 2\",\"State 3\"]}");
         setCurationLabelSets.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -3885,7 +3887,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response setDataverseCurationLabelSetResponse = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "AlternateProcess");
         setDataverseCurationLabelSetResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
         
-        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
         assertEquals(200, makeSuperUser.getStatusCode());
 
         //Non-existent option
@@ -3944,8 +3946,66 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response setInvalidStatus = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "Invalid Status");
         setInvalidStatus.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     
+        // Publish the dataset
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        // Verify that the current curation label is now empty after publishing
+        Response getStatusAfterPublish = UtilIT.getDatasetCurationStatus(datasetId, apiToken, false);
+        getStatusAfterPublish.then().assertThat().statusCode(OK.getStatusCode());
+        JsonObject statusAfterPublish = Json.createReader(new StringReader(getStatusAfterPublish.body().asString())).readObject();
+        JsonObject dataObject = statusAfterPublish.getJsonObject("data");
+        assertFalse(dataObject.containsKey("label"), "Curation label should be empty after publishing");
+          
+        //Cause a new draft version
+        String jsonLDTerms = "{\"https://dataverse.org/schema/core#fileTermsOfAccess\":{\"https://dataverse.org/schema/core#dataAccessPlace\":\"Somewhere\"}}";
+        Response updateTerms = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, jsonLDTerms, true);
+        updateTerms.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        // Add a new valid curation label
+        Response setNewStatus = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 2");
+        setNewStatus.then().assertThat().statusCode(OK.getStatusCode());
+        
+        // Verify the label was set
+        Response getStatusAfterSet = UtilIT.getDatasetCurationStatus(datasetId, apiToken, false);
+        getStatusAfterSet.then().assertThat().statusCode(OK.getStatusCode());
+        JsonObject statusAfterSet = Json.createReader(new StringReader(getStatusAfterSet.body().asString())).readObject();
+        JsonObject dataInSecondDraft = statusAfterSet.getJsonObject("data");
+        assertEquals("State 2", dataInSecondDraft.getString("label"), "Curation label should be set to State 2");
+        
+        // Publish the dataset again using updatecurrent as superuser
+        Response updateCurrentResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "updatecurrent", apiToken);
+        updateCurrentResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        // Verify that the current curation label is now empty after updatecurrent
+        Response getStatusAfterUpdateCurrent = UtilIT.getDatasetCurationStatus(datasetId, apiToken, false);
+        getStatusAfterUpdateCurrent.then().assertThat().statusCode(OK.getStatusCode());
+        JsonObject statusAfterUpdateCurrent = Json.createReader(new StringReader(getStatusAfterUpdateCurrent.body().asString())).readObject();
+        JsonObject dataAfterUpdateCurrent = statusAfterUpdateCurrent.getJsonObject("data");
+        assertFalse(dataAfterUpdateCurrent.containsKey("label"), "Curation label should be empty after updatecurrent");
+        
+        // Verify that the history contains the previously added label
+        Response getHistoryAfterUpdateCurrent = UtilIT.getDatasetCurationStatus(datasetId, apiToken, true);
+        getHistoryAfterUpdateCurrent.then().assertThat().statusCode(OK.getStatusCode());
+        
+        // Extract the data array from the response
+        JsonObject responseObj = Json.createReader(new StringReader(getHistoryAfterUpdateCurrent.body().asString())).readObject();
+        JsonArray historyAfterUpdateCurrent = responseObj.getJsonArray("data");
+        
+        // Verify history contains the State 2 label
+        boolean foundState2 = false;
+        for (int i = 0; i < historyAfterUpdateCurrent.size(); i++) {
+            JsonObject entry = historyAfterUpdateCurrent.getJsonObject(i);
+            if (entry.containsKey("label") && "State 2".equals(entry.getString("label"))) {
+                foundState2 = true;
+                break;
+            }
+        }
+        assertTrue(foundState2, "History should contain the State 2 label after updatecurrent");        
+       
         // Clean up
-        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         assertEquals(200, deleteDatasetResponse.getStatusCode());
     
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
@@ -6059,6 +6119,60 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     @Test
+    public void testSetGetDatasetStorageDriver() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+
+        Response storageDrivers = UtilIT.listStorageDrivers(apiToken);
+        storageDrivers.prettyPrint();
+        JsonObject data = JsonUtil.getJsonObject(storageDrivers.getBody().asString());
+        String first = data.getJsonObject("data").keySet().iterator().next();
+        String name = data.getJsonObject("data").getString(first);
+
+        Response setDriver = UtilIT.setDatasetStorageDriver(datasetId, first, apiToken);
+        setDriver.prettyPrint();
+        assertEquals(200, setDriver.getStatusCode());
+        Response getDriver = UtilIT.getDatasetStorageDriver(datasetId, apiToken);
+        getDriver.prettyPrint();
+        assertEquals(200, getDriver.getStatusCode());
+        getDriver.then().assertThat()
+                .body("data.name", CoreMatchers.equalTo(name))
+                .body("data.type", CoreMatchers.notNullValue())
+                .body("data.label", CoreMatchers.notNullValue())
+                .body("data.directUpload", CoreMatchers.notNullValue())
+                .body("data.directDownload", CoreMatchers.notNullValue())
+                .statusCode(OK.getStatusCode());
+
+        // Test dataset under root with default storage driver
+        Response getStorageDriverResponse = UtilIT.getStorageDriver("root", apiToken, Boolean.TRUE);
+        getStorageDriverResponse.prettyPrint();
+        data = JsonUtil.getJsonObject(getStorageDriverResponse.getBody().asString());
+        name = data.getJsonObject("data").getString("name");
+        String type = data.getJsonObject("data").getString("type");
+        String label = data.getJsonObject("data").getString("label");
+        createDataset = UtilIT.createRandomDatasetViaNativeApi("root", apiToken);
+        datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        getDriver = UtilIT.getDatasetStorageDriver(datasetId, apiToken);
+        getDriver.prettyPrint();
+        assertEquals(200, getDriver.getStatusCode());
+        getDriver.then().assertThat()
+                .body("data.name", CoreMatchers.equalTo(name))
+                .body("data.type", CoreMatchers.equalTo(type))
+                .body("data.label", CoreMatchers.equalTo(label))
+                .body("data.directUpload", CoreMatchers.notNullValue())
+                .body("data.directDownload", CoreMatchers.notNullValue())
+                .statusCode(OK.getStatusCode());
+    }
+
+    @Test
     public void testGetCanDownloadAtLeastOneFile() {
         Response createUserResponse = UtilIT.createRandomUser();
         createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -6314,11 +6428,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         compareResponse = UtilIT.compareDatasetVersions(datasetPersistentId,  ":latest-published", ":draft", apiToken, true);
         compareResponse.prettyPrint();
         compareResponse.then().assertThat().statusCode(OK.getStatusCode());
-
-        
-        
     }
-    
+
     @Test
     public void testSummaryDatasetVersionsDifferencesAPI() throws InterruptedException {
 
@@ -6417,16 +6528,19 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response updateTerms = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, jsonLDTerms, true);
         updateTerms.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
-        
+
 
         Response compareResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, apiToken);
-        compareResponse.prettyPrint(); 
+        compareResponse.prettyPrint();
 
         compareResponse.then().assertThat()
+                .body("totalCount", is(2))
+                .body("data.size()", is(2))
                 .body("data[1].versionNumber", equalTo("1.0"))
+                .body("data[1].contributors", notNullValue())
                 .body("data[1].summary", equalTo("firstPublished"))
                 .body("data[0].versionNumber", equalTo("DRAFT"))
+                .body("data[0].contributors", notNullValue())
                 .body("data[0].summary.'Citation Metadata'.Author.added", equalTo(2))
                 .body("data[0].summary.'Citation Metadata'.Subject.added", equalTo(2))
                 .body("data[0].summary.'Additional Citation Metadata'.changed", equalTo(0))
@@ -6438,32 +6552,87 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode());
 
         //user with no privileges will only see the published version
-        
+
         Response createUsernoPriv = UtilIT.createRandomUser();
         assertEquals(200, createUsernoPriv.getStatusCode());
         String apiTokenNoPriv = UtilIT.getApiTokenFromResponse(createUsernoPriv);
-        
+
         Response compareResponse2 = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, apiTokenNoPriv);
         compareResponse2.prettyPrint();
         compareResponse2.then().assertThat()
+                .body("totalCount", is(1))
+                .body("data.size()", is(1))
                 .body("data[0].versionNumber", CoreMatchers.equalTo("1.0"))
                 .body("data[0].summary", CoreMatchers.equalTo("firstPublished"))
                 .statusCode(OK.getStatusCode());
-        
+
         Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
         deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
-        
+
         compareResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, apiToken);
-        compareResponse.prettyPrint(); 
-        
+        compareResponse.prettyPrint();
+
         compareResponse.then().assertThat()
+                .body("totalCount", is(2))
+                .body("data.size()", is(2))
                 .body("data[1].versionNumber", equalTo("1.0"))
                 .body("data[1].summary.deaccessioned.reason", equalTo("Test deaccession reason."))
                 .body("data[0].versionNumber", equalTo("DRAFT"))
                 .body("data[0].summary.", equalTo("previousVersionDeaccessioned"))
                 .statusCode(OK.getStatusCode());
-        
-        
+
+        // Pagination tests
+
+        // Publish the current DRAFT as a minor version to create version 2.0
+        // This will give us more versions to test pagination against.
+
+        publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+        publishDataset.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Make one file change to create a new DRAFT on top of version 2.0
+        pathToJsonFilePostPub = "doc/sphinx-guides/source/_static/api/dataset-add-metadata-after-pub.json";
+        addDataToPublishedVersion = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFilePostPub, apiToken);
+        addDataToPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Test pagination: No pagination. Should return all 3 version differences (DRAFT, 2.0, 1.0).
+        Response compareAllResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, apiToken);
+        compareAllResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", is(3))
+                .body("totalCount", is(3))
+                .body("data[0].versionNumber", equalTo("DRAFT"))
+                .body("data[1].versionNumber", equalTo("2.0"))
+                .body("data[2].versionNumber", equalTo("1.0"));
+
+        // Test pagination: Use limit=1. Should return only the latest difference (DRAFT).
+        Response compareLimitResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, 1, null, apiToken);
+        compareLimitResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", is(1))
+                .body("totalCount", is(3))
+                .body("data[0].versionNumber", equalTo("DRAFT"));
+
+        // Test pagination: Use limit=1 and offset=1. Should skip the first result and return the second (2.0).
+        Response compareOffsetResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, 1, 1, apiToken);
+        compareOffsetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", is(1))
+                .body("totalCount", is(3))
+                .body("data[0].versionNumber", equalTo("2.0"));
+
+        // Test invalid pagination: limit=-1 (should return a bad request error)
+        compareAllResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, -1, 1, apiToken);
+        compareAllResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("status", equalTo("ERROR"))
+                .body("message", containsString("The limit parameter cannot be negative."));
+
+        // Test invalid pagination: offset=-1 (should return a bad request error)
+        compareAllResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, 1, -1, apiToken);
+        compareAllResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("status", equalTo("ERROR"))
+                .body("message", containsString("The offset parameter cannot be negative."));
     }
     
     @Test
