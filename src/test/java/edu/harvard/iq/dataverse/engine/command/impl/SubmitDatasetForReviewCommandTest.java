@@ -113,7 +113,7 @@ public class SubmitDatasetForReviewCommandTest {
                     }
 
                     @Override
-                    public RoleAssignment save(RoleAssignment assignment) {
+                    public RoleAssignment save(RoleAssignment assignment, DataverseRequest req) {
                         // no-op
                         return assignment;
                     }
