@@ -816,6 +816,29 @@ public class Files extends AbstractApiBean {
 
     @POST
     @AuthRequired
+    @Path("{id}/forcecontenttype")
+    public Response forceContentTypeDatafile(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("contentType") String contentType, @QueryParam("dryRun") boolean dryRun) {
+        try {
+            DataFile dataFileIn = findDataFileOrDie(id);
+            // Ingested Files have mimetype = text/tab-separated-values
+            // No need to redetect
+            if (dataFileIn.isTabularData()) {
+                return error(BAD_REQUEST, "The file is an ingested tabular file.");
+            }
+            String originalContentType = dataFileIn.getContentType();
+            DataFile dataFileOut = execCommand(new ForceContentTypeCommand(createDataverseRequest(getRequestUser(crc)), dataFileIn, dryRun, contentType));
+            NullSafeJsonBuilder result = NullSafeJsonBuilder.jsonObjectBuilder()
+                    .add("dryRun", dryRun)
+                    .add("oldContentType", originalContentType)
+                    .add("newContentType", dataFileOut.getContentType());
+            return ok(result);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    @POST
+    @AuthRequired
     @Path("{id}/extractNcml")
     public Response extractNcml(@Context ContainerRequestContext crc, @PathParam("id") String id) {
         try {
