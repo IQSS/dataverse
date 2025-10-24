@@ -2053,7 +2053,7 @@ public class DatasetsIT {
         int roleAssignmentId = (int) roleAssignment.get("id");
         logger.info("role assignment id: " + roleAssignmentId);
         assertEquals(roleAssignmentIdFromCreate, roleAssignmentId);
-        Response revoke = UtilIT.revokeRole(dataverseAlias, roleAssignmentId, apiToken);
+        Response revoke = UtilIT.revokeRoleOnDataverse(dataverseAlias, roleAssignmentId, apiToken);
         revoke.prettyPrint();
         assertEquals(OK.getStatusCode(), revoke.getStatusCode());
 
