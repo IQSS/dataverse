@@ -14,7 +14,7 @@ import java.util.*;
 /**
  * Lists the templates {@link Template} of a {@link Dataverse}.
  */
-@RequiredPermissions(Permission.EditDataverse)
+@RequiredPermissions(Permission.AddDataset)
 public class ListDataverseTemplatesCommand extends AbstractCommand<List<Template>> {
 
     private final Dataverse dataverse;
