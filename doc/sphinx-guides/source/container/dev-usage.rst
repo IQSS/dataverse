@@ -226,7 +226,11 @@ Hotswapping methods requires using JDWP (Debug Mode), but does not allow switchi
    .. tabs::
      .. group-tab:: VS Code
 
-       As described in `Payara VS Code extension docs <https://docs.payara.fish/enterprise/docs/Technical%20Documentation/Ecosystem/IDE%20Integration/VSCode%20Extension/Overview.html>`_, open the Extensions panel on the left-most menu of the editor (Ctrl + Shift + X), search for "payara tools", and install the extension.
+       Open the extensions panel, search for "Payara Tools", and install the extension.
+
+       - `docs <https://docs.payara.fish/community/docs/Technical%20Documentation/Ecosystem/IDE%20Integration/VSCode%20Extension/Overview.html>`_
+       - `source <https://github.com/payara/ecosystem-vscode-plugin>`_
+       - `issues <https://github.com/payara/ecosystem-support/issues>`_
 
      .. group-tab:: Netbeans
 
@@ -243,6 +247,8 @@ Hotswapping methods requires using JDWP (Debug Mode), but does not allow switchi
 
    .. tabs::
      .. group-tab:: VS Code
+
+       ## Container version (not working)
 
        First, gather some information about your running containers. Run the following:
 
@@ -277,6 +283,66 @@ Hotswapping methods requires using JDWP (Debug Mode), but does not allow switchi
        ``Error running command payara.server.remote.connect: Channel has been closed. This is likely caused by the extension that contributes payara.server.remote.connect.``
 
        Under "Java Projects", right click "dataverse" and choose "debug on payara server".
+
+       ## Remote version (not working)
+
+       Start containers with this command:
+
+       ``mvn -Pct clean package docker:run``
+
+       Wait until "dev_bootstrap" tells you it has configured Dataverse or that it's already configured.
+
+       Stop containers (Ctrl-c).
+
+       Start containers again, this time, skipping deployment, which we will do with VS Code. We can also savely skip "clean" and "package" since we just did it.
+
+       ``mvn -Pct docker:run -Dapp.skipDeploy``
+
+       Wait until "dev_bootstrap" starts showing "Checking the http://dataverse:8080/api/info/version" in a loop. It's waiting for you to deploy using VS Code.
+
+       Click "View", then "Command Palette", then run "Add Payara Server".
+
+       Choose the following:
+
+       - Remote Domain
+       - domain1
+       - localhost
+       - default ports
+       - custom username/password (admin/admin)
+
+       This is the resulting config:
+
+       ``[{"type":"remote","name":"payara6","host":"localhost","httpPort":8080,"adminPort":4848,"domainName":"domain1","username":"admin","password":"admin","instanceType":"default"}]``
+
+       Switch adminPort to 4949.
+
+       Then go to the explorer view. Under Payara servers click the connect button next to the server you added.
+
+       Create a workspace. This seems to be required?
+
+       Right click "dataverse" at the top of the explorer view and click "Debug on Payara". As of this writing the following error is expected:
+
+       ``Cannot read properties of undefined (reading '0')``
+
+       We reported this at https://github.com/payara/ecosystem-support/issues/99
+
+       ## Troubleshooting
+
+       To see the config (on macOS):
+
+       ``cat ~/Library/Application\ Support/Code/User/globalStorage/payara.payara-vscode/servers.json``
+
+       Something is misconfigured if you see this error when you click "connect":
+
+       `Error running command payara.server.remote.connect: Channel has been closed. This is likely caused by the extension that contributes payara.server.remote.connect.`
+
+       This error might be accompanied by the under "output":
+
+       Connecting to payara6[localhost:4848] ...
+       Connection failure payara6[localhost:4848]: EPROTO [write EPROTO 1357212100672:error:100000f7:SSL routines:OPENSSL_internal:WRONG_VERSION_NUMBER:../../third_party/boringssl/src/ssl/tls_record.cc:127:
+       ]. Please check your network connectivity or firewall settings.
+
+       Check your port. As explained above, we don't use the standard 4848 port.
 
      .. group-tab:: Netbeans
 
