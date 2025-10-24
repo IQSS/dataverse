@@ -695,7 +695,7 @@ public class JsonPrinter {
         Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(true);
         List<DatasetFieldType.FieldType> excludedFieldTypeList = new ArrayList<>();
         // Exclude the Email field or override the exclusion of the Email field type based on the settings ExcludeEmailFromExport and ignoreSettingExcludeEmailFromExport
-        if (settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false) && !ignoreSettingExcludeEmailFromExport) {
+        if ((settingsService != null) && settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false) && !ignoreSettingExcludeEmailFromExport) {
             excludedFieldTypeList.add(DatasetFieldType.FieldType.EMAIL);
         }
         DatasetFieldWalker.walk(fields, excludedFieldTypeList, cvocMap, new DatasetFieldsToJson(fieldsArray, anonymizedFieldTypeNamesList));
