@@ -3,7 +3,7 @@
 A new endpoint has been implemented to manage dataset terms of access for restricted files.
 
 ### Functionality
-- Updates the terms of access of a dataset by applying it to the draft version.
+- Updates the terms of access for a dataset by applying it to the draft version.
 - If no draft exists, a new one is automatically created.
 
 ### Usage
