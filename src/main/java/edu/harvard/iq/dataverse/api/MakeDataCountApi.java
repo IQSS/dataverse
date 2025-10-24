@@ -15,10 +15,7 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Future;
