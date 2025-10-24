@@ -230,6 +230,11 @@ public enum FeatureFlags {
      */
     ENABLE_PID_FAILURE_LOG("enable-pid-failure-log"),
     
+    /**
+     * This flag turns on history tracking of role assignments - keeping a record of when roles were granted
+     * or revoked, at what times, and by whom.
+     */
+    ROLE_ASSIGNMENT_HISTORY("role-assignment-history"),
     ;
     
     final String flag;

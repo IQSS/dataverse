@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +20,10 @@ import org.mockito.Mockito;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 public class DatasetFieldServiceBeanTest {
 
@@ -150,6 +156,57 @@ public class DatasetFieldServiceBeanTest {
         // Another termURI not in database
         result = datasetFieldServiceBean.getIndexableStringsByTermUri("http://example.org/uuid", cvocEntry, fieldName);
         assertEquals(Collections.emptySet(), result);
+    }
+
+    @Test
+    public void testProcessPathSegmentWithArrayStringMatching() {
+        // Create a DatasetFieldServiceBean instance
+        DatasetFieldServiceBean bean = new DatasetFieldServiceBean();
+
+        String termUri = "http://example.org/term/123";
+
+        // Create a JSON structure with an array containing string values
+        JsonArrayBuilder tagsArrayBuilder = Json.createArrayBuilder();
+        JsonObject testObject = Json.createObjectBuilder().add("tag", Json.createArrayBuilder().add("research").add("science")).add("name", "one").build();
+        tagsArrayBuilder.add(testObject);
+        JsonObject testObject2 = Json.createObjectBuilder().add("tag", "art").add("name", "two").build();
+        tagsArrayBuilder.add(testObject2);
+        JsonObject testObject3 = Json.createObjectBuilder().add("tag", termUri).add("name", "three").build();
+        tagsArrayBuilder.add(testObject3);
+        JsonArray tags = tagsArrayBuilder.build();
+
+        // Test case 1: Match a string in an array of strings
+        String[] pathParts = { "tag=research", "name" };
+        Object result = bean.processPathSegment(0, pathParts, tags, termUri);
+
+        // The method should return the test object when a match is found
+        // Result should not be null when a match is found
+        assertNotNull(result);
+        assertEquals("one", result, "Result should be the original test object");
+
+        // Test case 2: Match a string
+        pathParts[0] = "tag=art";
+        result = bean.processPathSegment(0, pathParts, tags, termUri);
+
+        // The method should return the test object when a match is found
+        // Result should not be null when a match is found
+        assertNotNull(result);
+        assertEquals("two", result, "Result should be the original test object");
+
+        // Test case 3: No match in the array
+        String[] noMatchPathParts = { "tags=nonexistent" };
+        Object noMatchResult = bean.processPathSegment(0, noMatchPathParts, testObject, termUri);
+
+        // The method should return null when no match is found
+        assertNull(noMatchResult, "Result should be null when no match is found");
+
+        // Test case 4: Match with @id substitution
+
+        String[] idPathParts = { "tag=@id", "name" };
+        Object idResult = bean.processPathSegment(0, idPathParts, tags, termUri);
+
+        assertNotNull(idResult, "Result should not be null when matching with @id");
+        assertEquals("three", idResult, "Result should be the original test object");
     }
 
     /**
