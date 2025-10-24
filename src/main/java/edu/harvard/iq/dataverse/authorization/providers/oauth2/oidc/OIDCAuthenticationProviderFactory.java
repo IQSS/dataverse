@@ -43,13 +43,13 @@ public class OIDCAuthenticationProviderFactory implements AuthenticationProvider
             factoryData.get("clientSecret"),
             factoryData.get("issuer"),
             Boolean.parseBoolean(factoryData.getOrDefault("pkceEnabled", "false")),
-            factoryData.getOrDefault("pkceMethod", "S256"),
-            Boolean.parseBoolean(factoryData.getOrDefault("jsfBlocked", "false"))
+            factoryData.getOrDefault("pkceMethod", "S256")
         );
         
         oidc.setId(aRow.getId());
         oidc.setTitle(aRow.getTitle());
         oidc.setSubTitle(aRow.getSubtitle());
+        oidc.setEnabled(aRow.isEnabled());
         
         return oidc;
     }
@@ -65,13 +65,13 @@ public class OIDCAuthenticationProviderFactory implements AuthenticationProvider
             JvmSettings.OIDC_CLIENT_SECRET.lookup(),
             JvmSettings.OIDC_AUTH_SERVER_URL.lookup(),
             JvmSettings.OIDC_PKCE_ENABLED.lookupOptional(Boolean.class).orElse(false),
-            JvmSettings.OIDC_PKCE_METHOD.lookupOptional().orElse("S256"),
-            JvmSettings.OIDC_JSFBLOCKED.lookupOptional(Boolean.class).orElse(false)
+            JvmSettings.OIDC_PKCE_METHOD.lookupOptional().orElse("S256")
         );
         
         oidc.setId("oidc-mpconfig");
         oidc.setTitle(JvmSettings.OIDC_TITLE.lookupOptional().orElse("OpenID Connect"));
         oidc.setSubTitle(JvmSettings.OIDC_SUBTITLE.lookupOptional().orElse("OpenID Connect"));
+        oidc.setEnabled(JvmSettings.OIDC_ENABLED.lookupOptional(Boolean.class).orElse(true));
         
         return oidc;
     }

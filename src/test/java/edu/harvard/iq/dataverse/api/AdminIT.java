@@ -978,14 +978,14 @@ public class AdminIT {
         Response getAuthProviders = UtilIT.getAuthProviders(superuserApiToken);
         getAuthProviders.prettyPrint();
 
-        String factoryData = String.format("type: oidc | issuer: http://keycloak.mydomain.com:8090/realms/test | clientId: %s | clientSecret: %s | jsfBlocked: true", clientId, clientSecret);
+        String factoryData = String.format("type: oidc | issuer: http://keycloak.mydomain.com:8090/realms/test | clientId: %s | clientSecret: %s", clientId, clientSecret);
         JsonObject jsonObject = Json.createObjectBuilder()
                 .add("id", "oidc1")
                 .add("factoryAlias", "oidc")
                 .add("title", "Open ID Connect SPA")
                 .add("subtitle", "SPA OIDC Provider")
                 .add("factoryData", factoryData)
-                .add("enabled", true)
+                .add("enabled", false)
                 .build();
         Response addAuthProviders = UtilIT.addAuthProviders(superuserApiToken, jsonObject);
         addAuthProviders.prettyPrint();
@@ -995,9 +995,17 @@ public class AdminIT {
         getAuthProviders = UtilIT.getAuthProviders(superuserApiToken);
         getAuthProviders.prettyPrint();
         getAuthProviders.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data[1].id", equalTo("oidc1"))
-                .body("data[1].factoryData", containsString("jsfBlocked: true"));
+                .statusCode(OK.getStatusCode());
 
+        boolean found = false;
+        List<Map<String, Object>> providers = getAuthProviders.body().jsonPath().getList("data");
+        for (Map<String, Object> provider : providers) {
+            if ("oidc1".equalsIgnoreCase((String) provider.get("id"))) {
+                found = true;
+                assertTrue(provider.get("title") != null && provider.get("title").equals("Open ID Connect SPA"));
+                assertTrue(provider.get("enabled") != null && !(Boolean) provider.get("enabled"));
+            }
+        }
+        assertTrue(found);
     }
 }

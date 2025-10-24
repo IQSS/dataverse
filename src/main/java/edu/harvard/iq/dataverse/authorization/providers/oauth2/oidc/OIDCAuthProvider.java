@@ -67,8 +67,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
     final OIDCProviderMetadata idpMetadata;
     final boolean pkceEnabled;
     final CodeChallengeMethod pkceMethod;
-    final boolean jsfBlocked;
-    
+
     /**
      * Using PKCE, we create and send a special {@link CodeVerifier}. This contains a secret
      * we need again when verifying the response by the provider, thus the cache.
@@ -81,7 +80,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
         .build();
     
     public OIDCAuthProvider(String aClientId, String aClientSecret, String issuerEndpointURL,
-                            boolean pkceEnabled, String pkceMethod, boolean jsfBlocked) throws AuthorizationSetupException {
+                            boolean pkceEnabled, String pkceMethod) throws AuthorizationSetupException {
         this.clientSecret = aClientSecret; // needed for state creation
         this.clientAuth = new ClientSecretBasic(new ClientID(aClientId), new Secret(aClientSecret));
         this.issuer = new Issuer(issuerEndpointURL);
@@ -90,10 +89,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
         
         this.pkceEnabled = pkceEnabled;
         this.pkceMethod = CodeChallengeMethod.parse(pkceMethod);
-        this.jsfBlocked = jsfBlocked;
     }
-    
-    public boolean isJsfBlocked() { return jsfBlocked; }
 
     /**
      * Setup metadata from OIDC provider during creation of the provider representation
