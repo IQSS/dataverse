@@ -4366,11 +4366,15 @@ The JSON representation of a license can take two forms, depending on whether yo
 
 To set a predefined license (e.g., CC BY 4.0), provide a JSON body with the license name:
 
+.. code-block:: json
+
   {
     "name": "CC BY 4.0"
   }
 
 To define custom terms of use and access, provide a JSON body with the following properties. All fields within ``customTerms`` are optional, except for the ``termsOfUse`` field, which is required:
+
+.. code-block:: json
 
   {
     "customTerms": {
