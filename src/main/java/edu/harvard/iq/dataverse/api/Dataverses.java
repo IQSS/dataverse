@@ -2027,6 +2027,8 @@ public class Dataverses extends AbstractApiBean {
             }
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             return ok(jsonLanguage(execCommand(new SetDataverseMetadataLanguageCommand(req, dataverse, lang))));
+        }, getRequestUser(crc));
+    }
     
     @GET
     @AuthRequired

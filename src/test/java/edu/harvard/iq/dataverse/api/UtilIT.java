@@ -5128,7 +5128,7 @@ public class UtilIT {
                         + alias
                         + "/allowedMetadataLanguages/"
                         + lang);
-    
+    }
 
     public static Response getDataverseRoleAssignmentHistory(String dataverseAlias, boolean downloadAsCsv, String apiToken) {
         RequestSpecification requestSpecification = given()
