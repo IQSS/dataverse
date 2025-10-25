@@ -48,11 +48,29 @@ public class UpdateDatasetLicenseCommand extends AbstractVoidCommand {
             if (customTermsOfUseAndAccess.getTermsOfUse() == null || customTermsOfUseAndAccess.getTermsOfUse().isBlank()) {
                 throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.customTermsOfUseNotProvided"), this);
             }
-
-            customTermsOfUseAndAccess.setDatasetVersion(datasetVersion);
-            datasetVersion.setTermsOfUseAndAccess(customTermsOfUseAndAccess);
-
+            TermsOfUseAndAccess termsToUpdate = datasetVersion.getTermsOfUseAndAccess();
+            applyCustomTerms(termsToUpdate, customTermsOfUseAndAccess);
+            termsToUpdate.setLicense(null);
+            datasetVersion.setTermsOfUseAndAccess(termsToUpdate);
             ctxt.engine().submit(new UpdateDatasetVersionCommand(this.dataset, getRequest()));
         }
+    }
+
+    /**
+     * Copies all custom term-related fields from the 'source' object
+     * to the 'target' object.
+     *
+     * @param target The TermsOfUseAndAccess object to be modified
+     * @param source The TermsOfUseAndAccess object containing the new data
+     */
+    private void applyCustomTerms(TermsOfUseAndAccess target, TermsOfUseAndAccess source) {
+        target.setTermsOfUse(source.getTermsOfUse());
+        target.setConfidentialityDeclaration(source.getConfidentialityDeclaration());
+        target.setSpecialPermissions(source.getSpecialPermissions());
+        target.setRestrictions(source.getRestrictions());
+        target.setCitationRequirements(source.getCitationRequirements());
+        target.setDepositorRequirements(source.getDepositorRequirements());
+        target.setConditions(source.getConditions());
+        target.setDisclaimer(source.getDisclaimer());
     }
 }

@@ -94,7 +94,25 @@ public class UpdateDatasetLicenseCommandTest {
     @Test
     public void execute_shouldUpdateCustomTermsAndSetVersionStateToDraft() throws CommandException {
         // Arrange
-        when(customTermsOfUseAndAccessMock.getTermsOfUse()).thenReturn("custom terms");
+        String termsOfUse = "custom terms";
+        String confidentialityDeclaration = "confidentiality";
+        String specialPermissions = "special permissions";
+        String restrictions = "restrictions";
+        String citationRequirements = "citation";
+        String depositorRequirements = "depositor";
+        String conditions = "conditions";
+        String disclaimer = "disclaimer";
+
+        when(customTermsOfUseAndAccessMock.getTermsOfUse()).thenReturn(termsOfUse);
+        when(customTermsOfUseAndAccessMock.getConfidentialityDeclaration()).thenReturn(confidentialityDeclaration);
+        when(customTermsOfUseAndAccessMock.getSpecialPermissions()).thenReturn(specialPermissions);
+        when(customTermsOfUseAndAccessMock.getRestrictions()).thenReturn(restrictions);
+        when(customTermsOfUseAndAccessMock.getCitationRequirements()).thenReturn(citationRequirements);
+        when(customTermsOfUseAndAccessMock.getDepositorRequirements()).thenReturn(depositorRequirements);
+        when(customTermsOfUseAndAccessMock.getConditions()).thenReturn(conditions);
+        when(customTermsOfUseAndAccessMock.getDisclaimer()).thenReturn(disclaimer);
+
+        termsOfUseAndAccessSpy.setLicense(activeLicense);
         UpdateDatasetLicenseCommand sut = new UpdateDatasetLicenseCommand(dataverseRequestStub, datasetMock, customTermsOfUseAndAccessMock);
 
         // Act
@@ -102,7 +120,18 @@ public class UpdateDatasetLicenseCommandTest {
 
         // Assert
         verify(datasetVersionMock).setVersionState(DatasetVersion.VersionState.DRAFT);
-        verify(datasetVersionMock).setTermsOfUseAndAccess(customTermsOfUseAndAccessMock);
+
+        assertEquals(termsOfUse, termsOfUseAndAccessSpy.getTermsOfUse());
+        assertEquals(confidentialityDeclaration, termsOfUseAndAccessSpy.getConfidentialityDeclaration());
+        assertEquals(specialPermissions, termsOfUseAndAccessSpy.getSpecialPermissions());
+        assertEquals(restrictions, termsOfUseAndAccessSpy.getRestrictions());
+        assertEquals(citationRequirements, termsOfUseAndAccessSpy.getCitationRequirements());
+        assertEquals(depositorRequirements, termsOfUseAndAccessSpy.getDepositorRequirements());
+        assertEquals(conditions, termsOfUseAndAccessSpy.getConditions());
+        assertEquals(disclaimer, termsOfUseAndAccessSpy.getDisclaimer());
+        assertEquals(null, termsOfUseAndAccessSpy.getLicense());
+
+        verify(datasetVersionMock).setTermsOfUseAndAccess(termsOfUseAndAccessSpy);
         verify(commandContextMock).engine();
     }
 
