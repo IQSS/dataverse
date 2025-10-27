@@ -30,7 +30,8 @@ public class TemplateServiceBean {
     }
 
     public Template save(Template template) {
-        return em.merge(template);
+        Template merged = em.merge(template);
+        return merged;
     }
     
     public List<Template> findByOwnerId(Long ownerId) {              

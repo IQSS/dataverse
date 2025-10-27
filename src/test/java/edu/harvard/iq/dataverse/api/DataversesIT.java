@@ -2595,6 +2595,10 @@ public class DataversesIT {
 
     @Test
     public void testCreateAndGetTemplates() throws JsonParseException  {
+        /*
+          Also Delete...
+        */
+        
         Response createUserResponse = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
         String username = UtilIT.getUsernameFromResponse(createUserResponse);
@@ -2609,9 +2613,13 @@ public class DataversesIT {
          */
         
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
+        
+        System.out.print("dataverseId: " + dataverseId);
+        
         String newName = "New Test Dataverse Name";
         String newAffiliation = "New Test Dataverse Affiliation";
         String newDataverseType = Dataverse.DataverseType.TEACHING_COURSES.toString();
@@ -2667,8 +2675,11 @@ public class DataversesIT {
                 jsonString,
                 apiToken
         );
+
+        createTemplateResponse.prettyPrint();
+        Long templateId = UtilIT.getTemplateIdFromResponse(createTemplateResponse);
         
-        createTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
+        createTemplateResponse.then().assertThat().statusCode(CREATED.getStatusCode())
                 .body("data.name", equalTo("Dataverse template"))
                 .body("data.isDefault", equalTo(true))
                 .body("data.usageCount", equalTo(0))
@@ -2710,12 +2721,20 @@ public class DataversesIT {
 
         // Templates retrieval should succeed if the secondary user has dataset creation permissions
 
+        
+        
         UtilIT.setSuperuserStatus(username, true);
         Response grantRoleResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, "@" + secondUsername, apiToken);
         grantRoleResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
         getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        Response deleteTemplateResponse = UtilIT.deleteTemplate(templateId.toString(), secondApiToken);
+        deleteTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        
+        
     }
 
     @Test
