@@ -304,10 +304,6 @@ public class DataFile extends DvObject implements Comparable {
         this.deleted = deleted;
     }
 
-    public boolean getUnpublished() {
-        return !isReleased();
-    }
-
     /*
     For use during file upload so that the user may delete 
     files that have already been uploaded to the current dataset version
