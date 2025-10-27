@@ -1,5 +1,5 @@
 {
-  "name": "LDN Announce workflow",
+  "name": "COAR Notify Relationship Announcement workflow",
   "steps": [
     {
       "provider":":internal",
@@ -8,6 +8,7 @@
         "stepName":"LDN Announce"
       },
       "requiredSettings": {
+//ToDo - update names
         ":LDNAnnounceRequiredFields": "string",
         ":LDNTarget": "string"
       }

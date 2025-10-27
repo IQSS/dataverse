@@ -205,7 +205,7 @@ Note - the example step includes two settings required for any archiver, three (
 ldnannounce
 +++++++++++
 
-A step that sends a `Linked Data Notification (LDN) <https://www.w3.org/TR/ldn/>`_ message to a specific LDN Inbox announcing a relationship between an newly published/available dataset with a relationship to an external resource (e.g. one managed by the recipient). 
+A step that sends a `Linked Data Notification (LDN) <https://www.w3.org/TR/ldn/>`_ message to a specific LDN Inbox announcing a relationship between a newly published/available dataset and an external resource (e.g. one managed by the recipient). 
 
 The two parameters are
 * ``:LDNAnnounceRequiredFields`` - a list of metadata fields that must exist to trigger the message. Currently, the message also includes the values for these fields but future versions may only send the dataset's persistent identifier (making the receiver responsible for making a call-back to get any metadata).
@@ -221,7 +221,7 @@ The message format is defined by the `COAR Notify Relationship Announcement <htt
     "provider":":internal",
     "stepType":"ldnannounce",
     "parameters": {
-      "stepName":"LDN Announce"
+      "stepName":"COAR Notify Relationship Announcement"
     },
     "requiredSettings": {
     //ToDo - update with final definitions
