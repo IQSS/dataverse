@@ -176,6 +176,24 @@ public class FileTypeDetectionIT {
                 .body("data.dryRun", equalTo(true))
                 .body("data.oldContentType", equalTo("foo/bar"))
                 .body("data.newContentType", equalTo("application/pdf"));
+        
+        System.out.println("file id: " + fileId);
+        Response forceContentType = UtilIT.forceFileType(fileId.toString(), false, apiToken,"text/plain; charset=US-ASCII");
+        forceContentType.prettyPrint();
+        forceContentType.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.dryRun", equalTo(false))
+                .body("data.oldContentType", equalTo("foo/bar"))
+                .body("data.newContentType", equalTo("text/plain; charset=US-ASCII"));
+        
+        System.out.println("file id: " + fileId);
+        Response forceContentTypeRevert = UtilIT.forceFileType(fileId.toString(), false, apiToken,"foo/bar");
+        forceContentTypeRevert.prettyPrint();
+        forceContentTypeRevert.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.dryRun", equalTo(false))
+                .body("data.oldContentType", equalTo("text/plain; charset=US-ASCII"))
+                .body("data.newContentType", equalTo("foo/bar"));
 
         Response createNoPrivsUser = UtilIT.createRandomUser();
         createNoPrivsUser.prettyPrint();

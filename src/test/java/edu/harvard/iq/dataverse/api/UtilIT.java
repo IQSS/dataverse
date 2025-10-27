@@ -1366,6 +1366,12 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .post("/api/files/" + fileId + "/redetect?dryRun=" + dryRun);
     }
+    
+    static Response forceFileType(String fileId, boolean dryRun, String apiToken, String contentType) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/files/" + fileId + "/forcecontenttype?contentType="+contentType+"dryRun=" + dryRun);
+    }
 
     static Response getSwordAtomEntry(String persistentId, String apiToken) {
         Response response = given()
