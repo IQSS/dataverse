@@ -273,8 +273,13 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     
     public String getSpacedScope() { return String.join(" ", getScope()); }
 
-    public void setEnabled(boolean enabled) { this.enabled = enabled; }
-    public boolean isEnabled() { return enabled; }
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
 
     @Override
     public int hashCode() {
