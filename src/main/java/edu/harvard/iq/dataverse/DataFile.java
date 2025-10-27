@@ -600,7 +600,7 @@ public class DataFile extends DvObject implements Comparable {
         }
 
         for (FileMetadata fileMetadata : fileMetadatas) {
-            if (fileMetadata.getDatasetVersion() != null && VersionState.DRAFT.equals(fileMetadata.getDatasetVersion().getVersionState())) {
+            if (fileMetadata.getDatasetVersion().getVersionState().equals(VersionState.DRAFT)) {
                 return fileMetadata;
             }
             resultFileMetadata = getTheNewerFileMetadata(resultFileMetadata, fileMetadata);
