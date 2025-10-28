@@ -19,7 +19,10 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
+import edu.harvard.iq.dataverse.RoleAssignmentHistory;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -61,21 +64,23 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
         this.anonymizedAccess= anonymizedAccess;
     }
 
-    @Override
-    public RoleAssignment execute(CommandContext ctxt) throws CommandException {
-        if (grantee instanceof AuthenticatedUser) {
-            AuthenticatedUser user = (AuthenticatedUser) grantee;
-            if (user.isDeactivated()) {
-                throw new IllegalCommandException("User " + user.getUserIdentifier() + " is deactivated and cannot be given a role.", this);
-            }
+@Override
+public RoleAssignment execute(CommandContext ctxt) throws CommandException {
+    if (grantee instanceof AuthenticatedUser) {
+        AuthenticatedUser user = (AuthenticatedUser) grantee;
+        if (user.isDeactivated()) {
+            throw new IllegalCommandException("User " + user.getUserIdentifier() + " is deactivated and cannot be given a role.", this);
         }
-        if(isExistingRole(ctxt)){
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.has.role.error"), this);
-        }
-        // TODO make sure the role is defined on the dataverse.
-        RoleAssignment roleAssignment = new RoleAssignment(role, grantee, defPoint, privateUrlToken, anonymizedAccess);
-        return ctxt.roles().save(roleAssignment);
     }
+    if(isExistingRole(ctxt)){
+        throw new IllegalCommandException(BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.has.role.error"), this);
+    }
+    // TODO make sure the role is defined on the dataverse.
+    RoleAssignment roleAssignment = new RoleAssignment(role, grantee, defPoint, privateUrlToken, anonymizedAccess);
+    RoleAssignment savedRoleAssignment = ctxt.roles().save(roleAssignment, getRequest());
+
+    return savedRoleAssignment;
+}
 
     private boolean isExistingRole(CommandContext ctxt) {
         return ctxt.roles()

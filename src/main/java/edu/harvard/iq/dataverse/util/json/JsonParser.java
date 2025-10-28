@@ -377,6 +377,51 @@ public class JsonParser {
         }
         return enums;
     }
+    
+    public TermsOfUseAndAccess parseTermsOfUseAndAccess(JsonObject obj) throws JsonParseException {
+        JsonObject terms = obj.getJsonObject("termsOfUseAndAccess");
+        TermsOfUseAndAccess toaa = new TermsOfUseAndAccess();
+        toaa.setTermsOfUse(terms.getString("termsOfUse", null));
+        toaa.setConfidentialityDeclaration(terms.getString("confidentialityDeclaration", null));
+        toaa.setSpecialPermissions(terms.getString("specialPermissions", null));
+        toaa.setRestrictions(terms.getString("restrictions", null));
+        toaa.setCitationRequirements(terms.getString("citationRequirements", null));
+        toaa.setDepositorRequirements(terms.getString("depositorRequirements", null));
+        toaa.setConditions(terms.getString("conditions", null));
+        toaa.setDisclaimer(terms.getString("disclaimer", null));
+        return parseTermsOfAccess(obj, toaa);
+    }
+
+    public TermsOfUseAndAccess parseTermsOfAccess(JsonObject obj) throws JsonParseException {
+        return parseTermsOfAccess(obj, null);
+    }
+
+    public TermsOfUseAndAccess parseTermsOfAccess(JsonObject obj, TermsOfUseAndAccess touaIn) throws JsonParseException {
+        //This only gets values associated with the terms of access for restricted files when no TermsOfUseAndAccess object provided
+        // or added to an existing object when provided
+
+        JsonObject terms;
+        TermsOfUseAndAccess toaa;
+        if (touaIn == null) {
+            terms = obj.getJsonObject("customTermsOfAccess");
+            toaa = new TermsOfUseAndAccess();
+        } else {
+            terms = obj.getJsonObject("termsOfUseAndAccess");
+            toaa = touaIn;
+        }
+
+        toaa.setFileAccessRequest(terms.getBoolean("fileAccessRequest", false));
+        toaa.setTermsOfAccess(terms.getString("termsOfAccess", null));
+        toaa.setDataAccessPlace(terms.getString("dataAccessPlace", null));
+        toaa.setOriginalArchive(terms.getString("originalArchive", null));
+        toaa.setAvailabilityStatus(terms.getString("availabilityStatus", null));
+        toaa.setContactForAccess(terms.getString("contactForAccess", null));
+        toaa.setSizeOfCollection(terms.getString("sizeOfCollection", null));
+        toaa.setStudyCompletion(terms.getString("studyCompletion", null));
+        toaa.setConfidentialityDeclaration(terms.getString("confidentialityDeclaration", null));
+
+        return toaa;
+    }
 
     public DatasetVersion parseDatasetVersion(JsonObject obj) throws JsonParseException {
         return parseDatasetVersion(obj, new DatasetVersion());
