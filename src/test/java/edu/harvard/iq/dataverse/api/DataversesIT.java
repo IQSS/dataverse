@@ -2638,6 +2638,10 @@ public class DataversesIT {
         updateDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+        assertTrue(publishDataverse.prettyPrint().contains("isReleased\": true"));
+        
         // Create a template
 
         String jsonString = """
@@ -2722,17 +2726,47 @@ public class DataversesIT {
         // Templates retrieval should succeed if the secondary user has dataset creation permissions
 
         
-        
+        //set to super to update role 
         UtilIT.setSuperuserStatus(username, true);
+
         Response grantRoleResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, "@" + secondUsername, apiToken);
+        grantRoleResponse.prettyPrint();
         grantRoleResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
         getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
-        
+      
         Response deleteTemplateResponse = UtilIT.deleteTemplate(templateId.toString(), secondApiToken);
-        deleteTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
+        deleteTemplateResponse.prettyPrint();
+        deleteTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
         
+        //set back to show super not needed for delete - just Edit Dataverse
+        UtilIT.setSuperuserStatus(username, false);
+        
+        String badId = "8675309";
+        
+        deleteTemplateResponse = UtilIT.deleteTemplate(badId, apiToken);
+        deleteTemplateResponse.prettyPrint();
+        deleteTemplateResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        
+        deleteTemplateResponse = UtilIT.deleteTemplate(templateId.toString(), apiToken);
+        deleteTemplateResponse.prettyPrint();
+        deleteTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // back to super for cleanup
+        
+        UtilIT.setSuperuserStatus(username, true);
+        
+        Response deleteDataverse1Response = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverse1Response.prettyPrint();
+        assertEquals(200, deleteDataverse1Response.getStatusCode());
+        
+        Response deleteUserResponse = UtilIT.deleteUser(secondUsername);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+        
+        deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
         
         
     }

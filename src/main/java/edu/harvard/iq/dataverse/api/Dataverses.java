@@ -2011,12 +2011,10 @@ public class Dataverses extends AbstractApiBean {
         }
     }
     
-    @Path("template/{id}")
+    @Path("{id}/template")
+    @AuthRequired
     @DELETE
-    public Response deleteTemplate(@PathParam("id") long id) {
-        
-        AuthenticatedUser user = authSvc.getAdminUser();
-
+    public Response deleteTemplate(@Context ContainerRequestContext crc, @PathParam("id") long id) {
 
         Template doomed = templateService.find(id);
         if (doomed == null) {
@@ -2025,10 +2023,8 @@ public class Dataverses extends AbstractApiBean {
 
         Dataverse dv = doomed.getDataverse();
         List <Dataverse> dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(doomed.getId());
-
         try {
-            execCommand(new DeleteTemplateCommand(createDataverseRequest(user), dv, doomed, dataverseWDefaultTemplate));
-
+            execCommand(new DeleteTemplateCommand(createDataverseRequest(getRequestUser(crc)), dv, doomed, dataverseWDefaultTemplate));
         } catch (WrappedResponse wr) {
                 return handleWrappedResponse(wr);
             }

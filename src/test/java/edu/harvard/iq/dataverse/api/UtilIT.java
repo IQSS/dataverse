@@ -5057,9 +5057,8 @@ public class UtilIT {
     
     public static Response deleteTemplate(String id,  String apiToken) {
         return given()
-                .contentType(ContentType.JSON)
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .delete("/api/dataverses/template/"+id);
+                .delete("/api/dataverses/"+id+"/template");
     }
 
     public static Response getTemplates(String dataverseAlias, String apiToken) {
