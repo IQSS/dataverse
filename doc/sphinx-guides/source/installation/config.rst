@@ -3828,13 +3828,11 @@ please find all known feature flags below. Any of these flags can be activated u
     * - enable-pid-failure-log
       - Turns on creation of a monthly log file (logs/PIDFailures_<yyyy-MM>.log) showing failed requests for dataset/file PIDs. Can be used directly or with scripts at https://github.com/gdcc/dataverse-recipes/python/pid_reports to alert admins.
       - ``Off``
-<<<<<<< HEAD
-    * - only-update-datacite-when-needed
-      - Only contact DataCite to update a DOI after checking to see if DataCite has outdated information (for efficiency, lighter load on DataCite, especially when using file DOIs).
-=======
     * - role-assignment-history
       - Turns on tracking/display of role assignments and revocations for collections, datasets, and files
->>>>>>> refs/remotes/IQSS/develop
+      - ``Off``
+    * - only-update-datacite-when-needed
+      - Only contact DataCite to update a DOI after checking to see if DataCite has outdated information (for efficiency, lighter load on DataCite, especially when using file DOIs).
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
