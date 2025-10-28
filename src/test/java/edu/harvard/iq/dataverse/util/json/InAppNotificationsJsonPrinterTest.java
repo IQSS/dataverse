@@ -11,6 +11,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonValue;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -65,7 +66,9 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("ASSIGNROLE: should add dataverse role fields")
     public void testAddFieldsByType_assignRole_dataverse() {
+        // Arrange
         userNotification.setType(UserNotification.Type.ASSIGNROLE);
         userNotification.setObjectId(1L);
 
@@ -75,8 +78,10 @@ public class InAppNotificationsJsonPrinterTest {
         when(dataverseService.find(1L)).thenReturn(dataverse);
         when(permissionService.getEffectiveRoleAssignments(authenticatedUser, dataverse)).thenReturn(Collections.emptyList());
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson).add(eq(KEY_ROLE_ASSIGNMENTS), any(JsonArrayBuilder.class));
         verify(notificationJson).add(KEY_DATAVERSE_ALIAS, "testdv");
         verify(notificationJson).add(KEY_DATAVERSE_DISPLAY_NAME, "Test Dataverse");
@@ -84,7 +89,9 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("ASSIGNROLE: should add dataset role fields")
     public void testAddFieldsByType_assignRole_dataset() {
+        // Arrange
         userNotification.setType(UserNotification.Type.ASSIGNROLE);
         userNotification.setObjectId(1L);
 
@@ -96,8 +103,10 @@ public class InAppNotificationsJsonPrinterTest {
         when(datasetService.find(1L)).thenReturn(dataset);
         when(permissionService.getEffectiveRoleAssignments(authenticatedUser, dataset)).thenReturn(Collections.emptyList());
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson).add(eq(KEY_ROLE_ASSIGNMENTS), any(JsonArrayBuilder.class));
         verify(notificationJson).add(KEY_DATASET_PERSISTENT_ID, testGlobalId.toString());
         verify(notificationJson).add(KEY_DATASET_DISPLAY_NAME, "Test Dataset");
@@ -105,7 +114,9 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("REVOKEROLE: should add data file role fields")
     public void testAddFieldsByType_revokeRole_dataFile() {
+        // Arrange
         userNotification.setType(UserNotification.Type.REVOKEROLE);
         userNotification.setObjectId(1L);
 
@@ -121,15 +132,19 @@ public class InAppNotificationsJsonPrinterTest {
         when(dataFileService.find(1L)).thenReturn(dataFile);
         when(permissionService.getEffectiveRoleAssignments(authenticatedUser, dataFile)).thenReturn(Collections.emptyList());
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson).add(eq(KEY_ROLE_ASSIGNMENTS), any(JsonArrayBuilder.class));
         verify(notificationJson).add(KEY_OWNER_PERSISTENT_ID, testGlobalId.toString());
         verify(notificationJson).add(KEY_OWNER_DISPLAY_NAME, "Owner Dataset");
     }
 
     @Test
+    @DisplayName("REVOKEROLE: should add object deleted flag when object is not found")
     public void testAddFieldsByType_revokeRole_objectDeleted() {
+        // Arrange
         userNotification.setType(UserNotification.Type.REVOKEROLE);
         userNotification.setObjectId(1L);
 
@@ -137,13 +152,17 @@ public class InAppNotificationsJsonPrinterTest {
         when(datasetService.find(1L)).thenReturn(null);
         when(dataFileService.find(1L)).thenReturn(null);
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson).add(KEY_OBJECT_DELETED, true);
     }
 
     @Test
+    @DisplayName("CREATEDV: should add dataverse and owner fields")
     public void testAddFieldsByType_createDv_dvHasOwner() {
+        // Arrange
         userNotification.setType(UserNotification.Type.CREATEDV);
         userNotification.setObjectId(1L);
 
@@ -161,8 +180,10 @@ public class InAppNotificationsJsonPrinterTest {
         when(systemConfig.getGuidesBaseUrl(false)).thenReturn("http://guides.dataverse.org");
         when(systemConfig.getGuidesVersion()).thenReturn("1.0");
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson).add(KEY_DATAVERSE_ALIAS, "childDv");
         verify(notificationJson).add(KEY_DATAVERSE_DISPLAY_NAME, "Child Dataverse");
         verify(notificationJson).add(KEY_OWNER_ALIAS, "parentDv");
@@ -173,7 +194,9 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("CREATEDV: should add dataverse fields when it has no owner")
     public void testAddFieldsByType_createDv_dvHasNoOwner() {
+        // Arrange
         userNotification.setType(UserNotification.Type.CREATEDV);
         userNotification.setObjectId(1L);
 
@@ -187,8 +210,10 @@ public class InAppNotificationsJsonPrinterTest {
         when(systemConfig.getGuidesBaseUrl(false)).thenReturn("http://guides.dataverse.org");
         when(systemConfig.getGuidesVersion()).thenReturn("1.0");
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson).add(KEY_DATAVERSE_ALIAS, "dv");
         verify(notificationJson).add(KEY_DATAVERSE_DISPLAY_NAME, "Dataverse");
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
@@ -197,7 +222,9 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("CREATEDV: should add object deleted flag when dataverse is not found")
     public void testAddFieldsByType_createDv_objectDeleted() {
+        // Arrange
         userNotification.setType(UserNotification.Type.CREATEDV);
         userNotification.setObjectId(1L);
 
@@ -205,8 +232,10 @@ public class InAppNotificationsJsonPrinterTest {
         when(systemConfig.getGuidesBaseUrl(false)).thenReturn("http://guides.dataverse.org");
         when(systemConfig.getGuidesVersion()).thenReturn("1.0");
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
         verify(notificationJson).add(KEY_GUIDES_VERSION, "1.0");
         verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_DATAVERSE_MANAGEMENT_HTML);
@@ -214,7 +243,9 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("REQUESTFILEACCESS: should add requestor and data file fields")
     public void testAddFieldsByType_requestFileAccess() {
+        // Arrange
         userNotification.setType(UserNotification.Type.REQUESTFILEACCESS);
         userNotification.setObjectId(1L);
         userNotification.setRequestor(requestor);
@@ -233,8 +264,10 @@ public class InAppNotificationsJsonPrinterTest {
         when(dataFile.getOwner()).thenReturn(dataset);
         when(dataFileService.find(1L)).thenReturn(dataFile);
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson).add(KEY_REQUESTOR_FIRST_NAME, "John");
         verify(notificationJson).add(KEY_REQUESTOR_LAST_NAME, "Doe");
         verify(notificationJson).add(KEY_REQUESTOR_EMAIL, "johndoe@example.com");
@@ -245,7 +278,9 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("REQUESTFILEACCESS: should add data file fields even when requestor is null")
     public void testAddFieldsByType_requestFileAccess_nullRequestor() {
+        // Arrange
         userNotification.setType(UserNotification.Type.REQUESTFILEACCESS);
         userNotification.setObjectId(1L);
         userNotification.setRequestor(null);
@@ -260,8 +295,10 @@ public class InAppNotificationsJsonPrinterTest {
         when(dataFile.getOwner()).thenReturn(dataset);
         when(dataFileService.find(1L)).thenReturn(dataFile);
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson, never()).add(eq(KEY_REQUESTOR_FIRST_NAME), anyString());
         verify(notificationJson, never()).add(eq(KEY_REQUESTOR_LAST_NAME), anyString());
         verify(notificationJson, never()).add(eq(KEY_REQUESTOR_EMAIL), anyString());
@@ -272,7 +309,9 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("GRANTFILEACCESS: should add dataset fields")
     public void testAddFieldsByType_grantFileAccess() {
+        // Arrange
         userNotification.setType(UserNotification.Type.GRANTFILEACCESS);
         userNotification.setObjectId(1L);
 
@@ -286,8 +325,10 @@ public class InAppNotificationsJsonPrinterTest {
         when(dataset.getOwner()).thenReturn(owner);
         when(datasetService.find(1L)).thenReturn(dataset);
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson).add(KEY_DATASET_PERSISTENT_ID, testGlobalId.toString());
         verify(notificationJson).add(KEY_DATASET_DISPLAY_NAME, "Granted Dataset");
         verify(notificationJson).add(KEY_OWNER_ALIAS, "ownerDv");
@@ -299,20 +340,26 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("GRANTFILEACCESS: should add object deleted flag when dataset is not found")
     public void testAddFieldsByType_grantFileAccess_objectDeleted() {
+        // Arrange
         userNotification.setType(UserNotification.Type.GRANTFILEACCESS);
         userNotification.setObjectId(1L);
 
         when(datasetService.find(1L)).thenReturn(null);
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson).add(KEY_OBJECT_DELETED, true);
         verifyNoInteractions(dataFileService);
     }
 
     @Test
+    @DisplayName("CREATEDS: should add dataset version and guides fields")
     public void testAddFieldsByType_createDs() {
+        // Arrange
         userNotification.setType(UserNotification.Type.CREATEDS);
         userNotification.setObjectId(1L);
 
@@ -334,8 +381,10 @@ public class InAppNotificationsJsonPrinterTest {
         when(systemConfig.getGuidesBaseUrl(false)).thenReturn("http://guides.dataverse.org");
         when(systemConfig.getGuidesVersion()).thenReturn("1.0");
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
         verify(notificationJson).add(KEY_GUIDES_VERSION, "1.0");
         verify(notificationJson).add(KEY_GUIDES_SECTION_PATH, GUIDES_SECTION_PATH_DATASET_MANAGEMENT_HTML);
@@ -346,7 +395,9 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("SUBMITTEDDS: should add dataset and requestor fields")
     public void testAddFieldsByType_submittedDs() {
+        // Arrange
         userNotification.setType(UserNotification.Type.SUBMITTEDDS);
         userNotification.setObjectId(1L);
         userNotification.setRequestor(requestor);
@@ -366,8 +417,10 @@ public class InAppNotificationsJsonPrinterTest {
         when(requestor.getLastName()).thenReturn("Submitter");
         when(requestor.getEmail()).thenReturn("j.submitter@example.com");
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson).add(KEY_DATASET_PERSISTENT_ID, testGlobalId.toString());
         verify(notificationJson).add(KEY_DATASET_DISPLAY_NAME, "Submitted Dataset");
         verify(notificationJson).add(KEY_OWNER_ALIAS, "reviewDv");
@@ -378,7 +431,9 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("PUBLISHEDDS: should add dataset version fields")
     public void testAddFieldsByType_publishedDs() {
+        // Arrange
         userNotification.setType(UserNotification.Type.PUBLISHEDDS);
         userNotification.setObjectId(1L);
 
@@ -397,8 +452,10 @@ public class InAppNotificationsJsonPrinterTest {
 
         when(datasetVersionService.find(1L)).thenReturn(datasetVersion);
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson).add(KEY_DATASET_PERSISTENT_ID, testGlobalId.toString());
         verify(notificationJson).add(KEY_DATASET_DISPLAY_NAME, "Published Dataset");
         verify(notificationJson, never()).add(eq(KEY_CURATION_STATUS), anyString());
@@ -407,7 +464,9 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("STATUSUPDATED: should add dataset version fields including curation status")
     public void testAddFieldsByType_statusUpdated() {
+        // Arrange
         userNotification.setType(UserNotification.Type.STATUSUPDATED);
         userNotification.setObjectId(1L);
 
@@ -429,8 +488,10 @@ public class InAppNotificationsJsonPrinterTest {
         when(dataset.getGlobalId()).thenReturn(testGlobalId);
         when(dataset.getDisplayName()).thenReturn("Status Update Dataset");
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson).add(KEY_DATASET_PERSISTENT_ID, testGlobalId.toString());
         verify(notificationJson).add(KEY_DATASET_DISPLAY_NAME, "Status Update Dataset");
         verify(notificationJson).add(eq(KEY_CURATION_STATUS), any(String.class));
@@ -439,19 +500,25 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("STATUSUPDATED: should add object deleted flag when dataset version is not found")
     public void testAddFieldsByType_statusUpdated_objectDeleted() {
+        // Arrange
         userNotification.setType(UserNotification.Type.STATUSUPDATED);
         userNotification.setObjectId(1L);
 
         when(datasetVersionService.find(1L)).thenReturn(null);
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson).add(KEY_OBJECT_DELETED, true);
     }
 
     @Test
+    @DisplayName("CREATEACC: should add installation brand and user guides fields")
     public void testAddFieldsByType_createAcc() {
+        // Arrange
         userNotification.setType(UserNotification.Type.CREATEACC);
         try (MockedStatic<BrandingUtil> mockedBrandingUtil = mockStatic(BrandingUtil.class)) {
             mockedBrandingUtil.when(BrandingUtil::getInstallationBrandName).thenReturn("My Test Brand Name");
@@ -459,8 +526,10 @@ public class InAppNotificationsJsonPrinterTest {
             when(systemConfig.getGuidesBaseUrl(false)).thenReturn("http://guides.dataverse.org");
             when(systemConfig.getGuidesVersion()).thenReturn("1.0");
 
+            // Act
             sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+            // Assert
             verify(notificationJson).add(KEY_INSTALLATION_BRAND_NAME, "My Test Brand Name");
             verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
             verify(notificationJson).add(KEY_GUIDES_VERSION, "1.0");
@@ -469,7 +538,9 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("INGESTCOMPLETED: should add dataset and tabular guides fields")
     public void testAddFieldsByType_ingestCompleted() {
+        // Arrange
         userNotification.setType(UserNotification.Type.INGESTCOMPLETED);
         userNotification.setObjectId(1L);
 
@@ -488,8 +559,10 @@ public class InAppNotificationsJsonPrinterTest {
         when(systemConfig.getGuidesBaseUrl(false)).thenReturn("http://guides.dataverse.org");
         when(systemConfig.getGuidesVersion()).thenReturn("1.0");
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson).add(KEY_DATASET_PERSISTENT_ID, testGlobalId.toString());
         verify(notificationJson).add(KEY_DATASET_DISPLAY_NAME, "Ingested Dataset");
         verify(notificationJson).add(KEY_OWNER_ALIAS, "ownerDv");
@@ -500,7 +573,9 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("INGESTCOMPLETED: should add object deleted flag when dataset is not found")
     public void testAddFieldsByType_ingestCompleted_objectDeleted() {
+        // Arrange
         userNotification.setType(UserNotification.Type.INGESTCOMPLETED);
         userNotification.setObjectId(1L);
 
@@ -509,8 +584,10 @@ public class InAppNotificationsJsonPrinterTest {
         when(systemConfig.getGuidesBaseUrl(false)).thenReturn("http://guides.dataverse.org");
         when(systemConfig.getGuidesVersion()).thenReturn("1.0");
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson).add(KEY_OBJECT_DELETED, true);
         verify(notificationJson).add(KEY_GUIDES_BASE_URL, "http://guides.dataverse.org");
         verify(notificationJson).add(KEY_GUIDES_VERSION, "1.0");
@@ -518,6 +595,7 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("DATASETMENTIONED: should parse and add additional info as JSON object")
     public void testAddFieldsByType_datasetMentioned_withJsonString() {
         // Arrange
         userNotification.setType(UserNotification.Type.DATASETMENTIONED);
@@ -561,6 +639,7 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("DATASETMENTIONED: should add additional info as plain string if not valid JSON")
     public void testAddFieldsByType_datasetMentioned_withRegularString() {
         // Arrange
         userNotification.setType(UserNotification.Type.DATASETMENTIONED);
@@ -593,6 +672,7 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("DATASETMENTIONED: should not add additional info key if info is null")
     public void testAddFieldsByType_datasetMentioned_withNullInfo() {
         // Arrange
         userNotification.setType(UserNotification.Type.DATASETMENTIONED);
@@ -625,7 +705,9 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("DATASETMENTIONED: should add dataset fields and additional info string")
     public void testAddFieldsByType_datasetMentioned() {
+        // Arrange
         userNotification.setType(UserNotification.Type.DATASETMENTIONED);
         userNotification.setObjectId(1L);
         userNotification.setAdditionalInfo("Mentioned in another dataset.");
@@ -641,8 +723,10 @@ public class InAppNotificationsJsonPrinterTest {
         when(owner.getAlias()).thenReturn("ownerDv");
         when(owner.getDisplayName()).thenReturn("Owner Dataverse");
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verify(notificationJson).add(KEY_DATASET_PERSISTENT_ID, testGlobalId.toString());
         verify(notificationJson).add(KEY_DATASET_DISPLAY_NAME, "Mentioned Dataset");
         verify(notificationJson).add(KEY_OWNER_ALIAS, "ownerDv");
@@ -651,13 +735,17 @@ public class InAppNotificationsJsonPrinterTest {
     }
 
     @Test
+    @DisplayName("Unhandled Type: should add no fields for unhandled notification types")
     public void testAddFieldsByType_noOpType() {
+        // Arrange
         // APIGENERATED is a valid type but is not handled by the switch statement,
         // so no fields should be added.
         userNotification.setType(UserNotification.Type.APIGENERATED);
 
+        // Act
         sut.addFieldsByType(notificationJson, authenticatedUser, userNotification);
 
+        // Assert
         verifyNoInteractions(notificationJson);
     }
 }
