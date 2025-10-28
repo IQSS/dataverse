@@ -1266,6 +1266,7 @@
                                 </image>
                             </images>
                             <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
+                            <containerNamePattern>%a</containerNamePattern>
                         </configuration>
                     </plugin>
                     <plugin>
