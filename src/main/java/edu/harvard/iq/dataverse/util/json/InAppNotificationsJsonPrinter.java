@@ -87,8 +87,6 @@ public class InAppNotificationsJsonPrinter {
                 addRequestFileAccessFields(notificationJson, userNotification, requestor);
                 break;
             case REQUESTEDFILEACCESS:
-            case GRANTFILEACCESS:
-            case REJECTFILEACCESS:
                 addDataFileFields(notificationJson, userNotification);
                 break;
             case DATASETCREATED:
@@ -123,6 +121,8 @@ public class InAppNotificationsJsonPrinter {
             case GLOBUSUPLOADLOCALFAILURE:
             case GLOBUSDOWNLOADCOMPLETEDWITHERRORS:
             case CHECKSUMFAIL:
+            case GRANTFILEACCESS:
+            case REJECTFILEACCESS:
                 addDatasetFields(notificationJson, userNotification);
                 break;
             case INGESTCOMPLETED:
@@ -192,7 +192,7 @@ public class InAppNotificationsJsonPrinter {
             notificationJson.add(KEY_DATAFILE_ID, dataFile.getId());
             notificationJson.add(KEY_DATAFILE_DISPLAY_NAME, dataFile.getDisplayName());
             notificationJson.add(KEY_DATASET_DISPLAY_NAME, dataFile.getOwner().getDisplayName());
-            notificationJson.add(KEY_DATASET_PERSISTENT_ID, dataFile.getOwner().getIdentifier());
+            notificationJson.add(KEY_DATASET_PERSISTENT_ID, dataFile.getOwner().getGlobalId().asString());
         } else {
             notificationJson.add(KEY_OBJECT_DELETED, true);
         }
