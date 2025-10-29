@@ -715,8 +715,8 @@ public class JsonPrinterTest {
 
         JsonObject result4 = JsonPrinter.jsonStorageDriver("test-driver4").build();
         assertFalse(result4.getBoolean("directDownload"));
-        assertFalse(result.getBoolean("directUpload"));
-        assertFalse(result.getBoolean("uploadOutOfBand"));
+        assertFalse(result4.getBoolean("directUpload"));
+        assertFalse(result4.getBoolean("uploadOutOfBand"));
 
         // Clean up system properties
         System.clearProperty("dataverse.files.test-driver.type");
