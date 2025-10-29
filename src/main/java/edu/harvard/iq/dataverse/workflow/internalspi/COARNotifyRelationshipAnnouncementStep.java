@@ -69,6 +69,7 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
     private static final String REQUIRED_FIELDS = ":COARNotifyRelationshipAnnouncementTriggerFields";
     private static final String CN_RA_TARGETS = ":COARNotifyRelationshipAnnouncementTargets";
     private static final String RELATED_PUBLICATION = "publication";
+    public static final String DATACITE_URI_PREFIX = "https://purl.org/datacite/ontology#";
 
     public COARNotifyRelationshipAnnouncementStep(Map<String, String> paramSet) {
         new HashMap<>(paramSet);
@@ -113,7 +114,7 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
 
                     // Send a message for each relationship to this target
                     for (JsonObject rel : relationships.getValuesAs(JsonObject.class)) {
-                        HttpPost announcement = buildAnnouncement(d, rel, target);
+                        HttpPost announcement = buildAnnouncementPost(rel, target);
 
                         try (CloseableHttpResponse response = client.execute(announcement)) {
                             int code = response.getStatusLine().getStatusCode();
@@ -224,8 +225,18 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
                 .add("id", "urn:uuid:" + UUID.randomUUID().toString()).add("type", "Relationship").build();
     }
 
-    HttpPost buildAnnouncement(Dataset d, JsonObject rel, JsonObject target) throws URISyntaxException {
+    HttpPost buildAnnouncementPost(JsonObject rel, JsonObject target) throws URISyntaxException {
+        String body = buildAnnouncement(rel, target);
+        logger.info("Body: " + body);
 
+        HttpPost annPost = new HttpPost();
+        annPost.setURI(new URI(target.getString("inbox")));
+        annPost.setEntity(new StringEntity(JsonUtil.prettyPrint(body), "utf-8"));
+        annPost.setHeader("Content-Type", "application/ld+json");
+        return annPost;
+    }
+
+    public static String buildAnnouncement(JsonObject rel, JsonObject target) {
         JsonObjectBuilder job = Json.createObjectBuilder();
         JsonArrayBuilder context = Json.createArrayBuilder().add("https://www.w3.org/ns/activitystreams")
                 .add("https://coar-notify.net");
@@ -242,18 +253,12 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
         job.add("target", target);
         job.add("type", Json.createArrayBuilder().add("Announce").add("coar-notify:RelationshipAction"));
 
-        HttpPost annPost = new HttpPost();
-        annPost.setURI(new URI(target.getString("inbox")));
-        String body = JsonUtil.prettyPrint(job.build());
-        logger.info("Body: " + body);
-        annPost.setEntity(new StringEntity(JsonUtil.prettyPrint(body), "utf-8"));
-        annPost.setHeader("Content-Type", "application/ld+json");
-        return annPost;
+        return JsonUtil.prettyPrint(job.build());
     }
 
     private String[] getBestIdAndType(DatasetFieldType dft, JsonValue jv) {
 
-        String type = "https://purl.org/datacite/ontology#isSupplementTo";
+        String type = DATACITE_URI_PREFIX + "IsSupplementTo";
         // Primitive value
         if (jv instanceof JsonString) {
             String value = ((JsonString) jv).getString();
@@ -338,7 +343,7 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
             }
             if (jo.containsKey(publicationRelationType.getLabel())) {
                 type = jo.getString(publicationRelationType.getLabel());
-                type = "https://purl.org/datacite/ontology#" + type.substring(0, 1).toLowerCase() + type.substring(1);
+                type = DATACITE_URI_PREFIX + type;
             }
             break;
         default:
