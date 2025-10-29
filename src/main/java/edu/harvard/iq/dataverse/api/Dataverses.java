@@ -26,6 +26,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.review.Review;
+import edu.harvard.iq.dataverse.review.ReviewServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -38,6 +40,7 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import edu.harvard.iq.dataverse.util.json.*;
 
 import java.io.*;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -121,6 +124,9 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
+
+    @EJB
+    ReviewServiceBean reviewService;
     
     @POST
     @AuthRequired
@@ -718,6 +724,30 @@ public class Dataverses extends AbstractApiBean {
             boolean hideEmail = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false);
             return ok(json(dataverse, hideEmail, returnOwners, false, returnChildCount ? dataverseService.getChildCount(dataverse) : null));
         }, getRequestUser(crc));
+    }
+
+    @POST
+    @AuthRequired
+    @Path("{identifier}/reviews")
+    @Consumes("application/json")
+    public Response createReview(@Context ContainerRequestContext crc, String jsonBody, @PathParam("identifier") String parentIdtf) {
+        try {
+            logger.info("JSON in:" + jsonBody);
+            User user = getRequestUser(crc);
+            Dataverse owner = findDataverseOrDie(parentIdtf);
+            Review review = new Review();
+            review.setOwner(owner);
+            Timestamp now = new java.sql.Timestamp(new java.util.Date().getTime());
+            review.setCreateDate(now);
+            review.setModificationTime(now);
+            Review saved = reviewService.save(review);
+            if (saved == null) {
+                return badRequest("Could not save review.");
+            }
+            return ok(Review.toJson(saved));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
     }
 
     @DELETE
