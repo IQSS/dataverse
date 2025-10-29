@@ -19,7 +19,6 @@ Messages can be sent via POST, using the application/ld+json ContentType:
   
   curl -X POST -H 'ContentType:application/ld+json' $SERVER_URL/api/inbox --upload-file message.jsonld
   
-https://coar-notify.net/catalogue/workflows/repository-relationship-repository/2/
 
 The supported message format is described by `the COAR Notify Relationship Announcement specification <https://coar-notify.net/catalogue/workflows/repository-relationship-repository/2/>`_. 
 

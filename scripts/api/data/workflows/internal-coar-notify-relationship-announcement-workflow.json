@@ -3,14 +3,13 @@
   "steps": [
     {
       "provider":":internal",
-      "stepType":"ldnannounce",
+      "stepType":"coarNotifyRelationshipAnnouncement",
       "parameters": {
         "stepName":"LDN Announce"
       },
       "requiredSettings": {
-//ToDo - update names
-        ":LDNAnnounceRequiredFields": "string",
-        ":LDNTarget": "string"
+        ":COARNotifyRelationshipAnnouncementTriggerFields": "string",
+        ":COARNotifyRelationshipAnnouncementTargets": "string"
       }
     }
   ]

@@ -4,7 +4,11 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
@@ -21,12 +25,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,39 +47,40 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
 /**
- * A workflow step that generates and sends an LDN Announcement message to the
- * inbox of a configured target. THe initial use case is for Dataverse to
- * anounce new dataset versions to the Harvard DASH preprint repository so that
- * a DASH admin can create a backlink for any dataset versions that reference a
- * DASH deposit or a paper with a DOI where DASH has a preprint copy.
+ * A workflow step that generates and sends a COAR Notify Relationship
+ * Announcement message to the inbox of a configured target (using the Linked
+ * Data Notification standard). An example use case is for Dataverse to anounce
+ * new dataset versions to the DSpace-based Harvard DASH preprint repository so
+ * that a DASH admin can create a backlink for any dataset versions that
+ * reference a DASH deposit or a paper with a DOI where DASH has a preprint
+ * copy.
  * 
  * @author qqmyers
  */
 
-public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
-    private static final Logger logger = Logger.getLogger(LDNAnnounceDatasetVersionStep.class.getName());
-    //ToDo - not required fields at this point - each results in a message, so a) change to LDNAnnounceFields, and b) consider settings
-    // connecting field and targets (only DB settings are supported in workflows at present)
-    private static final String REQUIRED_FIELDS = ":LDNAnnounceRequiredFields";
-    private static final String LDN_TARGET = ":LDNTarget";
+public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
+    private static final Logger logger = Logger.getLogger(COARNotifyRelationshipAnnouncementStep.class.getName());
+    /*
+     * Keeping db settings since only DB settings are supported in workflows at
+     * present. Going forward, it might make sense to have a config model that links
+     * the trigger field and targets (so different fields can trigger notices to
+     * different types of target repositories/services)
+     */
+    private static final String REQUIRED_FIELDS = ":COARNotifyRelationshipAnnouncementTriggerFields";
+    private static final String CN_RA_TARGETS = ":COARNotifyRelationshipAnnouncementTargets";
     private static final String RELATED_PUBLICATION = "publication";
 
-    public LDNAnnounceDatasetVersionStep(Map<String, String> paramSet) {
+    public COARNotifyRelationshipAnnouncementStep(Map<String, String> paramSet) {
         new HashMap<>(paramSet);
     }
 
     @Override
     public WorkflowStepResult run(WorkflowContext context) {
 
-        JsonObject target = JsonUtil.getJsonObject((String) context.getSettings().get(LDN_TARGET));
-        if (target != null) {
-            String inboxUrl = target.getString("inbox");
-
+        JsonArray targets = JsonUtil.getJsonArray((String) context.getSettings().get(CN_RA_TARGETS));
+        if (targets != null && !targets.isEmpty()) {
             CloseableHttpClient client = HttpClients.createDefault();
 
-            // build method
-
-            HttpPost announcement;
             try {
                 // First check that we have what is required
                 Dataset d = context.getDataset();
@@ -91,42 +94,67 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
                         fields.put(df.getDatasetFieldType().getName(), df);
                     }
                 }
-                // Loop through and send a message for each supported relationship
-                boolean success = false;
-                for (JsonObject rel : getObjects(context, fields).getValuesAs(JsonObject.class)) {
-                    announcement = buildAnnouncement(d, rel, target);
-                    // execute
-                    try (CloseableHttpResponse response = client.execute(announcement)) {
-                        int code = response.getStatusLine().getStatusCode();
-                        if (code >= 200 && code < 300) {
-                            // HTTP OK range
-                            success = true;
-                            logger.fine("Successfully sent message for " + rel.toString());
-                        } else {
-                            String responseBody = new String(response.getEntity().getContent().readAllBytes(),
-                                    StandardCharsets.UTF_8);
-                            ;
-                            return new Failure((success ? "Partial failure" : "") + "Error communicating with "
-                                    + inboxUrl + " for relationship " + rel.toString() + ". Server response: "
-                                    + responseBody + " (" + response + ").");
-                        }
 
-                    } catch (Exception ex) {
-                        logger.log(Level.SEVERE, "Error communicating with remote server: " + ex.getMessage(), ex);
-                        return new Failure((success ? "Partial failure" : "") + "Error executing request: "
-                                + ex.getLocalizedMessage(), "Cannot communicate with remote server.");
-                    }
+                // Get all relationship objects once
+                JsonArray relationships = getObjects(context, fields);
 
+                if (relationships.isEmpty()) {
+                    logger.fine("No valid relationships found to announce");
+                    return OK;
                 }
-                // Any failure and we would have returned already.
+
+                // Track overall success
+                boolean anySuccess = false;
+                StringBuilder errors = new StringBuilder();
+
+                // Loop through each target
+                for (JsonObject target : targets.getValuesAs(JsonObject.class)) {
+                    String inboxUrl = target.getString("inbox");
+
+                    // Send a message for each relationship to this target
+                    for (JsonObject rel : relationships.getValuesAs(JsonObject.class)) {
+                        HttpPost announcement = buildAnnouncement(d, rel, target);
+
+                        try (CloseableHttpResponse response = client.execute(announcement)) {
+                            int code = response.getStatusLine().getStatusCode();
+                            if (code >= 200 && code < 300) {
+                                // HTTP OK range
+                                anySuccess = true;
+                                logger.fine("Successfully sent message for " + rel.toString() + " to " + inboxUrl);
+                            } else {
+                                String responseBody = new String(response.getEntity().getContent().readAllBytes(),
+                                        StandardCharsets.UTF_8);
+                                String errorMsg = "Error communicating with " + inboxUrl + " for relationship "
+                                        + rel.toString() + ". Server response: " + responseBody + " (" + response
+                                        + ").";
+                                logger.warning(errorMsg);
+                                errors.append(errorMsg).append("\n");
+                            }
+                        } catch (Exception ex) {
+                            logger.log(Level.SEVERE, "Error communicating with " + inboxUrl + ": " + ex.getMessage(),
+                                    ex);
+                            String errorMsg = "Error executing request to " + inboxUrl + ": "
+                                    + ex.getLocalizedMessage();
+                            errors.append(errorMsg).append("\n");
+                        }
+                    }
+                }
+
+                // If we had any errors but also some successes, report partial failure
+                if (errors.length() > 0) {
+                    return new Failure((anySuccess ? "Partial failure: " : "") + errors.toString());
+                }
+
+                // All succeeded
                 return OK;
 
             } catch (URISyntaxException e) {
                 return new Failure(
-                        "LDNAnnounceDatasetVersion workflow step failed: unable to parse inbox in :LDNTarget setting.");
+                        "COARNotifyRelationshipAnnouncementStep workflow step failed: unable to parse inbox in target setting.");
             }
         }
-        return new Failure("LDNAnnounceDatasetVersion workflow step failed: :LDNTarget setting missing or invalid.");
+        return new Failure("COARNotifyRelationshipAnnouncementStep workflow step failed: " + CN_RA_TARGETS
+                + " setting missing or invalid.");
     }
 
     @Override
@@ -165,10 +193,16 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
                     Iterator<JsonValue> iter = rels.iterator();
                     while (iter.hasNext()) {
                         JsonValue jval = iter.next();
-                        jab.add(getRelationshipObject(dft, jval, d, localContext));
+                        JsonObject relObject = getRelationshipObject(dft, jval, d, localContext);
+                        if (relObject != null) {
+                            jab.add(relObject);
+                        }
                     }
                 } else {
-                    jab.add(getRelationshipObject(dft, jv, d, localContext));
+                    JsonObject relObject = getRelationshipObject(dft, jv, d, localContext);
+                    if (relObject != null) {
+                        jab.add(relObject);
+                    }
                 }
             }
 
@@ -181,15 +215,19 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
         String[] answers = getBestIdAndType(dft, jval);
         String id = answers[0];
         String type = answers[1];
+        // Skip if we couldn't determine a valid ID
+        if (id == null || type == null) {
+            return null;
+        }
         return Json.createObjectBuilder().add("as:object", id).add("as:relationship", type)
-                .add("as:subject", d.getGlobalId().asURL().toString()).add("id", "urn:uuid:" + UUID.randomUUID().toString()).add("type","Relationship").build();
+                .add("as:subject", d.getGlobalId().asURL().toString())
+                .add("id", "urn:uuid:" + UUID.randomUUID().toString()).add("type", "Relationship").build();
     }
 
     HttpPost buildAnnouncement(Dataset d, JsonObject rel, JsonObject target) throws URISyntaxException {
 
         JsonObjectBuilder job = Json.createObjectBuilder();
-        JsonArrayBuilder context = Json.createArrayBuilder()
-                .add("https://www.w3.org/ns/activitystreams")
+        JsonArrayBuilder context = Json.createArrayBuilder().add("https://www.w3.org/ns/activitystreams")
                 .add("https://coar-notify.net");
         job.add("@context", context);
         job.add("id", "urn:uuid:" + UUID.randomUUID().toString());
@@ -214,11 +252,16 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
     }
 
     private String[] getBestIdAndType(DatasetFieldType dft, JsonValue jv) {
-        
+
         String type = "https://purl.org/datacite/ontology#isSupplementTo";
         // Primitive value
         if (jv instanceof JsonString) {
-            return new String[] { ((JsonString) jv).getString(), type };
+            String value = ((JsonString) jv).getString();
+            if (isURI(value)) {
+                return new String[] { ((JsonString) jv).getString(), type };
+            } else {
+                return new String[] { null, null };
+            }
         }
         // Compound - apply type specific logic to get best Id
         JsonObject jo = jv.asJsonObject();
@@ -246,40 +289,59 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
                     publicationRelationType = cdft.getJsonLDTerm();
                 }
             }
-            if (jo.containsKey(publicationURL.getLabel())) {
-                id = jo.getString(publicationURL.getLabel());
-            } else if (jo.containsKey(publicationIDType.getLabel())) {
+            if (jo.containsKey(publicationIDType.getLabel())) {
                 if ((jo.containsKey(publicationIDNumber.getLabel()))) {
                     String number = jo.getString(publicationIDNumber.getLabel());
 
                     switch (jo.getString(publicationIDType.getLabel())) {
-                    case "doi":
-                        if (number.startsWith("https://doi.org/")) {
-                            id = number;
-                        } else if (number.startsWith("doi:")) {
-                            id = "https://doi.org/" + number.substring(4);
-                        } else {
-                            // Assume a raw DOI, e.g. 10.5072/FK2ABCDEF
-                            id = "https://doi.org/" + number;
+                    case AbstractDOIProvider.DOI_PROTOCOL:
+                        if (number.startsWith("10")) {
+                            number = AbstractDOIProvider.DOI_PROTOCOL + number;
+                        }
+                        // Validate using GlobalId
+                        try {
+                            GlobalId pid = PidUtil.parseAsGlobalID(number);
+                            id = pid.asURL();
+                        } catch (IllegalArgumentException e) {
+                            // Ignore
                         }
                         break;
-                    case "DASH-NRS":
-                        if (number.startsWith("http")) {
+                    case HandlePidProvider.HDL_PROTOCOL:
+                        if (!number.startsWith(HandlePidProvider.HDL_PROTOCOL)
+                                && !number.startsWith(HandlePidProvider.HDL_RESOLVER_URL)
+                                && !number.startsWith(HandlePidProvider.HTTP_HDL_RESOLVER_URL)) {
+                            number = "hdl:" + number;
+                        }
+                        // Validate using GlobalId
+                        try {
+                            GlobalId pid = PidUtil.parseAsGlobalID(number);
+                            id = pid.asURL();
+                        } catch (IllegalArgumentException e) {
+                            // Ignore
+                        }
+                        break;
+                    default:
+                        // Check if the number can be interpreted as a valid URI of some sort
+                        if (isURI(number)) {
                             id = number;
                         }
+
                         break;
                     }
                 }
+            } else if (jo.containsKey(publicationURL.getLabel())) {
+
+                String value = jo.getString(publicationURL.getLabel());
+                if (isURI(value)) {
+                    id = value;
+                }
             }
-            if(jo.containsKey(publicationRelationType.getLabel())) {
+            if (jo.containsKey(publicationRelationType.getLabel())) {
                 type = jo.getString(publicationRelationType.getLabel());
-                type = "https://purl.org/datacite/ontology#" + type.substring(0,1).toLowerCase() + type.substring(1); 
+                type = "https://purl.org/datacite/ontology#" + type.substring(0, 1).toLowerCase() + type.substring(1);
             }
             break;
-        default:  
-            //ToDo - handle primary field
-            //ToDo - handle "Identifier" vs "IdentifierType"
-            //ToDo - check for URL form
+        default:
             Collection<DatasetFieldType> childDFTs = dft.getChildDatasetFieldTypes();
             // Loop through child fields and select one
             // The order of preference is for a field with URL in the name, followed by one
@@ -288,7 +350,10 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
                 String fieldname = cdft.getName();
                 if (fieldname.contains("URL")) {
                     if (jo.containsKey(cdft.getJsonLDTerm().getLabel())) {
-                        id = jo.getString(cdft.getJsonLDTerm().getLabel());
+                        String value = jo.getString(cdft.getJsonLDTerm().getLabel());
+                        if (isURI(value)) {
+                            id = value;
+                        }
                         break;
                     }
                 }
@@ -297,9 +362,12 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
                 for (DatasetFieldType cdft : childDFTs) {
                     String fieldname = cdft.getName();
 
-                    if (fieldname.contains("ID") || fieldname.contains("Id")) {
+                    if ((fieldname.contains("ID") || fieldname.contains("Id")) && !fieldname.contains("Type")) {
                         if (jo.containsKey(cdft.getJsonLDTerm().getLabel())) {
-                            id = jo.getString(cdft.getJsonLDTerm().getLabel());
+                            String value = jo.getString(cdft.getJsonLDTerm().getLabel());
+                            if (isURI(value)) {
+                                id = value;
+                            }
                             break;
                         }
 
@@ -312,31 +380,30 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
 
                     if (fieldname.contains("Name")) {
                         if (jo.containsKey(cdft.getJsonLDTerm().getLabel())) {
-                            id = jo.getString(cdft.getJsonLDTerm().getLabel());
+                            String value = jo.getString(cdft.getJsonLDTerm().getLabel());
+                            if (isURI(value)) {
+                                id = value;
+                            }
                             break;
                         }
                     }
                 }
             }
-            id = jo.getString(jo.keySet().iterator().next());
         }
-        return new String[] {id, type};
+        return new String[] { id, type };
     }
 
-    String process(String template, Map<String, String> values) {
-        String curValue = template;
-        for (Map.Entry<String, String> ent : values.entrySet()) {
-            String val = ent.getValue();
-            if (val == null) {
-                val = "";
+    private boolean isURI(String number) {
+        try {
+            URI uri = new URI(number);
+            if (uri.isAbsolute()) {
+                return true;
             }
-            String varRef = "${" + ent.getKey() + "}";
-            while (curValue.contains(varRef)) {
-                curValue = curValue.replace(varRef, val);
-            }
+        } catch (URISyntaxException e) {
+            // Not a valid URI, skip
+            logger.fine("Value is not a valid URI: " + number);
         }
-
-        return curValue;
+        return false;
     }
 
 }
