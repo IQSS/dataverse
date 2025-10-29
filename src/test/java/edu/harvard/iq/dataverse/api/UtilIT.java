@@ -5143,4 +5143,13 @@ public class UtilIT {
         return requestSpecification
                 .get("/api/v1/datasets/" + datasetId + "/files/assignments/history");
     }
+    
+    public static Response sendMessageToLDNInbox(String message) {
+        // Send the message to the LDN inbox
+        return given()
+                .contentType("application/ld+json")
+                .body(message)
+                .when()
+                .post("/api/inbox/");
+    }
 }
