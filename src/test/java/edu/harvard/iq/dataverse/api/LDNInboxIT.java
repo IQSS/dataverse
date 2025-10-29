@@ -7,17 +7,22 @@ import jakarta.json.JsonObjectBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
+import edu.harvard.iq.dataverse.workflow.internalspi.COARNotifyRelationshipAnnouncementStep;
+import static edu.harvard.iq.dataverse.workflow.internalspi.COARNotifyRelationshipAnnouncementStep.DATACITE_URI_PREFIX;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 
 import java.util.UUID;
 
-
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static jakarta.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
@@ -36,6 +41,11 @@ public class LDNInboxIT {
     private static Integer datasetId;
     private static String superuserApiToken;
     private static String superusername;
+
+    private static final String FRBR_SUPPLEMENT = "http://purl.org/vocab/frbr/core#supplement";
+
+    static SettingsServiceBean settingsServiceBean = Mockito.mock(SettingsServiceBean.class);
+    static DataverseServiceBean dataverseServiceBean = Mockito.mock(DataverseServiceBean.class);
 
     @BeforeAll
     public static void setUpClass() {
@@ -71,6 +81,10 @@ public class LDNInboxIT {
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken);
         publishDataset.then().assertThat().statusCode(OK.getStatusCode());
 
+        // Setup mocks behavior, inject as deps - needed to build announcements
+        Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.InstallationName))
+                .thenReturn("LDN IT Tester");
+        BrandingUtil.injectServices(dataverseServiceBean, settingsServiceBean);
     }
 
     @AfterAll
@@ -97,23 +111,15 @@ public class LDNInboxIT {
     public void testAcceptRelationshipAnnouncementMessage() {
         // Create a COAR Notify Relationship Announcement message
         String citingResourceId = "https://doi.org/10.1234/example-publication";
-        String citingResourceName = "An Example Publication Citing the Dataset";
-        String relationship = "Cites";
+        String relationship = DATACITE_URI_PREFIX + "Cites";
 
-        JsonObject message = createRelationshipAnnouncementMessage(
-                citingResourceId,
-                citingResourceName,
-                datasetPid,
-                relationship
-        );
+        String message = createRelationshipAnnouncementMessage(citingResourceId, datasetPid, relationship);
 
         // Send the message to the LDN inbox
-        Response response = UtilIT.sendMessageToLDNInbox(message.toString());
+        Response response = UtilIT.sendMessageToLDNInbox(message);
 
         // Verify the response
-        response.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.message", equalTo("Message Received"));
+        response.then().assertThat().statusCode(OK.getStatusCode()).body("data.message", equalTo("Message Received"));
 
         // Wait a moment for notification to be created
         try {
@@ -125,41 +131,24 @@ public class LDNInboxIT {
         // Verify that a notification was created for the superuser
         Response notifications = UtilIT.getNotifications(superuserApiToken);
 
-        notifications.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data", notNullValue());
+        notifications.then().assertThat().statusCode(OK.getStatusCode()).body("data", notNullValue());
 
         // Check that at least one notification exists with type DATASETMENTIONED
         String notificationsJson = notifications.asString();
-        assertTrue(notificationsJson.contains("DATASETMENTIONED"),
-                "Expected to find DATASETMENTIONED notification");
-        assertTrue(notificationsJson.contains(citingResourceId),
-                "Expected notification to contain citing resource ID");
+        assertTrue(notificationsJson.contains("DATASETMENTIONED"), "Expected to find DATASETMENTIONED notification");
+        assertTrue(notificationsJson.contains(citingResourceId), "Expected notification to contain citing resource ID");
     }
 
     @Test
     @JvmSetting(key = JvmSettings.LINKEDDATANOTIFICATION_ALLOWED_HOSTS, value = "192.0.2.1")
     public void testRejectMessageFromNonWhitelistedHost() {
-
-        JsonObject message = createRelationshipAnnouncementMessage(
-                "https://doi.org/10.1234/test",
-                "Test Publication",
-                datasetPid,
-                "Cites"
-        );
+        String message = createRelationshipAnnouncementMessage("https://doi.org/10.1234/test", datasetPid,
+                DATACITE_URI_PREFIX + "Cites");
 
         // Send the message - should be rejected
-        Response response = UtilIT.sendMessageToLDNInbox(message.toString());
+        Response response = UtilIT.sendMessageToLDNInbox(message);
 
-        response.then().assertThat()
-                .statusCode(FORBIDDEN.getStatusCode());
-
-        // Restore whitelist
-        Response restoreWhitelist = UtilIT.setSetting(
-                SettingsServiceBean.Key.LDNMessageHosts,
-                "*"
-        );
-        restoreWhitelist.then().assertThat().statusCode(OK.getStatusCode());
+        response.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
     }
 
     @Test
@@ -168,167 +157,95 @@ public class LDNInboxIT {
 
         Response response = UtilIT.sendMessageToLDNInbox(invalidJson);
 
-        response.then().assertThat()
-                .statusCode(400); // Bad Request
+        response.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
 
     @Test
     public void testRejectMessageForNonExistentDataset() {
         String nonExistentPid = "doi:10.5072/FK2/NONEXISTENT";
 
-        JsonObject message = createRelationshipAnnouncementMessage(
-                "https://doi.org/10.1234/test",
-                "Test Publication",
-                nonExistentPid,
-                "Cites"
-        );
+        String message = createRelationshipAnnouncementMessage("https://doi.org/10.1234/test", nonExistentPid,
+                DATACITE_URI_PREFIX + "Cites");
 
-        Response response = UtilIT.sendMessageToLDNInbox(message.toString());
+        Response response = UtilIT.sendMessageToLDNInbox(message);
 
-        response.then().assertThat()
-                .statusCode(SERVICE_UNAVAILABLE.getStatusCode());
+        response.then().assertThat().statusCode(SERVICE_UNAVAILABLE.getStatusCode());
     }
 
     @Test
     public void testAcceptMessageWithMultipleRelationshipTypes() {
-        // Test different relationship types
-        String[] relationships = {
-                "Cites",
-                "IsSupplementTo",
-                "IsReferencedBy",
-                "IsRelatedTo"
-        };
+        // Test different relationship types - the ones supported by Dataverse and the
+        // default from DSpace
+        String[] relationships = { DATACITE_URI_PREFIX + "Cites", DATACITE_URI_PREFIX + "IsSupplementTo",
+                DATACITE_URI_PREFIX + "IsReferencedBy", DATACITE_URI_PREFIX + "IsCitedBy",
+                DATACITE_URI_PREFIX + "IsSupplementedBy", DATACITE_URI_PREFIX + "References", FRBR_SUPPLEMENT };
 
         for (String relationship : relationships) {
-            JsonObject message = createRelationshipAnnouncementMessage(
-                    "https://doi.org/10.1234/test-" + relationship.toLowerCase(),
-                    "Test Publication for " + relationship,
-                    datasetPid,
-                    relationship
-            );
+            String message = createRelationshipAnnouncementMessage(
+                    "https://doi.org/10.1234/test-" + relationship.toLowerCase(), datasetPid, relationship);
 
-            Response response = UtilIT.sendMessageToLDNInbox(message.toString());
+            Response response = UtilIT.sendMessageToLDNInbox(message);
 
-            response.then().assertThat()
-                    .statusCode(OK.getStatusCode())
-                    .body("data.message", equalTo("Message Received"));
+            response.then().assertThat().statusCode(OK.getStatusCode()).body("data.message",
+                    equalTo("Message Received"));
         }
     }
 
     @Test
-    public void testAcceptMessageWithDifferentResourceTypes() {
-        String[] resourceTypes = {
-                "ScholarlyArticle",
-                "Dataset",
-                "Software",
-                "Preprint"
-        };
+    public void testAcceptMessageWithUrn() {
+        // Test with URN format identifier
+        String urnPid = "urn:nbn:de:0000-12345";
 
-        for (String resourceType : resourceTypes) {
-            JsonObject message = createRelationshipAnnouncementMessageWithType(
-                    "https://doi.org/10.1234/test-" + resourceType.toLowerCase(),
-                    "Test Resource of type " + resourceType,
-                    datasetPid,
-                    "Cites",
-                    resourceType
-            );
+        // Create a dataset with URN (in real scenario, this would be configured)
+        // For this test, we'll use the existing dataset but reference it with a URN in
+        // the message
+        String message = createRelationshipAnnouncementMessage("https://doi.org/10.1234/test-urn", urnPid,
+                DATACITE_URI_PREFIX + "Cites");
 
-            Response response = UtilIT.sendMessageToLDNInbox(message.toString());
+        Response response = UtilIT.sendMessageToLDNInbox(message);
 
-            response.then().assertThat()
-                    .statusCode(OK.getStatusCode())
-                    .body("data.message", equalTo("Message Received"));
-        }
+        response.then().assertThat().statusCode(OK.getStatusCode());
+    }
+
+    @Test
+    public void testAcceptMessageWithHandle() {
+        // Test with Handle format identifier
+        String handlePid = "hdl:1234.5/67890";
+
+        String message = createRelationshipAnnouncementMessage("https://doi.org/10.1234/test-handle", handlePid,
+                DATACITE_URI_PREFIX + "Cites");
+
+        Response response = UtilIT.sendMessageToLDNInbox(message);
+
+        response.then().assertThat().statusCode(OK.getStatusCode());
+    }
+
+    @Test
+    public void testRejectMessageWithNonUriRelationship() {
+        // Test with an unsupported relationship type
+        String message = createRelationshipAnnouncementMessage("https://doi.org/10.1234/test-unsupported", datasetPid,
+                "UnsupportedRelationType");
+
+        Response response = UtilIT.sendMessageToLDNInbox(message);
+
+        // Should be rejected
+        response.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
 
     /**
-     * Helper method to create a COAR Notify Relationship Announcement message
+     * Helper method to create a COAR Notify Relationship Announcement message with
+     * specific resource type
      */
-    private JsonObject createRelationshipAnnouncementMessage(
-            String citingResourceId,
-            String citingResourceName,
-            String citedDatasetPid,
+    private String createRelationshipAnnouncementMessage(String citingResourceId, String targetDatasetPid,
             String relationship) {
-        return createRelationshipAnnouncementMessageWithType(
-                citingResourceId,
-                citingResourceName,
-                citedDatasetPid,
-                relationship,
-                "ScholarlyArticle"
-        );
-    }
 
-    /**
-     * Helper method to create a COAR Notify Relationship Announcement message with specific resource type
-     */
-    private JsonObject createRelationshipAnnouncementMessageWithType(
-            String citingResourceId,
-            String citingResourceName,
-            String citedDatasetPid,
-            String relationship,
-            String resourceType) {
+        JsonObjectBuilder targetBuilder = Json.createObjectBuilder().add("id", RestAssured.baseURI)
+                .add("inbox", RestAssured.baseURI + "/api/inbox").add("type", "Service");
 
-        String messageId = "urn:uuid:" + UUID.randomUUID().toString();
-        String relationshipId = "urn:uuid:" + UUID.randomUUID().toString();
+        JsonObject rel = Json.createObjectBuilder().add("as:object", targetDatasetPid)
+                .add("as:relationship", relationship).add("as:subject", citingResourceId)
+                .add("id", "urn:uuid:" + UUID.randomUUID().toString()).add("type", "Relationship").build();
 
-        // Convert PID to URL format if needed
-        String citedDatasetUrl = citedDatasetPid;
-        if (citedDatasetPid.startsWith("doi:")) {
-            citedDatasetUrl = "https://doi.org/" + citedDatasetPid.substring(4);
-        } else if (citedDatasetPid.startsWith("hdl:")) {
-            citedDatasetUrl = "https://hdl.handle.net/" +
-
-                    citedDatasetPid.substring(4);
-        }
-
-        // Build the COAR Notify message following the specification
-        JsonObjectBuilder messageBuilder = Json.createObjectBuilder();
-
-        // Add @context
-        messageBuilder.add("@context", Json.createArrayBuilder()
-                .add("https://www.w3.org/ns/activitystreams")
-                .add("https://purl.org/coar/notify"));
-
-        // Add message id and type
-        messageBuilder.add("id", messageId);
-        messageBuilder.add("type", Json.createArrayBuilder()
-                .add("Announce")
-                .add("coar-notify:RelationshipAction"));
-
-        // Add actor (the system sending the notification)
-        messageBuilder.add("actor", Json.createObjectBuilder()
-                .add("id", "https://example.org/repository")
-                .add("name", "Example Repository")
-                .add("type", "Service"));
-
-        // Add origin (inbox of the sender)
-        messageBuilder.add("origin", Json.createObjectBuilder()
-                .add("id", "https://example.org/repository")
-                .add("inbox", "https://example.org/inbox")
-                .add("type", "Service"));
-
-        // Add target (inbox of the receiver - this Dataverse instance)
-        messageBuilder.add("target", Json.createObjectBuilder()
-                .add("id", RestAssured.baseURI)
-                .add("inbox", RestAssured.baseURI + "/api/inbox")
-                .add("type", "Service"));
-
-        // Add object (the relationship being announced)
-        messageBuilder.add("object", Json.createObjectBuilder()
-                .add("id", relationshipId)
-                .add("type", "Relationship")
-                .add("as:subject", citingResourceId)
-                .add("as:relationship", "https://purl.org/datacite/ontology#" + relationship)
-                .add("as:object", citedDatasetUrl));
-
-        // Add context (the citing resource details)
-        messageBuilder.add("context", Json.createObjectBuilder()
-                .add("id", citingResourceId)
-                .add("ietf:cite-as", citingResourceId)
-                .add("type", "sorg:" + resourceType)
-                .add("sorg:name", citingResourceName));
-
-        return messageBuilder.build();
+        return COARNotifyRelationshipAnnouncementStep.buildAnnouncement(rel, targetBuilder.build());
     }
 }
-
