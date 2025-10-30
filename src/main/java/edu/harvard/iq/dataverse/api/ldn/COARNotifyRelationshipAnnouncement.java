@@ -120,7 +120,7 @@ public class COARNotifyRelationshipAnnouncement {
     private ResourceMetadata retrieveResourceMetadata(String subjectId) {
         ResourceMetadata metadata = new ResourceMetadata();
 
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
+        try (CloseableHttpClient client = HttpClients.custom().disableRedirectHandling().build()) {
             logger.info("Getting " + subjectId);
 
             // Step 1: Initial GET request expecting a 30x redirect
@@ -130,7 +130,7 @@ public class COARNotifyRelationshipAnnouncement {
             CloseableHttpResponse initialResponse = client.execute(initialGet);
             int statusCode = initialResponse.getStatusLine().getStatusCode();
 
-            if (statusCode == 302 || statusCode == 303) {
+            if (statusCode == 301 || statusCode == 302 || statusCode == 303 || statusCode == 307 || statusCode == 308) {
                 String location = initialResponse.getFirstHeader("Location").getValue();
                 logger.info("Redirecting to: " + location);
                 initialResponse.close();
