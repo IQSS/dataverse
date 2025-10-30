@@ -3,11 +3,15 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.pidproviders.PidProviderFactory;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.doi.UnmanagedDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.crossref.CrossRefDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DataCiteDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.ezid.EZIdDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.fake.FakeDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.fake.FakeProviderFactory;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandleProviderFactory;
 import edu.harvard.iq.dataverse.pidproviders.handle.UnmanagedHandlePidProvider;
+import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider;
 import edu.harvard.iq.dataverse.pidproviders.perma.UnmanagedPermaLinkPidProvider;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
@@ -15,6 +19,7 @@ import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,25 +39,21 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @LocalJvmSettings
-//FAKE 1
-@JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "FAKE 1", varArgs = "fake1")
-@JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = FakeDOIProvider.TYPE, varArgs = "fake1")
-@JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "10.5074", varArgs = "fake1")
-@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "fk", varArgs = "fake1")
-@JvmSetting(key = JvmSettings.PID_PROVIDER_MANAGED_LIST, value = "doi:10.5073/FK3ABCDEF", varArgs ="fake1")
+
 //HANDLE 1
 @JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "HDL 1", varArgs = "hdl1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = HandlePidProvider.TYPE, varArgs = "hdl1")
-@JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "1902.1", varArgs = "hdl1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "20.500.1234", varArgs = "hdl1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "test", varArgs = "hdl1")
-@JvmSetting(key = JvmSettings.PID_PROVIDER_MANAGED_LIST, value = "hdl:1902.1/FK2ABCDEF", varArgs ="hdl1")
-@JvmSetting(key = JvmSettings.HANDLENET_AUTH_HANDLE, value = "1902.1/ADMIN", varArgs ="hdl1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_MANAGED_LIST, value = "hdl:20.20.20/FK2ABCDEF", varArgs ="hdl1")
+@JvmSetting(key = JvmSettings.HANDLENET_AUTH_HANDLE, value = "20.500.1234/ADMIN", varArgs ="hdl1")
 @JvmSetting(key = JvmSettings.HANDLENET_INDEPENDENT_SERVICE, value = "true", varArgs ="hdl1")
 @JvmSetting(key = JvmSettings.HANDLENET_INDEX, value = "1", varArgs ="hdl1")
 @JvmSetting(key = JvmSettings.HANDLENET_KEY_PASSPHRASE, value = "passphrase", varArgs ="hdl1")
 @JvmSetting(key = JvmSettings.HANDLENET_KEY_PATH, value = "/tmp/cred", varArgs ="hdl1")
 //List to instantiate
-@JvmSetting(key = JvmSettings.PID_PROVIDERS, value = "fake1, hdl1")
+@JvmSetting(key = JvmSettings.PID_PROVIDERS, value = "hdl1")
+
 public class CitationServletTest {
 
     @Mock
@@ -68,8 +69,8 @@ public class CitationServletTest {
     @BeforeAll
     public static void setUp() {
         Map<String, PidProviderFactory> pidProviderFactoryMap = new HashMap<>();
-        pidProviderFactoryMap.put(FakeDOIProvider.TYPE, new FakeProviderFactory());
         pidProviderFactoryMap.put(HandlePidProvider.TYPE, new HandleProviderFactory());
+
         PidUtil.clearPidProviders();
 
         //Read list of providers to add
@@ -87,6 +88,11 @@ public class CitationServletTest {
     @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
+    }
+
+    @AfterAll
+    public static void tearDownClass() throws Exception {
+        PidUtil.clearPidProviders();
     }
 
     @Test
