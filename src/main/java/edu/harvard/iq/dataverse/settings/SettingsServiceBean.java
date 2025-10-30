@@ -816,6 +816,9 @@ public class SettingsServiceBean {
      * Basic functionality - get the name, return the setting, or {@code null}.
      * @param name of the setting
      * @return the actual setting, or {@code null}.
+     *
+     * @deprecated This will be removed in a future version of Dataverse. Please refrain from using it and migrate
+     *             any code doing so to use a {@link Key} and the {@link #getValueForKey(Key)} variants instead.
      */
     @Deprecated(since = "6.9", forRemoval = true)
     public String get( String name ) {
@@ -961,6 +964,9 @@ public class SettingsServiceBean {
      * @param name Name of the setting.
      * @param defaultValue The value to return if no setting is found in the DB.
      * @return Either the stored value, or the default value.
+     *
+     * @deprecated This will be removed in a future version of Dataverse. Please refrain from using it and migrate
+     *             any code doing so to use a {@link Key} and the {@link #getValueForKey(Key)} variants instead.
      */
     @Deprecated(since = "6.9", forRemoval = true)
     public String get( String name, String defaultValue ) {
@@ -968,6 +974,10 @@ public class SettingsServiceBean {
         return (val!=null) ? val : defaultValue;
     }
 
+    /**
+     * @deprecated This will be removed in a future version of Dataverse. Please refrain from using it and migrate
+     *             any code doing so to use a {@link Key} and the {@link #getValueForKey(Key)} variants instead.
+     */
     @Deprecated(since = "6.9", forRemoval = true)
     public String get(String name, String lang, String defaultValue ) {
         // Database safeguard, as the default is an empty string
@@ -995,6 +1005,10 @@ public class SettingsServiceBean {
         return get( key.toString(), lang, defaultValue );
     }
     
+    /**
+     * @deprecated This will be removed in a future version of Dataverse. Please refrain from using it and migrate
+     *             any code doing so to use a {@link Key} and the {@link #setValueForKey(Key, String)} variants instead.
+     */
     @Deprecated(since = "6.9", forRemoval = true)
     public Setting set( String name, String content ) {
         Setting s = null; 
@@ -1018,7 +1032,11 @@ public class SettingsServiceBean {
                             .setInfo(name + ": " + content));
         return s;
     }
-
+    
+    /**
+     * @deprecated This will be removed in a future version of Dataverse. Please refrain from using it and migrate
+     *             any code doing so to use a {@link Key} and the {@link #setValueForKey(Key, String)} variants instead.
+     */
     @Deprecated(since = "6.9", forRemoval = true)
     public Setting set( String name, String lang, String content ) {
         // Database safeguard, as the default is an empty string
@@ -1057,6 +1075,9 @@ public class SettingsServiceBean {
      * @param name name of the setting.
      * @param defaultValue logical value of {@code null}.
      * @return boolean value of the setting.
+     *
+     * @deprecated This will be removed in a future version of Dataverse. Please refrain from using it and migrate
+     *             any code doing so to use a {@link Key} and {@link #isTrueForKey(Key, boolean)} instead.
      */
     @Deprecated(since = "6.9", forRemoval = true)
     public boolean isTrue( String name, boolean defaultValue ) {
@@ -1085,6 +1106,10 @@ public class SettingsServiceBean {
         delete( name.toString() );
     }
     
+    /**
+     * @deprecated This will be removed in a future version of Dataverse. Please refrain from using it and migrate
+     *             any code doing so to use a {@link Key} and {@link #deleteValueForKey(Key)} instead.
+     */
     @Deprecated(since = "6.9", forRemoval = true)
     public void delete( String name ) {
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
@@ -1093,7 +1118,11 @@ public class SettingsServiceBean {
                 .setParameter("name", name)
                 .executeUpdate();
     }
-
+    
+    /**
+     * @deprecated This will be removed in a future version of Dataverse. Please refrain from using it and migrate
+     *             any code doing so to use a {@link Key} and {@link #deleteValueForKey(Key)} instead.
+     */
     @Deprecated(since = "6.9", forRemoval = true)
     public void delete( String name, String lang ) {
         // Database safeguard, as the default is an empty string
