@@ -1279,8 +1279,10 @@ public class SettingsServiceBean {
     
     /**
      * Enum representing the types of operations that are performed on a bulk operation with settings.
+     * @implNote Although this is only meant for internal use, we use it in a public method (which needs to stay public).
+     *           To avoid IDE warning about exposure, let's make it public, too.
      */
-    static enum Op {
+    public enum Op {
         UPDATED,
         CREATED,
         DELETED,
@@ -1328,6 +1330,8 @@ public class SettingsServiceBean {
      * @return a map tracking the operations performed on each setting. The map's keys
      *         are the settings involved, and the values are the types of operations
      *         performed (CREATED, UPDATED, DELETED).
+     *
+     * @implNote Must be a public method to ensure proper transaction management.
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public Map<Setting, Op> replaceAllSettings(Set<Setting> newSettings) {
