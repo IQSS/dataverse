@@ -1760,12 +1760,7 @@ public final class DatasetVersionDifference {
             job.add("replaced", 0);
         }
         
-        if (!changedFileMetadata.isEmpty()) {
-            job.add("changedFileMetaData", changedFileMetadata.size());
-           
-        } else{
-            job.add("changedFileMetaData", 0);
-        }
+        job.add("changedFileMetaData", getTotalFileMetadataChangesCount());
         
         if (!changedVariableMetadata.isEmpty()) {
             job.add("changedVariableMetadata", changedVariableMetadata.size());
@@ -1906,5 +1901,27 @@ public final class DatasetVersionDifference {
             job.add("tags", jabTags);
         }
         return job;
+    }
+
+    /**
+     * Calculates the total number of individual file metadata field changes
+     * across all files tracked in the {@code changedFileMetadataDiff} map.
+     *
+     * @return The total count of all file metadata field changes.
+     */
+    private int getTotalFileMetadataChangesCount() {
+        int totalChanges = 0;
+
+        if (this.changedFileMetadataDiff == null) {
+            return 0;
+        }
+
+        for (Map<String, List<String>> fileSpecificDiffs : this.changedFileMetadataDiff.values()) {
+            if (fileSpecificDiffs != null) {
+                totalChanges += fileSpecificDiffs.size();
+            }
+        }
+
+        return totalChanges;
     }
 }
