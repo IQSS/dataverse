@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.pidproviders.PidProviderFactory;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.doi.UnmanagedDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.fake.FakeDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.fake.FakeProviderFactory;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandleProviderFactory;
 import edu.harvard.iq.dataverse.pidproviders.handle.UnmanagedHandlePidProvider;
@@ -32,6 +34,12 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @LocalJvmSettings
+//FAKE 1
+@JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "FAKE 1", varArgs = "fake1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = FakeDOIProvider.TYPE, varArgs = "fake1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "10.5074", varArgs = "fake1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "fk", varArgs = "fake1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_MANAGED_LIST, value = "doi:10.5073/FK3ABCDEF", varArgs ="fake1")
 //HANDLE 1
 @JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "HDL 1", varArgs = "hdl1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = HandlePidProvider.TYPE, varArgs = "hdl1")
@@ -44,7 +52,7 @@ import static org.mockito.Mockito.*;
 @JvmSetting(key = JvmSettings.HANDLENET_KEY_PASSPHRASE, value = "passphrase", varArgs ="hdl1")
 @JvmSetting(key = JvmSettings.HANDLENET_KEY_PATH, value = "/tmp/cred", varArgs ="hdl1")
 //List to instantiate
-@JvmSetting(key = JvmSettings.PID_PROVIDERS, value = "hdl1")
+@JvmSetting(key = JvmSettings.PID_PROVIDERS, value = "fake1, hdl1")
 public class CitationServletTest {
 
     @Mock
@@ -60,6 +68,7 @@ public class CitationServletTest {
     @BeforeAll
     public static void setUp() {
         Map<String, PidProviderFactory> pidProviderFactoryMap = new HashMap<>();
+        pidProviderFactoryMap.put(FakeDOIProvider.TYPE, new FakeProviderFactory());
         pidProviderFactoryMap.put(HandlePidProvider.TYPE, new HandleProviderFactory());
         PidUtil.clearPidProviders();
 
