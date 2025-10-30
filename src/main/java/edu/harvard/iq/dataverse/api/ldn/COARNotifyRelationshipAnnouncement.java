@@ -134,9 +134,14 @@ public class COARNotifyRelationshipAnnouncement {
                 String location = initialResponse.getFirstHeader("Location").getValue();
                 logger.info("Redirecting to: " + location);
                 initialResponse.close();
-
+                // Assure the location is an absolute URI by converting any relative redirect
+                // location to absolute URI using the original request URI as base
+                // An absolute location will not be changed by this call
+                URI locationUri = new URI(subjectId).resolve(new URI(location));
+                logger.info("Absolute redirect: " + locationUri.toString());
+                
                 // Step 2: HEAD request to get Signposting links
-                HttpHead headRequest = new HttpHead(location);
+                HttpHead headRequest = new HttpHead(locationUri);
                 CloseableHttpResponse headResponse = client.execute(headRequest);
 
                 if (headResponse.getStatusLine().getStatusCode() == 200) {
@@ -174,13 +179,21 @@ public class COARNotifyRelationshipAnnouncement {
 
         for (org.apache.http.Header linkHeader : linkHeaders) {
             String linkValue = linkHeader.getValue();
-            if (linkValue.contains("application/vnd.datacite.datacite+xml")) {
-                int urlStart = linkValue.indexOf('<');
-                int urlEnd = linkValue.indexOf('>');
-                if (urlStart != -1 && urlEnd != -1 && urlEnd > urlStart) {
-                    String dataciteXmlUrl = linkValue.substring(urlStart + 1, urlEnd);
-                    logger.info("Found DataCite XML URL: " + dataciteXmlUrl);
-                    return dataciteXmlUrl;
+            // Split by comma to handle multiple links in a single header
+            String[] links = linkValue.split(",");
+            
+            for (String link : links) {
+                link = link.trim();
+                // Check if this link has the DataCite XML type
+                if (link.contains("type=\"application/vnd.datacite.datacite+xml\"") || 
+                    link.contains("type='application/vnd.datacite.datacite+xml'")) {
+                    int urlStart = link.indexOf('<');
+                    int urlEnd = link.indexOf('>');
+                    if (urlStart != -1 && urlEnd != -1 && urlEnd > urlStart) {
+                        String dataciteXmlUrl = link.substring(urlStart + 1, urlEnd);
+                        logger.info("Found DataCite XML URL: " + dataciteXmlUrl);
+                        return dataciteXmlUrl;
+                    }
                 }
             }
         }
@@ -294,6 +307,7 @@ public class COARNotifyRelationshipAnnouncement {
                     }
                 });
     }
+    
 
     /**
      * Inner class to hold resource metadata.
