@@ -73,7 +73,7 @@ public class LDNInbox extends AbstractApiBean {
             
             // Only process messages from whitelisted hosts
             if (!allowedIPs.equals("*") && !allowedIPs.contains(origin.toString())) {
-                logger.info("Ignoring message from IP address: " + origin.toString());
+                logger.fine("Ignoring message from IP address: " + origin.toString());
                 throw new ForbiddenException("The LDN Inbox does not accept messages from this address");
             }
 
@@ -83,7 +83,7 @@ public class LDNInbox extends AbstractApiBean {
                 throw new BadRequestException("Could not parse JSON message.");
             }
 
-            logger.info(JsonUtil.prettyPrint(jsonld));
+            logger.fine(JsonUtil.prettyPrint(jsonld));
 
             // Process message based on type
             processMessage(jsonld);
