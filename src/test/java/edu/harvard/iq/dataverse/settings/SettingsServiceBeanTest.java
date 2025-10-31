@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.settings;
 
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -197,7 +198,7 @@ class SettingsServiceBeanTest {
         }
         
         @Test
-        void testListAllAsJson_jsonSetting() {
+        void testListAllAsJson_jsonObjectSetting() {
             // Given
             JsonObject expected = Json.createObjectBuilder()
                 .add("default", "2147483648")
@@ -216,6 +217,28 @@ class SettingsServiceBeanTest {
             // Then
             assertEquals(1, result.size());
             assertEquals(expected.toString(), result.getJsonObject(SettingsServiceBean.Key.MaxFileUploadSizeInBytes.toString()).toString());
+        }
+        
+        @Test
+        void testListAllAsJson_jsonArraySetting() {
+            // Given
+            JsonArray expected = Json.createArrayBuilder()
+                .add(2147483648L)
+                .add("4000000000")
+                .add("8000000000")
+                .build();
+            
+            List<Setting> resultList = List.of(
+                new Setting(SettingsServiceBean.Key.MaxFileUploadSizeInBytes.toString(), "[2147483648, \"4000000000\", \"8000000000\"]")
+            );
+            when(typedQuery.getResultList()).thenReturn(resultList);
+            
+            // When
+            JsonObject result = settingsServiceBean.listAllAsJson();
+            
+            // Then
+            assertEquals(1, result.size());
+            assertEquals(expected.toString(), result.getJsonArray(SettingsServiceBean.Key.MaxFileUploadSizeInBytes.toString()).toString());
         }
         
         @Test

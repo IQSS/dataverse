@@ -13,6 +13,7 @@ import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonException;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonString;
@@ -1188,13 +1189,14 @@ public class SettingsServiceBean {
         settings.forEach(setting -> {
             String name = convertToJsonKey(setting);
             
-            // In case the setting is a JSON object, treat it a such in the output (so the API can return valid JSON)
-            if (setting.getContent().trim().startsWith("{"))
-                response.add(name, Json.createObjectBuilder(JsonUtil.getJsonObject(setting.getContent())));
-            else
+            try {
+                // In case the setting is JSON, treat it as such in the output (so the API can return valid JSON)
+                response.add(name, JsonUtil.getJsonValue(setting.getContent()));
+            } catch (JsonException e) {
+                // This wasn't valid JSON, so we just add it as a string
                 response.add(name, setting.getContent());
             }
-        );
+        });
         
         return response.build();
     }
