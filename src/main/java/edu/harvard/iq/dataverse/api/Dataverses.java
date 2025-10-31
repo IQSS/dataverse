@@ -1988,6 +1988,21 @@ public class Dataverses extends AbstractApiBean {
             return e.getResponse();
         }
     }
+    
+    @GET
+    @AuthRequired
+    @Path("/template/{id}")
+    public Response getTemplate(@Context ContainerRequestContext crc, @PathParam("id") Long templateId) {
+        try {
+            Template template = templateService.find(templateId);
+            if (template == null){
+                return error(Response.Status.NOT_FOUND, "Template with id " + templateId + " -  not found.");
+            }
+            return ok(jsonTemplate(execCommand(new GetTemplateCommand(createDataverseRequest(getRequestUser(crc)), template))));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
 
     @POST
     @AuthRequired

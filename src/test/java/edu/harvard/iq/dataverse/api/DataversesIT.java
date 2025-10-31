@@ -2596,7 +2596,7 @@ public class DataversesIT {
     @Test
     public void testCreateAndGetTemplates() throws JsonParseException  {
         /*
-          Also Delete...
+          Also Delete...and get single template
         */
         
         Response createUserResponse = UtilIT.createRandomUser();
@@ -2735,7 +2735,16 @@ public class DataversesIT {
 
         getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
         getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
-      
+        
+        Response getTemplateByIdResponse = UtilIT.getTemplate(templateId.toString(), apiToken);
+        getTemplateByIdResponse.prettyPrint();
+        getTemplateByIdResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        //guest user shouldn't get it
+        getTemplateByIdResponse = UtilIT.getTemplate(templateId.toString());
+        getTemplateByIdResponse.prettyPrint();
+        getTemplateByIdResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+        
         Response deleteTemplateResponse = UtilIT.deleteTemplate(templateId.toString(), secondApiToken);
         deleteTemplateResponse.prettyPrint();
         deleteTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
