@@ -95,13 +95,13 @@ public class COARNotifyRelationshipAnnouncement {
 
         Dataset dataset = datasetService.findByGlobalId(objectId);
         if (dataset == null) {
-            logger.info("Didn't find dataset for object ID: " + objectId + " - ignoring");
+            logger.fine("Didn't find dataset for object ID: " + objectId + " - ignoring");
         }
 
         // Create the citing resource JSON
         JsonObject citingResource = buildCitingResourceJson(subjectId, relationship, metadata);
         String jsonString = JsonUtil.prettyPrint(citingResource);
-        logger.info("Citing resource: " + jsonString);
+        logger.fine("Citing resource: " + jsonString);
 
         // Send notifications to users with publish permissions
         sendNotifications(dataset, jsonString);
@@ -121,7 +121,7 @@ public class COARNotifyRelationshipAnnouncement {
         ResourceMetadata metadata = new ResourceMetadata();
 
         try (CloseableHttpClient client = HttpClients.custom().disableRedirectHandling().build()) {
-            logger.info("Getting " + subjectId);
+            logger.fine("Getting " + subjectId);
 
             // Step 1: Initial GET request expecting a 30x redirect
             HttpGet initialGet = new HttpGet(new URI(subjectId));
@@ -132,13 +132,13 @@ public class COARNotifyRelationshipAnnouncement {
 
             if (statusCode == 301 || statusCode == 302 || statusCode == 303 || statusCode == 307 || statusCode == 308) {
                 String location = initialResponse.getFirstHeader("Location").getValue();
-                logger.info("Redirecting to: " + location);
+                logger.fine("Redirecting to: " + location);
                 initialResponse.close();
                 // Assure the location is an absolute URI by converting any relative redirect
                 // location to absolute URI using the original request URI as base
                 // An absolute location will not be changed by this call
                 URI locationUri = new URI(subjectId).resolve(new URI(location));
-                logger.info("Absolute redirect: " + locationUri.toString());
+                logger.fine("Absolute redirect: " + locationUri.toString());
                 
                 // Step 2: HEAD request to get Signposting links
                 HttpHead headRequest = new HttpHead(locationUri);
@@ -152,20 +152,20 @@ public class COARNotifyRelationshipAnnouncement {
                     if (dataciteXmlUrl != null) {
                         parseDataCiteXml(dataciteXmlUrl, client, metadata);
                     } else {
-                        logger.info("No DataCite XML URL found in Signposting links");
+                        logger.fine("No DataCite XML URL found in Signposting links");
                     }
                 } else {
-                    logger.info("HEAD request failed with status: " + headResponse.getStatusLine().getStatusCode());
+                    logger.fine("HEAD request failed with status: " + headResponse.getStatusLine().getStatusCode());
                     headResponse.close();
                 }
             } else {
-                logger.info("Expected 302/303 redirect but received status: " + statusCode);
+                logger.fine("Expected 302/303 redirect but received status: " + statusCode);
                 initialResponse.close();
             }
 
         } catch (Exception e) {
-            logger.info("Unable to get metadata from " + subjectId);
-            logger.info(e.getLocalizedMessage());
+            logger.fine("Unable to get metadata from " + subjectId);
+            logger.fine(e.getLocalizedMessage());
         }
 
         return metadata;
@@ -174,32 +174,45 @@ public class COARNotifyRelationshipAnnouncement {
     /**
      * Extract DataCite XML URL from Signposting Link headers.
      */
-    private String extractDataCiteXmlUrl(CloseableHttpResponse headResponse) {
-        org.apache.http.Header[] linkHeaders = headResponse.getHeaders("Link");
 
-        for (org.apache.http.Header linkHeader : linkHeaders) {
-            String linkValue = linkHeader.getValue();
-            // Split by comma to handle multiple links in a single header
-            String[] links = linkValue.split(",");
+/**
+ * Extract DataCite XML URL from Signposting Link headers.
+ */
+private String extractDataCiteXmlUrl(CloseableHttpResponse headResponse) {
+    org.apache.http.Header[] linkHeaders = headResponse.getHeaders("Link");
+
+    for (org.apache.http.Header linkHeader : linkHeaders) {
+        String linkValue = linkHeader.getValue();
+        logger.fine("Full Link header: " + linkValue);
+        
+        // Split by comma to handle multiple links in a single header
+        String[] links = linkValue.split(",");
+        
+        for (String link : links) {
+            link = link.trim();
+            logger.fine("Checking link segment: [" + link + "]");
             
-            for (String link : links) {
-                link = link.trim();
-                // Check if this link has the DataCite XML type
-                if (link.contains("type=\"application/vnd.datacite.datacite+xml\"") || 
-                    link.contains("type='application/vnd.datacite.datacite+xml'")) {
-                    int urlStart = link.indexOf('<');
-                    int urlEnd = link.indexOf('>');
-                    if (urlStart != -1 && urlEnd != -1 && urlEnd > urlStart) {
-                        String dataciteXmlUrl = link.substring(urlStart + 1, urlEnd);
-                        logger.info("Found DataCite XML URL: " + dataciteXmlUrl);
-                        return dataciteXmlUrl;
-                    }
+            // Check if this link has the DataCite XML type
+            boolean hasDataCiteType = link.contains("type=\"application/vnd.datacite.datacite+xml\"") || 
+                                     link.contains("type='application/vnd.datacite.datacite+xml'");
+            
+            logger.fine("Contains DataCite type: " + hasDataCiteType);
+            
+            if (hasDataCiteType) {
+                int urlStart = link.indexOf('<');
+                int urlEnd = link.indexOf('>');
+                if (urlStart != -1 && urlEnd != -1 && urlEnd > urlStart) {
+                    String dataciteXmlUrl = link.substring(urlStart + 1, urlEnd);
+                    logger.fine("Found DataCite XML URL: " + dataciteXmlUrl);
+                    return dataciteXmlUrl;
                 }
             }
         }
-
-        return null;
     }
+
+    logger.fine("No DataCite XML URL found in Link headers");
+    return null;
+}
 
     /**
      * Parse DataCite XML to extract title and resource type.
@@ -213,7 +226,7 @@ public class COARNotifyRelationshipAnnouncement {
 
             if (xmlResponse.getStatusLine().getStatusCode() == 200) {
                 String xmlContent = EntityUtils.toString(xmlResponse.getEntity(), "UTF-8");
-                logger.info("Retrieved DataCite XML");
+                logger.fine("Retrieved DataCite XML");
 
                 javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
                 factory.setNamespaceAware(true);
@@ -229,9 +242,9 @@ public class COARNotifyRelationshipAnnouncement {
 
                 if (titleNodes.getLength() > 0) {
                     metadata.name = titleNodes.item(0).getTextContent();
-                    logger.info("Extracted title from DataCite XML: " + metadata.name);
+                    logger.fine("Extracted title from DataCite XML: " + metadata.name);
                 } else {
-                    logger.info("No title element found in DataCite XML");
+                    logger.fine("No title element found in DataCite XML");
                 }
 
                 // Extract resource type
@@ -245,12 +258,12 @@ public class COARNotifyRelationshipAnnouncement {
                     String resourceTypeGeneral = resourceTypeElement.getAttribute("resourceTypeGeneral");
                     if (resourceTypeGeneral != null && !resourceTypeGeneral.isEmpty()) {
                         metadata.itemType = resourceTypeGeneral.toLowerCase();
-                        logger.info("Extracted resource type: " + metadata.itemType);
+                        logger.fine("Extracted resource type: " + metadata.itemType);
                     }
                 }
 
             } else {
-                logger.info("Failed to retrieve DataCite XML. Status: " + xmlResponse.getStatusLine().getStatusCode());
+                logger.fine("Failed to retrieve DataCite XML. Status: " + xmlResponse.getStatusLine().getStatusCode());
             }
 
             xmlResponse.close();
@@ -266,7 +279,7 @@ public class COARNotifyRelationshipAnnouncement {
      */
     private String extractRelationshipLabel(String relationshipId) {
         int index = relationshipId.indexOf("#");
-        logger.info("Found # at " + index + " in " + relationshipId);
+        logger.fine("Found # at " + index + " in " + relationshipId);
         return relationshipId.substring(index + 1);
     }
 
