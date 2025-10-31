@@ -7,9 +7,11 @@ Dataverse has a related capability to send COAR Notify Relationship Announcement
 
 The motivating use case is to support a use case where Dataverse administrators may wish to create back-links to the remote resource (e.g. as a Related Publication, Related Material, etc.).
 
-Upon receipt of a relevant message, Dataverse will create Announcement Received notifications for superusers, who can edit the dataset involved. (In the motivating use case, these users may then add an appropriate relationship and use the Update Curent Version publishing option to add it to the most recently published version of the dataset.)
+Upon receipt of a relevant message, Dataverse will create Announcement Received notifications for users who can edit the dataset involved. Notifications can be restricted to superusers who can publish the dataset as described below. (In the motivating use case, these superusers may then add an appropriate relationship and use the Update Curent Version publishing option to add it to the most recently published version of the dataset.)
 
-The ``:LDNMessageHosts`` setting is a comma-separated whitelist of hosts from which Dataverse will accept and process messages. By default, no hosts are allowed. ``*`` can be used in testing to indicate all hosts are allowed.
+The ``dataverse.ldn.allowed-hosts`` JVM option is a comma-separated whitelist of hosts from which Dataverse will accept and process messages. By default, no hosts are allowed. ``*`` can be used in testing to indicate all hosts are allowed.
+
+The ``dataverse.ldn.coar-noptify.relationship-announcement.notify-superusers-only`` JVM option can be set to ``true`` to restrict notifications to superusers only (those who can publish the dataset). The default is to notify all users who can publish the dataset.
 
 Messages can be sent via POST, using the application/ld+json ContentType:
 

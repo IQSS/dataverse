@@ -3669,7 +3669,7 @@ Experimental. See :doc:`/developers/search-services`.
 .. _dataverse.cors:
 
 CORS Settings
--------------
++++++++++++++
 
 The following settings control Cross-Origin Resource Sharing (CORS) for your Dataverse installation.
 
@@ -3746,6 +3746,23 @@ Default: ``0`` (no delay enforced)
 Example: ``dataverse.api.mdc.min-delay-ms=100`` (enforces a minimum 100ms delay between MDC API requests)
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_MDC_MIN_DELAY_MS``.
+
+.. dataverse.ldn
+
+Linked Data Notifications (LDN) Allowed Hosts
++++++++++++++++++++++++++++++++++++++++++++++
+
+Dataverse supports receiving LDN notifications via the /api/inbox endpoint. The datavers.ldn.allowed-hosts allows you to specify the list of host IP addresses from which LDN notifications can be received, or ``*`` to receive messages from anywhere.
+
+Example: ``dataverse.ldn.allowed-hosts=*``
+
+COAR Notify Relationship Announcement Notify Superusers Only
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+When Dataverse receives an LDN message conforming to the COAR Notify Relationship Announcement format and the message is about a Dataset hosted in the installation, Dataverse will send an notification to users who have permission to publish the dataset.
+This can instead be restricted to only superusers who can publish the dataset using this option.
+
+Example: ``dataverse.coar-notify.relationship-announcement.notify-superusers-only=true``
 
 .. _feature-flags:
 

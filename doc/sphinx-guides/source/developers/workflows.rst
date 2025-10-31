@@ -211,7 +211,7 @@ to a specific set of LDN Inboxes announcing a relationship between a newly publi
 The two parameters are
 * ``:COARNotifyRelationshipAnnouncementTriggerFields`` - a list of metadata field types that can trigger messages. Separate messages will be sent for each field (whether of the same type or not).
 * ``:COARNotifyRelationshipAnnouncementTargets`` - a JSON Array of JSON objects containing ``id``, ``inbox``, and ``type`` fields as required by the `COAR Notify Relationship Announcement specification <https://coar-notify.net/catalogue/workflows/repository-relationship-repository/2/>`_ .
-The ``inbox`` value should be the full URL of the target LDN inbox to which messages should be sent, e.g. ``{"id": "https://dashv7-dev.lib.harvard.edu","inbox": "https://dashv7-api-dev.lib.harvard.edu/server/ldn/inbox","type": "Service"}`` ).
+The ``inbox`` value should be the full URL of the target LDN inbox to which messages should be sent, e.g. ``{"id": "https://dashv7-dev.lib.harvard.edu","inbox": "https://dashv7-api-dev.lib.harvard.edu/server/ldn/inbox","type": ["Service"]}`` ).
 
 
 .. code:: json
