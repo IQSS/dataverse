@@ -10,7 +10,7 @@ This API changelog is experimental and we would love feedback on its usefulness.
 v6.9
 ----
 - The POST /api/admin/makeDataCount/{id}/updateCitationsForDataset processing is now asynchronous and the response no longer includes the number of citations. The response can be OK if the request is queued or 503 if the queue is full (default queue size is 1000).
-- For GET /api/notifications/ the JSON response has changed breaking the backward compatibility of the API.
+- For GET /api/notifications/all the JSON response has changed breaking the backward compatibility of the API.
 
 v6.8
 ----
