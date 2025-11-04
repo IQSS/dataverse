@@ -3981,8 +3981,7 @@ public class DatasetPage implements java.io.Serializable {
             dataset.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
         }
         // Validate
-        Set<ConstraintViolation> constraintViolations = workingVersion.validate();
-        if (!constraintViolations.isEmpty()) {
+        if (!workingVersion.isValid()) {
             FacesContext.getCurrentInstance().validationFailed();
             return "";
         }
