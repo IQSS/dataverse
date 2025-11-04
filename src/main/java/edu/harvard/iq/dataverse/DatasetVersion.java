@@ -1788,10 +1788,17 @@ public class DatasetVersion implements Serializable {
 
     private void removeEmptyValues(DatasetField dsf) {
         if (dsf.getDatasetFieldType().isPrimitive()) { // primitive
+            final boolean isControlledVocabulary = dsf.getDatasetFieldType().isControlledVocabulary();
             final Iterator<DatasetFieldValue> i = dsf.getDatasetFieldValues().iterator();
             while (i.hasNext()) {
-                final String v = i.next().getValue();
+                final DatasetFieldValue fieldValue = i.next();
+                final String v = fieldValue.getValue();
                 if (StringUtils.isBlank(v) || DatasetField.NA_VALUE.equals(v)) {
+                    i.remove();
+                    continue;
+                }
+                if (isControlledVocabulary && dsf.getDatasetFieldType().getControlledVocabularyValue(v) == null) {
+                    // Drop placeholders that never matched an allowed vocabulary value.
                     i.remove();
                 }
             }
@@ -1800,9 +1807,8 @@ public class DatasetVersion implements Serializable {
         }
     }
 
-    public Set<ConstraintViolation> validate() {
-        Set<ConstraintViolation> returnSet = new HashSet<>();
-
+    public Set<ConstraintViolation<?>> validate() {
+        Set<ConstraintViolation<?>> returnSet = new HashSet<>();
 
         for (DatasetField dsf : this.getFlatDatasetFields()) {
             dsf.setValidationMessage(null); // clear out any existing validation message
