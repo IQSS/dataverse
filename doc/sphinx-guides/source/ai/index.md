@@ -40,3 +40,5 @@ TurboCurator is an {ref}`external tool <inventory-of-external-tools>` that gener
 An MCP server for Dataverse has been deployed to [mcp.dataverse.org][], powered by the code at <https://github.com/gdcc/mcp-dataverse>. See the code's README for information on configuring MCP clients (e.g. Cursor, Visual Studio Code, Windsurf, Zed, etc.) to use [mcp.dataverse.org][] or your own local installation (setup instructions are also provided).
 
 [mcp.dataverse.org]: https://mcp.dataverse.org
+
+Another MCP server for Dataverse is available at <https://github.com/hunrenai4impact/dataverse-project-mcp>.
