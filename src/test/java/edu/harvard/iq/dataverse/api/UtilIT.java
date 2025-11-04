@@ -1712,19 +1712,22 @@ public class UtilIT {
     }
 
     static Response getNotifications(String apiToken) {
-        return getNotifications(apiToken, false, false, null, null);
+        return getNotifications(apiToken, null, null, null, null);
     }
 
-    static Response getNotifications(String apiToken, boolean inAppNotificationFormat, boolean onlyUnread, Integer limit, Integer offset) {
+    static Response getNotifications(String apiToken, Boolean inAppNotificationFormat, Boolean onlyUnread, Integer limit, Integer offset) {
         RequestSpecification request = given();
         if (apiToken != null) {
             request.header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
 
-        // Add the standard query parameters
-        request.queryParam("inAppNotificationFormat", inAppNotificationFormat)
-                .queryParam("onlyUnread", onlyUnread);
-
+        // Add Optional parameters
+        if (inAppNotificationFormat != null) {
+            request.queryParam("inAppNotificationFormat", inAppNotificationFormat);
+        }
+        if (onlyUnread != null) {
+            request.queryParam("onlyUnread", onlyUnread);
+        }
         // Conditionally add pagination parameters only if they are not null
         if (limit != null) {
             request.queryParam("limit", limit);

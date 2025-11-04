@@ -89,7 +89,7 @@ public class NotificationsIT {
         markRead.then().assertThat().statusCode(OK.getStatusCode());
 
         // Retrieve only unread notifications
-        getNotifications = UtilIT.getNotifications(authorApiToken, false, true, null, null);
+        getNotifications = UtilIT.getNotifications(authorApiToken, null, true, null, null);
         getNotifications.then().assertThat()
                 .body("data[0].type", equalTo(CREATEDV.toString()))
                 .body("data[0].displayAsRead", equalTo(false))
@@ -199,7 +199,7 @@ public class NotificationsIT {
                 .statusCode(OK.getStatusCode());
         authorApiToken = UtilIT.getApiTokenFromResponse(createAuthor);
 
-        getNotifications = UtilIT.getNotifications(authorApiToken, true, false, null, null);
+        getNotifications = UtilIT.getNotifications(authorApiToken, true, null, null, null);
         getNotifications.then().assertThat()
                 .body("data[0].displayAsRead", equalTo(false))
                 .body("totalCount", equalTo(1))
@@ -228,7 +228,7 @@ public class NotificationsIT {
 
         // Case 1: Test limit
         // Get first 2 notifications out of 5
-        Response limitedNotifications = UtilIT.getNotifications(paginationApiToken, false, false, 2, 0);
+        Response limitedNotifications = UtilIT.getNotifications(paginationApiToken, null, null, 2, 0);
         limitedNotifications.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].type", equalTo(CREATEDV.toString()))
@@ -238,7 +238,7 @@ public class NotificationsIT {
 
         // Case 2: Test offset
         // Skip first 3 notifications and get the remaining 2
-        Response offsetNotifications = UtilIT.getNotifications(paginationApiToken, false, false, null, 3);
+        Response offsetNotifications = UtilIT.getNotifications(paginationApiToken, null, null, null, 3);
         offsetNotifications.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].type", equalTo(CREATEDV.toString()))
@@ -248,7 +248,7 @@ public class NotificationsIT {
 
         // Case 3: Test limit and offset together
         // Get 2 notifications, starting from the 2nd one (index 1)
-        Response limitedAndOffsetNotifications = UtilIT.getNotifications(paginationApiToken, false, false, 2, 1);
+        Response limitedAndOffsetNotifications = UtilIT.getNotifications(paginationApiToken, null, null, 2, 1);
         limitedAndOffsetNotifications.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].type", equalTo(CREATEDV.toString()))
@@ -271,6 +271,7 @@ public class NotificationsIT {
 
         // Case 4: Test limit larger than available notifications
         // Ask for 10, but should only get the 5 that exist
+        // Also testing inAppNotificationFormat and onlyUnread set to false
         Response excessiveLimitNotifications = UtilIT.getNotifications(paginationApiToken, false, false, 10, 0);
         excessiveLimitNotifications.then().assertThat()
                 .statusCode(OK.getStatusCode())
