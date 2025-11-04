@@ -240,11 +240,6 @@ Discoverability
 
 A number of builtin features related to data discovery are listed under :doc:`discoverability` but you can further increase the discoverability of your data by setting up integrations.
 
-SHARE
-+++++
-
-`SHARE <http://www.share-research.org>`_ is building a free, open, data set about research and scholarly activities across their life cycle. It's possible to add a Dataverse installation as one of the `sources <https://share.osf.io/sources>`_ they include if you contact the SHARE team.
-
 Geodisy
 +++++++
 
