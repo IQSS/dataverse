@@ -100,7 +100,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         if ( ! (getUser() instanceof AuthenticatedUser) ) {
             throw new IllegalCommandException("Only authenticated users can update datasets", this);
         }
-        
+
         Dataset theDataset = getDataset();        
         ctxt.permissions().checkUpdateDatasetVersionLock(theDataset, getRequest(), this);
         Dataset savedDataset = null;
@@ -136,6 +136,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
             
             getDataset().getOrCreateEditVersion(fmVarMet).setDatasetFields(getDataset().getOrCreateEditVersion(fmVarMet).initDatasetFields());
+
             validateOrDie(getDataset().getOrCreateEditVersion(fmVarMet), isValidateLenient());
 
             final DatasetVersion editVersion = getDataset().getOrCreateEditVersion(fmVarMet);
