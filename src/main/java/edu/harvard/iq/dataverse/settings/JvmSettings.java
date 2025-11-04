@@ -609,17 +609,73 @@ public enum JvmSettings {
         return String.format(this.getScopedKey(), (Object[]) arguments);
     }
     
-    /** Lookup optional comma-separated value and return tokens as a List. */
+    /**
+     * Lookup an optional comma-separated value and return the tokens as an immutable list.
+     * MicroProfile Config removes zero-length segments when it converts to {@code String[]}, but
+     * it leaves any leading or trailing whitespace on the surviving tokens (including tokens that
+     * contain only spaces). This convenience overload trims each token; after trimming, any token
+     * that becomes empty (because it consisted solely of whitespace) is discarded so callers still
+     * receive a list that is free of empty strings. Use the boolean overload with {@code false} if
+     * you need the exact whitespace that MicroProfile provided.
+     *
+     * @return an {@link Optional} containing the list of tokens when the setting is present;
+     *         an empty {@link Optional} if the setting is not configured
+     */
     public Optional<List<String>> lookupSplittedListOptional() {
-    return lookupOptional(String[].class)
-        .map(values -> Arrays.stream(values).map(String::trim).toList());
+        return lookupSplittedListOptional(true);
     }
 
-    /** Lookup required comma-separated value and return tokens as a List. */
+    /**
+    * Lookup an optional comma-separated value and return the tokens as an immutable list.
+    *
+    * @param trimSpaces when {@code true}, individual elements are trimmed; tokens that become empty after
+    *                   trimming (because they were all whitespace) are removed to preserve MicroProfile's
+    *                   "no empty entries" guarantee; when {@code false}, the tokens are returned exactly as
+    *                   produced by MicroProfile Config
+     * @return an {@link Optional} containing the list of tokens when the setting is present;
+     *         an empty {@link Optional} if the setting is not configured
+     */
+    public Optional<List<String>> lookupSplittedListOptional(boolean trimSpaces) {
+        return lookupOptional(String[].class)
+            .map(values -> Arrays.stream(values)
+                .map(s -> trimSpaces ? s.trim() : s)
+                .filter(s -> trimSpaces ? !s.isEmpty() : true)
+                .toList());
+    }
+
+    /**
+     * Lookup a required comma-separated value and return the tokens as an immutable list.
+     * MicroProfile Config removes zero-length segments when it converts to {@code String[]}, but it
+     * leaves any leading or trailing whitespace on the surviving tokens (including tokens that contain
+     * only spaces). This convenience overload trims each token; after trimming, any token that becomes
+     * empty (because it consisted solely of whitespace) is discarded so callers still receive a list that
+     * is free of empty strings. Use the boolean overload with {@code false} if you need the exact whitespace
+     * that MicroProfile provided.
+     *
+     * @return the list of tokens for the configured setting
+     * @throws java.util.NoSuchElementException if the setting is missing or blank
+     * @throws IllegalArgumentException if conversion to {@code String[]} fails
+     */
     public List<String> lookupSplittedList() {
+        return lookupSplittedList(true);
+    }
+
+    /**
+    * Lookup a required comma-separated value and return the tokens as an immutable list.
+    *
+    * @param trimSpaces when {@code true}, individual elements are trimmed; tokens that become empty after
+    *                   trimming (because they were all whitespace) are removed to preserve MicroProfile's
+    *                   "no empty entries" guarantee; when {@code false}, the tokens are returned exactly as
+    *                   produced by MicroProfile Config
+     * @return the list of tokens for the configured setting
+     * @throws java.util.NoSuchElementException if the setting is missing or blank
+     * @throws IllegalArgumentException if conversion to {@code String[]} fails
+     */
+    public List<String> lookupSplittedList(boolean trimSpaces) {
         return Arrays.stream(lookup(String[].class))
-                .map(String::trim)
-                .toList();
+            .map(s -> trimSpaces ? s.trim() : s)
+            .filter(s -> trimSpaces ? !s.isEmpty() : true)
+            .toList();
     }
 
 }
