@@ -157,6 +157,7 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
@@ -2367,7 +2368,8 @@ public class DatasetPage implements java.io.Serializable {
 
     private void displayLockInfo(Dataset dataset) {
         // Various info messages, when the dataset is locked (for various reasons):
-        if (dataset.isLocked() && canUpdateDataset()) {
+        boolean globusUploadInProgress = globusService.isUploadTaskInProgressForDataset(dataset.getId());
+        if ((dataset.isLocked() || globusUploadInProgress) && canUpdateDataset()) {
             if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"),
                         BundleUtil.getStringFromBundle("dataset.locked.message.details"));
@@ -2381,9 +2383,17 @@ public class DatasetPage implements java.io.Serializable {
                         BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
                 lockedDueToDcmUpload = true;
             }
-            if (dataset.isLockedFor(DatasetLock.Reason.GlobusUpload)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.globusUpload.inProgressMessage.summary"),
-                        BundleUtil.getStringFromBundle("file.globusUpload.inProgressMessage.details"));
+            if (dataset.isLockedFor(DatasetLock.Reason.GlobusUpload)
+                    || globusUploadInProgress) {
+                // (prod. patch 6.8) fall back to the old-style Globus lock message unless 
+                // the new, async task mgmt model is used.
+                if (FeatureFlags.GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK.enabled()) {
+                    JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.globusUpload.inProgressMessage.summary"),
+                            BundleUtil.getStringFromBundle("file.globusUpload.inProgressMessageAsync.details"));
+                } else {
+                    JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.globusUpload.inProgressMessage.summary"),
+                            BundleUtil.getStringFromBundle("file.globusUpload.inProgressMessage.details"));
+                }
             }
             //This is a hack to remove dataset locks for File PID registration if
             //the dataset is released
@@ -4357,10 +4367,10 @@ public class DatasetPage implements java.io.Serializable {
         if (dataset.getId() != null) {
             Dataset testDataset = datasetService.find(dataset.getId());
             if (testDataset != null && testDataset.getId() != null) {
+                // Refresh the info messages, in case the dataset has been
+                // re-locked with a different lock type (or a Globus upload task is in progress):
+                displayLockInfo(testDataset);
                 if (testDataset.getLocks().size() > 0) {
-                    // Refresh the info messages, in case the dataset has been
-                    // re-locked with a different lock type:
-                    displayLockInfo(testDataset);
                     return true;
                 }
             }

@@ -360,16 +360,23 @@
                                                 <div class="btn-group">
                                                     <!-- Publish BTN -->
                                                     <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess or !valid}">
-                                                        <c:if test="#{!((showSubmitForReviewLink or showReturnToAuthorLink) and showPublishLink )}">
-                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess or !valid ? 'disabled' : ''}"/>
+                                                        <c:if test="#{!((showSubmitForReviewLink or showReturnToAuthorLink) and showPublishLink ) and !DatasetPage.lockedFromPublishing}">
+                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{!DatasetPage.hasValidTermsOfAccess or !valid ? 'disabled' : ''}"/>
                                                             <f:passThroughAttribute name="onclick" value="$(this).parent().find( 'li > a' ).trigger( 'click' );"/>
                                                         </c:if>
-                                                        <c:if test="#{(showSubmitForReviewLink or showReturnToAuthorLink) and showPublishLink}">
-                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess  or !valid ? 'disabled' : ''}"/>
+                                                        <!-- todo: make sure it's working properly with submit-for-review in place as well? -->
+                                                        <c:if test="#{!((showSubmitForReviewLink or showReturnToAuthorLink) and showPublishLink ) and DatasetPage.lockedFromPublishing}">
+                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish disabled"/>
+                                                        </c:if>
+                                                        <c:if test="#{(showSubmitForReviewLink or showReturnToAuthorLink) and showPublishLink and !DatasetPage.lockedFromPublishing}">
+                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{!DatasetPage.hasValidTermsOfAccess  or !valid ? 'disabled' : ''}"/>
                                                             <f:passThroughAttribute name="data-toggle" value="dropdown"/>
                                                             <f:passThroughAttribute name="aria-haspopup" value="true"/>
                                                             <f:passThroughAttribute name="aria-expanded" value="false"/>
                                                         </c:if>
+                                                        <!--c:if test="#{(showSubmitForReviewLink or showReturnToAuthorLink) and showPublishLink and DatasetPage.lockedFromPublishing}" -->
+                                                            <!-- f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle disabled"/ -->
+                                                        <!-- /c:if -->
                                                         #{showPublishLink ? bundle['dataset.publishBtn'] : (latestVersionInReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn'])} <span jsf:rendered="#{(showSubmitForReviewLink or showReturnToAuthorLink) and showPublishLink}" class="caret"></span>
                                                     </h:outputLink>
                                                     <!-- Publish BTN DROPDOWN-MENU OPTIONS -->

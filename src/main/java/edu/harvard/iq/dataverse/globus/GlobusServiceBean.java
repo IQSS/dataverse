@@ -51,6 +51,7 @@ import org.apache.commons.codec.binary.StringUtils;
 import org.primefaces.PrimeFaces;
 
 import com.google.gson.Gson;
+import com.rometools.utils.Lists;
 import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
@@ -1698,6 +1699,25 @@ public class GlobusServiceBean implements java.io.Serializable {
     
     public List<GlobusTaskInProgress> findAllOngoingTasks(GlobusTaskInProgress.TaskType taskType) {
         return em.createQuery("select object(o) from GlobusTaskInProgress as o where o.taskType=:taskType order by o.startTime", GlobusTaskInProgress.class).setParameter("taskType", taskType).getResultList();
+    }
+    
+    public List<GlobusTaskInProgress> findAllOngoingTasksForDataset(GlobusTaskInProgress.TaskType taskType, Long datasetId) {
+        return em.createQuery("select object(o) from GlobusTaskInProgress as o where o.taskType=:taskType and o.dataset.id=:datasetId order by o.startTime", GlobusTaskInProgress.class)
+                .setParameter("taskType", taskType)
+                .setParameter("datasetId", datasetId)
+                .getResultList();
+    }
+    
+    /**
+     * (prod. patch 6.8)
+     * @param datasetId
+     * @return 
+     */
+    public boolean isUploadTaskInProgressForDataset(Long datasetId) {
+        if (!FeatureFlags.GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK.enabled()) {
+            return false; 
+        }
+        return Lists.isNotEmpty(findAllOngoingTasksForDataset(GlobusTaskInProgress.TaskType.UPLOAD, datasetId));
     }
     
     public boolean isRuleInUseByOtherTasks(String ruleId) {
