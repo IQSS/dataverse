@@ -3756,6 +3756,22 @@ Example:
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_CORS_HEADERS_EXPOSE``.
 
+
+.. _dataverse.api.mdc.min-delay-ms:
+
+dataverse.api.mdc.min-delay-ms
+++++++++++++++++++++++++++++++
+
+Minimum delay in milliseconds between Make Data Count (MDC) API requests from the /api/admin/makeDataCount/{id}/updateCitationsForDataset api.
+This setting helps prevent overloading the MDC service by enforcing a minimum time interval between consecutive requests.
+If a request arrives before this interval has elapsed since the previous request, it will be rate-limited.
+
+Default: ``0`` (no delay enforced)
+
+Example: ``dataverse.api.mdc.min-delay-ms=100`` (enforces a minimum 100ms delay between MDC API requests)
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_MDC_MIN_DELAY_MS``.
+
 .. _feature-flags:
 
 Feature Flags
@@ -3829,6 +3845,9 @@ please find all known feature flags below. Any of these flags can be activated u
       - ``Off``
     * - enable-pid-failure-log
       - Turns on creation of a monthly log file (logs/PIDFailures_<yyyy-MM>.log) showing failed requests for dataset/file PIDs. Can be used directly or with scripts at https://github.com/gdcc/dataverse-recipes/python/pid_reports to alert admins.
+      - ``Off``
+    * - role-assignment-history
+      - Turns on tracking/display of role assignments and revocations for collections, datasets, and files
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable

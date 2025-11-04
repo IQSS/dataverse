@@ -142,7 +142,7 @@
                 value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfAccess)}"
                 escape="false" />
         </div>
-            <p:fragment rendered="#{guestbookAndTermsPopupRequired and guestbookPopupRequired}" id="guestbookUIFragment">
+            <p:fragment rendered="#{guestbookAndTermsPopupRequired and (((termsGuestbookPopupAction != bundle.download) != guestbookPopupRequiredAtDownload) and guestbookPopupRequired)}" id="guestbookUIFragment">
                 <div class="container messagePanel">
                     <iqbs:messages collapsible="true" />
                 </div>

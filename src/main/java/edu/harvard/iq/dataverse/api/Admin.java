@@ -2156,8 +2156,9 @@ public class Admin extends AbstractApiBean {
         if (owner == null) {
             return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
         }
+        AuthenticatedUser user = null;
         try {
-            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
@@ -2172,7 +2173,7 @@ public class Admin extends AbstractApiBean {
                 if (rolesToInherit.contains("*")) {
                     inheritAllRoles = true;
                 }
-                return ok(dataverseSvc.addRoleAssignmentsToChildren(owner, rolesToInherit, inheritAllRoles));
+                return ok(dataverseSvc.addRoleAssignmentsToChildren(owner, rolesToInherit, inheritAllRoles, createDataverseRequest(user)));
             }
         }
         return error(Response.Status.BAD_REQUEST,
