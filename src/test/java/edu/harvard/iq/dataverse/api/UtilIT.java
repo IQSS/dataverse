@@ -2596,7 +2596,7 @@ public class UtilIT {
                 .post("api/datasets/:persistentId/assignments?key=" + apiToken + "&persistentId=" + definitionPoint);
     }
 
-    static Response revokeRole(String definitionPoint, long doomed, String apiToken) {
+    static Response revokeRoleOnDataverse(String definitionPoint, long doomed, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("api/dataverses/" + definitionPoint + "/assignments/" + doomed);
@@ -3882,6 +3882,35 @@ public class UtilIT {
             .put("/api/datasets/" + datasetId + "/metadata?replace=" + replace);
         return response;
     }
+    
+    static Response updateDatasetTermsAndAccess(String idOrPersistentIdOfDataset, String apiToken, String pathToJsonFile) {
+        String idInPath = idOrPersistentIdOfDataset;
+        String optionalQueryParam = "";
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentIdOfDataset;
+        }
+
+        String jsonIn = getDatasetTermsFromFile(pathToJsonFile);
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .body(jsonIn)
+                .put("/api/datasets/" + idInPath + "/access" + optionalQueryParam);
+        return response;
+    }
+    
+    public static String getDatasetTermsFromFile(String pathToJsonFile) {
+        File datasetTermsJson = new File(pathToJsonFile);
+        try {
+            String datasetTermsAsJson = new String(Files.readAllBytes(Paths.get(datasetTermsJson.getAbsolutePath())));
+            return datasetTermsAsJson;
+        } catch (IOException ex) {
+            Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+
+    }
 
     static Response deleteDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody) {
         Response response = given()
@@ -5082,5 +5111,36 @@ public class UtilIT {
         return given()
                 .when()
                 .get(callbackUrl);
+    }
+    
+
+    public static Response getDataverseRoleAssignmentHistory(String dataverseAlias, boolean downloadAsCsv, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+        
+        requestSpecification = requestSpecification.header("Accept", downloadAsCsv ? "text/csv" : "application/json");
+        
+        return requestSpecification
+                .get("/api/v1/dataverses/" + dataverseAlias + "/assignments/history");
+    }
+    
+    public static Response getDatasetRoleAssignmentHistory(Integer datasetId, boolean downloadAsCsv, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+        
+        requestSpecification = requestSpecification.header("Accept", downloadAsCsv ? "text/csv" : "application/json");
+        
+        return requestSpecification
+                .get("/api/v1/datasets/" + datasetId + "/assignments/history");
+    }
+    
+    public static Response getDatasetFilesRoleAssignmentHistory(Integer datasetId, boolean downloadAsCsv, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+        
+        requestSpecification = requestSpecification.header("Accept", downloadAsCsv ? "text/csv" : "application/json");
+        
+        return requestSpecification
+                .get("/api/v1/datasets/" + datasetId + "/files/assignments/history");
     }
 }

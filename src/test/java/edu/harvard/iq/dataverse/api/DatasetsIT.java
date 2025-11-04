@@ -2053,7 +2053,7 @@ public class DatasetsIT {
         int roleAssignmentId = (int) roleAssignment.get("id");
         logger.info("role assignment id: " + roleAssignmentId);
         assertEquals(roleAssignmentIdFromCreate, roleAssignmentId);
-        Response revoke = UtilIT.revokeRole(dataverseAlias, roleAssignmentId, apiToken);
+        Response revoke = UtilIT.revokeRoleOnDataverse(dataverseAlias, roleAssignmentId, apiToken);
         revoke.prettyPrint();
         assertEquals(OK.getStatusCode(), revoke.getStatusCode());
 
@@ -4029,8 +4029,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     private String getData(String body) {
             return getDataAsJsonObject(body).toString();
     }
-
-    @Test
+    
+        @Test
     public void testFilesUnchangedAfterDatasetMetadataUpdate() throws IOException {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
@@ -4076,19 +4076,172 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 .body("data.latestVersion.files[0].label", equalTo("run.sh"))
                 .body("data.latestVersion.files[0].directoryLabel", equalTo("code"));
-        
+
         String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
         Response updateTitle = UtilIT.updateDatasetMetadataViaNative(datasetPid, pathToJsonFile, apiToken);
         updateTitle.prettyPrint();
         updateTitle.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         Response getDatasetJsonAfterUpdate = UtilIT.nativeGet(datasetId, apiToken);
         getDatasetJsonAfterUpdate.prettyPrint();
         getDatasetJsonAfterUpdate.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.latestVersion.files[0].label", equalTo("run.sh"))
                 .body("data.latestVersion.files[0].directoryLabel", equalTo("code"));
+
+    }
+
+    @Test
+    public void testUpdateDatasetTermsOfAccess() throws IOException {
+
+        //get publicInstall setting so we can change it back
+        Response publicInstallResponse = UtilIT.getSetting(SettingsServiceBean.Key.PublicInstall);
+        //TODO: fix this its a little hacky
+        String publicInstall = String.valueOf(publicInstallResponse.getBody().asString().contains("true"));
+
+        // make sure this is not a public installation
+        UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, "false");
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+        Integer datasetId = JsonPath.from(createDataset.asString()).getInt("data.id");
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        String pathToJsonFile = "src/test/resources/json/update-dataset-terms-access.json";
+        Response updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPid, apiToken, pathToJsonFile);
+        updateTerms.prettyPrint();
+        updateTerms.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        //Add another dataset with restricted files in order to get the access info to show up
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId2 = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String datasetPersistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+
+        updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPersistentId, apiToken, pathToJsonFile);
+        updateTerms.prettyPrint();
+        updateTerms.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.fileAccessRequest", equalTo(true));
+
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId2), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String fileId = JsonPath.from(uploadResponse.body().asString()).getString("data.files[0].dataFile.id");
+
+        //verify that terms of access have been updated but license remains unchanged
+        updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPersistentId, apiToken, pathToJsonFile);
+        updateTerms.prettyPrint();
+        updateTerms.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.fileAccessRequest", equalTo(true))
+                .body("data.termsOfAccess", equalTo("For access to restricted files please see read me file"))
+                .body("data.dataAccessPlace", equalTo("dataAccessPlace"))
+                .body("data.license.name", equalTo("CC0 1.0"));
+        
+
+        // Restrict file
+        Response restrictFileResponse = UtilIT.restrictFile(fileId, true, apiToken);
+        restrictFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Publish dataset version
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+        publishDatasetResponse.prettyPrint();
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        //Make installation "public install" to see that terms of access may not be set
+        UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, "true");
+
+        updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPid, apiToken, pathToJsonFile);
+        updateTerms.prettyPrint();
+        // should fail because its now a public install
+        updateTerms.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Setting File Access Request or Terms of Access is not permitted on a public installation."));
+
+        pathToJsonFile = "src/test/resources/json/update-dataset-terms-no-access.json";
+
+        updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPid, apiToken, pathToJsonFile);
+        updateTerms.prettyPrint();
+        // should be ok because it doesn't update request or terms of access
+        updateTerms.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.fileAccessRequest", equalTo(false));
+        
+        String badPID = "QQQAndABatmanSymbol";
+        updateTerms = UtilIT.updateDatasetTermsAndAccess(badPID, apiToken, pathToJsonFile);
+        updateTerms.prettyPrint();
+        // should get bad Request Dataset not found....
+        updateTerms.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                 .body("message", containsString("QQQ"));
+ 
+        //Make installation "public install"  tp false to see that terms of access can be set
+        UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, "false");
+        
+        createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        datasetPersistentId = JsonPath.from(createDataset.body().asString()).getString("data.persistentId");
+        int datasetId3 = JsonPath.from(createDataset.body().asString()).getInt("data.id");
+        
+        pathToJsonFile = "src/test/resources/json/update-dataset-access-only.json";
+        updateTerms = UtilIT.updateDatasetTermsAndAccess(datasetPersistentId, apiToken, pathToJsonFile);
+        updateTerms.prettyPrint();
+        updateTerms.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.fileAccessRequest", equalTo(true));
+
+        //reset public install
+        UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, publicInstall);
+        
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        //for cleanup
+        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
+        
+        // Clean up
+
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        destroyDatasetResponse.prettyPrint();
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+        
+        destroyDatasetResponse = UtilIT.destroyDataset(datasetId2, apiToken);
+        destroyDatasetResponse.prettyPrint();
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+        
+        destroyDatasetResponse = UtilIT.destroyDataset(datasetId3, apiToken);
+        destroyDatasetResponse.prettyPrint();
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+        
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());
         
     }
 
