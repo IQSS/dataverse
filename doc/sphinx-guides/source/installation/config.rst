@@ -246,6 +246,8 @@ If you are running an installation with Apache and Payara on the same server, an
 
 You should **NOT** use the configuration option above if you are running in a load-balanced environment, or otherwise have the web server on a different host than the application server.
 
+.. _root-collection-permissions:
+
 Root Dataverse Collection Permissions
 -------------------------------------
 
@@ -3187,7 +3189,7 @@ dataverse.person-or-org.org-phrase-array
 Please note that this setting is experimental.
 
 The Schema.org metadata and OpenAIRE exports and the Schema.org metadata included in DatasetPages try to infer whether each entry in the various fields (e.g. Author, Contributor) is a Person or Organization.
-If you have examples where an orgization name is being inferred to belong to a person, you can use this setting to force it to be recognized as an organization.
+If you have examples where an organization name is being inferred to belong to a person, you can use this setting to force it to be recognized as an organization.
 The value is expected to be a comma-separated list of strings. Any name that contains one of the strings is assumed to be an organization. For example, "Project" is a word that is not otherwise associated with being an organization.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_PERSON_OR_ORG_ORG_PHRASE_ARRAY``.
@@ -3729,6 +3731,22 @@ Example:
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_CORS_HEADERS_EXPOSE``.
 
+
+.. _dataverse.api.mdc.min-delay-ms:
+
+dataverse.api.mdc.min-delay-ms
+++++++++++++++++++++++++++++++
+
+Minimum delay in milliseconds between Make Data Count (MDC) API requests from the /api/admin/makeDataCount/{id}/updateCitationsForDataset api.
+This setting helps prevent overloading the MDC service by enforcing a minimum time interval between consecutive requests.
+If a request arrives before this interval has elapsed since the previous request, it will be rate-limited.
+
+Default: ``0`` (no delay enforced)
+
+Example: ``dataverse.api.mdc.min-delay-ms=100`` (enforces a minimum 100ms delay between MDC API requests)
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_MDC_MIN_DELAY_MS``.
+
 .. _feature-flags:
 
 Feature Flags
@@ -3799,6 +3817,12 @@ please find all known feature flags below. Any of these flags can be activated u
       - ``Off``
     * - add-local-contexts-permission-check
       - Adds a permission check to ensure that the user calling the /api/localcontexts/datasets/{id} API can edit the dataset with that id. This is currently the only use case - see https://github.com/gdcc/dataverse-external-vocab-support/tree/main/packages/local_contexts. The flag adds additional security to stop other uses, but would currently have to be used in conjunction with the api-session-auth feature flag (the security implications of which have not been fully investigated) to still allow adding Local Contexts metadata to a dataset.
+      - ``Off``
+    * - enable-pid-failure-log
+      - Turns on creation of a monthly log file (logs/PIDFailures_<yyyy-MM>.log) showing failed requests for dataset/file PIDs. Can be used directly or with scripts at https://github.com/gdcc/dataverse-recipes/python/pid_reports to alert admins.
+      - ``Off``
+    * - role-assignment-history
+      - Turns on tracking/display of role assignments and revocations for collections, datasets, and files
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable

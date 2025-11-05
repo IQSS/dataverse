@@ -2,9 +2,10 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
-import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.api.dto.CustomTermsDTO;
+import edu.harvard.iq.dataverse.api.dto.LicenseUpdateRequest;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -17,6 +18,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
+import edu.harvard.iq.dataverse.datasetversionsummaries.DatasetVersionSummary;
 import software.amazon.awssdk.services.s3.model.CompletedPart;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.*;
@@ -28,7 +30,6 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.*;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
-import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
@@ -140,9 +141,6 @@ public class Datasets extends AbstractApiBean {
     AuthenticationServiceBean authenticationServiceBean;
 
     @EJB
-    DDIExportServiceBean ddiExportService;
-
-    @EJB
     MetadataBlockServiceBean metadataBlockService;
 
     @EJB
@@ -162,10 +160,6 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     SettingsServiceBean settingsService;
-
-    // TODO: Move to AbstractApiBean
-    @EJB
-    DatasetMetricsServiceBean datasetMetricsSvc;
 
     @EJB
     DatasetExternalCitationsServiceBean datasetExternalCitationsService;
@@ -199,9 +193,6 @@ public class Datasets extends AbstractApiBean {
 
     @Inject
     DatasetTypeServiceBean datasetTypeSvc;
-
-    @Inject
-    DatasetFieldsValidator datasetFieldsValidator;
 
     @Inject
     DataFileCategoryServiceBean dataFileCategoryService;
@@ -1149,6 +1140,42 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.editMetadata.error.parseUpdate", List.of(ex.getMessage())));
         } catch (WrappedResponse ex) {
             logger.log(Level.SEVERE, "Update metadata error: " + ex.getMessage(), ex);
+            return ex.getResponse();
+        }
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{id}/access")
+    public Response editVersionTermsOfAccess(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id,
+                                        @QueryParam("sourceLastUpdateTime") String sourceLastUpdateTime) {
+        try {
+
+            boolean publicInstall = settingsSvc.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false);
+
+            Dataset dataset = findDatasetOrDie(id);
+
+            if (sourceLastUpdateTime != null) {
+                validateInternalTimestampIsNotOutdated(dataset, sourceLastUpdateTime);
+            }
+
+            JsonObject json = JsonUtil.getJsonObject(jsonBody);
+
+            TermsOfUseAndAccess toua = jsonParser().parseTermsOfAccess(json);
+
+            if (publicInstall && (toua.isFileAccessRequest() || !toua.getTermsOfAccess().isEmpty())){
+                return error(BAD_REQUEST, "Setting File Access Request or Terms of Access is not permitted on a public installation.");
+            }
+
+            DatasetVersion updatedVersion = execCommand(new UpdateDatasetTermsOfAccessCommand(dataset, toua, createDataverseRequest(getRequestUser(crc)))).getLatestVersion();
+
+            return ok(json(updatedVersion, true));
+
+        } catch (JsonParseException ex) {
+            logger.log(Level.SEVERE, "Semantic error parsing dataset terms update Json: " + ex.getMessage(), ex);
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.editMetadata.error.parseUpdate", List.of(ex.getMessage())));
+        } catch (WrappedResponse ex) {
+            logger.log(Level.SEVERE, "Update terms of use error: " + ex.getMessage(), ex);
             return ex.getResponse();
         }
     }
@@ -2609,7 +2636,7 @@ public class Datasets extends AbstractApiBean {
                 canSeeStatus = permissionSvc.requestOn(createDataverseRequest(user), ds).has(Permission.PublishDataset);
             }
 
-            if (dsv.isDraft() && (canSeeStatus)) {
+            if (canSeeStatus) {
                 List<CurationStatus> statuses = includeHistory ? dsv.getCurationStatuses() : Collections.singletonList(dsv.getCurrentCurationStatus());
                 if (includeHistory) {
                     JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
@@ -3138,76 +3165,21 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/compareSummary")
-    public Response getCompareVersionsSummary(@Context ContainerRequestContext crc, @PathParam("id") String id,
-                                      @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        try {
-            Dataset dataset = findDatasetOrDie(id);
-            User user = getRequestUser(crc);
-            JsonArrayBuilder differenceSummaries = Json.createArrayBuilder();
-
-            for (DatasetVersion dv : dataset.getVersions()) {
-                //only get summaries of draft is user may view unpublished
-
-                if (dv.isPublished() ||dv.isDeaccessioned() || permissionService.hasPermissionsFor(user, dv.getDataset(),
-                        EnumSet.of(Permission.ViewUnpublishedDataset))) {
-
-                    JsonObjectBuilder versionBuilder = new NullSafeJsonBuilder();
-                    versionBuilder.add("id", dv.getId());
-                    versionBuilder.add("versionNumber", dv.getFriendlyVersionNumber());
-                    DatasetVersionDifference dvdiff = dv.getDefaultVersionDifference();
-                    if (dvdiff == null) {
-                        if (dv.isReleased()) {
-                            if (dv.getPriorVersionState() == null) {
-                                versionBuilder.add("summary", "firstPublished");
-                            }
-                            if (dv.getPriorVersionState() != null && dv.getPriorVersionState().equals(VersionState.DEACCESSIONED)) {
-                                versionBuilder.add("summary", "previousVersionDeaccessioned");
-                            }
-                        }
-                        if (dv.isDraft()) {
-                            if (dv.getPriorVersionState() == null) {
-                                versionBuilder.add("summary", "firstDraft");
-                            }
-                            if (dv.getPriorVersionState() != null && dv.getPriorVersionState().equals(VersionState.DEACCESSIONED)) {
-                                versionBuilder.add("summary", "previousVersionDeaccessioned");
-                            }
-                        }
-                        if (dv.isDeaccessioned()) {
-                            versionBuilder.add("summary", getDeaccessionJson(dv));
-                        }
-
-                    } else {
-                        versionBuilder.add("summary", dvdiff.getSummaryDifferenceAsJson());
-                    }
-                    versionBuilder.add("versionNote", dv.getVersionNote());
-                    versionBuilder.add("contributors", datasetversionService.getContributorsNames(dv));
-                    versionBuilder.add("publishedOn", !dv.isDraft() ? dv.getPublicationDateAsString() : "");
-                    differenceSummaries.add(versionBuilder);
-                }
+    public Response getCompareVersionsSummary(@Context ContainerRequestContext crc,
+                                              @PathParam("id") String id,
+                                              @QueryParam("limit") Integer limit,
+                                              @QueryParam("offset") Integer offset) {
+        return response(req -> {
+            try {
+                Dataset dataset = findDatasetOrDie(id);
+                List<DatasetVersionSummary> versionSummaries = execCommand(new GetDatasetVersionSummariesCommand(req, dataset, limit, offset));
+                JsonArrayBuilder versionSummariesArrayBuilder = jsonDatasetVersionSummaries(versionSummaries);
+                long datasetVersionTotalCount = execCommand(new GetDatasetVersionCountCommand(req, dataset));
+                return ok(versionSummariesArrayBuilder, datasetVersionTotalCount);
+            } catch (WrappedResponse wr) {
+                return wr.getResponse();
             }
-            return ok(differenceSummaries);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-    }
-
-    private JsonObject getDeaccessionJson(DatasetVersion dv) {
-
-        JsonObjectBuilder compositionBuilder = Json.createObjectBuilder();
-
-        if (dv.getDeaccessionNote() != null && !dv.getDeaccessionNote().isEmpty()) {
-            compositionBuilder.add("reason", dv.getDeaccessionNote());
-        }
-
-        if (dv.getDeaccessionLink() != null && !dv.getDeaccessionLink().isEmpty()) {
-            compositionBuilder.add("url", dv.getDeaccessionLink());
-        }
-
-        JsonObject json = Json.createObjectBuilder()
-                .add("deaccessioned", compositionBuilder)
-                .build();
-
-        return json;
+        }, getRequestUser(crc));
     }
 
     private static Set<String> getDatasetFilenames(Dataset dataset) {
@@ -3591,7 +3563,7 @@ public class Datasets extends AbstractApiBean {
                     return error(Response.Status.BAD_REQUEST, "Country must be one of the ISO 1366 Country Codes");
                 }
             }
-            DatasetMetrics datasetMetrics = datasetMetricsSvc.getDatasetMetricsByDatasetForDisplay(dataset, monthYear, country);
+            DatasetMetrics datasetMetrics = datasetMetricsService.getDatasetMetricsByDatasetForDisplay(dataset, monthYear, country);
             if (datasetMetrics == null) {
                 return ok("No metrics available for dataset " + dataset.getId() + " for " + yyyymm + " for country code " + country + ".");
             } else if (datasetMetrics.getDownloadsTotal() + datasetMetrics.getViewsTotal() == 0) {
@@ -3690,7 +3662,7 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
 
-        return response(req -> ok(dataset.getEffectiveStorageDriverId()), getRequestUser(crc));
+        return ok(JsonPrinter.jsonStorageDriver(dataset.getEffectiveStorageDriverId(), dataset));
     }
 
     @PUT
@@ -5153,6 +5125,129 @@ public class Datasets extends AbstractApiBean {
         return false;
     }
 
+    /**
+     * API endpoint to retrieve a URL for a dataset-level external tool.
+     * 
+     * This endpoint allows clients to get a URL for accessing an external tool
+     * that operates at the dataset level. The URL includes necessary authentication tokens and
+     * parameters based on the user's permissions and the tool's configuration.
+     * 
+     * The endpoint accepts JSON input with optional parameters:
+     * - preview: boolean flag to indicate if the tool should run in preview mode (preview mode, if supported by the tool, suppresses showing metadata (i.e. item name/PID) and is intended for cases where the tool is embedded in the dataset/file page and this metadata is not needed. The current JSF UI never embeds a dataset-level tool in an iframe, so this is param is not currently useful (and may not be supported in dataset tools yet)
+     * - locale: string specifying the locale for internationalization
+     * 
+     * The response includes:
+     * - toolUrl: the URL to access the external tool
+     * - toolName: the display name of the external tool
+     * - datasetId: the ID of the dataset
+     * - preview: whether the URL is for preview mode
+     * 
+     * Authentication is required, and appropriate permissions are checked before generating the URL.
+     * For restricted datasets (draft or deaccessioned), the user must have ViewUnpublishedDataset permission.
+     * 
+     * @param crc The container request context for authentication
+     * @param datasetId The ID of the dataset
+     * @param externalToolId The ID of the external tool
+     * @param jsonBody JSON containing optional parameters
+     * @return A Response with the external tool URL and related information
+     */
+@POST
+@AuthRequired
+@Path("{id}/externalTool/{tid}/toolUrl")
+@Consumes(MediaType.APPLICATION_JSON)
+public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
+        @PathParam("tid") long externalToolId, String jsonBody) {
+
+    boolean preview = false;
+    String locale = null;
+
+    // Parse request body for parameters
+    if (StringUtils.isNotBlank(jsonBody)) {
+        try {
+            jakarta.json.JsonObject jsonObject = JsonUtil.getJsonObject(jsonBody);
+            if (jsonObject.containsKey("preview")) {
+                preview = jsonObject.getBoolean("preview");
+            }
+            if (jsonObject.containsKey("locale")) {
+                locale = jsonObject.getString("locale");
+            }
+        } catch (JsonParsingException | NullPointerException e) {
+            logger.warning("Error parsing JSON: " + e.getMessage());
+            // Return an error response for malformed JSON
+            return error(Response.Status.BAD_REQUEST, "Invalid JSON format in request body");
+        }
+    }
+
+    try {
+        // Find the dataset
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse ex) {
+            return notFound("Dataset not found for given id: " + datasetId);
+        }
+
+        // Find the external tool
+        ExternalTool externalTool = externalToolService.findById(externalToolId);
+        if (externalTool == null) {
+            return error(BAD_REQUEST, "External tool not found with id: " + externalToolId);
+        }
+
+        // Check if the tool has dataset scope
+        if (!ExternalTool.Scope.DATASET.equals(externalTool.getScope())) {
+            return error(BAD_REQUEST, "External tool does not have dataset scope.");
+        }
+
+        // Get the current user and create a request object
+        User user = getRequestUser(crc);
+        DataverseRequest req = createDataverseRequest(user);
+
+        // Get the latest dataset version
+        DatasetVersion datasetVersion = dataset.getLatestVersion();
+        if (datasetVersion == null) {
+            return error(BAD_REQUEST, "Dataset version not found.");
+        }
+
+        // Check if the dataset is restricted or draft
+        boolean isRestricted = datasetVersion.isDraft() || datasetVersion.isDeaccessioned();
+
+        // Check if user has permission to access the dataset if it's restricted
+        if (isRestricted) {
+            boolean hasPermission = permissionSvc.requestOn(req, dataset).has(Permission.ViewUnpublishedDataset);
+            if (!hasPermission) {
+                return error(Response.Status.FORBIDDEN,
+                        "You do not have permission to access this dataset with the requested external tool.");
+            }
+        }
+
+        // Determine if we need an API token for authentication
+        ApiToken apiToken = null;
+        if (user.isAuthenticated() && isRestricted) {
+            apiToken = authSvc.getValidApiTokenForUser(user);
+        }
+
+        // Create the external tool handler
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataset, apiToken, locale);
+
+        // Get the tool URL
+        String toolUrl;
+        if (preview) {
+            toolUrl = externalToolHandler.getToolUrlForPreviewMode();
+        } else {
+            toolUrl = externalToolHandler.getToolUrlWithQueryParams();
+        }
+
+        // Return the URL in a JSON response
+        return ok(Json.createObjectBuilder().add("toolUrl", toolUrl).add("displayName", externalTool.getDisplayName())
+                .add("datasetId", dataset.getId()).add("preview", preview));
+
+    } catch (Exception ex) {
+        logger.log(Level.SEVERE, "Error getting dataset external tool URL: " + ex.getMessage(), ex);
+        return error(Response.Status.INTERNAL_SERVER_ERROR,
+                "An error occurred while generating the external tool URL.");
+    }
+}
+
     // This method provides a callback for an external tool to retrieve it's
     // parameters/api URLs. If the request is authenticated, e.g. by it being
     // signed, the api URLs will be signed. If a guest request is made, the URLs
@@ -5934,7 +6029,7 @@ public class Datasets extends AbstractApiBean {
         }, getRequestUser(crc));
     }
 
-@GET
+    @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/versionNote")
     public Response getVersionCreationNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
@@ -6004,4 +6099,61 @@ public class Datasets extends AbstractApiBean {
         }, getRequestUser(crc));
     }
 
+    @GET
+    @AuthRequired
+    @Path("{identifier}/assignments/history")
+    @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
+    public Response getRoleAssignmentHistory(@Context ContainerRequestContext crc, @PathParam("identifier") String id, @Context HttpHeaders headers) {
+        return response(req -> {
+            Dataset dataset = findDatasetOrDie(id);
+
+            // user is authenticated
+            AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+
+            return getRoleAssignmentHistoryResponse(dataset, authenticatedUser, false, headers);
+        }, getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/files/assignments/history")
+    @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
+    public Response getFilesRoleAssignmentHistory(@Context ContainerRequestContext crc,
+            @PathParam("identifier") String id,
+            @Context HttpHeaders headers) {
+        return response(req -> {
+            Dataset dataset = findDatasetOrDie(id);
+
+            // user is authenticated
+            AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+
+            return getRoleAssignmentHistoryResponse(dataset, authenticatedUser, true, headers);
+        }, getRequestUser(crc));
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{id}/license")
+    public Response updateLicense(@Context ContainerRequestContext crc,
+                                  @PathParam("id") String datasetId,
+                                  LicenseUpdateRequest requestBody) {
+        return response(req -> {
+            Dataset dataset = findDatasetOrDie(datasetId);
+            if (requestBody.getName() != null && !requestBody.getName().isEmpty()) {
+                String licenseName = requestBody.getName();
+                License license = licenseSvc.getByNameOrUri(licenseName);
+                if (license == null) {
+                    return notFound(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNotFound", List.of(licenseName)));
+                }
+                execCommand(new UpdateDatasetLicenseCommand(req, dataset, license));
+                return ok(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success"));
+            } else if (requestBody.getCustomTerms() != null) {
+                CustomTermsDTO customTerms = requestBody.getCustomTerms();
+                execCommand(new UpdateDatasetLicenseCommand(req, dataset, customTerms.toTermsOfUseAndAccess()));
+                return ok(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success"));
+            } else {
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNameIsEmpty"));
+            }
+        }, getRequestUser(crc));
+    }
 }

@@ -1,1 +1,0 @@
-A bug, introduced in v6.7, that caused files in draft versions that were added after the initial dataset version was published, has been fixed.
