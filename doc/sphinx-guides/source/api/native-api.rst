@@ -4208,7 +4208,7 @@ Delete files from a dataset. This API call allows you to delete multiple files f
 
   curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/datasets/:persistentId/deleteFiles?persistentId=$PERSISTENT_IDENTIFIER" \
   -H "Content-Type: application/json" \
-  -d '{"fileIds": [1, 2, 3]}'
+  -d '[1, 2, 3]'
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -4216,16 +4216,16 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/:persistentId/deleteFiles?persistentId=doi:10.5072/FK2ABCDEF" \
   -H "Content-Type: application/json" \
-  -d '{"fileIds": [1, 2, 3]}'
+  -d '[1, 2, 3]'
 
-The ``fileIds`` in the JSON payload should be an array of file IDs that you want to delete from the dataset.
+The JSON payload should be an array of file IDs that you want to delete from the dataset.
 
 You must have the appropriate permissions to delete files from the dataset.
 
 Upon success, the API will return a JSON response with a success message and the number of files deleted.
 
 The API call will report a 400 (BAD REQUEST) error if any of the files specified do not exist or are not in the latest version of the specified dataset.
-The ``fileIds`` in the JSON payload should be an array of file IDs that you want to delete from the dataset.
+The JSON payload should be an array of file IDs that you want to delete from the dataset.
 
 .. _api-dataset-role-assignment-history:
 
