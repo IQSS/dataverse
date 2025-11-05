@@ -4357,6 +4357,53 @@ The CSV response for this call is the same as for the /api/datasets/{id}/assignm
 
 Note: This feature requires the "role-assignment-history" feature flag to be enabled (see :ref:`feature-flags`).
 
+Update Dataset License
+~~~~~~~~~~~~~~~~~~~~~~
+
+Updates the license of a dataset by applying it to the draft version, or by creating a draft if none exists.
+
+The JSON representation of a license can take two forms, depending on whether you want to specify a predefined license or define custom terms of use and access.
+
+To set a predefined license (e.g., CC BY 4.0), provide a JSON body with the license name:
+
+.. code-block:: json
+
+  {
+    "name": "CC BY 4.0"
+  }
+
+To define custom terms of use and access, provide a JSON body with the following properties. All fields within ``customTerms`` are optional, except for the ``termsOfUse`` field, which is required:
+
+.. code-block:: json
+
+  {
+    "customTerms": {
+        "termsOfUse": "Your terms of use",
+        "confidentialityDeclaration": "Your confidentiality declaration",
+        "specialPermissions": "Your special permissions",
+        "restrictions": "Your restrictions",
+        "citationRequirements": "Your citation requirements",
+        "depositorRequirements": "Your depositor requirements",
+        "conditions": "Your conditions",
+        "disclaimer": "Your disclaimer"
+    }
+  }
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=3
+  export FILE_PATH=license.json
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/datasets/$ID/license" -H "Content-type:application/json" --upload-file $FILE_PATH
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/3/license" -H "Content-type:application/json" --upload-file license.json
+
 Files
 -----
 
