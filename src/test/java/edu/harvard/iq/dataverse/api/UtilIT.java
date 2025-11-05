@@ -1812,7 +1812,7 @@ public class UtilIT {
     static Response summaryDatasetVersionDifferences(String persistentId, String apiToken) {
         return summaryDatasetVersionDifferences(persistentId, null, null, apiToken);
     }
-    
+
     static Response summaryDatasetVersionDifferences(String persistentId, Integer limit, Integer offset, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -3891,7 +3891,7 @@ public class UtilIT {
             .put("/api/datasets/" + datasetId + "/metadata?replace=" + replace);
         return response;
     }
-    
+
     static Response updateDatasetTermsAndAccess(String idOrPersistentIdOfDataset, String apiToken, String pathToJsonFile) {
         String idInPath = idOrPersistentIdOfDataset;
         String optionalQueryParam = "";
@@ -3908,7 +3908,7 @@ public class UtilIT {
                 .put("/api/datasets/" + idInPath + "/access" + optionalQueryParam);
         return response;
     }
-    
+
     public static String getDatasetTermsFromFile(String pathToJsonFile) {
         File datasetTermsJson = new File(pathToJsonFile);
         try {
@@ -5121,35 +5121,43 @@ public class UtilIT {
                 .when()
                 .get(callbackUrl);
     }
-    
+
 
     public static Response getDataverseRoleAssignmentHistory(String dataverseAlias, boolean downloadAsCsv, String apiToken) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken);
-        
+
         requestSpecification = requestSpecification.header("Accept", downloadAsCsv ? "text/csv" : "application/json");
-        
+
         return requestSpecification
                 .get("/api/v1/dataverses/" + dataverseAlias + "/assignments/history");
     }
-    
+
     public static Response getDatasetRoleAssignmentHistory(Integer datasetId, boolean downloadAsCsv, String apiToken) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken);
-        
+
         requestSpecification = requestSpecification.header("Accept", downloadAsCsv ? "text/csv" : "application/json");
-        
+
         return requestSpecification
                 .get("/api/v1/datasets/" + datasetId + "/assignments/history");
     }
-    
+
     public static Response getDatasetFilesRoleAssignmentHistory(Integer datasetId, boolean downloadAsCsv, String apiToken) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken);
-        
+
         requestSpecification = requestSpecification.header("Accept", downloadAsCsv ? "text/csv" : "application/json");
-        
+
         return requestSpecification
                 .get("/api/v1/datasets/" + datasetId + "/files/assignments/history");
+    }
+
+    public static Response updateLicense(String datasetId, String licenseOrCustomTerms, String apiToken) {
+        return given()
+                .body(licenseOrCustomTerms)
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/datasets/" + datasetId + "/license");
     }
 }
