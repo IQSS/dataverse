@@ -17,7 +17,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import com.beust.jcommander.Strings;
 
 public abstract class AbstractPidProvider implements PidProvider {
 
@@ -577,8 +576,8 @@ public abstract class AbstractPidProvider implements PidProvider {
         providerSpecification.add("shoulder", shoulder);
         providerSpecification.add("identifierGenerationStyle", identifierGenerationStyle);
         providerSpecification.add("datafilePidFormat", datafilePidFormat);
-        providerSpecification.add("managedSet", Strings.join(",", managedSet.toArray()));
-        providerSpecification.add("excludedSet", Strings.join(",", excludedSet.toArray()));
+        providerSpecification.add("managedSet", String.join(",", managedSet));
+        providerSpecification.add("excludedSet", String.join(",", excludedSet));
         return providerSpecification.build();
     }
     
