@@ -13,7 +13,9 @@ Note: See :doc:`making-releases` for Dataverse itself.
 We release Java libraries to Maven Central that are used by Dataverse (and perhaps `other <https://github.com/gdcc/xoai/issues/141>`_ `software <https://github.com/gdcc/xoai/issues/170>`_!):
 
 - https://central.sonatype.com/namespace/org.dataverse
+- https://central.sonatype.com/namespace/org.dataverse.test
 - https://central.sonatype.com/namespace/io.gdcc
+- https://central.sonatype.com/namespace/io.gdcc.export
 
 We release JavaScript/TypeScript libraries to npm:
 
@@ -109,60 +111,18 @@ Releasing a New Library to Maven Central
 At a high level:
 
 - Start with a snapshot release.
-- Use an existing pom.xml as a starting point.
-- Use existing GitHub Actions workflows as a starting point.
-- Create secrets in the new library's GitHub repo used by the workflow.
+- Use an existing pom.xml as a starting point, such as from `Croissant <https://github.com/gdcc/exporter-croissant>`_, that inherits from the common Maven parent (https://github.com/gdcc/maven-parent). You can also play around with the "hello" project (https://github.com/gdcc/hello) and even make releases from it since it is designed to be a sandbox for publishing to Maven Central.
+- Use existing GitHub Actions workflows as a starting point, such as from `Croissant <https://github.com/gdcc/exporter-croissant>`_. As of this writing we have separate actions for ``maven-snapshot.yml`` and ``maven-release.yml``.
+- For repos under https://github.com/IQSS, create secrets in the new library's GitHub repo used by the workflow. This is necessary for the IQSS org because "organization secrets are not available for organizations on legacy per-repository billing plans." For repos under https://github.com/gdcc you can make use of shared secrets at the org level. These are the environment variables we use:
+
+  - DATAVERSEBOT_GPG_KEY
+
+  - DATAVERSEBOT_GPG_PASSWORD
+
+  - DATAVERSEBOT_SONATYPE_TOKEN
+
+  - DATAVERSEBOT_SONATYPE_USERNAME
 - If you need an entire new namespace, look at previous issues such as https://issues.sonatype.org/browse/OSSRH-94575 and https://issues.sonatype.org/browse/OSSRH-94577
-
-Updating pom.xml for a Snapshot Release
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Before publishing a final version to Maven Central, you should publish a snapshot release or two. For each snapshot release you publish, the jar name will be unique each time (e.g. ``foobar-0.0.1-20240430.175110-3.jar``), so you can safely publish over and over with the same version number.
-
-We use the `Nexus Staging Maven Plugin <https://github.com/sonatype/nexus-maven-plugins/blob/main/staging/maven-plugin/README.md>`_ to push snapshot releases to https://s01.oss.sonatype.org/content/groups/staging/io/gdcc/ and https://s01.oss.sonatype.org/content/groups/staging/org/dataverse/
-
-Add the following to your pom.xml:
-
-.. code-block:: xml
-
-    <version>0.0.1-SNAPSHOT</version>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
-   <plugin>
-       <groupId>org.sonatype.plugins</groupId>
-       <artifactId>nexus-staging-maven-plugin</artifactId>
-       <version>${nexus-staging.version}</version>
-       <extensions>true</extensions>
-       <configuration>
-           <serverId>ossrh</serverId>
-           <nexusUrl>https://s01.oss.sonatype.org</nexusUrl>
-           <autoReleaseAfterClose>true</autoReleaseAfterClose>
-       </configuration>
-   </plugin>
-
-Configuring Secrets
-~~~~~~~~~~~~~~~~~~~
-
-In GitHub, you will likely need to configure the following secrets:
-
-- DATAVERSEBOT_GPG_KEY
-- DATAVERSEBOT_GPG_PASSWORD
-- DATAVERSEBOT_SONATYPE_TOKEN
-- DATAVERSEBOT_SONATYPE_USERNAME
-
-Note that some of these secrets might be configured at the org level (e.g. gdcc or IQSS).
-
-Many of the automated tasks are performed by the dataversebot account on GitHub: https://github.com/dataversebot
 
 npm (JavaScript/TypeScript)
 ---------------------------
