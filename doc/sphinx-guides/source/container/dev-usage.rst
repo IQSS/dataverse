@@ -145,13 +145,13 @@ Accessing Harvesting Log Files
 
 \1. Open a terminal and access the Dataverse container.
 
-Run the following command to access the Dataverse container (assuming your container is named dataverse-1):
+Run the following command to access the Dataverse container:
 
 .. code-block::
 
-  docker exec -it dataverse-1 bash
+  docker exec -it dev_dataverse bash
 
-This command opens an interactive shell within the dataverse-1 container.
+This command opens an interactive shell within the dev_dataverse container.
 
 \2. Navigate to the log files directory.
 
