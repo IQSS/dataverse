@@ -2001,6 +2001,24 @@ public class Dataverses extends AbstractApiBean {
             return e.getResponse();
         }
     }
+
+    @POST
+    @AuthRequired
+    @Path("{identifier}/templates/default/{templateId}")
+    public Response setDefaultTemplate(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String dvIdtf) {
+        System.out.println("Dataverse API: setting default template for dataverse " + dvIdtf);
+        return ok(BundleUtil.getStringFromBundle("dataverse.setDefaultTemplate.success"));
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("{identifier}/templates/default/{templateId}")
+    public Response removeDefaultTemplate(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String dvIdtf) {
+        System.out.println("Dataverse API: removing default template for dataverse " + dvIdtf);
+        return ok(BundleUtil.getStringFromBundle("dataverse.removeDefaultTemplate.success"));
+    }
+
+
     
     @GET
     @AuthRequired
