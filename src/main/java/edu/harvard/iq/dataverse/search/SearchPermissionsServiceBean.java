@@ -69,6 +69,8 @@ public class SearchPermissionsServiceBean {
                 .map(this::convertToIndexableString)
                 .filter(s -> s != null)
                 .forEach(permStrings::add);
+                // And anyone who has permission to view the unpublished version
+                permStrings.addAll(findDvObjectPerms(dataverse));
             }
         }
         permStrings.addAll(findDvObjectPerms(dataverse));
@@ -86,6 +88,8 @@ public class SearchPermissionsServiceBean {
                 .map(this::convertToIndexableString)
                 .filter(s -> s != null)
                 .forEach(perms::add);
+                // And anyone who has permission to view the unpublished version 
+                perms.addAll(findDvObjectPerms(version.getDataset()));
             }
 
         }

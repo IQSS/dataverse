@@ -129,6 +129,8 @@ public class SolrIndexServiceBean {
                 .map(searchPermissionsService::convertToIndexableString)
                 .filter(s -> s != null)
                 .forEach(perms::add);
+                // Also allow people who can view the unpublished dataverse
+                perms.addAll(searchPermissionsService.findDataversePerms(dataverse));
             }
         } else {
             perms = searchPermissionsService.findDataversePerms(dataverse);
@@ -180,6 +182,8 @@ public class SolrIndexServiceBean {
                         .map(searchPermissionsService::convertToIndexableString)
                         .filter(s -> s != null)
                         .forEach(perms::add);
+                        //Also allow people who can view the unpublished dataset
+                        perms.addAll(searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo));
                     }
                 } else {
                     perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
@@ -227,6 +231,8 @@ public class SolrIndexServiceBean {
                 .map(searchPermissionsService::convertToIndexableString)
                 .filter(s -> s != null)
                 .forEach(perms::add);
+                // Also allow people who can view the unpublished dataset
+                perms.addAll(searchPermissionsService.findDatasetVersionPerms(version));
             }
         } else {
             perms = searchPermissionsService.findDatasetVersionPerms(version);
