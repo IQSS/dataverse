@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -60,16 +61,27 @@ public class SearchPermissionsServiceBean {
     public List<String> findDataversePerms(Dataverse dataverse) {
         List<String> permStrings = new ArrayList<>();
         if (hasBeenPublished(dataverse)) {
-            permStrings.add(IndexServiceBean.getPublicGroupString());
+            Set<String> raIds = dataverse.getLocallyFAIRRoleAssigneeIdentifiers();
+            if (raIds.isEmpty()) {
+                permStrings.add(IndexServiceBean.getPublicGroupString());
+            } else {
+                permStrings.addAll(raIds);
+            }
         }
         permStrings.addAll(findDvObjectPerms(dataverse));
         return permStrings;
     }
-    
+
     public List<String> findDatasetVersionPerms(DatasetVersion version) {
         List<String> perms = new ArrayList<>();
         if (version.isReleased()) {
-            perms.add(IndexServiceBean.getPublicGroupString());
+            Set<String> raIds = version.getDataset().getOwner().getLocallyFAIRRoleAssigneeIdentifiers();
+            if (raIds.isEmpty()) {
+                perms.add(IndexServiceBean.getPublicGroupString());
+            } else {
+                perms.addAll(raIds);
+            }
+
         }
 
         perms.addAll(findDvObjectPerms(version.getDataset()));

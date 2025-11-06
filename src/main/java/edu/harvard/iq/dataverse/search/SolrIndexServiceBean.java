@@ -121,7 +121,12 @@ public class SolrIndexServiceBean {
     private DvObjectSolrDoc constructDataverseSolrDoc(Dataverse dataverse) {
         List<String> perms = new ArrayList<>();
         if (dataverse.isReleased()) {
-            perms.add(IndexServiceBean.getPublicGroupString());
+            Set<String> raIds = dataverse.getLocallyFAIRRoleAssigneeIdentifiers();
+            if (raIds.isEmpty()) {
+                perms.add(IndexServiceBean.getPublicGroupString());
+            } else {
+                perms.addAll(raIds);
+            }
         } else {
             perms = searchPermissionsService.findDataversePerms(dataverse);
         }
@@ -158,13 +163,18 @@ public class SolrIndexServiceBean {
 
     private List<DvObjectSolrDoc> constructDatafileSolrDocsFromDataset(Dataset dataset) {
         List<DvObjectSolrDoc> datafileSolrDocs = new ArrayList<>();
+        Set<String> raIds = dataset.getOwner().getLocallyFAIRRoleAssigneeIdentifiers();
         Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(dataset);
         for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersionsToBuildCardsFor(dataset)) {
             boolean cardShouldExist = desiredCards.get(datasetVersionFileIsAttachedTo.getVersionState());
             if (cardShouldExist) {
                 List<String> perms = new ArrayList<>();
                 if (datasetVersionFileIsAttachedTo.isReleased()) {
-                    perms.add(IndexServiceBean.getPublicGroupString());
+                    if (raIds.isEmpty()) {
+                        perms.add(IndexServiceBean.getPublicGroupString());
+                    } else {
+                        perms.addAll(raIds);
+                    }
                 } else {
                     perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
                 }
@@ -203,7 +213,12 @@ public class SolrIndexServiceBean {
         String name = version.getTitle();
         List<String> perms = new ArrayList<>();
         if (version.isReleased()) {
-            perms.add(IndexServiceBean.getPublicGroupString());
+            Set<String> raIds = version.getDataset().getOwner().getLocallyFAIRRoleAssigneeIdentifiers();
+            if (raIds.isEmpty()) {
+                perms.add(IndexServiceBean.getPublicGroupString());
+            } else {
+                perms.addAll(raIds);
+            }
         } else {
             perms = searchPermissionsService.findDatasetVersionPerms(version);
         }
