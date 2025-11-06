@@ -115,28 +115,28 @@ public class Dataverse extends DvObjectContainer {
     @Column(name = "assigneeidentifier")
     private Set<String> locallyFAIRRoleAssigneeIdentifiers = new HashSet<>();
 
-    public Set<String> getRoleAssigneeIdentifiers() {
+    public Set<String> getLocallyFAIRRoleAssigneeIdentifiers() {
         return locallyFAIRRoleAssigneeIdentifiers;
     }
 
-    public void setRoleAssigneeIdentifiers(Set<String> roleAssigneeIdentifiers) {
+    public void setLocallyFAIRRoleAssigneeIdentifiers(Set<String> roleAssigneeIdentifiers) {
         this.locallyFAIRRoleAssigneeIdentifiers = roleAssigneeIdentifiers;
     }
 
-    public void addRoleAssignee(String assigneeIdentifier) {
+    public void addLocallyFAIRRoleAssignee(String assigneeIdentifier) {
         if (locallyFAIRRoleAssigneeIdentifiers == null) {
             locallyFAIRRoleAssigneeIdentifiers = new HashSet<>();
         }
         locallyFAIRRoleAssigneeIdentifiers.add(assigneeIdentifier);
     }
 
-    public void removeRoleAssignee(String assigneeIdentifier) {
+    public void removeLocallyFAIRRoleAssignee(String assigneeIdentifier) {
         if (locallyFAIRRoleAssigneeIdentifiers != null) {
             locallyFAIRRoleAssigneeIdentifiers.remove(assigneeIdentifier);
         }
     }
 
-    public boolean hasRoleAssignee(String assigneeIdentifier) {
+    public boolean LocallyFAIR(String assigneeIdentifier) {
         return locallyFAIRRoleAssigneeIdentifiers != null && locallyFAIRRoleAssigneeIdentifiers.contains(assigneeIdentifier);
     }
     
