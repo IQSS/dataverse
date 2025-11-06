@@ -65,7 +65,10 @@ public class SearchPermissionsServiceBean {
             if (raIds.isEmpty()) {
                 permStrings.add(IndexServiceBean.getPublicGroupString());
             } else {
-                permStrings.addAll(raIds);
+                raIds.stream()
+                .map(this::convertToIndexableString)
+                .filter(s -> s != null)
+                .forEach(permStrings::add);
             }
         }
         permStrings.addAll(findDvObjectPerms(dataverse));
@@ -79,7 +82,10 @@ public class SearchPermissionsServiceBean {
             if (raIds.isEmpty()) {
                 perms.add(IndexServiceBean.getPublicGroupString());
             } else {
-                perms.addAll(raIds);
+                raIds.stream()
+                .map(this::convertToIndexableString)
+                .filter(s -> s != null)
+                .forEach(perms::add);
             }
 
         }
@@ -193,5 +199,42 @@ public class SearchPermissionsServiceBean {
             return null;
         }
     }
+    
+
+/**
+ * Converts a single role assignee identifier (e.g., "@john.doe", "&admins") to its
+ * indexable form for Solr (e.g., "user_1", "group_admins") w/o any db lookup for groups.
+ * 
+ * @param identifier Identifier prefixed with @ (user) or & (group)
+ * @return Indexable string for Solr, or null if conversion fails
+ */
+public String convertToIndexableString(String identifier) {
+    if (identifier == null || identifier.isEmpty()) {
+        return null;
+    }
+    
+    char prefix = identifier.charAt(0);
+    String value = identifier.substring(1);
+    
+    if (prefix == '@') {
+        // User identifier - need to extract the numeric ID
+        // Format: @userIdentifier -> user_<primaryKey>
+        AuthenticatedUser user = authSvc.getAuthenticatedUser(value);
+        if (user != null) {
+            return IndexServiceBean.getGroupPerUserPrefix() + user.getId();
+        } else {
+            logger.fine("Could not find user for identifier: " + identifier);
+            return null;
+        }
+    } else if (prefix == '&') {
+        // Group alias - can use directly
+        // Format: &groupAlias -> group_groupAlias
+        return IndexServiceBean.getGroupPrefix() + value;
+    } else {
+        logger.warning("Unknown role assignee identifier format: " + identifier);
+        return null;
+    }
+}
+
 
 }

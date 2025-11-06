@@ -125,7 +125,10 @@ public class SolrIndexServiceBean {
             if (raIds.isEmpty()) {
                 perms.add(IndexServiceBean.getPublicGroupString());
             } else {
-                perms.addAll(raIds);
+                raIds.stream()
+                .map(searchPermissionsService::convertToIndexableString)
+                .filter(s -> s != null)
+                .forEach(perms::add);
             }
         } else {
             perms = searchPermissionsService.findDataversePerms(dataverse);
@@ -173,7 +176,10 @@ public class SolrIndexServiceBean {
                     if (raIds.isEmpty()) {
                         perms.add(IndexServiceBean.getPublicGroupString());
                     } else {
-                        perms.addAll(raIds);
+                        raIds.stream()
+                        .map(searchPermissionsService::convertToIndexableString)
+                        .filter(s -> s != null)
+                        .forEach(perms::add);
                     }
                 } else {
                     perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
@@ -217,7 +223,10 @@ public class SolrIndexServiceBean {
             if (raIds.isEmpty()) {
                 perms.add(IndexServiceBean.getPublicGroupString());
             } else {
-                perms.addAll(raIds);
+                raIds.stream()
+                .map(searchPermissionsService::convertToIndexableString)
+                .filter(s -> s != null)
+                .forEach(perms::add);
             }
         } else {
             perms = searchPermissionsService.findDatasetVersionPerms(version);
