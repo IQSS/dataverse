@@ -16,7 +16,7 @@ This command-line workflow provides a fast feedback loop for developers who pref
 
 # New Files
 
-- **`docker-compose.override.yml`**: Removes the 2GB memory limit (set for GitHub Actions CI) which is insufficient for local development. Automatically used by the fast-redeploy scripts.
+- **`docker-compose.override.yml`**: Increases memory limits to 8GB (from the 2GB limit set for GitHub Actions CI) for local development. Automatically used by the fast-redeploy scripts.
 
 # Key Features
 

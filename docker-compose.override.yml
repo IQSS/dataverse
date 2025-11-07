@@ -6,7 +6,7 @@ version: "2.4"
 
 services:
   dev_dataverse:
-    # Remove memory limits for local development
+    # Increase memory limits for local development
     # (upstream has 2GB limit for GitHub Actions CI, which is too restrictive for local dev)
-    mem_limit: 0
-    mem_reservation: 0
+    mem_limit: 8g
+    mem_reservation: 4g

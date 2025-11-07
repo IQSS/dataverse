@@ -464,9 +464,9 @@ This script:
 
 **Memory Configuration**
 
-The fast-redeploy workflow includes ``docker-compose.override.yml`` that removes the default 2GB memory limit 
-(set for GitHub Actions CI) which is insufficient for local Dataverse development. The override file is 
-automatically used by the scripts and enables running the full development stack without memory constraints.
+The fast-redeploy workflow includes ``docker-compose.override.yml`` that increases the memory limit to 8GB 
+(from the default 2GB limit set for GitHub Actions CI) which is insufficient for local Dataverse development. 
+The override file is automatically used by the scripts.
 
 **Limitations**
 
