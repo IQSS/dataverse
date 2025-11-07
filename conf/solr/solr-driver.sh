@@ -154,14 +154,12 @@ Options:
     -d, --dataverse-url URL        Dataverse API base URL
     -s, --solr-url URL             Solr base URL
     -c, --core NAME                Solr core name
+
     -p, --schema-target-path PATH  Path to target schema.xml (where to write)
     -P, --schema-source-path PATH  Path to source schema.xml (base for updates)
     -t, --lock-timeout SECONDS     Schema file lock timeout in seconds
-    -u, --update-script PATH       Path to update-fields.sh script
-    -w, --work-dir PATH            Working directory path
-
     -U, --upgrade                  Enable upgrade mode (oneshot only)
-                                   Apply metadata to template schema instead of current
+                                   Apply metadata to template schema instead of current and reload the core.
 
     -k, --startup-check MODE       Startup check mode: 'fail', 'warn', or 'wait'
                                    (fail: exit on error, warn: continue with warning, wait: block until ready)
@@ -172,6 +170,8 @@ Options:
     -l, --liveness-file PATH       Path to liveness indicator file
     -r, --readiness-file PATH      Path to readiness indicator file
 
+    -u, --update-script PATH       Path to update-fields.sh script
+    -w, --work-dir PATH            Working directory path
     -h, --help                     Show this help message
 
 Environment Variables (used as defaults if command-line options not provided):
