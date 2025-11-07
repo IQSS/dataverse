@@ -2,11 +2,10 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
-import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
-import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.api.dto.CustomTermsDTO;
+import edu.harvard.iq.dataverse.api.dto.LicenseUpdateRequest;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -31,7 +30,6 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.*;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
-import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
@@ -143,9 +141,6 @@ public class Datasets extends AbstractApiBean {
     AuthenticationServiceBean authenticationServiceBean;
 
     @EJB
-    DDIExportServiceBean ddiExportService;
-
-    @EJB
     MetadataBlockServiceBean metadataBlockService;
 
     @EJB
@@ -165,10 +160,6 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     SettingsServiceBean settingsService;
-
-    // TODO: Move to AbstractApiBean
-    @EJB
-    DatasetMetricsServiceBean datasetMetricsSvc;
 
     @EJB
     DatasetExternalCitationsServiceBean datasetExternalCitationsService;
@@ -202,9 +193,6 @@ public class Datasets extends AbstractApiBean {
 
     @Inject
     DatasetTypeServiceBean datasetTypeSvc;
-
-    @Inject
-    DatasetFieldsValidator datasetFieldsValidator;
 
     @Inject
     DataFileCategoryServiceBean dataFileCategoryService;
@@ -1155,16 +1143,16 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
+
     @PUT
     @AuthRequired
     @Path("{id}/access")
     public Response editVersionTermsOfAccess(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id,
                                         @QueryParam("sourceLastUpdateTime") String sourceLastUpdateTime) {
         try {
-            
+
             boolean publicInstall = settingsSvc.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false);
-            
+
             Dataset dataset = findDatasetOrDie(id);
 
             if (sourceLastUpdateTime != null) {
@@ -1174,11 +1162,11 @@ public class Datasets extends AbstractApiBean {
             JsonObject json = JsonUtil.getJsonObject(jsonBody);
 
             TermsOfUseAndAccess toua = jsonParser().parseTermsOfAccess(json);
-            
+
             if (publicInstall && (toua.isFileAccessRequest() || !toua.getTermsOfAccess().isEmpty())){
                 return error(BAD_REQUEST, "Setting File Access Request or Terms of Access is not permitted on a public installation.");
             }
-                       
+
             DatasetVersion updatedVersion = execCommand(new UpdateDatasetTermsOfAccessCommand(dataset, toua, createDataverseRequest(getRequestUser(crc)))).getLatestVersion();
 
             return ok(json(updatedVersion, true));
@@ -3575,7 +3563,7 @@ public class Datasets extends AbstractApiBean {
                     return error(Response.Status.BAD_REQUEST, "Country must be one of the ISO 1366 Country Codes");
                 }
             }
-            DatasetMetrics datasetMetrics = datasetMetricsSvc.getDatasetMetricsByDatasetForDisplay(dataset, monthYear, country);
+            DatasetMetrics datasetMetrics = datasetMetricsService.getDatasetMetricsByDatasetForDisplay(dataset, monthYear, country);
             if (datasetMetrics == null) {
                 return ok("No metrics available for dataset " + dataset.getId() + " for " + yyyymm + " for country code " + country + ".");
             } else if (datasetMetrics.getDownloadsTotal() + datasetMetrics.getViewsTotal() == 0) {
@@ -6043,7 +6031,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }, getRequestUser(crc));
     }
 
-@GET
+    @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/versionNote")
     public Response getVersionCreationNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
@@ -6112,7 +6100,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             return ok("Note deleted");
         }, getRequestUser(crc));
     }
-    
+
     @GET
     @AuthRequired
     @Path("{identifier}/assignments/history")
@@ -6120,7 +6108,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     public Response getRoleAssignmentHistory(@Context ContainerRequestContext crc, @PathParam("identifier") String id, @Context HttpHeaders headers) {
         return response(req -> {
             Dataset dataset = findDatasetOrDie(id);
-            
+
             // user is authenticated
             AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
 
@@ -6137,11 +6125,37 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             @Context HttpHeaders headers) {
         return response(req -> {
             Dataset dataset = findDatasetOrDie(id);
-            
+
             // user is authenticated
             AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
 
             return getRoleAssignmentHistoryResponse(dataset, authenticatedUser, true, headers);
+        }, getRequestUser(crc));
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{id}/license")
+    public Response updateLicense(@Context ContainerRequestContext crc,
+                                  @PathParam("id") String datasetId,
+                                  LicenseUpdateRequest requestBody) {
+        return response(req -> {
+            Dataset dataset = findDatasetOrDie(datasetId);
+            if (requestBody.getName() != null && !requestBody.getName().isEmpty()) {
+                String licenseName = requestBody.getName();
+                License license = licenseSvc.getByNameOrUri(licenseName);
+                if (license == null) {
+                    return notFound(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNotFound", List.of(licenseName)));
+                }
+                execCommand(new UpdateDatasetLicenseCommand(req, dataset, license));
+                return ok(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success"));
+            } else if (requestBody.getCustomTerms() != null) {
+                CustomTermsDTO customTerms = requestBody.getCustomTerms();
+                execCommand(new UpdateDatasetLicenseCommand(req, dataset, customTerms.toTermsOfUseAndAccess()));
+                return ok(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success"));
+            } else {
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNameIsEmpty"));
+            }
         }, getRequestUser(crc));
     }
 }
