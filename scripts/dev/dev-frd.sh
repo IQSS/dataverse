@@ -25,7 +25,7 @@ rsync -a --delete --exclude 'META-INF/persistence.xml' \
 if [ -d "src/main/webapp" ]; then
     echo "Syncing webapp resources..."
     rsync -a --delete \
-        --exclude 'WEB-INF/classes' --exclude 'WEB-INF/classes/**' \
+        --exclude 'WEB-INF/classes' \
         --exclude 'WEB-INF/lib' --exclude 'WEB-INF/lib/**' \
         src/main/webapp/ target/dataverse/
 fi
