@@ -36,6 +36,7 @@ if [ "$DB_INITIALIZED" = true ]; then
     echo "Detected existing database - disabling DDL generation to preserve schema..."
     sed -i.bak 's/\(eclipselink.ddl-generation" value="\)create-tables/\1none/' \
         target/dataverse/WEB-INF/classes/META-INF/persistence.xml
+    rm -f target/dataverse/WEB-INF/classes/META-INF/persistence.xml.bak
 else
     echo "First-time setup detected - keeping DDL generation enabled for schema creation..."
 fi
