@@ -2013,7 +2013,6 @@ public class Dataverses extends AbstractApiBean {
             NewTemplateDTO newTemplateDTO;
             try {
                 newTemplateDTO = NewTemplateDTO.fromRequestBody(body, jsonParser());
-                System.out.print("newTemplateDTO.isDefault():" + newTemplateDTO.isDefault());
             } catch (JsonParseException ex) {
                 return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.createTemplate.error.jsonParseMetadataFields"), ex.getMessage()));
             }

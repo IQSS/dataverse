@@ -1,8 +1,6 @@
 
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -37,7 +35,7 @@ public class GetTemplateCommand extends AbstractCommand<Template>  {
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         //at least need add dataset if not published also - view unpublished
-        Set<Permission> requiredPermissions = new HashSet<Permission>();
+        Set<Permission> requiredPermissions = new HashSet<>();
 
         requiredPermissions.add(Permission.AddDataset);
         if (!template.getDataverse().isReleased()) {
