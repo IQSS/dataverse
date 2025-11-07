@@ -54,7 +54,7 @@ RUN true && \
   rm -rf "~/.local" && \
 
   # Cleanup apt cache
-  rm -rf "/var/lib/apt/lists/*"
+  rm -rf "/var/lib/apt/lists/*" "/var/cache/apt/archives/*"
 
 # New step (and shell) as this is a different manager and we need pipx around as command
 RUN true && \
