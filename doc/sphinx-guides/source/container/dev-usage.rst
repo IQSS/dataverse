@@ -403,6 +403,80 @@ The steps below describe options to enable the later in different IDEs.
 
     **IMPORTANT**: This tool uses a Bash shell script and is thus limited to Mac and Linux OS.
 
+.. _dev-fast-redeploy:
+
+Fast Redeploy (Command-Line)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For developers who prefer command-line workflows over IDE integration, Dataverse provides scripts for fast iterative development without full container rebuilds.
+
+**Initial Setup**
+
+Run once per development session:
+
+.. code-block:: bash
+
+   ./scripts/dev/dev-start-frd.sh
+
+This command:
+
+- Builds the full Dataverse WAR with ``mvn package``
+- Extracts it into ``target/dataverse/`` as an exploded WAR
+- Configures JPA settings for development (``ddl-generation=none``)
+- Starts the dev stack with ``SKIP_DEPLOY=1``
+- Manually deploys the application via ``asadmin``
+
+**Iterative Development**
+
+After making code changes, run:
+
+.. code-block:: bash
+
+   ./scripts/dev/dev-frd.sh
+
+This script:
+
+- Compiles Java sources incrementally (``mvn compile``, ~5-10s)
+- Syncs updated classes and webapp resources into the mounted exploded WAR
+- Forces Payara to redeploy the application without restarting containers
+- Key features:
+  - Skips full Maven rebuilds (only compiles changed Java files)
+  - Avoids container restarts (uses hot-redeployment)
+  - Completes in ~12 seconds vs. ~54s for traditional full rebuild workflow (4.5x faster)
+  - Preserves database state between deployments
+
+**Typical Workflow**
+
+.. code-block:: bash
+
+   # Start dev environment once
+   ./scripts/dev/dev-start-frd.sh
+
+   # Edit Java or XHTML files...
+
+   # Fast redeploy
+   ./scripts/dev/dev-frd.sh
+
+   # Repeat as needed
+
+   # When finished, stop containers
+   ./scripts/dev/dev-down-frd.sh
+
+**Memory Configuration**
+
+The fast-redeploy workflow includes ``docker-compose.override.yml`` that removes the default 2GB memory limit 
+(set for GitHub Actions CI) which is insufficient for local Dataverse development. The override file is 
+automatically used by the scripts and enables running the full development stack without memory constraints.
+
+**Limitations**
+
+- Does not update dependencies (run full ``mvn package`` + restart if ``pom.xml`` changes)
+- Static resources (CSS, JS) may require browser cache clear
+- For database schema changes, use ``dev-rebuild.sh`` instead
+- Performance timings may vary depending on your hardware configuration
+
+**Note**: This workflow complements IDE-based redeployment. Use whichever fits your development style.
+
 Exploring the Database
 ----------------------
 
