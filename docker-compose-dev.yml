@@ -80,7 +80,7 @@ services:
     tmpfs:
       - /dumps:mode=770,size=2052M,uid=1000,gid=1000
       - /tmp:mode=770,size=2052M,uid=1000,gid=1000
-    mem_limit: 2147483648 # 2 GiB
+    mem_limit: 2684354560 # 2.5 GiB
     mem_reservation: 1024m
     privileged: false
 
@@ -133,6 +133,26 @@ services:
     volumes:
       - ./docker-dev-volumes/solr/data:/var/solr
       - ./docker-dev-volumes/solr/conf:/solr-template
+
+  # This is optional. Uncomment to try and experiment with schema sidecar.
+  # dev_solr_schema_sidecar:
+  #   container_name: "dev_solr_schema_sidecar"
+  #   hostname: "solr-schema"
+  #   image: gdcc/configbaker:unstable
+  #   depends_on:
+  #     - dev_dv_initializer
+  #     - dev_solr
+  #   restart: on-failure
+  #   networks:
+  #     - dataverse
+  #   # Note: no quotes here - they will become part of the arguments passed to the script!
+  #   command: >-
+  #     solr-driver.sh --mode watch --startup-check wait
+  #     --dataverse-url http://dataverse:8080
+  #     --solr-url http://solr:8983
+  #     --core collection1
+  #   volumes:
+  #     - ./docker-dev-volumes/solr/data:/var/solr
 
   dev_solr:
     container_name: "dev_solr"

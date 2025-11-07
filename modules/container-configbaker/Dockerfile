@@ -75,7 +75,7 @@ RUN true && \
   pipx install --global ${PYTHON_PKGS}
 
 # Get in the scripts 
-COPY maven/scripts maven/solr/update-fields.sh ${SCRIPT_DIR}/
+COPY maven/scripts maven/solr/*.sh ${SCRIPT_DIR}/
 # Copy the data from scripts/api that provide the common base setup you'd get from the installer.
 # ".dockerignore" will take care of taking only the bare necessities
 COPY maven/setup ${SCRIPT_DIR}/bootstrap/base/
