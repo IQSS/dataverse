@@ -42,7 +42,7 @@ public class RevokeAllRolesCommand extends AbstractVoidCommand {
         }
         
         try {
-            ctxt.roles().revokeAll(assignee);
+            ctxt.roles().revokeAll(assignee, getRequest());
             
             ctxt.explicitGroups().revokeAllGroupsForAssignee(assignee);
             

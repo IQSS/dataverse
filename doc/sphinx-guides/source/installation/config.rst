@@ -115,6 +115,23 @@ See the :ref:`payara` section of :doc:`prerequisites` for details and init scrip
 
 Related to this is that you should remove ``/root/.payara/pass`` to ensure that Payara isn't ever accidentally started as root. Without the password, Payara won't be able to start as root, which is a good thing.
 
+.. _payara-ports-localhost-only:
+
+Restricting Payara's Ports to localhost
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In the recommended setup of Dataverse, you do not expose Payara's ports directly to the Internet. Rather, you front Payara with a proxy such as Apache.
+
+If you are running Payara and your proxy on the same server, we recommend having Payara listen only to localhost, which is how your proxy talks to it, with the following command:
+
+``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-1.address=127.0.0.1``
+
+(You should **NOT** use the configuration option above if you are running in a load-balanced environment, or otherwise have your proxy on a different host than Payara.)
+
+To test that Payara is now only listening on localhost, try hitting port 8080 from the Internet. Payara should not respond.
+
+See also :ref:`network-ports`.
+
 .. _secure-password-storage:
 
 Secure Password Storage
@@ -245,6 +262,8 @@ If you are running an installation with Apache and Payara on the same server, an
 ``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-1.address=127.0.0.1``
 
 You should **NOT** use the configuration option above if you are running in a load-balanced environment, or otherwise have the web server on a different host than the application server.
+
+This security tip is also mentioned at :ref:`payara-ports-localhost-only`.
 
 .. _root-collection-permissions:
 
@@ -3820,6 +3839,9 @@ please find all known feature flags below. Any of these flags can be activated u
       - ``Off``
     * - enable-pid-failure-log
       - Turns on creation of a monthly log file (logs/PIDFailures_<yyyy-MM>.log) showing failed requests for dataset/file PIDs. Can be used directly or with scripts at https://github.com/gdcc/dataverse-recipes/python/pid_reports to alert admins.
+      - ``Off``
+    * - role-assignment-history
+      - Turns on tracking/display of role assignments and revocations for collections, datasets, and files
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable

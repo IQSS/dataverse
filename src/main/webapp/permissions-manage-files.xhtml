@@ -8,8 +8,7 @@
       xmlns:o="http://omnifaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-    <h:head>
-    </h:head>
+    
     <h:body>
         <f:metadata>
             <f:viewParam name="id" value="#{manageFilePermissionsPage.dataset.id}"/>
@@ -95,6 +94,7 @@
                                                                            update=":#{p:resolveClientId('rolesPermissionsForm:userGroups', view)}
                                                                            :#{p:resolveClientId('rolesPermissionsForm:restrictedFiles', view)}
                                                                            #{p:resolveClientId('rolesPermissionsForm:usersGroups', view)}
+                                                                           #{p:resolveClientId('rolesPermissionsForm:roleAssignmentHistory', view)}
                                                                            @([id$=Messages])">
                                                                 <span class="glyphicon glyphicon-ok"/> #{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}
                                                             </p:commandLink>
@@ -103,6 +103,7 @@
                                                                            update=":#{p:resolveClientId('rolesPermissionsForm:userGroups', view)}
                                                                            :#{p:resolveClientId('rolesPermissionsForm:restrictedFiles', view)}
                                                                            #{p:resolveClientId('rolesPermissionsForm:usersGroups', view)}
+                                                                           #{p:resolveClientId('rolesPermissionsForm:roleAssignmentHistory', view)}
                                                                            @([id$=Messages])">
                                                                 <span class="glyphicon glyphicon-ban-circle"/> #{bundle['dataverse.permissionsFiles.assignDialog.rejectBtn']}
                                                             </p:commandLink>
@@ -217,6 +218,57 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <!-- Role Assignment History Panel -->
+                    <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
+                    <div class="panel panel-default" rendered="#{FeatureFlags.ROLE_ASSIGNMENT_HISTORY.enabled()}">
+                      <div data-toggle="collapse" data-target="#panelCollapseHistory" class="panel-heading text-info">
+                        #{bundle['dataverse.permissions.history']} <span class="glyphicon glyphicon-chevron-down" /> <span class="text-muted small pull-right">#{bundle['dataverse.permissions.history.description']}</span>
+                      </div>
+                      <div id="panelCollapseHistory" class="collapse">
+                        <div class="panel-body">
+                            <!-- Download button for file permissions history -->
+                            <div class="button-group margin-bottom text-right">
+                                <h:outputLink value="#{manageFilePermissionsPage.signedUrlForRAHistoryCsv}" 
+                                             styleClass="btn btn-default" 
+                                             onclick="downloadRAHistoryCSV(this.href, '#{manageFilePermissionsPage.permissionsHistoryFilename}'); return false;">
+                                    <span class="glyphicon glyphicon-download"></span> #{bundle['dataverse.permissions.history.download']}
+                                </h:outputLink>
+                            </div>
+                            <p:dataTable id="roleAssignmentHistory" widgetVar="roleAssignmentHistory" var="historyEntry" value="#{manageFilePermissionsPage.roleAssignmentHistory}" sortMode="multiple" paginator="true"
+                                rows="10" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15">
+                                <p:column headerText="#{bundle['dataverse.permissions.history.assignee']}" sortBy="#{historyEntry.assigneeIdentifier}">
+                                    <h:outputText value="#{historyEntry.assigneeIdentifier}" />
+                                </p:column>
+                                <p:column headerText="#{bundle['dataverse.permissions.history.role']}" sortBy="#{historyEntry.roleName}">
+                                    <h:outputText value="#{historyEntry.roleName}" />
+                                </p:column>
+                                <p:column headerText="#{bundle['dataverse.permissions.history.definedOn']}" sortBy="#{historyEntry.definitionPointIds.size()}">
+                                    <h:outputFormat value="#{bundle['dataverse.permissions.history.files']}" title="#{historyEntry.definitionPointIdsAsString}">
+                                        <f:param value="#{historyEntry.definitionPointIds.size()}" />
+                                        <p:tooltip />
+                                    </h:outputFormat>
+                                </p:column>
+                                <p:column headerText="#{bundle['dataverse.permissions.history.assignedBy']}" sortBy="#{historyEntry.assignedBy}">
+                                    <h:outputText value="#{historyEntry.assignedBy}" />
+                                </p:column>
+                                <p:column headerText="#{bundle['dataverse.permissions.history.assignedAt']}" sortBy="#{historyEntry.assignedAt}">
+                                    <h:outputText value="#{historyEntry.assignedAt}">
+                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="#{bundle['dataverse.permissions.history.revokedBy']}" sortBy="#{historyEntry.revokedBy}">
+                                    <h:outputText value="#{historyEntry.revokedBy}" />
+                                </p:column>
+                                <p:column headerText="#{bundle['dataverse.permissions.history.revokedAt']}" sortBy="#{historyEntry.revokedAt}">
+                                    <h:outputText value="#{historyEntry.revokedAt}">
+                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                      </div>
                     </div>
                     <!-- View / Remove Users/Groups Popup -->
                     <p:dialog id="viewRemoveDialog" styleClass="largePopUp" header="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.header']}" widgetVar="viewRemoveWidget" modal="true">
@@ -340,14 +392,14 @@
                             </div>
                             <div class="button-block">
                                 <p:commandLink styleClass="btn btn-default" rendered="#{empty manageFilePermissionsPage.fileRequester}"
-                                               update="assignRoleContent userGroups restrictedFiles @([id$=Messages])"
+                                               update="assignRoleContent userGroups restrictedFiles roleAssignmentHistory @([id$=Messages])"
                                                actionListener="#{manageFilePermissionsPage.grantAccess}" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('assignWidget').hide();">
                                     <f:param name="DO_VALIDATION" value="true"/>
                                     <span class="glyphicon glyphicon-ok"/>
                                     <h:outputText value="#{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}"/>
                                 </p:commandLink>
                                 <p:commandLink styleClass="btn btn-default" rendered="#{!empty manageFilePermissionsPage.fileRequester}"
-                                               update="assignRoleContent userGroups fileAccessRequests restrictedFiles @([id$=Messages])"
+                                               update="assignRoleContent userGroups fileAccessRequests restrictedFiles roleAssignmentHistory @([id$=Messages])"
                                                actionListener="#{manageFilePermissionsPage.grantAccessToRequests(manageFilePermissionsPage.fileRequester)}" oncomplete="PF('assignWidget').hide();">
                                     <span class="glyphicon glyphicon-ok"/>
                                     <h:outputText value="#{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}"/>
@@ -372,7 +424,7 @@
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('confirmation').hide()"
                                              action="#{manageFilePermissionsPage.removeRoleAssignments()}"
                                              process="@this"
-                                             update=":#{p:resolveClientId('rolesPermissionsForm:userGroups', view)} :#{p:resolveClientId('rolesPermissionsForm:restrictedFiles', view)} @([id$=Messages])"
+                                             update=":#{p:resolveClientId('rolesPermissionsForm:userGroups', view)} :#{p:resolveClientId('rolesPermissionsForm:restrictedFiles', view)} roleAssignmentHistory @([id$=Messages])"
                                              oncomplete="PF('viewRemoveWidget').hide();"/>
                             <button class="btn btn-link" onclick="PF('confirmation').hide();" type="button">
                                 #{bundle.cancel}
@@ -380,6 +432,7 @@
                         </div>
                     </p:dialog>
                 </h:form>
+                <script src="#{resource['js/rahistory_utils.js']}?version=#{settingsWrapper.appVersion}"></script>
             </ui:define>
         </ui:composition>
     </h:body>

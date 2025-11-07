@@ -89,7 +89,7 @@
             </div>
             <div class="button-block">
                 <p:commandButton styleClass="btn btn-default" value="#{bundle.saveChanges}"
-                               update="assignRoleContent assignedRoles @([id$=Messages])"
+                               update="assignRoleContent assignedRoles roleAssignmentHistory @([id$=Messages])"
                                actionListener="#{managePermissionsPage.assignRole}" 
                                oncomplete="if (args &amp;&amp; !args.validationFailed) PF('userGroupsForm').hide();">
                     <f:param name="DO_ASSIGN_VALIDATION" value="true"/>
@@ -99,21 +99,5 @@
                 </button>
             </div>
         </p:fragment>
-    </p:dialog>
-    <p:dialog id="confirmFileDownloader" header="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.header']}" widgetVar="confirmFileDownloader" modal="true">
-        <p class="help-block">
-            <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['dataverse.permissions.usersOrGroups.assignDialog.fileDownloadConfirm']}</span>
-        </p>
-        <div class="button-block">
-            
-            <!-- THIS confirmFileDownloader POPUP HAS YET TO BE WIRED UP -->
-            
-            <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confirmFileDownloader').hide()"
-                             action="#{managePermissionsPage.assignRole}"
-                             update="assignRoleContent assignedRoles @([id$=Messages])" />
-            <button class="btn btn-link" onclick="PF('confirmFileDownloader').hide()" type="button">
-                #{bundle.cancel}
-            </button>
-        </div>
     </p:dialog>
 </ui:composition>
