@@ -85,7 +85,8 @@ public class DdiExportUtil {
     public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
     public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
     public static final String CITATION_BLOCK_NAME = "citation";
-    public static final int DATATABLES_BATCH_SIZE = 50; 
+    public static final int DATATABLES_BATCH_SIZE = 50;
+    public static final int DATAVARIABLES_BATCH_SIZE = 10000; // todo: review
 
     //Some tests don't send real PIDs that can be parsed
     //Use constant empty PID in these cases
@@ -179,9 +180,9 @@ public class DdiExportUtil {
                 // the "ingested" tabular data files.
                 // Note that as of 6.8, we are generating the fileDscr from the DTOs
                 // supplied by ExportDataProvider.ExportDataProvider.getDatasetJson()
-                int tabularFilesTotal = createFileDscrs(xmlw, datasetDto.getDatasetVersion().getFiles());
+                List<Integer> varQuantityMap = createFileDscrs(xmlw, datasetDto.getDatasetVersion().getFiles());
 
-                if (tabularFilesTotal > 0) {
+                if (varQuantityMap != null && !varQuantityMap.isEmpty()) {
                     // Now that we know that there is 1 or more ingested tabular file
                     // in the dataset, we can try and produce the dataDscr section. 
                     // A dataset with a large number 
@@ -190,10 +191,11 @@ public class DdiExportUtil {
                     // As of the ExportDataProvider v2.1.0 a more efficient method is 
                     // provided for retrieving this information in chunks of length-offset
                     // datatables-worth at a time.
-                    if (tabularFilesTotal <= DATATABLES_BATCH_SIZE) {
-                        createDataDscr(xmlw, dataProvider.getDatasetFileDetails());
+                    //if (tabularFilesTotal <= DATATABLES_BATCH_SIZE) {
+                    if (isVarQuantityLimitExceeded(varQuantityMap)) {
+                        createDataDscrInBatches(xmlw, varQuantityMap, dataProvider); 
                     } else {
-                        createDataDscrInBatches(xmlw, dataProvider);
+                        createDataDscr(xmlw, dataProvider.getDatasetFileDetails());                        
                     }
                 }
                 // otherMats section:
@@ -216,6 +218,18 @@ public class DdiExportUtil {
         }
     }
 
+    private static boolean isVarQuantityLimitExceeded(List<Integer> varQuantityMap) {
+        if (varQuantityMap != null) {
+            long varQuantityCount = 0; 
+            for (long varQuantity : varQuantityMap) {
+                varQuantityCount += varQuantity; 
+                if (varQuantityCount > DATAVARIABLES_BATCH_SIZE) {
+                    return true; 
+                }
+            }
+        }
+        return false; 
+    }
     /**
      * @todo This is just a stub, copied from DDIExportServiceBean. It should
      * produce valid DDI based on
@@ -1674,36 +1688,45 @@ public class DdiExportUtil {
             xmlw.writeEndElement(); // dataDscr
         }
     }
-    
-    public static void createDataDscrInBatches(XMLStreamWriter xmlw, ExportDataProvider exportDataProvider) throws XMLStreamException {
-        int offset = 0;
-        boolean inProgress = true;
+
+    private static void createDataDscrInBatches(XMLStreamWriter xmlw, List<Integer> varQuantityMap, ExportDataProvider exportDataProvider) throws XMLStreamException {
         boolean dataDscrWritten = false;
         
         try {
-            while (inProgress) {
-                JsonArray tabularFileDetails = exportDataProvider.getTabularDataDetails(ExportDataContext.context().withOffset(offset).withLength(DATATABLES_BATCH_SIZE));
-                logger.fine("retrieved " + tabularFileDetails.size() + " tabular file data entries");
+            int dataTableStart = 0;
+            int dataTablesThisBatch = 0;
+            int varQuantityThisBatch = 0;
+            
+            for (int dataTableCurrent = 0; dataTableCurrent < varQuantityMap.size(); dataTableCurrent++) {
+                varQuantityThisBatch += varQuantityMap.get(dataTableCurrent);
+                dataTablesThisBatch++; 
                 
-                for (int i = 0; i < tabularFileDetails.size(); i++) {
-                    JsonObject fileJson = tabularFileDetails.getJsonObject(i);
+                if (varQuantityThisBatch >= DATAVARIABLES_BATCH_SIZE || dataTableCurrent == varQuantityMap.size() - 1) {
+                    JsonArray tabularFileDetails = exportDataProvider.getTabularDataDetails(ExportDataContext.context().withOffset(dataTableStart).withLength(dataTablesThisBatch));
+                    logger.fine("requested: " + dataTablesThisBatch + " tabular file data entries; retrieved: " + tabularFileDetails.size());
+                    logger.fine("total number of variables in this batch: " + varQuantityThisBatch);
 
-                    if (isFileRestricted(fileJson)) {
-                        continue;
-                    }
-        
-                    if (fileJson.containsKey("dataTables")) {
-                        if (!dataDscrWritten) {
-                            xmlw.writeStartElement("dataDscr");
-                            dataDscrWritten = true;
+                    for (int i = 0; i < tabularFileDetails.size(); i++) {
+                        JsonObject fileJson = tabularFileDetails.getJsonObject(i);
+
+                        if (isFileRestricted(fileJson)) {
+                            continue;
                         }
-                
-                        createVariablesForDataFile(xmlw, fileJson);
+
+                        if (fileJson.containsKey("dataTables")) {
+                            if (!dataDscrWritten) {
+                                xmlw.writeStartElement("dataDscr");
+                                dataDscrWritten = true;
+                            }
+
+                            createVariablesForDataFile(xmlw, fileJson);
+                        }
                     }
+
+                    dataTableStart += dataTablesThisBatch; 
+                    dataTablesThisBatch = 0; 
+                    varQuantityThisBatch = 0;
                 }
-                
-                offset+=DATATABLES_BATCH_SIZE;
-                inProgress = tabularFileDetails.size() == DATATABLES_BATCH_SIZE; 
             }
         } catch (ExportException ee) {
             if (dataDscrWritten) {
@@ -1718,7 +1741,6 @@ public class DdiExportUtil {
                 createDataDscr(xmlw, exportDataProvider.getDatasetFileDetails());
             }
         }
-
     }
 
     private static void createVariablesForDataFile(XMLStreamWriter xmlw, JsonObject fileJson) throws XMLStreamException {
@@ -2001,16 +2023,20 @@ public class DdiExportUtil {
         xmlw.writeEndElement(); //var
 
     }
-    
- private static int createFileDscrs(XMLStreamWriter xmlw, List<FileDTO> fileDtos) throws XMLStreamException {
-     logger.fine("total " + fileDtos.size() + " file DTOs to process for fileDscr");
+     
+    private static List<Integer> createFileDscrs(XMLStreamWriter xmlw, List<FileDTO> fileDtos) throws XMLStreamException {
+        List<Integer> ret = new ArrayList<>(); 
+        
+        logger.fine("total " + fileDtos.size() + " file DTOs to process for fileDscr");
         String dataverseUrl = SystemConfig.getDataverseSiteUrlStatic();
         int counter = 0;
+        long totalVarQuantity = 0; 
+        
         for (FileDTO fileDTo : fileDtos) {
             logger.fine("processing file " + fileDTo.getDataFile().getId());
             if (isTabularData(fileDTo)) {
                 xmlw.writeStartElement("fileDscr");
-                
+
                 xmlw.writeAttribute("ID", "f" + fileDTo.getDataFile().getId());
                 xmlw.writeAttribute("URI", dataverseUrl + "/api/access/datafile/" + fileDTo.getDataFile().getId());
 
@@ -2018,7 +2044,7 @@ public class DdiExportUtil {
                 xmlw.writeStartElement("fileName");
                 xmlw.writeCharacters(fileDTo.getDataFile().getFilename());
                 xmlw.writeEndElement(); // fileName
-                
+
                 DataTableDTO dataTableDTO = fileDTo.getDataFile().getDataTables().get(0);
                 if (dataTableDTO.getCaseQuantity() != null
                         || dataTableDTO.getVarQuantity() != null
@@ -2031,10 +2057,18 @@ public class DdiExportUtil {
                         xmlw.writeEndElement(); // caseQnty
                     }
 
-                    if (dataTableDTO.getVarQuantity() != null) {
+                    Long varQuantity = dataTableDTO.getVarQuantity(); 
+                    
+                    if (varQuantity != null) {
                         xmlw.writeStartElement("varQnty");
                         xmlw.writeCharacters(dataTableDTO.getVarQuantity().toString());
                         xmlw.writeEndElement(); // varQnty
+                        totalVarQuantity += varQuantity;
+                        ret.add(varQuantity.intValue()); 
+                    } else {
+                        // Strictly speaking, this should never happen - Dataverse is 
+                        // supposed to know the number of variables in every ingested tabular file. 
+                        ret.add(0);
                     }
 
                     if (dataTableDTO.getRecordsPerCase() != null) {
@@ -2077,7 +2111,7 @@ public class DdiExportUtil {
                         xmlw.writeEndElement(); // notes
                     }
                 }
-                
+
                 // Adding a dedicated node for the description entry (for 
                 // non-tabular files we format it under the <txt> field)
                 if (fileDTo.getDataFile().getDescription() != null) {
@@ -2091,11 +2125,11 @@ public class DdiExportUtil {
 
                 // TODO: add the remaining fileDscr elements!
                 xmlw.writeEndElement(); // fileDscr
-                counter++; 
+                counter++;
             }
         }
-        logger.fine("produced " + counter + " fileDscr entries.");
-        return counter;
+        logger.fine("produced " + counter + " fileDscr entries; total number of variables found: " + totalVarQuantity);
+        return ret;
     }
    
     public static void datasetHtmlDDI(InputStream datafile, OutputStream outputStream) throws XMLStreamException {
