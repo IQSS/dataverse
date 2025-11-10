@@ -108,13 +108,11 @@ public class ManageTemplatesPage implements java.io.Serializable {
     }
 
     public void makeDefault(Template templateIn) {
-        System.out.println("making default template: " + templateIn.getName());
         dataverse.setDefaultTemplate(templateIn);
         saveDataverse(BundleUtil.getStringFromBundle("template.makeDefault"));
     }
 
     public void unselectDefault(Template templateIn) {
-        System.out.println("unselecting default template: " + templateIn.getName());
         dataverse.setDefaultTemplate(null);
         saveDataverse(BundleUtil.getStringFromBundle("template.unselectDefault"));
     }

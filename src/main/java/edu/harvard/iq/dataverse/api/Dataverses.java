@@ -2005,17 +2005,43 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/templates/default/{templateId}")
-    public Response setDefaultTemplate(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String dvIdtf) {
-        System.out.println("Dataverse API: setting default template for dataverse " + dvIdtf);
-        return ok(BundleUtil.getStringFromBundle("dataverse.setDefaultTemplate.success"));
+    public Response setDefaultTemplate(@Context ContainerRequestContext crc, String body,
+            @PathParam("identifier") String dvId,
+            @PathParam("templateId") Long templateId) {
+
+        try {
+            System.out.println(
+                    "Dataverse API: setting default template for dataverse " + dvId + " to template " + templateId);
+            Dataverse dataverse = findDataverseOrDie(dvId);
+
+            Template templateToSet = dataverse.getTemplates().stream()
+                    .filter(t -> Objects.equals(t.getId(), templateId))
+                    .findFirst()
+                    .orElse(null);
+            if (templateToSet == null) {
+                return error(Status.NOT_FOUND, "Template with id " + templateId + " not found for dataverse " + dvId);
+            }
+            dataverse.setDefaultTemplate(templateToSet);
+            return ok(jsonTemplates(execCommand(
+                    new ListDataverseTemplatesCommand(createDataverseRequest(getRequestUser(crc)), dataverse))));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
     }
 
     @DELETE
     @AuthRequired
-    @Path("{identifier}/templates/default/{templateId}")
-    public Response removeDefaultTemplate(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String dvIdtf) {
-        System.out.println("Dataverse API: removing default template for dataverse " + dvIdtf);
-        return ok(BundleUtil.getStringFromBundle("dataverse.removeDefaultTemplate.success"));
+    @Path("{identifier}/templates/default")
+    public Response removeDefaultTemplate(@Context ContainerRequestContext crc, String body,
+            @PathParam("identifier") String dvId) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(dvId);
+            dataverse.setDefaultTemplate(null);
+            return ok(jsonTemplates(execCommand(
+                    new ListDataverseTemplatesCommand(createDataverseRequest(getRequestUser(crc)), dataverse))));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
     }
 
 
