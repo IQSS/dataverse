@@ -124,7 +124,7 @@ Here's an example of using these credentials from within the PostgreSQL containe
 
 .. code-block:: bash
 
-    pdurbin@beamish dataverse % docker exec -it postgres-1 bash
+    pdurbin@beamish dataverse % docker exec -it dev_postgres bash
     root@postgres:/# export PGPASSWORD=secret
     root@postgres:/# psql -h localhost -U dataverse dataverse
     psql (16.3 (Debian 16.3-1.pgdg120+1))
