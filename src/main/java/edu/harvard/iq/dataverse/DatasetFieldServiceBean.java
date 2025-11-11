@@ -764,13 +764,24 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                                 JsonValue val = jo.get(keyVal[0]);
                                 if (val != null) {
                                     if (val.getValueType().equals(ValueType.STRING)) {
+                                        //Match a string value
                                         if (((JsonString) val).getString().equals(expected)) {
                                             logger.fine("Found: " + jo);
                                             curPath = jo;
                                             return processPathSegment(index + 1, pathParts, curPath, termUri);
                                         }
-                                    } else {
-                                        logger.warning("Expected a string value for " + keyVal[0] + " but found: " + val.getValueType());
+                                    } else if (val.getValueType() == JsonValue.ValueType.ARRAY) {
+                                        // Match one string in an array
+                                        JsonArray jsonArray = (JsonArray) val;
+                                        for (JsonValue arrayVal : jsonArray) {
+                                            if (arrayVal.getValueType() == JsonValue.ValueType.STRING) {
+                                                if (((JsonString) arrayVal).getString().equals(expected)) {
+                                                    logger.fine("Found match in array: " + jo.toString());
+                                                    curPath = jo;
+                                                    return processPathSegment(index + 1, pathParts, curPath, termUri);
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
