@@ -13,7 +13,9 @@ Note: See :doc:`making-releases` for Dataverse itself.
 We release Java libraries to Maven Central that are used by Dataverse (and perhaps `other <https://github.com/gdcc/xoai/issues/141>`_ `software <https://github.com/gdcc/xoai/issues/170>`_!):
 
 - https://central.sonatype.com/namespace/org.dataverse
+- https://central.sonatype.com/namespace/org.dataverse.test
 - https://central.sonatype.com/namespace/io.gdcc
+- https://central.sonatype.com/namespace/io.gdcc.export
 
 We release JavaScript/TypeScript libraries to npm:
 
@@ -35,6 +37,32 @@ Releasing a Snapshot Version to Maven Central
 `Snapshot <https://maven.apache.org/guides/getting-started/index.html#what-is-a-snapshot-version>`_ releases are published automatically through GitHub Actions (e.g. through a `snapshot workflow <https://github.com/gdcc/sword2-server/blob/main/.github/workflows/maven-snapshot.yml>`_ for the SWORD library) every time a pull request is merged (or the default branch, typically ``main``, is otherwise updated).
 
 That is to say, to make a snapshot release, you only need to get one or more commits into the default branch.
+
+It's possible, of course, to make snapshot releases outside of GitHub Actions, from environments such as your laptop. Generally, you'll want to look at the GitHub Action and try to do the equivalent. You'll need a file set up locally at ``~/.m2/settings.xml`` with the following (contact a core developer for the redacted bits):
+
+.. code-block:: bash
+
+  <settings>
+    <servers>
+      <server>
+        <id>central</id>
+        <username>REDACTED</username>
+        <password>REDACTED</password>
+      </server>
+    </servers>
+  </settings>
+
+Then, study the GitHub Action and perform similar commands from your local environment. For example, as of this writing, for the dataverse-spi project, you can run the following commands, substituting the suffix you need:
+
+``mvn -f modules/dataverse-spi -Dproject.version.suffix="2.1.0-PR11767-SNAPSHOT" verify``
+
+``mvn -f modules/dataverse-spi -Dproject.version.suffix="2.1.0-PR11767-SNAPSHOT" deploy``
+
+This will upload the snapshot here, for example: https://central.sonatype.com/repository/maven-snapshots/io/gdcc/dataverse-spi/2.1.02.1.0-PR11767-SNAPSHOT/dataverse-spi-2.1.02.1.0-PR11767-20250827.182026-1.jar
+
+Before OSSRH was retired, you could browse through snapshot jars you published at https://s01.oss.sonatype.org/content/repositories/snapshots/io/gdcc/dataverse-spi/2.0.0-PR9685-SNAPSHOT/, for example. Now, even though you may see the URL of the jar as shown above during the "deploy" step, if you try to browse the various snapshot jars at https://central.sonatype.com/repository/maven-snapshots/io/gdcc/dataverse-spi/2.1.02.1.0-PR11767-SNAPSHOT/ you'll see "This maven2 hosted repository is not directly browseable at this URL. Please use the browse or HTML index views to inspect the contents of this repository." Sadly, the "browse" and "HTML index" links don't work, as noted in a `question <https://community.sonatype.com/t/this-maven2-group-repository-is-not-directly-browseable-at-this-url/8991>`_ on the Sonatype Community forum. Below is a suggestion for confirming that the jar was uploaded properly, which is to use Maven to copy the jar to your local directory. You could then compare checksums.
+
+``mvn dependency:copy -DrepoUrl=https://central.sonatype.com/repository/maven-snapshots/ -Dartifact=io.gdcc:dataverse-spi:2.1.02.1.0-PR11767-SNAPSHOT -DoutputDirectory=.``
 
 Releasing a Release (Non-Snapshot) Version to Maven Central
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -83,60 +111,18 @@ Releasing a New Library to Maven Central
 At a high level:
 
 - Start with a snapshot release.
-- Use an existing pom.xml as a starting point.
-- Use existing GitHub Actions workflows as a starting point.
-- Create secrets in the new library's GitHub repo used by the workflow.
+- Use an existing pom.xml as a starting point, such as from `Croissant <https://github.com/gdcc/exporter-croissant>`_, that inherits from the common Maven parent (https://github.com/gdcc/maven-parent). You can also play around with the "hello" project (https://github.com/gdcc/hello) and even make releases from it since it is designed to be a sandbox for publishing to Maven Central.
+- Use existing GitHub Actions workflows as a starting point, such as from `Croissant <https://github.com/gdcc/exporter-croissant>`_. As of this writing we have separate actions for ``maven-snapshot.yml`` and ``maven-release.yml``.
+- For repos under https://github.com/IQSS, create secrets in the new library's GitHub repo used by the workflow. This is necessary for the IQSS org because "organization secrets are not available for organizations on legacy per-repository billing plans." For repos under https://github.com/gdcc you can make use of shared secrets at the org level. These are the environment variables we use:
+
+  - DATAVERSEBOT_GPG_KEY
+
+  - DATAVERSEBOT_GPG_PASSWORD
+
+  - DATAVERSEBOT_SONATYPE_TOKEN
+
+  - DATAVERSEBOT_SONATYPE_USERNAME
 - If you need an entire new namespace, look at previous issues such as https://issues.sonatype.org/browse/OSSRH-94575 and https://issues.sonatype.org/browse/OSSRH-94577
-
-Updating pom.xml for a Snapshot Release
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Before publishing a final version to Maven Central, you should publish a snapshot release or two. For each snapshot release you publish, the jar name will be unique each time (e.g. ``foobar-0.0.1-20240430.175110-3.jar``), so you can safely publish over and over with the same version number.
-
-We use the `Nexus Staging Maven Plugin <https://github.com/sonatype/nexus-maven-plugins/blob/main/staging/maven-plugin/README.md>`_ to push snapshot releases to https://s01.oss.sonatype.org/content/groups/staging/io/gdcc/ and https://s01.oss.sonatype.org/content/groups/staging/org/dataverse/
-
-Add the following to your pom.xml:
-
-.. code-block:: xml
-
-    <version>0.0.1-SNAPSHOT</version>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
-   <plugin>
-       <groupId>org.sonatype.plugins</groupId>
-       <artifactId>nexus-staging-maven-plugin</artifactId>
-       <version>${nexus-staging.version}</version>
-       <extensions>true</extensions>
-       <configuration>
-           <serverId>ossrh</serverId>
-           <nexusUrl>https://s01.oss.sonatype.org</nexusUrl>
-           <autoReleaseAfterClose>true</autoReleaseAfterClose>
-       </configuration>
-   </plugin>
-
-Configuring Secrets
-~~~~~~~~~~~~~~~~~~~
-
-In GitHub, you will likely need to configure the following secrets:
-
-- DATAVERSEBOT_GPG_KEY
-- DATAVERSEBOT_GPG_PASSWORD
-- DATAVERSEBOT_SONATYPE_TOKEN
-- DATAVERSEBOT_SONATYPE_USERNAME
-
-Note that some of these secrets might be configured at the org level (e.g. gdcc or IQSS).
-
-Many of the automated tasks are performed by the dataversebot account on GitHub: https://github.com/dataversebot
 
 npm (JavaScript/TypeScript)
 ---------------------------
