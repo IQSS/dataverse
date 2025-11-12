@@ -14,7 +14,6 @@ import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.UserNotification.Type;
@@ -51,7 +50,8 @@ import jakarta.mail.internet.InternetAddress;
 public class SettingsWrapper implements java.io.Serializable {
 
     static final Logger logger = Logger.getLogger(SettingsWrapper.class.getCanonicalName());
-    
+    public static final String COMMA_BETWEEN_OPTIONAL_WHITE_SPACE = "\\s*,\\s*";
+
     @EJB
     SettingsServiceBean settingsService;
 
@@ -396,7 +396,7 @@ public class SettingsWrapper implements java.io.Serializable {
                 if (uploadMethods==null){
                     rsyncOnly = false;
                 } else {
-                    rsyncOnly = Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+                    rsyncOnly = Arrays.asList(uploadMethods.toLowerCase().split(COMMA_BETWEEN_OPTIONAL_WHITE_SPACE)).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
                 }
             }
         }
@@ -428,7 +428,7 @@ public class SettingsWrapper implements java.io.Serializable {
             if (uploadMethods==null){
                 uploadMethodsCount = 0;
             } else {
-                uploadMethodsCount = Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
+                uploadMethodsCount = Arrays.asList(uploadMethods.toLowerCase().split(COMMA_BETWEEN_OPTIONAL_WHITE_SPACE)).size();
             } 
         }
         return uploadMethodsCount;
@@ -502,7 +502,7 @@ public class SettingsWrapper implements java.io.Serializable {
         if (anonymizedFieldTypes == null) {
             anonymizedFieldTypes = new ArrayList<String>();
             String names = get(SettingsServiceBean.Key.AnonymizedFieldTypeNames.toString(), "");
-            anonymizedFieldTypes.addAll(Arrays.asList(names.split(",\\s")));
+            anonymizedFieldTypes.addAll(Arrays.asList(names.split(COMMA_BETWEEN_OPTIONAL_WHITE_SPACE)));
         }
         return anonymizedFieldTypes.contains(df.getDatasetFieldType().getName());
     }
@@ -830,7 +830,7 @@ public class SettingsWrapper implements java.io.Serializable {
         if (uploadMethods==null){
             return false;
         } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
+           return  Arrays.asList(uploadMethods.toLowerCase().split(COMMA_BETWEEN_OPTIONAL_WHITE_SPACE)).contains(method);
         }
     }
 

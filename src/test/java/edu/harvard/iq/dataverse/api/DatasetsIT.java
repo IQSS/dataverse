@@ -6612,12 +6612,21 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                         .add("Data")
                 );
         JsonObject jsonObj = json.build();
+
         String pathToFile = "src/main/webapp/resources/images/dataverse-icon-1200.png";
         Response uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, jsonObj, apiToken);
         uploadResponse.prettyPrint();
         uploadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        Integer modifyFileId = UtilIT.getDataFileIdFromResponse(uploadResponse);
+        Integer firstFileToModify = UtilIT.getDataFileIdFromResponse(uploadResponse);
+
+        pathToFile = "src/test/resources/images/coffeeshop.png";
+        uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, jsonObj, apiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Integer secondFileToModify = UtilIT.getDataFileIdFromResponse(uploadResponse);
+
         pathToFile = "src/main/webapp/resources/images/dataverseproject_logo.jpg";
         uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, jsonObj, apiToken);
         uploadResponse.then().assertThat()
@@ -6670,9 +6679,18 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         replaceResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        // Test modify by restricting the file
-        Response restrictResponse = UtilIT.restrictFile(modifyFileId.toString(), true, apiToken);
-        restrictResponse.prettyPrint();
+        // Test modify first file by adding a new category
+        Response setFileCategoriesResponse = UtilIT.setFileCategories(firstFileToModify.toString(), apiToken, List.of("Category"));
+        setFileCategoriesResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Test modify first file by restricting it
+        Response restrictResponse = UtilIT.restrictFile(firstFileToModify.toString(), true, apiToken);
+        restrictResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Test modify second file by restricting it
+        restrictResponse = UtilIT.restrictFile(secondFileToModify.toString(), true, apiToken);
         restrictResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
@@ -6681,7 +6699,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response updateTerms = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, jsonLDTerms, true);
         updateTerms.then().assertThat()
                 .statusCode(OK.getStatusCode());
-
 
         Response compareResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, apiToken);
         compareResponse.prettyPrint();
@@ -6701,7 +6718,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data[0].summary.'Life Sciences Metadata'.added", equalTo(2))
                 .body("data[0].summary.'Life Sciences Metadata'.deleted", equalTo(0))
                 .body("data[0].summary.files.added", equalTo(1))
-                .body("data[0].summary.files.changedFileMetaData", equalTo(2))
+                // Expected total file metadata field changes: 3 (File 1 has 2 modifications + File 2 has 1 modification)
+                .body("data[0].summary.files.changedFileMetaData", equalTo(3))
                 .statusCode(OK.getStatusCode());
 
         //user with no privileges will only see the published version
@@ -7225,6 +7243,128 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response deleteSecondUserResponse = UtilIT.deleteUser(secondUsername);
         deleteSecondUserResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
+    }
+
+    @Test
+    public void testUpdateLicense() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        // Test setup: Create a user and a published dataverse to host the dataset.
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String ownerAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        UtilIT.publishDataverseViaNativeApi(ownerAlias, apiToken);
+
+        // Test setup: Create and publish a dataset within the new dataverse.
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(ownerAlias, apiToken);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+
+        // Verify the dataset's initial state, ensuring it has the default CC0 1.0 license.
+        Response getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST, apiToken);
+        getDatasetVersion.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.license.name", equalTo("CC0 1.0"));
+
+        // Test case 1: Update to a valid, predefined license (CC BY 4.0).
+        Response updateLicenseResponse = UtilIT.updateLicense(datasetId.toString(), "{ \"name\": \"CC BY 4.0\" }", apiToken);
+        updateLicenseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success")));
+
+        getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST, apiToken);
+        getDatasetVersion.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.license.name", equalTo("CC BY 4.0"));
+
+        // Test case 2: Attempt to update with an invalid license name and verify the expected error.
+        String testInvalidLicenseName = "INVALID LICENSE 4.0";
+        updateLicenseResponse = UtilIT.updateLicense(datasetId.toString(), "{ \"name\": \"" + testInvalidLicenseName + "\" }", apiToken);
+        updateLicenseResponse.then().assertThat()
+                .statusCode(NOT_FOUND.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNotFound", List.of(testInvalidLicenseName))));
+
+        // Test case 3: Update with custom terms, providing only the required 'termsOfUse' field.
+        String jsonString = """
+            {
+               "customTerms": {
+                 "termsOfUse": "testTermsOfUse"
+                }
+            }
+            """;
+
+        updateLicenseResponse = UtilIT.updateLicense(datasetId.toString(), jsonString, apiToken);
+        updateLicenseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success")));
+
+        getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST, apiToken);
+        getDatasetVersion.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.license", equalTo(null))
+                .body("data.termsOfUse", equalTo("testTermsOfUse"))
+                .body("data.confidentialityDeclaration", equalTo(null))
+                .body("data.specialPermissions", equalTo(null))
+                .body("data.restrictions", equalTo(null))
+                .body("data.citationRequirements", equalTo(null))
+                .body("data.depositorRequirements", equalTo(null))
+                .body("data.conditions", equalTo(null))
+                .body("data.disclaimer", equalTo(null));
+
+        // Test case 4: Update with a complete set of custom terms, including all optional fields.
+        jsonString = """
+            {
+               "customTerms": {
+                 "termsOfUse": "testTermsOfUse",
+                 "confidentialityDeclaration": "testConfidentialityDeclaration",
+                 "specialPermissions": "testSpecialPermissions",
+                 "restrictions": "testRestrictions",
+                 "citationRequirements": "testCitationRequirements",
+                 "depositorRequirements": "testDepositorRequirements",
+                 "conditions": "testConditions",
+                 "disclaimer": "testDisclaimer"
+               }
+             }
+            """;
+
+        updateLicenseResponse = UtilIT.updateLicense(datasetId.toString(), jsonString, apiToken);
+        updateLicenseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success")));
+
+        getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST, apiToken);
+        getDatasetVersion.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.license", equalTo(null))
+                .body("data.termsOfUse", equalTo("testTermsOfUse"))
+                .body("data.confidentialityDeclaration", equalTo("testConfidentialityDeclaration"))
+                .body("data.specialPermissions", equalTo("testSpecialPermissions"))
+                .body("data.restrictions", equalTo("testRestrictions"))
+                .body("data.citationRequirements", equalTo("testCitationRequirements"))
+                .body("data.depositorRequirements", equalTo("testDepositorRequirements"))
+                .body("data.conditions", equalTo("testConditions"))
+                .body("data.disclaimer", equalTo("testDisclaimer"));
+
+        // Test case 5: Ensure that providing an empty 'customTerms' object results in a validation error.
+        jsonString = """
+            {
+               "customTerms": {}
+             }
+            """;
+
+        updateLicenseResponse = UtilIT.updateLicense(datasetId.toString(), jsonString, apiToken);
+        updateLicenseResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.customTermsOfUseNotProvided")));
+
+        // Test case 6: The operation should return a permissions error when invoked by a user with insufficient permissions.
+        createUser = UtilIT.createRandomUser();
+        apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        updateLicenseResponse = UtilIT.updateLicense(datasetId.toString(), "{ \"name\": \"CC BY 4.0\" }", apiToken);
+        updateLicenseResponse.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
     }
 
     private String getSuperuserToken() {
