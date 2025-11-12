@@ -129,13 +129,13 @@ remote store, would be, instead of using URLs that directly enable download of t
 may require the user to login, or go through some other authentication/validation process before being able to access the file.
 
 Dataverse considers remote storage to be read-only, or, in cases where the remote service does not provide a way for Dataverse to download the file bytes
-(due to access control or because the URL refers to a landing page), inacessible. Depending on whether Dataverse can access the bytes of the file,
+(due to access control or because the URL refers to a landing page), inaccessible. Depending on whether Dataverse can access the bytes of the file,
 functionality such as ingest and integrity checking may or may not be possible. If the file bytes are not accessible the remote store in Dataverse should be
-configured to disable operations that attempt to access the file (see  files-not-accessible-by-dataverse). If the file bytes are accessible, Dataverse can still
-support features such as ingest and thumbnail creation in Dataverse-local storage. In either case, local storage of other files and auxiliary files in the same
-dataset is possible. Support for such files is handled by configuring a 'base' store with the remote store that is used for these purposes. (This means that while
-the specified files remain on the remote store, other files in the dataset, and potentially the ingested TSV format of a remote file would be managed by Dataverse
-in some other store. If ingest is not desired, the ingest size limit for the store can be set to 0 bytes).
+configured to disable operations that attempt to access the file (see the files-not-accessible-by-dataverse in :ref:`trusted-remote-storage`).
+Regardless of whether the remote files can be read, local storage of other datafiles and auxiliary files in the same dataset is possible. Support for such files is handled by configuring a 'base' store with the remote store that is used for these purposes. (This means that while
+files added as remote remain on the remote store, other files in the dataset, and potentially thumbnails and the ingested TSV format of remote files would be managed by Dataverse
+in the base store. If ingest is not desired, the ingest size limit for the store can be set to 0 bytes).
+
 
 Benefits: 
 
@@ -146,7 +146,7 @@ Challenges:
 
 - Currently, remote files can only be added via the API. (This may be addressed in future versions).
 - Remote files can only be added after the dataset is created in the UI (and therefore has an id and PID for use with the API). However, the UI will still allow upload of files to the base store (at dataset creation and when editing), which could be confusing.
-- As Dataverse is relying on the remote service to main the integrity and availability of the files, it is likely that the Dataverse site admin will want to have a formal agreement with the remote service 
+- As Dataverse is relying on the remote service to maintain the integrity and availability of the files, it is likely that the Dataverse site admin will want to have a formal agreement with the remote service 
   operator about their policies.
 - Site admins need to consider carefully how to configure file size limits, ingest size limits, etc. on the remote store and it's base store, and whether the remote store is public-only, and whether files there can be read by Dataverse to assure the
   requirements of a specific use case(s) are addressed.
@@ -187,7 +187,7 @@ Challenges:
 - Users familiar with Globus sometimes expect to be able to find the Dataverse endpoint in Globus' online service and download files from there. Due to the fact that Dataverse is managing permissions and handling file naming, this doesn't work.
 - Due to differences between Dataverse's and Globus's access control models, Dataverse cannot enforce per-file-access restrictions - restriction can only be done today at the level of providing access to all files in a dataset.
   Globus stores can be defined as public to disable Dataverse's ability to restrict and embargo files in that store. If the store is configured to support restriction and embargo,
-  Dataverse and it's Dataverse-Globus app will limit users to downloading only the files they have been granted access to, but a technically knowledgeable user could access other files in the same dataset if they are give access to one.
+  Dataverse and its Dataverse-Globus app will limit users to downloading only the files they have been granted access to, but a technically knowledgeable user could access other files in the same dataset if they are give access to one.
   (Data depositors would need to be aware of this limitation and could be guided to restrict all files/only grant access to all dataset files in Globus as a work-around).
 - Dataverse-managed endpoints must be Globus 'guest collections' hosted on either a file-system-based endpoint or an S3-based endpoint (the latter requires use of the Globus
   S3 connector which requires a paid Globus subscription at the host institution). In either case, Dataverse is configured with the Globus credentials of a user account that can manage the endpoint.
@@ -201,7 +201,7 @@ Challenges:
   Users will need to be made aware of these limitations and the possibilities for managing them (e.g. by aggregating multiple files in a single larger file, or storing smaller files in the base-store via the normal Dataverse upload UI).
 - There is currently (a bug)[https://github.com/gdcc/dataverse-globus/issues/2] that won't allow users to transfer files from/to endpoints where they do not have permission to list the overall file tree (i.e. an institution manages <endpoint>/institution_name but the user only has access to <endpoint>/institution_name/my_dir.)
   Until that is fixed, a work-around is to first transfer data to an endpoint without this restriction.
-- An alternative, experimental implementation of Globus polling of ongoing upload transfers has been added in v6.4. This framework does not rely on the instance staying up continuously for the duration of the transfer and saves the state information about Globus upload requests in the database. While it is now the recommended option, it is not enabled by default. See the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`) and the JVM option :ref:`dataverse.files.globus-monitoring-server`.
+- An alternative, experimental implementation of Globus polling of ongoing upload transfers was added in v6.4. This framework does not rely on the instance staying up continuously for the duration of the transfer and saves the state information about Globus upload requests in the database. While it is now the recommended option, it is not enabled by default. See the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`) and the JVM option :ref:`dataverse.files.globus-monitoring-server`.
 
 More details of the setup required to enable Globus is described in the `Community Dataverse-Globus Setup and Configuration document <https://docs.google.com/document/d/1mwY3IVv8_wTspQC0d4ddFrD2deqwr-V5iAGHgOy4Ch8/edit?usp=sharing>`_ and the references therein.
 
@@ -256,7 +256,7 @@ Avoiding Many Files
 
 Before describing things that can be done to improve scaling, it is important to note that there are configuration options and best practices to suggest to users to help avoid larger datasets and and help them avoid hitting performance issues by going beyond the file counts you know work in your instance.
 
-There are a number of settings to limit how many files can be uploaded:
+There are a number of settings to limit how many files can be uploaded (see :ref:`database-settings` and :ref:`jvm-options` for more details):
 
 - ZipUploadFilesLimit - the maximum number of files allowed in an uploaded zip file - only relevant for file stores and S3 when direct upload is not used.
 - MultipleUploadFilesLimit - the number of files the GUI user is allowed to upload in one batch, via drag-and-drop, or through the file select dialog
@@ -267,7 +267,8 @@ There are a number of settings to limit how many files can be uploaded:
 Ways to Scale
 ~~~~~~~~~~~~~
 
-There are a broad range of options (that are not turned on by default) for improving how well Solr indexing and searching scales. Some of these are useful for all installations while others are related to specific use cases, or are mostly for emergency use (e.g. disabling facets):
+There are a broad range of options (that are not turned on by default) for improving how well Solr indexing and searching scales and for handling more files per dataset. Some of these are useful for all installations while others are related to specific use cases, or are mostly for emergency use (e.g. disabling facets).
+(see :ref:`database-settings`, :ref:`jvm-options`, and :ref:`feature-flags` for more details):
 
 - dataverse.feature.add-publicobject-solr-field=true - specifically marks unrestricted content as public in solr
 - dataverse.feature.avoid-expensive-solr-join=true - this tells Dataverse to use the feature above to speed searches

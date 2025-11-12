@@ -1467,9 +1467,9 @@ In addition to having the type "remote" and requiring a label, Trusted Remote St
 These and other available options are described in the table below.
 
 Trusted remote stores can range from being a static trusted website to a sophisticated service managing access requests and logging activity
-and/or managing access to a secure enclave.  See :doc:`/developers/big-data-support` for additional information on how to use a trusted remote store. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
+and/or managing access to a secure enclave.  See :doc:`/admin/big-data-administration` and :doc:`/developers/big-data-support` for additional information on how to use a trusted remote store. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
 
-Note that in the current implementation, activites where Dataverse needs access to data bytes, e.g. to create thumbnails or validate hash values at publication will fail if a remote store does not allow Dataverse access. Implementers of such trusted remote stores should consider using Dataverse's settings to disable ingest, validation of files at publication, etc. as needed.
+Note that in the current implementation, activities where Dataverse needs access to data bytes, e.g. to create thumbnails or validate hash values at publication will fail if a remote store does not allow Dataverse access. Implementers of such trusted remote stores should consider using Dataverse's settings to disable ingest, validation of files at publication, etc. as needed.
 
 Once you have configured a trusted remote store, you can point your users to the :ref:`add-remote-file-api` section of the API Guide.
 
@@ -1486,6 +1486,8 @@ Once you have configured a trusted remote store, you can point your users to the
     dataverse.files.<id>.upload-out-of-band                  ``true``            **Required to be true** Dataverse does not manage file placement            ``false``
     dataverse.files.<id>.download-redirect                   ``true``/``false``  Enable direct download (should usually be true).                            ``false``
     dataverse.files.<id>.secret-key                          <?>                 A key used to sign download requests sent to the remote store. Optional.    (none)
+    dataverse.files.<id>.public                              ``true``/``false``  True if the remote store does not enforce Dataverse access controls         ``false``
+    dataverse.files.<id>.ingestsizelimit                     <size in bytes>     Maximum size of files that should be ingested                               (none)
     dataverse.files.<id>.url-expiration-minutes              <?>                 If direct downloads and using signing: time until links expire. Optional.   60
     dataverse.files.<id>.remote-store-name                   <?>                 A short name used in the UI to indicate where a file is located. Optional.  (none)
     dataverse.files.<id>.remote-store-url                    <?>                 A url to an info page about the remote store used in the UI. Optional.      (none)
@@ -1531,6 +1533,7 @@ Once you have configured a globus store, or configured an S3 store for Globus ac
                                                                                  for a managed store) - using a microprofile alias is recommended            (none)
     dataverse.files.<id>.reference-endpoints-with-basepaths  <?>                 A comma separated list of *remote* trusted Globus endpoint id/<basePath>s   (none)
     dataverse.files.<id>.files-not-accessible-by-dataverse   ``true``/``false``  Should be false for S3 Connector-based *managed* stores, true for others    ``false``
+    dataverse.files.<id>.public                              ``true``/``false``  True can be used to disable users ability restrict/embargo files            ``false``
     
     =======================================================  ==================  ==========================================================================  ===================
     
