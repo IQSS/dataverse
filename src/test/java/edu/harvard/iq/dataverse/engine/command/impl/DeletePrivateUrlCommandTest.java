@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
@@ -64,7 +65,7 @@ public class DeletePrivateUrlCommandTest {
                     }
 
                     @Override
-                    public void revoke(RoleAssignment ra) {
+                    public void revoke(RoleAssignment ra, DataverseRequest req) {
                         // no-op
                     }
 

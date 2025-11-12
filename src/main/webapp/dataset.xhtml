@@ -161,8 +161,8 @@
                         <div class="row" jsf:rendered="#{empty DatasetPage.editMode}">
                             <div class="col-xs-12">
                                 <div id="datasetVersionBlock" class="row">
-                                    <div id="title-block" class="col-xs-12 margin-bottom-half" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
-                                        <h1 id="title">#{DatasetPage.datasetVersionUI.title.value}</h1>
+                                    <div id="title-block" class="col-xs-12 margin-bottom-half" jsf:rendered="#{!empty DatasetPage.displayTitle}">
+                                        <h1 id="title">#{DatasetPage.displayTitle}</h1>
                                         <div id="title-label-block" class="margin-top-half">
                                             <!-- DATASET Publication Status -->
                                             <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{version.draft}"/>
@@ -525,7 +525,7 @@
                                                     #{bundle['dataset.curationStatusMenu']} <span class="caret"></span>
                                                 </button>
                                                 <ul class="dropdown-menu multi-level pull-right text-left">
-                                                    <ui:fragment rendered="#{(not empty DatasetPage.allowedCurationStatuses) and DatasetPage.canPublishDataset()}">
+                                                    <ui:fragment rendered="#{(not empty DatasetPage.allowedCurationStatuses) and DatasetPage.canPublishDataset() and version.draft}">
                                                     <li class="dropdown-submenu pull-left">
                                                         <a tabindex="0">#{bundle['dataset.changestatus']}</a>
                                                         <ul class="dropdown-menu">
@@ -777,7 +777,7 @@
                     <!-- Create/Edit editMode -->
                     <ui:fragment rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                         <p:focus context="datasetForm"/>
-                        <div class="form-group">
+                        <div class="form-group" jsf:rendered="#{DatasetPage.hasDataversesToChoose and DatasetPage.editMode == 'CREATE'}">
                             <label jsf:for="#{DatasetPage.editMode == 'CREATE' ? 'selectHostDataverse_input' : 'select_HostDataverse_Static'}" class="col-md-3 control-label">
                                 #{bundle.hostDataverse}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"

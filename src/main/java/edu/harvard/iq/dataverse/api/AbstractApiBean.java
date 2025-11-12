@@ -2,9 +2,11 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
+
 import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -22,10 +24,14 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVer
 import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.FailedPIDResolutionLoggingServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.pidproviders.FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DateUtil;
@@ -37,6 +43,7 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
+import jakarta.inject.Inject;
 import jakarta.json.*;
 import jakarta.json.JsonValue.ValueType;
 import jakarta.persistence.EntityManager;
@@ -46,6 +53,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.ResponseBuilder;
@@ -218,6 +226,9 @@ public abstract class AbstractApiBean {
     protected ExternalToolServiceBean externalToolService;
 
     @EJB
+    protected DatasetMetricsServiceBean datasetMetricsService;
+
+    @EJB
     DataFileServiceBean fileSvc;
 
     @EJB
@@ -232,6 +243,9 @@ public abstract class AbstractApiBean {
     @EJB 
     GuestbookResponseServiceBean gbRespSvc;
 
+    @Inject
+    FailedPIDResolutionLoggingServiceBean fprLogService;
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
 
@@ -408,8 +422,13 @@ public abstract class AbstractApiBean {
                 datasetId = dvObjSvc.findIdByAltGlobalId(globalId, DvObject.DType.Dataset);
             }
             if (datasetId == null) {
+                if (FeatureFlags.ENABLE_PID_FAILURE_LOG.enabled()) {
+
+                    FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry entry = new FailedPIDResolutionEntry(persistentId, httpRequest.getRequestURI(), httpRequest.getMethod(), new DataverseRequest(null, httpRequest).getSourceAddress());
+                    fprLogService.logEntry(entry);
+                }
                 throw new WrappedResponse(
-                    notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+                        notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
             }
         }
         if (deep) {
@@ -479,6 +498,11 @@ public abstract class AbstractApiBean {
             }
             datafile = fileService.findByGlobalId(persistentId);
             if (datafile == null) {
+                if (FeatureFlags.ENABLE_PID_FAILURE_LOG.enabled()) {
+
+                    FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry entry = new FailedPIDResolutionEntry(persistentId, httpRequest.getRequestURI(), httpRequest.getMethod(), new DataverseRequest(null, httpRequest).getSourceAddress());
+                    fprLogService.logEntry(entry);
+                }
                 throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datafile.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
             }
             return datafile;
@@ -597,11 +621,12 @@ public abstract class AbstractApiBean {
      *
      * @param dvIdtf
      * @param type
+     * @param testForReleased
      * @return DvObject if type matches or throw exception
      * @throws WrappedResponse
      */
     @NotNull
-    protected DvObject findDvoByIdAndFeaturedItemTypeOrDie(@NotNull final String dvIdtf, String type) throws WrappedResponse {
+    protected DvObject findDvoByIdAndTypeOrDie(@NotNull final String dvIdtf, String type, boolean testForReleased) throws WrappedResponse {
         try {
             DataverseFeaturedItem.TYPES dvType = DataverseFeaturedItem.getDvType(type);
             DvObject dvObject = null;
@@ -634,7 +659,12 @@ public abstract class AbstractApiBean {
                     }
                 }
             }
-            DataverseFeaturedItem.validateTypeAndDvObject(dvIdtf, dvObject, dvType);
+            if (testForReleased){
+                DataverseFeaturedItem.validateTypeAndDvObject(dvIdtf, dvObject, dvType);
+            }
+            if (dvObject == null) {
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dvo.error.dvObjectNotFound", Collections.singletonList(dvIdtf))));
+            }
             return dvObject;
         } catch (IllegalArgumentException e) {
             throw new WrappedResponse(error(Response.Status.BAD_REQUEST, e.getMessage()));
@@ -657,7 +687,132 @@ public abstract class AbstractApiBean {
         return isNumeric(idtf) ? datasetFieldSvc.find(Long.parseLong(idtf))
                 : datasetFieldSvc.findByNameOpt(idtf);
     }
+    
+    /**
+     * Gets role assignment history for a DvObject (Dataset, Dataverse, or DataFile)
+     * 
+     * @param dvObject The DvObject to get history for
+     * @param authenticatedUser The authenticated user making the request
+     * @param headers HTTP headers from the request (for content negotiation)
+     * @return Response containing history in JSON or CSV format
+     */
+    protected Response getRoleAssignmentHistoryResponse(DvObject dvObject, AuthenticatedUser authenticatedUser, boolean forFiles, HttpHeaders headers) {
+        // Check if the user has permission to manage permissions for this object
+        if (!permissionSvc.userOn(authenticatedUser, dvObject).has(Permission.ManageDatasetPermissions)) {
+            return error(Status.FORBIDDEN, "You do not have permission to view the role assignment history for this " + dvObject.getClass().getSimpleName().toLowerCase());
+        }
 
+        // Get the role assignment history
+        List<DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry> history = null;
+        if (forFiles == false) {
+            history = rolesSvc.getRoleAssignmentHistory(dvObject.getId());
+        } else {
+            history = rolesSvc.getFilesRoleAssignmentHistory(dvObject.getId());
+        }
+
+        List<MediaType> acceptedTypes = headers.getAcceptableMediaTypes();
+        boolean wantCSV = acceptedTypes.stream()
+                .anyMatch(mt -> mt.toString().equals("text/csv"));
+
+        if (wantCSV) {
+            //Reusing strings from history panel
+            String definedOn = BundleUtil.getStringFromBundle("dataverse.permissions.history.definedOn");
+            String assigneeHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.assignee");
+            String roleHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.role");
+            String assignedByHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.assignedBy");
+            String assignedAtHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.assignedAt");
+            String revokedByHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.revokedBy");
+            String revokedAtHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.revokedAt");
+
+            // Generate CSV response
+            StringBuilder csvBuilder = getHistoryCsvHeaderRow();
+
+            // Add data rows
+            for (DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry entry : history) {
+                String definitionPointIds = entry.getDefinitionPointIdsAsString();
+                // Handle multiple comma-separated values in definitionPointIds column
+                if(definitionPointIds.contains(",")) {
+                    definitionPointIds = "\"" + definitionPointIds + "\"";
+                }
+                csvBuilder.append(definitionPointIds).append(",")
+                    .append(entry.getAssigneeIdentifier()).append(",")
+                    .append(entry.getRoleName()).append(",")
+                    .append(entry.getAssignedBy() != null ? entry.getAssignedBy() : "").append(",")
+                    .append(entry.getAssignedAt() != null ? entry.getAssignedAt().toString() : "").append(",")
+                    .append(entry.getRevokedBy() != null ? entry.getRevokedBy() : "").append(",")
+                    .append(entry.getRevokedAt() != null ? entry.getRevokedAt().toString() : "")
+                    .append("\n");
+            }
+
+            String objectType = dvObject.getClass().getSimpleName().toLowerCase();
+            return Response.ok()
+                    .entity(csvBuilder.toString())
+                    .type("text/csv")
+                    .header("Content-Disposition", "attachment; filename=" + objectType + "_permissions_history.csv")
+                    .build();
+        }
+        
+        // Or Json by default
+        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
+        for (DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry entry : history) {
+            JsonObjectBuilder job = Json.createObjectBuilder()
+                    .add("definedOn", entry.getDefinitionPointIdsAsString())
+                    .add("assigneeIdentifier", entry.getAssigneeIdentifier())
+                    .add("roleName", entry.getRoleName());
+                    
+            // Add assignment info if available
+            if (entry.getAssignedBy()!= null) {
+                job.add("assignedBy", entry.getAssignedBy());
+            } else {
+                job.add("assignedBy", JsonValue.NULL);
+            }
+            if (entry.getAssignedAt()!= null) {
+                job.add("assignedAt", entry.getAssignedAt().toString());
+            } else {
+                job.add("assignedAt", JsonValue.NULL);
+            }
+
+            // Add revocation info if available
+            if (entry.getRevokedBy() != null) {
+                job.add("revokedBy", entry.getRevokedBy());
+            } else {
+                job.add("revokedBy", JsonValue.NULL);
+            }
+            if (entry.getRevokedAt() != null) {
+                job.add("revokedAt", entry.getRevokedAt().toString());
+            } else {
+                job.add("revokedAt", JsonValue.NULL);
+            }
+
+            jsonArray.add(job);
+        }
+
+        return ok(jsonArray);
+    }
+
+    static StringBuilder getHistoryCsvHeaderRow() {
+        // Reusing strings from history panel
+        String definedOn = BundleUtil.getStringFromBundle("dataverse.permissions.history.definedOn");
+        String assigneeHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.assignee");
+        String roleHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.role");
+        String assignedByHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.assignedBy");
+        String assignedAtHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.assignedAt");
+        String revokedByHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.revokedBy");
+        String revokedAtHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.revokedAt");
+
+        // Generate CSV response
+        StringBuilder csvBuilder = new StringBuilder();
+        // Add CSV header with internationalized column names
+        csvBuilder
+                .append(definedOn).append(",")
+                .append(assigneeHeader).append(",")
+                .append(roleHeader).append(",")
+                .append(assignedByHeader).append(",")
+                .append(assignedAtHeader).append(",")
+                .append(revokedByHeader).append(",")
+                .append(revokedAtHeader).append("\n");
+        return csvBuilder;
+    }
     /* =================== *\
      *  Command Execution  *
     \* =================== */

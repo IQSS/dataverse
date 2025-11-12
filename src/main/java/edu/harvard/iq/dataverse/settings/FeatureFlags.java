@@ -218,6 +218,23 @@ public enum FeatureFlags {
      * @since Dataverse 6.5
      */
     ADD_LOCAL_CONTEXTS_PERMISSION_CHECK("add-local-contexts-permission-check"),
+    
+    /**
+     * This flag turns on creation of a monthly log file that tracks when requests for
+     * datasets/files with PIDs fail due to the PIDs not existing. This helps in catching
+     * cases where the DOI of a draft dataset has been cited, etc.
+     * 
+     * @apiNote Raise flag by setting
+     *          "dataverse.feature.enable-pid-failure-log"
+     * @since Dataverse 6.8
+     */
+    ENABLE_PID_FAILURE_LOG("enable-pid-failure-log"),
+    
+    /**
+     * This flag turns on history tracking of role assignments - keeping a record of when roles were granted
+     * or revoked, at what times, and by whom.
+     */
+    ROLE_ASSIGNMENT_HISTORY("role-assignment-history"),
     ;
     
     final String flag;

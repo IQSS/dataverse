@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.datasetversionsummaries.*;
 import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
@@ -34,13 +35,17 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
+
+import static edu.harvard.iq.dataverse.util.json.FileVersionDifferenceJsonPrinter.jsonFileVersionDifference;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 
+import java.io.IOException;
 import java.util.*;
+
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
@@ -83,7 +88,7 @@ public class JsonPrinter {
 
     @EJB
     static InAppNotificationsJsonPrinter inAppNotificationsJsonPrinter;
-    
+
     public static void injectSettingsService(SettingsServiceBean ssb,
                                              DatasetFieldServiceBean dfsb,
                                              DataverseFieldTypeInputLevelServiceBean dfils,
@@ -290,22 +295,35 @@ public class JsonPrinter {
 
         return bld;
     }
+    
+    public static JsonObjectBuilder json(Dataverse dv, boolean minimal) {
+        if (!minimal){
+            return json(dv, false, false, false, null);
+        } else {
+            return json(dv, false, false, true, null);        
+        }
+    }
 
     public static JsonObjectBuilder json(Dataverse dv) {
-        return json(dv, false, false, null);
+        return json(dv, false, false, false, null);
     }
 
     //TODO: Once we upgrade to Java EE 8 we can remove objects from the builder, and this email removal can be done in a better place.
-    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail, Boolean returnOwners, Long childCount) {
+    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail, Boolean returnOwners, Boolean minimal, Long childCount) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dv.getId())
                 .add("alias", dv.getAlias())
-                .add("name", dv.getName())
-                .add("affiliation", dv.getAffiliation());
-        if(!hideEmail) {
+                .add("name", dv.getName());
+        //minimal refers to only returning the id alias and name for 
+        //used in selecting collections available for linking
+        if (minimal) {
+            return bld;
+        }
+        bld.add("affiliation", dv.getAffiliation());
+        if (!hideEmail) {
             bld.add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()));
         }
-        if (returnOwners){
+        if (returnOwners) {
             bld.add("isPartOf", getOwnersFromDvObject(dv));
         }
         bld.add("permissionRoot", dv.isPermissionRoot())
@@ -322,8 +340,8 @@ public class JsonPrinter {
         if (dv.getDataverseTheme() != null) {
             bld.add("theme", JsonPrinter.json(dv.getDataverseTheme()));
         }
-        if(dv.getStorageDriverId() != null) {
-        	bld.add("storageDriverLabel", DataAccess.getStorageDriverLabelFor(dv.getStorageDriverId()));
+        if (dv.getStorageDriverId() != null) {
+            bld.add("storageDriverLabel", DataAccess.getStorageDriverLabelFor(dv.getStorageDriverId()));
         }
         if (dv.getFilePIDsEnabled() != null) {
             bld.add("filePIDsEnabled", dv.getFilePIDsEnabled());
@@ -332,7 +350,7 @@ public class JsonPrinter {
         bld.add("isReleased", dv.isReleased());
 
         List<DataverseFieldTypeInputLevel> inputLevels = dv.getDataverseFieldTypeInputLevels();
-        if(!inputLevels.isEmpty()) {
+        if (!inputLevels.isEmpty()) {
             bld.add("inputLevels", JsonPrinter.jsonDataverseFieldTypeInputLevels(inputLevels));
         }
 
@@ -340,8 +358,22 @@ public class JsonPrinter {
             bld.add("childCount", childCount);
         }
         addDatasetFileCountLimit(dv, bld);
-
         return bld;
+    }
+
+    public static JsonObjectBuilder jsonArray(List<Dataverse> dataverses) {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("count", dataverses.size());
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        for (Dataverse dataverse : dataverses) {
+            NullSafeJsonBuilder jsonObject = NullSafeJsonBuilder.jsonObjectBuilder();
+            jsonObject.add("id", dataverse.getId());
+            jsonObject.add("name", dataverse.getDisplayName());
+            jsonObject.add("alias", dataverse.getAlias());
+            jsonArrayBuilder.add(jsonObject);
+        }
+        job.add("items", jsonArrayBuilder);
+        return job;
     }
 
     public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
@@ -480,7 +512,7 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv, boolean includeFiles) {
-        return json(dsv, null, includeFiles, false,true);
+        return json(dsv, null, includeFiles, false, true);
     }
     public static JsonObjectBuilder json(DatasetVersion dsv, boolean includeFiles, boolean includeMetadataBlocks) {
         return json(dsv, null, includeFiles, false, includeMetadataBlocks);
@@ -1638,6 +1670,23 @@ public class JsonPrinter {
         return jsonArrayBuilder;
     }
 
+    public static JsonObjectBuilder jsonStorageDriver(String storageDriverId, Dataset dataset) {
+        JsonObjectBuilder jsonObjectBuilder = new NullSafeJsonBuilder();
+        jsonObjectBuilder.add("name", storageDriverId);
+        jsonObjectBuilder.add("type", DataAccess.getDriverType(storageDriverId));
+        jsonObjectBuilder.add("label", DataAccess.getStorageDriverLabelFor(storageDriverId));
+        if (dataset != null) {
+            jsonObjectBuilder.add("directUpload", DataAccess.uploadToDatasetAllowed(dataset, storageDriverId));
+            try {
+                jsonObjectBuilder.add("directDownload", DataAccess.getStorageIO(dataset).downloadRedirectEnabled());
+            } catch (IOException ex) {
+                logger.fine("Failed to get Storage IO for dataset " + ex.getMessage());
+            }
+        }
+
+        return jsonObjectBuilder;
+    }
+
     public static JsonArrayBuilder json(List<UserNotification> notifications, AuthenticatedUser authenticatedUser, boolean inAppNotificationFormat) {
         JsonArrayBuilder notificationsArray = Json.createArrayBuilder();
 
@@ -1669,5 +1718,57 @@ public class JsonPrinter {
         }
 
         return notificationsArray;
+    }
+
+    public static JsonArrayBuilder jsonDatasetVersionSummaries(List<DatasetVersionSummary> summaries) {
+        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        summaries.stream()
+                .filter(Objects::nonNull)
+                .map(JsonPrinter::json)
+                .forEach(arrayBuilder::add);
+
+        return arrayBuilder;
+    }
+
+    private static JsonObjectBuilder json(DatasetVersionSummary summary) {
+        JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder()
+                .add("id", summary.id())
+                .add("versionNumber", summary.versionNumber())
+                .add("versionNote", summary.versionNote())
+                .add("contributors", summary.contributorNames())
+                .add("publishedOn", summary.publicationDate());
+
+        DatasetVersionSummaryContent content = summary.content();
+        if (content instanceof DatasetVersionSummaryContentDeaccessioned deaccessioned) {
+            JsonObject deaccessionedDetailsJsonObject = jsonObjectBuilder()
+                    .add("reason", deaccessioned.getDeaccessionNote())
+                    .add("url", deaccessioned.getDeaccessionLink())
+                    .build();
+            JsonObject deaccessionedJsonObject = jsonObjectBuilder()
+                    .add("deaccessioned", deaccessionedDetailsJsonObject)
+                    .build();
+            jsonObjectBuilder.add("summary", deaccessionedJsonObject
+            );
+        } else if (content instanceof DatasetVersionSummaryContentSimple simple) {
+            jsonObjectBuilder.add("summary", simple.getValue().name());
+
+        } else if (content instanceof DatasetVersionSummaryContentDifferences differences) {
+            jsonObjectBuilder.add("summary", differences
+                    .getDatasetVersionDifference()
+                    .getSummaryDifferenceAsJson()
+                    .build());
+        }
+
+        return jsonObjectBuilder;
+    }
+
+    public static JsonArrayBuilder jsonFileVersionSummaries(List<FileVersionDifference> differences) {
+        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        differences.stream()
+                .filter(Objects::nonNull)
+                .map(diff -> jsonFileVersionDifference(diff).build())
+                .forEach(arrayBuilder::add);
+
+        return arrayBuilder;
     }
 }
