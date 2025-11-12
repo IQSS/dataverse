@@ -2036,12 +2036,12 @@ public class Dataverses extends AbstractApiBean {
         }
 
         Dataverse dv = doomed.getDataverse();
-        List <Dataverse> dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(doomed.getId());
+        List<Dataverse> dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(doomed.getId());
         try {
             execCommand(new DeleteTemplateCommand(createDataverseRequest(getRequestUser(crc)), dv, doomed, dataverseWDefaultTemplate));
         } catch (WrappedResponse wr) {
-                return handleWrappedResponse(wr);
-            }
+            return handleWrappedResponse(wr);
+        }
 
         return ok("Template " + doomed.getName() + " deleted.");
     }
