@@ -967,96 +967,90 @@ public class PermissionServiceBean {
     
     public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit, String searchTerm) {
         if (user != null) {
-            // IP Group - Only check IP if a User is calling for themself
-            String ipRangeSQL = "FALSE";
-            if (request != null
-                    && request.getAuthenticatedUser() != null
-                    && !request.getAuthenticatedUser().isSuperuser()
-                    && request.getSourceAddress() != null
-                    && request.getAuthenticatedUser().getUserIdentifier().equalsIgnoreCase(user.getUserIdentifier())) {
-                IpAddress ip = request.getSourceAddress();
-                if (ip instanceof IPv4Address) {
-                    IPv4Address ipv4 = (IPv4Address) ip;
-                    ipRangeSQL = ipv4.toBigInteger() + " BETWEEN ipv4range.bottomaslong AND ipv4range.topaslong";
-                } else if (ip instanceof IPv6Address) {
-                    IPv6Address ipv6 = (IPv6Address) ip;
-                    long[] vals = ipv6.toLongArray();
-                    if (vals.length == 4) {
-                        ipRangeSQL = """
-                                (@0 BETWEEN ipv6range.bottoma AND ipv6range.topa
-                                AND @1 BETWEEN ipv6range.bottomb AND ipv6range.topb
-                                AND @2 BETWEEN ipv6range.bottomc AND ipv6range.topc
-                                AND @3 BETWEEN ipv6range.bottomd AND ipv6range.topd)
-                                """;
-                        for (int i = 0; i < vals.length; i++) {
-                            ipRangeSQL = ipRangeSQL.replace("@" + i, String.valueOf(vals[i]));
-                        }
-                    }
-                }
+            var sqlCode = getBaseQueryForAllPermittedDataverses(request, user, permissionBit);
+            if (searchTerm == null || searchTerm.isEmpty()) {
+                return em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
+            } else if (user.isSuperuser()) {
+                Query query = em.createNativeQuery(sqlCode.concat(WHERE).concat(SEARCH_PARAMS), Dataverse.class);
+                setSearchParamValues(searchTerm, query);
+                return query.getResultList();
             }
-            String sqlCode;
-            if (user.isSuperuser()) {
-                sqlCode = LIST_ALL_DATAVERSES_SUPERUSER_HAS_PERMISSION;
-
-                if (searchTerm == null || searchTerm.isEmpty()) {
-                    return em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
-                } else {
-                    sqlCode = LIST_ALL_DATAVERSES_SUPERUSER_HAS_PERMISSION.concat(WHERE).concat(SEARCH_PARAMS);
-
-                    String pattern = searchTerm.toLowerCase();
-                    String pattern1 = pattern + "%";
-                    String pattern2 = "% " + pattern + "%";
-
-                    // Adjust the queries for very short, 1 
-                    if (pattern.length() == 1) {
-                        pattern1 = pattern;
-                        pattern2 = pattern + " %";
-                    }
-                    Query query = em.createNativeQuery(sqlCode, Dataverse.class);
-                    query.setParameter(1, "%dataverse");
-                    query.setParameter(2, pattern1);
-                    query.setParameter(3, pattern2);
-                    query.setParameter(4, "%dataverse");
-                    query.setParameter(5, pattern1);
-                    query.setParameter(6, pattern2);
-                    return query.getResultList();
-
-                }
-            } else {
-                if (searchTerm == null || searchTerm.isEmpty()) {
-                    sqlCode = LIST_ALL_DATAVERSES_USER_HAS_PERMISSION
-                            .replace("@USERID", String.valueOf(user.getId()))
-                            .replace("@PERMISSIONBIT", String.valueOf(permissionBit))
-                            .replace("@IPRANGESQL", ipRangeSQL);
-                    return em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
-                } else {
-                    String pattern = searchTerm.toLowerCase();
-                    String pattern1 = pattern + "%";
-                    String pattern2 = "% " + pattern + "%";
-
-                    // Adjust the queries for very short, 1 
-                    if (pattern.length() == 1) {
-                        pattern1 = pattern;
-                        pattern2 = pattern + " %";
-                    }
-
-                    sqlCode = LIST_ALL_DATAVERSES_USER_HAS_PERMISSION.concat(AND).concat(SEARCH_PARAMS)
-                            .replace("@USERID", String.valueOf(user.getId()))
-                            .replace("@PERMISSIONBIT", String.valueOf(permissionBit))
-                            .replace("@IPRANGESQL", ipRangeSQL);
-                    
-                    Query query = em.createNativeQuery(sqlCode, Dataverse.class);
-                    query.setParameter(1, "%dataverse");
-                    query.setParameter(2, pattern1);
-                    query.setParameter(3, pattern2);
-                    query.setParameter(4, "%dataverse");
-                    query.setParameter(5, pattern1);
-                    query.setParameter(6, pattern2);
-                    return query.getResultList();
-                }
+            else {
+                Query query = em.createNativeQuery(sqlCode.concat(AND).concat(SEARCH_PARAMS), Dataverse.class);
+                setSearchParamValues(searchTerm, query);
+                return query.getResultList();
             }
         }
         return null;
+    }
+
+    public boolean hasMultiplePermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit) {
+        if (user != null) {
+            var sqlCode = getBaseQueryForAllPermittedDataverses(request, user, permissionBit) + " LIMIT 2";
+            var resultList = em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
+            return resultList.size() > 1;
+        }
+        return false;
+    }
+
+    private String getBaseQueryForAllPermittedDataverses(DataverseRequest request, AuthenticatedUser user, int permissionBit) {
+        if (user.isSuperuser()) {
+            return LIST_ALL_DATAVERSES_SUPERUSER_HAS_PERMISSION;
+        } else {
+            return LIST_ALL_DATAVERSES_USER_HAS_PERMISSION
+                .replace("@USERID", String.valueOf(user.getId()))
+                .replace("@PERMISSIONBIT", String.valueOf(permissionBit))
+                .replace("@IPRANGESQL", getIpRange(request, user));
+        }
+    }
+
+    private String getIpRange(DataverseRequest request, AuthenticatedUser user) {
+        // IP Group - Only check IP if a User is calling for themself
+        String ipRangeSQL = "FALSE";
+        if (request != null
+            && request.getAuthenticatedUser() != null
+            && !request.getAuthenticatedUser().isSuperuser()
+            && request.getSourceAddress() != null
+            && request.getAuthenticatedUser().getUserIdentifier().equalsIgnoreCase(user.getUserIdentifier())) {
+            IpAddress ip = request.getSourceAddress();
+            if (ip instanceof IPv4Address) {
+                IPv4Address ipv4 = (IPv4Address) ip;
+                ipRangeSQL = ipv4.toBigInteger() + " BETWEEN ipv4range.bottomaslong AND ipv4range.topaslong";
+            } else if (ip instanceof IPv6Address) {
+                IPv6Address ipv6 = (IPv6Address) ip;
+                long[] vals = ipv6.toLongArray();
+                if (vals.length == 4) {
+                    ipRangeSQL = """
+                            (@0 BETWEEN ipv6range.bottoma AND ipv6range.topa
+                            AND @1 BETWEEN ipv6range.bottomb AND ipv6range.topb
+                            AND @2 BETWEEN ipv6range.bottomc AND ipv6range.topc
+                            AND @3 BETWEEN ipv6range.bottomd AND ipv6range.topd)
+                            """;
+                    for (int i = 0; i < vals.length; i++) {
+                        ipRangeSQL = ipRangeSQL.replace("@" + i, String.valueOf(vals[i]));
+                    }
+                }
+            }
+        }
+        return ipRangeSQL;
+    }
+
+    private void setSearchParamValues(String searchTerm, Query query) {
+        String pattern = searchTerm.toLowerCase();
+        String pattern1 = pattern + "%";
+        String pattern2 = "% " + pattern + "%";
+
+        // Adjust the queries for very short, 1
+        if (pattern.length() == 1) {
+            pattern1 = pattern;
+            pattern2 = pattern + " %";
+        }
+        query.setParameter(1, "%dataverse");
+        query.setParameter(2, pattern1);
+        query.setParameter(3, pattern2);
+        query.setParameter(4, "%dataverse");
+        query.setParameter(5, pattern1);
+        query.setParameter(6, pattern2);
     }
 
     /**

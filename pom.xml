@@ -32,7 +32,7 @@
         <jhove.version>1.20.1</jhove.version>
         <poi.version>5.4.0</poi.version>
         <tika.version>3.2.2</tika.version>
-        <netcdf.version>5.5.3</netcdf.version>
+        <netcdf.version>5.9.1</netcdf.version>
         
         <openapi.infoTitle>Dataverse API</openapi.infoTitle>
         <openapi.infoVersion>${project.version}</openapi.infoVersion>
@@ -1266,6 +1266,7 @@
                                 </image>
                             </images>
                             <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
+                            <containerNamePattern>%a</containerNamePattern>
                         </configuration>
                     </plugin>
                     <plugin>
