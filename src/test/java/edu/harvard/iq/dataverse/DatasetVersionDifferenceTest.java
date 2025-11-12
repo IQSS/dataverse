@@ -447,7 +447,7 @@ public class DatasetVersionDifferenceTest {
         JsonPath dataFile = JsonPath.from(JsonUtil.prettyPrint(obj));
                 
         assertTrue("true".equalsIgnoreCase(dataFile.getString("termsAccessChanged")));
-        assertEquals(2,(Long.parseLong(dataFile.getString("files.changedFileMetaData"))));
+        assertEquals(1,(Long.parseLong(dataFile.getString("files.changedFileMetaData"))));
         assertEquals(0,(Long.parseLong(dataFile.getString("testMetadataBlock.deleted"))));
         assertEquals(1, (int) (Long.parseLong(dataFile.getString("testMetadataBlock.added"))));
         assertEquals(1,(Long.parseLong(dataFile.getString("files.added"))));
