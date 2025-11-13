@@ -11,7 +11,7 @@ Upon receipt of a relevant message, Dataverse will create Announcement Received 
 
 The ``dataverse.ldn.allowed-hosts`` JVM option is a comma-separated list of hosts from which Dataverse will accept and process messages. By default, no hosts are allowed. ``*`` can be used in testing to indicate all hosts are allowed.
 
-The ``dataverse.ldn.coar-noptify.relationship-announcement.notify-superusers-only`` JVM option can be set to ``true`` to restrict notifications to superusers only (those who can publish the dataset). The default is to notify all users who can publish the dataset.
+The ``dataverse.ldn.coar-notify.relationship-announcement.notify-superusers-only`` JVM option can be set to ``true`` to restrict notifications to superusers only (those who can publish the dataset). The default is to notify all users who can publish the dataset.
 
 Messages can be sent via POST, using the application/ld+json ContentType:
 
