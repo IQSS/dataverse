@@ -1511,8 +1511,8 @@ Once you have configured a trusted remote store, you can point your users to the
     dataverse.files.<id>.ingestsizelimit                     <size in bytes>     Maximum size of files that should be ingested                               (none)
     dataverse.files.<id>.url-expiration-minutes              <?>                 If direct downloads and using signing: time until links expire. Optional.   60
     dataverse.files.<id>.remote-store-name                   <?>                 A short name used in the UI to indicate where a file is located. Optional.  (none)
-    dataverse.files.<id>.remote-store-url                    <?>                 A url to an info page about the remote store used in the UI. Optional.      (none)
-    dataverse.files.<id>.files-not-accessible-by-dataverse   ``true``/``false``  True if the file is at the url provided, false if that is a landing page    ``false``
+    dataverse.files.<id>.remote-store-url                    <?>                 A URL to an info page about the remote store used in the UI. Optional.      (none)
+    dataverse.files.<id>.files-not-accessible-by-dataverse   ``true``/``false``  True if the file is at the URL provided, false if that is a landing page    ``false``
     
     =======================================================  ==================  ==========================================================================  ===================
 
