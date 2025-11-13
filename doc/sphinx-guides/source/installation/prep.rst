@@ -110,7 +110,7 @@ Decisions to Make
 
 Here are some questions to keep in the back of your mind as you test and move into production:
 
-- How much storage do I need?
+- How much storage do I need? What is the scale of data I will need to handle (see :doc:`/admin/big-data-administration`)?
 - Which features do I want based on :ref:`architecture`?
 - How do I want my users to log in to the Dataverse installation? With local accounts? With Shibboleth/SAML? With OAuth providers such as ORCID, GitHub, or Google?
 - Do I want to to run my app server on the standard web ports (80 and 443) or do I want to "front" my app server with a proxy such as Apache or nginx? See "Network Ports" in the :doc:`config` section.
