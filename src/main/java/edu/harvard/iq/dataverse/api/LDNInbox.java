@@ -111,15 +111,19 @@ public class LDNInbox extends AbstractApiBean {
             // with the contents of the final redirect (current as of 10/29/2025)
             // and try again
             body = body.replace("\"https://purl.org/coar/notify\"",
-                    "{\n" + "                \"@vocab\": \"http://purl.org/coar/notify_vocabulary/\",\n"
-                            + "                \"ietf\": \"http://www.iana.org/assignments/relation/\",\n"
-                            + "                \"coar-notify\": \"http://purl.org/coar/notify_vocabulary/\",\n"
-                            + "                \"sorg\": \"http://schema.org/\",\n"
-                            + "                \"ReviewAction\": \"coar-notify:ReviewAction\",\n"
-                            + "                \"EndorsementAction\": \"coar-notify:EndorsementAction\",\n"
-                            + "                \"IngestAction\": \"coar-notify:IngestAction\",\n"
-                            + "                \"ietf:cite-as\": {\n" + "                \"@type\": \"@id\"\n"
-                            + "                }}");
+                    """
+                    {
+                        "@vocab": "http://purl.org/coar/notify_vocabulary/",
+                        "ietf": "http://www.iana.org/assignments/relation/",
+                        "coar-notify": "http://purl.org/coar/notify_vocabulary/",
+                        "sorg": "http://schema.org/",
+                        "ReviewAction": "coar-notify:ReviewAction",
+                        "EndorsementAction": "coar-notify:EndorsementAction",
+                        "IngestAction": "coar-notify:IngestAction",
+                        "ietf:cite-as": {
+                        "@type": "@id"
+                        }
+                    }""");
             jsonld = JSONLDUtil.decontextualizeJsonLD(body);
         }
         
