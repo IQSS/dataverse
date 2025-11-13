@@ -94,7 +94,7 @@ Other Considerations
 - Several features that involve Dataverse accessing files' contents, including unzipping zip files, are disabled when S3 direct upload is enabled. See :ref:`s3-direct-upload-features-disabled`.
 
 - Using direct upload stops Dataverse from inspecting the file bytes to determine the MIME type (with one exception - Stata files). Dataverse will still look at the file name and extension to determine the MIME type.
-- To perform "ingest" processing (see :doc:`/user/tabulardataingest`), Dataverse currently has to copy the file to local storage, negating the benefit of sending data directly to S3. To manage larger files, one can set a per-store
+- To perform "ingest" processing (see :doc:`/user/tabulardataingest/index`), Dataverse currently has to copy the file to local storage, negating the benefit of sending data directly to S3. To manage larger files, one can set a per-store
   ingest size limit (which can be 0 bytes) to stop ingest or limit it to smaller files (see :ref:`list-of-s3-storage-options`). 
 - Dataverse's mechanism for downloading a whole dataset or multiple selected files involves zipping those files together. Even When using S3 with direct upload/download,
   the file bytes are transferred to the Dataverse server as part of the zipping process. There are ways to reduce the performance impact of this:
