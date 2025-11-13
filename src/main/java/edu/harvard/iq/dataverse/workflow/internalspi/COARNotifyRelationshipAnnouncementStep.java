@@ -2,7 +2,9 @@ package edu.harvard.iq.dataverse.workflow.internalspi;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
@@ -22,6 +24,7 @@ import static edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult.OK;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -40,6 +43,7 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 
+import org.apache.commons.lang3.Strings;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -86,13 +90,35 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
                 // First check that we have what is required
                 Dataset d = context.getDataset();
                 DatasetVersion dv = d.getReleasedVersion();
+                DatasetVersion priorVersion = d.getPriorReleasedVersion();
                 List<DatasetField> dvf = dv.getDatasetFields();
                 Map<String, DatasetField> fields = new HashMap<String, DatasetField>();
                 List<String> reqFields = Arrays
                         .asList(((String) context.getSettings().getOrDefault(REQUIRED_FIELDS, "")).split(",\\s*"));
+                
+                Map<String, DatasetField> priorFields = new HashMap<String, DatasetField>();
+                if (priorVersion != null) {
+                    for (DatasetField pdf : priorVersion.getDatasetFields()) {
+                        if (!pdf.isEmpty() && reqFields.contains(pdf.getDatasetFieldType().getName())) {
+                            priorFields.put(pdf.getDatasetFieldType().getName(), pdf);
+                        }
+                    }
+                }
+                
                 for (DatasetField df : dvf) {
                     if (!df.isEmpty() && reqFields.contains(df.getDatasetFieldType().getName())) {
-                        fields.put(df.getDatasetFieldType().getName(), df);
+                        DatasetField priorField = priorFields.get(df.getDatasetFieldType().getName());
+                        
+                        if (priorVersion == null || priorField == null) {
+                            // No prior version, include all values
+                            fields.put(df.getDatasetFieldType().getName(), df);
+                        } else {
+                            // Create a filtered field with only new values
+                            DatasetField filteredField = filterNewValues(df, priorField);
+                            if (!filteredField.isEmpty()) {
+                                fields.put(df.getDatasetFieldType().getName(), filteredField);
+                            }
+                        }
                     }
                 }
 
@@ -411,4 +437,146 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
         return false;
     }
 
+    /**
+     * Create a new DatasetField containing only values that are new compared to the prior field.
+     * This creates a detached copy to avoid modifying the managed entity.
+     * 
+     * @param currentField The field from the current version
+     * @param priorField The field from the prior version
+     * @return A new DatasetField with only new values
+     */
+    private DatasetField filterNewValues(DatasetField currentField, DatasetField priorField) {
+        DatasetField filteredField = new DatasetField();
+        filteredField.setDatasetFieldType(currentField.getDatasetFieldType());
+
+        if (currentField.getDatasetFieldType().isCompound()) {
+            // Handle compound values
+            List<DatasetFieldCompoundValue> newCompoundValues = new ArrayList<>();
+
+            for (DatasetFieldCompoundValue currentCompoundValue : currentField.getDatasetFieldCompoundValues()) {
+                boolean isNew = true;
+
+                // Check if this compound value exists in prior field
+                if (priorField != null && priorField.getDatasetFieldCompoundValues() != null) {
+                    for (DatasetFieldCompoundValue priorCompoundValue : priorField.getDatasetFieldCompoundValues()) {
+                        if (compoundValuesEqual(currentCompoundValue, priorCompoundValue)) {
+                            isNew = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (isNew) {
+                    // Create a copy of the compound value
+                    DatasetFieldCompoundValue newCompoundValue = copyCompoundValue(currentCompoundValue, filteredField);
+                    newCompoundValues.add(newCompoundValue);
+                }
+            }
+
+            filteredField.setDatasetFieldCompoundValues(newCompoundValues);
+
+        } else if (currentField.getDatasetFieldType().isAllowMultiples()) {
+            // Handle multiple simple values
+            List<DatasetFieldValue> newValues = new ArrayList<>();
+
+            for (DatasetFieldValue currentValue : currentField.getDatasetFieldValues()) {
+                boolean isNew = true;
+
+                if (priorField != null && priorField.getDatasetFieldValues() != null) {
+                    for (DatasetFieldValue priorValue : priorField.getDatasetFieldValues()) {
+                        if (valuesEqual(currentValue, priorValue)) {
+                            isNew = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (isNew) {
+                    DatasetFieldValue newValue = new DatasetFieldValue();
+                    newValue.setValue(currentValue.getValue());
+                    newValue.setDatasetField(filteredField);
+                    newValues.add(newValue);
+                }
+            }
+
+            filteredField.setDatasetFieldValues(newValues);
+
+        } else {
+            // Handle single value
+            if (priorField == null || !valuesEqual(currentField.getSingleValue(), priorField.getSingleValue())) {
+                filteredField.setSingleValue(currentField.getValue());
+            }
+        }
+
+        return filteredField;
+    }
+
+    /**
+     * Check if two compound values are equal by comparing all their child fields.
+     * Since child fields are ordered, we can do a simpler comparison.
+     */
+    private boolean compoundValuesEqual(DatasetFieldCompoundValue cv1, DatasetFieldCompoundValue cv2) {
+        if (cv1 == null && cv2 == null) {
+            return true;
+        }
+        if (cv1 == null || cv2 == null) {
+            return false;
+        }
+
+        List<DatasetField> children1 = cv1.getChildDatasetFields();
+        List<DatasetField> children2 = cv2.getChildDatasetFields();
+
+        if (children1.size() != children2.size()) {
+            return false;
+        }
+
+        // Since fields are ordered, we can compare them directly by position
+        for (int i = 0; i < children1.size(); i++) {
+            DatasetField child1 = children1.get(i);
+            DatasetField child2 = children2.get(i);
+            
+            // Compare field types
+            if (!child1.getDatasetFieldType().equals(child2.getDatasetFieldType())) {
+                return false;
+            }
+            
+            // Compare values using Apache Commons StringUtils
+            if (!Strings.CS.equals(child1.getValue(), child2.getValue())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Create a deep copy of a compound value
+     */
+    private DatasetFieldCompoundValue copyCompoundValue(DatasetFieldCompoundValue source, DatasetField parentField) {
+        DatasetFieldCompoundValue copy = new DatasetFieldCompoundValue();
+        copy.setParentDatasetField(parentField);
+        copy.setDisplayOrder(source.getDisplayOrder());
+
+        List<DatasetField> childFieldsCopy = new ArrayList<>();
+        for (DatasetField sourceChild : source.getChildDatasetFields()) {
+            DatasetField childCopy = new DatasetField();
+            childCopy.setDatasetFieldType(sourceChild.getDatasetFieldType());
+            childCopy.setParentDatasetFieldCompoundValue(copy);
+            childCopy.setSingleValue(sourceChild.getValue());
+            childFieldsCopy.add(childCopy);
+        }
+
+        copy.setChildDatasetFields(childFieldsCopy);
+        return copy;
+    }
+
+    private boolean valuesEqual(DatasetFieldValue v1, DatasetFieldValue v2) {
+        if (v1 == null && v2 == null) {
+            return true;
+        }
+        if (v1 == null || v2 == null) {
+            return false;
+        }
+        return Strings.CS.equals(v1.getValue(), v2.getValue());
+    }
 }

@@ -534,6 +534,20 @@ public class Dataset extends DvObjectContainer {
         return null;
     }
     
+    public DatasetVersion getPriorReleasedVersion() {
+        boolean foundReleasedVersion = false;
+        for (DatasetVersion version : this.getVersions()) {
+            if (version.isReleased()) {
+                if(foundReleasedVersion) {
+                    return version;
+                } else {
+                    foundReleasedVersion = true;
+                }
+            }
+        }
+        return null;
+    }
+    
     public DatasetVersion getVersionFromId(Long datasetVersionId) {
         for (DatasetVersion version : this.getVersions()) {
             if (datasetVersionId == version.getId().longValue()) {
