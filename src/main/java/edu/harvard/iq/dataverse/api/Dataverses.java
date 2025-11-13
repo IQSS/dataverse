@@ -2018,7 +2018,7 @@ public class Dataverses extends AbstractApiBean {
             }
             Template created = execCommand(new CreateTemplateCommand(newTemplateDTO.toTemplate(), createDataverseRequest(getRequestUser(crc)), dataverse, true));
             
-            return created("/dataverses/template" + created.getId(), jsonTemplate(created));
+            return created("/dataverses/template/" + created.getId(), jsonTemplate(created));
         
         } catch (WrappedResponse e) {
             return e.getResponse();
