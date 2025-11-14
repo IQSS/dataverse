@@ -834,6 +834,9 @@
                 <includes>
                     <include>*.properties</include>
                     <include>**/*.properties</include>
+                    <!-- As of https://github.com/payara/Payara/issues/7741, Payara uses the jakarta.mime.types file. 
+                         The original mime.types file (with the same content) is retained to support the FileUtilTest.testGZipFile.
+                     -->
                     <include>**/jakarta.mime.types</include>
                     <include>**/mime.types</include>
                     <include>**/*.R</include>
