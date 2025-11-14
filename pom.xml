@@ -835,6 +835,7 @@
                     <include>*.properties</include>
                     <include>**/*.properties</include>
                     <include>**/jakarta.mime.types</include>
+                    <include>**/mime.types</include>
                     <include>**/*.R</include>
                 </includes>
             </resource>
