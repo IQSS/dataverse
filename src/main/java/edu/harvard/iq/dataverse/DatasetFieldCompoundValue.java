@@ -27,6 +27,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -253,5 +254,46 @@ public class DatasetFieldCompoundValue implements Serializable {
         }
 
         return mapIn;
+    }
+    
+    /**
+     * Compares this DatasetFieldCompoundValue with another for equality based on their child fields.
+     * Two compound values are considered equal if they have the same child fields with the same values
+     * in the same order.
+     * 
+     * @param other The DatasetFieldCompoundValue to compare with
+     * @return true if both compound values have equal child fields, false otherwise
+     */
+    public boolean valuesEqual(DatasetFieldCompoundValue other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null) {
+            return false;
+        }
+
+        List<DatasetField> children1 = this.getChildDatasetFields();
+        List<DatasetField> children2 = other.getChildDatasetFields();
+
+        if (children1.size() != children2.size()) {
+            return false;
+        }
+
+        // Since fields are ordered, we can compare them directly by position
+        for (int i = 0; i < children1.size(); i++) {
+            DatasetField child1 = children1.get(i);
+            DatasetField child2 = children2.get(i);
+            
+            // Compare field types
+            if (!child1.getDatasetFieldType().equals(child2.getDatasetFieldType())) {
+                return false;
+            }
+            
+            // Compare values using Apache Commons StringUtils
+            if (!Strings.CS.equals(child1.getValue(), child2.getValue())) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -455,128 +455,47 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
 
             for (DatasetFieldCompoundValue currentCompoundValue : currentField.getDatasetFieldCompoundValues()) {
                 boolean isNew = true;
-
                 // Check if this compound value exists in prior field
                 if (priorField != null && priorField.getDatasetFieldCompoundValues() != null) {
                     for (DatasetFieldCompoundValue priorCompoundValue : priorField.getDatasetFieldCompoundValues()) {
-                        if (compoundValuesEqual(currentCompoundValue, priorCompoundValue)) {
+                        if (currentCompoundValue.valuesEqual(priorCompoundValue)) {
                             isNew = false;
                             break;
                         }
                     }
                 }
-
                 if (isNew) {
-                    // Create a copy of the compound value
-                    DatasetFieldCompoundValue newCompoundValue = copyCompoundValue(currentCompoundValue, filteredField);
+                    // Use the existing copy method from DatasetFieldCompoundValue
+                    DatasetFieldCompoundValue newCompoundValue = currentCompoundValue.copy(filteredField);
                     newCompoundValues.add(newCompoundValue);
                 }
             }
-
             filteredField.setDatasetFieldCompoundValues(newCompoundValues);
-
         } else if (currentField.getDatasetFieldType().isAllowMultiples()) {
             // Handle multiple simple values
             List<DatasetFieldValue> newValues = new ArrayList<>();
-
             for (DatasetFieldValue currentValue : currentField.getDatasetFieldValues()) {
                 boolean isNew = true;
-
                 if (priorField != null && priorField.getDatasetFieldValues() != null) {
                     for (DatasetFieldValue priorValue : priorField.getDatasetFieldValues()) {
-                        if (valuesEqual(currentValue, priorValue)) {
+                        if (currentValue.valuesEqual(priorValue)) {
                             isNew = false;
                             break;
                         }
                     }
                 }
-
                 if (isNew) {
-                    DatasetFieldValue newValue = new DatasetFieldValue();
-                    newValue.setValue(currentValue.getValue());
-                    newValue.setDatasetField(filteredField);
+                    DatasetFieldValue newValue = currentValue.copy(filteredField);
                     newValues.add(newValue);
                 }
             }
-
             filteredField.setDatasetFieldValues(newValues);
-
         } else {
             // Handle single value
-            if (priorField == null || !valuesEqual(currentField.getSingleValue(), priorField.getSingleValue())) {
+            if (priorField == null || !(currentField.getSingleValue().valuesEqual(priorField.getSingleValue()))) {
                 filteredField.setSingleValue(currentField.getValue());
             }
         }
-
         return filteredField;
-    }
-
-    /**
-     * Check if two compound values are equal by comparing all their child fields.
-     * Since child fields are ordered, we can do a simpler comparison.
-     */
-    private boolean compoundValuesEqual(DatasetFieldCompoundValue cv1, DatasetFieldCompoundValue cv2) {
-        if (cv1 == null && cv2 == null) {
-            return true;
-        }
-        if (cv1 == null || cv2 == null) {
-            return false;
-        }
-
-        List<DatasetField> children1 = cv1.getChildDatasetFields();
-        List<DatasetField> children2 = cv2.getChildDatasetFields();
-
-        if (children1.size() != children2.size()) {
-            return false;
-        }
-
-        // Since fields are ordered, we can compare them directly by position
-        for (int i = 0; i < children1.size(); i++) {
-            DatasetField child1 = children1.get(i);
-            DatasetField child2 = children2.get(i);
-            
-            // Compare field types
-            if (!child1.getDatasetFieldType().equals(child2.getDatasetFieldType())) {
-                return false;
-            }
-            
-            // Compare values using Apache Commons StringUtils
-            if (!Strings.CS.equals(child1.getValue(), child2.getValue())) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Create a deep copy of a compound value
-     */
-    private DatasetFieldCompoundValue copyCompoundValue(DatasetFieldCompoundValue source, DatasetField parentField) {
-        DatasetFieldCompoundValue copy = new DatasetFieldCompoundValue();
-        copy.setParentDatasetField(parentField);
-        copy.setDisplayOrder(source.getDisplayOrder());
-
-        List<DatasetField> childFieldsCopy = new ArrayList<>();
-        for (DatasetField sourceChild : source.getChildDatasetFields()) {
-            DatasetField childCopy = new DatasetField();
-            childCopy.setDatasetFieldType(sourceChild.getDatasetFieldType());
-            childCopy.setParentDatasetFieldCompoundValue(copy);
-            childCopy.setSingleValue(sourceChild.getValue());
-            childFieldsCopy.add(childCopy);
-        }
-
-        copy.setChildDatasetFields(childFieldsCopy);
-        return copy;
-    }
-
-    private boolean valuesEqual(DatasetFieldValue v1, DatasetFieldValue v2) {
-        if (v1 == null && v2 == null) {
-            return true;
-        }
-        if (v1 == null || v2 == null) {
-            return false;
-        }
-        return Strings.CS.equals(v1.getValue(), v2.getValue());
     }
 }
