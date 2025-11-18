@@ -112,6 +112,7 @@
                                     </h:outputFormat>
                                     
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipQuotaRemaining']}" escape="false" 
+						    style="color: red;"
                                                     rendered="#{EditDatafilesPage.isStorageQuotaEnforced()}">
                                         <f:param value="#{EditDatafilesPage.getHumanMaxTotalUploadSizeInBytes()}"/>
                                     </h:outputFormat>
@@ -199,20 +200,26 @@
                                 <div jsf:id="webloaderBlock" jsf:rendered="#{webloaderUploadSupported}"  class="ui-fileupload-buttonbar ui-widget-header ui-corner-top">
                                     <p class="help-block" jsf:rendered="#{!createDataset}">#{bundle['file.fromWebloader.tip']}</p>
                                     <p class="help-block" jsf:rendered="#{createDataset}">#{bundle['file.fromWebloaderAfterCreate.tip']}</p>
-                                    <p:button target="_blank" rendered="#{!createDataset}" onclick="cancelDatasetEdit();window.open('#{(datasetPage==true) ? DatasetPage.getWebloaderUrlForDataset(dataset):EditDatafilesPage.getWebloaderUrlForDataset(dataset)}');return false;" value="#{bundle['file.fromWebloader']}"  icon="ui-icon-plusthick" />
+                                    <p:button
+				      target="_blank"
+				      rendered="#{!createDataset}"
+				      onclick="cancelDatasetEdit();window.open('#{(datasetPage==true) ? DatasetPage.getWebloaderUrlForDataset(dataset):EditDatafilesPage.getWebloaderUrlForDataset(dataset)}');return false;"
+				      value="#{bundle['file.fromWebloader']}"
+				      disabled="#{lockedFromEdits ||  !(showFileUploadComponent) || isQuotaExceeded || isFileUploadCountExceeded}"
+				      icon="ui-icon-plusthick" />
                                 </div>
                                 <div jsf:id="dropboxBlock" jsf:rendered="#{settingsWrapper.isHasDropBoxKey()}"  class="margin-top">
                                     <!-- Dropbox upload widget -->
                                     <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
                                     <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
                                     <p:commandButton id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" oncomplete="javascript:dropBoxUploadFinished();" update="@none" style="display:none;" />
-                                    <p:commandButton id="dropBoxUserButton" disabled="#{!(showFileUploadComponent)}" value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
+                                    <p:commandButton id="dropBoxUserButton" disabled="#{lockedFromEdits ||  !(showFileUploadComponent) || isQuotaExceeded || isFileUploadCountExceeded}" value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
                                     <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" redisplay="false" />
                                 </div>
                                 <div jsf:id="globusBlock" jsf:rendered="#{globusUploadSupported}"  class="margin-top">
                                     <p class="help-block" jsf:rendered="#{!createDataset}">#{bundle['file.fromGlobus.tip']}</p>
                                     <p class="help-block" jsf:rendered="#{createDataset}">#{bundle['file.fromGlobusAfterCreate.tip']}</p>
-                                    <p:button target="_blank" rendered="#{!createDataset}" onclick="cancelDatasetEdit();window.open('#{GlobusServiceBean.getGlobusAppUrlForDataset(dataset)}');return false;" value="#{bundle['file.fromGlobus']}"  icon="globus-btn" />
+                                    <p:button target="_blank" rendered="#{!createDataset}" onclick="cancelDatasetEdit();window.open('#{GlobusServiceBean.getGlobusAppUrlForDataset(dataset)}');return false;" value="#{bundle['file.fromGlobus']}"  icon="globus-btn" disabled="#{lockedFromEdits ||  !(showFileUploadComponent) || isQuotaExceeded || isFileUploadCountExceeded}"/>
                                 </div>
                               </ui:fragment>
                             </div>
