@@ -374,9 +374,6 @@
                                                             <f:passThroughAttribute name="aria-haspopup" value="true"/>
                                                             <f:passThroughAttribute name="aria-expanded" value="false"/>
                                                         </c:if>
-                                                        <!--c:if test="#{(showSubmitForReviewLink or showReturnToAuthorLink) and showPublishLink and DatasetPage.lockedFromPublishing}" -->
-                                                            <!-- f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle disabled"/ -->
-                                                        <!-- /c:if -->
                                                         #{showPublishLink ? bundle['dataset.publishBtn'] : (latestVersionInReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn'])} <span jsf:rendered="#{(showSubmitForReviewLink or showReturnToAuthorLink) and showPublishLink}" class="caret"></span>
                                                     </h:outputLink>
                                                     <!-- Publish BTN DROPDOWN-MENU OPTIONS -->
