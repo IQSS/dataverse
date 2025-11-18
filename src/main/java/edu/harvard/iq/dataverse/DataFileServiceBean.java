@@ -40,7 +40,7 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.*;
-import org.jsoup.internal.StringUtil;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -285,13 +285,12 @@ public class DataFileServiceBean implements java.io.Serializable {
 
     public List<Long> findDataFileIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String userSuppliedSearchTerm, String userSuppliedSortField, String userSuppliedSortOrder) {
         FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
-        String searchTerm = !StringUtil.isBlank(userSuppliedSearchTerm) ? "%"+userSuppliedSearchTerm.trim().toLowerCase()+"%" : null;
+        String searchTerm = !StringUtils.isBlank(userSuppliedSearchTerm) ? "%"+userSuppliedSearchTerm.trim().toLowerCase()+"%" : null;
 
         String selectClause = "select o.datafile_id from FileMetadata o where o.datasetversion_id = " + datasetVersionId;
         String searchClause = searchTerm != null ? " and (lower(o.label) like ? or lower(o.description) like ?)" : "";
         String orderByClause = " order by o." + sortFieldAndOrder.getSortField() + " " + sortFieldAndOrder.getSortOrder();
 
-        // NOTE: since datafile_id and datasetversion_id are indexes we can't use a TypedQuery
         Query query = em.createNativeQuery(selectClause + searchClause + orderByClause);
         if (searchTerm != null) {
             query.setParameter(1, searchTerm);
