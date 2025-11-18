@@ -2594,128 +2594,140 @@ public class DataversesIT {
     }
 
     @Test
-    public void testCreateAndGetTemplates() throws JsonParseException  {
-        Response createUserResponse = UtilIT.createRandomUser();
-        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
-        String username = UtilIT.getUsernameFromResponse(createUserResponse);
+    public void testCreateAndGetTemplates() throws JsonParseException {
+            Response createUserResponse = UtilIT.createRandomUser();
+            String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+            String username = UtilIT.getUsernameFromResponse(createUserResponse);
 
-        Response createSecondUserResponse = UtilIT.createRandomUser();
-        String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
-        String secondUsername = UtilIT.getUsernameFromResponse(createSecondUserResponse);
+            Response createSecondUserResponse = UtilIT.createRandomUser();
+            String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
+            String secondUsername = UtilIT.getUsernameFromResponse(createSecondUserResponse);
 
-        
-        /*
-        We need to make this a non-inherited metadatablocks so the get template will only get templates from current dv
-         */
-        
-        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
-        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
-        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+            /*
+             * We need to make this a non-inherited metadatablocks so the get template will
+             * only get templates from current dv
+             */
 
-        String newName = "New Test Dataverse Name";
-        String newAffiliation = "New Test Dataverse Affiliation";
-        String newDataverseType = Dataverse.DataverseType.TEACHING_COURSES.toString();
-        String[] newContactEmails = new String[]{"new_email@dataverse.com"};
-        String[] newInputLevelNames = new String[]{"geographicCoverage"};
-        String[] newFacetIds = new String[]{"contributorName"};
-        String[] newMetadataBlockNames = new String[]{"citation", "geospatial", "biomedical"};
+            Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+            createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+            String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-       //Giving the new Dataverse updated metadatablocks so that it will not inherit templates 
-       Response updateDataverseResponse = UtilIT.updateDataverse(
-                dataverseAlias, dataverseAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
-                null, newMetadataBlockNames, apiToken,
-                Boolean.FALSE, Boolean.FALSE, null
-        );
-       
-        updateDataverseResponse.then().assertThat()
-                .statusCode(OK.getStatusCode());
+            String newName = "New Test Dataverse Name";
+            String newAffiliation = "New Test Dataverse Affiliation";
+            String newDataverseType = Dataverse.DataverseType.TEACHING_COURSES.toString();
+            String[] newContactEmails = new String[] { "new_email@dataverse.com" };
+            String[] newInputLevelNames = new String[] { "geographicCoverage" };
+            String[] newFacetIds = new String[] { "contributorName" };
+            String[] newMetadataBlockNames = new String[] { "citation", "geospatial", "biomedical" };
 
-        // Create a template
+            // Giving the new Dataverse updated metadatablocks so that it will not inherit
+            // templates
+            Response updateDataverseResponse = UtilIT.updateDataverse(
+                            dataverseAlias, dataverseAlias, newName, newAffiliation, newDataverseType, newContactEmails,
+                            newInputLevelNames,
+                            null, newMetadataBlockNames, apiToken,
+                            Boolean.FALSE, Boolean.FALSE, null);
 
-        String jsonString = """
-                {
-                  "name": "Dataverse template",
-                  "isDefault": true,
-                  "fields": [
-                    {
-                      "typeName": "author",
-                      "value": [
-                        {
-                          "authorName": {
-                            "typeName": "authorName",
-                            "value": "Belicheck, Bill"
-                          },
-                          "authorAffiliation": {
-                            "typeName": "authorIdentifierScheme",
-                            "value": "ORCID"
-                          }
-                        }
-                      ]
-                    }
-                  ],
-                  "instructions": [
-                    {
-                        "instructionField": "author",
-                        "instructionText": "The author data"
-                    }
-                  ]
-                }
-                """;
+            updateDataverseResponse.then().assertThat()
+                            .statusCode(OK.getStatusCode());
 
-        Response createTemplateResponse = UtilIT.createTemplate(
-                dataverseAlias,
-                jsonString,
-                apiToken
-        );
-        
-        createTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
-                .body("data.name", equalTo("Dataverse template"))
-                .body("data.isDefault", equalTo(true))
-                .body("data.usageCount", equalTo(0))
-                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
-                .body("data.datasetFields.citation.fields.size()", equalTo(1))
-                .body("data.instructions.size()", equalTo(1))
-                .body("data.instructions[0].instructionField", equalTo("author"))
-                .body("data.instructions[0].instructionText", equalTo("The author data"))
-                .body("data.dataverseAlias", equalTo(dataverseAlias));
+            // Create a template
 
-        // Template creation should fail if the user lacks dataverse edit permissions
+            String jsonString = """
+                            {
+                              "name": "Dataverse template",
+                              "isDefault": false,
+                              "fields": [
+                                {
+                                  "typeName": "author",
+                                  "value": [
+                                    {
+                                      "authorName": {
+                                        "typeName": "authorName",
+                                        "value": "Belicheck, Bill"
+                                      },
+                                      "authorAffiliation": {
+                                        "typeName": "authorIdentifierScheme",
+                                        "value": "ORCID"
+                                      }
+                                    }
+                                  ]
+                                }
+                              ],
+                              "instructions": [
+                                {
+                                    "instructionField": "author",
+                                    "instructionText": "The author data"
+                                }
+                              ]
+                            }
+                            """;
 
-        createTemplateResponse = UtilIT.createTemplate(
-                dataverseAlias,
-                jsonString,
-                secondApiToken
-        );
-        createTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+            Response createTemplateResponse = UtilIT.createTemplate(
+                            dataverseAlias,
+                            jsonString,
+                            apiToken);
 
-        // Get templates
+            createTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
+                            .body("data.name", equalTo("Dataverse template"))
+                            .body("data.isDefault", equalTo(false))
+                            .body("data.usageCount", equalTo(0))
+                            .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                            .body("data.datasetFields.citation.fields.size()", equalTo(1))
+                            .body("data.instructions.size()", equalTo(1))
+                            .body("data.instructions[0].instructionField", equalTo("author"))
+                            .body("data.instructions[0].instructionText", equalTo("The author data"))
+                            .body("data.dataverseAlias", equalTo(dataverseAlias));
 
-        Response getTemplateResponse = UtilIT.getTemplates(dataverseAlias, apiToken);
-        getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
-                .body("data.size()", equalTo(1))
-                .body("data[0].name", equalTo("Dataverse template"))
-                .body("data[0].isDefault", equalTo(true))
-                .body("data[0].usageCount", equalTo(0))
-                .body("data[0].termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
-                .body("data[0].datasetFields.citation.fields.size()", equalTo(1))
-                .body("data[0].instructions.size()", equalTo(1))
-                .body("data[0].instructions[0].instructionField", equalTo("author"))
-                .body("data[0].instructions[0].instructionText", equalTo("The author data"))
-                .body("data[0].dataverseAlias", equalTo(dataverseAlias));
+            Long templateId = createTemplateResponse.then().extract().path("data.id");
 
-        // Templates retrieval should fail if a secondary user lacks dataset creation permissions
 
-        getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
-        getTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
-        // Templates retrieval should succeed if the secondary user has dataset creation permissions
+            Response setDefaultResp = UtilIT.setDefaultTemplate(dataverseAlias, templateId, secondApiToken);
+            setDefaultResp.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
-        UtilIT.setSuperuserStatus(username, true);
-        Response grantRoleResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, "@" + secondUsername, apiToken);
-        grantRoleResponse.then().assertThat().statusCode(OK.getStatusCode());
+            setDefaultResp = UtilIT.setDefaultTemplate(dataverseAlias, templateId, apiToken);
+            setDefaultResp.then().assertThat().statusCode(OK.getStatusCode());
 
-        getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
-        getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
+            // Template creation should fail if the user lacks dataverse edit permissions
+
+            createTemplateResponse = UtilIT.createTemplate(
+                            dataverseAlias,
+                            jsonString,
+                            secondApiToken);
+            createTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+            // Get templates
+
+            Response getTemplateResponse = UtilIT.getTemplates(dataverseAlias, apiToken);
+            getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
+                            .body("data.size()", equalTo(1))
+                            .body("data[0].name", equalTo("Dataverse template"))
+                            .body("data[0].isDefault", equalTo(true))
+                            .body("data[0].usageCount", equalTo(0))
+                            .body("data[0].termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                            .body("data[0].datasetFields.citation.fields.size()", equalTo(1))
+                            .body("data[0].instructions.size()", equalTo(1))
+                            .body("data[0].instructions[0].instructionField", equalTo("author"))
+                            .body("data[0].instructions[0].instructionText", equalTo("The author data"))
+                            .body("data[0].dataverseAlias", equalTo(dataverseAlias));
+
+            // Templates retrieval should fail if a secondary user lacks dataset creation
+            // permissions
+
+            getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
+            getTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+            // Templates retrieval should succeed if the secondary user has dataset creation
+            // permissions
+
+            UtilIT.setSuperuserStatus(username, true);
+            Response grantRoleResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR,
+                            "@" + secondUsername, apiToken);
+            grantRoleResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+            getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
+            getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
     }
 
     @Test

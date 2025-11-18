@@ -5054,6 +5054,22 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/dataverses/" + dataverseAlias + "/templates");
     }
+
+    public static Response setDefaultTemplate(String dataverseAlias, Long templateId, String apiToken) {
+    return given()
+            .contentType(ContentType.JSON)
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .post("/api/dataverses/" + dataverseAlias + "/templates/default/" + templateId);
+    }
+
+    public static Response removeDefaultTemplate(String dataverseAlias, String apiToken) {
+    return given()
+            .contentType(ContentType.JSON)
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .delete("/api/dataverses/" + dataverseAlias + "/templates/default");
+    }
+
+
     
     /**
      * Gets the tool URL for a dataset with optional parameters
