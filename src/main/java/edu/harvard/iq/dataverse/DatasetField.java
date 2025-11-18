@@ -172,7 +172,6 @@ public class DatasetField implements Serializable {
     }
 
     @OneToMany(mappedBy = "parentDatasetField", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    @OrderBy("displayOrder ASC")
     private List<DatasetFieldCompoundValue> datasetFieldCompoundValues = new ArrayList<>();
 
     public List<DatasetFieldCompoundValue> getDatasetFieldCompoundValues() {
