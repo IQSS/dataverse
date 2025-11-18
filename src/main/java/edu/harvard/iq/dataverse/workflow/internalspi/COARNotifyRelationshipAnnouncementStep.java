@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
+import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
@@ -43,7 +44,6 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 
-import org.apache.commons.lang3.Strings;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -438,64 +438,89 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
     }
 
     /**
-     * Create a new DatasetField containing only values that are new compared to the prior field.
-     * This creates a detached copy to avoid modifying the managed entity.
+     * Create a new DatasetField containing only values that are new compared to the
+     * prior field. This creates a detached copy to avoid modifying the managed
+     * entity.
      * 
      * @param currentField The field from the current version
-     * @param priorField The field from the prior version
+     * @param priorField   The field from the prior version
      * @return A new DatasetField with only new values
      */
     private DatasetField filterNewValues(DatasetField currentField, DatasetField priorField) {
-        DatasetField filteredField = new DatasetField();
-        filteredField.setDatasetFieldType(currentField.getDatasetFieldType());
+        DatasetField filtered = new DatasetField();
+        DatasetFieldType fieldType = currentField.getDatasetFieldType();
+        filtered.setDatasetFieldType(fieldType);
 
-        if (currentField.getDatasetFieldType().isCompound()) {
-            // Handle compound values
-            List<DatasetFieldCompoundValue> newCompoundValues = new ArrayList<>();
-
-            for (DatasetFieldCompoundValue currentCompoundValue : currentField.getDatasetFieldCompoundValues()) {
-                boolean isNew = true;
-                // Check if this compound value exists in prior field
-                if (priorField != null && priorField.getDatasetFieldCompoundValues() != null) {
-                    for (DatasetFieldCompoundValue priorCompoundValue : priorField.getDatasetFieldCompoundValues()) {
-                        if (currentCompoundValue.valuesEqual(priorCompoundValue)) {
+        // Handle primitive fields
+        if (fieldType.isPrimitive()) {
+            if (fieldType.isControlledVocabulary()) {
+                // Handle controlled vocabulary fields
+                List<ControlledVocabularyValue> currentCVs = currentField.getControlledVocabularyValues();
+                List<ControlledVocabularyValue> priorCVs = priorField != null ? priorField.getControlledVocabularyValues() : new ArrayList<>();
+                
+                List<ControlledVocabularyValue> newCVs = new ArrayList<>();
+                for (ControlledVocabularyValue currentCV : currentCVs) {
+                    boolean isNew = true;
+                    for (ControlledVocabularyValue priorCV : priorCVs) {
+                        if (currentCV.getStrValue().equals(priorCV.getStrValue())) {
                             isNew = false;
                             break;
                         }
                     }
+                    if (isNew) {
+                        newCVs.add(currentCV);
+                    }
                 }
-                if (isNew) {
-                    // Use the existing copy method from DatasetFieldCompoundValue
-                    DatasetFieldCompoundValue newCompoundValue = currentCompoundValue.copy(filteredField);
-                    newCompoundValues.add(newCompoundValue);
-                }
-            }
-            filteredField.setDatasetFieldCompoundValues(newCompoundValues);
-        } else if (currentField.getDatasetFieldType().isAllowMultiples()) {
-            // Handle multiple simple values
-            List<DatasetFieldValue> newValues = new ArrayList<>();
-            for (DatasetFieldValue currentValue : currentField.getDatasetFieldValues()) {
-                boolean isNew = true;
-                if (priorField != null && priorField.getDatasetFieldValues() != null) {
-                    for (DatasetFieldValue priorValue : priorField.getDatasetFieldValues()) {
-                        if (currentValue.valuesEqual(priorValue)) {
+                filtered.setControlledVocabularyValues(newCVs);
+            } else {
+             // Handle regular fields
+                List<DatasetFieldValue> currentDFVs = currentField.getDatasetFieldValues();
+                List<DatasetFieldValue> priorDFVs = priorField != null ? priorField.getDatasetFieldValues() : new ArrayList<>();
+                
+                List<DatasetFieldValue> newDFVs = new ArrayList<>();
+                for (DatasetFieldValue currentDFV : currentDFVs) {
+                    boolean isNew = true;
+                    for (DatasetFieldValue priorDFV : priorDFVs) {
+                        if (currentDFV.valuesEqual(priorDFV)) {
                             isNew = false;
                             break;
                         }
                     }
+                    if (isNew) {
+                        newDFVs.add(currentDFV);
+                    }
                 }
-                if (isNew) {
-                    DatasetFieldValue newValue = currentValue.copy(filteredField);
-                    newValues.add(newValue);
-                }
+                filtered.setDatasetFieldValues(newDFVs);
             }
-            filteredField.setDatasetFieldValues(newValues);
         } else {
-            // Handle single value
-            if (priorField == null || !(currentField.getSingleValue().valuesEqual(priorField.getSingleValue()))) {
-                filteredField.setSingleValue(currentField.getValue());
+            // Handle compound fields
+            List<DatasetFieldCompoundValue> currentCompounds = currentField.getDatasetFieldCompoundValues();
+            List<DatasetFieldCompoundValue> priorCompounds = priorField != null ? priorField.getDatasetFieldCompoundValues() : new ArrayList<>();
+            
+            List<DatasetFieldCompoundValue> newCompounds = new ArrayList<>();
+            
+            for (DatasetFieldCompoundValue currentCompound : currentCompounds) {
+                boolean isNew = true;
+                
+                for (DatasetFieldCompoundValue priorCompound : priorCompounds) {
+
+                    if (currentCompound.valuesEqual(priorCompound)) {
+                        isNew = false;
+                        break;
+                    }
+                }
+                
+                if (isNew) {
+                    // Create a copy of the compound value with all its children
+                    DatasetFieldCompoundValue newCompound = currentCompound.copy(filtered);
+                    newCompound.setParentDatasetField(filtered);
+                    newCompounds.add(newCompound);
+                }
             }
+            
+            filtered.setDatasetFieldCompoundValues(newCompounds);
         }
-        return filteredField;
+        
+        return filtered;
     }
 }

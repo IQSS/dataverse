@@ -533,7 +533,13 @@ public class Dataset extends DvObjectContainer {
         }
         return null;
     }
-    
+
+    /**
+     * Returns the second-most-recent released version of this dataset.
+     * Assumes versions are ordered from most recent to oldest.
+     * 
+     * @return The prior released version, or null if there is only one or no released versions
+     */
     public DatasetVersion getPriorReleasedVersion() {
         boolean foundReleasedVersion = false;
         for (DatasetVersion version : this.getVersions()) {
