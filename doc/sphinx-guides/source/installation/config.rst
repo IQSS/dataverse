@@ -556,6 +556,8 @@ dataverse.pid.*.datacite.username
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 dataverse.pid.*.datacite.password
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.feature.only-update-datacite-when-needed
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 PID Providers of type ``datacite`` require four additional parameters that define how the provider connects to DataCite.
 DataCite has two APIs that are used in Dataverse:
@@ -570,6 +572,11 @@ DataCite uses `HTTP Basic authentication <https://en.wikipedia.org/wiki/Basic_ac
 for `Fabrica <https://doi.datacite.org/>`_ and their APIs. You need to provide
 the same credentials (``username``, ``password``) to Dataverse software to mint and manage DOIs for you.
 As noted above, you should use one of the more secure options for setting the password.
+
+The `only-update-datacite-when-needed feature` flag is a global option that causes Dataverse to GET the latest metadata from DataCite
+for a DOI and compare it with the current metadata in Dataverse and only sending a following POST request if needed. This potentially
+substitutes a read for an unnecessary write at DataCite, but would result in extra reads when all metadata in Dataverse is new. 
+Setting the flag to "true" is recommended when using DataCite file DOIs.
 
 CrossRef-specific Settings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -3842,6 +3849,9 @@ please find all known feature flags below. Any of these flags can be activated u
       - ``Off``
     * - role-assignment-history
       - Turns on tracking/display of role assignments and revocations for collections, datasets, and files
+      - ``Off``
+    * - only-update-datacite-when-needed
+      - Only contact DataCite to update a DOI after checking to see if DataCite has outdated information (for efficiency, lighter load on DataCite, especially when using file DOIs).
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
