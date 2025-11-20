@@ -3684,7 +3684,7 @@ public class UtilIT {
     static Response setDatasetQuota(String datasetId, long allocatedSize, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .post("/api/dataset/" + datasetId + "/storage/quota/" + allocatedSize);
+                .post("/api/datasets/" + datasetId + "/storage/quota/" + allocatedSize);
         return response;
     }
     
