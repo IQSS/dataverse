@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.S3ArchiverConfig;
 import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -64,7 +65,7 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
     private ManagedExecutorService executorService;
 
     private static final Logger logger = Logger.getLogger(S3SubmitToArchiveCommand.class.getName());
-    private static final String S3_CONFIG = ":S3ArchiverConfig";
+    private static final String S3_CONFIG = S3ArchiverConfig.toString();
 
     private static final Config config = ConfigProvider.getConfig();
     protected S3AsyncClient s3 = null;

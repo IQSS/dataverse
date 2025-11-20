@@ -4,7 +4,7 @@
 # the sensitive API endpoints, in order to block it for the general public.
 
 # First, revoke the authentication token from the built-in user: 
-curl -X DELETE $SERVER/admin/settings/BuiltinUsers.KEY
+curl -X DELETE "$SERVER/admin/settings/:BuiltinUsersKey"
 
 # Block the sensitive endpoints:
 # Relevant settings:
