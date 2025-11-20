@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.LDNAnnounceRequiredFields;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.LDNTarget;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -48,7 +49,7 @@ import org.apache.http.impl.client.HttpClients;
  * anounce new dataset versions to the Harvard DASH preprint repository so that
  * a DASH admin can create a backlink for any dataset versions that reference a
  * DASH deposit or a paper with a DOI where DASH has a preprint copy.
- * 
+ *
  * @author qqmyers
  */
 
@@ -76,7 +77,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
             CloseableHttpClient client = HttpClients.createDefault();
 
             // build method
-            
+
             HttpPost announcement;
             try {
                 announcement = buildAnnouncement(false, context, target);
@@ -126,8 +127,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
         DatasetVersion dv = ctxt.getDataset().getReleasedVersion();
         List<DatasetField> dvf = dv.getDatasetFields();
         Map<String, DatasetField> fields = new HashMap<String, DatasetField>();
-        String[] requiredFields = ((String) ctxt.getSettings().getOrDefault(REQUIRED_FIELDS, "")).split(",\\s*");
-        for (String field : requiredFields) {
+        for (String field : ListSplitUtil.split((String) ctxt.getSettings().getOrDefault(REQUIRED_FIELDS, ""))) {
             fields.put(field, null);
         }
         Set<String> reqFields = fields.keySet();

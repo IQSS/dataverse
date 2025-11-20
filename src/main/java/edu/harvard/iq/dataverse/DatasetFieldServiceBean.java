@@ -53,6 +53,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 
 /**
  *
@@ -908,12 +909,12 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         // If the fields list of supported languages contains the current locale (e.g.
         // the lang of the UI, or the current metadata input/display lang (tbd)), use
         // that. Otherwise, return the first in the list
-        String[] langStrings = languages.split("\\s*,\\s*");
-        if (langStrings.length > 0) {
-            if (Arrays.asList(langStrings).contains(localeCode)) {
+        final List<String> langStrings = ListSplitUtil.split(languages);
+        if (!langStrings.isEmpty()) {
+            if (langStrings.contains(localeCode)) {
                 return localeCode;
             } else {
-                return langStrings[0];
+                return langStrings.get(0);
             }
         }
         return null;
