@@ -2010,7 +2010,7 @@ public class Dataverses extends AbstractApiBean {
             @PathParam("templateId") Long templateId) {
 
         try {
-            
+
             Dataverse dataverse = findDataverseOrDie(dvId);
             Template template = findTemplateOrDie(templateId, dataverse);
             DataverseRequest dvReq = createDataverseRequest(getRequestUser(crc));
@@ -2033,8 +2033,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             Dataverse dataverse = findDataverseOrDie(dvId);
             dataverse.setDefaultTemplate(null);
-            return ok(jsonTemplates(execCommand(
-                    new ListDataverseTemplatesCommand(createDataverseRequest(getRequestUser(crc)), dataverse))));
+            return ok(BundleUtil.getStringFromBundle("dataverse.removeDefaultTemplate.success"));
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
