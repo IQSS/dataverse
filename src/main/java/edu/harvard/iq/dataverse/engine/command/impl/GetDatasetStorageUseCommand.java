@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  *
  * @author landreev
  */
-@RequiredPermissions(Permission.ManageDatasetPermissions)
+@RequiredPermissions(Permission.EditDataset)
 public class GetDatasetStorageUseCommand extends AbstractCommand<Long> {
 
     private static final Logger logger = Logger.getLogger(GetDatasetStorageUseCommand.class.getCanonicalName());
