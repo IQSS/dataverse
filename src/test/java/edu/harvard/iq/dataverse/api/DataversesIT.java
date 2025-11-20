@@ -2617,7 +2617,6 @@ public class DataversesIT {
             String newDataverseType = Dataverse.DataverseType.TEACHING_COURSES.toString();
             String[] newContactEmails = new String[] { "new_email@dataverse.com" };
             String[] newInputLevelNames = new String[] { "geographicCoverage" };
-            String[] newFacetIds = new String[] { "contributorName" };
             String[] newMetadataBlockNames = new String[] { "citation", "geospatial", "biomedical" };
 
             // Giving the new Dataverse updated metadatablocks so that it will not inherit
@@ -2667,8 +2666,6 @@ public class DataversesIT {
                             dataverseAlias,
                             jsonString,
                             apiToken);
-
-        
 
             createTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
                             .body("data.name", equalTo("Dataverse template"))

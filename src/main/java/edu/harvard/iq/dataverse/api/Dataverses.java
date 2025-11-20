@@ -2010,20 +2010,16 @@ public class Dataverses extends AbstractApiBean {
             @PathParam("templateId") Long templateId) {
 
         try {
-            System.out.println(
-                    "Dataverse API: setting default template for dataverse " + dvId + " to template " + templateId);
+            
             Dataverse dataverse = findDataverseOrDie(dvId);
+            Template template = findTemplateOrDie(templateId, dataverse);
+            DataverseRequest dvReq = createDataverseRequest(getRequestUser(crc));
+            SetDefaultTemplateCommand command = new SetDefaultTemplateCommand(template, dvReq, dataverse);
+            
+            execCommand(command);
 
-            Template templateToSet = dataverse.getTemplates().stream()
-                    .filter(t -> Objects.equals(t.getId(), templateId))
-                    .findFirst()
-                    .orElse(null);
-            if (templateToSet == null) {
-                return error(Status.NOT_FOUND, "Template with id " + templateId + " not found for dataverse " + dvId);
-            }
-            dataverse.setDefaultTemplate(templateToSet);
-            return ok(jsonTemplates(execCommand(
-                    new ListDataverseTemplatesCommand(createDataverseRequest(getRequestUser(crc)), dataverse))));
+            return ok(BundleUtil.getStringFromBundle("dataverse.setDefaultTemplate.success"));
+        
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
