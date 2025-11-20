@@ -54,8 +54,9 @@ public class CreateTemplateCommand extends AbstractCommand<Template> {
             dataverse.setDefaultTemplate(createdTemplate);
             ctxt.em().merge(dataverse);
         }
-
-        return template;
+        
+        ctxt.em().flush();
+        return createdTemplate;
     }
 
     private static void updateTermsOfUseAndAccess(CommandContext ctxt, Template template) {

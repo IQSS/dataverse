@@ -2668,6 +2668,8 @@ public class DataversesIT {
                             jsonString,
                             apiToken);
 
+        
+
             createTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
                             .body("data.name", equalTo("Dataverse template"))
                             .body("data.isDefault", equalTo(false))
@@ -2679,9 +2681,7 @@ public class DataversesIT {
                             .body("data.instructions[0].instructionText", equalTo("The author data"))
                             .body("data.dataverseAlias", equalTo(dataverseAlias));
 
-            Long templateId = createTemplateResponse.then().extract().path("data.id");
-
-
+            Long templateId = createTemplateResponse.body().jsonPath().getLong("data.id");
 
             Response setDefaultResp = UtilIT.setDefaultTemplate(dataverseAlias, templateId, secondApiToken);
             setDefaultResp.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
