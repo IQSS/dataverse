@@ -39,7 +39,7 @@
 	notesText	Notes	Additional information about the Dataset		textbox	35		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		citation	
 	language	Language	A language that the Dataset's files is written in		text	36		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		citation	http://purl.org/dc/terms/language
 	producer	Producer	The entity, such a person or organization, managing the finances or other administrative processes involved in the creation of the Dataset		none	37		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation	
-	producerName	Name	The name of the entity, e.g. the person's name or the name of an organization	1) FamilyName, GivenName or 2) Organization	text	38	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	TRUE	producer	citation	
+	producerName	Name	The name of the entity, e.g. the person's name or the name of an organization	1) FamilyName, GivenName or 2) Organization	text	38	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	producer	citation	
 	producerAffiliation	Affiliation	The name of the entity affiliated with the producer, e.g. an organization's name	Organization XYZ	text	39	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation	
 	producerAbbreviation	Abbreviated Name	The producer's abbreviated name (e.g. IQSS, ICPSR)		text	40	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation	
 	producerURL	URL	The URL of the producer's website	https://	url	41	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation	
