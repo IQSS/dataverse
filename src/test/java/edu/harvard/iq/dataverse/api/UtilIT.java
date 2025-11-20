@@ -3675,6 +3675,32 @@ public class UtilIT {
                 .get("/api/dataverses/" + collectionId + "/storage/use");
     }
     
+    static Response checkDatasetQuota(String datasetId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/storage/quota");
+    }
+    
+    static Response setDatasetQuota(String datasetId, long allocatedSize, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/dataset/" + datasetId + "/storage/quota/" + allocatedSize);
+        return response;
+    }
+    
+    static Response disableDatasetQuota(String datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/" + datasetId + "/storage/quota");
+        return response;
+    }
+    
+    static Response checkDatasetStorageUse(String datasetId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/storage/use");
+    }
+    
     /**
      * Determine the "payload" storage size of a dataverse
      *
