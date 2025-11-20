@@ -14,6 +14,8 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.GoogleCloudBucket;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.GoogleCloudProject;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import org.apache.commons.codec.binary.Hex;
@@ -35,8 +37,8 @@ import java.util.logging.Logger;
 public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
 
     private static final Logger logger = Logger.getLogger(GoogleCloudSubmitToArchiveCommand.class.getName());
-    private static final String GOOGLECLOUD_BUCKET = ":GoogleCloudBucket";
-    private static final String GOOGLECLOUD_PROJECT = ":GoogleCloudProject";
+    private static final String GOOGLECLOUD_BUCKET = GoogleCloudBucket.toString();
+    private static final String GOOGLECLOUD_PROJECT = GoogleCloudProject.toString();
 
     public GoogleCloudSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         super(aRequest, version);
