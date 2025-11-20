@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.LDNAnnounceRequiredFields;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.LDNTarget;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
@@ -52,8 +54,8 @@ import org.apache.http.impl.client.HttpClients;
 
 public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
     private static final Logger logger = Logger.getLogger(LDNAnnounceDatasetVersionStep.class.getName());
-    private static final String REQUIRED_FIELDS = ":LDNAnnounceRequiredFields";
-    private static final String LDN_TARGET = ":LDNTarget";
+    private static final String REQUIRED_FIELDS = LDNAnnounceRequiredFields.toString();
+    private static final String LDN_TARGET = LDNTarget.toString();
     private static final String RELATED_PUBLICATION = "publication";
 
     JsonLDTerm publicationIDType = null;
