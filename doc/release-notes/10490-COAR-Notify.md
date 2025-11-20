@@ -19,5 +19,5 @@ DATAVERSE_LDN_ALLOWED_HOSTS (dataverse.ldn.allowed-hosts)
 
 Notifications are sent by default to users who can publish a dataset. The option below can be used to restrict notifications to superusers who can publish the dataset.
  
-DATAVERSE_COAR_NOTOIFY_RELATIONSHIP_ANNOUNCEMENT_NOTIFY_SUPERSUSERS_ONLY
+DATAVERSE_COAR_NOTIFY_RELATIONSHIP_ANNOUNCEMENT_NOTIFY_SUPERSUSERS_ONLY
 
