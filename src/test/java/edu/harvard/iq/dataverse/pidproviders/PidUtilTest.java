@@ -153,7 +153,7 @@ public class PidUtilTest {
         PidUtil.clearPidProviders();
         
         //Read list of providers to add
-        List<String> providers = Arrays.asList(JvmSettings.PID_PROVIDERS.lookup().split(",\\s"));
+        List<String> providers = JvmSettings.PID_PROVIDERS.lookupSplittedList();
         //Iterate through the list of providers and add them using the PidProviderFactory of the appropriate type
         for (String providerId : providers) {
             System.out.println("Loading provider: " + providerId);
