@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.COARNotifyRelationshipAnnouncementTargets;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.COARNotifyRelationshipAnnouncementTriggerFields;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
@@ -66,8 +68,6 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
      * the trigger field and targets (so different fields can trigger notices to
      * different types of target repositories/services)
      */
-    private static final String REQUIRED_FIELDS = ":COARNotifyRelationshipAnnouncementTriggerFields";
-    private static final String CN_RA_TARGETS = ":COARNotifyRelationshipAnnouncementTargets";
     private static final String RELATED_PUBLICATION = "publication";
     public static final String DATACITE_URI_PREFIX = "https://purl.org/datacite/ontology#";
 
@@ -78,7 +78,7 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
     @Override
     public WorkflowStepResult run(WorkflowContext context) {
 
-        JsonArray targets = JsonUtil.getJsonArray((String) context.getSettings().get(CN_RA_TARGETS));
+        JsonArray targets = JsonUtil.getJsonArray((String) context.getSettings().get(COARNotifyRelationshipAnnouncementTargets.toString()));
         if (targets != null && !targets.isEmpty()) {
             CloseableHttpClient client = HttpClients.createDefault();
 
@@ -89,7 +89,7 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
                 List<DatasetField> dvf = dv.getDatasetFields();
                 Map<String, DatasetField> fields = new HashMap<String, DatasetField>();
                 List<String> reqFields = Arrays
-                        .asList(((String) context.getSettings().getOrDefault(REQUIRED_FIELDS, "")).split(",\\s*"));
+                        .asList(((String) context.getSettings().getOrDefault(COARNotifyRelationshipAnnouncementTriggerFields.toString(), "")).split(",\\s*"));
                 for (DatasetField df : dvf) {
                     if (!df.isEmpty() && reqFields.contains(df.getDatasetFieldType().getName())) {
                         fields.put(df.getDatasetFieldType().getName(), df);
@@ -154,7 +154,7 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
                         "COARNotifyRelationshipAnnouncementStep workflow step failed: unable to parse inbox in target setting.");
             }
         }
-        return new Failure("COARNotifyRelationshipAnnouncementStep workflow step failed: " + CN_RA_TARGETS
+        return new Failure("COARNotifyRelationshipAnnouncementStep workflow step failed: " + COARNotifyRelationshipAnnouncementTargets.toString()
                 + " setting missing or invalid.");
     }
 

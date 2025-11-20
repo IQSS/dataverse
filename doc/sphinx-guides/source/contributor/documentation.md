@@ -66,7 +66,7 @@ From a terminal, switch to the "dataverse" directory you just cloned. This is th
 
 Then try running this command:
 
-`docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx:7.2.6 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make html"`
+`docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx:7.4.0 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make html"`
 
 If all goes well, you should be able to open `doc/sphinx-guides/build/html/index.html` to see the guides you just built.
 
@@ -187,7 +187,7 @@ The HTML version of the guides is the official one. Any other formats are mainta
 
 If you would like to build a PDF version of the guides and have Docker installed, please try the command below from the root of the git repo:
 
-`docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx-latexpdf:7.2.6 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make latexpdf LATEXMKOPTS=\"-interaction=nonstopmode\"; cd ../.. && ls -1 doc/sphinx-guides/build/latex/Dataverse.pdf"`
+`docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx-latexpdf:7.4.0 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make latexpdf LATEXMKOPTS=\"-interaction=nonstopmode\"; cd ../.. && ls -1 doc/sphinx-guides/build/latex/Dataverse.pdf"`
 
 A few notes about the command above:
 

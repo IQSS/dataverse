@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.workflow.PendingWorkflowInvocation;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.util.Arrays;
@@ -60,7 +62,7 @@ public class Workflows extends AbstractApiBean {
     
     private void updateWhitelist() { 
         IpGroup updatedList = new IpGroup();
-        String[] ips = settingsSvc.get(WorkflowsAdmin.IP_WHITELIST_KEY, "127.0.0.1;::1").split(";");
+        String[] ips = settingsSvc.getValueForKey(Key.WorkflowsAdminIpWhitelist, WorkflowsAdmin.DEFAULT_IP_ALLOWLIST).split(WorkflowsAdmin.IP_SEPARATOR);
         Arrays.stream(ips)
                 .forEach( str -> updatedList.add(
                                       IpAddressRange.makeSingle(
