@@ -13,28 +13,26 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.List;
 
 @RequiredPermissions(Permission.EditDataset)
-public class UpdateDatasetLicenseCommand extends AbstractVoidCommand {
-    private final Dataset dataset;
+public class UpdateDatasetLicenseCommand extends AbstractDatasetCommand<Dataset> {
     private License license = null;
     private TermsOfUseAndAccess customTermsOfUseAndAccess = null;
 
     public UpdateDatasetLicenseCommand(DataverseRequest aRequest, Dataset dataset, License license) {
         super(aRequest, dataset);
-        this.dataset = dataset;
         this.license = license;
     }
 
     public UpdateDatasetLicenseCommand(DataverseRequest aRequest, Dataset dataset, TermsOfUseAndAccess customTermsOfUseAndAccess) {
         super(aRequest, dataset);
-        this.dataset = dataset;
         this.customTermsOfUseAndAccess = customTermsOfUseAndAccess;
     }
 
 
     @Override
-    protected void executeImpl(CommandContext ctxt) throws CommandException {
-        DatasetVersion datasetVersion = dataset.getOrCreateEditVersion();
+    public Dataset execute(CommandContext ctxt) throws CommandException {
+        DatasetVersion datasetVersion = getDataset().getOrCreateEditVersion();
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
+        Dataset savedDataset = null;
 
         if (license != null) {
             if (!license.isActive()) {
@@ -43,7 +41,7 @@ public class UpdateDatasetLicenseCommand extends AbstractVoidCommand {
             TermsOfUseAndAccess termsOfUseAndAccess = datasetVersion.getTermsOfUseAndAccess();
             termsOfUseAndAccess.setLicense(license);
 
-            ctxt.engine().submit(new UpdateDatasetVersionCommand(this.dataset, getRequest()));
+            savedDataset = ctxt.engine().submit(new UpdateDatasetVersionCommand(getDataset(), getRequest()));
         } else if (customTermsOfUseAndAccess != null) {
             if (customTermsOfUseAndAccess.getTermsOfUse() == null || customTermsOfUseAndAccess.getTermsOfUse().isBlank()) {
                 throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.customTermsOfUseNotProvided"), this);
@@ -52,8 +50,9 @@ public class UpdateDatasetLicenseCommand extends AbstractVoidCommand {
             applyCustomTerms(termsToUpdate, customTermsOfUseAndAccess);
             termsToUpdate.setLicense(null);
             datasetVersion.setTermsOfUseAndAccess(termsToUpdate);
-            ctxt.engine().submit(new UpdateDatasetVersionCommand(this.dataset, getRequest()));
+            savedDataset = ctxt.engine().submit(new UpdateDatasetVersionCommand(getDataset(), getRequest()));
         }
+        return savedDataset;
     }
 
     /**

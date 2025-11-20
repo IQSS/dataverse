@@ -14,6 +14,8 @@ import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.COARNotifyRelationshipAnnouncementTargets;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.COARNotifyRelationshipAnnouncementTriggerFields;
+
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
@@ -28,7 +30,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -93,8 +94,7 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
                 DatasetVersion priorVersion = d.getPriorReleasedVersion();
                 List<DatasetField> dvf = dv.getDatasetFields();
                 Map<String, DatasetField> fields = new HashMap<String, DatasetField>();
-                List<String> reqFields = Arrays
-                        .asList(((String) context.getSettings().getOrDefault(COARNotifyRelationshipAnnouncementTriggerFields.toString(), "")).split(",\\s*"));
+                List<String> reqFields = ListSplitUtil.split((String) context.getSettings().getOrDefault(COARNotifyRelationshipAnnouncementTriggerFields.toString(), ""));
                 
                 Map<String, DatasetField> priorFields = new HashMap<String, DatasetField>();
                 if (priorVersion != null) {

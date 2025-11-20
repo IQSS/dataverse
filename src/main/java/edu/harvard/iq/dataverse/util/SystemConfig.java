@@ -1001,11 +1001,12 @@ public class SystemConfig {
             return false;
         }
         String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
-        if (uploadMethods==null){
+        if (uploadMethods == null) {
             return false;
-        } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
         }
+        String normalizedUploadMethods = uploadMethods.toLowerCase();
+        return ListSplitUtil.split(normalizedUploadMethods).size() == 1
+                && normalizedUploadMethods.equals(SystemConfig.FileUploadMethods.RSYNC.toString());
     }
 
     @Deprecated(forRemoval = true, since = "2024-07-07")
@@ -1035,18 +1036,16 @@ public class SystemConfig {
                 upload ? SettingsServiceBean.Key.UploadMethods : SettingsServiceBean.Key.DownloadMethods);
         if (methods == null) {
             return false;
-        } else {
-            return Arrays.asList(methods.toLowerCase().split("\\s*,\\s*")).contains(method);
         }
+        return ListSplitUtil.split(methods.toLowerCase()).contains(method);
     }
     
     public Integer getUploadMethodCount(){
         String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods); 
-        if (uploadMethods==null){
+        if (uploadMethods == null) {
             return 0;
-        } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
-        }       
+        }
+        return ListSplitUtil.split(uploadMethods.toLowerCase()).size();
     }
 
     public boolean isAllowCustomTerms() {
