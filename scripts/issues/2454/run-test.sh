@@ -39,7 +39,7 @@ if [ $SETUP_NEEDED == "yes" ]; then
 	echo $ROOT_USER api key is $ROOT_KEY
 
 	# Create @anAuthUser
-	USER_CREATION_KEY=$($DB "SELECT content FROM setting WHERE name='BuiltinUsers.KEY'")
+	USER_CREATION_KEY=$($DB "SELECT content FROM setting WHERE name=':BuiltinUsersKey'")
 	AN_AUTH_USER_KEY=$( curl -s -X POST -d@anAuthUser.json -H"Content-type:application/json" $ENDPOINT/builtin-users?password=XXX\&key=$USER_CREATION_KEY | jq .data.apiToken | tr -d \")
 	ANOTHER_AUTH_USER_KEY=$( curl -s -X POST -d@anotherAuthUser.json -H"Content-type:application/json" $ENDPOINT/builtin-users?password=XXX\&key=$USER_CREATION_KEY | jq .data.apiToken | tr -d \")
 	echo
