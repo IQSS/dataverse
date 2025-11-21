@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.FileCategories;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import jakarta.ejb.EJB;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 @Stateless
 public class DataFileCategoryServiceBean {
 
-    public static final String FILE_CATEGORIES_KEY = ":FileCategories";
+    public static final String FILE_CATEGORIES_KEY = FileCategories.toString();
 
     @EJB
     private SettingsServiceBean settingsService;

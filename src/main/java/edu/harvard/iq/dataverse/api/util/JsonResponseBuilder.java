@@ -131,7 +131,7 @@ public class JsonResponseBuilder {
      * @return The enhanced builder
      */
     public JsonResponseBuilder internalError(Throwable ex) {
-        this.entityBuilder.add("interalError", ex.getClass().getSimpleName());
+        this.entityBuilder.add("internalError", ex.getClass().getSimpleName());
         if (ex.getCause() != null) {
             this.entityBuilder.add("internalCause", ex.getCause().getClass().getSimpleName());
         }
