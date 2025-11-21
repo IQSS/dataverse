@@ -10,6 +10,27 @@ Once you have finished securing and configuring your Dataverse installation, you
 .. contents:: |toctitle|
   :local:
 
+.. _comma-separated-config-values:
+
+Comma-separated configuration values
+------------------------------------
+
+Many configuration options (both MicroProfile/JVM settings and database settings) accept comma-separated lists. For all such settings, Dataverse applies consistent, lightweight parsing:
+
+- Whitespace immediately around commas is ignored (e.g., ``GET, POST`` is equivalent to ``GET,POST``).
+- Tokens are otherwise preserved exactly as typed. There is no quote parsing and no escape processing.
+- Embedded commas within a token are not supported.
+
+Examples include (but are not limited to):
+
+- :ref:`dataverse.cors.origin <dataverse.cors.origin>`
+- :ref:`dataverse.cors.methods <dataverse.cors.methods>`
+- :ref:`dataverse.cors.headers.allow <dataverse.cors.headers.allow>`
+- :ref:`dataverse.cors.headers.expose <dataverse.cors.headers.expose>`
+- :ref:`:UploadMethods`
+
+This behavior is implemented centrally and applies across all Dataverse settings that accept comma-separated values.
+
 .. _securing-your-installation:
 
 Securing Your Installation
@@ -25,7 +46,7 @@ The default password for the "dataverseAdmin" superuser account is "admin", as m
 Blocking API Endpoints
 ++++++++++++++++++++++
 
-The :doc:`/api/native-api` contains a useful but potentially dangerous set of API endpoints called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The "builtin-users" endpoints let admins do tasks such as creating a local/builtin user account if they know the key defined in :ref:`BuiltinUsers.KEY`.
+The :doc:`/api/native-api` contains a useful but potentially dangerous set of API endpoints called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The "builtin-users" endpoints let admins do tasks such as creating a local/builtin user account if they know the key defined in :ref:`:BuiltinUsersKey`.
 
 By default in the code, most of these API endpoints can be operated on remotely and a number of endpoints do not require authentication. However, the endpoints "admin" and "builtin-users" are limited to localhost out of the box by the installer, using the JvmSettings :ref:`dataverse.api.blocked.endpoints` and :ref:`dataverse.api.blocked.policy`.
 
@@ -114,6 +135,23 @@ Run Payara as a User Other Than Root
 See the :ref:`payara` section of :doc:`prerequisites` for details and init scripts for running Payara as non-root.
 
 Related to this is that you should remove ``/root/.payara/pass`` to ensure that Payara isn't ever accidentally started as root. Without the password, Payara won't be able to start as root, which is a good thing.
+
+.. _payara-ports-localhost-only:
+
+Restricting Payara's Ports to localhost
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In the recommended setup of Dataverse, you do not expose Payara's ports directly to the Internet. Rather, you front Payara with a proxy such as Apache.
+
+If you are running Payara and your proxy on the same server, we recommend having Payara listen only to localhost, which is how your proxy talks to it, with the following command:
+
+``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-1.address=127.0.0.1``
+
+(You should **NOT** use the configuration option above if you are running in a load-balanced environment, or otherwise have your proxy on a different host than Payara.)
+
+To test that Payara is now only listening on localhost, try hitting port 8080 from the Internet. Payara should not respond.
+
+See also :ref:`network-ports`.
 
 .. _secure-password-storage:
 
@@ -245,6 +283,8 @@ If you are running an installation with Apache and Payara on the same server, an
 ``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-1.address=127.0.0.1``
 
 You should **NOT** use the configuration option above if you are running in a load-balanced environment, or otherwise have the web server on a different host than the application server.
+
+This security tip is also mentioned at :ref:`payara-ports-localhost-only`.
 
 .. _root-collection-permissions:
 
@@ -537,6 +577,8 @@ dataverse.pid.*.datacite.username
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 dataverse.pid.*.datacite.password
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.feature.only-update-datacite-when-needed
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 PID Providers of type ``datacite`` require four additional parameters that define how the provider connects to DataCite.
 DataCite has two APIs that are used in Dataverse:
@@ -551,6 +593,11 @@ DataCite uses `HTTP Basic authentication <https://en.wikipedia.org/wiki/Basic_ac
 for `Fabrica <https://doi.datacite.org/>`_ and their APIs. You need to provide
 the same credentials (``username``, ``password``) to Dataverse software to mint and manage DOIs for you.
 As noted above, you should use one of the more secure options for setting the password.
+
+The `only-update-datacite-when-needed feature` flag is a global option that causes Dataverse to GET the latest metadata from DataCite
+for a DOI and compare it with the current metadata in Dataverse and only sending a following POST request if needed. This potentially
+substitutes a read for an unnecessary write at DataCite, but would result in extra reads when all metadata in Dataverse is new. 
+Setting the flag to "true" is recommended when using DataCite file DOIs.
 
 CrossRef-specific Settings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -781,7 +828,7 @@ Both Local and Remote Auth
 
 The ``authenticationproviderrow`` database table controls which "authentication providers" are available within a Dataverse installation. Out of the box, a single row with an id of "builtin" will be present. For each user in a Dataverse installation, the ``authenticateduserlookup`` table will have a value under ``authenticationproviderid`` that matches this id. For example, the default "dataverseAdmin" user will have the value "builtin" under  ``authenticationproviderid``. Why is this important? Users are tied to a specific authentication provider but conversion mechanisms are available to switch a user from one authentication provider to the other. As explained in the :doc:`/user/account` section of the User Guide, a graphical workflow is provided for end users to convert from the "builtin" authentication provider to a remote provider. Conversion from a remote authentication provider to the builtin provider can be performed by a sysadmin with access to the "admin" API. See the :doc:`/api/native-api` section of the API Guide for how to list users and authentication providers as JSON.
 
-Adding and enabling a second authentication provider (:ref:`native-api-add-auth-provider` and :ref:`api-toggle-auth-provider`) will result in the Log In page showing additional providers for your users to choose from. By default, the Log In page will show the "builtin" provider, but you can adjust this via the :ref:`conf-default-auth-provider` configuration option. Further customization can be achieved by setting :ref:`conf-allow-signup` to "false", thus preventing users from creating local accounts via the web interface. Please note that local accounts can also be created through the API by enabling the ``builtin-users`` endpoint (:ref:`:BlockedApiEndpoints`) and setting the ``BuiltinUsers.KEY`` database setting (:ref:`BuiltinUsers.KEY`).
+Adding and enabling a second authentication provider (:ref:`native-api-add-auth-provider` and :ref:`api-toggle-auth-provider`) will result in the Log In page showing additional providers for your users to choose from. By default, the Log In page will show the "builtin" provider, but you can adjust this via the :ref:`conf-default-auth-provider` configuration option. Further customization can be achieved by setting :ref:`conf-allow-signup` to "false", thus preventing users from creating local accounts via the web interface. Please note that local accounts can also be created through the API by enabling the ``builtin-users`` endpoint (:ref:`:BlockedApiEndpoints`) and setting the ``:BuiltinUsersKey`` database setting (:ref:`:BuiltinUsersKey`).
 
 To configure Shibboleth see the :doc:`shibboleth` section and to configure OAuth see the :doc:`oauth2` section.
 
@@ -3678,16 +3725,20 @@ The following settings control Cross-Origin Resource Sharing (CORS) for your Dat
 dataverse.cors.origin
 +++++++++++++++++++++
 
-Allowed origins for CORS requests. The default with no value set is to not include CORS headers. However, if the deprecated :AllowCors setting is explicitly set to true the default is "\*" (all origins).
-When the :AllowsCors setting is not used, you must set this setting to "\*" or a list of origins to enable CORS headers.
+Allowed origins for CORS requests. If this setting is not defined, CORS headers are not added. Set to ``*`` to allow all origins (note that browsers will not allow credentialed requests with ``*``) or provide a comma-separated list of explicit origins.
 
-Multiple origins can be specified as a comma-separated list.
+Multiple origins can be specified as a comma-separated list (whitespace is ignored):
 
 Example:
 
 ``./asadmin create-jvm-options '-Ddataverse.cors.origin=https://example.com,https://subdomain.example.com'``
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_CORS_ORIGIN``.
+
+Behavior:
+
+* When a list of origins is configured, Dataverse echoes the single matching request ``Origin`` value in ``Access-Control-Allow-Origin`` and adds ``Vary: Origin`` to support correct proxy/CDN caching.
+* When ``*`` is configured, ``Access-Control-Allow-Origin: *`` is sent and ``Vary`` is not modified.
 
 .. _dataverse.cors.methods:
 
@@ -3824,6 +3875,9 @@ please find all known feature flags below. Any of these flags can be activated u
     * - role-assignment-history
       - Turns on tracking/display of role assignments and revocations for collections, datasets, and files
       - ``Off``
+    * - only-update-datacite-when-needed
+      - Only contact DataCite to update a DOI after checking to see if DataCite has outdated information (for efficiency, lighter load on DataCite, especially when using file DOIs).
+      - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_FEATURE_XXX`` (e.g. ``DATAVERSE_FEATURE_API_SESSION_AUTH=1``). These environment variables can be set in your shell before starting Payara. If you are using :doc:`Docker for development </container/dev-usage>`, you can set them in the `docker compose <https://docs.docker.com/compose/environment-variables/set-environment-variables/>`_ file.
@@ -3892,11 +3946,14 @@ You might also create your own profiles and use these, please refer to the upstr
 Database Settings
 -----------------
 
-These settings are stored in the ``setting`` database table but can be read and modified via the "admin" endpoint of the :doc:`/api/native-api` for easy scripting.
+These settings are stored in the ``setting`` database table but we recommend using the Settings Admin API (:ref:`admin-api-db-settings`) to view and modify them, as shown below.
+If changed in the database directly, you need to reload the application to make the ORM pickup the changes.
 
-The most commonly used configuration options are listed first.
+In short:
 
-The pattern you will observe in curl examples below is that an HTTP ``PUT`` is used to add or modify a setting. If you perform an HTTP ``GET`` (the default when using curl), the output will contain the value of the setting, if it has been set. You can also do a ``GET`` of all settings with ``curl http://localhost:8080/api/admin/settings`` which you may want to pretty-print by piping the output through a tool such as jq by appending ``| jq .``. If you want to remove a setting, use an HTTP ``DELETE`` such as ``curl -X DELETE http://localhost:8080/api/admin/settings/:GuidesBaseUrl`` .
+- HTTP ``GET`` is used to show settings.
+- HTTP ``PUT`` is used to add or modify settings.
+- HTTP ``DELETE`` is used to delete settings.
 
 .. _:BlockedApiPolicy:
 
@@ -3952,14 +4009,16 @@ Now that ``:BlockedApiKey`` has been enabled, blocked APIs can be accessed using
 
 ``curl https://demo.dataverse.org/api/admin/settings?unblock-key=theKeyYouChose``
 
-.. _BuiltinUsers.KEY:
+.. _:BuiltinUsersKey:
 
-BuiltinUsers.KEY
+:BuiltinUsersKey
 ++++++++++++++++
 
 The key required to create users via API as documented at :doc:`/api/native-api`. Unlike other database settings, this one doesn't start with a colon.
 
-``curl -X PUT -d builtInS3kretKey http://localhost:8080/api/admin/settings/BuiltinUsers.KEY``
+``curl -X PUT -d builtInS3kretKey http://localhost:8080/api/admin/settings/:BuiltinUsersKey``
+
+Note: this key used to be named ``BuiltinUsers.KEY`` until Dataverse 6.8.
 
 :SearchApiRequiresToken
 +++++++++++++++++++++++
@@ -4389,33 +4448,65 @@ For performance reasons, your Dataverse installation will only allow creation of
 
 In the UI, users trying to download a zip file larger than the Dataverse installation's :ZipDownloadLimit will receive messaging that the zip file is too large, and the user will be presented with alternate access options. 
 
+.. _:TabularIngestSizeLimit:
+
 :TabularIngestSizeLimit
 +++++++++++++++++++++++
 
-Threshold in bytes for limiting whether or not "ingest" it attempted for tabular files (which can be resource intensive). For example, with the below in place, files greater than 2 GB in size will not go through the ingest process:
+Threshold in bytes for limiting whether or not "ingest" is attempted for an uploaded tabular file (which can be resource intensive).
+For more on the ingest feature, see :doc:`/user/tabulardataingest/index` in the User Guide.
+
+There are two ways to specify ingest size limits. You can set a global limit for all file types or you can use a JSON file for more granularity. We'll cover the global limit first.
+
+With the following value in place (again, expressed in bytes), files greater than 2 GB in size will not go through the ingest process:
 
 ``curl -X PUT -d 2000000000 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 
-(You can set this value to 0 to prevent files from being ingested at all.)
+You can set this value to ``0`` to prevent files from being ingested at all.
 
-You can override this global setting on a per-format basis for the following formats:
+Out of the box, the ``:TabularIngestSizeLimit`` setting is absent, which results in ingest being attempted no matter how large the file is. You can specify this "no size limit" default explicitly with the value ``-1``.
 
+Using a JSON-based setting, you can set a global default and per-format limits for the following formats:
+
+- CSV
 - DTA
 - POR
-- SAV
 - Rdata
-- CSV
-- XLSX (in lower-case)
+- SAV
+- XLSX
 
-For example :
+(In previous releases of Dataverse, a colon-separated form was used to specify per-format limits, such as ``:TabularIngestSizeLimit:Rdata``, but this is no longer supported. Now JSON is used.)
 
-* if you want your Dataverse installation to not attempt to ingest Rdata files larger than 1 MB, use this setting:
+The expected JSON is an object with key/value pairs like the following. Format names are case-insensitive, and all fields are optional. The size limits must be strings with double quotes around them (e.g. ``"10"``) rather than numbers (e.g. ``10``).
 
-``curl -X PUT -d 1000000 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit:Rdata``
+.. code:: json
 
-* if you want your Dataverse installation to not attempt to ingest XLSX files at all, use this setting:
+  {
+    "default": "-1",
+    "csv": "0",
+    "dta": "10",
+    "por": "100"
+  }
 
-``curl -X PUT -d 0 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit:xlsx``
+Whatever JSON you send will overwrite existing values. If you have any exiting ``:TabularIngestSizeLimit`` settings, you can use the following command to see them in the expected input format above (and then add the new settings you want):
+
+``curl http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit | jq -r '.data.message'``
+
+The ``default`` key is optional and can be used to give limits to formats that are not specified in the JSON. If you omit the ``default`` key or set it to ``"-1"``, no limits are applied to formats not specified in the JSON. If you set it to ``"0"``, ingest will be disabled (but you can override this per-format).
+
+Add a format name (``csv``, ``dta``, etc., as listed above) to change the limit for that particular format.
+
+Examples:
+
+1. If you want your Dataverse installation to not attempt to ingest Rdata files larger than 1 MB but otherwise be unlimited:
+
+   ``curl -X PUT -d '{"Rdata":"1000000"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
+2. If you want your Dataverse installation to not attempt to ingest XLSX files at all and apply a global limit of 512 MiB, use this setting:
+
+   ``curl -X PUT -d '{"default":"536870912", "XSLX":"0"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
+3. If you want your Dataverse installation to not attempt to ingest files at all except for CSV files that are 256 MiB or smaller, use this setting:
+
+   ``curl -X PUT -d '{"default":"0", "CSV":"268435456"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 
 :ZipUploadFilesLimit
 ++++++++++++++++++++
@@ -4961,20 +5052,6 @@ This can be helpful in situations where multiple organizations are sharing one D
 ``curl -X PUT -d 'admin, curator' http://localhost:8080/api/admin/settings/:InheritParentRoleAssignments``
 or
 ``curl -X PUT -d '*' http://localhost:8080/api/admin/settings/:InheritParentRoleAssignments``
-
-:AllowCors (Deprecated)
-+++++++++++++++++++++++
-
-.. note::
-   This setting is deprecated. Please use the JVM settings above instead.
-   This legacy setting will only be used if the newer JVM settings are not set.
-
-Enable or disable support for Cross-Origin Resource Sharing (CORS) by setting ``:AllowCors`` to ``true`` or ``false``.
-
-``curl -X PUT -d true http://localhost:8080/api/admin/settings/:AllowCors``
-
-.. note::
-   New values for this setting will only be used after a server restart.
 
 :ChronologicalDateFacets
 ++++++++++++++++++++++++

@@ -17,11 +17,6 @@ Within the main repository, you may find the application image's files at ``<git
 This is the same Maven module providing a Dataverse WAR file for classic installations, and uses the
 `Maven Docker Plugin <https://dmp.fabric8.io>`_ to build and ship the image within a special Maven profile.
 
-**NOTE: This image is created, maintained and supported by the Dataverse community on a best-effort basis.**
-IQSS will not offer you support how to deploy or run it, please reach out to the community for help on using it.
-You might be interested in taking a look at :doc:`../developers/containers`, linking you to some (community-based)
-efforts.
-
 .. _app-image-supported-tags:
 
 Supported Image Tags
