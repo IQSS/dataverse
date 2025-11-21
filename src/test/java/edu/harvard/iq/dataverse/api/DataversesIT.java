@@ -2680,22 +2680,22 @@ public class DataversesIT {
 
             Long templateId = createTemplateResponse.body().jsonPath().getLong("data.id");
 
+            //Check for failure due unauthorized user.
             Response setDefaultResp = UtilIT.setDefaultTemplate(dataverseAlias, templateId, secondApiToken);
             setDefaultResp.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
-
+            
+            // Set default template
             setDefaultResp = UtilIT.setDefaultTemplate(dataverseAlias, templateId, apiToken);
             setDefaultResp.then().assertThat().statusCode(OK.getStatusCode());
 
             // Template creation should fail if the user lacks dataverse edit permissions
-
             createTemplateResponse = UtilIT.createTemplate(
                             dataverseAlias,
                             jsonString,
                             secondApiToken);
             createTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
-            // Get templates
-
+            // Get templates and check this one is default now
             Response getTemplateResponse = UtilIT.getTemplates(dataverseAlias, apiToken);
             getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
                             .body("data.size()", equalTo(1))
@@ -2708,6 +2708,17 @@ public class DataversesIT {
                             .body("data[0].instructions[0].instructionField", equalTo("author"))
                             .body("data[0].instructions[0].instructionText", equalTo("The author data"))
                             .body("data[0].dataverseAlias", equalTo(dataverseAlias));
+
+            // Remove default template
+            Response removeDefaultResp = UtilIT.removeDefaultTemplate(dataverseAlias, apiToken);
+            removeDefaultResp.then().assertThat().statusCode(OK.getStatusCode());       
+
+            //check that template is no longer default.
+            getTemplateResponse = UtilIT.getTemplates(dataverseAlias, apiToken);
+            getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
+                            .body("data.size()", equalTo(1))
+                            .body("data[0].isDefault", equalTo(false));
+
 
             // Templates retrieval should fail if a secondary user lacks dataset creation
             // permissions
