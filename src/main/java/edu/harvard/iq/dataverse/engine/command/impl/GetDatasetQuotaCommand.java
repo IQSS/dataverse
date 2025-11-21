@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -23,19 +24,31 @@ public class GetDatasetQuotaCommand extends AbstractCommand<Long> {
     private static final Logger logger = Logger.getLogger(GetDatasetQuotaCommand.class.getCanonicalName());
     
     private final Dataset dataset;
+    private final boolean inherited;
     
-    public GetDatasetQuotaCommand(DataverseRequest aRequest, Dataset target) {
+    public GetDatasetQuotaCommand(DataverseRequest aRequest, Dataset target, boolean inherited) {
         super(aRequest, target);
         dataset = target;
+        this.inherited = inherited; 
     } 
         
     @Override
     public Long execute(CommandContext ctxt) throws CommandException {
                
-        if (dataset != null && dataset.getStorageQuota() != null) {
-            return dataset.getStorageQuota().getAllocation();
+        if (dataset != null) {
+            if (dataset.getStorageQuota() != null) {
+                return dataset.getStorageQuota().getAllocation();
+            } else if (inherited) {
+                DvObjectContainer uptree = dataset;
+                while (uptree.getStorageQuota() == null && uptree.getOwner() != null) {
+                    uptree = uptree.getOwner();
+                    if (uptree.getStorageQuota() != null) {
+                        return uptree.getStorageQuota().getAllocation();
+                    }
+                }
+            }
         }
-        
+
         return null;
     }
 

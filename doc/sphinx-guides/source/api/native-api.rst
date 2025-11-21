@@ -1250,7 +1250,8 @@ Collection Storage Quotas
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota"
 
-Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for the specific collection. The user identified by the API token must have the ``Edit`` permission on the collection. 
+Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for the collection. The user identified by the API token must have the ``Edit`` permission on the collection. 
+With an optional query parameter ``showInherited=true`` it will show the applicable quota potentially defined on the nearest parent when the collection does not have a quota configured directly.
 
 .. code-block:: 
 
@@ -1282,7 +1283,8 @@ Storage Quotas on Individual Datasets
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/$ID/storage/quota"
 
-Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for the specific collection. The user identified by the API token must have the ``Edit`` permission on the dataset. 
+Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for this dataset. The user identified by the API token must have the ``Edit`` permission on the dataset.
+With an optional query parameter ``showInherited=true`` it will show the applicable quota potentially defined on the nearest parent collection when the dataset does not have a quota configured directly.
 
 .. code-block:: 
 

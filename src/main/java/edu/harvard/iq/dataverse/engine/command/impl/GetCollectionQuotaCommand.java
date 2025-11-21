@@ -23,17 +23,30 @@ public class GetCollectionQuotaCommand  extends AbstractCommand<Long> {
     private static final Logger logger = Logger.getLogger(GetCollectionQuotaCommand.class.getCanonicalName());
     
     private final Dataverse dataverse;
+    private final boolean inherited;
     
-    public GetCollectionQuotaCommand(DataverseRequest aRequest, Dataverse target) {
+    public GetCollectionQuotaCommand(DataverseRequest aRequest, Dataverse target, boolean inherited) {
         super(aRequest, target);
         dataverse = target;
+        this.inherited = inherited;
     } 
         
     @Override
     public Long execute(CommandContext ctxt) throws CommandException {
                
-        if (dataverse != null && dataverse.getStorageQuota() != null) {
-            return dataverse.getStorageQuota().getAllocation();
+        if (dataverse != null) {
+
+            if (dataverse.getStorageQuota() != null) {
+                return dataverse.getStorageQuota().getAllocation();
+            } else if (inherited) {
+                Dataverse uptree = dataverse; 
+                while (uptree.getStorageQuota() == null && uptree.getOwner() != null) {
+                    uptree = uptree.getOwner(); 
+                    if (uptree.getStorageQuota() != null) {
+                        return uptree.getStorageQuota().getAllocation();
+                    }
+                }
+            }
         }
         
         return null;
