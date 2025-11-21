@@ -91,12 +91,12 @@ public class LDNInboxIT {
     public static void afterClass() {
         // Clean up: remove test dataset and dataverse
         if (datasetId != null) {
-            Response destroyDataset = UtilIT.destroyDataset(datasetId, apiToken);
+            Response destroyDataset = UtilIT.destroyDataset(datasetId, superuserApiToken);
             destroyDataset.then().assertThat().statusCode(OK.getStatusCode());
         }
 
         if (dataverseAlias != null) {
-            Response deleteDataverse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+            Response deleteDataverse = UtilIT.deleteDataverse(dataverseAlias, superuserApiToken);
             deleteDataverse.then().assertThat().statusCode(OK.getStatusCode());
         }
 
