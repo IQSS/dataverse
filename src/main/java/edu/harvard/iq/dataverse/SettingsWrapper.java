@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.UserNotification.Type;
@@ -50,8 +51,7 @@ import jakarta.mail.internet.InternetAddress;
 public class SettingsWrapper implements java.io.Serializable {
 
     static final Logger logger = Logger.getLogger(SettingsWrapper.class.getCanonicalName());
-    public static final String COMMA_BETWEEN_OPTIONAL_WHITE_SPACE = "\\s*,\\s*";
-
+    
     @EJB
     SettingsServiceBean settingsService;
 
@@ -218,7 +218,7 @@ public class SettingsWrapper implements java.io.Serializable {
     private void initSettingsMap() {
         // initialize settings map
         settingsMap = new HashMap<>();
-        for (Setting setting : settingsService.listAll()) {
+        for (Setting setting : settingsService.listAllWithoutLocalizations()) {
             settingsMap.put(setting.getName(), setting.getContent());
         }
     }
@@ -393,10 +393,12 @@ public class SettingsWrapper implements java.io.Serializable {
                 rsyncOnly = false;
             } else {
                 String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods);
-                if (uploadMethods==null){
+                if (uploadMethods == null) {
                     rsyncOnly = false;
                 } else {
-                    rsyncOnly = Arrays.asList(uploadMethods.toLowerCase().split(COMMA_BETWEEN_OPTIONAL_WHITE_SPACE)).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+                    String normalizedUploadMethods = uploadMethods.toLowerCase();
+                    rsyncOnly = ListSplitUtil.split(normalizedUploadMethods).size() == 1
+                            && normalizedUploadMethods.equals(SystemConfig.FileUploadMethods.RSYNC.toString());
                 }
             }
         }
@@ -424,11 +426,11 @@ public class SettingsWrapper implements java.io.Serializable {
     
     public Integer getUploadMethodsCount() {
         if (uploadMethodsCount == null) {
-            String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods); 
-            if (uploadMethods==null){
+            String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods);
+            if (uploadMethods == null) {
                 uploadMethodsCount = 0;
             } else {
-                uploadMethodsCount = Arrays.asList(uploadMethods.toLowerCase().split(COMMA_BETWEEN_OPTIONAL_WHITE_SPACE)).size();
+                uploadMethodsCount = ListSplitUtil.split(uploadMethods).size();
             } 
         }
         return uploadMethodsCount;
@@ -502,7 +504,7 @@ public class SettingsWrapper implements java.io.Serializable {
         if (anonymizedFieldTypes == null) {
             anonymizedFieldTypes = new ArrayList<String>();
             String names = get(SettingsServiceBean.Key.AnonymizedFieldTypeNames.toString(), "");
-            anonymizedFieldTypes.addAll(Arrays.asList(names.split(COMMA_BETWEEN_OPTIONAL_WHITE_SPACE)));
+            anonymizedFieldTypes.addAll(ListSplitUtil.split(names));
         }
         return anonymizedFieldTypes.contains(df.getDatasetFieldType().getName());
     }
@@ -826,11 +828,11 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     private Boolean getUploadMethodAvailable(String method){
-        String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods); 
-        if (uploadMethods==null){
+        String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods);
+        if (uploadMethods == null) {
             return false;
         } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split(COMMA_BETWEEN_OPTIONAL_WHITE_SPACE)).contains(method);
+            return ListSplitUtil.splitToLowerCaseSet(uploadMethods).contains(method);
         }
     }
 
