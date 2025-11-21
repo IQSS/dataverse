@@ -1339,9 +1339,21 @@ public class UtilIT {
     }
 
     static Response getFileVersionDifferences(String fileId, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/files/" + fileId + "/versionDifferences");
+        return getFileVersionDifferences(fileId, apiToken, null, null);
+    }
+
+    static Response getFileVersionDifferences(String fileId, String apiToken, Integer limit, Integer offset) {
+        RequestSpecification request = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+
+        if (limit != null) {
+            request.queryParam("limit", limit);
+        }
+        if (offset != null) {
+            request.queryParam("offset", offset);
+        }
+
+        return request.get("/api/files/" + fileId + "/versionDifferences");
     }
 
     static Response testIngest(String fileName, String fileType) {
@@ -1787,14 +1799,21 @@ public class UtilIT {
                         + "&includeDeaccessioned="
                         + includeDeaccessioned);
     }
-    
-    static Response summaryDatasetVersionDifferences(String persistentId,  String apiToken) {
+
+    static Response summaryDatasetVersionDifferences(String persistentId, String apiToken) {
+        return summaryDatasetVersionDifferences(persistentId, null, null, apiToken);
+    }
+
+    static Response summaryDatasetVersionDifferences(String persistentId, Integer limit, Integer offset, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("limit", limit)
+                .queryParam("offset", offset)
                 .get("/api/datasets/:persistentId/versions/compareSummary"
                         + "?persistentId="
                         + persistentId);
     }
+
     static Response getDatasetWithOwners(String persistentId,  String apiToken, boolean returnOwners) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -2507,8 +2526,18 @@ public class UtilIT {
         return response;
     }
 
+    static Response getSettings() {
+        Response response = given().when().get("/api/admin/settings");
+        return response;
+    }
+
     static Response getSetting(SettingsServiceBean.Key settingKey) {
         Response response = given().when().get("/api/admin/settings/" + settingKey);
+        return response;
+    }
+    
+    static Response getSetting(SettingsServiceBean.Key settingKey, String language) {
+        Response response = given().when().get("/api/admin/settings/" + settingKey + "/lang/" + language);
         return response;
     }
 
@@ -2527,6 +2556,15 @@ public class UtilIT {
      */
     public static Response setSetting(String settingKey, String value) {
         Response response = given().body(value).when().put("/api/admin/settings/" + settingKey);
+        return response;
+    }
+
+    public static Response setSettings(String value) {
+        Response response = given()
+                .header("Content-Type", "application/json")
+                .body(value)
+                .when()
+                .put("/api/admin/settings");
         return response;
     }
 
@@ -2577,7 +2615,7 @@ public class UtilIT {
                 .post("api/datasets/:persistentId/assignments?key=" + apiToken + "&persistentId=" + definitionPoint);
     }
 
-    static Response revokeRole(String definitionPoint, long doomed, String apiToken) {
+    static Response revokeRoleOnDataverse(String definitionPoint, long doomed, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("api/dataverses/" + definitionPoint + "/assignments/" + doomed);
@@ -3864,6 +3902,35 @@ public class UtilIT {
         return response;
     }
 
+    static Response updateDatasetTermsAndAccess(String idOrPersistentIdOfDataset, String apiToken, String pathToJsonFile) {
+        String idInPath = idOrPersistentIdOfDataset;
+        String optionalQueryParam = "";
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentIdOfDataset;
+        }
+
+        String jsonIn = getDatasetTermsFromFile(pathToJsonFile);
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .body(jsonIn)
+                .put("/api/datasets/" + idInPath + "/access" + optionalQueryParam);
+        return response;
+    }
+
+    public static String getDatasetTermsFromFile(String pathToJsonFile) {
+        File datasetTermsJson = new File(pathToJsonFile);
+        try {
+            String datasetTermsAsJson = new String(Files.readAllBytes(Paths.get(datasetTermsJson.getAbsolutePath())));
+            return datasetTermsAsJson;
+        } catch (IOException ex) {
+            Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+
+    }
+
     static Response deleteDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody) {
         Response response = given()
             .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -4652,6 +4719,25 @@ public class UtilIT {
                 .put("/api/datasets/datasetTypes/" + idOrName + "/licenses");
     }
 
+    public static Response getWorkflowIpWhitelist() {
+        Response response = given()
+                .get("/api/admin/workflows/ip-whitelist");
+        return response;
+    }
+
+    public static Response setWorkflowIpWhitelist(String iPWhitelist) {
+        Response response = given()
+                .body(iPWhitelist)
+                .put("/api/admin/workflows/ip-whitelist");
+        return response;
+    }
+
+    public static Response deleteWorkflowIpWhitelist() {
+        Response response = given()
+                .delete("/api/admin/workflows/ip-whitelist");
+        return response;
+    }
+
     static Response registerOidcUser(String jsonIn, String bearerToken) {
         return given()
                 .header(HttpHeaders.AUTHORIZATION, bearerToken)
@@ -5063,5 +5149,60 @@ public class UtilIT {
         return given()
                 .when()
                 .get(callbackUrl);
+    }
+
+    public static Response getDataverseMetadataLanguage(String alias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/"
+                        + alias
+                        + "/allowedMetadataLanguages");
+    }
+
+    public static Response setDataverseMetadataLanguage(String alias, String apiToken, String lang) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/dataverses/"
+                        + alias
+                        + "/allowedMetadataLanguages/"
+                        + lang);
+    }
+
+    public static Response getDataverseRoleAssignmentHistory(String dataverseAlias, boolean downloadAsCsv, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+
+        requestSpecification = requestSpecification.header("Accept", downloadAsCsv ? "text/csv" : "application/json");
+
+        return requestSpecification
+                .get("/api/v1/dataverses/" + dataverseAlias + "/assignments/history");
+    }
+
+    public static Response getDatasetRoleAssignmentHistory(Integer datasetId, boolean downloadAsCsv, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+
+        requestSpecification = requestSpecification.header("Accept", downloadAsCsv ? "text/csv" : "application/json");
+
+        return requestSpecification
+                .get("/api/v1/datasets/" + datasetId + "/assignments/history");
+    }
+
+    public static Response getDatasetFilesRoleAssignmentHistory(Integer datasetId, boolean downloadAsCsv, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+
+        requestSpecification = requestSpecification.header("Accept", downloadAsCsv ? "text/csv" : "application/json");
+
+        return requestSpecification
+                .get("/api/v1/datasets/" + datasetId + "/files/assignments/history");
+    }
+
+    public static Response updateLicense(String datasetId, String licenseOrCustomTerms, String apiToken) {
+        return given()
+                .body(licenseOrCustomTerms)
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/datasets/" + datasetId + "/license");
     }
 }
