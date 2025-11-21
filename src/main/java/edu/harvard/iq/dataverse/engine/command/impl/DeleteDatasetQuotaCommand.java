@@ -46,8 +46,10 @@ public class DeleteDatasetQuotaCommand extends AbstractVoidCommand {
         StorageQuota storageQuota = targetDataset.getStorageQuota();
         
         if (storageQuota != null && storageQuota.getAllocation() != null) {
+            // The method below, in dataverseServiceBean, can be used to delete
+            // quotas defined on either of the DvObjectContainer classes:
             ctxt.dataverses().disableStorageQuota(storageQuota);
         } 
-        // ... and if no quota was enabled on the collection - nothing to do = success
+        // ... and if no quota was enabled on the dataset - nothing to do = success
     }    
 }
