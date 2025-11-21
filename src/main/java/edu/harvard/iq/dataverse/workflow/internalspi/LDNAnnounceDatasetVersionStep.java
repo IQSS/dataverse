@@ -5,6 +5,9 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.LDNAnnounceRequiredFields;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.LDNTarget;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
@@ -46,14 +49,14 @@ import org.apache.http.impl.client.HttpClients;
  * anounce new dataset versions to the Harvard DASH preprint repository so that
  * a DASH admin can create a backlink for any dataset versions that reference a
  * DASH deposit or a paper with a DOI where DASH has a preprint copy.
- * 
+ *
  * @author qqmyers
  */
 
 public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
     private static final Logger logger = Logger.getLogger(LDNAnnounceDatasetVersionStep.class.getName());
-    private static final String REQUIRED_FIELDS = ":LDNAnnounceRequiredFields";
-    private static final String LDN_TARGET = ":LDNTarget";
+    private static final String REQUIRED_FIELDS = LDNAnnounceRequiredFields.toString();
+    private static final String LDN_TARGET = LDNTarget.toString();
     private static final String RELATED_PUBLICATION = "publication";
 
     JsonLDTerm publicationIDType = null;
@@ -74,7 +77,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
             CloseableHttpClient client = HttpClients.createDefault();
 
             // build method
-            
+
             HttpPost announcement;
             try {
                 announcement = buildAnnouncement(false, context, target);
@@ -124,8 +127,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
         DatasetVersion dv = ctxt.getDataset().getReleasedVersion();
         List<DatasetField> dvf = dv.getDatasetFields();
         Map<String, DatasetField> fields = new HashMap<String, DatasetField>();
-        String[] requiredFields = ((String) ctxt.getSettings().getOrDefault(REQUIRED_FIELDS, "")).split(",\\s*");
-        for (String field : requiredFields) {
+        for (String field : ListSplitUtil.split((String) ctxt.getSettings().getOrDefault(REQUIRED_FIELDS, ""))) {
             fields.put(field, null);
         }
         Set<String> reqFields = fields.keySet();
