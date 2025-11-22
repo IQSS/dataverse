@@ -1250,14 +1250,14 @@ Collection Storage Quotas
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota"
 
-Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for the collection. The user identified by the API token must have the ``Edit`` permission on the collection. 
+Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for the collection. If this is an unpublished collection, the user must have the ``ViewUnpublishedDataverse`` permission. 
 With an optional query parameter ``showInherited=true`` it will show the applicable quota potentially defined on the nearest parent when the collection does not have a quota configured directly.
 
 .. code-block:: 
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/use"
 
-Will output the dynamically cached total storage size (in bytes) used by the collection.
+Will output the dynamically cached total storage size (in bytes) used by the collection. The user identified by the API token must have the ``Edit`` permission on the collection. 
 
 To set or change the storage allocation quota for a collection:
 
@@ -1265,7 +1265,7 @@ To set or change the storage allocation quota for a collection:
 
   curl -X POST -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota/$SIZE_IN_BYTES"
 
-This is API is superuser-only.
+This API is superuser-only.
   
 
 To delete a storage quota configured for a collection:
@@ -1274,7 +1274,7 @@ To delete a storage quota configured for a collection:
 
   curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota"
 
-This is API is superuser-only.
+This API is superuser-only.
 
 Storage Quotas on Individual Datasets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1283,14 +1283,14 @@ Storage Quotas on Individual Datasets
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/$ID/storage/quota"
 
-Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for this dataset. The user identified by the API token must have the ``Edit`` permission on the dataset.
+Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for this dataset. If this is an unpublished dataset, the user must have the ``ViewUnpublishedDataset`` permission.  
 With an optional query parameter ``showInherited=true`` it will show the applicable quota potentially defined on the nearest parent collection when the dataset does not have a quota configured directly.
 
 .. code-block:: 
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/$ID/storage/use"
 
-Will output the dynamically cached total storage size (in bytes) used by the dataset.
+Will output the dynamically cached total storage size (in bytes) used by the dataset. The user identified by the API token must have the ``Edit`` permission on the dataset.
 
 To set or change the storage allocation quota for a dataset:
 
@@ -1298,7 +1298,7 @@ To set or change the storage allocation quota for a dataset:
 
   curl -X POST -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/$ID/storage/quota/$SIZE_IN_BYTES"
 
-This is API is superuser-only.
+This API is superuser-only.
   
 
 To delete a storage quota configured for a dataset:
@@ -1307,7 +1307,7 @@ To delete a storage quota configured for a dataset:
 
   curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/$ID/storage/quota"
 
-This is API is superuser-only.
+This API is superuser-only.
 
 
 Use the ``/settings`` API to enable or disable the enforcement of storage quotas that are defined across the instance via the following setting:
