@@ -3681,28 +3681,17 @@ public class Datasets extends AbstractApiBean {
         if (showRemaining) {
             // Add optional elements - storage size and file count limits, if present:
 
-            Long storageSizeQuotaRemaining = null;
-            Integer numberOfFilesRemaining = null;
-
             if (systemConfig.isStorageQuotasEnforced()) {
                 UploadSessionQuotaLimit uploadSessionQuota = fileService.getUploadSessionQuotaLimit(dataset);
                 if (uploadSessionQuota != null) {
-                    storageSizeQuotaRemaining = uploadSessionQuota.getRemainingQuotaInBytes();
+                    output.add("storageQuotaRemaining", uploadSessionQuota.getRemainingQuotaInBytes());
                 }
             }
 
             Integer effectiveFileCountLimit = dataset.getEffectiveDatasetFileCountLimit();
 
             if (effectiveFileCountLimit != null) {
-                numberOfFilesRemaining = effectiveFileCountLimit - datasetService.getDataFileCountByOwner(dataset.getId());
-            }
-
-            if (storageSizeQuotaRemaining != null) {
-                output.add("storageQuotaRemaining", storageSizeQuotaRemaining);
-            }
-
-            if (numberOfFilesRemaining != null) {
-                output.add("numberOfFilesRemaining", numberOfFilesRemaining);
+                output.add("numberOfFilesRemaining", effectiveFileCountLimit - datasetService.getDataFileCountByOwner(dataset.getId()));
             }
         }
 
