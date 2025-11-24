@@ -154,7 +154,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
     public String retrieveMyDataAsJsonString(
             @Context ContainerRequestContext crc,
             @QueryParam("dvobject_types") List<DvObject.DType> dvobject_types,
-            @QueryParam("published_states") List<String> published_states, 
+            @QueryParam("published_states") List<String> published_states,
+            @QueryParam("metadata_fields") List<String> metadataFields,
             @QueryParam("selected_page") Integer selectedPage, 
             @QueryParam("mydata_search_term") String searchTerm,             
             @QueryParam("role_ids") List<Long> roleIds, 
@@ -284,7 +285,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                         Json.createObjectBuilder()
                                 .add("pagination", pager.asJsonObjectBuilderUsingCardTerms())
                                 //.add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, filterParams, this.myDataFinder))
-                                .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, roleTagRetriever))
+                                .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, roleTagRetriever, metadataFields))
                                 .add(SearchConstants.SEARCH_API_TOTAL_COUNT, solrQueryResponse.getNumResultsFound())
                                 .add(SearchConstants.SEARCH_API_START, solrQueryResponse.getResultsStart())
                                 .add("search_term",  filterParams.getSearchTerm())
@@ -347,7 +348,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
      * @param roleTagRetriever
      * @return 
      */
-    private JsonArrayBuilder formatSolrDocs(SolrQueryResponse solrResponse, RoleTagRetriever roleTagRetriever ){
+    private JsonArrayBuilder formatSolrDocs(SolrQueryResponse solrResponse, RoleTagRetriever roleTagRetriever, List<String> metadataFields){
         if (solrResponse == null){
             throw new NullPointerException("DataRetrieverAPI.formatSolrDocs:  solrResponse should not be null");     
         }
@@ -365,7 +366,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
             // (a) Get core card data from solr
             // -------------------------------------------
             
-            myDataCardInfo = doc.getJsonForMyData(isValid(doc));
+            myDataCardInfo = doc.getJsonForMyData(isValid(doc), metadataFields);
             
             if (doc.getEntity() != null && !doc.getEntity().isInstanceofDataFile()){
                 String parentAlias = dataverseService.getParentAliasString(doc);
