@@ -4,7 +4,7 @@ A new endpoint has been implemented to set the default template to a given datav
 
 ### Functionality
 - Sets the default template of the given dataverse collection.
-- You must have edit dataset permission in the collection in order to use this endpoint.
+- You must have edit dataverse permission in the collection in order to use this endpoint.
 
 ## New Endpoint: DELETE `/dataverses/{id}/template/default`
 
@@ -12,4 +12,4 @@ A new endpoint has been implemented to remove the default template to a given da
 
 ### Functionality
 - Removes the default template of the given dataverse collection.
-- You must have edit dataset permission in the collection in order to use this endpoint.
+- You must have edit dataverse permission in the collection in order to use this endpoint.
