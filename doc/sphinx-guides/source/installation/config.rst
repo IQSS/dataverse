@@ -10,6 +10,27 @@ Once you have finished securing and configuring your Dataverse installation, you
 .. contents:: |toctitle|
   :local:
 
+.. _comma-separated-config-values:
+
+Comma-separated configuration values
+------------------------------------
+
+Many configuration options (both MicroProfile/JVM settings and database settings) accept comma-separated lists. For all such settings, Dataverse applies consistent, lightweight parsing:
+
+- Whitespace immediately around commas is ignored (e.g., ``GET, POST`` is equivalent to ``GET,POST``).
+- Tokens are otherwise preserved exactly as typed. There is no quote parsing and no escape processing.
+- Embedded commas within a token are not supported.
+
+Examples include (but are not limited to):
+
+- :ref:`dataverse.cors.origin <dataverse.cors.origin>`
+- :ref:`dataverse.cors.methods <dataverse.cors.methods>`
+- :ref:`dataverse.cors.headers.allow <dataverse.cors.headers.allow>`
+- :ref:`dataverse.cors.headers.expose <dataverse.cors.headers.expose>`
+- :ref:`:UploadMethods`
+
+This behavior is implemented centrally and applies across all Dataverse settings that accept comma-separated values.
+
 .. _securing-your-installation:
 
 Securing Your Installation
@@ -3704,16 +3725,20 @@ The following settings control Cross-Origin Resource Sharing (CORS) for your Dat
 dataverse.cors.origin
 +++++++++++++++++++++
 
-Allowed origins for CORS requests. The default with no value set is to not include CORS headers. However, if the deprecated :AllowCors setting is explicitly set to true the default is "\*" (all origins).
-When the :AllowsCors setting is not used, you must set this setting to "\*" or a list of origins to enable CORS headers.
+Allowed origins for CORS requests. If this setting is not defined, CORS headers are not added. Set to ``*`` to allow all origins (note that browsers will not allow credentialed requests with ``*``) or provide a comma-separated list of explicit origins.
 
-Multiple origins can be specified as a comma-separated list.
+Multiple origins can be specified as a comma-separated list (whitespace is ignored):
 
 Example:
 
 ``./asadmin create-jvm-options '-Ddataverse.cors.origin=https://example.com,https://subdomain.example.com'``
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_CORS_ORIGIN``.
+
+Behavior:
+
+* When a list of origins is configured, Dataverse echoes the single matching request ``Origin`` value in ``Access-Control-Allow-Origin`` and adds ``Vary: Origin`` to support correct proxy/CDN caching.
+* When ``*`` is configured, ``Access-Control-Allow-Origin: *`` is sent and ``Vary`` is not modified.
 
 .. _dataverse.cors.methods:
 
@@ -5027,20 +5052,6 @@ This can be helpful in situations where multiple organizations are sharing one D
 ``curl -X PUT -d 'admin, curator' http://localhost:8080/api/admin/settings/:InheritParentRoleAssignments``
 or
 ``curl -X PUT -d '*' http://localhost:8080/api/admin/settings/:InheritParentRoleAssignments``
-
-:AllowCors (Deprecated)
-+++++++++++++++++++++++
-
-.. note::
-   This setting is deprecated. Please use the JVM settings above instead.
-   This legacy setting will only be used if the newer JVM settings are not set.
-
-Enable or disable support for Cross-Origin Resource Sharing (CORS) by setting ``:AllowCors`` to ``true`` or ``false``.
-
-``curl -X PUT -d true http://localhost:8080/api/admin/settings/:AllowCors``
-
-.. note::
-   New values for this setting will only be used after a server restart.
 
 :ChronologicalDateFacets
 ++++++++++++++++++++++++
