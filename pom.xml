@@ -1060,6 +1060,9 @@
                     -->
                     <argLine>@{failsafe.jacoco.args} ${argLine}</argLine>
                     <skip>${skipIntegrationTests}</skip>
+                    <systemPropertyVariables>
+                        <postgresql.server.version>${postgresql.server.version}</postgresql.server.version>
+                    </systemPropertyVariables>
                 </configuration>
                 <executions>
                     <execution>
