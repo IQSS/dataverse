@@ -20,7 +20,7 @@
     <properties>
         <skipUnitTests>false</skipUnitTests>
         <skipIntegrationTests>false</skipIntegrationTests>
-        <it.groups>integration</it.groups>
+        <it.groups>integration,migration</it.groups>
         <!-- Provide a fallback value that won't break things if JaCoCo prepare-agent steps don't set it. -->
         <!-- Note: you must use @{} style late variable binding in argLine, otherwise JaCoCo cannot inject the right settings! -->
         <surefire.jacoco.args>-Ddummy.jacoco.property=true</surefire.jacoco.args>
@@ -747,6 +747,12 @@
                     <artifactId>android-json</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.dbunit</groupId>
+            <artifactId>dbunit</artifactId>
+            <version>3.0.0</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
