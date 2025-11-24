@@ -2401,7 +2401,7 @@ public class DatasetsIT {
         Response getDefaultSetting = UtilIT.getSetting(SettingsServiceBean.Key.FileFixityChecksumAlgorithm);
         getDefaultSetting.prettyPrint();
         getDefaultSetting.then().assertThat()
-                .body("message", equalTo("Setting :FileFixityChecksumAlgorithm not found"));
+                .body("message", equalTo("Setting :FileFixityChecksumAlgorithm not found."));
 
         Response uploadMd5File = UtilIT.uploadRandomFile(dataset1PersistentId, apiToken);
         uploadMd5File.prettyPrint();
