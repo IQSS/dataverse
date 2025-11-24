@@ -13,13 +13,14 @@ v6.9
 - The POST /api/admin/makeDataCount/{id}/updateCitationsForDataset processing is now asynchronous and the response no longer includes the number of citations. The response can be OK if the request is queued or 503 if the queue is full (default queue size is 1000).
 - The way to set per-format size limits for tabular ingest has changed. JSON input is now used. See :ref:`:TabularIngestSizeLimit`.
 - In the past, the settings API would accept any key and value. This is no longer the case because validation has been added. See :ref:`settings_put_single`, for example.
+- For GET /api/notifications/all the JSON response has changed breaking the backward compatibility of the API.
 
 v6.8
 ----
 
 - For POST /api/files/{id}/metadata passing an empty string ("description":"")  or array ("categories":[]) will no longer be ignored. Empty fields will now clear out the values in the file's metadata. To ignore the fields simply do not include them in the JSON string.
 - For PUT /api/datasets/{id}/editMetadata the query parameter "sourceInternalVersionNumber" has been removed and replaced with "sourceLastUpdateTime" to verify that the data being edited hasn't been modified and isn't stale.
-- For GET /api/dataverses/$dataverse-alias/links the Json response has changed breaking the backward compatibility of the API.
+- For GET /api/dataverses/$dataverse-alias/links the JSON response has changed breaking the backward compatibility of the API.
 - For GET /api/admin/dataverse/{dataverse-alias}/storageDriver and /api/datasets/{identifier}/storageDriver the driver name is no longer returned in data.message. This value is now returned in data.name.
 - For PUT /api/dataverses/$dataverse-alias/inputLevels custom input levels that had been previously set will no longer be deleted. To delete input levels send an empty list (deletes all), then send the new/modified list.
 - For GET /api/externalTools and /api/externalTools/{id} the responses are now formatted as JSON (previously the toolParameters and allowedApiCalls were a JSON object and array (respectively) that were serialized as JSON strings) and any configured "requirements" are included.
