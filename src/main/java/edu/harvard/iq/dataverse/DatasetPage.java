@@ -6101,10 +6101,12 @@ public class DatasetPage implements java.io.Serializable {
             AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
             if (cmd != null) {
                 try {
-                    commandEngine.submitAsync(cmd);
-
+                    
                     // Set initial pending status
                     dv.setArchivalCopyLocation(DatasetVersion.ARCHIVAL_STATUS_PENDING);
+                    dv = datasetVersionService.merge(dv);
+                    
+                    commandEngine.submitAsync(cmd);
 
                     logger.info(
                             "DatasetVersion id=" + dv.getId() + " submitted to Archive, status: " + dv.getArchivalCopyLocationStatus());
