@@ -3652,7 +3652,9 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/storageDriver")
     public Response getFileStore(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
-            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+            @QueryParam("showRemainingQuotas") boolean showRemaining,
+            @Context UriInfo uriInfo,
+            @Context HttpHeaders headers) throws WrappedResponse {
 
         Dataset dataset;
 
@@ -3662,7 +3664,49 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
 
-        return ok(JsonPrinter.jsonStorageDriver(dataset.getEffectiveStorageDriverId(), dataset));
+        if (showRemaining) {
+            AuthenticatedUser user;
+            try {
+                user = getRequestAuthenticatedUserOrDie(crc);
+            } catch (WrappedResponse ex) {
+                return error(Response.Status.BAD_REQUEST, "The option showRemainingQuotas requires authentication.");
+            }
+            if (!permissionSvc.requestOn(createDataverseRequest(user), dataset).has(Permission.EditDataset)) {
+                return error(Response.Status.FORBIDDEN, "The option showRemainingQuotas requires EditDataset permission.");
+            }
+        }
+
+        JsonObjectBuilder output = JsonPrinter.jsonStorageDriver(dataset.getEffectiveStorageDriverId(), dataset);
+
+        if (showRemaining) {
+            // Add optional elements - storage size and file count limits, if present:
+
+            Long storageSizeQuotaRemaining = null;
+            Integer numberOfFilesRemaining = null;
+
+            if (systemConfig.isStorageQuotasEnforced()) {
+                UploadSessionQuotaLimit uploadSessionQuota = fileService.getUploadSessionQuotaLimit(dataset);
+                if (uploadSessionQuota != null) {
+                    storageSizeQuotaRemaining = uploadSessionQuota.getRemainingQuotaInBytes();
+                }
+            }
+
+            Integer effectiveFileCountLimit = dataset.getEffectiveDatasetFileCountLimit();
+
+            if (effectiveFileCountLimit != null) {
+                numberOfFilesRemaining = effectiveFileCountLimit - datasetService.getDataFileCountByOwner(dataset.getId());
+            }
+
+            if (storageSizeQuotaRemaining != null) {
+                output.add("storageQuotaRemaining", storageSizeQuotaRemaining);
+            }
+
+            if (numberOfFilesRemaining != null) {
+                output.add("numberOfFilesRemaining", numberOfFilesRemaining);
+            }
+        }
+
+        return ok(output);
     }
 
     @PUT
