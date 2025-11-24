@@ -161,7 +161,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
             @QueryParam("role_ids") List<Long> roleIds, 
             @QueryParam("userIdentifier") String userIdentifier,
             @QueryParam("filter_validities") Boolean filterValidities,
-            @QueryParam("dataset_valid") List<Boolean> datasetValidities) {
+            @QueryParam("dataset_valid") List<Boolean> datasetValidities,
+            @QueryParam("show_collections") boolean showCollections) {
         boolean otherUser;
 
         String noMsgResultsFound = BundleUtil.getStringFromBundle("dataretrieverAPI.noMsgResultsFound");
@@ -241,7 +242,13 @@ public class DataRetrieverAPI extends AbstractApiBean {
                         SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
                         solrCardStart, //paginationStart,
                         true, // dataRelatedToMe
-                        SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
+                        SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE, //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
+                        true,
+                        null,
+                        null,
+                        true,
+                        true,
+                        showCollections
                 );
 
             if (this.solrQueryResponse.getNumResultsFound()==0){
