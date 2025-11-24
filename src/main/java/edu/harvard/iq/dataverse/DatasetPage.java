@@ -6101,20 +6101,17 @@ public class DatasetPage implements java.io.Serializable {
             AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
             if (cmd != null) {
                 try {
-                    DatasetVersion version = commandEngine.submit(cmd);
-                    if (!version.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
-                        logger.info(
-                                "DatasetVersion id=" + version.getId() + " submitted to Archive, status: " + dv.getArchivalCopyLocationStatus());
-                    } else {
-                        logger.severe("Error submitting version " + version.getId() + " due to conflict/error at Archive");
-                    }
-                    if (version.getArchivalCopyLocation() != null) {
-                        setVersionTabList(resetVersionTabList());
-                        this.setVersionTabListForPostLoad(getVersionTabList());
-                        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetversion.archive.success"));
-                    } else {
-                        JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
-                    }
+                    commandEngine.submitAsync(cmd);
+
+                    // Set initial pending status
+                    dv.setArchivalCopyLocation(DatasetVersion.ARCHIVAL_STATUS_PENDING);
+
+                    logger.info(
+                            "DatasetVersion id=" + dv.getId() + " submitted to Archive, status: " + dv.getArchivalCopyLocationStatus());
+                    setVersionTabList(resetVersionTabList());
+                    this.setVersionTabListForPostLoad(getVersionTabList());
+                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetversion.archive.inprogress"));
+
                 } catch (CommandException ex) {
                     logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
                     JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
