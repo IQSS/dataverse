@@ -37,4 +37,4 @@ A Dataverse repository can host one or more Dataverse collections, which organiz
 - Compare versions with the detailed version change overview on dataset-level.
 
 ### ✨More features  
-The Dataverse project is continuously evolving. For an overview of capabilities, visit the features list [link].
+The Dataverse project is continuously evolving. For an overview of capabilities, visit the [features list](https://dataverse.org/software-features).
