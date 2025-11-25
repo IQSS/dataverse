@@ -176,6 +176,9 @@ File Previews
 
 Dataverse installations can add previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically, after terms have been agreed to or a guestbook entry has been made, if necessary. File previews are not available for restricted files unless they are being accessed using a Preview URL. See also :ref:`previewUrl`. When the dataset license is not the default license, users will be prompted to accept the license/data use agreement before the preview is shown. See also :ref:`license-terms`.
 
+.. note::
+   Some previewers run purely in the browser and make direct (JavaScript) requests back to the Dataverse API endpoints to retrieve file contents, metadata, or signed URLs. For these previewers to function when hosted on a different origin (e.g., a CDN or a separate previewer service), the Dataverse installation must have CORS enabled via :ref:`dataverse.cors.origin <dataverse.cors.origin>`. Administrators should configure the list of allowed origins to include the host serving the previewers.
+
 Previewers are available for the following file types:
 
 - Text
@@ -717,7 +720,7 @@ If you have a Contributor role (can edit metadata, upload files, and edit files,
 Preview URL to Review Unpublished Dataset
 =========================================
 
-Creating a Preview URL for a draft version of your dataset allows you to share your dataset (for viewing and downloading of files) before it is published to a wide group of individuals who may not have a user account on the Dataverse installation. Anyone you send the Preview URL to will not have to log into the Dataverse installation to view the unpublished dataset. Once a dataset has been published you may create new General Preview URLs for subsequent draft versions, but the Anonymous Preview URL will no longer be available.
+Creating a Preview URL for a draft version of your dataset allows you to share your dataset (for viewing and downloading files, including :ref:`restricted <restricted-files>` and :ref:`embargoed <embargoes>` files) before it is published to a wide group of people who might not have a user account on the Dataverse installation. Anyone you send the Preview URL to will not have to log in to the Dataverse installation to view the unpublished dataset. Once a dataset has been published, you may create new General Preview URLs for subsequent draft versions, but the Anonymous Preview URL will no longer be available.
 
 **Note:** To create a Preview URL, you must have the *ManageDatasetPermissions* permission for your draft dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*.
 
@@ -738,6 +741,8 @@ To disable a Preview URL and to revoke access, follow the same steps as above un
 #. It may be necessary for you to further edit your draft dataset's metadata to remove identifying items before you distribute the Anonymous Preview URL
 
 Note that only one Preview URL (normal or with anonymized access) can be configured per dataset at a time. 
+
+.. _embargoes:
 
 Embargoes
 =========

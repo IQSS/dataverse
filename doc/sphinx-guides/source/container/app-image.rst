@@ -17,11 +17,6 @@ Within the main repository, you may find the application image's files at ``<git
 This is the same Maven module providing a Dataverse WAR file for classic installations, and uses the
 `Maven Docker Plugin <https://dmp.fabric8.io>`_ to build and ship the image within a special Maven profile.
 
-**NOTE: This image is created, maintained and supported by the Dataverse community on a best-effort basis.**
-IQSS will not offer you support how to deploy or run it, please reach out to the community for help on using it.
-You might be interested in taking a look at :doc:`../developers/containers`, linking you to some (community-based)
-efforts.
-
 .. _app-image-supported-tags:
 
 Supported Image Tags
@@ -81,7 +76,7 @@ For now, stale images will be kept on Docker Hub indefinitely.
   | Example: :substitution-code:`|nextVersion|-noble`
   | Summary: Rolling tag, equivalent to ``unstable`` for current development cycle.
     Will roll over to the rolling production tag after a Dataverse release.
-  | Discussion: Perhaps you are eager to starting testing features of an upcoming version (e.g. |nextVersion|) in a staging environment. You select the :substitution-code:`|nextVersion|-noble` tag (as opposed to ``unstable``) because you want to stay on |nextVersion| rather switching to the version **after that** when a release is made (which would happen if you had selected the ``unstable`` tag). Also, when the next release comes out (|nextVersion| in this example), you would stay on the :substitution-code:`|nextVersion|-noble` tag, which is the same tag that someone would use who wants the final release of |nextVersion|. (See "Rolling Production", above.)
+  | Discussion: Perhaps you are eager to start testing features of an upcoming version (e.g. |nextVersion|) in a staging environment. You select the :substitution-code:`|nextVersion|-noble` tag (as opposed to ``unstable``) because you want to stay on |nextVersion| rather than switching to the version **after that** when a release is made (which would happen if you had selected the ``unstable`` tag). Also, when the next release comes out (|nextVersion| in this example), you would stay on the :substitution-code:`|nextVersion|-noble` tag, which is the same tag that someone would use who wants the final release of |nextVersion|. (See "Rolling Production", above.)
 
 **NOTE**: In these tags for development usage, the version number will always be 1 minor version ahead of existing Dataverse releases.
 Example: Assume Dataverse ``6.x`` is released, ``6.(x+1)`` is underway.

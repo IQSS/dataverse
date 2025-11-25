@@ -19,6 +19,13 @@ Standard Installation
 
 Installing the Dataverse Software involves some system configuration followed by executing an installation script that will guide you through the installation process as described in :doc:`installation-main`, but reading about the :ref:`architecture` of the Dataverse Software is recommended first.
 
+.. _docker-installation:
+
+Docker Installation
++++++++++++++++++++
+
+See the :doc:`/container/index`, especially :doc:`/container/running/index` and :doc:`/container/running/production`.
+
 .. _advanced:
 
 Advanced Installation
@@ -26,13 +33,13 @@ Advanced Installation
 
 There are some community-lead projects to use configuration management tools such as Ansible and Puppet to automate the installation and configuration of the Dataverse Software, but support for these solutions is limited to what the Dataverse Community can offer as described in each project's webpage:
 
-- https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible
+- https://github.com/gdcc/dataverse-ansible
 - https://gitlab.com/lip-computing/dataverse
 - https://github.com/IQSS/dataverse-puppet
 
 (Please note that the "dataverse-ansible" repo is used in a script that allows the Dataverse Software to be installed on Amazon Web Services (AWS) from arbitrary GitHub branches as described in the :doc:`/developers/deployment` section of the Developer Guide.)
 
-The Dataverse Project team is happy to "bless" additional community efforts along these lines (i.e. Docker, Chef, Salt, etc.) by creating a repo under https://github.com/gdcc and managing team access.
+The Dataverse Project team is happy to "bless" additional community efforts along these lines (i.e. Chef, Salt, etc.) by creating a repo under https://github.com/gdcc and managing team access.
 
 The Dataverse Software permits a fair amount of flexibility in where you choose to install the various components. The diagram below shows a load balancer, multiple proxies and web servers, redundant database servers, and offloading of potentially resource intensive work to a separate server. (Glassfish is shown rather than Payara.)
 

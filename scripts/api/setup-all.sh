@@ -57,7 +57,7 @@ echo  "- Allow internal signup"
 curl -X PUT -d yes "${DATAVERSE_URL}/api/admin/settings/:AllowSignUp"
 curl -X PUT -d "/dataverseuser.xhtml?editMode=CREATE" "${DATAVERSE_URL}/api/admin/settings/:SignUpUrl"
 
-curl -X PUT -d burrito "${DATAVERSE_URL}/api/admin/settings/BuiltinUsers.KEY"
+curl -X PUT -d burrito "${DATAVERSE_URL}/api/admin/settings/:BuiltinUsersKey"
 curl -X PUT -d localhost-only "${DATAVERSE_URL}/api/admin/settings/:BlockedApiPolicy"
 curl -X PUT -d 'native/http' "${DATAVERSE_URL}/api/admin/settings/:UploadMethods"
 echo
@@ -91,7 +91,7 @@ if [ $SECURESETUP = 1 ]
 then
     # Revoke the "burrito" super-key; 
     # Block sensitive API endpoints;
-    curl -X DELETE "${DATAVERSE_URL}/api/admin/settings/BuiltinUsers.KEY"
+    curl -X DELETE "${DATAVERSE_URL}/api/admin/settings/:BuiltinUsersKey"
     curl -X PUT -d 'admin,builtin-users' "${DATAVERSE_URL}/api/admin/settings/:BlockedApiEndpoints"
     echo "Access to the /api/admin and /api/test is now disabled, except for connections from localhost."
 else 
