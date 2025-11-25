@@ -287,7 +287,6 @@ There are a broad range of options (that are not turned on by default) for impro
 - dataverse.feature.only-update-datacite-when-needed=true - reduces the load on DataCite and reduces Dataverse failures related to that load, which is important when using file PIDs on Datasets with many files. See :ref:`feature-flags`.
 - :ref:`dataverse.solr.min-files-to-use-proxy` =<X> - improve performance/lower memory requirements when indexing datasets with many files, suggested value is in the range 200 to 500
 - :ref:`dataverse.solr.concurrency.max-async-indexes` =<X> - limits the number of index operations running in parallel. The default is 4, larger values may improve performance (if the Solr instance is appropriately sized)
-- dataverse.exports.schema-dot-org.max-files-for-download-entries - reduces the size of the schema.org metadata export when there are many files per dataset. By default, this is included in the dataset page header, so the smaller version improves page loading and can avoid issues with Google indexing (datasets with thousands of files+)
 - :ref:`:SolrFullTextIndexing` - false improves performance at the expense of not indexing file contents
 - :ref:`:SolrMaxFileSizeForFullTextIndexing` - size in bytes (default unset/no limit) above which file contents should not be indexed
 - :ref:`:ZipDownloadLimit` - the maximum size in bytes for zipped downloads of files from a dataset. If the size of requested files is larger, some files will be omitted and listed in the zip manifest file as not included.
