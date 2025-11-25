@@ -67,7 +67,7 @@ DO $$
         -- Insert or update the new JSON-based setting
         INSERT INTO setting (name, content, lang)
         VALUES (':TabularIngestSizeLimit', json_object::TEXT, NULL)
-        ON CONFLICT (name) WHERE lang IS NULL
+        ON CONFLICT (name, (coalesce(lang, '')))
             DO UPDATE SET content = EXCLUDED.content;
 
         -- Delete all format-specific settings
