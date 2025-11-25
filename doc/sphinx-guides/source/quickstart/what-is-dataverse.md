@@ -1,6 +1,6 @@
 # What is Dataverse?
 
-The Dataverse project is an open source web application for sharing, preserving, citing, exploring, and analyzing research data. It is developed and supported by the Dataverse user community.
+Dataverse is an open source web application for sharing, preserving, citing, exploring, and analyzing research data. It is developed and supported by the Dataverse user community.
 
 A Dataverse repository can host one or more Dataverse collections, which organize datasets. A Dataverse repository can host one or more Dataverse collections, which organize datasets.
 
