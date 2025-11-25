@@ -69,6 +69,7 @@ import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.StreamingOutput;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -1999,5 +2000,55 @@ public class Dataverses extends AbstractApiBean {
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/allowedMetadataLanguages")
+    public Response getMetadataLanguage(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+        return response(req -> {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            return ok(jsonLanguage(execCommand(
+                    new GetDataverseMetadataLanguageCommand(req, dataverse))));
+        }, getRequestUser(crc));
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/allowedMetadataLanguages/{metadataLanguage}")
+    public Response setMetadataLanguage(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("metadataLanguage") String lang) {
+        return response(req -> {
+            Map<String, String> langMap = settingsService.getBaseMetadataLanguageMap(null, true);
+            if (langMap.isEmpty()) {
+                return badRequest("There are no metadata languages configured on this server");
+            }
+            if (!langMap.containsKey(lang)) {
+                return badRequest("The specified metadata language " + lang + " is not allowed on this server!");
+            }
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            return ok(jsonLanguage(execCommand(new SetDataverseMetadataLanguageCommand(req, dataverse, lang))));
+        }, getRequestUser(crc));
+    }
+    
+    @GET
+    @AuthRequired
+    @Path("{identifier}/assignments/history")
+    @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
+    public Response getRoleAssignmentHistory(@Context ContainerRequestContext crc,
+            @PathParam("identifier") String id,
+            @Context HttpHeaders headers) {
+        return response(req -> {
+            Dataverse dataverse = findDataverseOrDie(id);
+
+            // user is authenticated
+            AuthenticatedUser authenticatedUser = null;
+            try {
+                authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+            } catch (WrappedResponse ex) {
+                return error(Status.UNAUTHORIZED, "Authentication is required.");
+            }
+
+            return getRoleAssignmentHistoryResponse(dataverse, authenticatedUser, false, headers);
+        }, getRequestUser(crc));
     }
 }

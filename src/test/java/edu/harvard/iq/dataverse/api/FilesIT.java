@@ -60,11 +60,14 @@ public class FilesIT {
         Response removePublicInstall = UtilIT.deleteSetting(SettingsServiceBean.Key.PublicInstall);
         removePublicInstall.then().assertThat().statusCode(200);
 
+        Response removeLimit = UtilIT.deleteSetting(SettingsServiceBean.Key.TabularIngestSizeLimit);
+        removeLimit.then().assertThat().statusCode(OK.getStatusCode());
     }
 
     @AfterAll
     public static void tearDownClass() {
         UtilIT.deleteSetting(SettingsServiceBean.Key.PublicInstall);
+        UtilIT.deleteSetting(SettingsServiceBean.Key.TabularIngestSizeLimit);
     }
 
     /**
@@ -1208,7 +1211,183 @@ public class FilesIT {
         }
 
     }
-    
+
+    @Test
+    public void testIngestSizeLimits() throws InterruptedException, IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
+        makeSuperUser.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        String tinyCsvOnly = """
+{
+  "csv": "50"
+}
+""";
+
+        Response setLimit = UtilIT.setSetting(SettingsServiceBean.Key.TabularIngestSizeLimit, tinyCsvOnly);
+        setLimit.then().assertThat().statusCode(OK.getStatusCode());
+
+        Path pathToDataFile = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.csv");
+        String contentOfCsv = ""
+                + "name,pounds,species,treats\n"
+                + "Midnight,15,dog,milkbones\n"
+                + "Tiger,17,cat,cat grass\n"
+                + "Panther,21,cat,cat nip\n";
+        java.nio.file.Files.write(pathToDataFile, contentOfCsv.getBytes());
+
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data.csv"));
+
+        String fileId1 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        Response getTabularFails = UtilIT.getFileDataTables(fileId1, apiToken);
+        getTabularFails.prettyPrint();
+        getTabularFails.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported")));
+
+        String largerCsv = """
+{
+  "csv": "123456"
+}
+""";
+
+        setLimit = UtilIT.setSetting(SettingsServiceBean.Key.TabularIngestSizeLimit, largerCsv);
+        setLimit.then().assertThat().statusCode(OK.getStatusCode());
+
+        uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data-1.csv"));
+
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToDataFile);
+
+        String fileId2 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        Response getTabularWorks = UtilIT.getFileDataTables(fileId2, apiToken);
+        getTabularWorks.prettyPrint();
+        getTabularWorks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].varQuantity", equalTo(4));
+
+        String tinyDefaultSize = """
+{
+  "default": "50"
+}
+""";
+
+        setLimit = UtilIT.setSetting(SettingsServiceBean.Key.TabularIngestSizeLimit, tinyDefaultSize);
+        setLimit.then().assertThat().statusCode(OK.getStatusCode());
+
+        uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data-2.csv"));
+
+        String fileId3 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        getTabularFails = UtilIT.getFileDataTables(fileId3, apiToken);
+        getTabularFails.prettyPrint();
+        getTabularFails.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported")));
+
+        // The behavior of `"default": "-2"` is not documented in the guides
+        // but it acts like `"default": "0"` which disables ingest.
+        String unexpectedNegativeDefault = """
+{
+  "default": "-2"
+}
+""";
+
+        setLimit = UtilIT.setSetting(SettingsServiceBean.Key.TabularIngestSizeLimit, unexpectedNegativeDefault);
+        setLimit.then().assertThat().statusCode(OK.getStatusCode());
+
+        uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data-3.csv"));
+
+        String fileId4 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        getTabularFails = UtilIT.getFileDataTables(fileId4, apiToken);
+        getTabularFails.prettyPrint();
+        getTabularFails.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported")));
+
+        // As the guides say, you MUST provide a string, not a JSON number.
+        // That is, `"123"` in quotes rather than `123` with no quotes.
+        // If you provide a number (no quotes) rather than a string,
+        // all ingest will be disabled and you'll see an error in server.log
+        // about how the system is misconfigured.
+        String invalidNonString = """
+{
+  "default": 987654321
+}
+""";
+
+        setLimit = UtilIT.setSetting(SettingsServiceBean.Key.TabularIngestSizeLimit, invalidNonString);
+        setLimit.then().assertThat().statusCode(OK.getStatusCode());
+
+        uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data-4.csv"));
+
+        String fileId5 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        getTabularFails = UtilIT.getFileDataTables(fileId5, apiToken);
+        getTabularFails.prettyPrint();
+        getTabularFails.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported")));
+
+        String defaultDisabledAndLargeCsvLimit = """
+{
+  "default": "0",
+  "csv": "123456"
+}
+""";
+
+        setLimit = UtilIT.setSetting(SettingsServiceBean.Key.TabularIngestSizeLimit, defaultDisabledAndLargeCsvLimit);
+        setLimit.then().assertThat().statusCode(OK.getStatusCode());
+
+        uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data-5.csv"));
+
+        String fileId6 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        getTabularWorks = UtilIT.getFileDataTables(fileId2, apiToken);
+        getTabularWorks.prettyPrint();
+        getTabularWorks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].varQuantity", equalTo(4));
+
+        Response removeLimit = UtilIT.deleteSetting(SettingsServiceBean.Key.TabularIngestSizeLimit);
+        removeLimit.then().assertThat().statusCode(OK.getStatusCode());
+    }
+
     @Test
     public void testUningestFileViaApi() throws InterruptedException {
         Response createUser = UtilIT.createRandomUser();
@@ -1448,7 +1627,7 @@ public class FilesIT {
     }
 
     @Test
-    public void GetFileVersionDifferences() {
+    public void getFileVersionDifferences() {
         // Create superuser and regular user
         Response createUser = UtilIT.createRandomUser();
         String superUserUsername = UtilIT.getUsernameFromResponse(createUser);
@@ -1461,7 +1640,8 @@ public class FilesIT {
         // Create dataverse and dataset. Upload 1 file
         String dataverseAlias = createDataverseGetAlias(superUserApiToken);
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, superUserApiToken);
-        Integer datasetId = createDatasetGetId(dataverseAlias, superUserApiToken);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, superUserApiToken);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
         String pathToFile = "scripts/search/data/binary/trees.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, superUserApiToken);
         addResponse.prettyPrint();
@@ -1472,6 +1652,8 @@ public class FilesIT {
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
+                .body("totalCount", is(1))
+                .body("data.size()", is(1))
                 .body("data[0].datasetVersion", equalTo("DRAFT"))
                 .body("data[0].fileDifferenceSummary.file", equalTo("Added"))
                 .statusCode(OK.getStatusCode());
@@ -1492,6 +1674,8 @@ public class FilesIT {
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
+                .body("totalCount", is(1))
+                .body("data.size()", is(1))
                 .body("data[0].datasetVersion", equalTo("1.0"))
                 .body("data[0].fileDifferenceSummary.file", equalTo("Added"))
                 .statusCode(OK.getStatusCode());
@@ -1506,6 +1690,8 @@ public class FilesIT {
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
+                .body("totalCount", is(1))
+                .body("data.size()", is(1))
                 .body("data[0].datasetVersion", equalTo("1.0"))
                 .body("data[0].fileDifferenceSummary.file", equalTo("Added"))
                 .statusCode(OK.getStatusCode());
@@ -1520,10 +1706,69 @@ public class FilesIT {
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
+                .body("totalCount", is(2))
+                .body("data.size()", is(2))
                 .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.file", equalTo(null))
                 .body("data[1].datasetVersion", equalTo("1.0"))
                 .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
                 .statusCode(OK.getStatusCode());
+
+        // Test pagination: limit=1, offset=0 (should get the first item: DRAFT)
+        Response paginatedResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken, 1, 0);
+        paginatedResponse.prettyPrint();
+        paginatedResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("status", equalTo("OK"))
+                .body("totalCount", is(2))
+                .body("data.size()", is(1))
+                .body("data[0].datasetVersion", equalTo("DRAFT"));
+
+        // Test pagination: limit=1, offset=1 (should skip 1 and get the second item: 1.0)
+        paginatedResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken, 1, 1);
+        paginatedResponse.prettyPrint();
+        paginatedResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("status", equalTo("OK"))
+                .body("totalCount", is(2))
+                .body("data.size()", is(1))
+                .body("data[0].datasetVersion", equalTo("1.0"));
+
+        // Test pagination: limit=1, offset=2 (out of bounds, should get an empty list)
+        paginatedResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken, 1, 2);
+        paginatedResponse.prettyPrint();
+        paginatedResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("status", equalTo("OK"))
+                .body("totalCount", is(2))
+                .body("data.size()", is(0));
+
+        // Test pagination: limit=2, offset=0 (should get both items)
+        paginatedResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken, 2, 0);
+        paginatedResponse.prettyPrint();
+        paginatedResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("status", equalTo("OK"))
+                .body("totalCount", is(2))
+                .body("data.size()", is(2))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[1].datasetVersion", equalTo("1.0"));
+
+        // Test invalid pagination: limit=-1 (should return a bad request error)
+        paginatedResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken, -1, 0);
+        paginatedResponse.prettyPrint();
+        paginatedResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("status", equalTo("ERROR"))
+                .body("message", containsString("The limit parameter cannot be negative."));
+
+        // Test invalid pagination: offset=-1 (should return a bad request error)
+        paginatedResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken, 1, -1);
+        paginatedResponse.prettyPrint();
+        paginatedResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("status", equalTo("ERROR"))
+                .body("message", containsString("The offset parameter cannot be negative."));
 
         // test replace file
         pathToFile = "src/test/resources/images/coffeeshop.png";
@@ -1536,6 +1781,8 @@ public class FilesIT {
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
+                .body("totalCount", is(2))
+                .body("data.size()", is(2))
                 .body("data[0].datasetVersion", equalTo("DRAFT"))
                 .body("data[0].fileDifferenceSummary.file", equalTo("Replaced"))
                 .body("data[0].datafileId", equalTo(Integer.parseInt(replacedDataFileId)))
@@ -1562,11 +1809,161 @@ public class FilesIT {
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
+                .body("totalCount", is(2))
+                .body("data.size()", is(2))
                 .body("data[1].datasetVersion", equalTo("1.0"))
                 .body("data[1].fileDifferenceSummary.deaccessionedReason", equalTo("Test reason"))
                 .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
                 .statusCode(OK.getStatusCode());
+
+        // Test when the file was not present on previous versions
+
+        pathToFile = "src/test/resources/images/coffeeshop.png";
+        addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, superUserApiToken);
+        addResponse.then().assertThat().statusCode(OK.getStatusCode());
+        dataFileId = addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, superUserApiToken);
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("totalCount", is(2))
+                .body("data.size()", is(2))
+                .body("data[0].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].versionState", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.file", equalTo("Added"))
+                .body("data[0].isDraft", equalTo(true))
+                .body("data[0].isDeaccessioned", equalTo(false))
+                .body("data[0].publishedDate", equalTo(""))
+                // Since the file was not present on the previous version, datafileId should be null
+                .body("data[1].datafileId", equalTo(null))
+                .body("data[1].datasetVersion", equalTo("1.0"))
+                .body("data[1].versionState", equalTo("DEACCESSIONED"))
+                .body("data[1].fileDifferenceSummary.deaccessionedReason", equalTo("Test reason"))
+                // No differences to report at this stage since we are requesting differences for a newly added file
+                .body("data[1].fileDifferenceSummary.file", equalTo(null))
+                .body("data[1].isDraft", equalTo(false))
+                .body("data[1].isDeaccessioned", equalTo(true))
+                .body("data[1].publishedDate", not(equalTo("")));
+
+        // Test when no changes were made to the file in a new version
+
+        // First, publish the current DRAFT version
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", superUserApiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        // Second, generate a new version by updating the dataset title, and publish it
+        String newTitle = "I am changing the title";
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        UtilIT.updateDatasetTitleViaSword(datasetPersistentId, newTitle, superUserApiToken).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", superUserApiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, superUserApiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("totalCount", is(3))
+                .body("data.size()", is(3))
+                .body("data[0].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .body("data[0].datasetVersion", equalTo("3.0"))
+                .body("data[0].versionState", equalTo("RELEASED"))
+                .body("data[0].fileDifferenceSummary", equalTo(null))
+                .body("data[0].isDraft", equalTo(false))
+                .body("data[0].isDeaccessioned", equalTo(false))
+                .body("data[0].publishedDate", not(equalTo("")))
+                // Since the file was already present in the previous version, datafileId should be present
+                .body("data[1].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .body("data[1].datasetVersion", equalTo("2.0"))
+                .body("data[1].versionState", equalTo("RELEASED"))
+                .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
+                .body("data[1].isDraft", equalTo(false))
+                .body("data[1].isDeaccessioned", equalTo(false))
+                .body("data[1].publishedDate", not(equalTo("")))
+                .body("data[2].fileDifferenceSummary.file", equalTo(null))
+                .body("data[2].isDraft", equalTo(false))
+                // Since the file was not present in this version, datafileId should be null
+                .body("data[2].datafileId", equalTo(null))
+                .body("data[2].isDeaccessioned", equalTo(true))
+                .body("data[2].publishedDate", not(equalTo("")));
+
+        // Test FileAccess restricted
+
+        UtilIT.allowAccessRequests(datasetPersistentId, true, superUserApiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.restrictFile(dataFileId, true, superUserApiToken).then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, superUserApiToken);
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("totalCount", is(4))
+                .body("data.size()", is(4))
+                .body("data[0].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].versionState", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.FileAccess", equalTo("Restricted"))
+                .body("data[0].isDraft", equalTo(true))
+                .body("data[0].isDeaccessioned", equalTo(false))
+                .body("data[0].publishedDate", equalTo(""));
+
+        // Test FileAccess unrestricted
+
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", superUserApiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.restrictFile(dataFileId, false, superUserApiToken).then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, superUserApiToken);
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("totalCount", is(5))
+                .body("data.size()", is(5))
+                .body("data[0].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].versionState", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.FileAccess", equalTo("Unrestricted"))
+                .body("data[0].isDraft", equalTo(true))
+                .body("data[0].isDeaccessioned", equalTo(false))
+                .body("data[0].publishedDate", equalTo(""));
+
+        // Test FileMetadata update
+
+        JsonObjectBuilder updateFileMetadata = Json.createObjectBuilder()
+                .add("label", "new_name.png");
+        UtilIT.updateFileMetadata(dataFileId, updateFileMetadata.build().toString(), superUserApiToken).then().statusCode(OK.getStatusCode());
+
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, superUserApiToken);
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("totalCount", is(5))
+                .body("data.size()", is(5))
+                .body("data[0].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].versionState", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.FileAccess", equalTo("Unrestricted"))
+                .body("data[0].fileDifferenceSummary.FileMetadata[0].name", equalTo("File Name"))
+                .body("data[0].fileDifferenceSummary.FileMetadata[0].action", equalTo("Changed"))
+                .body("data[0].isDraft", equalTo(true))
+                .body("data[0].isDeaccessioned", equalTo(false))
+                .body("data[0].publishedDate", equalTo(""));
+
+        // Test FileTags update
+
+        Response setFileCategoriesResponse = UtilIT.setFileCategories(dataFileId, superUserApiToken, List.of("Category"));
+        setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, superUserApiToken);
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("totalCount", is(5))
+                .body("data.size()", is(5))
+                .body("data[0].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].versionState", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.FileAccess", equalTo("Unrestricted"))
+                .body("data[0].fileDifferenceSummary.FileMetadata[0].name", equalTo("File Name"))
+                .body("data[0].fileDifferenceSummary.FileMetadata[0].action", equalTo("Changed"))
+                .body("data[0].fileDifferenceSummary.FileTags.Added", equalTo(1))
+                .body("data[0].isDraft", equalTo(true))
+                .body("data[0].isDeaccessioned", equalTo(false))
+                .body("data[0].publishedDate", equalTo(""));
     }
+
     @Test
     public void testGetFileInfo() {
         Response createUser = UtilIT.createRandomUser();

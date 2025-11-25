@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
@@ -21,6 +22,7 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import jakarta.json.Json;
@@ -29,8 +31,12 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.core.Response.Status;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.api.parallel.ResourceAccessMode;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.CoreMatchers.*;
@@ -48,6 +54,8 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import static org.hamcrest.Matchers.greaterThan;
 
+@ResourceLock(value = "MetadataLanguages", mode = ResourceAccessMode.READ_WRITE)
+@Isolated
 public class DataversesIT {
 
     private static final Logger logger = Logger.getLogger(DataversesIT.class.getCanonicalName());
@@ -55,11 +63,18 @@ public class DataversesIT {
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+        UtilIT.deleteSetting(SettingsServiceBean.Key.MetadataLanguages);
     }
 
     @AfterAll
     public static void afterClass() {
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
+        UtilIT.deleteSetting(SettingsServiceBean.Key.MetadataLanguages);
+    }
+
+    @AfterEach
+    public void afterEach() {
+        UtilIT.deleteSetting(SettingsServiceBean.Key.MetadataLanguages);
     }
 
     @Test
@@ -2596,9 +2611,12 @@ public class DataversesIT {
     public void testCreateAndGetTemplates() throws JsonParseException  {
         Response createUserResponse = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String username = UtilIT.getUsernameFromResponse(createUserResponse);
 
         Response createSecondUserResponse = UtilIT.createRandomUser();
         String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
+        String secondUsername = UtilIT.getUsernameFromResponse(createSecondUserResponse);
+
         
         /*
         We need to make this a non-inherited metadatablocks so the get template will only get templates from current dv
@@ -2699,9 +2717,19 @@ public class DataversesIT {
                 .body("data[0].instructions[0].instructionText", equalTo("The author data"))
                 .body("data[0].dataverseAlias", equalTo(dataverseAlias));
 
-        // Templates retrieval should fail if the user lacks dataverse edit permissions
+        // Templates retrieval should fail if a secondary user lacks dataset creation permissions
+
         getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
         getTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Templates retrieval should succeed if the secondary user has dataset creation permissions
+
+        UtilIT.setSuperuserStatus(username, true);
+        Response grantRoleResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, "@" + secondUsername, apiToken);
+        grantRoleResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
+        getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
     }
 
     @Test
@@ -2731,4 +2759,37 @@ public class DataversesIT {
         UtilIT.makeSuperUser(username);
         return adminApiToken;
     }
+    
+    @Test
+    public void testDataverseMetadataLanguage() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken);
+
+        createDataverse1Response.prettyPrint();
+        createDataverse1Response.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        String alias = UtilIT.getAliasFromResponse(createDataverse1Response);
+
+        Response noLang = UtilIT.getDataverseMetadataLanguage(alias, apiToken);
+        noLang.prettyPrint();
+
+        noLang.then().assertThat().body("data", equalTo(List.of()));
+
+        UtilIT.setSetting(SettingsServiceBean.Key.MetadataLanguages,
+                        "[{\"locale\":\"en\",\"title\":\"English\"},{\"locale\":\"hu\",\"title\":\"magyar\"}]");
+        Response allLangs = UtilIT.getDataverseMetadataLanguage(alias, apiToken);
+        allLangs.prettyPrint();
+        allLangs.then().assertThat()
+                        .body("data.size()", equalTo(2))
+                        .and().body("data[0].locale", equalTo("en"))
+                        .and().body("data[1].locale", equalTo("hu"));
+        
+        Response english = UtilIT.setDataverseMetadataLanguage(alias, apiToken, "en");
+        english.then().assertThat().body("data", equalTo(List.of(Map.of("locale", "en", "title", "English"))));
+        Response singleLang = UtilIT.getDataverseMetadataLanguage(alias, apiToken);
+        singleLang.then().assertThat().body("data", equalTo(List.of(Map.of("locale", "en", "title", "English"))));
+    }
+
 }
