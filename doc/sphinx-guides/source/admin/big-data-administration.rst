@@ -16,6 +16,8 @@ In general, there are three dimensions in which Dataverse can scale:
 .. contents:: |toctitle|
         :local:
 
+.. _choose-store:
+
 Storage: Choosing the Right Store
 ---------------------------------
 
@@ -24,13 +26,15 @@ With appropriate configuration, Dataverse can support file sizes and aggregate d
 
 The primary choice in Dataverse related to storage is which types of "store" (also called "storage driver") to use:
 
+.. _file-stores:
+
 File Stores
 ~~~~~~~~~~~
 
 The default storage option in Dataverse uses the local file system. When files are transferred to Dataverse, they are first stored in a
 temporary location on the Dataverse server. Any zip files uploaded are unzipped to create multiple individual file entries. Once an upload is completed, 
 Dataverse copies the files to permanent storage. Dataverse also takes advantage of the file being local to inspect its bytes to determine its 
-MIME type, and, for tabular data, to "ingest" it - extracting metadata about the variables used in the file and creating a tab-separated values (TSV)
+MIME type, and, for tabular data, to ":doc:`ingest </user/tabulardataingest/index>`" it - extracting metadata about the variables used in the file and creating a tab-separated values (TSV)
 version of the file.
 
 Benefits: 
@@ -50,6 +54,7 @@ Challenges: In general, file storage is not a good option for larger data sizes 
 - Cost: local file storage must be provisioned in advance based on anticipated demand. It can involve up-front costs (for a local disk), or, when procured from a 
   cloud provider, is likely to be more expensive than object storage from that provider (see below).
 
+.. _s3-stores:
 
 S3 Stores: Object Storage via S3
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -77,7 +82,7 @@ Challenges:
   providers charge more per TB than the equivalent cost of a local disk (though commercial S3 storage is cheaper than commercial file storage).
   There can also be egress and other charges. Overall, S3 storage is generally more expensive than local file storage but cheaper than cloud file storage.
   Running a local S3 storage or leveraging an institutional service can further reduce costs.
-- Direct upload via S3 is a multi-step process: Dataverse provides URLs for the uploads, the user's browser or other app uses the URLs to transfer files to the S3 store,
+- Direct upload via S3 is a :doc:`multi-step process </developers/s3-direct-upload-api>`: Dataverse provides URLs for the uploads, the user's browser or other app uses the URLs to transfer files to the S3 store,
   possibly in many pieces per file, and finally, Dataverse is told that one or more files are in place and should be added to the dataset. If the last step fails, or if
   all parts of a file cannot be transferred, orphaned files or parts of files can be left on S3. These files are not accessible via Dataverse but do use space (for which there is a monetary cost)
   until they are deleted. There is currently no automated clean-up mechanism.
@@ -88,7 +93,7 @@ Other Considerations
 - S3 Storage without direct upload/download provides minimal benefits with Dataverse as files still pass through the server, files are still uploaded as a single HTTP/HTTPS stream, and temporary storage is still used.
 - While not having files unzipped can be confusing to users who are used to it from using Dataverse with file storage, there are ways to minimize the impact. 
   For example, Dataverse can be configured to use a "Zip File Previewer" that allows users to see the contents of a zip file and even download individual files from within it (see :ref:`compressed-files`). 
-  For users who still want their data stored as individual files with their relative folder paths, Dataverse can be configured with "DVWebloader" which allows users to select an entire folder tree of files and 
+  For users who still want their data stored as individual files with their relative folder paths, Dataverse can be configured with ":ref:`DVWebloader <folder-upload>`" which allows users to select an entire folder tree of files and
   upload them, with their relative paths intact, to Dataverse. (DVWebloader can only be used with S3/direct upload, but it is much more efficient with many files than using the 
   standard upload interface in Dataverse (which also does not retain path information)).
 - Several features that involve Dataverse accessing files' contents, including unzipping zip files, are disabled when S3 direct upload is enabled. See :ref:`s3-direct-upload-features-disabled`.
@@ -105,6 +110,8 @@ Other Considerations
 
 - Dataverse leverages S3 features that are not implemented by all servers and has several configuration options geared towards handling variations between servers - see :ref:`s3-compatible`. Site admins should be sure to test with their preferred S3 implementation (and consider adding to the list of working S3 implementations).
 - The part-size used when directly transferring files to S3 is configurable (at AWS, from 5 MiB to 5GiB). The default in Dataverse is 1 GiB (1024^3 bytes). If the primary use case is with smaller files than that, decreasing the part size may improve upload speeds.
+
+.. _remote-stores:
 
 Remote Stores
 ~~~~~~~~~~~~~
@@ -149,6 +156,8 @@ Challenges:
 - The current remote store implementation will not prevent you from providing a relative URL that results in a 404 when resolved (i.e. if you make a typo). You should check to make sure the file exists at the location you specify - by trying to download in Dataverse, by checking to see that Dataverse was able to get the file size (which it does with a HEAD call to that location), or just manually trying the URL in your browser.
 - For large files, direct-download should always be used with a remote store. (Otherwise the Dataverse will be involved in the download.)
 - When multiple files are selected for download, Dataverse will try to include remote files in the zip file being created (up to the max zip size limit) which is inefficient, and will not be able to include remote files that are inaccessible (possibly confusing). 
+
+.. _globus-stores:
 
 Globus Stores: Globus Transfer Between Large File/Tape Archives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -259,11 +268,11 @@ Before describing things that can be done to improve scaling, it is important to
 
 There are a number of settings to limit how many files can be uploaded (see :ref:`database-settings` and :ref:`jvm-options` for more details):
 
-- ZipUploadFilesLimit - the maximum number of files allowed in an uploaded zip file - only relevant for file stores and S3 when direct upload is not used.
-- MultipleUploadFilesLimit - the number of files the GUI user is allowed to upload in one batch, via drag-and-drop, or through the file select dialog
-- MaxFileUploadSizeInBytes - limit the size of files that can be uploaded
-- UseStorageQuotas - once enabled, super users can set per-collection quotas (in bytes) to limit the aggregate size of all files in the collection
-- dataverse.files.default-dataset-file-count-limit - directly limits the number of files per dataset, can be changed per dataset via API (by super users)
+- :ref:`:ZipUploadFilesLimit` - the maximum number of files allowed in an uploaded zip file - only relevant for file stores and S3 when direct upload is not used.
+- :ref:`:MultipleUploadFilesLimit` - the number of files the GUI user is allowed to upload in one batch, via drag-and-drop, or through the file select dialog
+- :ref:`:MaxFileUploadSizeInBytes` - limit the size of files that can be uploaded
+- :ref:`:UseStorageQuotas` - once enabled, super users can set per-collection quotas (in bytes) to limit the aggregate size of all files in the collection
+- :ref:`dataverse.files.default-dataset-file-count-limit` - directly limits the number of files per dataset, can be changed per dataset via API (by super users)
 
 Scaling-related Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -271,29 +280,29 @@ Scaling-related Configuration
 There are a broad range of options (that are not turned on by default) for improving how well Solr indexing and searching scales and for handling more files per dataset. Some of these are useful for all installations while others are related to specific use cases, or are mostly for emergency use (e.g. disabling facets).
 (see :ref:`database-settings`, :ref:`jvm-options`, and :ref:`feature-flags` for more details):
 
-- dataverse.feature.add-publicobject-solr-field=true - specifically marks unrestricted content as public in Solr
-- dataverse.feature.avoid-expensive-solr-join=true - this tells Dataverse to use the feature above to speed up searches
-- dataverse.feature.reduce-solr-deletes=true - when Solr entries are being updated, this avoids an unnecessary step (deletion of existing entries) for entries that are being replaced
-- dataverse.feature.disable-dataset-thumbnail-autoselect=true - by default, Dataverse scans through all files in a dataset to find one that can be used as a thumbnail, which is expensive for many files. This disables that behavior to improve performance
+- dataverse.feature.add-publicobject-solr-field=true - specifically marks unrestricted content as public in Solr. See :ref:`feature-flags`.
+- dataverse.feature.avoid-expensive-solr-join=true - this tells Dataverse to use the feature above to speed up searches. See :ref:`feature-flags`.
+- dataverse.feature.reduce-solr-deletes=true - when Solr entries are being updated, this avoids an unnecessary step (deletion of existing entries) for entries that are being replaced. See :ref:`feature-flags`.
+- dataverse.feature.disable-dataset-thumbnail-autoselect=true - by default, Dataverse scans through all files in a dataset to find one that can be used as a thumbnail, which is expensive for many files. This disables that behavior to improve performance. See :ref:`feature-flags`.
 - dataverse.feature.only-update-datacite-when-needed=true - reduces the load on DataCite and reduces Dataverse failures related to that load, which is important when using file PIDs on Datasets with many files
-- dataverse.solr.min-files-to-use-proxy=<X> - improve performance/lower memory requirements when indexing datasets with many files, suggested value is in the range 200 to 500
-- dataverse.solr.concurrency.max-async-indexes=<X> - limits the number of index operations running in parallel. The default is 4, larger values may improve performance (if the Solr intance is appropriately sized)
+- :ref:`dataverse.solr.min-files-to-use-proxy` =<X> - improve performance/lower memory requirements when indexing datasets with many files, suggested value is in the range 200 to 500
+- :ref:`dataverse.solr.concurrency.max-async-indexes` =<X> - limits the number of index operations running in parallel. The default is 4, larger values may improve performance (if the Solr intance is appropriately sized)
 - dataverse.exports.schema-dot-org.max-files-for-download-entries - reduces the size of the schema.org metadata export when there are many files per dataset. By default, this is included in the dataset page header, so the smaller version improves page loading and can avoid issues with Google indexing (datasets with thousands of files+)
-- SolrFullTextIndexing - false improves performance at the expense of not indexing file contents
-- SolrMaxFileSizeForFullTextIndexing - size in bytes (default unset/no limit) above which file contents should not be indexed
-- ZipDownloadLimit - the maximum size in bytes for zipped downloads of files from a dataset. If the size of requested files is larger, some files will be omitted and listed in the zip manifest file as not included.
-- DatasetChecksumValidationSizeLimit - by default, Dataverse checks fixity (assuring the file contents match the recorded checksum) as part of publication. This setting specifies a maximum aggregate dataset size, above which this validation will not be done.
-- DataFileChecksumValidationSizeLimit - by default, Dataverse checks fixity (assuring the file contents match the recorded checksum) as part of publication. This setting specifies a maximum file size, above which validation will not be done.
-- FilePIDsEnabled - false is recommended when datasets have many files. Related settings allow file PIDS to be enabled/disabled per collection and per dataset
-- CustomZipDownloadServiceUrl - allows use of a separate process/machine to handle zipping up multi-file downloads. Requires installation of the separate Zip Download app
-- WebloaderUrl - enables use of an installed DVWebloader (by specifying its web location) which is more efficient for uploading many files 
-- CategoryOrder - Pre-sorts the file display by category, e.g. showing all "Documentation" files before "Data" files. Any user selected sorting by name, age, or size is done within these sections  
-- OrderByFolder - pre-sorts files by their directory Label (folder), showing files with no path before others. Any user selected sorting by name, age, or size is done within these sections
-- DisableSolrFacets - disables facets, which are costly to generate, in search results (including the main collection page)
-- DisableSolrFacetsForGuestUsers - only disable facets for guests
-- DisableSolrFacetsWithoutJsession - disables facets for users who have disabled cookies (e.g. for bots)
-- DisableUncheckedTypesFacet - only disables the facet showing the number of collections, datasets, files matching the query (this facet is potentially less useful than others)
-- StoreIngestedTabularFilesWithVarHeaders - by default, Dataverse stores ingested files without headers and dynamically adds them back at download time. Once this setting is enabled, Dataverse will leave the headers in place (for newly ingested files), reducing the cost of downloads
+- :ref:`:SolrFullTextIndexing` - false improves performance at the expense of not indexing file contents
+- :ref:`:SolrMaxFileSizeForFullTextIndexing` - size in bytes (default unset/no limit) above which file contents should not be indexed
+- :ref:`:ZipDownloadLimit` - the maximum size in bytes for zipped downloads of files from a dataset. If the size of requested files is larger, some files will be omitted and listed in the zip manifest file as not included.
+- :ref:`:DatasetChecksumValidationSizeLimit` - by default, Dataverse checks fixity (assuring the file contents match the recorded checksum) as part of publication. This setting specifies a maximum aggregate dataset size, above which this validation will not be done.
+- :ref:`:DataFileChecksumValidationSizeLimit` - by default, Dataverse checks fixity (assuring the file contents match the recorded checksum) as part of publication. This setting specifies a maximum file size, above which validation will not be done.
+- :ref:`:FilePIDsEnabled` - false is recommended when datasets have many files. Related settings allow file PIDS to be enabled/disabled per collection and per dataset
+- :ref:`:CustomZipDownloadServiceUrl` - allows use of a separate process/machine to handle zipping up multi-file downloads. Requires installation of the separate Zip Download app
+- :ref:`:WebloaderUrl` - enables use of an installed DVWebloader (by specifying its web location) which is more efficient for uploading many files 
+- :ref:`:CategoryOrder` - Pre-sorts the file display by category, e.g. showing all "Documentation" files before "Data" files. Any user selected sorting by name, age, or size is done within these sections  
+- :ref:`:OrderByFolder` - pre-sorts files by their directory Label (folder), showing files with no path before others. Any user selected sorting by name, age, or size is done within these sections
+- :ref:`:DisableSolrFacets` - disables facets, which are costly to generate, in search results (including the main collection page)
+- :ref:`:DisableSolrFacetsForGuestUsers` - only disable facets for guests
+- :ref:`:DisableSolrFacetsWithoutJsession` - disables facets for users who have disabled cookies (e.g. for bots)
+- :ref:`:DisableUncheckedTypesFacet` - only disables the facet showing the number of collections, datasets, files matching the query (this facet is potentially less useful than others)
+- :ref:`:StoreIngestedTabularFilesWithVarHeaders` - by default, Dataverse stores ingested files without headers and dynamically adds them back at download time. Once this setting is enabled, Dataverse will leave the headers in place (for newly ingested files), reducing the cost of downloads
 
 
 Scaling Infrastructure

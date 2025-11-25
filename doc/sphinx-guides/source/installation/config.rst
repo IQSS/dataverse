@@ -1011,13 +1011,13 @@ By default, a Dataverse installation stores all data files (files uploaded by en
 A Dataverse installation can alternately store files in a Swift or S3-compatible object store, or on a Globus endpoint, and can now be configured to support multiple stores at once.
 A Dataverse installation may also be configured to reference some files (e.g. large and/or sensitive data) stored in a web or Globus accessible trusted remote store.
 With a multi-store configuration, the location for new files can be controlled on a per-Dataverse collection or per-dataset basis.
-The :doc:`/admin/big-data-administration` provides more detail about the pros and cons of different types of storage.
+:doc:`/admin/big-data-administration` provides more detail about the pros and cons of different types of storage.
 
 A Dataverse installation can be configured to allow out of band upload by setting the ``dataverse.files.\<id\>.upload-out-of-band`` JVM option to ``true``.
 By default, Dataverse supports uploading files via the :ref:`add-file-api`. With S3 stores, a direct upload process can be enabled to allow sending the file directly to the S3 store (without any intermediate copies on the Dataverse server).
 With the upload-out-of-band option enabled, it is also possible for file upload to be managed manually or via third-party tools, with the :ref:`Adding the Uploaded file to the Dataset <direct-add-to-dataset-api>` API call (described in the :doc:`/developers/s3-direct-upload-api` page) used to add metadata and inform Dataverse that a new file has been added to the relevant store.
 
-The following sections describe how to set up various types of stores and how to configure for multiple stores.
+The following sections describe how to set up various types of stores and how to configure for multiple stores. See also :ref:`choose-store`.
 
 .. _multiple-stores:
 
@@ -1079,6 +1079,8 @@ File stores have one option - the directory where files should be stored. This c
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.directory=<file directory>"
 
 Multiple file stores should specify different directories (which would nominally be the reason to use multiple file stores), but one may share the same directory as "\-Ddataverse.files.directory" option - this would result in temp files being stored in the /temp subdirectory within the file store's root directory.
+
+See also :ref:`file-stores`.
 
 Swift Storage
 +++++++++++++
@@ -1174,6 +1176,8 @@ The Dataverse Software supports Amazon S3 storage as well as other S3-compatible
 The Dataverse Software S3 driver supports multi-part upload for large files (over 1 GB by default - see the min-part-size option in the table below to change this).
 
 **Note:** The Dataverse Project Team is most familiar with AWS S3, and can provide support on its usage with the Dataverse Software. Thanks to community contributions, the application's architecture also allows non-AWS S3 providers. The Dataverse Project Team can provide very limited support on these other providers. We recommend reaching out to the wider Dataverse Project Community if you have questions.
+
+See also :ref:`s3-stores`.
 
 First: Set Up Accounts and Access Credentials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1493,7 +1497,7 @@ In addition to having the type "remote" and requiring a label, Trusted Remote St
 These and other available options are described in the table below.
 
 Trusted remote stores can range from being a static trusted website to a sophisticated service managing access requests and logging activity
-and/or managing access to a secure enclave.  See :doc:`/admin/big-data-administration` and :doc:`/developers/big-data-support` for additional information on how to use a trusted remote store. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
+and/or managing access to a secure enclave.  See :doc:`/admin/big-data-administration` (specifically :ref:`remote-stores`) and :doc:`/developers/big-data-support` for additional information on how to use a trusted remote store. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
 
 Note that in the current implementation, activities where Dataverse needs access to data bytes, e.g. to create thumbnails or validate hash values at publication will fail if a remote store does not allow Dataverse access. Implementers of such trusted remote stores should consider using Dataverse's settings to disable ingest, validation of files at publication, etc. as needed.
 
@@ -2786,6 +2790,8 @@ when using it to configure your core name!
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_PATH``.
 
+.. _dataverse.solr.min-files-to-use-proxy:
+
 dataverse.solr.min-files-to-use-proxy
 +++++++++++++++++++++++++++++++++++++
 
@@ -2796,6 +2802,8 @@ This setting represents a number of files for which the datafile procy should be
 A recommended value would be ~1000 but the optimal value may vary depending on details of your installation.  
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_MIN_FILES_TO_USE_PROXY``.
+
+.. _dataverse.solr.concurrency.max-async-indexes:
 
 dataverse.solr.concurrency.max-async-indexes
 ++++++++++++++++++++++++++++++++++++++++++++
@@ -4400,6 +4408,8 @@ Notes:
 
 - For larger file upload sizes, you may need to configure your reverse proxy timeout. If using apache2 (httpd) with Shibboleth, add a timeout to the ProxyPass defined in etc/httpd/conf.d/ssl.conf (which is described in the :doc:`/installation/shibboleth` setup).
 
+.. _:MultipleUploadFilesLimit:
+
 :MultipleUploadFilesLimit
 +++++++++++++++++++++++++
 
@@ -4446,6 +4456,8 @@ For example :
 
 ``curl -X PUT -d 0 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit:xlsx``
 
+.. _:ZipUploadFilesLimit:
+
 :ZipUploadFilesLimit
 ++++++++++++++++++++
 
@@ -4464,12 +4476,16 @@ By default your Dataverse installation will attempt to connect to Solr on port 8
 
 **Note:** instead of using a database setting, you could alternatively use JVM settings like :ref:`dataverse.solr.host`.
 
+.. _:SolrFullTextIndexing:
+
 :SolrFullTextIndexing
 +++++++++++++++++++++
 
 Whether or not to index the content of files such as PDFs. The default is false.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:SolrFullTextIndexing``
+
+.. _:SolrMaxFileSizeForFullTextIndexing:
 
 :SolrMaxFileSizeForFullTextIndexing
 +++++++++++++++++++++++++++++++++++
@@ -4492,11 +4508,14 @@ To enable the setting::
 
   curl -X PUT -d true "http://localhost:8080/api/admin/settings/:DisableSolrFacets"
 
+.. _:DisableSolrFacetsForGuestUsers:
 
 :DisableSolrFacetsForGuestUsers
 +++++++++++++++++++++++++++++++
 
 Similar to the above, but will disable the facets for Guest (unauthenticated) users only. 
+
+.. _:DisableSolrFacetsWithoutJsession:
 
 :DisableSolrFacetsWithoutJsession
 +++++++++++++++++++++++++++++++++
@@ -5014,6 +5033,8 @@ If you don’t want date facets to be sorted chronologically, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:ChronologicalDateFacets``
 
+.. _:CustomZipDownloadServiceUrl:
+
 :CustomZipDownloadServiceUrl
 ++++++++++++++++++++++++++++
 
@@ -5145,6 +5166,8 @@ A suggested minimum includes author, datasetContact, and contributor, but additi
 
 ``curl -X PUT -d 'author, datasetContact, contributor, depositor, grantNumber, publication' http://localhost:8080/api/admin/settings/:AnonymizedFieldTypeNames``
 
+.. _:DatasetChecksumValidationSizeLimit:
+
 :DatasetChecksumValidationSizeLimit
 +++++++++++++++++++++++++++++++++++
 
@@ -5159,6 +5182,8 @@ When this option is used to disable the checksum validation, it's strongly recom
 Refer to "Physical Files Validation in a Dataset" API :ref:`dataset-files-validation-api` section of our :doc:`/api/native-api` documentation.
 
 Also refer to the "Datafile Integrity" API  :ref:`datafile-integrity`
+
+.. _:DataFileChecksumValidationSizeLimit:
 
 :DataFileChecksumValidationSizeLimit
 ++++++++++++++++++++++++++++++++++++
@@ -5421,6 +5446,8 @@ To use the current GDCC version directly:
 
 ``curl -X PUT -d 'https://gdcc.github.io/dvwebloader/src/dvwebloader.html' http://localhost:8080/api/admin/settings/:WebloaderUrl``
 
+.. _:CategoryOrder:
+
 :CategoryOrder
 ++++++++++++++
 
@@ -5429,6 +5456,8 @@ The setting can include custom tag names along with the pre-defined tags (Docume
 The default is category ordering disabled.
 
 ``curl -X PUT -d 'Documentation,Data,Code' http://localhost:8080/api/admin/settings/:CategoryOrder``
+
+.. _:OrderByFolder:
 
 :OrderByFolder
 ++++++++++++++
