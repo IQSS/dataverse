@@ -269,6 +269,26 @@ The current driver can be seen using::
 
     curl http://$SERVER/api/datasets/$dataset-id/storageDriver
 
+The output of the API will include the id, label, type (for example, "file" or "s3") as well as the support for direct download and upload. 
+With the optional parameter ``showRemainingQuotas=true``, the remaining storage size and/or file number quotas will also be included, if present. For example:
+
+.. code-block::
+   curl  -H "X-Dataverse-key: $API_TOKEN" "http://localhost:8080/api/datasets/$dataset-id/storageDriver?showRemainingQuotas=true" 
+   {
+     "status": "OK",
+     "data": {
+       "label": "S3",
+       "type": "s3",
+       "name": "s3",
+       "directDownload": true,
+       "directUpload": false,
+       "numberOfFilesRemaining": 20,
+       "storageQuotaRemaining": 1048576
+     } 
+   }
+
+Note that using this option requires the Edit permission on the dataset. 
+
 It can be reset to the default store as follows (only a superuser can do this) ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$dataset-id/storageDriver
