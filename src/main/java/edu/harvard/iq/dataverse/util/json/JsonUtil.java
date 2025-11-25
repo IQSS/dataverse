@@ -71,7 +71,7 @@ public class JsonUtil {
      * not catch any exceptions.
      * @param serializedJson the JSON object serialized as a {@code String}
      * @throws JsonException when parsing fails.
-     * @see #getJsonObject(InputStream)
+     * @see #getJsonObjectFromInputStream(InputStream)
      * @see #getJsonObjectFromFile(String)
      * @see #getJsonArray(String)
      */
@@ -94,7 +94,7 @@ public class JsonUtil {
      * @see #getJsonObject(String)
      * @see #getJsonObjectFromFile(String)
      */
-    public static JsonObject getJsonObject(InputStream stream) {
+    public static JsonObject getJsonObjectFromInputStream(InputStream stream) {
         try (JsonReader jsonReader = Json.createReader(stream)) {
             return jsonReader.readObject();
         }
@@ -108,7 +108,7 @@ public class JsonUtil {
      * @throws FileNotFoundException when the file cannot be opened for reading
      * @throws JsonException when parsing fails.
      * @see #getJsonObject(String)
-     * @see #getJsonObject(InputStream)
+     * @see #getJsonObjectFromInputStream(InputStream)
      */
     public static JsonObject getJsonObjectFromFile(String fileName) throws IOException {
         try (FileReader rdr = new FileReader(fileName)) {
