@@ -256,7 +256,7 @@ public class MakeDataCountApi extends AbstractApiBean {
                 
                 JsonObject report;
                 try (InputStream inStream = connection.getInputStream()) {
-                    report = JsonUtil.getJsonObject(inStream);
+                    report = JsonUtil.getJsonObjectFromInputStream(inStream);
                 } finally {
                     connection.disconnect();
                 }
