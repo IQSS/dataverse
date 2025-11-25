@@ -19,8 +19,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,7 +91,7 @@ public class DdiExportUtilTest {
         PidUtil.clearPidProviders();
 
         //Read list of providers to add
-        List<String> providers = Arrays.asList(JvmSettings.PID_PROVIDERS.lookup().split(",\\s"));
+        List<String> providers = JvmSettings.PID_PROVIDERS.lookupSplittedList();
         //Iterate through the list of providers and add them using the PidProviderFactory of the appropriate type
         for (String providerId : providers) {
             System.out.println("Loading provider: " + providerId);
