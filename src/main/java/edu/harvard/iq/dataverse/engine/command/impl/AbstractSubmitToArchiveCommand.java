@@ -185,7 +185,15 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
        return false;
   }
 
-   public static boolean supportsDelete() {
-    return false;
-   }
+  /** Whether the archiver can delete existing archival files (and thus can retry when the existing files are incomplete/obsolete)
+   * A static version supports calls via reflection while the instance method supports inheritance for use on actual command instances (see DatasetPage for both use cases).
+   * @return
+   */
+  public static boolean supportsDelete() {
+      return false;
+  }
+
+  public boolean canDelete() {
+      return supportsDelete();
+  }
 }

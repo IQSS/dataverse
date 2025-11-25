@@ -6119,7 +6119,7 @@ public class DatasetPage implements java.io.Serializable {
             if (cmd != null) {
                 try {
                     String status = dv.getArchivalCopyLocationStatus();
-                    if(status == null || (force && cmd.supportsDelete())){
+                    if(status == null || (force && cmd.canDelete())){
                         
                     // Set initial pending status
                     dv.setArchivalCopyLocation(DatasetVersion.ARCHIVAL_STATUS_PENDING);

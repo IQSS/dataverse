@@ -44,9 +44,12 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
         super(aRequest, version);
     }
 
-    @Override
     public static boolean supportsDelete() {
         return true;
+    }
+    @Override
+    public boolean canDelete() {
+        return supportsDelete();
     }
     
     @Override
