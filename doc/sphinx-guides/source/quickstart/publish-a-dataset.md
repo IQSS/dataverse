@@ -3,7 +3,7 @@
 ## 🔐 Step 1: Log In & Create a Draft
 
 - {ref}`Log in <account-log-in-options>`.
-- (Optional) Navigate to a collection.
+- (Optional) Navigate to {doc}`a collection </user/dataverse-management>`.
 - Click "Add Data" → "{ref}`New Dataset <adding-new-dataset>`".
 
 Note: If you don’t see the "Add Data" button, contact your repository support team.
