@@ -273,6 +273,7 @@ The output of the API will include the id, label, type (for example, "file" or "
 With the optional parameter ``showRemainingQuotas=true``, the remaining storage size and/or file number quotas will also be included, if present. For example:
 
 .. code-block::
+
    curl  -H "X-Dataverse-key: $API_TOKEN" "http://localhost:8080/api/datasets/$dataset-id/storageDriver?showRemainingQuotas=true" 
    {
      "status": "OK",
