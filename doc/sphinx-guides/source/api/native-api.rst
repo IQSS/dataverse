@@ -8262,7 +8262,7 @@ Get details of a workflow with a given id::
 
    GET http://$SERVER/api/admin/workflows/$id
 
-Add a new workflow. Request body specifies the workflow properties and steps in JSON format.
+Add a new workflow. Request body specifies the workflow properties and steps in JSON format. Specifically, the body of the message should be a JSON Object with a String "name" for the workflow and a "steps" JSON Array containing a JSON Object per workflow step. (See :doc:`/developers/workflows` for the exiting steps and their required JSON representations.)
 Sample ``json`` files are available at ``scripts/api/data/workflows/``::
 
    POST http://$SERVER/api/admin/workflows

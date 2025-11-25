@@ -737,9 +737,9 @@ public class MailServiceBean implements java.io.Serializable {
                 Object[] paramArrayDatasetMentioned = {
                         userNotification.getUser().getName(),
                         BrandingUtil.getInstallationBrandName(), 
-                        citingResource.getString("@type"),
+                        citingResource.getString("@type", "External Resource"),
                         citingResource.getString("@id"),
-                        citingResource.getString("name"),
+                        citingResource.getString("name", citingResource.getString("@id")),
                         citingResource.getString("relationship"), 
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalId().toString(), 

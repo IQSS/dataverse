@@ -5220,4 +5220,13 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .put("/api/datasets/" + datasetId + "/license");
     }
+
+    public static Response sendMessageToLDNInbox(String message) {
+        // Send the message to the LDN inbox
+        return given()
+                .contentType("application/ld+json")
+                .body(message)
+                .when()
+                .post("/api/inbox/");
+    }
 }
