@@ -96,6 +96,7 @@ public class COARNotifyRelationshipAnnouncement {
         Dataset dataset = datasetService.findByGlobalId(objectId);
         if (dataset == null) {
             logger.fine("Didn't find dataset for object ID: " + objectId + " - ignoring");
+            return;
         }
 
         // Create the citing resource JSON

@@ -3803,14 +3803,14 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 Linked Data Notifications (LDN) Allowed Hosts
 +++++++++++++++++++++++++++++++++++++++++++++
 
-Dataverse supports receiving LDN notifications via the /api/inbox endpoint. The datavers.ldn.allowed-hosts allows you to specify the list of host IP addresses from which LDN notifications can be received, or ``*`` to receive messages from anywhere.
+Dataverse supports receiving LDN notifications via the /api/inbox endpoint. The dataverse.ldn.allowed-hosts allows you to specify the list of host IP addresses from which LDN notifications can be received, or ``*`` to receive messages from anywhere.
 
 Example: ``dataverse.ldn.allowed-hosts=*``
 
 COAR Notify Relationship Announcement Notify Superusers Only
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-When Dataverse receives an LDN message conforming to the COAR Notify Relationship Announcement format and the message is about a Dataset hosted in the installation, Dataverse will send an notification to users who have permission to publish the dataset.
+When Dataverse receives an LDN message conforming to the COAR Notify Relationship Announcement format and the message is about a dataset hosted in the installation, Dataverse will send an notification to users who have permission to publish the dataset.
 This can instead be restricted to only superusers who can publish the dataset using this option.
 
 Example: ``dataverse.coar-notify.relationship-announcement.notify-superusers-only=true``
