@@ -132,6 +132,7 @@ public class DatasetVersion implements Serializable {
     public static final String ARCHIVAL_STATUS_PENDING = "pending";
     public static final String ARCHIVAL_STATUS_SUCCESS = "success";
     public static final String ARCHIVAL_STATUS_FAILURE = "failure";
+    public static final String ARCHIVAL_STATUS_OBSOLETE = "obsolete";
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
