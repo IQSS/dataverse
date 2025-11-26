@@ -1,6 +1,12 @@
 Production
 ==========
 
+.. _production-security-warning:
+
+The :doc:`demo` tutorial is **NOT SECURE BY DEFAULT**. It uses public, hardcoded passwords and secrets for demonstration purposes only.
+
+If you use the demo as a structural template, you MUST replace all default secrets before deploying your instance. Failure to do so will result in a vulnerable production environment.
+
 .. contents:: |toctitle|
 	:local:
 
@@ -11,7 +17,7 @@ As of Dataverse 6.8, when we introduced image tagging per version (see the :ref:
 
 The images and the documentation is not perfect, of course.
 
-For now, we recommend following the :doc:`demo` tutorial. It will help you learn how to configure and secure your installation. Not that instead of "latest" you might want to select a specific version. Again see :ref:`app-image-supported-tags`.
+For now, we recommend following the :doc:`demo` as a structural template. Note that instead of "latest" you might want to select a specific version. Again see :ref:`app-image-supported-tags`.
 
 The Dataverse guides were originally written with a non-Docker installation in mind so we'd like rewrite them with both Docker and non-Docker in mind. This is a big job, obviously. 😅 We know we'd like to write more about ports. We'd like to explain `how to set up Rserve <https://github.com/IQSS/dataverse/issues/11731>`_. Etc., etc.
 
