@@ -533,6 +533,7 @@ public class JsonPrinter {
                 .add("internalVersionNumber", dsv.getVersion())
                 .add("versionMinorNumber", dsv.getMinorVersionNumber())
                 .add("versionState", dsv.getVersionState().name())
+                .add("isInReviewState", dsv.isInReview())
                 .add("latestVersionPublishingState", dataset.getLatestVersion().getVersionState().name())
                 .add("deaccessionNote", dsv.getDeaccessionNote())
                 .add("deaccessionLink", dsv.getDeaccessionLink())
