@@ -9,8 +9,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.GetUserPermittedCollectionsCommand;
-import edu.harvard.iq.dataverse.search.SolrQueryResponse;
-import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.search.*;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -18,11 +17,6 @@ import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.search.SearchConstants;
-import edu.harvard.iq.dataverse.search.SearchException;
-import edu.harvard.iq.dataverse.search.SearchFields;
-import edu.harvard.iq.dataverse.search.SearchServiceFactory;
-import edu.harvard.iq.dataverse.search.SortBy;
 
 import java.util.Arrays;
 import java.util.List;
@@ -162,7 +156,9 @@ public class DataRetrieverAPI extends AbstractApiBean {
             @QueryParam("userIdentifier") String userIdentifier,
             @QueryParam("filter_validities") Boolean filterValidities,
             @QueryParam("dataset_valid") List<Boolean> datasetValidities,
-            @QueryParam("show_collections") boolean showCollections) {
+            @QueryParam("show_collections") boolean showCollections,
+            @QueryParam("sort") String sortField,
+            @QueryParam("order") String sortOrder) {
         boolean otherUser;
 
         String noMsgResultsFound = BundleUtil.getStringFromBundle("dataretrieverAPI.noMsgResultsFound");
@@ -232,14 +228,21 @@ public class DataRetrieverAPI extends AbstractApiBean {
             return this.getJSONErrorString(noMsgResultsFound, null);
         }
 
+        SortBy sortBy;
+        try {
+            sortBy = SearchUtil.getSortBy(sortField, sortOrder, SearchFields.RELEASE_OR_CREATE_DATE);
+        } catch (Exception ex) {
+            return this.getJSONErrorString(ex.getLocalizedMessage(), null);
+        }
+
         try {
                 solrQueryResponse = searchService.getDefaultSearchService().search(
                         dataverseRequest,
                         null, // subtree, default it to Dataverse for now
                         filterParams.getSearchTerm(),  //"*", //
                         filterQueries,//filterQueries,
-                        //SearchFields.NAME_SORT, SortBy.ASCENDING,
-                        SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
+                        sortBy.getField(),
+                        sortBy.getOrder(),
                         solrCardStart, //paginationStart,
                         true, // dataRelatedToMe
                         SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE, //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
