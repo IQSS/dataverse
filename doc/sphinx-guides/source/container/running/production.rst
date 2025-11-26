@@ -3,9 +3,11 @@ Production
 
 .. _production-security-warning:
 
-The :doc:`demo` tutorial is **NOT SECURE BY DEFAULT**. It uses public, hardcoded passwords and secrets for demonstration purposes only.
+.. warning::
 
-If you use the demo as a structural template, you MUST replace all default secrets before deploying your instance. Failure to do so will result in a vulnerable production environment.
+    The :doc:`demo` tutorial is **NOT SECURE BY DEFAULT**. It uses public, hardcoded passwords and secrets for demonstration purposes only.
+
+    If you use the demo as a structural template, you MUST replace all default secrets before deploying your instance. Failure to do so will result in a vulnerable production environment.
 
 .. contents:: |toctitle|
 	:local:
