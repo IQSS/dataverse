@@ -178,6 +178,18 @@ public class SettingsServiceBean {
         WorkflowsAdminIpWhitelist,
         
         /**
+         * Represents the workflow identifier for the "pre-publish dataset" operation.
+         * This identifier is used to manage and define the specific workflow
+         * triggered before a dataset is published within the application.
+         */
+        PrePublishDatasetWorkflowId,
+        /**
+         * Represents the configuration key for specifying the workflow identifier that
+         * will be executed after a dataset has been published.
+         */
+        PostPublishDatasetWorkflowId,
+        
+        /**
          * A special secret that, if set, needs to be given when trying to manage internal users.
          * This key was formerly known as "BuiltinUsers.KEY", which never was a setting name aligning with the others.
          * At some future point this setting should be moved to JvmSettings (so we consume proper secrets)

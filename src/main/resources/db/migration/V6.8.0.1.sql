@@ -95,3 +95,7 @@ DO $$
             DELETE FROM setting WHERE name = 'WorkflowsAdmin#IP_WHITELIST_KEY';
         END IF;
     END $$;
+
+-- 4. Migrate WorkflowServiceBean.WorkflowId specials to new PrePublishDatasetWorkflowId and PostPublishDatasetWorkflowId
+UPDATE setting SET name = ':PrePublishDatasetWorkflowId' WHERE name = 'WorkflowServiceBean.WorkflowId:PrePublishDataset';
+UPDATE setting SET name = ':PostPublishDatasetWorkflowId' WHERE name = 'WorkflowServiceBean.WorkflowId:PostPublishDataset';
