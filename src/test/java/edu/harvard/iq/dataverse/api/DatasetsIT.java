@@ -1176,6 +1176,7 @@ public class DatasetsIT {
         datasetVersion.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.versionState", equalTo("RELEASED"))
+                .body("data.isInReviewState", equalTo(false))
                 .body("data.latestVersionPublishingState", equalTo("RELEASED"));
 
         // Upload another file: 
@@ -1189,6 +1190,7 @@ public class DatasetsIT {
         datasetVersion.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.versionState", equalTo("DRAFT"))
+                .body("data.isInReviewState", equalTo(false))
                 .body("data.latestVersionPublishingState", equalTo("DRAFT"));
 
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
@@ -1196,6 +1198,7 @@ public class DatasetsIT {
         datasetVersion.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.versionState", equalTo("RELEASED"))
+                .body("data.isInReviewState", equalTo(false))
                 .body("data.latestVersionPublishingState", equalTo("DRAFT"));
        
         // We should now have a published version, and a draft. 
@@ -1222,6 +1225,7 @@ public class DatasetsIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", equalTo(1))
                 .body("data.versionState[0]", equalTo("DRAFT"))
+                .body("data[0].isInReviewState", equalTo(false))
                 .body("data[0].files.size()", equalTo(2));
                 
         // And now call it with an un-privileged token, to make sure only one 
@@ -1231,6 +1235,7 @@ public class DatasetsIT {
         versionsResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.versionState[0]", not("DRAFT"))
+                .body("data[0].isInReviewState", equalTo(false))
                 .body("data.size()", equalTo(1));
         
         // And now call the "short", no-files version of the same api
@@ -1253,6 +1258,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("RELEASED"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files", equalTo(null));
 
         //Latest published unauthorized token
@@ -1261,6 +1267,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("RELEASED"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files", equalTo(null));
 
         //Latest authorized token
@@ -1269,6 +1276,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("DRAFT"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files", equalTo(null));
 
         //Latest unauthorized token
@@ -1277,6 +1285,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("RELEASED"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files", equalTo(null));
 
         //Specific version authorized token
@@ -1285,6 +1294,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("RELEASED"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files", equalTo(null));
 
         //Specific version unauthorized token
@@ -1293,6 +1303,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("RELEASED"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files", equalTo(null));
 
         excludeFiles = false;
@@ -1303,6 +1314,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("RELEASED"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files.size()", equalTo(1));
 
         //Latest published unauthorized token
@@ -1311,6 +1323,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("RELEASED"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files.size()", equalTo(1));
 
         //Latest authorized token, user is authenticated should get the Draft version
@@ -1319,6 +1332,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("DRAFT"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files.size()", equalTo(2));
 
         //Latest unauthorized token, user has no permissions should get the latest Published version
@@ -1327,6 +1341,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("RELEASED"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files.size()", equalTo(1));
 
         //Specific version authorized token
@@ -1335,6 +1350,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("RELEASED"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files.size()", equalTo(1));
 
         //Specific version unauthorized token
@@ -1343,6 +1359,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("RELEASED"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files.size()", equalTo(1));
 
         //We deaccession the dataset
@@ -1359,6 +1376,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("DEACCESSIONED"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files.size()", equalTo(1));
 
         //Latest published requesting files, one version is DEACCESSIONED the second is DRAFT so shouldn't get any datasets
@@ -1371,6 +1389,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("DRAFT"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files.size()", equalTo(2));
 
         //Latest unauthorized token requesting files, one version is DEACCESSIONED the second is DRAFT so shouldn't get any datasets
@@ -1383,6 +1402,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("DEACCESSIONED"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files.size()", equalTo(1));
 
         //Specific version unauthorized token requesting files, one version is DEACCESSIONED the second is DRAFT so shouldn't get any datasets.
@@ -1398,6 +1418,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("DEACCESSIONED"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files", equalTo(null));
 
         //Latest published exclude files, should get the DEACCESSIONED version
@@ -1406,6 +1427,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("DEACCESSIONED"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files", equalTo(null));
 
         //Latest authorized token should get the DRAFT version with no files
@@ -1414,6 +1436,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("DRAFT"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files", equalTo(null));
 
         //Latest unauthorized token excluding files, one version is DEACCESSIONED the second is DRAFT so shouldn't get any datasets
@@ -1422,6 +1445,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("DEACCESSIONED"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files", equalTo(null));
 
         //Specific version authorized token
@@ -1430,6 +1454,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("DEACCESSIONED"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files", equalTo(null));
 
         //Specific version unauthorized token requesting files, one version is DEACCESSIONED the second is DRAFT so shouldn't get any datasets.
@@ -1438,6 +1463,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("DEACCESSIONED"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files", equalTo(null));
 
         //Set of test when we have a deaccessioned dataset but we don't include deaccessioned
@@ -1460,6 +1486,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("DRAFT"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files.size()", equalTo(2));
 
         //Latest unauthorized token one version is DEACCESSIONED the second is DRAFT so shouldn't get any datasets
@@ -1494,6 +1521,7 @@ public class DatasetsIT {
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
             .body("data.versionState", equalTo("DRAFT"))
+            .body("data.isInReviewState", equalTo(false))
             .body("data.files", equalTo(null));
 
         //Latest unauthorized token one version is DEACCESSIONED the second is DRAFT so shouldn't get any datasets
@@ -1510,6 +1538,28 @@ public class DatasetsIT {
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // Now we request review for the dataset, and check that this is reflected in the API responses
+
+        Response submitForReview = UtilIT.submitDatasetForReview(datasetPid, apiToken);
+        submitForReview.prettyPrint();
+        submitForReview.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiToken);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.versionState", equalTo("DRAFT"))
+                .body("data.isInReviewState", equalTo(true))
+                .body("data.latestVersionPublishingState", equalTo("DRAFT"));
+
+        versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiToken);
+        versionsResponse.prettyPrint();
+        versionsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.versionState[0]", equalTo("DRAFT"))
+                .body("data[0].isInReviewState", equalTo(true));
        
     }
 
