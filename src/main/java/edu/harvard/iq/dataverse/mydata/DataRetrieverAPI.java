@@ -158,7 +158,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
             @QueryParam("dataset_valid") List<Boolean> datasetValidities,
             @QueryParam("show_collections") boolean showCollections,
             @QueryParam("sort") String sortField,
-            @QueryParam("order") String sortOrder) {
+            @QueryParam("order") String sortOrder,
+            @QueryParam("fq") final List<String> filterQueries) {
         boolean otherUser;
 
         String noMsgResultsFound = BundleUtil.getStringFromBundle("dataretrieverAPI.noMsgResultsFound");
@@ -222,11 +223,12 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
         //msg("search with user: " + searchUser.getIdentifier());
 
-        List<String> filterQueries = this.myDataFinder.getSolrFilterQueries();
-        if (filterQueries==null){
+        List<String> defaultFilterQueries = this.myDataFinder.getSolrFilterQueries();
+        if (defaultFilterQueries==null){
             logger.fine("No ids found for this search");
             return this.getJSONErrorString(noMsgResultsFound, null);
         }
+        filterQueries.addAll(defaultFilterQueries);
 
         SortBy sortBy;
         try {
