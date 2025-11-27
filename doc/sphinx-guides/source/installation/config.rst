@@ -2403,6 +2403,9 @@ The workflow id returned in this call (or available by doing a GET of /api/admin
 
 Once these steps are taken, new publication requests will automatically trigger submission of an archival copy to the specified archiver, Chronopolis' DuraCloud component in this example. For Chronopolis, as when using the API, it is currently the admin's responsibility to snap-shot the DuraCloud space and monitor the result. Failure of the workflow, (e.g. if DuraCloud is unavailable, the configuration is wrong, or the space for this dataset already exists due to a prior publication action or use of the API), will create a failure message but will not affect publication itself.
 
+Note: setting the default workflow is also available via the Settings API.
+See :ref:`:WorkflowsAdminIpWhitelist`, :ref:`:PrePublishDatasetWorkflowId` and :ref:`:PostPublishDatasetWorkflowId`
+
 .. _bag-info.txt:
 
 Configuring bag-info.txt
@@ -5084,6 +5087,43 @@ To enable redirects to the zipper on a different server:
 Number of errors to display to the user when creating DataFiles from a file upload. It defaults to 5 errors.
 
 ``curl -X PUT -d '1' http://localhost:8080/api/admin/settings/:CreateDataFilesMaxErrorsToDisplay``
+
+.. _:WorkflowsAdminIpWhitelist:
+
+:WorkflowsAdminIpWhitelist
+++++++++++++++++++++++++++
+
+A semicolon-separated list of IP addresses from which workflow resume requests are honored.
+By default, the Dataverse installation honors resume requests from localhost only (``127.0.0.1;::1``).
+This setting allows for preventing unauthorized resuming of workflows.
+
+``curl -X PUT -d '127.0.0.1;::1;192.168.0.1' http://localhost:8080/api/admin/settings/:WorkflowsAdminIpWhitelist``
+
+See :ref:`Workflow Admin section <workflow_admin>` for more details and context.
+
+.. _:PrePublishDatasetWorkflowId:
+
+:PrePublishDatasetWorkflowId
+++++++++++++++++++++++++++++
+
+The identifier of the workflow to be executed prior to dataset publication.
+This pre-publish workflow is useful for preparing a dataset for public access (e.g., moving files, checking metadata) or starting an approval process.
+
+``curl -X PUT -d '1' http://localhost:8080/api/admin/settings/:PrePublishDatasetWorkflowId``
+
+See :ref:`Workflow Admin section <workflow_admin>` for more details and context.
+
+.. _:PostPublishDatasetWorkflowId:
+
+:PostPublishDatasetWorkflowId
++++++++++++++++++++++++++++++
+
+The identifier of the workflow to be executed after a dataset has been successfully published.
+This post-publish workflow is useful for actions such as sending notifications about the newly published dataset or archiving.
+
+``curl -X PUT -d '2' http://localhost:8080/api/admin/settings/:PostPublishDatasetWorkflowId``
+
+See :ref:`Workflow Admin section <workflow_admin>` for more details and context.
 
 .. _:BagItHandlerEnabled:
 

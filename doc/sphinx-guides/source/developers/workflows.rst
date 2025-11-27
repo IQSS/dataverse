@@ -27,6 +27,8 @@ If a step in a workflow fails, the Dataverse installation makes an effort to rol
   provider offers two steps for sending and receiving customizable HTTP requests.
   *http/sr* and *http/authExt*, detailed below, with the latter able to use the API to make changes to the dataset being processed. (Both lock the dataset to prevent other processes from changing the dataset between the time the step is launched to when the external process responds to the Dataverse instance.)
 
+.. _workflow_admin:
+
 Administration
 ~~~~~~~~~~~~~~
 
@@ -36,6 +38,8 @@ At the moment, defining a workflow for each trigger is done for the entire insta
 
 In order to prevent unauthorized resuming of workflows, the Dataverse installation maintains a "white list" of IP addresses from which resume requests are honored. This list is maintained using the ``/api/admin/workflows/ip-whitelist`` endpoint of the :doc:`/api/native-api`. By default, the Dataverse installation honors resume requests from localhost only (``127.0.0.1;::1``), so set-ups that use a single server work with no additional configuration.
 
+Note: these settings are also exposed and manageable via the Settings API.
+See :ref:`:WorkflowsAdminIpWhitelist`, :ref:`:PrePublishDatasetWorkflowId` and :ref:`:PostPublishDatasetWorkflowId`
 
 Available Steps
 ~~~~~~~~~~~~~~~
