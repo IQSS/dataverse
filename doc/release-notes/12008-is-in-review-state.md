@@ -1,0 +1,1 @@
+The APIs returning information about dataset versions (`/api/datasets/{id}/versions` and `/api/datasets/{id}/versions/{vid}`) now include an `isInReviewState` field indicating whether a specific version is currently under review.
