@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.db.migration;
 
-
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.testing.Tags;
 import org.dbunit.IDatabaseTester;
 import org.junit.jupiter.api.AfterEach;
@@ -63,7 +63,7 @@ class V6_8_0_1__SettingsDataMigrationIT {
     }
     
     @Test
-    @DisplayName("Test migrating BuiltinUsers.KEY and WorkflowsAdmin")
+    @DisplayName("Test migrating BuiltinUsers.KEY and Workflow settings")
     void testMigrationConvertSimpleSettings() throws Exception {
         // GIVEN
         var inputXml = """
@@ -71,6 +71,8 @@ class V6_8_0_1__SettingsDataMigrationIT {
             <dataset>
                 <setting id="1" name="BuiltinUsers.KEY" content="secret-key-123" />
                 <setting id="2" name="WorkflowsAdmin#IP_WHITELIST_KEY" content="127.0.0.1" />
+                <setting id="3" name="WorkflowServiceBean.WorkflowId:PrePublishDataset" content="1" />
+                <setting id="4" name="WorkflowServiceBean.WorkflowId:PostPublishDataset" content="2" />
             </dataset>
             """;
         DBUnitHelper.loadData(databaseTester, inputXml);
@@ -85,10 +87,12 @@ class V6_8_0_1__SettingsDataMigrationIT {
         var expectedXml = """
             <?xml version='1.0' encoding='UTF-8'?>
             <dataset>
-                <setting name=":BuiltinUsersKey" content="secret-key-123" />
-                <setting name=":WorkflowsAdminIpWhitelist" content="127.0.0.1" />
+                <setting name="%s" content="secret-key-123" lang="[null]" />
+                <setting name="%s" content="127.0.0.1" lang="[null]" />
+                <setting name="%s" content="1" lang="[null]" />
+                <setting name="%s" content="2" lang="[null]" />
             </dataset>
-            """;
+            """.formatted(Key.BuiltinUsersKey, Key.WorkflowsAdminIpWhitelist, Key.PrePublishDatasetWorkflowId, Key.PostPublishDatasetWorkflowId);
         var expectedData = DBUnitHelper.getExpectedData(expectedXml, TABLE_NAME, "name", "id");
         
         DBUnitHelper.assertTablesEqual(expectedData, actualData);
