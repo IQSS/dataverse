@@ -4005,6 +4005,7 @@ public class DatasetPage implements java.io.Serializable {
             dataset.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
         }
         // Validate
+        workingVersion.validate(); // and validation messages to dataset fields
         if (!workingVersion.isValid()) {
             FacesContext.getCurrentInstance().validationFailed();
             return "";
