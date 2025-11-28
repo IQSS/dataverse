@@ -696,13 +696,6 @@ public class SettingsServiceBean {
          * Nevermuted setting warning is logged.
          */
         NeverMuted,
-        /**
-         * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
-         */
-        LDNMessageHosts,
-        LDNAnnounceRequiredFields,
-        LDNTarget,
-
         /*
          * Allow a custom JavaScript to control values of specific fields.
          */
@@ -770,6 +763,11 @@ public class SettingsServiceBean {
         PostExternalSearchUrl,
         //Experimental setting to provide a display name for the POST external search service
         PostExternalSearchName,
+        //COAR Notify Relationship Anouncement Workflow Step settings
+        // Which field(s) to trigger on, e.g. 'publication'
+        COARNotifyRelationshipAnnouncementTriggerFields,
+        // JSON specification of the targets to send announcements to
+        COARNotifyRelationshipAnnouncementTargets,
         ;
 
         @Override

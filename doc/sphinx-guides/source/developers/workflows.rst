@@ -206,16 +206,16 @@ Note - the example step includes two settings required for any archiver, three (
   }
 
 
-ldnannounce
-+++++++++++
+coarNotifyRelationshipAnnouncement
+++++++++++++++++++++++++++++++++++
 
-An experimental step that sends a Linked Data Notification (LDN) message to a specific LDN Inbox announcing the publication/availability of a dataset meeting certain criteria. 
+A step that sends a `COAR Notify Relationship Announcement <https://coar-notify.net/catalogue/workflows/repository-relationship-repository/>`_ message, using the `Linked Data Notification (LDN) <https://www.w3.org/TR/ldn/>`_ message standard,
+to a specific set of LDN Inboxes announcing a relationship between a newly published/available dataset and an external resource (e.g. one managed by the recipient). 
 
 The two parameters are
-* ``:LDNAnnounceRequiredFields`` - a list of metadata fields that must exist to trigger the message. Currently, the message also includes the values for these fields but future versions may only send the dataset's persistent identifier (making the receiver responsible for making a call-back to get any metadata).
-* ``:LDNTarget`` - a JSON object containing an ``inbox`` key whose value is the URL of the target LDN inbox to which messages should be sent, e.g. ``{"id": "https://dashv7-dev.lib.harvard.edu","inbox": "https://dashv7-api-dev.lib.harvard.edu/server/ldn/inbox","type": "Service"}`` ).
-
-The supported message format is desribed by `our preliminary specification <https://docs.google.com/document/d/1dqj8_vEcIBeyDIZCaPQvp0FM1eSGO_5CSNCdXOpoUz0/edit?usp=sharing>`_. The format is expected to change in the near future to match the standard for relationship announcements being developed as part of `the COAR Notify Project <https://notify.coar-repositories.org/>`_. 
+* ``:COARNotifyRelationshipAnnouncementTriggerFields`` - a list of metadata field types that can trigger messages. Separate messages will be sent for each field (whether of the same type or not).
+* ``:COARNotifyRelationshipAnnouncementTargets`` - a JSON Array of JSON objects containing ``id``, ``inbox``, and ``type`` fields as required by the `COAR Notify Relationship Announcement specification <https://coar-notify.net/catalogue/workflows/repository-relationship-repository/2/>`_ .
+The ``inbox`` value should be the full URL of the target LDN inbox to which messages should be sent, e.g. ``{"id": "https://dashv7-dev.lib.harvard.edu","inbox": "https://dashv7-api-dev.lib.harvard.edu/server/ldn/inbox","type": ["Service"]}`` ).
 
 
 .. code:: json
@@ -223,13 +223,13 @@ The supported message format is desribed by `our preliminary specification <http
 
   {
     "provider":":internal",
-    "stepType":"ldnannounce",
+    "stepType":"coarNotifyRelationshipAnnouncement",
     "parameters": {
-      "stepName":"LDN Announce"
+      "stepName":"COAR Notify Relationship Announcement"
     },
     "requiredSettings": {
-      ":LDNAnnounceRequiredFields": "string",
-      ":LDNTarget": "string"
+      ":COARNotifyRelationshipAnnouncementTriggerFields": "string",
+      ":COARNotifyRelationshipAnnouncementTargets": "string"
     }
   }
 
