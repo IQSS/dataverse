@@ -7,6 +7,8 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import io.restassured.path.json.JsonPath;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -405,6 +407,48 @@ public class DataRetrieverApiIT {
         Response deleteSuperUserResponse = UtilIT.deleteUser(superUserIdentifier);
         deleteSuperUserResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), deleteSuperUserResponse.getStatusCode());
+    }
+
+    @Test
+    public void testRetrieveMyDataWithMetadataFields() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+
+        Response myDataWithAuthor = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&metadata_fields=citation:author");
+        myDataWithAuthor.prettyPrint();
+        myDataWithAuthor.then().assertThat()
+                .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
+                .body("data.items[0].metadataBlocks.citation.fields[0].typeName", CoreMatchers.equalTo("author"))
+                .body("data.items[0].metadataBlocks.citation.fields[0].value[0].authorName.value", CoreMatchers.equalTo("Finch, Fiona"))
+                .body("data.items[0].metadataBlocks.citation.fields[0].value[0].authorAffiliation.value", CoreMatchers.equalTo("Birds Inc."))
+                .statusCode(OK.getStatusCode());
+
+        Response subFieldsNotSupported = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&metadata_fields=citation:authorAffiliation");
+        subFieldsNotSupported.prettyPrint();
+        subFieldsNotSupported.then().assertThat()
+                .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
+                // No fields returned. authorAffiliation is a subfield of author and not supported.
+                .body("data.items[0].metadataBlocks.citation.fields", Matchers.empty())
+                .statusCode(OK.getStatusCode());
+
+        Response myDataWithAllFieldsFromCitation = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&metadata_fields=citation:*");
+        // Many more fields printed
+        myDataWithAllFieldsFromCitation.prettyPrint();
+        myDataWithAllFieldsFromCitation.then().assertThat()
+                .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
+                // Many fields returned, all of the citation block that has been filled in.
+                .body("data.items[0].metadataBlocks.citation.fields", Matchers.hasSize(5))
+                .statusCode(OK.getStatusCode());
+
     }
 
     private static String prettyPrintError(String resourceBundleKey, List<String> params) {
