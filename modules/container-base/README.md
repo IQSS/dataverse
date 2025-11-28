@@ -13,10 +13,6 @@ this image for other purposes than the Dataverse application.
 
 ## Quick Reference
 
-**Maintained by:** 
-
-This image is created, maintained and supported by the Dataverse community on a best-effort basis.
-
 **Where to find documentation:**
 
 The [Dataverse Container Guide - Base Image](https://guides.dataverse.org/en/latest/container/base-image.html)
@@ -24,7 +20,6 @@ provides in-depth information about content, building, tuning and so on for this
 
 **Where to get help and ask questions:**
 
-IQSS will not offer support on how to deploy or run it. Please reach out to the community for help on using it.
 You can join the Community Chat at https://chat.dataverse.org and https://groups.google.com/g/dataverse-community
 to ask for help and guidance.
 

@@ -27,6 +27,14 @@ public class StartupFlywayMigrator {
 
         Flyway flyway = Flyway.configure()
                 .dataSource(dataSource)
+                .locations(
+                    // Path where to find normal SQL migrations
+                    "classpath:db/migration",
+                    // Path where to find compiled Java migrations
+                    "classpath:edu/harvard/iq/dataverse/flyway"
+                )
+                // Java-based callbacks are not auto-discovered (unlike migrations)
+                .callbacks(new SettingsCleanupCallback())
                 .baselineOnMigrate(true)
                 .load();
 

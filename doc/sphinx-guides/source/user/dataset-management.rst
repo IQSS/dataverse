@@ -175,6 +175,9 @@ File Previews
 
 Dataverse installations can add previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically, after terms have been agreed to or a guestbook entry has been made, if necessary. File previews are not available for restricted files unless they are being accessed using a Preview URL. See also :ref:`previewUrl`. When the dataset license is not the default license, users will be prompted to accept the license/data use agreement before the preview is shown. See also :ref:`license-terms`.
 
+.. note::
+   Some previewers run purely in the browser and make direct (JavaScript) requests back to the Dataverse API endpoints to retrieve file contents, metadata, or signed URLs. For these previewers to function when hosted on a different origin (e.g., a CDN or a separate previewer service), the Dataverse installation must have CORS enabled via :ref:`dataverse.cors.origin <dataverse.cors.origin>`. Administrators should configure the list of allowed origins to include the host serving the previewers.
+
 Previewers are available for the following file types:
 
 - Text
@@ -388,13 +391,16 @@ If the bounding box was successfully populated, :ref:`geospatial-search` should 
 Compressed Files
 ----------------
 
-Compressed files in .zip format are unpacked automatically. If a .zip file fails to unpack for whatever reason, it will upload as is. If the number of files inside are more than a set limit (1,000 by default, configurable by the Administrator), you will get an error message and the .zip file will upload as is.
+Depending on the configuration, compressed files in .zip format are unpacked automatically. If a .zip file is not unpacked, it will upload as is.
+If the number of files inside are more than a set limit (1,000 by default, configurable by the Administrator), you will get an error message and the .zip file will upload as is.
 
 If the uploaded .zip file contains a folder structure, the Dataverse installation will keep track of this structure. A file's location within this folder structure is displayed in the file metadata as the File Path. When you download the contents of the dataset, this folder structure will be preserved and files will appear in their original locations. 
 
 These folder names are subject to strict validation rules. Only the following characters are allowed: the alphanumerics, '_', '-', '.' and ' ' (white space). When a zip archive is uploaded, the folder names are automatically sanitized, with any invalid characters replaced by the '.' character. Any sequences of dots are further replaced with a single dot. For example, the folder name ``data&info/code=@137`` will be converted to ``data.info/code.137``. When uploading through the Web UI, the user can change the values further on the edit form presented, before clicking the 'Save' button. 
 
 .. note:: If you upload multiple .zip files to one dataset, any subdirectories that are identical across multiple .zips will be merged together when the user downloads the full dataset.
+
+If a .zip file is not unpacked and Zip Previewer is installed (see :ref:`file-previews`), it will be possible for users to view the contents of the zip file and to download individual files from within the .zip.
 
 Other File Types
 ----------------
