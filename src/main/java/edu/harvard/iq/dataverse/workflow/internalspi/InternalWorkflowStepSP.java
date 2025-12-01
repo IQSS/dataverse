@@ -25,8 +25,8 @@ public class InternalWorkflowStepSP implements WorkflowStepSPI {
                 return new AuthorizedExternalStep(stepParameters);
             case "archiver":
                 return new ArchivalSubmissionWorkflowStep(stepParameters);
-            case "ldnannounce":
-                return new LDNAnnounceDatasetVersionStep(stepParameters);
+            case "coarNotifyRelationshipAnnouncement":
+                return new COARNotifyRelationshipAnnouncementStep(stepParameters);
             default:
                 throw new IllegalArgumentException("Unsupported step type: '" + stepType + "'.");
         }

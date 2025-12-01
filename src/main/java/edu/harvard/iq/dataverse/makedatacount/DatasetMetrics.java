@@ -8,8 +8,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 
@@ -27,6 +29,9 @@ import jakarta.validation.constraints.NotNull;
  * downloads for a given month.
  */
 @Entity
+@Table(indexes = {
+    @Index(columnList = "dataset_id")
+})
 public class DatasetMetrics implements Serializable {
 
     @Id
