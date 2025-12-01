@@ -172,7 +172,6 @@ public class DatasetField implements Serializable {
     }
 
     @OneToMany(mappedBy = "parentDatasetField", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    @OrderBy("displayOrder ASC")
     private List<DatasetFieldCompoundValue> datasetFieldCompoundValues = new ArrayList<>();
 
     public List<DatasetFieldCompoundValue> getDatasetFieldCompoundValues() {
@@ -197,6 +196,7 @@ public class DatasetField implements Serializable {
 
     @ManyToMany(cascade = {CascadeType.MERGE})
     @JoinTable(indexes = {@Index(columnList="datasetfield_id"),@Index(columnList="controlledvocabularyvalues_id")})
+    @OrderBy("displayOrder ASC")
     private List<ControlledVocabularyValue> controlledVocabularyValues = new ArrayList<>();
 
     public List<ControlledVocabularyValue> getControlledVocabularyValues() {
@@ -604,14 +604,15 @@ public class DatasetField implements Serializable {
         
         if (versionOrTemplate != null) {
             if (versionOrTemplate instanceof DatasetVersion) {
-                dsf.setDatasetVersion((DatasetVersion) versionOrTemplate);               
+                dsf.setDatasetVersion((DatasetVersion) versionOrTemplate);
             } else {
                 dsf.setTemplate((Template) versionOrTemplate);
             }
         }
         
         dsf.setParentDatasetFieldCompoundValue(parent);
-        dsf.setControlledVocabularyValues(controlledVocabularyValues);
+        
+        dsf.getControlledVocabularyValues().addAll(controlledVocabularyValues);
 
         for (DatasetFieldValue dsfv : datasetFieldValues) {
             dsf.getDatasetFieldValues().add(dsfv.copy(dsf));
