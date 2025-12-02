@@ -52,6 +52,9 @@
                                             <p:selectBooleanCheckbox value="#{manageFilePermissionsPage.showDeleted}" itemLabel="#{bundle['dataverse.permissionsFiles.files.includeDeleted']}"  onchange="#{manageFilePermissionsPage.showDeletedCheckboxChange()}">
                                                 <p:ajax update="filesFragment, usersGroups"/>
                                             </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{manageFilePermissionsPage.showHistory}" itemLabel="#{bundle['dataverse.permissionsFiles.files.showHistory']}"  onchange="#{manageFilePermissionsPage.showHistoryCheckboxChange()}">
+                                                <p:ajax update="filesFragment, usersGroups"/>
+                                            </p:selectBooleanCheckbox>
                                         </div>
                                         <div>
                                             <p:fragment id="userGroupsRequests" rendered="#{!empty manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}">
@@ -88,8 +91,8 @@
                                                             rendered="#{manageFilePermissionsPage.formatAccessRequestDate(access.value) == null}" />
                                                     </p:column>
                                                     <p:column width="20%" class="text-center" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.access']}">
-                                                        <div class="btn-group" role="group" aria-label="access">
-                                                            <p:commandLink styleClass="btn btn-default"
+                                                        <div class="btn-group" role="group" aria-label="access" >
+                                                            <p:commandLink styleClass="btn btn-default" rendered="#{!manageFilePermissionsPage.showHistory}"
                                                                            actionListener="#{manageFilePermissionsPage.grantAccessToAllRequests(access.key)}"
                                                                            update=":#{p:resolveClientId('rolesPermissionsForm:userGroups', view)}
                                                                            :#{p:resolveClientId('rolesPermissionsForm:restrictedFiles', view)}
@@ -98,7 +101,7 @@
                                                                            @([id$=Messages])">
                                                                 <span class="glyphicon glyphicon-ok"/> #{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}
                                                             </p:commandLink>
-                                                            <p:commandLink styleClass="btn btn-default"
+                                                            <p:commandLink styleClass="btn btn-default" rendered="#{!manageFilePermissionsPage.showHistory}"
                                                                            actionListener="#{manageFilePermissionsPage.rejectAccessToAllRequests(access.key)}"
                                                                            update=":#{p:resolveClientId('rolesPermissionsForm:userGroups', view)}
                                                                            :#{p:resolveClientId('rolesPermissionsForm:restrictedFiles', view)}
@@ -107,6 +110,7 @@
                                                                            @([id$=Messages])">
                                                                 <span class="glyphicon glyphicon-ban-circle"/> #{bundle['dataverse.permissionsFiles.assignDialog.rejectBtn']}
                                                             </p:commandLink>
+                                                            <h:outputText value="#{manageFilePermissionsPage.getAccessRequestStates(access.value)}" rendered="#{manageFilePermissionsPage.showHistory}"/>
                                                         </div>
                                                     </p:column>
                                                 </p:dataTable>
@@ -399,13 +403,13 @@
                                     <span class="glyphicon glyphicon-ok"/>
                                     <h:outputText value="#{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}"/>
                                 </p:commandLink>
-                                <p:commandLink styleClass="btn btn-default" rendered="#{!empty manageFilePermissionsPage.fileRequester}"
+                                <p:commandLink styleClass="btn btn-default" rendered="#{!empty manageFilePermissionsPage.fileRequester and !manageFilePermissionsPage.showHistory}"
                                                update="assignRoleContent userGroups fileAccessRequests restrictedFiles roleAssignmentHistory @([id$=Messages])"
                                                actionListener="#{manageFilePermissionsPage.grantAccessToRequests(manageFilePermissionsPage.fileRequester)}" oncomplete="PF('assignWidget').hide();">
                                     <span class="glyphicon glyphicon-ok"/>
                                     <h:outputText value="#{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}"/>
                                 </p:commandLink>
-                                <p:commandLink styleClass="btn btn-default" rendered="#{!empty manageFilePermissionsPage.fileRequester}"
+                                <p:commandLink styleClass="btn btn-default" rendered="#{!empty manageFilePermissionsPage.fileRequester and !manageFilePermissionsPage.showHistory}"
                                                update="assignRoleContent userGroups fileAccessRequests restrictedFiles @([id$=Messages])"
                                                actionListener="#{manageFilePermissionsPage.rejectAccessToRequests(manageFilePermissionsPage.fileRequester)}" oncomplete="PF('assignWidget').hide();">
                                     <span class="glyphicon glyphicon-ban-circle"/>

@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.util.zip.ZipInputStream;
 
-import jakarta.json.Json;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -27,9 +26,8 @@ import java.util.regex.Pattern;
 import org.hamcrest.collection.IsMapContaining;
 
 import static jakarta.ws.rs.core.Response.Status.*;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -547,6 +545,12 @@ public class AccessIT {
         Response rejectFileAccessResponse = UtilIT.rejectFileAccessRequest(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
         assertEquals(200, rejectFileAccessResponse.getStatusCode());
 
+        // including history includes "rejected"
+        Response listAccessRequestWithHistoryResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken, Boolean.TRUE);
+        listAccessRequestWithHistoryResponse.prettyPrint();
+        assertEquals(200, listAccessRequestWithHistoryResponse.getStatusCode());
+        assertTrue(listAccessRequestWithHistoryResponse.prettyPrint().contains("\"requestState\": \"rejected\""));
+
         requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
         //grant file access
         Response grantFileAccessResponse = UtilIT.grantFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
@@ -571,6 +575,75 @@ public class AccessIT {
 
         listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken);
         assertEquals(404, listAccessRequestResponse.getStatusCode());
+
+        // create multiple users and grant some access and reject the others
+        for (int i=0 ; i <15; i++) {
+            Response createUserResponse = UtilIT.createRandomUser();
+            createUserResponse.prettyPrint();
+            assertEquals(200, createUserResponse.getStatusCode());
+            String token = UtilIT.getApiTokenFromResponse(createUserResponse);
+            String apiIdentifier = UtilIT.getUsernameFromResponse(createUserResponse);
+            Response fileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), token);
+            assertEquals(200, fileAccessResponse.getStatusCode());
+            if (i % 2 == 0) {
+                fileAccessResponse = UtilIT.grantFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifier, apiToken);
+                assertEquals(200, fileAccessResponse.getStatusCode());
+            } else {
+                fileAccessResponse = UtilIT.rejectFileAccessRequest(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifier, apiToken);
+                assertEquals(200, fileAccessResponse.getStatusCode());
+            }
+        }
+
+        // include full history
+        listAccessRequestWithHistoryResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken, Boolean.TRUE);
+        listAccessRequestWithHistoryResponse.prettyPrint();
+        listAccessRequestWithHistoryResponse.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(17));
+
+        // include paginated history
+        for (int page = 0; page <= 8; page++) {
+            // There are 9 pages (0 though 8). The first 8 pages should have 2 entries each. The last page should have 1 entry. (Total 17)
+            int expectedCount = page < 8 ? 2 : 1;
+            listAccessRequestWithHistoryResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken, page, 2);
+            listAccessRequestWithHistoryResponse.prettyPrint();
+            listAccessRequestWithHistoryResponse.then()
+                    .assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("selectedPage", equalTo(page))
+                    .body("pageCount", equalTo(expectedCount))
+                    .body("totalCount", equalTo(17))
+                    .body("hasPrevPage", equalTo(page > 0))
+                    .body("hasNextPage", equalTo(page < 8))
+                    .body("data.size()", equalTo(expectedCount));
+        }
+        // Edge cases.
+        // Return 404 if requesting a page to high.
+        // Gets the entire list if requesting page = negative index or number of items <= 0
+        listAccessRequestWithHistoryResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken, 99, 2);
+        listAccessRequestWithHistoryResponse.prettyPrint();
+        listAccessRequestWithHistoryResponse.then()
+                .assertThat()
+                .statusCode(NOT_FOUND.getStatusCode());
+        listAccessRequestWithHistoryResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken, -1, 2);
+        listAccessRequestWithHistoryResponse.prettyPrint();
+        listAccessRequestWithHistoryResponse.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("selectedPage", nullValue())
+                .body("pageCount", nullValue())
+                .body("totalCount", nullValue())
+                .body("data.size()", equalTo(17));
+        listAccessRequestWithHistoryResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken, 0, 0);
+        listAccessRequestWithHistoryResponse.prettyPrint();
+        listAccessRequestWithHistoryResponse.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("selectedPage", nullValue())
+                .body("pageCount", nullValue())
+                .body("totalCount", nullValue())
+                .body("data.size()", equalTo(17));
     }
 
     // This is a round trip test of uploading a zipped archive, with some folder

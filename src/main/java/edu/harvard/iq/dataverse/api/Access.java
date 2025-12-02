@@ -41,6 +41,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 import java.util.logging.Logger;
@@ -62,6 +63,7 @@ import jakarta.inject.Inject;
 import jakarta.json.Json;
 import java.net.URI;
 import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 import jakarta.persistence.TypedQuery;
 
 import jakarta.ws.rs.GET;
@@ -1467,8 +1469,11 @@ public class Access extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/datafile/{id}/listRequests")
-    public Response listFileAccessRequests(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId, @Context HttpHeaders headers) {
-
+    public Response listFileAccessRequests(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId,
+                                           @QueryParam("includeHistory") boolean includeHistory,
+                                           @QueryParam("per_page") final int numResultsPerPageRequested,
+                                           @QueryParam("start") final int paginationStart,
+                                           @Context HttpHeaders headers) {
         DataverseRequest dataverseRequest;
 
         DataFile dataFile;
@@ -1489,7 +1494,8 @@ public class Access extends AbstractApiBean {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
 
-        List<FileAccessRequest> requests = dataFile.getFileAccessRequests(FileAccessRequest.RequestState.CREATED);
+        List<FileAccessRequest> requests = !includeHistory ? dataFile.getFileAccessRequests(FileAccessRequest.RequestState.CREATED) :
+                dataFile.getFileAccessRequests(numResultsPerPageRequested, paginationStart);
 
         if (requests == null || requests.isEmpty()) {
             List<String> args = Arrays.asList(dataFile.getDisplayName());
@@ -1499,7 +1505,21 @@ public class Access extends AbstractApiBean {
         JsonArrayBuilder userArray = Json.createArrayBuilder();
 
         for (FileAccessRequest fileAccessRequest : requests) {
-            userArray.add(json(fileAccessRequest.getRequester()));
+            userArray.add(json(fileAccessRequest));
+        }
+
+        // Check for pagination request
+        if (includeHistory && numResultsPerPageRequested > 0 && paginationStart >= 0) {
+            JsonObjectBuilder builder = Json.createObjectBuilder()
+                    .add("status", ApiConstants.STATUS_OK)
+                    .add("data", userArray);
+
+            builder = JsonPrinter.jsonAddPagination(builder, paginationStart, numResultsPerPageRequested,
+                    requests.size(), dataFile.getFileAccessRequests().size());
+
+            return Response.ok( builder.build() )
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
         }
 
         return ok(userArray);

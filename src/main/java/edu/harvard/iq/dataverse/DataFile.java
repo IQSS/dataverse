@@ -35,6 +35,7 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.NotBlank;
+import org.apache.commons.compress.utils.Lists;
 
 /**
  *
@@ -226,11 +227,25 @@ public class DataFile extends DvObject implements Comparable {
     inverseJoinColumns = @JoinColumn(name = "authenticated_user_id"))
     private List<AuthenticatedUser> fileAccessRequesters;
 
-    
-    public List<FileAccessRequest> getFileAccessRequests(){
-        return fileAccessRequests;
+    public List<FileAccessRequest> getFileAccessRequests() {
+        return getFileAccessRequests(0, 0);
     }
-    
+
+    public List<FileAccessRequest> getFileAccessRequests(int numResultsPerPageRequested, int paginationStart) {
+        if (numResultsPerPageRequested <= 0 || paginationStart < 0) {
+            return fileAccessRequests;
+        } else {
+            int startIndex = paginationStart * numResultsPerPageRequested;
+            int endIndex = startIndex + numResultsPerPageRequested;
+            if (startIndex >= fileAccessRequests.size()) {
+                return List.of();
+            } else if (endIndex > fileAccessRequests.size()) {
+                endIndex = fileAccessRequests.size();
+            }
+            return fileAccessRequests.subList(startIndex, endIndex);
+        }
+    }
+
     public List<FileAccessRequest> getFileAccessRequests(FileAccessRequest.RequestState state){
         return fileAccessRequests.stream().filter(far -> far.getState() == state).collect(Collectors.toList());
     }

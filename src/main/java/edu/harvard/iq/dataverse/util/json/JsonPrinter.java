@@ -146,6 +146,21 @@ public class JsonPrinter {
             .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
         return builder;
     }
+    public static JsonObjectBuilder json(FileAccessRequest fileAccessRequest) {
+        JsonObjectBuilder builder = json(fileAccessRequest.getRequester())
+                .add("requestState", fileAccessRequest.getStateLabel());
+        return builder;
+    }
+
+    public static JsonObjectBuilder jsonAddPagination(JsonObjectBuilder objectBuilder, int pageRequested, int numResultsPerPageRequested, int pageCount, int totalCount) {
+        objectBuilder
+                .add("selectedPage", pageRequested)
+                .add("pageCount", pageCount)
+                .add("totalCount", totalCount)
+                .add("hasPrevPage", pageRequested > 0)
+                .add("hasNextPage", pageCount < numResultsPerPageRequested ? false : totalCount > (pageRequested + 1) * pageCount);
+        return objectBuilder;
+    }
 
     public static JsonArrayBuilder jsonRoleAssignments(List<RoleAssignment> roleAssignments) {
         JsonArrayBuilder bld = Json.createArrayBuilder();
