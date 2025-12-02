@@ -328,7 +328,7 @@
                         </p:fragment>
                         <p:fragment id="assignRoleContent">
                             <div class="form-horizontal">
-                                <p class="help-block">#{bundle['dataverse.permissionsFiles.assignDialog.description']}</p>
+                                <p class="help-block">#{manageFilePermissionsPage.showHistory ? '' : bundle['dataverse.permissionsFiles.assignDialog.description']}</p>
                                 <div class="form-group" jsf:rendered="#{empty manageFilePermissionsPage.fileRequester}">
                                     <label for="userGroupAccessInput" class="col-sm-3 control-label">
                                         #{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup']}
@@ -361,7 +361,7 @@
                             <div>
                                 <p:outputPanel id="selectionCounter">
                                     <p>
-                                        <h:outputFormat styleClass="highlightBold" value="#{bundle['dataverse.permissionsFiles.files.selected']}">
+                                        <h:outputFormat styleClass="highlightBold" value="#{manageFilePermissionsPage.showHistory ? '' : bundle['dataverse.permissionsFiles.files.selected']}">
                                             <f:param value="#{manageFilePermissionsPage.selectedFiles.size()}"/>
                                             <f:param value="#{!empty manageFilePermissionsPage.fileRequester ?
                                                         manageFilePermissionsPage.fileAccessRequestMap.get(manageFilePermissionsPage.fileRequester).size()
@@ -386,12 +386,13 @@
                                     <p:ajax event="rowUnselectCheckbox" update=":rolesPermissionsForm:selectionCounter" />
                                     <p:ajax event="toggleSelect"  update=":rolesPermissionsForm:selectionCounter" />
 
-                                    <p:column selectionMode="multiple" style="width:2%;text-align:center"/>
+                                    <p:column selectionMode="multiple" style="width:2%;text-align:center" rendered="#{!manageFilePermissionsPage.showHistory}"/>
                                     <p:column width="98%"  headerText="#{bundle['dataverse.permissionsFiles.assignDialog.fileName']}">
                                         <h:outputText rendered="#{!empty file.directoryLabel}" value="#{file.directoryLabel}/" styleClass="text-muted"/>
                                         <h:outputText value="#{file.displayName}"/>
                                         <h:outputText value=" (#{bundle['dataverse.permissionsFiles.files.deleted']}) " rendered="#{file.deleted}"/>
                                         <h:outputText value=" (#{bundle['dataverse.permissionsFiles.files.draftUnpublished']}) "  rendered="#{!file.released}"/>
+                                        <h:outputText value=" #{manageFilePermissionsPage.getAccessRequestStates(file.getAccessRequestsForAssignee(manageFilePermissionsPage.fileRequester))} " rendered="#{manageFilePermissionsPage.showHistory}"/>
                                     </p:column>
                                 </p:dataTable>
                             </div>

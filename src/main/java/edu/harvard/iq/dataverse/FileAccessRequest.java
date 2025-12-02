@@ -147,7 +147,7 @@ public class FileAccessRequest implements Serializable{
 
     // For use by UI to allow for internationalization
     public String getStateLabelNationalized() {
-        if(isStateCreated()){
+        if(isStateCreated()) {
             return BundleUtil.getStringFromBundle("permission.fileAccess.created");
         }
         if(isStateGranted()) {

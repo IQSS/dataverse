@@ -843,6 +843,15 @@ public class DataFile extends DvObject implements Comparable {
         this.fileAccessRequests.add(request);
     }
 
+    public List<FileAccessRequest> getAccessRequestsForAssignee(RoleAssignee roleAssignee) {
+        if (this.fileAccessRequests == null) {
+            return null;
+        }
+
+        return this.fileAccessRequests.stream()
+                .filter(fileAccessRequest -> fileAccessRequest.getRequester().equals(roleAssignee)).toList();
+    }
+
     public FileAccessRequest getAccessRequestForAssignee(RoleAssignee roleAssignee) {
         if (this.fileAccessRequests == null) {
             return null;
