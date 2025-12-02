@@ -3652,9 +3652,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/storageDriver")
     public Response getFileStore(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
-            @QueryParam("showRemainingQuotas") boolean showRemaining,
-            @Context UriInfo uriInfo,
-            @Context HttpHeaders headers) throws WrappedResponse {
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
 
         Dataset dataset;
 
@@ -3664,38 +3662,7 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
 
-        if (showRemaining) {
-            AuthenticatedUser user;
-            try {
-                user = getRequestAuthenticatedUserOrDie(crc);
-            } catch (WrappedResponse ex) {
-                return error(Response.Status.BAD_REQUEST, "The option showRemainingQuotas requires authentication.");
-            }
-            if (!permissionSvc.requestOn(createDataverseRequest(user), dataset).has(Permission.EditDataset)) {
-                return error(Response.Status.FORBIDDEN, "The option showRemainingQuotas requires EditDataset permission.");
-            }
-        }
-
-        JsonObjectBuilder output = JsonPrinter.jsonStorageDriver(dataset.getEffectiveStorageDriverId(), dataset);
-
-        if (showRemaining) {
-            // Add optional elements - storage size and file count limits, if present:
-
-            if (systemConfig.isStorageQuotasEnforced()) {
-                UploadSessionQuotaLimit uploadSessionQuota = fileService.getUploadSessionQuotaLimit(dataset);
-                if (uploadSessionQuota != null) {
-                    output.add("storageQuotaRemaining", uploadSessionQuota.getRemainingQuotaInBytes());
-                }
-            }
-
-            Integer effectiveFileCountLimit = dataset.getEffectiveDatasetFileCountLimit();
-
-            if (effectiveFileCountLimit != null) {
-                output.add("numberOfFilesRemaining", effectiveFileCountLimit - datasetService.getDataFileCountByOwner(dataset.getId()));
-            }
-        }
-
-        return ok(output);
+        return ok(JsonPrinter.jsonStorageDriver(dataset.getEffectiveStorageDriverId(), dataset));
     }
 
     @PUT
@@ -6254,5 +6221,49 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     public Response getDatasetStorageUse(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) throws WrappedResponse {
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataset.storage.use"),
                 execCommand(new GetDatasetStorageUseCommand(req, findDatasetOrDie(identifier))))), getRequestUser(crc));
+    }
+    
+    @GET
+    @AuthRequired
+    @Path("{identifier}/uploadlimits")
+    public Response getUploadLimits(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+            @Context UriInfo uriInfo,
+            @Context HttpHeaders headers) throws WrappedResponse {
+
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+
+        AuthenticatedUser user;
+        try {
+            user = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "This API call requires authentication.");
+        }
+        if (!permissionSvc.requestOn(createDataverseRequest(user), dataset).has(Permission.EditDataset)) {
+            return error(Response.Status.FORBIDDEN, "This API call requires EditDataset permission.");
+        }
+
+        JsonObjectBuilder limits = new NullSafeJsonBuilder();
+
+        // Add optional elements - storage size and file count limits, if present:
+        if (systemConfig.isStorageQuotasEnforced()) {
+            UploadSessionQuotaLimit uploadSessionQuota = fileService.getUploadSessionQuotaLimit(dataset);
+            if (uploadSessionQuota != null) {
+                limits.add("storageQuotaRemaining", uploadSessionQuota.getRemainingQuotaInBytes());
+            }
+        }
+
+        Integer effectiveFileCountLimit = dataset.getEffectiveDatasetFileCountLimit();
+
+        if (effectiveFileCountLimit != null) {
+            limits.add("numberOfFilesRemaining", effectiveFileCountLimit - datasetService.getDataFileCountByOwner(dataset.getId()));
+        }
+
+        return ok(new NullSafeJsonBuilder().add("uploadLimits", limits));
     }
 }
