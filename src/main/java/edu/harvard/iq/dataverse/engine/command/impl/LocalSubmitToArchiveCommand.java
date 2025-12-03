@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.BagItLocalPath;
 import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
@@ -38,7 +39,7 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
     public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token,
             Map<String, String> requestedSettings) {
         logger.fine("In LocalCloudSubmitToArchive...");
-        String localPath = requestedSettings.get(":BagItLocalPath");
+        String localPath = requestedSettings.get(BagItLocalPath.toString());
         String zipName = null;
         
         //Set a failure status that will be updated if we succeed
