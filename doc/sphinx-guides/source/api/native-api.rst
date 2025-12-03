@@ -1263,7 +1263,7 @@ To set or change the storage allocation quota for a collection:
 
 .. code-block:: 
 
-  curl -X POST -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota/$SIZE_IN_BYTES"
+  curl -X PUT -H "X-Dataverse-key:$API_TOKEN" -d $SIZE_IN_BYTES "$SERVER_URL/api/dataverses/$ID/storage/quota"
 
 This API is superuser-only.
   
@@ -1296,7 +1296,7 @@ To set or change the storage allocation quota for a dataset:
 
 .. code-block:: 
 
-  curl -X POST -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/$ID/storage/quota/$SIZE_IN_BYTES"
+  curl -X PUT -H "X-Dataverse-key:$API_TOKEN" -d $SIZE_IN_BYTES "$SERVER_URL/api/datasets/$ID/storage/quota"
 
 This API is superuser-only.
   
@@ -1309,6 +1309,29 @@ To delete a storage quota configured for a dataset:
 
 This API is superuser-only.
 
+The following convenience API shows the dynamic values of the *remaining* storage size and/or file number quotas on the dataset, if present. For example:
+
+.. code-block::
+
+   curl  -H "X-Dataverse-key: $API_TOKEN" "http://localhost:8080/api/datasets/$dataset-id/uploadlimits" 
+   {
+     "status": "OK",
+     "uploadLimits": {
+       "numberOfFilesRemaining": 20,
+       "storageQuotaRemaining": 1048576
+     } 
+   }
+
+Or, when neither limit is present: 
+
+.. code-block::
+
+   {
+     "status": "OK",
+     "uploadLimits": {} 
+   }
+
+This API requires the Edit permission on the dataset. 
 
 Use the ``/settings`` API to enable or disable the enforcement of storage quotas that are defined across the instance via the following setting:
 
