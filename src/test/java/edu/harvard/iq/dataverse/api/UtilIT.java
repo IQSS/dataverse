@@ -1712,16 +1712,31 @@ public class UtilIT {
     }
 
     static Response getNotifications(String apiToken) {
-        return getNotifications(apiToken, false);
+        return getNotifications(apiToken, null, null, null, null);
     }
 
-    static Response getNotifications(String apiToken, boolean inAppNotificationFormat) {
-        RequestSpecification requestSpecification = given();
+    static Response getNotifications(String apiToken, Boolean inAppNotificationFormat, Boolean onlyUnread, Integer limit, Integer offset) {
+        RequestSpecification request = given();
         if (apiToken != null) {
-            requestSpecification = given()
-                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+            request.header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
-        return requestSpecification.get("/api/notifications/all?inAppNotificationFormat=" + inAppNotificationFormat);
+
+        // Add Optional parameters
+        if (inAppNotificationFormat != null) {
+            request.queryParam("inAppNotificationFormat", inAppNotificationFormat);
+        }
+        if (onlyUnread != null) {
+            request.queryParam("onlyUnread", onlyUnread);
+        }
+        // Conditionally add pagination parameters only if they are not null
+        if (limit != null) {
+            request.queryParam("limit", limit);
+        }
+        if (offset != null) {
+            request.queryParam("offset", offset);
+        }
+
+        return request.get("/api/notifications/all");
     }
 
     static Response getUnreadNotificationsCount(String apiToken) {

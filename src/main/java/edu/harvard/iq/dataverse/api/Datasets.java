@@ -3662,7 +3662,7 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
 
-        return ok(JsonPrinter.jsonStorageDriver(dataset.getEffectiveStorageDriverId(), dataset));
+        return ok(JsonPrinter.jsonStorageDriver(dataset.getEffectiveStorageDriverId()));
     }
 
     @PUT
