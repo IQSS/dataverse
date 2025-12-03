@@ -8,6 +8,7 @@ A dataset in a Dataverse installation is a container for your data, documentatio
 .. contents:: |toctitle|
 	:local:
 
+.. _metadata-supported:
 
 Supported Metadata
 ==================
@@ -174,6 +175,9 @@ File Previews
 -------------
 
 Dataverse installations can add previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically, after terms have been agreed to or a guestbook entry has been made, if necessary. File previews are not available for restricted files unless they are being accessed using a Preview URL. See also :ref:`previewUrl`. When the dataset license is not the default license, users will be prompted to accept the license/data use agreement before the preview is shown. See also :ref:`license-terms`.
+
+.. note::
+   Some previewers run purely in the browser and make direct (JavaScript) requests back to the Dataverse API endpoints to retrieve file contents, metadata, or signed URLs. For these previewers to function when hosted on a different origin (e.g., a CDN or a separate previewer service), the Dataverse installation must have CORS enabled via :ref:`dataverse.cors.origin <dataverse.cors.origin>`. Administrators should configure the list of allowed origins to include the host serving the previewers.
 
 Previewers are available for the following file types:
 
@@ -388,13 +392,16 @@ If the bounding box was successfully populated, :ref:`geospatial-search` should 
 Compressed Files
 ----------------
 
-Compressed files in .zip format are unpacked automatically. If a .zip file fails to unpack for whatever reason, it will upload as is. If the number of files inside are more than a set limit (1,000 by default, configurable by the Administrator), you will get an error message and the .zip file will upload as is.
+Depending on the configuration, compressed files in .zip format are unpacked automatically. If a .zip file is not unpacked, it will upload as is.
+If the number of files inside are more than a set limit (1,000 by default, configurable by the Administrator), you will get an error message and the .zip file will upload as is.
 
 If the uploaded .zip file contains a folder structure, the Dataverse installation will keep track of this structure. A file's location within this folder structure is displayed in the file metadata as the File Path. When you download the contents of the dataset, this folder structure will be preserved and files will appear in their original locations. 
 
 These folder names are subject to strict validation rules. Only the following characters are allowed: the alphanumerics, '_', '-', '.' and ' ' (white space). When a zip archive is uploaded, the folder names are automatically sanitized, with any invalid characters replaced by the '.' character. Any sequences of dots are further replaced with a single dot. For example, the folder name ``data&info/code=@137`` will be converted to ``data.info/code.137``. When uploading through the Web UI, the user can change the values further on the edit form presented, before clicking the 'Save' button. 
 
 .. note:: If you upload multiple .zip files to one dataset, any subdirectories that are identical across multiple .zips will be merged together when the user downloads the full dataset.
+
+If a .zip file is not unpacked and Zip Previewer is installed (see :ref:`file-previews`), it will be possible for users to view the contents of the zip file and to download individual files from within the .zip.
 
 Other File Types
 ----------------
@@ -415,8 +422,12 @@ Differentially Private (DP) Metadata can be accessed for restricted tabular file
 
 See also :ref:`terms-of-access` and :ref:`permissions`.
 
+.. _edit-files:
+
 Edit Files
 ==========
+
+.. _edit-file-metadata:
 
 Edit File Metadata
 ------------------
@@ -470,6 +481,8 @@ Terms
 
 Dataset terms can be viewed and edited from the Terms tab of the dataset page, or under the Edit dropdown button of a Dataset. There, you can set up how users can use your data once they have downloaded it (via a standard license or, if allowed, custom terms), how they can access your data if you have files that are restricted (terms of access), and enable a Guestbook for your dataset so that you can track who is using your data and for what purposes. These are explained in further detail below:
 
+.. _choosing-license:
+
 Choosing a License
 ------------------
 
@@ -499,6 +512,8 @@ This is true of other licenses as well - users should cite data as appropriate e
 The `Dataverse Community Norms <https://dataverse.org/best-practices/dataverse-community-norms>`_\* detail additional areas where data users should follow societal norms and scientific best practices.
 
 \* **Legal Disclaimer:** these `Community Norms <https://dataverse.org/best-practices/dataverse-community-norms>`_ are not a substitute for the CC0 waiver or custom terms and licenses applicable to each dataset. The Community Norms are not a binding contractual agreement, and downloading datasets from a Dataverse installation does not create a legal obligation to follow these policies.
+
+.. _custom-terms:
 
 Custom Terms of Use for Datasets
 --------------------------------
@@ -682,6 +697,8 @@ Adding Widgets to an OpenScholar Website
 #. Click on the Settings Cog and select Layout
 #. At the top right, select Add New Widget and under Misc. you will see the Dataverse Collection and the Dataverse Dataset Citation Widgets. Click on the widget you would like to add, fill out the form, and then drag it to where you would like it to display in the page.
 
+.. _publish-dataset:
+
 Publish Dataset
 ===============
 
@@ -693,6 +710,8 @@ Whenever you edit your dataset, you are able to publish a new version of the dat
 
 Note: Prior to publishing your dataset the Data Citation will indicate that this is a draft but the "DRAFT VERSION" text
 will be removed as soon as you Publish.
+
+.. _submit-for-review:
 
 Submit for Review
 =================
@@ -751,6 +770,8 @@ Support for file-level retention periods can also be configured in a Dataverse i
 
 Retention periods are intended to support use cases where files must be made unavailable - and in most cases destroyed, e.g. to meet legal requirements - after a certain period or date.
 Actual destruction is not automatically handled, but would have to be done on the storage if needed.
+
+.. _dataset-versions:
 
 Dataset Versions
 ================

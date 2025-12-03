@@ -1,5 +1,13 @@
-Production (Future)
-===================
+Production
+==========
+
+.. _production-security-warning:
+
+.. warning::
+
+    The :doc:`demo` tutorial is **NOT SECURE BY DEFAULT**. It uses public, hardcoded passwords and secrets for demonstration purposes only.
+
+    If you use the demo as a structural template, you MUST replace all default secrets before deploying your instance. Failure to do so will result in a vulnerable production environment.
 
 .. contents:: |toctitle|
 	:local:
@@ -7,21 +15,15 @@ Production (Future)
 Status
 ------
 
-The images described in this guide are not yet recommended for production usage, but we think we are close. (Tagged releases are done; see the "supported image tags" section for :ref:`Application <app-image-supported-tags>` and :ref:`Config Baker <config-image-supported-tags>` images.) For now, please see :doc:`demo`.
+As of Dataverse 6.8, when we introduced image tagging per version (see the :ref:`app-image-supported-tags` section for the :ref:`application image <app-image-supported-tags>`), we feel that the images described in this guide are ready for production use. Enjoy!
 
-We'd like to make the following improvements:
+The images and the documentation is not perfect, of course.
 
-- More docs on setting up additional features
+For now, we recommend following the :doc:`demo` as a structural template. Note that instead of "latest" you might want to select a specific version. Again see :ref:`app-image-supported-tags`.
 
-  - How to set up Rserve.
+The Dataverse guides were originally written with a non-Docker installation in mind so we'd like rewrite them with both Docker and non-Docker in mind. This is a big job, obviously. 😅 We know we'd like to write more about ports. We'd like to explain `how to set up Rserve <https://github.com/IQSS/dataverse/issues/11731>`_. Etc., etc.
 
-- Go through all the features in docs and check what needs to be done differently with containers
-
-  - Check ports, for example.
-
-To join the discussion on what else might be needed before declaring images ready for production, please comment on https://dataverse.zulipchat.com/#narrow/stream/375812-containers/topic/containers.20for.20production/near/434979159
-
-You are also very welcome to join our meetings. See "how to help" below.
+To talk about your ideas for making the images and docs better for production, please feel free to join the `containers for production <https://dataverse.zulipchat.com/#narrow/channel/375812-containers/topic/containers.20for.20production/with/451611258>`_ topic or join a working group meeting (see :ref:`helping-containers`).
 
 Limitations
 -----------
@@ -31,9 +33,9 @@ Limitations
 How to Help
 -----------
 
-You can help the effort to support these images in production by trying them out (see :doc:`demo`) and giving feedback (see :ref:`helping-containers`).
+Please try the images (see :doc:`demo`) and give feedback (see :ref:`helping-containers`)! ❤️
 
 Alternatives
 ------------
 
-Until the images are ready for production, please use the traditional installation method described in the :doc:`/installation/index`.
+The traditional (non-Docker) installation method is described in the :doc:`/installation/index`.

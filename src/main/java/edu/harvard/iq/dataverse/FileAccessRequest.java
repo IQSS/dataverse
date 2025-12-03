@@ -55,7 +55,7 @@ public class FileAccessRequest implements Serializable{
     private Long id;
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(name="datafile_id", nullable=false)
     private DataFile dataFile;
     
     @ManyToOne
