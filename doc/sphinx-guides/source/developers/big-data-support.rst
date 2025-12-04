@@ -165,7 +165,7 @@ Globus File Transfer
 Note: Globus file transfer is still experimental but feedback is welcome! See :ref:`support`.
 
 Users can transfer files via `Globus <https://www.globus.org>`_ into and out of datasets, or reference files on a remote Globus endpoint, when their Dataverse installation is configured to use a Globus accessible store(s) 
-and a community-developed `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ app has been properly installed and configured.
+and a community-developed `dataverse-globus <https://github.com/gdcc/dataverse-globus>`_ app has been properly installed and configured.
 
 Globus endpoints can be in a variety of places, from data centers to personal computers. 
 This means that from within the Dataverse software, a Globus transfer can feel like an upload or a download (with Globus Personal Connect running on your laptop, for example) or it can feel like a true transfer from one server to another (from a cluster in a data center into a Dataverse dataset or vice versa).
