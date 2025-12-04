@@ -3278,7 +3278,7 @@ public class FilesIT {
         assertEquals(BundleUtil.getStringFromBundle("dataverse.storage.quota.notdefined"), JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
         
         // Set quota to 1K:
-        Response setQuotaResponse = UtilIT.setCollectionQuota(dataverseAlias, 1024, apiToken);
+        Response setQuotaResponse = UtilIT.setCollectionQuota(dataverseAlias, Long.valueOf(1024), apiToken);
         setQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
         assertEquals(BundleUtil.getStringFromBundle("dataverse.storage.quota.updated"), JsonPath.from(setQuotaResponse.body().asString()).getString("data.message"));
         
@@ -3402,7 +3402,7 @@ public class FilesIT {
         assertEquals(BundleUtil.getStringFromBundle("dataset.storage.quota.notdefined"), JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
         
         // Set quota to 1K:
-        Response setQuotaResponse = UtilIT.setDatasetQuota(datasetId.toString(), 1024, apiToken);
+        Response setQuotaResponse = UtilIT.setDatasetQuota(datasetId.toString(), Long.valueOf(1024), apiToken);
         setQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
         assertEquals(BundleUtil.getStringFromBundle("dataset.storage.quota.updated"), JsonPath.from(setQuotaResponse.body().asString()).getString("data.message"));
         

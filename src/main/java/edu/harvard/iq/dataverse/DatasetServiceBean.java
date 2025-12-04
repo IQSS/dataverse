@@ -1122,7 +1122,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     /**
      * 
-     * @todo: consider moving the quota methods, from here and the DataverseServiceBean,
+     * @todo: consider moving the quota method, from here and the DataverseServiceBean,
      * to DvObjectServiceBean. 
      */
     public void saveStorageQuota(Dataset target, Long allocation) {
@@ -1140,13 +1140,4 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         em.flush();
     }
-    
-    public void disableStorageQuota(StorageQuota storageQuota) {
-        if (storageQuota != null && storageQuota.getAllocation() != null) {
-            storageQuota.setAllocation(null);
-            em.merge(storageQuota);
-            em.flush();
-        }
-    }
-
 }

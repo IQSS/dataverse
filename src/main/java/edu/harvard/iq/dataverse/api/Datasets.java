@@ -6182,11 +6182,17 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }
     }
     
-    @POST
+    @PUT
     @AuthRequired
-    @Path("{identifier}/storage/quota/{bytesAllocated}")
-    public Response setDatasetQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("bytesAllocated") Long bytesAllocated) throws WrappedResponse {
+    @Path("{identifier}/storage/quota")
+    public Response setDatasetQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String value) throws WrappedResponse {
         try {
+            Long bytesAllocated; 
+            try {
+                bytesAllocated = Long.parseLong(value);
+            } catch (NumberFormatException nfe){
+                return error(Status.BAD_REQUEST, value + " is not a valid number of bytes");
+            }
             execCommand(new SetDatasetQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDatasetOrDie(dvIdtf), bytesAllocated));
             return ok(BundleUtil.getStringFromBundle("dataset.storage.quota.updated"));
         } catch (WrappedResponse ex) {
