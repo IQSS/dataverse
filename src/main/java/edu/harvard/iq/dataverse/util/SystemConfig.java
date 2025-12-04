@@ -519,38 +519,41 @@ public class SystemConfig {
         if (limitEntry != null) {
             // Case A: the setting is using JSON to support multiple formats
             if (limitEntry.trim().startsWith("{")) {
-                try {
-                    JsonObject limits = Json.createReader(new StringReader(limitEntry)).readObject();
+                try (JsonReader reader = Json.createReader(new StringReader(limitEntry))) {
+                    JsonObject limits = reader.readObject();
                     
                     Map<String, Long> limitsMap = new HashMap<>();
                     // We add the default in case the JSON does not contain the default (which is optional).
                     limitsMap.put(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, -1L);
                     
-                    for (String formatName : limits.keySet()) {
+                    for (Map.Entry<String, JsonValue> format : limits.entrySet()) {
+                        String formatName = format.getKey();
                         String lowercaseFormatName = formatName.toLowerCase();
                         
                         try {
-                            JsonValue value = limits.get(formatName);
-                            Long sizeOption;
+                            JsonValue value = format.getValue();
+                            long sizeOption;
                             
                             // We want to be able to use either numbers or string values, so detect which one it is.
+                            // This is necessary as we need to tell the JSON parser what to do, it doesn't automatically handle this for us.
                             if (value.getValueType() == JsonValue.ValueType.STRING) {
-                                sizeOption = Long.valueOf(limits.getString(formatName));
+                                sizeOption = Long.parseLong(limits.getString(formatName));
                             } else if (value.getValueType() == JsonValue.ValueType.NUMBER) {
+                                // Will throw if not a whole number!
                                 sizeOption = limits.getJsonNumber(formatName).longValueExact();
                             } else {
-                                logger.warning("Invalid value type for format " + formatName + ": expected string or number");
+                                logger.warning(() -> "Invalid value type for format " + formatName + ": expected string or number");
                                 logger.warning("Disabling all tabular ingest completely until fixed!");
                                 return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
                             }
                             
                             limitsMap.put(lowercaseFormatName, sizeOption);
                         } catch (NumberFormatException nfe) {
-                            logger.warning("Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long for format " + formatName + " (not a valid number)");
+                            logger.warning(() -> "Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long for format " + formatName + " (not a valid number)");
                             logger.warning("Disabling all tabular ingest completely until fixed!");
                             return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
                         } catch (ArithmeticException ae) {
-                            logger.warning("Number too large or has fractional part for format " + formatName);
+                            logger.warning(() -> "Number too large or has fractional part for format " + formatName);
                             logger.warning("Disabling all tabular ingest completely until fixed!");
                             return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
                         }
@@ -558,7 +561,7 @@ public class SystemConfig {
                     
                     return Collections.unmodifiableMap(limitsMap);
                 } catch (JsonParsingException e) {
-                    logger.warning("Invalid TabularIngestSizeLimit option found, cannot parse JSON: " + e.getMessage());
+                    logger.warning(() -> "Invalid TabularIngestSizeLimit option found, cannot parse JSON: " + e.getMessage());
                     logger.warning("Disabling all tabular ingest completely until fixed!");
                     return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
                 }
@@ -568,7 +571,7 @@ public class SystemConfig {
                     Long limit = Long.valueOf(limitEntry);
                     return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, limit);
                 } catch (NumberFormatException nfe) {
-                    logger.warning("Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long: " + nfe);
+                    logger.warning(() -> "Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long: " + nfe);
                     logger.warning("Disabling all tabular ingest completely until fixed!");
                     return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
                 }
