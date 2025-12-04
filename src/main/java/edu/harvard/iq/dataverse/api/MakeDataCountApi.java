@@ -1,28 +1,21 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitationsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
-import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountProcessState;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountProcessStateServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DataCiteDOIProvider;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -58,15 +51,9 @@ public class MakeDataCountApi extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(MakeDataCountApi.class.getCanonicalName());
 
     @EJB
-    DatasetMetricsServiceBean datasetMetricsService;
-    @EJB
     MakeDataCountProcessStateServiceBean makeDataCountProcessStateService;
     @EJB
     DatasetExternalCitationsServiceBean datasetExternalCitationsService;
-    @EJB
-    DatasetServiceBean datasetService;
-    @EJB
-    SystemConfig systemConfig;
 
     // Inject the managed executor service provided by the container
     @Resource(name = "concurrent/CitationUpdateExecutor")
@@ -269,7 +256,7 @@ public class MakeDataCountApi extends AbstractApiBean {
                 
                 JsonObject report;
                 try (InputStream inStream = connection.getInputStream()) {
-                    report = JsonUtil.getJsonObject(inStream);
+                    report = JsonUtil.getJsonObjectFromInputStream(inStream);
                 } finally {
                     connection.disconnect();
                 }

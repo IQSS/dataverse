@@ -287,6 +287,51 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/roles"
 
+List the Allowed Metadata Languages of a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Shows the allowed metadata languages of the Dataverse collection ``id``:
+
+.. code-block:: bash
+  
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/allowedMetadataLanguages"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/allowedMetadataLanguages"
+
+If there are no metadata languages configured on the server, this call returns an empty array. If the Dataverse collection has a mandatory metadata language, the return value is an array of that single language,
+otherwise it's an array of all available metadata languages on the server.
+
+Set the Allowed Metadata Language of a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sets the allowed metadata language of the Dataverse collection ``id`` to ``langCode`` if it's available on the server:
+
+.. code-block:: bash
+  
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+  export LANGCODE=en
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/dataverses/$ID/allowedMetadataLanguages/$LANGCODE"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/dataverses/root/allowedMetadataLanguages/en"
+
+Returns an array of the set metadata language.
+If the metadata language is not available on the server, this call responds with a 400 BAD REQUEST.
+
 List Facets Configured for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1205,16 +1250,22 @@ Collection Storage Quotas
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota"
 
-Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for the specific collection. The user identified by the API token must have the ``Manage`` permission on the collection. 
+Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for the collection. If this is an unpublished collection, the user must have the ``ViewUnpublishedDataverse`` permission. 
+With an optional query parameter ``showInherited=true`` it will show the applicable quota potentially defined on the nearest parent when the collection does not have a quota configured directly.
 
+.. code-block:: 
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/use"
+
+Will output the dynamically cached total storage size (in bytes) used by the collection. The user identified by the API token must have the ``Edit`` permission on the collection. 
 
 To set or change the storage allocation quota for a collection:
 
 .. code-block:: 
 
-  curl -X POST -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota/$SIZE_IN_BYTES"
+  curl -X PUT -H "X-Dataverse-key:$API_TOKEN" -d $SIZE_IN_BYTES "$SERVER_URL/api/dataverses/$ID/storage/quota"
 
-This is API is superuser-only.
+This API is superuser-only.
   
 
 To delete a storage quota configured for a collection:
@@ -1223,9 +1274,70 @@ To delete a storage quota configured for a collection:
 
   curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota"
 
-This is API is superuser-only.
+This API is superuser-only.
 
-Use the ``/settings`` API to enable or disable the enforcement of storage quotas that are defined across the instance via the following setting. For example,
+Storage Quotas on Individual Datasets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: 
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/$ID/storage/quota"
+
+Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for this dataset. If this is an unpublished dataset, the user must have the ``ViewUnpublishedDataset`` permission.  
+With an optional query parameter ``showInherited=true`` it will show the applicable quota potentially defined on the nearest parent collection when the dataset does not have a quota configured directly.
+
+.. code-block:: 
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/$ID/storage/use"
+
+Will output the dynamically cached total storage size (in bytes) used by the dataset. The user identified by the API token must have the ``Edit`` permission on the dataset.
+
+To set or change the storage allocation quota for a dataset:
+
+.. code-block:: 
+
+  curl -X PUT -H "X-Dataverse-key:$API_TOKEN" -d $SIZE_IN_BYTES "$SERVER_URL/api/datasets/$ID/storage/quota"
+
+This API is superuser-only.
+  
+
+To delete a storage quota configured for a dataset:
+
+.. code-block:: 
+
+  curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/$ID/storage/quota"
+
+This API is superuser-only.
+
+The following convenience API shows the dynamic values of the *remaining* storage size and/or file number quotas on the dataset, if present. For example:
+
+.. code-block::
+
+   curl  -H "X-Dataverse-key: $API_TOKEN" "http://localhost:8080/api/datasets/$dataset-id/uploadlimits" 
+   {
+     "status": "OK",
+     "data": {
+       "uploadLimits": {
+         "numberOfFilesRemaining": 20,
+         "storageQuotaRemaining": 1048576
+       }
+     } 
+   }
+
+Or, when neither limit is present: 
+
+.. code-block::
+
+   {
+     "status": "OK",
+     "data": {
+       "uploadLimits": {}
+     }
+   }
+
+This API requires the Edit permission on the dataset. 
+
+Use the ``/settings`` API to enable or disable the enforcement of storage quotas that are defined across the instance via the following setting:
 
 .. code-block:: 
 
@@ -4208,7 +4320,7 @@ Delete files from a dataset. This API call allows you to delete multiple files f
 
   curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/datasets/:persistentId/deleteFiles?persistentId=$PERSISTENT_IDENTIFIER" \
   -H "Content-Type: application/json" \
-  -d '{"fileIds": [1, 2, 3]}'
+  -d '[1, 2, 3]'
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -4216,16 +4328,16 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/:persistentId/deleteFiles?persistentId=doi:10.5072/FK2ABCDEF" \
   -H "Content-Type: application/json" \
-  -d '{"fileIds": [1, 2, 3]}'
+  -d '[1, 2, 3]'
 
-The ``fileIds`` in the JSON payload should be an array of file IDs that you want to delete from the dataset.
+The JSON payload should be an array of file IDs that you want to delete from the dataset.
 
 You must have the appropriate permissions to delete files from the dataset.
 
 Upon success, the API will return a JSON response with a success message and the number of files deleted.
 
 The API call will report a 400 (BAD REQUEST) error if any of the files specified do not exist or are not in the latest version of the specified dataset.
-The ``fileIds`` in the JSON payload should be an array of file IDs that you want to delete from the dataset.
+The JSON payload should be an array of file IDs that you want to delete from the dataset.
 
 .. _api-dataset-role-assignment-history:
 
@@ -4356,6 +4468,53 @@ The fully expanded example above (without environment variables) looks like this
 The CSV response for this call is the same as for the /api/datasets/{id}/assignments/history call above with the exception that definedOn will be a comma separated list of one or more file ids.
 
 Note: This feature requires the "role-assignment-history" feature flag to be enabled (see :ref:`feature-flags`).
+
+Update Dataset License
+~~~~~~~~~~~~~~~~~~~~~~
+
+Updates the license of a dataset by applying it to the draft version, or by creating a draft if none exists.
+
+The JSON representation of a license can take two forms, depending on whether you want to specify a predefined license or define custom terms of use and access.
+
+To set a predefined license (e.g., CC BY 4.0), provide a JSON body with the license name:
+
+.. code-block:: json
+
+  {
+    "name": "CC BY 4.0"
+  }
+
+To define custom terms of use and access, provide a JSON body with the following properties. All fields within ``customTerms`` are optional, except for the ``termsOfUse`` field, which is required:
+
+.. code-block:: json
+
+  {
+    "customTerms": {
+        "termsOfUse": "Your terms of use",
+        "confidentialityDeclaration": "Your confidentiality declaration",
+        "specialPermissions": "Your special permissions",
+        "restrictions": "Your restrictions",
+        "citationRequirements": "Your citation requirements",
+        "depositorRequirements": "Your depositor requirements",
+        "conditions": "Your conditions",
+        "disclaimer": "Your disclaimer"
+    }
+  }
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=3
+  export FILE_PATH=license.json
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/datasets/$ID/license" -H "Content-type:application/json" --upload-file $FILE_PATH
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/3/license" -H "Content-type:application/json" --upload-file license.json
 
 Files
 -----
@@ -5796,13 +5955,13 @@ Builtin users are known as "Username/Email and Password" users in the :doc:`/use
 Create a Builtin User
 ~~~~~~~~~~~~~~~~~~~~~
 
-For security reasons, builtin users cannot be created via API unless the team who runs the Dataverse installation has populated a database setting called ``BuiltinUsers.KEY``, which is described under :ref:`securing-your-installation` and :ref:`database-settings` sections of Configuration in the Installation Guide. You will need to know the value of ``BuiltinUsers.KEY`` before you can proceed.
+For security reasons, builtin users cannot be created via API unless the team who runs the Dataverse installation has populated a database setting called ``:BuiltinUsersKey``, which is described under :ref:`securing-your-installation` and :ref:`database-settings` sections of Configuration in the Installation Guide. You will need to know the value of ``:BuiltinUsersKey`` before you can proceed.
 
 To create a builtin user via API, you must first construct a JSON document.  You can download :download:`user-add.json <../_static/api/user-add.json>` or copy the text below as a starting point and edit as necessary.
 
 .. literalinclude:: ../_static/api/user-add.json
 
-Place this ``user-add.json`` file in your current directory and run the following curl command, substituting variables as necessary. Note that both the password of the new user and the value of ``BuiltinUsers.KEY`` are passed as query parameters::
+Place this ``user-add.json`` file in your current directory and run the following curl command, substituting variables as necessary. Note that both the password of the new user and the value of ``:BuiltinUsersKey`` are passed as query parameters::
 
   curl -d @user-add.json -H "Content-type:application/json" "$SERVER_URL/api/builtin-users?password=$NEWUSER_PASSWORD&key=$BUILTIN_USERS_KEY"
 
@@ -6428,44 +6587,65 @@ The expected OK (200) response looks something like this:
 
   {
       "status": "OK",
-      "data": {
-          "notifications": [
-              {
-                  "id": 38,
-                  "type": "CREATEACC",
-                  "displayAsRead": true,
-                  "subjectText": "Root: Your account has been created",
-                  "messageText": "Hello, \nWelcome to...",
-                  "sentTimestamp": "2025-07-21T19:15:37Z"
-              }
+      "totalCount": 15,
+      "data": [
+        {
+            "id": 38,
+            "type": "CREATEACC",
+            "displayAsRead": true,
+            "subjectText": "Root: Your account has been created",
+            "messageText": "Hello, \nWelcome to...",
+            "sentTimestamp": "2025-07-21T19:15:37Z"
+        }
   ...
 
-This endpoint supports an optional query parameter ``inAppNotificationFormat`` which, if sent as ``true``, retrieves the fields needed to build the in-app notifications for the Notifications section of the Dataverse UI, omitting fields related to email notifications.
+This endpoint supports several optional query parameters to filter and paginate the results.
+
+The ``inAppNotificationFormat`` parameter, if sent as ``true``, retrieves the fields needed to build the in-app notifications for the Notifications section of the Dataverse UI, omitting fields related to email notifications.
 
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all?inAppNotificationFormat=true"
 
-The expected OK (200) response looks something like this:
+The ``onlyUnread`` parameter, if sent as ``true``, filters the results to include only notifications that have not been marked as read.
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all?onlyUnread=true"
+
+The ``limit`` and ``offset`` parameters can be used for pagination. ``limit`` specifies the maximum number of notifications to return, and ``offset`` specifies the number of notifications to skip from the beginning of the list. For example, to retrieve notifications 11 through 15:
+
+To aid in pagination the JSON response also includes the total number of rows (totalCount) available.
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all?limit=5&offset=10"
+
+All parameters can be combined. For instance, to get the first page of 10 unread notifications in the in-app format:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all?inAppNotificationFormat=true&onlyUnread=true&limit=1&offset=0"
+
+The expected OK (200) response for an in-app format request looks something like this:
 
 .. code-block:: text
 
   {
       "status": "OK",
-      "data": {
-          "notifications": [
-              {
-                  "id": 79,
-                  "type": "CREATEACC",
-                  "displayAsRead": false,
-                  "sentTimestamp": "2025-08-08T08:00:16Z",
-                  "installationBrandName": "Your Installation Name",
-                  "userGuidesBaseUrl": "https://guides.dataverse.org",
-                  "userGuidesVersion": "6.7.1",
-                  "userGuidesSectionPath": "user/index.html"
-              }
-          ]
-      }
+      "totalCount": 15,
+      "data": [
+        {
+            "id": 79,
+            "type": "CREATEACC",
+            "displayAsRead": false,
+            "sentTimestamp": "2025-08-08T08:00:16Z",
+            "installationBrandName": "Your Installation Name",
+            "userGuidesBaseUrl": "https://guides.dataverse.org",
+            "userGuidesVersion": "6.7.1",
+            "userGuidesSectionPath": "user/index.html"
+        }
+      ]
   }
   ...
 
@@ -7086,35 +7266,193 @@ If the PID is not managed by Dataverse, this call will report if the PID is reco
 Admin
 -----
 
-This is the administrative part of the API. For security reasons, it is absolutely essential that you block it before allowing public access to a Dataverse installation. Blocking can be done using settings. See the ``post-install-api-block.sh`` script in the ``scripts/api`` folder for details. See :ref:`blocking-api-endpoints` in Securing Your Installation section of the Configuration page of the Installation Guide.
+This is the administrative part of the API.
+For security reasons, it is absolutely essential that you block it before allowing public access to a Dataverse installation.
+See :ref:`blocking-api-endpoints` in the Installation Guide for details.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. _admin-api-db-settings:
+
+Manage Database Settings
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+These are the API endpoints for managing the :ref:`database-settings` listed in the Installation Guide.
+
+.. _settings_get_all:
 
 List All Database Settings
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-List all settings::
+.. code-block:: bash
 
-  GET http://$SERVER/api/admin/settings
+  export SERVER_URL="http://localhost:8080"
+  
+  curl "$SERVER_URL/api/admin/settings"
 
-Configure Database Setting
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+The fully expanded example above (without environment variables) looks like this:
 
-Sets setting ``name`` to the body of the request::
+.. code-block:: bash
 
-  PUT http://$SERVER/api/admin/settings/$name
+  curl http://localhost:8080/api/admin/settings
+
+.. _settings_get_single:
 
 Get Single Database Setting
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Get the setting under ``name``::
+.. code-block:: bash
 
-  GET http://$SERVER/api/admin/settings/$name
+  export SERVER_URL="http://localhost:8080"
+  export NAME=":UploadMethods"
+  
+  curl "$SERVER_URL/api/admin/settings/$NAME"
 
-Delete Database Setting
-~~~~~~~~~~~~~~~~~~~~~~~
+The fully expanded example above (without environment variables) looks like this:
 
-Delete the setting under ``name``::
+.. code-block:: bash
 
-  DELETE http://$SERVER/api/admin/settings/$name
+  curl http://localhost:8080/api/admin/settings/:UploadMethods
+
+.. _settings_get_single_lang:
+
+Get Single Database Setting With Language/Locale
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A small number of settings, most notably :ref:`:ApplicationTermsOfUse`, can be saved in multiple languages.
+
+Use two-character ISO 639-1 language codes.
+
+.. code-block:: bash
+
+  export SERVER_URL="http://localhost:8080"
+  export NAME=":ApplicationTermsOfUse"
+  export LANG="en"
+  
+  curl "$SERVER_URL/api/admin/settings/$NAME/lang/$LANG"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse/lang/en
+
+.. _settings_put_single:
+
+Configure Single Database Setting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+  export SERVER_URL="http://localhost:8080"
+  export NAME=":InstallationName"
+  export VALUE="LibreScholar"
+  
+  curl -X PUT "$SERVER_URL/api/admin/settings/$NAME" -d "$VALUE"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X PUT http://localhost:8080/api/admin/settings/:InstallationName -d LibreScholar
+
+Note: ``NAME`` values are validated for existence and compliance.
+
+.. _settings_put_single_lang:
+
+Configure Single Database Setting With Language/Locale
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A small number of settings, most notably :ref:`:ApplicationTermsOfUse`, can be saved in multiple languages.
+
+Use two-character ISO 639-1 language codes.
+
+.. code-block:: bash
+
+  export SERVER_URL="http://localhost:8080"
+  export NAME=":ApplicationTermsOfUse"
+  export LANG="fr"
+  
+  curl -X PUT "$SERVER_URL/api/admin/settings/$NAME/lang/$LANG" --upload-file /tmp/apptou_fr.html
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X PUT http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse/lang/fr --upload-file /tmp/apptou_fr.html
+
+Note: ``NAME`` and ``LANG`` values are validated for existence and compliance.
+
+.. _settings_put_bulk:
+
+Configure All Database Settings
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Using a JSON file, replace all settings in a single idempotent and atomic operation and delete any settings not present in that JSON file.
+
+Use the JSON ``data`` object in output of ``GET /api/admin/settings`` (:ref:`settings_get_all`) for the JSON input structure for this endpoint.
+To put this concretely, you can save just the ``data`` object for your existing settings to disk by filtering them through ``jq`` like this:
+
+.. code-block:: bash
+
+  curl http://localhost:8080/api/admin/settings | jq '.data' > /tmp/all-settings.json
+
+Then you can use this "all-settings.json" file as a starting point for your input file.
+The :doc:`../installation/config` page of the Installation Guide has a :ref:`complete list of all the available settings <database-settings>`.
+Note that settings in the JSON file are validated for existence and compliance.
+
+.. code-block:: bash
+
+  export SERVER_URL="http://localhost:8080"
+  
+  curl -X PUT -H "Content-type:application/json" "$SERVER_URL/api/admin/settings" --upload-file /tmp/all-settings.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X PUT -H "Content-type:application/json" http://localhost:8080/api/admin/settings --upload-file /tmp/all-settings.json
+
+.. _settings_delete_single:
+
+Delete Single Database Setting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+  export SERVER_URL="http://localhost:8080"
+  export NAME=":InstallationName"
+  
+  curl -X DELETE "$SERVER_URL/api/admin/settings/$NAME"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X DELETE http://localhost:8080/api/admin/settings/:InstallationName
+
+.. _settings_delete_single_lang:
+
+Delete Single Database Setting With Language/Locale
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A small number of settings, most notably :ref:`:ApplicationTermsOfUse`, can be saved in multiple languages.
+
+Use two-character ISO 639-1 language codes.
+
+.. code-block:: bash
+
+  export SERVER_URL="http://localhost:8080"
+  export NAME=":ApplicationTermsOfUse"
+  export LANG="fr"
+  
+  curl -X DELETE "$SERVER_URL/api/admin/settings/$NAME/lang/$LANG"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X DELETE http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse/lang/fr 
 
 .. _list-all-feature-flags:
 
@@ -7991,7 +8329,7 @@ Get details of a workflow with a given id::
 
    GET http://$SERVER/api/admin/workflows/$id
 
-Add a new workflow. Request body specifies the workflow properties and steps in JSON format.
+Add a new workflow. Request body specifies the workflow properties and steps in JSON format. Specifically, the body of the message should be a JSON Object with a String "name" for the workflow and a "steps" JSON Array containing a JSON Object per workflow step. (See :doc:`/developers/workflows` for the exiting steps and their required JSON representations.)
 Sample ``json`` files are available at ``scripts/api/data/workflows/``::
 
    POST http://$SERVER/api/admin/workflows

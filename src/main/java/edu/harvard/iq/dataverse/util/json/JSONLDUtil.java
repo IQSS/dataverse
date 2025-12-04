@@ -552,7 +552,7 @@ public class JSONLDUtil {
                 logger.fine("Decontextualized object: " + jsonld);
                 return jsonld;
             } catch (JsonLdError e) {
-                System.out.println(e.getMessage());
+                logger.warning(e.getMessage());
                 return null;
             }
         }
