@@ -77,7 +77,8 @@
         <c:if test="#{dsfvIndex!=0}">
             <f:passThroughAttribute name="aria-label" value="#{bundle['dataset.additionalEntry']}" />
         </c:if>
-        </p:inputTextarea>
+        <f:passThroughAttribute rendered="#{cvoc!=null and !cvoc.getString('term-uri-field').equals(dsfv.datasetField.datasetFieldType.name)}" name="data-cvoc-managed-field" value="#{dsfv.datasetField.datasetFieldType.name}"/>
+    </p:inputTextarea>
     <p:watermark for="description" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
 
     <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{dsfvIndex eq 0 and !empty dsfv.datasetField.validationMessage}">
