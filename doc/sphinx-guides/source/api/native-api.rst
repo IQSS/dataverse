@@ -1316,9 +1316,11 @@ The following convenience API shows the dynamic values of the *remaining* storag
    curl  -H "X-Dataverse-key: $API_TOKEN" "http://localhost:8080/api/datasets/$dataset-id/uploadlimits" 
    {
      "status": "OK",
-     "uploadLimits": {
-       "numberOfFilesRemaining": 20,
-       "storageQuotaRemaining": 1048576
+     "data": {
+       "uploadLimits": {
+         "numberOfFilesRemaining": 20,
+         "storageQuotaRemaining": 1048576
+       }
      } 
    }
 
@@ -1328,7 +1330,9 @@ Or, when neither limit is present:
 
    {
      "status": "OK",
-     "uploadLimits": {} 
+     "data": {
+       "uploadLimits": {}
+     }
    }
 
 This API requires the Edit permission on the dataset. 
