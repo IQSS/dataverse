@@ -4517,7 +4517,11 @@ Using a JSON-based setting, you can set a global default and per-format limits f
 
 (In previous releases of Dataverse, a colon-separated form was used to specify per-format limits, such as ``:TabularIngestSizeLimit:Rdata``, but this is no longer supported. Now JSON is used.)
 
-The expected JSON is an object with key/value pairs like the following. Format names are case-insensitive, and all fields are optional. The size limits must be strings with double quotes around them (e.g. ``"10"``) rather than numbers (e.g. ``10``).
+The expected JSON is an object with key/value pairs like the following.
+Format names are case-insensitive, and all fields are optional (an empty JSON object equals not restricted).
+The size limits must be whole numbers, either presented as strings with double quotes around them (e.g. ``"10"``) or numeric values (e.g. ``10`` or ``10.0``).
+Note that decimal numbers like ``10.5`` are invalid.
+Any invalid setting will temporarily disable tabular ingest until corrected.
 
 .. code:: json
 

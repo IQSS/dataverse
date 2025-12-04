@@ -527,19 +527,30 @@ public class SystemConfig {
                     limitsMap.put(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, -1L);
                     
                     for (String formatName : limits.keySet()) {
-                        // We deliberatly do not validate the formatNames here for backward compatibility.
-                        // But we transform to lowercase here, so the casing doesn't matter for lookups.
                         String lowercaseFormatName = formatName.toLowerCase();
                         
                         try {
-                            Long sizeOption = Long.valueOf(limits.getString(formatName));
+                            JsonValue value = limits.get(formatName);
+                            Long sizeOption;
+                            
+                            // We want to be able to use either numbers or string values, so detect which one it is.
+                            if (value.getValueType() == JsonValue.ValueType.STRING) {
+                                sizeOption = Long.valueOf(limits.getString(formatName));
+                            } else if (value.getValueType() == JsonValue.ValueType.NUMBER) {
+                                sizeOption = limits.getJsonNumber(formatName).longValueExact();
+                            } else {
+                                logger.warning("Invalid value type for format " + formatName + ": expected string or number");
+                                logger.warning("Disabling all tabular ingest completely until fixed!");
+                                return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
+                            }
+                            
                             limitsMap.put(lowercaseFormatName, sizeOption);
-                        } catch (ClassCastException cce) {
-                            logger.warning("Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long from JSON integer. You must provide the long number as string (use quotes) for format " + formatName);
+                        } catch (NumberFormatException nfe) {
+                            logger.warning("Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long for format " + formatName + " (not a valid number)");
                             logger.warning("Disabling all tabular ingest completely until fixed!");
                             return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
-                        } catch (NumberFormatException nfe) {
-                            logger.warning("Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long for format " + formatName + " (not a number)");
+                        } catch (ArithmeticException ae) {
+                            logger.warning("Number too large or has fractional part for format " + formatName);
                             logger.warning("Disabling all tabular ingest completely until fixed!");
                             return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
                         }
