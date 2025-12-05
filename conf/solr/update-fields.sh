@@ -68,10 +68,10 @@ while getopts ":hp" opt; do
 done
 
 # Check for ed and bc being present
-exists ed || error "Please ensure ed, bc, sed + awk are installed"
-exists bc || error "Please ensure ed, bc, sed + awk are installed"
-exists awk || error "Please ensure ed, bc, sed + awk are installed"
-exists sed || error "Please ensure ed, bc, sed + awk are installed"
+exists ed || error "Please ensure ed, bc, sed + awk are installed (ed is missing)"
+exists bc || error "Please ensure ed, bc, sed + awk are installed (bc is missing)"
+exists awk || error "Please ensure ed, bc, sed + awk are installed (awk is missing)"
+exists sed || error "Please ensure ed, bc, sed + awk are installed (sed is missing)"
 
 # remove all the parsed options
 shift $((OPTIND-1))

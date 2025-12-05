@@ -3,7 +3,7 @@ Apps
 
 The introduction of Dataverse Software APIs has fostered the development of a variety of software applications that are listed in the :doc:`/admin/integrations`, :doc:`/admin/external-tools`, and :doc:`/admin/reporting-tools-and-queries` sections of the Admin Guide.
 
-The apps below are open source and demonstrate how to use Dataverse Software APIs. Some of these apps are built on :doc:`/api/client-libraries` that are available for Dataverse Software APIs in Python, Javascript, R, and Java.
+The apps below are open source and demonstrate how to use Dataverse Software APIs. Some of these apps are built on :doc:`/api/client-libraries` that are available for Dataverse Software APIs in Python, Javascript, R, Java, and Ruby.
 
 .. contents:: |toctitle|
 	:local:
@@ -101,6 +101,18 @@ This module can, among others, help you migrate one dataverse to another. (see `
 
 https://github.com/iza-institute-of-labor-economics/idsc.dataverse
 
+dataverse-metadata-crawler
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A Python CLI tool for bulk extraction of dataverses, datasets, and data file metadata from any chosen level of dataverse collection (an entire Dataverse repository/sub-Dataverse), with flexible export options to JSON and CSV formats.
+
+https://github.com/scholarsportal/dataverse-metadata-crawler
+
+mcp-dataverse
+~~~~~~~~~~~~~
+
+The code at https://github.com/gdcc/mcp-dataverse powers a :ref:`mcp` server for Dataverse.
+
 Java
 ----
 
@@ -143,9 +155,9 @@ https://github.com/IQSS/doi2pmh-server
 OJS
 ~~~
 
-The Open Journal Systems (OJS) Dataverse Software Plugin adds data sharing and preservation to the OJS publication process.
+The Open Journal Systems (OJS) Dataverse Plugin adds data sharing and preservation to the OJS publication process.
 
-https://github.com/pkp/ojs/tree/ojs-stable-2_4_8/plugins/generic/dataverse
+https://github.com/lepidus/dataversePlugin
 
 OpenScholar
 ~~~~~~~~~~~
@@ -153,3 +165,13 @@ OpenScholar
 The Dataverse Software module from OpenScholar allows a Dataverse installation's widgets to be easily embedded in its web pages:
 
 https://github.com/openscholar/openscholar/tree/SCHOLAR-3.x/openscholar/modules/os_features/os_dataverse
+
+Ruby
+----
+
+Open OnDemand Loop
+~~~~~~~~~~~~~~~~~~
+
+Open OnDemand Loop integrates Dataverse with Open OnDemand, as :ref:`described <ood-upload>` in the Admin Guide.
+
+https://github.com/IQSS/ondemand-loop

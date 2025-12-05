@@ -353,3 +353,5 @@ Create both print and web version of the Dataverse collection logo by downloadin
 
 .. |image1| image:: ./img/dataverse-icon.jpg
    :class: img-responsive
+
+Here is another vector-based SVG file with three rings: :download:`Dataverse_3ring-brand_icon_EqualSpace.svg <../_static/Dataverse_3ring-brand_icon_EqualSpace.svg>`

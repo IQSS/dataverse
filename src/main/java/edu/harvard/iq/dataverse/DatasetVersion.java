@@ -73,7 +73,11 @@ import org.apache.commons.lang3.StringUtils;
     @NamedQuery(name = "DatasetVersion.findById", 
                 query = "SELECT o FROM DatasetVersion o LEFT JOIN FETCH o.fileMetadatas WHERE o.id=:id"), 
     @NamedQuery(name = "DatasetVersion.findByDataset",
-                query = "SELECT o FROM DatasetVersion o WHERE o.dataset.id=:datasetId ORDER BY o.versionNumber DESC, o.minorVersionNumber DESC"), 
+                query = "SELECT o FROM DatasetVersion o WHERE o.dataset.id=:datasetId ORDER BY o.versionNumber DESC, o.minorVersionNumber DESC"),
+    @NamedQuery(name = "DatasetVersion.findByDesiredStatesAndDataset",
+            query = "SELECT o FROM DatasetVersion o " +
+                    "WHERE o.dataset.id = :datasetId AND o.versionState IN :states " +
+                    "ORDER BY o.versionNumber DESC, o.minorVersionNumber DESC"),
     @NamedQuery(name = "DatasetVersion.findReleasedByDataset",
                 query = "SELECT o FROM DatasetVersion o WHERE o.dataset.id=:datasetId AND o.versionState=edu.harvard.iq.dataverse.DatasetVersion.VersionState.RELEASED ORDER BY o.versionNumber DESC, o.minorVersionNumber DESC")/*,
     @NamedQuery(name = "DatasetVersion.findVersionElements",
@@ -155,7 +159,7 @@ public class DatasetVersion implements Serializable {
      * @todo versionState should never be null so when we are ready, uncomment
      * the `nullable = false` below.
      */
-//    @Column(nullable = false)
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private VersionState versionState;
 
@@ -216,9 +220,14 @@ public class DatasetVersion implements Serializable {
     @OneToMany(mappedBy = "datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<WorkflowComment> workflowComments;
 
-    @Column(nullable=true)
-    private String externalStatusLabel;
-    
+    /*
+     * As of v6.7, the NULLS LAST part of the annotation below appears to not be working. Explicit sorting has been added in the getCurationStatuses() method. The annotation is kept since, if it does work
+     * in the future, it is presumably more efficient that sorting in our code.
+     */
+    @OneToMany(mappedBy = "datasetVersion", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("createTime DESC NULLS LAST")
+    private List<CurationStatus> curationStatuses = new ArrayList<>();
+
     @Transient
     private DatasetVersionDifference dvd;
     
@@ -2132,7 +2141,7 @@ public class DatasetVersion implements Serializable {
                 fileObject.add("name", fileMetadata.getLabel());
                 fileObject.add("encodingFormat", fileMetadata.getDataFile().getContentType());
                 fileObject.add("contentSize", fileMetadata.getDataFile().getFilesize());
-                fileObject.add("description", fileMetadata.getDescription());
+                fileObject.add("description", MarkupChecker.stripAllTags(fileMetadata.getDescription()));
                 fileObject.add("@id", filePidUrlAsString);
                 fileObject.add("identifier", filePidUrlAsString);
                 boolean hideFilesBoolean = JvmSettings.HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS.lookupOptional(Boolean.class).orElse(false);
@@ -2156,12 +2165,56 @@ public class DatasetVersion implements Serializable {
         return DateUtil.formatDate(new Timestamp(lastUpdateTime.getTime()));
     }
     
-    public String getExternalStatusLabel() {
-        return externalStatusLabel;
+    // Add methods to manage curationLabels
+    public List<CurationStatus> getCurationStatuses() {
+        // Sort the list to ensure null createTime values appear last
+        /*
+         * Note that the ORDER DESC NULLS LAST annotation on this list should sort this way,
+         * but, as of v6.7, the NULLS LAST aspect is not working.
+         * The code here assured both the DESC order and NULLS LAST.
+         */
+        if (curationStatuses != null) {
+            curationStatuses.sort(Comparator.comparing(
+                CurationStatus::getCreateTime,
+                Comparator.nullsLast(Comparator.reverseOrder())
+            ));
+        }
+        return curationStatuses;
     }
 
-    public void setExternalStatusLabel(String externalStatusLabel) {
-        this.externalStatusLabel = externalStatusLabel;
+    protected void setCurationStatuses(List<CurationStatus> curationStatuses) {
+        this.curationStatuses = curationStatuses;
+    }
+
+    public CurationStatus getCurrentCurationStatus() {
+        return !getCurationStatuses().isEmpty() ? getCurationStatuses().get(0) : null;
+    }
+
+    
+    public void addCurationStatus(CurationStatus status) {
+        status.setDatasetVersion(this);
+        curationStatuses.add(0, status); // Add the new status at the beginning of the list
+    }
+
+    public void removeCurationStatus(CurationStatus curationStatus) {
+        curationStatuses.remove(curationStatus);
+        curationStatus.setDatasetVersion(null);
+    }
+
+    public CurationStatus getCurationStatusAsOfDate(Date date) {
+        if (curationStatuses == null || curationStatuses.isEmpty()) {
+            return null;
+        }
+
+        // Find the first status whose createTime is before or equal to the given date
+        for (CurationStatus status : curationStatuses) {
+            if (status.getCreateTime().compareTo(date) <= 0) {
+                return status;
+            }
+        }
+
+        // If no status is found before the given date, return null
+        return null;
     }
 
     public String getVersionNote() {

@@ -20,6 +20,8 @@
 package edu.harvard.iq.dataverse.harvest.client;
 
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
+
 import java.io.IOException;
 
 import java.io.InputStream;
@@ -126,7 +128,7 @@ public class FastGetRecord {
     public void harvestRecord(String baseURL, String identifier, String metadataPrefix, Map<String,String> customHeaders, HttpClient httpClient) throws IOException,
         ParserConfigurationException, SAXException, TransformerException{
 
-        xmlInputFactory = javax.xml.stream.XMLInputFactory.newInstance();
+        xmlInputFactory = XmlUtil.getSecureXMLInputFactory();
         String requestURL = getRequestURL(baseURL, identifier, metadataPrefix);
         InputStream in;
         

@@ -102,5 +102,9 @@ public class RestrictFileCommand extends AbstractVoidCommand {
                 }
             }
         }
+        if (restrict) {
+            // delete all FeaturedItems with links to this restricted file
+            ctxt.dataverseFeaturedItems().deleteAllByDvObjectId(file.getId());
+        }
     }
 }

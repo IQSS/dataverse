@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.api.util;
 
-import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
-
 import jakarta.json.Json;
 import jakarta.json.JsonValue;
 import jakarta.json.JsonObjectBuilder;
@@ -12,6 +10,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+
+import edu.harvard.iq.dataverse.api.filter.ApiBlockingFilter;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -131,7 +131,7 @@ public class JsonResponseBuilder {
      * @return The enhanced builder
      */
     public JsonResponseBuilder internalError(Throwable ex) {
-        this.entityBuilder.add("interalError", ex.getClass().getSimpleName());
+        this.entityBuilder.add("internalError", ex.getClass().getSimpleName());
         if (ex.getCause() != null) {
             this.entityBuilder.add("internalCause", ex.getCause().getClass().getSimpleName());
         }

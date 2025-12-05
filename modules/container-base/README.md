@@ -13,10 +13,6 @@ this image for other purposes than the Dataverse application.
 
 ## Quick Reference
 
-**Maintained by:** 
-
-This image is created, maintained and supported by the Dataverse community on a best-effort basis.
-
 **Where to find documentation:**
 
 The [Dataverse Container Guide - Base Image](https://guides.dataverse.org/en/latest/container/base-image.html)
@@ -24,15 +20,13 @@ provides in-depth information about content, building, tuning and so on for this
 
 **Where to get help and ask questions:**
 
-IQSS will not offer support on how to deploy or run it. Please reach out to the community for help on using it.
-You can join the Community Chat on Matrix at https://chat.dataverse.org and https://groups.google.com/g/dataverse-community
+You can join the Community Chat at https://chat.dataverse.org and https://groups.google.com/g/dataverse-community
 to ask for help and guidance.
 
 ## Supported Image Tags
 
 This image is sourced within the main upstream code [repository of the Dataverse software](https://github.com/IQSS/dataverse).
 Development and maintenance of the [image's code](https://github.com/IQSS/dataverse/tree/develop/modules/container-base) happens there (again, by the community).
-Community-supported image tags are based on the two most important branches:
 
 Our tagging is inspired by [Bitnami](https://docs.vmware.com/en/VMware-Tanzu-Application-Catalog/services/tutorials/GUID-understand-rolling-tags-containers-index.html).
 For more detailed information about our tagging policy, please read about our [base image tags](https://guides.dataverse.org/en/latest/container/base-image.html#supported-image-tags) in the Dataverse Containers Guide.

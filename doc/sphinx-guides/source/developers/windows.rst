@@ -2,106 +2,106 @@
 Windows Development
 ===================
 
-Historically, development on Windows is `not well supported <https://groups.google.com/d/msg/dataverse-community/Hs9j5rIxqPI/-q54751aAgAJ>`_ but as of 2023 a container-based approach is recommended.
-
 .. contents:: |toctitle|
-	:local:
-
-Running Dataverse in Docker on Windows
---------------------------------------
-
-See the `post <https://groups.google.com/g/dataverse-dev/c/utqkZ7gYsf4/m/4IDtsvKSAwAJ>`_ by Akio Sone for additional details, but please observe the following:
-
-- You must have jq installed: https://jqlang.github.io/jq/download/
-- In git, the line-ending setting should be set to always LF (line feed, ``core.autocrlf=input``). Update: This should have been fixed by https://github.com/IQSS/dataverse/pull/10092.
-
-Once the above is all set you can move on to :doc:`/container/dev-usage` in the Container Guide.
-
-Generally speaking, if you're having trouble running a Dataverse dev environment in Docker on Windows, you are highly encouraged to post about it in the #containers channel on Zulip (https://chat.dataverse.org) and join a Containerization Working Group meeting (https://ct.gdcc.io). See also :doc:`/container/intro` in the Container Guide.
+       :local:
 
 Running Dataverse in Windows WSL
 --------------------------------
 
-It is possible to run Dataverse in Windows 10 and 11 through WSL (Windows Subsystem for Linux).
+The simplest method to run Dataverse in Windows 10 and 11 is using Docker and Windows Subsystem for Linux (WSL) - specifically WSL 2. 
+Once Docker and WSL are installed, you can follow the :ref:`quickstart instructions <container-dev-quickstart>`.
 
-Please note: these instructions have not been extensively tested. If you find any problems, please open an issue at https://github.com/IQSS/dataverse/issues.
+Please note: these instructions have not been extensively tested. They have been found to work with the Ubuntu-24.04 distribution for WSL. If you find any problems, please open an issue at https://github.com/IQSS/dataverse/issues and/or submit a PR to update this guide.
+
+Install Docker Desktop
+~~~~~~~~~~~~~~~~~~~~~~
+
+Follow the directions at https://www.docker.com to install Docker Desktop on Windows. If prompted, turn on WSL 2 during installation.
+
+Settings you may need in Docker Desktop:
+
+* **General/Expose daemon on tcp://localhost:2375 without TLS**: true
+* **General/Use the WSL 2 based engine**: true
+* **General/Add the \*.docker.internal names to the host's /etc/hosts file (Requires password)**: true
+* **Resources/WSL Integration/Enable integration with my default WSL distro**: true
+* **Resources/WSL Integration/Enable integration with additional distros**: select any you run Dataverse in
 
 Install WSL
 ~~~~~~~~~~~
-If you have Docker already installed, you should already have WSL installed. Otherwise open PowerShell and run:
+If you install Docker Desktop, you should already have WSL installed. If not, or if you wish to add an additional Linux distribution, open PowerShell.
 
+If WSL itself is not installed run:
+ 
 .. code-block:: powershell
   
    wsl --install
 
-If you already had WSL installed you can install a specific Linux distribution:
+For use with Docker, you should use WSL v2 - run:
 
-See the list of possible distributions:
+.. code-block:: powershell
+  
+   wsl  --set-default-version 2
+
+Install a specific Linux distribution. To see the list of possible distributions:
 
 .. code-block:: powershell
 
   wsl --list --online
 
-Choose the distribution you would like. Then run the following command. These instructions were tested with Ubuntu.
+Choose the distribution you would like. Then run the following command. These instructions were tested with ``Ubuntu 24.04 LTS``.
 
 .. code-block:: powershell
 
   wsl --install -d <Distribution Name>
 
-You will be asked to create a Linux user.
-After the installation of Linux is complete, check that you have an Internet connection:
+You will be asked to create an initial Linux user.
 
-.. code-block:: bash
+.. note::
+   Using wsl --set-version to upgrade an existing distribution from WSL 1 to WSL 2 may not work - installing a new distribution using WSL 2 is recommended.
 
-  ping www.google.com
+Prepare WSL
+~~~~~~~~~~~
 
-If you do not have an Internet connection, try adding it in ``/etc/wsl.conf``
+Once that you have WSL installed, You will need Java and MVN working inside WSL, how you go about this will depend on the Linux distribution you installed in WSL.
 
-.. code-block:: bash
-  
-  [network]
-  generateResolvConf = false
-
-Also in ``/etc/resolv.conf`` add
-
-.. code-block:: bash
-
-  nameserver 1.1.1.1
-
-Now you can install all the tools one usually uses in Linux. For example, it is good idea to run an update:
+Here is an example using SDKMAN, which is not required, but it is recommended for managing Java and other SDKs.
 
 .. code-block:: bash
 
    sudo apt update
-   sudo apt full-upgrade -y
+   sudo apt install zip
+
+.. code-block:: bash
+
+   sudo apt update
+   sudo apt install unzip
+
+.. code-block:: bash
+
+   curl -s "https://get.sdkman.io" | bash
+   source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+.. code-block:: bash
+
+   sdk install java 17.0.7-tem
+
+.. code-block:: bash
+
+   sdk install maven
 
 Install Dataverse
 ~~~~~~~~~~~~~~~~~
 
-Now you can install Dataverse in WSL following the instructions for :doc:`classic-dev-env`
-At the end, check that you have ``-Ddataverse.pid.default-provider=fake`` in jvm-options.
+Open a Linux terminal (e.g. use Windows Terminal and open a tab for the Linux distribution you selected). Then install Dataverse in WSL following the :ref:`quickstart instructions <container-dev-quickstart>`. You should then have a working Dataverse instance.
 
-Now you can access Dataverse in your Windows browser (Edge, Chrome, etc.):
+We strongly recommend that you clone the Dataverse repository from WSL, not from Windows. This will ensure that builds are much faster.
 
-- http://localhost:8080
-- username: dataverseAdmin
-- password: admin
+IDEs for Dataverse in Windows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-IDE for Dataverse in Windows
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Files in WSL are accessible from Windows for editing using ``\\wsl.localhost`` or ``\\wsl$`` path. Windows files are accessible under Linux in the ``/mnt/c/`` directory. Therefore one can use one's favorite editor or IDE to edit Dataverse project files. Then one can build using ``mvn`` in WSL and deploy manually in WSL using ``asadmin``.
+You can use your favorite editor or IDE to edit Dataverse project files. Files in WSL are accessible from Windows for editing using the path ``\\wsl.localhost``. Your Linux distribution files should also be visible in File Explorer under the This PC/Linux entry.
 
-It is still though possible to use a full-strength IDE. The following instructions are for IntelliJ users.
-
-- Install Intelij in Windows.
-
-You can open the project through ``\\wsl.localhost`` and navigate to the Dataverse project.
-You can try to build the project in IntelliJ. You may get a message ``Cannot establish network connection from WSL to Windows host (could be blocked by the firewall).`` In that case you can try
-to disable WSL Hyperviser from the firewall.
-After that you should be able to build the project in IntelliJ.
-It seems that at present it is impossible to deploy the Glassfish application in IntelliJ. You can try to add a Glassfish plugin through Settings->Plugins and in Run->Edit Configurations configure Application Server from WSL ``/usr/localhost/payara6`` with URL http://localhost:8080 and Server Domain as domain1, but it may fail since IntelliJ confuses the Windows and Linux paths.
-
-To use the full strength of Intelij with build, deployment and debugging, one will need to use Intelij ``Remote development``. Close all the projects in IntelliJ and go to ``Remote development->WSL`` and press ``New Project``. In WSL instance choose your Linux distribution and press ``Next``. In ``Project Directory`` navigate to WSL Dataverse project. Then press ``Download IDE and Connect``. This will install IntelliJ in WSL in ``~/.cache/JetBrains/``. Now in IntelliJ you should see your project opened in a new IntelliJ window. After adding the Glassfish plugin and editing your configuration you should be able to build the project and run the project.
+.. note:: FYI: For the best performance, it is recommended, with WSL 2, to store Dataverse files in the WSL/Linux file system and to access them from there with your Windows-based IDE (versus storing Dataverse files in your Windows file system and trying to run maven and build from Linux - access to /mnt/c files using WSL 2 is slow).
 
 pgAdmin in Windows for Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -110,4 +110,4 @@ You can access the Dataverse database from Windows.
 
 Install pgAdmin from https://www.pgadmin.org/download/pgadmin-4-windows/
 
-In pgAdmin, register a server using 127.0.0.1 with port 5432, database dvndb and dvnapp as username with secret password. Now you will be able to access and update the Dataverse database.
+In pgAdmin, register a server using ``127.0.0.1`` with port ``5432``. For the database name, username, and password, see :ref:`db-name-creds`. Now you will be able to access, monitor, and update the Dataverse database. 

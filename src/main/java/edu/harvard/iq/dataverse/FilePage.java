@@ -345,7 +345,15 @@ public class FilePage implements java.io.Serializable {
     public boolean canPublishDataset(){
         return permissionsWrapper.canIssuePublishDatasetCommand(fileMetadata.getDatasetVersion().getDataset());
     }
-   
+    
+    public boolean canSeeCurationStatus() {
+        boolean creatorsCanSeeStatus = JvmSettings.UI_SHOW_CURATION_STATUS_TO_ALL.lookupOptional(Boolean.class).orElse(false);
+        if (creatorsCanSeeStatus) {
+            return canViewUnpublishedDataset();
+        } else {
+            return canPublishDataset();
+        }
+    }
 
     public FileMetadata getFileMetadata() {
         return fileMetadata;
@@ -411,6 +419,11 @@ public class FilePage implements java.io.Serializable {
         // Only show guestbookAtDownload if guestbook at request is disabled (legacy behavior)
         DatasetVersion workingVersion = fileMetadata.getDatasetVersion();
         return FileUtil.isGuestbookPopupRequired(workingVersion) && !workingVersion.getDataset().getEffectiveGuestbookEntryAtRequest();
+    }
+    
+    public boolean isGuestbookPopupRequired(){
+        DatasetVersion workingVersion = fileMetadata.getDatasetVersion();
+        return FileUtil.isGuestbookPopupRequired(workingVersion);
     }
 
     public void setFileMetadata(FileMetadata fileMetadata) {
@@ -1130,8 +1143,10 @@ public class FilePage implements java.io.Serializable {
     public String preview(ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
-        if (fileMetadata.getDatasetVersion().isDraft() || fileMetadata.getDatasetVersion().isDeaccessioned() || (fileMetadata.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fileMetadata))) {
-            apiToken=authService.getValidApiTokenForUser(user);
+        if (fileMetadata.getDatasetVersion().isDraft() || (fileMetadata.getDataFile().isRestricted())
+                || fileMetadata.getDatasetVersion().isDeaccessioned() || (FileUtil.isActivelyEmbargoed(fileMetadata))
+                || (FileUtil.isRetentionExpired(fileMetadata))) {
+            apiToken = authService.getValidApiTokenForUser(user);
         }
         if(externalTool == null){
             return "";

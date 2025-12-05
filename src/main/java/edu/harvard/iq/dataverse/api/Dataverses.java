@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
@@ -34,10 +35,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 
-import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
-import edu.harvard.iq.dataverse.util.json.JsonParseException;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import edu.harvard.iq.dataverse.util.json.*;
 
 import java.io.*;
 import java.util.*;
@@ -71,6 +69,7 @@ import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.StreamingOutput;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -122,7 +121,7 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
-
+    
     @POST
     @AuthRequired
     public Response addRoot(@Context ContainerRequestContext crc, String body) {
@@ -154,7 +153,7 @@ public class Dataverses extends AbstractApiBean {
             }
 
             AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
-            newDataverse = execCommand(new CreateDataverseCommand(newDataverse, createDataverseRequest(u), facets, inputLevels, metadataBlocks));
+            newDataverse = execCommand(new CreateDataverseCommand(newDataverse, createDataverseRequest(u), facets, inputLevels, metadataBlocks, true));
             return created("/dataverses/" + newDataverse.getAlias(), json(newDataverse));
 
         } catch (WrappedResponse ww) {
@@ -410,9 +409,9 @@ public class Dataverses extends AbstractApiBean {
             ds.setIdentifier(null);
             ds.setProtocol(null);
             ds.setGlobalIdCreateTime(null);
-            Dataset managedDs = null;
+            Dataset managedDs;
             try {
-                managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u), null, validate));
+                managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u), validate, true));
             } catch (WrappedResponse ww) {
                 Throwable cause = ww.getCause();
                 StringBuilder sb = new StringBuilder();
@@ -717,7 +716,7 @@ public class Dataverses extends AbstractApiBean {
         return response(req -> {
             Dataverse dataverse = execCommand(new GetDataverseCommand(req, findDataverseOrDie(idtf)));
             boolean hideEmail = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false);
-            return ok(json(dataverse, hideEmail, returnOwners, returnChildCount ? dataverseService.getChildCount(dataverse) : null));
+            return ok(json(dataverse, hideEmail, returnOwners, false, returnChildCount ? dataverseService.getChildCount(dataverse) : null));
         }, getRequestUser(crc));
     }
 
@@ -1237,9 +1236,9 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/storage/quota")
-    public Response getCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) throws WrappedResponse {
+    public Response getCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("showInherited") boolean showInherited) throws WrappedResponse {
         try {
-            Long bytesAllocated = execCommand(new GetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf)));
+            Long bytesAllocated = execCommand(new GetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf), showInherited));
             if (bytesAllocated != null) {
                 return ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.storage.quota.allocation"),bytesAllocated));
             }
@@ -1249,11 +1248,17 @@ public class Dataverses extends AbstractApiBean {
         }
     }
     
-    @POST
+    @PUT
     @AuthRequired
-    @Path("{identifier}/storage/quota/{bytesAllocated}")
-    public Response setCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("bytesAllocated") Long bytesAllocated) throws WrappedResponse {
+    @Path("{identifier}/storage/quota")
+    public Response setCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String value) throws WrappedResponse {
         try {
+            Long bytesAllocated; 
+            try {
+                bytesAllocated = Long.parseLong(value);
+            } catch (NumberFormatException nfe){
+                return error(Status.BAD_REQUEST, value + " is not a valid number of bytes");
+            }
             execCommand(new SetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf), bytesAllocated));
             return ok(BundleUtil.getStringFromBundle("dataverse.storage.quota.updated"));
         } catch (WrappedResponse ex) {
@@ -1695,25 +1700,36 @@ public class Dataverses extends AbstractApiBean {
             List<Dataverse> dvsThisDvHasLinkedToList = dataverseSvc.findDataversesThisIdHasLinkedTo(dv.getId());
             JsonArrayBuilder dvsThisDvHasLinkedToBuilder = Json.createArrayBuilder();
             for (Dataverse dataverse : dvsThisDvHasLinkedToList) {
-                dvsThisDvHasLinkedToBuilder.add(dataverse.getAlias());
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                job.add("id", dataverse.getId());
+                job.add("alias", dataverse.getAlias());
+                job.add("displayName", dataverse.getDisplayName());
+                dvsThisDvHasLinkedToBuilder.add(job);
             }
 
             List<Dataverse> dvsThatLinkToThisDvList = dataverseSvc.findDataversesThatLinkToThisDvId(dv.getId());
             JsonArrayBuilder dvsThatLinkToThisDvBuilder = Json.createArrayBuilder();
             for (Dataverse dataverse : dvsThatLinkToThisDvList) {
-                dvsThatLinkToThisDvBuilder.add(dataverse.getAlias());
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                job.add("id", dataverse.getId());
+                job.add("alias", dataverse.getAlias());
+                job.add("displayName", dataverse.getDisplayName());
+                dvsThatLinkToThisDvBuilder.add(job);
             }
 
             List<Dataset> datasetsThisDvHasLinkedToList = dataverseSvc.findDatasetsThisIdHasLinkedTo(dv.getId());
             JsonArrayBuilder datasetsThisDvHasLinkedToBuilder = Json.createArrayBuilder();
             for (Dataset dataset : datasetsThisDvHasLinkedToList) {
-                datasetsThisDvHasLinkedToBuilder.add(dataset.getLatestVersion().getTitle());
+                JsonObjectBuilder ds = new NullSafeJsonBuilder();
+                ds.add("title", dataset.getLatestVersion().getTitle());
+                ds.add("identifier",  dataset.getProtocol() + ":" + dataset.getAuthority() + "/" + dataset.getIdentifier());
+                datasetsThisDvHasLinkedToBuilder.add(ds);
             }
 
             JsonObjectBuilder response = Json.createObjectBuilder();
-            response.add("dataverses that the " + dv.getAlias() + " dataverse has linked to", dvsThisDvHasLinkedToBuilder);
-            response.add("dataverses that link to the " + dv.getAlias(), dvsThatLinkToThisDvBuilder);
-            response.add("datasets that the " + dv.getAlias() + " has linked to", datasetsThisDvHasLinkedToBuilder);
+            response.add("linkedDataverses", dvsThisDvHasLinkedToBuilder);
+            response.add("dataversesLinkingToThis", dvsThatLinkToThisDvBuilder);
+            response.add("linkedDatasets", datasetsThisDvHasLinkedToBuilder);
             return ok(response);
 
         } catch (WrappedResponse wr) {
@@ -1763,6 +1779,36 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }
+    
+    @GET
+    @AuthRequired
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("{identifier}/{type}/linkingDataverses")
+    public Response getLinkingDataverseList(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("searchTerm") String searchTerm, @QueryParam("alreadyLinking") boolean alreadyLinking, @PathParam("type") String type) {
+
+        try {
+
+            DvObject dvObject = findDvoByIdAndTypeOrDie(dvIdtf, type, false);
+            List<Dataverse> dataversesForLinking = execCommand(new GetLinkingDataverseListCommand(
+                    createDataverseRequest(getRequestUser(crc)),
+                    dvObject,
+                    searchTerm,
+                    alreadyLinking
+            ));
+
+            JsonArrayBuilder dvBuilder = Json.createArrayBuilder();
+            if (dataversesForLinking != null && !dataversesForLinking.isEmpty()) {
+                for (Dataverse dv : dataversesForLinking) {
+                    dvBuilder.add(json(dv, true));
+                }
+            }
+            return ok(dvBuilder);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+    
+    
 
     @GET
     @AuthRequired
@@ -1792,18 +1838,24 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/featuredItems")
     public Response createFeaturedItem(@Context ContainerRequestContext crc,
                                        @PathParam("identifier") String dvIdtf,
+                                       @FormDataParam("type") String type,
+                                       @FormDataParam("dvObjectIdentifier") String dvObjectIdtf,
                                        @FormDataParam("content") String content,
                                        @FormDataParam("displayOrder") int displayOrder,
                                        @FormDataParam("file") InputStream imageFileInputStream,
                                        @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
         Dataverse dataverse;
+        DvObject dvObject = null;
         try {
             dataverse = findDataverseOrDie(dvIdtf);
+            if (dvObjectIdtf != null) {
+                dvObject = findDvoByIdAndTypeOrDie(dvObjectIdtf, type, true);
+            }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        NewDataverseFeaturedItemDTO newDataverseFeaturedItemDTO = NewDataverseFeaturedItemDTO.fromFormData(content, displayOrder, imageFileInputStream, contentDispositionHeader);
         try {
+            NewDataverseFeaturedItemDTO newDataverseFeaturedItemDTO = NewDataverseFeaturedItemDTO.fromFormData(content, displayOrder, imageFileInputStream, contentDispositionHeader, type, dvObject);
             DataverseFeaturedItem dataverseFeaturedItem = execCommand(new CreateDataverseFeaturedItemCommand(
                     createDataverseRequest(getRequestUser(crc)),
                     dataverse,
@@ -1837,6 +1889,8 @@ public class Dataverses extends AbstractApiBean {
             @PathParam("dataverseId") String dvIdtf,
             @FormDataParam("id") List<Long> ids,
             @FormDataParam("content") List<String> contents,
+            @FormDataParam("type") List<String> types,
+            @FormDataParam("dvObjectIdentifier") List<String> dvObjectIdtf,
             @FormDataParam("displayOrder") List<Integer> displayOrders,
             @FormDataParam("keepFile") List<Boolean> keepFiles,
             @FormDataParam("fileName") List<String> fileNames,
@@ -1848,7 +1902,15 @@ public class Dataverses extends AbstractApiBean {
             }
 
             int size = ids.size();
-            if (contents.size() != size || displayOrders.size() != size || keepFiles.size() != size || fileNames.size() != size) {
+            if (types == null || types.isEmpty()) {
+                types = new ArrayList<>(Collections.nCopies(size, null));
+            }
+            if (dvObjectIdtf == null || dvObjectIdtf.isEmpty()) {
+                dvObjectIdtf = new ArrayList<>(Collections.nCopies(size, null));
+            }
+
+            if (contents.size() != size || displayOrders.size() != size || keepFiles.size() != size || fileNames.size() != size ||
+                    types.size() != size || dvObjectIdtf.size() != size) {
                 throw new WrappedResponse(error(Response.Status.BAD_REQUEST,
                         BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.inputListsSizeMismatch")));
             }
@@ -1873,9 +1935,12 @@ public class Dataverses extends AbstractApiBean {
                     }
                 }
 
+                // ignore dvObject if the id is missing or an empty string
+                DvObject dvObject = dvObjectIdtf.get(i) != null && !dvObjectIdtf.get(i).isEmpty()
+                        ? findDvoByIdAndTypeOrDie(dvObjectIdtf.get(i), types.get(i), true) : null;
                 if (ids.get(i) == 0) {
                     newItems.add(NewDataverseFeaturedItemDTO.fromFormData(
-                            contents.get(i), displayOrders.get(i), fileInputStream, contentDisposition));
+                            contents.get(i), displayOrders.get(i), fileInputStream, contentDisposition, types.get(i), dvObject));
                 } else {
                     DataverseFeaturedItem existingItem = dataverseFeaturedItemServiceBean.findById(ids.get(i));
                     if (existingItem == null) {
@@ -1883,7 +1948,7 @@ public class Dataverses extends AbstractApiBean {
                                 MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notFound"), ids.get(i))));
                     }
                     itemsToUpdate.put(existingItem, UpdatedDataverseFeaturedItemDTO.fromFormData(
-                            contents.get(i), displayOrders.get(i), keepFiles.get(i), fileInputStream, contentDisposition));
+                            contents.get(i), displayOrders.get(i), keepFiles.get(i), fileInputStream, contentDisposition, types.get(i), dvObject));
                 }
             }
 
@@ -1911,5 +1976,85 @@ public class Dataverses extends AbstractApiBean {
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/templates")
+    public Response getTemplates(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            return ok(jsonTemplates(execCommand(new ListDataverseTemplatesCommand(createDataverseRequest(getRequestUser(crc)), dataverse))));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+
+    @POST
+    @AuthRequired
+    @Path("{identifier}/templates")
+    public Response createTemplate(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String dvIdtf) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            NewTemplateDTO newTemplateDTO;
+            try {
+                newTemplateDTO = NewTemplateDTO.fromRequestBody(body, jsonParser());
+            } catch (JsonParseException ex) {
+                return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.createTemplate.error.jsonParseMetadataFields"), ex.getMessage()));
+            }
+            return ok(jsonTemplate(execCommand(new CreateTemplateCommand(newTemplateDTO.toTemplate(), createDataverseRequest(getRequestUser(crc)), dataverse, true))));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/allowedMetadataLanguages")
+    public Response getMetadataLanguage(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+        return response(req -> {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            return ok(jsonLanguage(execCommand(
+                    new GetDataverseMetadataLanguageCommand(req, dataverse))));
+        }, getRequestUser(crc));
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/allowedMetadataLanguages/{metadataLanguage}")
+    public Response setMetadataLanguage(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("metadataLanguage") String lang) {
+        return response(req -> {
+            Map<String, String> langMap = settingsService.getBaseMetadataLanguageMap(null, true);
+            if (langMap.isEmpty()) {
+                return badRequest("There are no metadata languages configured on this server");
+            }
+            if (!langMap.containsKey(lang)) {
+                return badRequest("The specified metadata language " + lang + " is not allowed on this server!");
+            }
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            return ok(jsonLanguage(execCommand(new SetDataverseMetadataLanguageCommand(req, dataverse, lang))));
+        }, getRequestUser(crc));
+    }
+    
+    @GET
+    @AuthRequired
+    @Path("{identifier}/assignments/history")
+    @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
+    public Response getRoleAssignmentHistory(@Context ContainerRequestContext crc,
+            @PathParam("identifier") String id,
+            @Context HttpHeaders headers) {
+        return response(req -> {
+            Dataverse dataverse = findDataverseOrDie(id);
+
+            // user is authenticated
+            AuthenticatedUser authenticatedUser = null;
+            try {
+                authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+            } catch (WrappedResponse ex) {
+                return error(Status.UNAUTHORIZED, "Authentication is required.");
+            }
+
+            return getRoleAssignmentHistoryResponse(dataverse, authenticatedUser, false, headers);
+        }, getRequestUser(crc));
     }
 }

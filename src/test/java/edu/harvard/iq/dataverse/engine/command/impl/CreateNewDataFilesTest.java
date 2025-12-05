@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -18,8 +19,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -43,11 +50,24 @@ import static org.mockito.ArgumentMatchers.any;
 
 
 @LocalJvmSettings
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class CreateNewDataFilesTest {
     // TODO keep constants for annotations in sync with class name
     Path testDir = Path.of("target/test/").resolve(getClass().getSimpleName());
     PrintStream original_stderr;
 
+    @Mock
+    Dataset mockDataset;
+    @Mock
+    DatasetVersion mockDatasetVersion;
+
+    @BeforeEach
+    public void setupMock() {
+        Mockito.when(mockDataset.getId()).thenReturn(2L);
+        Mockito.when(mockDataset.getEffectiveDatasetFileCountLimit()).thenReturn(1000);
+        Mockito.when(mockDatasetVersion.getDataset()).thenReturn(mockDataset);
+    }
     @BeforeEach
     public void cleanTmpDir() throws IOException {
         original_stderr = System.err;
@@ -63,8 +83,8 @@ public class CreateNewDataFilesTest {
     @JvmSetting(key = JvmSettings.FILES_DIRECTORY, value = "target/test/CreateNewDataFilesTest/tmp")
     public void execute_fails_to_upload_when_tmp_does_not_exist() throws FileNotFoundException {
 
-        mockTmpLookup();
-        var cmd = createCmd("scripts/search/data/shape/shapefile.zip", mockDatasetVersion(), 1000L, 500L);
+        var cmd = createCmd("scripts/search/data/shape/shapefile.zip", mockDatasetVersion, 1000L, 500L);
+        cmd.setDatasetService(mockDatasetServiceBean());
         var ctxt = mockCommandContext(mockSysConfig(true, 0L, MD5, 10));
 
         assertThatThrownBy(() -> cmd.execute(ctxt))
@@ -80,8 +100,8 @@ public class CreateNewDataFilesTest {
     public void execute_fails_on_size_limit() throws Exception {
         createDirectories(Path.of("target/test/CreateNewDataFilesTest/tmp/temp"));
 
-        mockTmpLookup();
-        var cmd = createCmd("scripts/search/data/binary/3files.zip", mockDatasetVersion(), 1000L, 500L);
+        var cmd = createCmd("scripts/search/data/binary/3files.zip", mockDatasetVersion, 1000L, 500L);
+        cmd.setDatasetService(mockDatasetServiceBean());
         var ctxt = mockCommandContext(mockSysConfig(true, 50L, MD5, 0));
         try (var mockedStatic = Mockito.mockStatic(JhoveFileType.class)) {
             mockedStatic.when(JhoveFileType::getJhoveConfigFile).thenReturn("conf/jhove/jhove.conf");
@@ -98,8 +118,8 @@ public class CreateNewDataFilesTest {
         var tempDir = testDir.resolve("tmp/temp");
         createDirectories(tempDir);
 
-        mockTmpLookup();
-        var cmd = createCmd("src/test/resources/own-cloud-downloads/greetings.zip", mockDatasetVersion(), 1000L, 500L);
+        var cmd = createCmd("src/test/resources/own-cloud-downloads/greetings.zip", mockDatasetVersion, 1000L, 500L);
+        cmd.setDatasetService(mockDatasetServiceBean());
         var ctxt = mockCommandContext(mockSysConfig(false, 1000000L, MD5, 10));
         try (MockedStatic<JhoveFileType> mockedStatic = Mockito.mockStatic(JhoveFileType.class)) {
             mockedStatic.when(JhoveFileType::getJhoveConfigFile).thenReturn("conf/jhove/jhove.conf");
@@ -125,8 +145,8 @@ public class CreateNewDataFilesTest {
         var tempDir = testDir.resolve("tmp/temp");
         createDirectories(tempDir);
 
-        mockTmpLookup();
-        var cmd = createCmd("src/test/resources/own-cloud-downloads/shapes.zip", mockDatasetVersion(), 1000L, 500L);
+        var cmd = createCmd("src/test/resources/own-cloud-downloads/shapes.zip", mockDatasetVersion, 1000L, 500L);
+        cmd.setDatasetService(mockDatasetServiceBean());
         var ctxt = mockCommandContext(mockSysConfig(false, 100000000L, MD5, 10));
         try (var mockedJHoveFileType = Mockito.mockStatic(JhoveFileType.class)) {
             mockedJHoveFileType.when(JhoveFileType::getJhoveConfigFile).thenReturn("conf/jhove/jhove.conf");
@@ -205,7 +225,9 @@ public class CreateNewDataFilesTest {
 
                 // upload the zip
                 var before = DateTime.now();
-                var result = createCmd(zip.toString(), mockDatasetVersion(), 1000L, 500L)
+                @NotNull CreateNewDataFilesCommand cmd = createCmd(zip.toString(), mockDatasetVersion, 1000L, 500L);
+                cmd.setDatasetService(mockDatasetServiceBean());
+                var result = cmd
                     .execute(ctxt);
                 totalTime += DateTime.now().getMillis() - before.getMillis();
 
@@ -250,15 +272,9 @@ public class CreateNewDataFilesTest {
         return sysCfg;
     }
 
-    private static void mockTmpLookup() {
-        JvmSettings mockFilesDirectory = Mockito.mock(JvmSettings.class);
-        Mockito.when(mockFilesDirectory.lookup()).thenReturn("/mocked/path");
+    private static @NotNull DatasetServiceBean mockDatasetServiceBean() {
+        var datasetService = Mockito.mock(DatasetServiceBean.class);
+        Mockito.when(datasetService.getDataFileCountByOwner(2L)).thenReturn(0);
+        return datasetService;
     }
-
-    private static @NotNull DatasetVersion mockDatasetVersion() {
-        var dsVersion = Mockito.mock(DatasetVersion.class);
-        Mockito.when(dsVersion.getDataset()).thenReturn(Mockito.mock(Dataset.class));
-        return dsVersion;
-    }
-
 }
