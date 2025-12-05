@@ -3699,10 +3699,11 @@ public class UtilIT {
                 .get("/api/dataverses/" + collectionId + "/storage/quota");
     }
     
-    static Response setCollectionQuota(String collectionId, long allocatedSize, String apiToken) {
+    static Response setCollectionQuota(String collectionId, Long allocatedSize, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .post("/api/dataverses/" + collectionId + "/storage/quota/" + allocatedSize);
+                .body(allocatedSize.toString())
+                .put("/api/dataverses/" + collectionId + "/storage/quota");
         return response;
     }
     
@@ -3717,6 +3718,33 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/dataverses/" + collectionId + "/storage/use");
+    }
+    
+    static Response checkDatasetQuota(String datasetId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/storage/quota");
+    }
+    
+    static Response setDatasetQuota(String datasetId, Long allocatedSize, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(allocatedSize.toString())
+                .put("/api/datasets/" + datasetId + "/storage/quota");
+        return response;
+    }
+    
+    static Response disableDatasetQuota(String datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/" + datasetId + "/storage/quota");
+        return response;
+    }
+    
+    static Response checkDatasetStorageUse(String datasetId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/storage/use");
     }
     
     /**

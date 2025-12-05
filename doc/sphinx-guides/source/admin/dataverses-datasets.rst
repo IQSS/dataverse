@@ -271,6 +271,8 @@ The effective store can be seen using::
 
     curl http://$SERVER/api/datasets/$dataset-id/storageDriver
 
+The output of the API will include the id, label, type (for example, "file" or "s3") as well as the support for direct download and upload.
+
 To remove an assigned store, and allow the dataset to inherit the store from it's parent collection, use the following (only a superuser can do this) ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$dataset-id/storageDriver
