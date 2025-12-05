@@ -14,4 +14,4 @@ The following country-specific license has been added:
 
 - Open Government Licence (OGL UK)
 
-The licenses above are widely recognized and used in Europe and beyond to promote data and software sharing. See [the guides](https://guides.dataverse.org/en/6.7/installation/config.html#configuring-licenses) and #11522.
+The licenses above are widely recognized and used in Europe and beyond to promote data and software sharing. See [the guides](https://dataverse-guide--11522.org.readthedocs.build/en/11522/installation/config.html#configuring-licenses) and #11522.
