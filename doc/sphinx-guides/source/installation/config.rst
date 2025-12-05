@@ -2161,8 +2161,8 @@ Contributing to the Collection of Standard Licenses Above
 
 If you do not find the license JSON you need above, you are encouraged to contribute it to this documentation. Following the Dataverse 6.2 release, we have standardized on the following procedure:
 
-- Look for the license at https://spdx.org/licenses/
-- ``cd scripts/api/data/licenses``
+- Look for the license at https://spdx.org/licenses/.
+- ``cd scripts/api/data/licenses``.
 - Copy an existing license as a starting point.
 - Name your file using the SPDX identifier. For example, if the identifier is ``Apache-2.0``, you should name your file ``licenseApache-2.0.json``.
 - For the ``name`` field, use the "short identifier" from the SPDX landing page (e.g. ``Apache-2.0``).
