@@ -1,0 +1,120 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://edatos.consorciomadrono.es/oai",
+      "service-doc": [
+        {
+          "href": "https://www.openarchives.org/OAI/2.0/guidelines-static-repository.htm",
+          "type": "text/html",
+          "title": "Specification for an OAI Static Repository and an OAI Static Repository Gateway"
+        }
+      ],
+      "service-meta": [
+        {
+          "href": "https://edatos.consorciomadrono.es/oai",
+          "type": "application/xml"
+        }
+      ]
+    },
+    {
+      "anchor": "https://edatos.consorciomadrono.es/api",
+      "service-doc": [
+        {
+          "href": "https://guides.dataverse.org/en/latest/api/search.html",
+          "type": "application/html"
+          "title": "API Rest"
+        }
+      ]
+    },
+    {
+      "anchor": "https://edatos.consorciomadrono.es/api",
+      "service-doc": [
+        {
+          "href": "https://guides.dataverse.org/en/latest/api/dataaccess.html",
+          "type": "application/html"
+          "title": "API Rest"
+        }
+      ]
+    },
+    {
+      "anchor": "https://edatos.consorciomadrono.es/api",
+      "service-doc": [
+        {
+          "href": "https://guides.dataverse.org/en/latest/api/native-api.html",
+          "type": "application/html"
+          "title": "API Rest"
+        }
+      ]
+    },
+    {
+      "anchor": "https://edatos.consorciomadrono.es/api",
+      "service-doc": [
+        {
+          "href": "https://guides.dataverse.org/en/latest/developers/dataset-semantic-metadata-api.html",
+          "type": "application/html"
+          "title": "API Rest"
+        }
+      ]
+    },
+    {
+      "anchor": "https://edatos.consorciomadrono.es/api",
+      "service-doc": [
+        {
+          "href": "https://guides.dataverse.org/en/latest/developers/dataset-migration-api.html",
+          "type": "application/html"
+          "title": "API Rest"
+        }
+      ]
+    },
+    {
+      "anchor": "https://edatos.consorciomadrono.es/api",
+      "service-doc": [
+        {
+          "href": "https://guides.dataverse.org/en/latest/developers/s3-direct-upload-api.html",
+          "type": "application/html"
+          "title": "API Rest"
+        }
+      ]
+    },
+    {
+      "anchor": "https://edatos.consorciomadrono.es/api",
+      "service-doc": [
+        {
+          "href": "https://guides.dataverse.org/en/latest/developers/globus-api.html",
+          "type": "application/html"
+          "title": "API Rest"
+        }
+      ]
+    },
+    {
+      "anchor": "https://edatos.consorciomadrono.es/api",
+      "service-doc": [
+        {
+          "href": "https://guides.dataverse.org/en/latest/api/metrics.html",
+          "type": "application/html"
+          "title": "API Rest"
+        }
+      ]
+    },
+    {
+      "anchor": "https://edatos.consorciomadrono.es/api",
+      "service-doc": [
+        {
+          "href": "http://swordapp.org/",
+          "type": "application/html"
+          "title": "API Rest"
+        }
+      ]
+    },
+    {
+      "anchor": "https://edatos.consorciomadrono.es/sitemap.xml",
+      "service-doc": [
+        {
+          "href": "https://www.sitemaps.org/protocol.html",
+          "type": "text/html",
+          "title": "sitemaps.org - Protocol"
+        }
+      ]
+    }
+  ]
+}

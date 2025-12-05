@@ -756,8 +756,30 @@ public class SettingsServiceBean {
         COARNotifyRelationshipAnnouncementTriggerFields,
         // JSON specification of the targets to send announcements to
         COARNotifyRelationshipAnnouncementTargets,
-        ;
 
+        // DCAT an json repository description entries
+        // The country in which the repository operates
+        dcat_repository_country,
+        // The native language of the user interface of the repository.
+        dcat_repository_language,
+        // The subject classification of datasets in a repository. If none, it could be generic 
+        dcat_repository_research_area,
+        //  Policies that explain the repository’s commitment and processes that ensure the long-term preservation, fitness, and availability of datasets.
+        dcat_repository_prev_policy,
+        // Policies that explain what datasets the repository will accept for deposit, from whom, and under what conditions, including costs.
+        dcat_repository_terms,
+        // The terms of reuse of datasets that are provided by a repository
+        dcat_repository_license,
+        // Evidence that a repository meets a formal standard and adheres to a set of best, professional practices. Format. Certification|Start date|End date
+        dcat_repository_certification,
+        // The organization responsible for the data repository
+        dcat_repository_org_name,
+        // Policies for who can view and access a dataset and under what conditions.
+        dcat_repository_access_terms,
+        // A general description of the data repository
+        dcat_repositoryDescription      
+        ;
+        
         @Override
         public String toString() {
             return ":" + name();

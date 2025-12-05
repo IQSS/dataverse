@@ -49,6 +49,14 @@
                     <f:viewAction action="#{SearchIncludeFragment.search()}" />
                 </f:metadata>
             </ui:define>
+            <ui:define name="jsonld_header">
+                <ui:fragment rendered="#{DataversePage.isRootDataverse()}">
+                    <link rel="api-catalog" type="application/linkset+json" href="#{systemConfig.dataverseSiteUrl}/resources/json/.well-known/api-catalog"/>
+                    <script rel="describedby" type="application/ld+json">
+                        #{DataversePage.getSchemaOrgDcatJson ()}
+                    </script>
+                </ui:fragment>
+            </ui:define>
             <ui:define name="body">
                 <f:loadBundle basename="ValidationMessages" var="valMsg"/>
                 <h:form id="dataverseForm">
