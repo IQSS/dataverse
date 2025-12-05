@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -381,6 +382,18 @@ public class SettingsWrapper implements java.io.Serializable {
             webloaderUpload = systemConfig.isWebloaderUpload();
         }
         return webloaderUpload;
+    }
+
+    /**
+     * Check if embedded webloader V2 mode is enabled.
+     * Requires both the feature flag AND a V2 webloader URL.
+     */
+    public boolean isEmbeddedWebloaderV2() {
+        if (!FeatureFlags.EMBED_WEBLOADER_V2.enabled()) {
+            return false;
+        }
+        String webloaderUrl = settingsService.getValueForKey(SettingsServiceBean.Key.WebloaderUrl);
+        return webloaderUrl != null && webloaderUrl.toLowerCase().contains("v2");
     }
 
     @Deprecated(forRemoval = true, since = "2024-07-07")

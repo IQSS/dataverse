@@ -250,6 +250,16 @@ public enum FeatureFlags {
      */ 
     ONLY_UPDATE_DATACITE_WHEN_NEEDED("only-update-datacite-when-needed"),
 
+    /**
+     * Enables embedding DVWebloader V2 directly in the JSF edit files page
+     * using an iframe, instead of opening it in a popup window.
+     * Requires :WebloaderUrl to be set to a V2 URL (containing "v2" in the path).
+     * 
+     * @apiNote Raise flag by setting "dataverse.feature.embed-webloader-v2"
+     * @since Dataverse 6.x
+     */
+    EMBED_WEBLOADER_V2("embed-webloader-v2"),
+
     ;
     
     final String flag;

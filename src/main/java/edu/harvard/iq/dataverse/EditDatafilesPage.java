@@ -3165,4 +3165,30 @@ public class EditDatafilesPage implements java.io.Serializable {
             return null;
         }
     }
+
+    /**
+     * Get URL for embedded DVWebloader V2 (iframe mode).
+     * Similar to getWebloaderUrlForDataset but uses embedded HTML page.
+     */
+    public String getEmbeddedWebloaderUrl() {
+        Dataset d = this.getDataset();
+        String localeCode = session.getLocaleCode();
+        User user = session.getUser();
+        if (user instanceof AuthenticatedUser) {
+            ApiToken apiToken = authService.getValidApiTokenForUser((AuthenticatedUser) user);
+            String storageDriverId = d.getEffectiveStorageDriverId();
+            boolean useS3Tagging = !JvmSettings.DISABLE_S3_TAGGING
+                .lookupOptional(Boolean.class, storageDriverId).orElse(false);
+            
+            // Get base URL and replace HTML filename with embedded version
+            String baseUrl = settingsService.getValueForKey(SettingsServiceBean.Key.WebloaderUrl);
+            String embeddedUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1) 
+                + "embeddedDvWebloader.html";
+            
+            return WebloaderUtil.getWebloaderUrl(d, apiToken, localeCode, embeddedUrl, useS3Tagging);
+        } else {
+            logger.warning("getEmbeddedWebloaderUrl called for non-Authenticated user");
+            return null;
+        }
+    }
 }

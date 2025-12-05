@@ -59,14 +59,41 @@
                         </h:outputFormat>
                         
                         <h:outputText value="#{bundle['dataset.message.uploadFilesMultiple.message']}" escape="false"
-                                        rendered="#{settingsWrapper.uploadMethodsCount > 1}"/>
+                                        rendered="#{settingsWrapper.uploadMethodsCount > 1 and !settingsWrapper.embeddedWebloaderV2}"/>
                     </p>
                 </ui:fragment>
                 <!-- Upload -->
                 <div class="panel-group" role="tablist" aria-multiselectable="true"
                       id="fileUploadFragment" jsf:rendered="#{showFileUploadFragment}">
                     
-                    <div jsf:id="httpPanel" jsf:rendered="#{settingsWrapper.HTTPUpload}" class="panel panel-default">
+                    <!-- V2 Embedded Uploader Mode (iframe like previewers) -->
+                    <!-- Requires: dataverse.feature.embed-webloader-v2=true AND :WebloaderUrl containing "v2" -->
+                    <!-- No panel wrapper needed - the React component provides its own UI -->
+                    <ui:fragment rendered="#{settingsWrapper.embeddedWebloaderV2 and settingsWrapper.HTTPUpload and !hasPackageFile}">
+                        <iframe 
+                            id="dvwebloaderFrame"
+                            role="presentation" 
+                            title="#{bundle['file.uploadFiles']}" 
+                            src="#{EditDatafilesPage.embeddedWebloaderUrl}"
+                            style="width: 100%; min-height: 400px; border: none; display: block;">
+                        </iframe>
+                        <script>
+                            //<![CDATA[
+                            // Listen for height updates from embedded DVWebloader
+                            window.addEventListener('message', function(event) {
+                                if (event.data && event.data.type === 'dvwebloader-resize') {
+                                    var iframe = document.getElementById('dvwebloaderFrame');
+                                    if (iframe) {
+                                        iframe.style.height = event.data.height + 'px';
+                                    }
+                                }
+                            });
+                            //]]>
+                        </script>
+                    </ui:fragment>
+
+                    <!-- Legacy HTTP Upload Panel (when not using embedded V2) -->
+                    <div jsf:id="httpPanel" jsf:rendered="#{!settingsWrapper.embeddedWebloaderV2 and settingsWrapper.HTTPUpload}" class="panel panel-default">
                         <div role="tab" id="headingHTTP" data-toggle="collapse" data-target="#panelCollapseHTTP" class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseHTTP">
                             #{bundle['file.fromHTTP']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
                         </div>

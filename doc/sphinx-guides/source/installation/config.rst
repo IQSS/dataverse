@@ -3914,6 +3914,9 @@ please find all known feature flags below. Any of these flags can be activated u
     * - only-update-datacite-when-needed
       - Only contact DataCite to update a DOI after checking to see if DataCite has outdated information (for efficiency, lighter load on DataCite, especially when using file DOIs).
       - ``Off``
+    * - embed-webloader-v2
+      - When enabled (and ``:WebloaderUrl`` contains "v2"), DVWebloader V2 is embedded directly in the edit files page via an iframe instead of opening in a popup window. The embedded uploader respects the ``dataverse.files.<driverId>.disable-tagging`` JVM setting.
+      - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_FEATURE_XXX`` (e.g. ``DATAVERSE_FEATURE_API_SESSION_AUTH=1``). These environment variables can be set in your shell before starting Payara. If you are using :doc:`Docker for development </container/dev-usage>`, you can set them in the `docker compose <https://docs.docker.com/compose/environment-variables/set-environment-variables/>`_ file.
@@ -5521,6 +5524,8 @@ The URL of `dvuploader <https://github.com/gdcc/dvwebloader>`'s HTML file when d
 To use the current GDCC version directly:
 
 ``curl -X PUT -d 'https://gdcc.github.io/dvwebloader/src/dvwebloader.html' http://localhost:8080/api/admin/settings/:WebloaderUrl``
+
+**DVWebloader V2 Embedded Mode (Experimental):** If you use a DVWebloader V2 URL (containing "v2" in the path, e.g., ``dvwebloaderV2.html`` or ``embeddedDvWebloader.html``) and enable the ``embed-webloader-v2`` feature flag, the uploader will be embedded directly in the edit files page via an iframe instead of opening in a popup window. See also :ref:`feature-flags`.
 
 .. _:CategoryOrder:
 
