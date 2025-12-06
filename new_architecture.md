@@ -12,8 +12,6 @@ This document proposes a **component-based development approach** for Dataverse 
 - **Proves the pattern** - DVWebloader V2 demonstrates this works in practice
 
 > **What's actually being proposed:** Continue developing new frontend features (like the planned File Tree Browser) using the standalone component pattern proven by DVWebloader V2.
->
-> **What's illustrative:** The AI enhancements and "Dataverse Light" sections show what *becomes possible* with this approach - they are not planned work.
 
 ### Scope & Intent
 
@@ -21,12 +19,10 @@ This document proposes a **component-based development approach** for Dataverse 
 |----------|----------|--------|
 | **Core Proposal** | Standalone component pattern, iframe embedding, API-first design | ✅ Proven (DVWebloader V2) |
 | **Planned Work** | File Tree Browser as standalone component | 🚧 Next contribution |
-| **Illustrative Possibilities** | AI search, Dataverse Light | 💭 Shows what becomes possible |
 
 This document serves as:
 1. **Justification** for the architectural approach used in existing contributions (DVWebloader V2)
 2. **Proposal** to continue this pattern for future frontend work
-3. **Vision** of what this approach enables long-term (for discussion, not commitment)
 
 ### Related Projects
 
@@ -63,10 +59,10 @@ This architecture vision builds upon existing projects in the Dataverse ecosyste
 5. [Integration Patterns](#5-integration-patterns)
    - [Embedding in Dataverse (iframe)](#51-embedding-in-dataverse-iframe)
    - [External Tools](#52-external-tools)
-   - [Dataverse Light](#53-dataverse-light)
 6. [Component Communication](#6-component-communication)
 7. [What This Enables](#7-what-this-enables)
-8. [Benefits & Trade-offs](#8-benefits--trade-offs)
+8. [Anticipated Questions](#8-anticipated-questions)
+9. [Benefits & Trade-offs](#9-benefits--trade-offs)
 
 **Appendices:**
 - [Appendix A: Component API Reference](#appendix-a-component-api-reference)
@@ -123,7 +119,10 @@ This architecture vision builds upon existing projects in the Dataverse ecosyste
 Each UI component is:
 - **Self-contained** - Has its own build, can run standalone
 - **Embeddable** - Works in iframe with postMessage communication
-- **Configurable** - Accepts configuration via URL params, props, or self-configures via API calls (to be discussed)
+- **Configurable** - Accepts configuration via URL params, props, or self-configures via API calls
+
+> ⚠️ **Open Question (for Tech Hours):** The configuration approach needs resolution. URL params work for simple cases, but complex components may need a cleaner contract. The current approach assumes components can self-configure via API calls (e.g., fetching dataset metadata after receiving just a dataset PID). This needs confirmation, and current PRs may need updates based on the decision.
+
 - **Stateless** - Receives data via API, doesn't maintain global state
 
 ### 2.2 API-First Design
@@ -177,9 +176,9 @@ This architecture aligns with the goals of the [Dataverse Frontend](https://gith
 |-----------|------------|-------------------|--------------------------------|
 | **File Uploader** | ✅ Complete | ✅ Complete | `src/standalone-uploader/` |
 | **File Tree Browser** | 🚧 Planned | 🚧 Planned | `src/sections/dataset/dataset-files/files-tree/` (proposed) |
-| **Search & Discovery** | ✅ Complete | 💭 Illustrative | `src/sections/collection/collection-items-panel/` |
-| **File Metadata Editor** | ✅ Complete | 💭 Illustrative | `src/sections/edit-file-metadata/` |
-| **Dataset Metadata Editor** | ✅ Complete | 💭 Illustrative | `src/sections/edit-dataset-metadata/` |
+| **Search & Discovery** | ✅ Complete | — (extractable) | `src/sections/collection/collection-items-panel/` |
+| **File Metadata Editor** | ✅ Complete | — (extractable) | `src/sections/edit-file-metadata/` |
+| **Dataset Metadata Editor** | ✅ Complete | — (extractable) | `src/sections/edit-dataset-metadata/` |
 
 **Key Insight:** Most components already exist in the SPA. The standalone extraction pattern (demonstrated by File Uploader) could be applied to other components if needed for external tools or other use cases.
 
@@ -336,9 +335,7 @@ export function FilesTable({ files, fileRepository, ... }) {
 
 **Status:** ✅ Working in SPA
 
-The search components (`CollectionItemsPanel`, `FilterPanel`, `SearchInput`, `ItemsList`) already exist in `dataverse-frontend`. The `SearchInput` component already supports swappable search services - it could be extended to support alternative backends (e.g., AI-enhanced search).
-
-**Illustrative:** If extracted as a standalone component, it could be embedded in external tools or "Dataverse Light" configurations. This is not planned work.
+The search components (`CollectionItemsPanel`, `FilterPanel`, `SearchInput`, `ItemsList`) already exist in `dataverse-frontend`. Could be extracted as standalone following the File Uploader pattern if needed for external tools.
 
 ---
 
@@ -346,9 +343,7 @@ The search components (`CollectionItemsPanel`, `FilterPanel`, `SearchInput`, `It
 
 **Status:** ✅ Working in SPA
 
-The file metadata editing components (`EditFileMetadata`, `EditFilesList`) already exist in `dataverse-frontend`.
-
-**Illustrative:** Could be extracted as standalone for use in external tools that need file metadata editing capabilities.
+The file metadata editing components (`EditFileMetadata`, `EditFilesList`) already exist in `dataverse-frontend`. Could be extracted as standalone following the File Uploader pattern if needed for external tools.
 
 ---
 
@@ -356,9 +351,7 @@ The file metadata editing components (`EditFileMetadata`, `EditFilesList`) alrea
 
 **Status:** ✅ Working in SPA
 
-The dataset metadata editing components (`EditDatasetMetadata`, `DatasetMetadataForm`, `CreateDataset`) already exist in `dataverse-frontend`.
-
-**Illustrative:** Could be extracted as standalone for use in external tools.
+The dataset metadata editing components (`EditDatasetMetadata`, `DatasetMetadataForm`, `CreateDataset`) already exist in `dataverse-frontend`. Could be extracted as standalone following the File Uploader pattern if needed for external tools.
 
 ---
 
@@ -509,44 +502,6 @@ This is a key motivation for the standalone component approach: **accelerate ext
 
 ---
 
-### 5.3 Dataverse Light
-
-> ⚠️ **Theoretical Concept:** This is a thought experiment to illustrate the *logical conclusion* of the component-based approach - not a planned product. In practice, the complexity of Dataverse lies in its data model and permissions, not the UI layer. A truly "light" deployment would still require PostgreSQL, Solr, and storage infrastructure. This section exists to show what becomes architecturally *possible*, not what is practical or planned.
-
-**Concept:** Lightweight Dataverse deployment using standalone components
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                   Dataverse Light                       │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  ┌─────────────────────────────────────────────────────┐│
-│  │              Search Component                       ││
-│  │  [🔍 Search datasets...                    ] [🔎]   ││
-│  │                                                     ││
-│  │  Filters          │  Results                        ││
-│  │  ☑ Published      │  ┌───────────────────────────┐  ││
-│  │  ☐ My Drafts      │  │ 📊 Climate Dataset 2024   │  ││
-│  │                   │  │ ⭐ 4.5 | 📥 1.2k          │  ││
-│  │  Subject          │  └───────────────────────────┘  ││
-│  │  [Select...]      │  ┌───────────────────────────┐  ││
-│  │                   │  │ 📊 Genomics Study         │  ││
-│  │                   │  │ ⭐ 4.8 | 📥 856           │  ││
-│  └───────────────────┴──┴───────────────────────────┴──┘│
-│                                                         │
-│  ┌─────────────────────────────────────────────────────┐│
-│  │              Dataset View                           ││
-│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐    ││
-│  │  │  Metadata   │ │  File Tree  │ │   Upload    │    ││
-│  │  │   Editor    │ │   Browser   │ │  Component  │    ││
-│  │  └─────────────┘ └─────────────┘ └─────────────┘    ││
-│  └─────────────────────────────────────────────────────┘│
-│                                                         │
-└─────────────────────────────────────────────────────────┘
-```
-
----
-
 ## 6. Component Communication
 
 ### 6.1 Same-Origin Components (SPA mode)
@@ -661,18 +616,44 @@ These become possible with the component architecture but are **not currently pl
 - [ ] File Metadata Editor - Extract `EditFileMetadata`
 - [ ] Dataset Metadata Editor - Extract `EditDatasetMetadata`
 
-**Backend Flexibility:**
-> The component architecture decouples UI from backend implementation. This *theoretically* enables:
+---
 
-- [ ] Alternative search implementations (AI-enhanced, different indexing)
-- [ ] Swappable services behind the Native API contract
+## 8. Anticipated Questions
 
-**Dataverse Light:**
-> A minimal deployment using standalone components. See Section 5.3 for why this is more of a thought experiment than a practical goal.
+This section addresses likely pushback and concerns about the standalone component approach.
+
+### "Why not just wait for the SPA?"
+
+The SPA transition has been gradual, and institutions need features *now*. The standalone component approach bridges this gap:
+- New components work in JSF today and SPA tomorrow
+- No duplicate implementation effort
+- Components don't impede SPA development - they contribute to it
+
+### "Iframes feel old-school"
+
+True, but they solve real problems that modern alternatives don't address as cleanly:
+- **CSS isolation** - No conflicts with JSF's PrimeFaces styles
+- **React version isolation** - Dataverse JSF doesn't need to care about React 18
+- **Security boundary** - Same-origin policy applies naturally
+- **Web Components** would be the modern alternative, but they don't solve the React-version isolation problem and have their own complexity
+
+### "This adds complexity"
+
+Fair. The postMessage protocol, standalone builds, and dual-mode components add cognitive overhead. The question is whether that complexity pays for itself:
+- **Reuse across JSF, SPA, and external tools** - One implementation, multiple contexts
+- **Proven pattern** - DVWebloader V2 demonstrates it works
+- **Documented** - This document + working examples reduce learning curve
+
+### "Bundle size is chunky (420KB gzipped)"
+
+For the uploader, this is acceptable because:
+- It's loaded on-demand (only when user needs to upload)
+- The component is feature-rich (drag-drop, progress, retry, MD5)
+- Lazy loading and code splitting can help for frequently-loaded components
 
 ---
 
-## 8. Benefits & Trade-offs
+## 9. Benefits & Trade-offs
 
 ### Why This Approach?
 
@@ -872,8 +853,6 @@ Extract **standalone UI components from the SPA** that can work both within the 
 
 1. **Search Component**
    - Includes: facets, search box, list of results
-   - Supports different search engines (dockerized, swappable backends)
-   - AI-enhanced options (e.g., RAG - Retrieval Augmented Generation)
    - Custom result views as separate standalone components
 
 2. **File Tree Browser**
@@ -896,23 +875,12 @@ Extract **standalone UI components from the SPA** that can work both within the 
    - View and edit dataset-level metadata
    - For JSON-LD editing/validation pattern, see [cdi-viewer](../cdi-viewer/ARCHITECTURE.md)
 
-### Future Flexibility
-
-> 💭 **Theoretical:** Because components use the Native API, alternative backend implementations become possible (but are not planned):
->  - Different search implementations (Elasticsearch, AI-enhanced search)
->  - AI services for metadata enhancement
-
 ### Composition Patterns
 
 1. **External Tool Development**
    - Combine: Tree Browser + Uploader + File Metadata Editor + Dataset Metadata Editor
    - Example: rdm-integration project demonstrates this pattern
    - Accelerates external tool development on dataset level
-
-2. **"Dataverse Light"**
-   - Combine standalone components with search
-   - Easy to assemble and customize
-   - All basic functionality in lightweight package
 
 ### Architectural Principles
 
@@ -934,8 +902,8 @@ Extract **standalone UI components from the SPA** that can work both within the 
 
 ---
 
-**Document Version:** 1.3
+**Document Version:** 1.4
 **Created:** December 2025
 **Updated:** December 2025
 **Authors:** Eryk Kulikowski, with Claude Opus 4.5 (preview) via GitHub Copilot for VS Code
-**Status:** Vision / Proposal
+**Status:** Proposal
