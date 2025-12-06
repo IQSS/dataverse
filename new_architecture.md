@@ -58,8 +58,7 @@ This architecture vision builds upon existing projects in the Dataverse ecosyste
    - [File Tree Browser](#32-file-tree-browser-planned)
    - [Search & Discovery](#33-search--discovery-exists-in-spa)
    - [File Metadata Editor](#34-file-metadata-editor-exists-in-spa)
-   - [DDI-CDI Metadata Generator](#35-ddi-cdi-metadata-generator-existing)
-   - [Dataset Metadata Editor](#36-dataset-metadata-editor-exists-in-spa)
+   - [Dataset Metadata Editor](#35-dataset-metadata-editor-exists-in-spa)
 4. [Backend Architecture](#4-backend-architecture)
 5. [Integration Patterns](#5-integration-patterns)
    - [Embedding in Dataverse (iframe)](#51-embedding-in-dataverse-iframe)
@@ -178,12 +177,11 @@ This architecture aligns with the goals of the [Dataverse Frontend](https://gith
 |-----------|------------|-------------------|--------------------------------|
 | **File Uploader** | ✅ Complete | ✅ Complete | `src/standalone-uploader/` |
 | **File Tree Browser** | 🚧 Planned | 🚧 Planned | `src/sections/dataset/dataset-files/files-tree/` (proposed) |
-| **Search & Discovery** | ✅ Complete | 🚧 Needs extraction | `src/sections/collection/collection-items-panel/` |
-| **File Metadata Editor** | ✅ Complete | 🚧 Needs extraction | `src/sections/edit-file-metadata/` |
-| **Dataset Metadata Editor** | ✅ Complete | 🚧 Needs extraction | `src/sections/edit-dataset-metadata/` |
-| **DDI-CDI Generator** | ✅ Complete | ✅ External tool | `rdm-integration` (separate project) |
+| **Search & Discovery** | ✅ Complete | 💭 Illustrative | `src/sections/collection/collection-items-panel/` |
+| **File Metadata Editor** | ✅ Complete | 💭 Illustrative | `src/sections/edit-file-metadata/` |
+| **Dataset Metadata Editor** | ✅ Complete | 💭 Illustrative | `src/sections/edit-dataset-metadata/` |
 
-**Key Insight:** Most components already exist in the SPA. The primary work is extracting them as standalone bundles (following the File Uploader pattern) and adding iframe embedding support.
+**Key Insight:** Most components already exist in the SPA. The standalone extraction pattern (demonstrated by File Uploader) could be applied to other components if needed for external tools or other use cases.
 
 ### 3.1 File Uploader (IMPLEMENTED)
 
@@ -336,319 +334,31 @@ export function FilesTable({ files, fileRepository, ... }) {
 
 ### 3.3 Search & Discovery (EXISTS IN SPA)
 
-**Status:** ✅ Working in SPA (needs standalone extraction)
+**Status:** ✅ Working in SPA
 
-**Purpose:** Search datasets with facets, filters, and customizable result views
+The search components (`CollectionItemsPanel`, `FilterPanel`, `SearchInput`, `ItemsList`) already exist in `dataverse-frontend`. The `SearchInput` component already supports swappable search services - it could be extended to support alternative backends (e.g., AI-enhanced search).
 
-**API Integration:**
-
-Uses `dataverse-client-javascript` for all search operations:
-
-```typescript
-import { 
-  getCollectionItems, 
-  getCollectionFacets,
-  getMyDataCollectionItems 
-} from '@iqss/dataverse-client-javascript'
-
-// Fetch paginated collection items with filters
-const items = await getCollectionItems.execute(
-  collectionIdOrAlias,  // e.g., 'root' or collection alias
-  limit,                 // pagination
-  offset,
-  searchCriteria        // filters, types, query
-)
-
-// Get facets for filter sidebar
-const facets = await getCollectionFacets.execute(collectionIdOrAlias)
-
-// Get user's own datasets (My Data page)
-const myData = await getMyDataCollectionItems.execute(
-  roleIds,
-  collectionItemTypes,
-  publishingStatuses,
-  limit,
-  page,
-  searchText
-)
-```
-
-**Existing Components in `dataverse-frontend`:**
-
-| Component | Location | Purpose |
-|-----------|----------|--------|
-| `CollectionItemsPanel` | [`src/sections/collection/collection-items-panel/`](https://github.com/IQSS/dataverse-frontend/tree/develop/src/sections/collection/collection-items-panel) | Main search results panel with facets and items list |
-| `FilterPanel` | [`collection-items-panel/filter-panel/FilterPanel.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/collection/collection-items-panel/filter-panel/FilterPanel.tsx) | Facet filters sidebar (type filters, facet filters) |
-| `SearchInput` (homepage) | [`src/sections/homepage/search-input/SearchInput.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/homepage/search-input/SearchInput.tsx) | Homepage search bar with swappable search services |
-| `SearchInput` (collection) | [`src/sections/collection/collection-items-panel/search-input/SearchInput.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/collection/collection-items-panel/search-input/SearchInput.tsx) | Collection page search (used in CollectionItemsPanel) |
-| `ItemsList` | [`collection-items-panel/items-list/ItemsList.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/collection/collection-items-panel/items-list/ItemsList.tsx) | Results list with infinite scroll |
-| `AdvancedSearch` | [`src/sections/advanced-search/AdvancedSearch.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/advanced-search/AdvancedSearch.tsx) | Advanced search form with metadata block fields |
-
-**Current Architecture (from CollectionItemsPanel.tsx):**
-```tsx
-// HOW IT WORKS (from actual source code comments):
-// This component loads items on the following scenarios:
-// 1. When the component mounts
-// 2. When the user scrolls to the bottom (infinite scroll)
-// 3. When the user submits a search query
-// 4. When the user changes item types in the filter panel
-// 5. When the user selects or removes a facet filter
-// 6. When the user navigates back/forward in the browser
-// 7. When the user changes the sort and order of items
-```
-
-**Current UI Layout:**
-```
-┌─────────────────────────────────────────────────────────┐
-│                  Homepage / Collection Page             │
-├─────────────────────────────────────────────────────────┤
-│  SearchInput (with service dropdown for AI search)      │
-│  [🔍 Search datasets...                         ] [🔎]  │
-├─────────────────────────────────────────────────────────┤
-│ ┌───────────────┐ ┌───────────────────────────────────┐ │
-│ │  FilterPanel  │ │            ItemsList              │ │
-│ │               │ │  (infinite scroll, selection)     │ │
-│ │ TypeFilters:  │ │  ┌──────────────────────────────┐ │ │
-│ │ ☐ Collections │ │  │ 📊 Climate Dataset 2024      │ │ │
-│ │ ☑ Datasets    │ │  │ ⭐ 4.5 | 📥 1.2k downloads   │ │ │
-│ │ ☐ Files       │ │  └──────────────────────────────┘ │ │
-│ │               │ │  ┌─────────────────────────────┐  │ │
-│ │ FacetsFilters:│ │  │ 📊 Genomics Study           │  │ │
-│ │ Subject       │ │  │ ⭐ 4.8 | 📥 856             │  │ │
-│ │ ☑ Medicine    │ │  └─────────────────────────────┘  │ │
-│ │ ☑ Biology     │ │                                   │ │
-│ └───────────────┘ └───────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────┘
-```
-
-**Swappable Search Service (already supported):**
-```tsx
-// From SearchInput.tsx - already supports multiple search services!
-interface SearchInputProps {
-  searchServices: SearchService[]  // Multiple backends supported
-}
-
-// User can select which service to use (Solr, AI, etc.)
-const [searchServiceSelected, setSearchServiceSelected] = 
-  useState<string>(SOLR_SERVICE_NAME)
-```
-
-**Custom Result Views:**
-
-The search component supports swappable result view components, enabling different visualizations of the same search results:
-
-| View Type | Description | Use Case |
-|-----------|-------------|----------|
-| `list` | Standard vertical list with details | Default browse view |
-| `grid` | Card-based grid layout | Visual browsing, thumbnails |
-| `table` | Compact tabular view | Data-oriented users, bulk selection |
-| `custom` | User-provided component | Domain-specific visualizations |
-
-This enables:
-- Different views for different Dataverse installations
-- Domain-specific result cards (e.g., medical datasets with DICOM previews)
-- Custom third-party view components as separate standalone builds
-
-**To Extract as Standalone:**
-1. Create `src/standalone-search/` (similar to `standalone-uploader/`)
-2. Bundle `CollectionItemsPanel` + `FilterPanel` + `SearchInput`
-3. Add URL parameter configuration (including `resultView` option)
-4. Use same iframe embedding pattern
+**Illustrative:** If extracted as a standalone component, it could be embedded in external tools or "Dataverse Light" configurations. This is not planned work.
 
 ---
 
 ### 3.4 File Metadata Editor (EXISTS IN SPA)
 
-**Status:** ✅ Working in SPA (needs standalone extraction)
+**Status:** ✅ Working in SPA
 
-**Purpose:** View and edit file-level metadata with validation
+The file metadata editing components (`EditFileMetadata`, `EditFilesList`) already exist in `dataverse-frontend`.
 
-**API Integration:**
-
-Uses `dataverse-client-javascript` for file operations:
-
-```typescript
-import { getFile, updateFileMetadata } from '@iqss/dataverse-client-javascript'
-
-// Get file with metadata
-const file = await getFile.execute(fileId)
-
-// Update file metadata
-await updateFileMetadata.execute(fileId, {
-  label: 'new-filename.csv',
-  directoryLabel: 'data/processed',
-  description: 'Processed data from experiment',
-  categories: ['Data'],
-  restrict: false
-})
-```
-
-**Existing Components in `dataverse-frontend`:**
-
-| Component | Location | Purpose |
-|-----------|----------|--------|
-| `EditFileMetadata` | [`src/sections/edit-file-metadata/EditFileMetadata.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/edit-file-metadata/EditFileMetadata.tsx) | Page wrapper with breadcrumbs and permissions |
-| `EditFilesList` | [`src/sections/edit-file-metadata/EditFilesList.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/edit-file-metadata/EditFilesList.tsx) | Form for editing file metadata (name, description, path) |
-| `EditFileMetadataRow` | [`src/sections/edit-file-metadata/EditFileMetadataRow.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/edit-file-metadata/EditFileMetadataRow.tsx) | Individual file row in the editor |
-
-**Current Implementation:**
-```tsx
-// From EditFileMetadata.tsx
-export const EditFileMetadata = ({ fileId, fileRepository, referrer }) => {
-  const { file, isLoading } = useFile(fileRepository, fileId)
-  
-  return (
-    <section>
-      <BreadcrumbsGenerator hierarchy={file.hierarchy} ... />
-      <header><h1>{t('pageTitle')}</h1></header>
-      
-      {canEditOwnerDataset ? (
-        <Tabs defaultActiveKey="files">
-          <Tabs.Tab eventKey="files" title={t('files')}>
-            <EditFilesList
-              fileRepository={fileRepository}
-              editFileMetadataFormData={createEditFileMetadataFormData(file)}
-              referrer={referrer}
-              datasetPersistentId={file.hierarchy.parent?.persistentId}
-            />
-          </Tabs.Tab>
-        </Tabs>
-      ) : (
-        <Alert variant="danger">Not allowed</Alert>
-      )}
-    </section>
-  )
-}
-```
-
-**Form Data Structure:**
-```typescript
-// From EditFilesList.tsx
-export interface FileMetadataFormRow {
-  id: number
-  fileName: string
-  fileType: string
-  fileSizeString: string
-  checksumValue?: string
-  checksumAlgorithm?: FixityAlgorithm
-  description: string
-  fileDir: string  // Directory path
-}
-
-export interface EditFileMetadataFormData {
-  files: FileMetadataFormRow[]
-}
-```
-
-**Integration with Other Components:**
-- Accessible from `FilesTable` → Edit menu → "Metadata"
-- Accessible from `File` page → `EditFileMenu`
-- Uses `react-hook-form` for form handling
-
-**To Extract as Standalone:** Similar pattern to file uploader:
-1. Create wrapper in `src/standalone-file-metadata/`
-2. Accept fileId/datasetPid via URL params
-3. Use postMessage for parent communication
+**Illustrative:** Could be extracted as standalone for use in external tools that need file metadata editing capabilities.
 
 ---
 
-### 3.5 DDI-CDI Metadata Generator (EXISTING)
+### 3.5 Dataset Metadata Editor (EXISTS IN SPA)
 
-**Status:** ✅ Production Ready (in rdm-integration)
+**Status:** ✅ Working in SPA
 
-**Purpose:** Automatically generate rich, standardized metadata descriptions for tabular data files following the [DDI-CDI](https://ddialliance.org/Specification/DDI-CDI/) (Data Documentation Initiative - Cross-Domain Integration) specification.
+The dataset metadata editing components (`EditDatasetMetadata`, `DatasetMetadataForm`, `CreateDataset`) already exist in `dataverse-frontend`.
 
-> DDI-CDI is an international standard for describing research data. It provides a common vocabulary and structure for documenting datasets, making it easier to share, preserve, discover, integrate, and validate data.
-> — [rdm-integration/ddi-cdi.md](../rdm-integration/ddi-cdi.md)
-
-**Features:**
-- **Automatic file analysis** - Examines structure and content of tabular files
-- **Metadata inference** - Determines variable types, roles, and statistics
-- **SHACL-based validation** - Interactive form with validation constraints
-- **RDF/Turtle output** - Standardized metadata format
-
-**Supported File Formats:**
-- CSV/TSV files
-- Statistical data files (SPSS `.sav`, SAS, Stata `.dta`)
-- Files with DDI metadata already ingested by Dataverse
-
-**Architecture:**
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Angular Frontend                     │
-├─────────────────────────────────────────────────────────┤
-│                    SHACL Form Viewer                    │
-│      (JSON-LD display, validation, inline editing)      │
-├─────────────────────────────────────────────────────────┤
-│                     Python Pipeline                     │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌─────────┐  │
-│  │  File    │  │   Data   │  │ Metadata │  │   CDI   │  │
-│  │  Access  │─▶│ Analysis │─▶│ Enrichmt │─▶│  Output │  │
-│  └──────────┘  └──────────┘  └──────────┘  └─────────┘  │
-└─────────────────────────────────────────────────────────┘
-```
-
-**Key Concept for Architecture:** The DDI-CDI generator demonstrates how a specialized metadata tool can be built as an external tool that:
-1. Runs analysis in background processes (Go backend + Python scripts)
-2. Presents results through a SHACL-validated form interface
-3. Integrates with Dataverse via the external tools API
-
-**Related: cdi-viewer (JSON-LD Viewer/Editor/Validator)**
-
-The [cdi-viewer](../cdi-viewer) project provides a standalone proof-of-concept for browser-based JSON-LD viewing, editing, and SHACL validation. Key architectural patterns from cdi-viewer:
-
-- **Generic JSON-LD Support** - Works with any RDF vocabulary (DDI-CDI, schema.org, DCAT, etc.)
-- **Dual Deployment** - Standalone (GitHub Pages) + Dataverse integration
-- **SHACL Validation** - Real-time validation against SHACL shapes with SPARQL support
-- **Client-Side Only** - No backend required, all processing in browser
-- **Configurable** - Optional namespace and context mappings
-
-This pattern can be applied to create embeddable metadata components for any JSON-LD vocabulary. See [`cdi-viewer/ARCHITECTURE.md`](../cdi-viewer/ARCHITECTURE.md) for detailed documentation.
-
-**See:** [`rdm-integration/ddi-cdi.md`](../rdm-integration/ddi-cdi.md) for complete documentation.
-
----
-
-### 3.6 Dataset Metadata Editor (EXISTS IN SPA)
-
-**Status:** ✅ Working in SPA (needs standalone extraction)
-
-**Purpose:** Edit dataset-level metadata with rich validation
-
-**Existing Components in `dataverse-frontend`:**
-
-| Component | Location | Purpose |
-|-----------|----------|--------|
-| `EditDatasetMetadata` | [`src/sections/edit-dataset-metadata/`](https://github.com/IQSS/dataverse-frontend/tree/develop/src/sections/edit-dataset-metadata) | Dataset metadata editing page |
-| `DatasetMetadataForm` | [`src/sections/shared/form/DatasetMetadataForm/`](https://github.com/IQSS/dataverse-frontend/tree/develop/src/sections/shared/form/DatasetMetadataForm) | Reusable metadata form component |
-| `CreateDataset` | [`src/sections/create-dataset/`](https://github.com/IQSS/dataverse-frontend/tree/develop/src/sections/create-dataset) | Dataset creation wizard |
-
-**Features Already Implemented:**
-- Citation metadata editing
-- Controlled vocabulary support (with lookup)
-- Multi-language support (i18next)
-- Draft/Published state management
-- Metadata block rendering based on collection configuration
-- Form validation with `react-hook-form`
-
-**Shared Form Infrastructure:**
-```tsx
-// The DatasetMetadataForm is already designed for reuse
-import { DatasetMetadataForm } from '@/sections/shared/form/DatasetMetadataForm'
-
-// Used in both CreateDataset and EditDatasetMetadata
-<DatasetMetadataForm
-  metadataBlocksInfo={metadataBlocksInfo}
-  datasetMetadata={existingMetadata}  // null for create
-  onSubmit={handleSubmit}
-/>
-```
-
-**To Extract as Standalone:**
-1. Create `src/standalone-dataset-editor/`
-2. Bundle `DatasetMetadataForm` with necessary context
-3. Accept datasetPid via URL params
-4. Can be used for both create and edit modes
+**Illustrative:** Could be extracted as standalone for use in external tools or lightweight dataset creation workflows.
 
 ---
 
@@ -746,41 +456,13 @@ interface RefreshMessage {
 
 ### 5.2 External Tools
 
-#### 5.2.1 Existing Example: rdm-integration
+#### 5.2.1 Example: rdm-integration
 
-The [rdm-integration](https://github.com/libis/rdm-integration) project is a production-ready external tool that demonstrates the modular architecture pattern. It provides:
+The [rdm-integration](https://github.com/libis/rdm-integration) project is an external tool for data synchronization from various repositories (GitHub, GitLab, IRODS, OneDrive, etc.) into Dataverse.
 
-**Key Features:**
-- **Data Synchronization** - Synchronize files from various repositories (GitHub, GitLab, IRODS, OneDrive, OSF, Globus) into Dataverse with background processing
-- **DDI-CDI Metadata Generation** - Automatically generate rich, standardized metadata for tabular data files following the [DDI-CDI specification](https://ddialliance.org/Specification/DDI-CDI/)
-- **Globus Transfers** - High-performance uploads and downloads via managed Globus transfers for S3-backed storage
+**Relevance to this proposal:** The development of rdm-integration would have been significantly easier if standalone UI components had been available. Instead of building custom Angular components for file browsing, metadata editing, and uploads, we could have embedded the existing React components from dataverse-frontend.
 
-**Architecture (from rdm-integration):**
-```
-┌─────────────────────────────────────────────────────────┐
-│                Angular Frontend                         │
-│  (served behind OAuth2 Proxy for authentication)        │
-├─────────────────────────────────────────────────────────┤
-│                   Go Backend                            │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │
-│  │   Plugin    │  │    Job      │  │   Redis     │      │
-│  │   System    │  │  Scheduler  │  │   State     │      │
-│  └─────────────┘  └─────────────┘  └─────────────┘      │
-├─────────────────────────────────────────────────────────┤
-│  Plugins: GitHub | GitLab | IRODS | OneDrive | OSF |    │
-│           SFTP | REDCap | Globus | Local filesystem     │
-└─────────────────────────────────────────────────────────┘
-```
-
-**External Tool Configurations (registered in Dataverse):**
-
-| Tool | Type | Scope | Route |
-|------|------|-------|-------|
-| RDM-integration upload | `configure` | `dataset` | `/#/connect` |
-| RDM-integration download | `explore` | `dataset` | `/#/download` |
-| Generate DDI-CDI | `configure` | `dataset` | `/#/ddi-cdi` |
-
-**See:** [`rdm-integration/README.md`](../rdm-integration/README.md) and [`rdm-integration/ddi-cdi.md`](../rdm-integration/ddi-cdi.md)
+This is a key motivation for the standalone component approach: **accelerate external tool development** by providing reusable UI building blocks.
 
 ---
 
