@@ -10,6 +10,18 @@ This document proposes a **modular, microservices-based architecture** for Datav
 - **Maintainability** - Loosely coupled, independently deployable modules
 - **Future-proofing** - Easy adoption of new technologies
 
+### Related Projects
+
+This architecture vision builds upon existing projects in the Dataverse ecosystem:
+
+| Project | Description | Repository |
+|---------|-------------|------------|
+| **Dataverse Frontend** | New React-based SPA for Dataverse | [IQSS/dataverse-frontend](https://github.com/IQSS/dataverse-frontend) |
+| **DVWebloader** | Web-based folder uploader for Dataverse | [gdcc/dvwebloader](https://github.com/gdcc/dvwebloader) |
+| **rdm-integration** | External tool for file synchronization & DDI-CDI generation | [libis/rdm-integration](https://github.com/libis/rdm-integration) |
+| **rdm-build** | Docker build scripts for RDM infrastructure | Local: `../rdm-build` |
+| **dataverse-client-javascript** | Official JavaScript/TypeScript client library | [IQSS/dataverse-client-javascript](https://github.com/IQSS/dataverse-client-javascript) |
+
 ---
 
 ## Table of Contents
@@ -115,6 +127,26 @@ Each microservice:
 - Communication: REST/GraphQL + WebSocket for real-time
 - Storage: Pluggable (S3, Azure Blob, local filesystem)
 
+### 2.5 Alignment with Dataverse Frontend Vision
+
+This architecture aligns with the goals of the [Dataverse Frontend](https://github.com/IQSS/dataverse-frontend) project:
+
+> **The goals of Dataverse Frontend:**
+> - Modernize the application
+> - Separate the frontend and backend logic, transition away from Monolithic Architecture
+> - Reimagine the current Dataverse backend as a headless API-first instance
+> - The Dataverse Frontend becomes a stand-alone SPA (Single Page Application)
+> - Modularize the UI to allow third-party extension of the base project
+> - Increase cadence of development, decrease time between release cycles
+> — [dataverse-frontend README](https://github.com/IQSS/dataverse-frontend/blob/develop/README.md)
+
+**Technology Stack (from dataverse-frontend):**
+- React 18 with TypeScript
+- Bootstrap with custom theming
+- Storybook for component library
+- Cypress for E2E testing
+- i18next for localization
+
 ---
 
 ## 3. Standalone UI Components
@@ -123,33 +155,69 @@ Each microservice:
 
 **Status:** ✅ Working (DVWebloader V2)
 
+> DVWebloader V2 reuses the file upload components from the new Dataverse SPA ([dataverse-frontend](https://github.com/IQSS/dataverse-frontend)) and the official JavaScript client library ([dataverse-client-javascript](https://github.com/IQSS/dataverse-client-javascript)). This ensures consistency with the main Dataverse application and reduces code duplication.
+> — [DVWebloader README](https://github.com/gdcc/dvwebloader/blob/main/README.md)
+
 **Modes:**
 - SPA mode - Full React Router integration
-- Popup mode - Opens in new window
-- Embedded mode - iframe in JSF pages
+- Popup mode - Opens in new window (legacy DVWebloader behavior)
+- Embedded mode - iframe in JSF pages (new)
 
 **Features:**
 - Drag & drop files and folders
 - Progress tracking per file
 - S3 direct upload support
-- Configurable (tagging, checksums, retries)
+- MD5 checksum calculation (optional)
+- Retry mechanism for failed uploads
+- i18n support
 
-**Repository:** `dataverse-frontend` branch `feature/standalone-file-uploader`
+**Configuration Options:**
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `siteUrl` | (required) | The Dataverse installation URL |
+| `datasetPid` | (required) | The dataset's persistent identifier |
+| `key` | (required) | User's API token for authentication |
+| `dvLocale` | `en` | Language locale (e.g., `en`, `de`, `fr`) |
+| `useS3Tagging` | `true` | Set to `false` for S3-compatible storage (e.g., MinIO) |
+| `maxRetries` | `3` | Maximum retries for multipart upload parts |
+| `uploadTimeoutMs` | `0` | Timeout in ms (`0` = unlimited) |
+| `disableMD5Checksum` | `false` | Set to `true` to skip checksum calculation |
+
+**Project References:**
+
+| Location | Purpose |
+|----------|--------|
+| [`dataverse-frontend/src/standalone-uploader/`](https://github.com/IQSS/dataverse-frontend) | React component source |
+| [`rdm-build/images/previewers/dvwebloader-v2/`](../rdm-build/images/previewers/dvwebloader-v2/) | Build configuration & output |
+| [`dvwebloader/src/dvwebloaderV2.html`](../dvwebloader/src/dvwebloaderV2.html) | Standalone HTML wrapper |
+| [`dataverse/embedded_dvwebloader.md`](embedded_dvwebloader.md) | Embedded mode implementation status |
 
 **Key Files:**
 ```
-src/standalone-uploader/
-├── index.tsx                    # Entry point
-├── StandaloneFileUploaderPanel.tsx  # Standalone wrapper
-├── embeddedDvWebloader.html     # Minimal HTML for iframe
-└── config.ts                    # URL param parsing
+dataverse-frontend/src/standalone-uploader/
+├── index.tsx                        # Entry point
+├── StandaloneFileUploaderPanel.tsx  # Standalone wrapper component
+└── config.ts                        # URL param parsing
+
+rdm-build/images/previewers/dvwebloader-v2/
+├── vite.config.ts                   # Build configuration
+├── embeddedDvWebloader.html         # Minimal HTML for iframe embedding
+└── dist/dvwebloader-v2.js           # Bundled output (~1.6MB, ~420KB gzipped)
 ```
 
+**Bundle Architecture:**
+- React 18
+- React Bootstrap components
+- dataverse-client-javascript (for API communication)
+- i18next (for internationalization)
+- All CSS is inlined into the JavaScript bundle
+
 **Lessons Learned:**
-- iframe isolation solves CSS conflicts
+- iframe isolation solves CSS conflicts with JSF pages
 - postMessage for height sync works well
-- API token in URL (iframe) is secure enough
-- Need to handle embedded vs popup mode differently
+- API token in URL (iframe) is acceptable for same-origin embedding
+- Need to handle embedded vs popup mode differently in React component
 
 ---
 
@@ -300,7 +368,52 @@ cdi-viewer concepts → File Metadata Component
 
 ---
 
-### 3.5 Dataset Metadata Editor (PLANNED)
+### 3.5 DDI-CDI Metadata Generator (EXISTING)
+
+**Status:** ✅ Production Ready (in rdm-integration)
+
+**Purpose:** Automatically generate rich, standardized metadata descriptions for tabular data files following the [DDI-CDI](https://ddialliance.org/Specification/DDI-CDI/) (Data Documentation Initiative - Cross-Domain Integration) specification.
+
+> DDI-CDI is an international standard for describing research data. It provides a common vocabulary and structure for documenting datasets, making it easier to share, preserve, discover, integrate, and validate data.
+> — [rdm-integration/ddi-cdi.md](../rdm-integration/ddi-cdi.md)
+
+**Features:**
+- **Automatic file analysis** - Examines structure and content of tabular files
+- **Metadata inference** - Determines variable types, roles, and statistics
+- **SHACL-based validation** - Interactive form with validation constraints
+- **RDF/Turtle output** - Standardized metadata format
+
+**Supported File Formats:**
+- CSV/TSV files
+- Statistical data files (SPSS `.sav`, SAS, Stata `.dta`)
+- Files with DDI metadata already ingested by Dataverse
+
+**Architecture:**
+```
+┌─────────────────────────────────────────────────────────┐
+│                   Angular Frontend                      │
+├─────────────────────────────────────────────────────────┤
+│                   SHACL Form Viewer                     │
+│  (JSON-LD display, validation, inline editing)          │
+├─────────────────────────────────────────────────────────┤
+│                    Python Pipeline                      │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐    │
+│  │ File     │→│ Data     │→│ Metadata │→│ CDI      │    │
+│  │ Access   │ │ Analysis │ │ Enrichment│ │ Generation│   │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘    │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Key Concept for Architecture:** The DDI-CDI generator demonstrates how a specialized metadata tool can be built as an external tool that:
+1. Runs analysis in background processes (Go backend + Python scripts)
+2. Presents results through a SHACL-validated form interface
+3. Integrates with Dataverse via the external tools API
+
+**See:** [`rdm-integration/ddi-cdi.md`](../rdm-integration/ddi-cdi.md) for complete documentation.
+
+---
+
+### 3.6 Dataset Metadata Editor (PLANNED)
 
 **Purpose:** Edit dataset-level metadata with rich validation
 
@@ -577,7 +690,47 @@ interface RefreshMessage {
 
 ### 5.2 External Tools
 
-**Example: File Management Tool (using multiple components)**
+#### 5.2.1 Existing Example: rdm-integration
+
+The [rdm-integration](https://github.com/libis/rdm-integration) project is a production-ready external tool that demonstrates the modular architecture pattern. It provides:
+
+**Key Features:**
+- **Data Synchronization** - Synchronize files from various repositories (GitHub, GitLab, IRODS, OneDrive, OSF, Globus) into Dataverse with background processing
+- **DDI-CDI Metadata Generation** - Automatically generate rich, standardized metadata for tabular data files following the [DDI-CDI specification](https://ddialliance.org/Specification/DDI-CDI/)
+- **Globus Transfers** - High-performance uploads and downloads via managed Globus transfers for S3-backed storage
+
+**Architecture (from rdm-integration):**
+```
+┌─────────────────────────────────────────────────────────┐
+│                Angular Frontend                         │
+│  (served behind OAuth2 Proxy for authentication)        │
+├─────────────────────────────────────────────────────────┤
+│                   Go Backend                            │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │
+│  │   Plugin    │  │    Job      │  │   Redis     │      │
+│  │   System    │  │  Scheduler  │  │   State     │      │
+│  └─────────────┘  └─────────────┘  └─────────────┘      │
+├─────────────────────────────────────────────────────────┤
+│  Plugins: GitHub | GitLab | IRODS | OneDrive | OSF |    │
+│           SFTP | REDCap | Globus | Local filesystem     │
+└─────────────────────────────────────────────────────────┘
+```
+
+**External Tool Configurations (registered in Dataverse):**
+
+| Tool | Type | Scope | Route |
+|------|------|-------|-------|
+| RDM-integration upload | `configure` | `dataset` | `/#/connect` |
+| RDM-integration download | `explore` | `dataset` | `/#/download` |
+| Generate DDI-CDI | `configure` | `dataset` | `/#/ddi-cdi` |
+
+**See:** [`rdm-integration/README.md`](../rdm-integration/README.md) and [`rdm-integration/ddi-cdi.md`](../rdm-integration/ddi-cdi.md)
+
+---
+
+#### 5.2.2 Proposed: Composable External Tools
+
+**Example: File Management Tool (using multiple standalone components)**
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -916,15 +1069,92 @@ interface SearchConfig {
 
 ---
 
-## Appendix B: Related Documentation
+## Appendix B: Related Project Documentation
 
-- **Embedded DVWebloader V2:** `/home/eryk/projects/dataverse/embedded_dvwebloader.md`
-- **cdi-viewer Architecture:** `/home/eryk/projects/cdi-viewer/ARCHITECTURE.md`
-- **rdm-integration:** `/home/eryk/projects/rdm-integration/` (external tool example)
+### Core Projects
+
+| Project | Key Documentation | Description |
+|---------|-------------------|-------------|
+| **dataverse-frontend** | [README](https://github.com/IQSS/dataverse-frontend/blob/develop/README.md) | SPA goals, environments, technology stack |
+| | [DEVELOPER_GUIDE](https://github.com/IQSS/dataverse-frontend/blob/develop/DEVELOPER_GUIDE.md) | Architecture design, coding standards |
+| | [CHANGELOG](https://github.com/IQSS/dataverse-frontend/blob/develop/CHANGELOG.md) | Version history |
+| **dvwebloader** | [README](https://github.com/gdcc/dvwebloader/blob/main/README.md) | V1/V2 versions, configuration, integration |
+| | [Wiki](https://github.com/gdcc/dvwebloader/wiki) | Detailed usage documentation |
+| **rdm-integration** | [README](../rdm-integration/README.md) | Setup, plugins, architecture overview |
+| | [ddi-cdi.md](../rdm-integration/ddi-cdi.md) | DDI-CDI metadata generation guide |
+| | [FAST_REDEPLOY.md](../rdm-integration/FAST_REDEPLOY.md) | Development workflow |
+
+### Build Infrastructure
+
+| Project | Key Documentation | Description |
+|---------|-------------------|-------------|
+| **rdm-build** | [README](../rdm-build/README.md) | Docker image build scripts |
+| | [images/previewers/README](../rdm-build/images/previewers/README.md) | Previewers image (includes DVWebloader) |
+| | [images/previewers/dvwebloader-v2/README](../rdm-build/images/previewers/dvwebloader-v2/README.md) | V2 build instructions |
+
+### Implementation Status Documents
+
+| Document | Location | Description |
+|----------|----------|-------------|
+| **Embedded DVWebloader V2** | [`embedded_dvwebloader.md`](embedded_dvwebloader.md) | Current implementation status, known issues, next steps |
+| **This Document** | [`new_architecture.md`](new_architecture.md) | Architecture vision and roadmap |
+
+### External Resources
+
+- [Dataverse Guides](https://guides.dataverse.org/en/latest/)
+- [Dataverse API Documentation](http://guides.dataverse.org/en/latest/api/index.html)
+- [GDCC (Global Dataverse Community Consortium)](https://www.gdcc.io/)
+- [DDI-CDI Specification](https://ddialliance.org/Specification/DDI-CDI/)
+- [Dataverse Frontend Chromatic (Storybook)](https://www.chromatic.com/builds?appId=646f68aa9beb01b35c599acd)
 
 ---
 
-**Document Version:** 1.0  
+## Appendix C: Quick Start for Developers
+
+### Running the Full Stack Locally
+
+The rdm-integration project provides a complete local development environment:
+
+```bash
+# Clone required repositories side-by-side
+git clone https://github.com/libis/rdm-integration
+git clone https://github.com/IQSS/dataverse
+git clone https://github.com/IQSS/dataverse-frontend
+
+# Start the full stack (Dataverse + Keycloak + MinIO + rdm-integration)
+cd rdm-integration
+make up
+
+# Access points:
+# - http://localhost:4180      - rdm-integration app
+# - http://localhost:8080      - Dataverse UI
+# - http://localhost:8090      - Keycloak admin
+# Default login: admin / admin
+```
+
+### Building DVWebloader V2
+
+```bash
+cd rdm-build/images/previewers/dvwebloader-v2
+npm install
+npm run build
+# Output: dist/dvwebloader-v2.js
+```
+
+### Running dataverse-frontend Development Server
+
+```bash
+cd dataverse-frontend
+npm install
+cd packages/design-system && npm run build && cd ../..
+npm start
+# Access: http://localhost:5173
+```
+
+---
+
+**Document Version:** 1.1  
 **Created:** December 2024  
+**Updated:** December 2024 (added project references)  
 **Author:** Architecture discussion with AI assistance  
 **Status:** Vision / Proposal
