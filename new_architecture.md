@@ -19,6 +19,7 @@ This architecture vision builds upon existing projects in the Dataverse ecosyste
 | **Dataverse Frontend** | New React-based SPA for Dataverse | [IQSS/dataverse-frontend](https://github.com/IQSS/dataverse-frontend) |
 | **DVWebloader** | Web-based folder uploader for Dataverse | [gdcc/dvwebloader](https://github.com/gdcc/dvwebloader) |
 | **rdm-integration** | External tool for file synchronization & DDI-CDI generation | [libis/rdm-integration](https://github.com/libis/rdm-integration) |
+| **cdi-viewer** | Generic JSON-LD viewer/editor/validator with SHACL support | Local: `../cdi-viewer` |
 | **rdm-build** | Docker build scripts for RDM infrastructure | Local: `../rdm-build` |
 | **dataverse-client-javascript** | Official JavaScript/TypeScript client library | [IQSS/dataverse-client-javascript](https://github.com/IQSS/dataverse-client-javascript) |
 
@@ -53,6 +54,12 @@ This architecture vision builds upon existing projects in the Dataverse ecosyste
 6. [Component Communication](#6-component-communication)
 7. [Implementation Roadmap](#7-implementation-roadmap)
 8. [Benefits & Trade-offs](#8-benefits--trade-offs)
+
+**Appendices:**
+- [Appendix A: Component API Reference](#appendix-a-component-api-reference)
+- [Appendix B: Related Project Documentation](#appendix-b-related-project-documentation)
+- [Appendix C: Quick Start for Developers](#appendix-c-quick-start-for-developers)
+- [Appendix D: Original Vision (Structured)](#appendix-d-original-vision-structured)
 
 ---
 
@@ -608,10 +615,26 @@ const [searchServiceSelected, setSearchServiceSelected] =
   useState<string>(SOLR_SERVICE_NAME)
 ```
 
+**Custom Result Views:**
+
+The search component supports swappable result view components, enabling different visualizations of the same search results:
+
+| View Type | Description | Use Case |
+|-----------|-------------|----------|
+| `list` | Standard vertical list with details | Default browse view |
+| `grid` | Card-based grid layout | Visual browsing, thumbnails |
+| `table` | Compact tabular view | Data-oriented users, bulk selection |
+| `custom` | User-provided component | Domain-specific visualizations |
+
+This enables:
+- Different views for different Dataverse installations
+- Domain-specific result cards (e.g., medical datasets with DICOM previews)
+- Custom third-party view components as separate standalone builds
+
 **To Extract as Standalone:**
 1. Create `src/standalone-search/` (similar to `standalone-uploader/`)
 2. Bundle `CollectionItemsPanel` + `FilterPanel` + `SearchInput`
-3. Add URL parameter configuration
+3. Add URL parameter configuration (including `resultView` option)
 4. Use same iframe embedding pattern
 
 ---
@@ -751,6 +774,18 @@ export interface EditFileMetadataFormData {
 1. Runs analysis in background processes (Go backend + Python scripts)
 2. Presents results through a SHACL-validated form interface
 3. Integrates with Dataverse via the external tools API
+
+**Related: cdi-viewer (JSON-LD Viewer/Editor/Validator)**
+
+The [cdi-viewer](../cdi-viewer) project provides a standalone proof-of-concept for browser-based JSON-LD viewing, editing, and SHACL validation. Key architectural patterns from cdi-viewer:
+
+- **Generic JSON-LD Support** - Works with any RDF vocabulary (DDI-CDI, schema.org, DCAT, etc.)
+- **Dual Deployment** - Standalone (GitHub Pages) + Dataverse integration
+- **SHACL Validation** - Real-time validation against SHACL shapes with SPARQL support
+- **Client-Side Only** - No backend required, all processing in browser
+- **Configurable** - Optional namespace and context mappings
+
+This pattern can be applied to create embeddable metadata components for any JSON-LD vocabulary. See [`cdi-viewer/ARCHITECTURE.md`](../cdi-viewer/ARCHITECTURE.md) for detailed documentation.
 
 **See:** [`rdm-integration/ddi-cdi.md`](../rdm-integration/ddi-cdi.md) for complete documentation.
 
@@ -1510,6 +1545,8 @@ interface SearchConfig {
 | **rdm-integration** | [README](../rdm-integration/README.md) | Setup, plugins, architecture overview |
 | | [ddi-cdi.md](../rdm-integration/ddi-cdi.md) | DDI-CDI metadata generation guide |
 | | [FAST_REDEPLOY.md](../rdm-integration/FAST_REDEPLOY.md) | Development workflow |
+| **cdi-viewer** | [ARCHITECTURE.md](../cdi-viewer/ARCHITECTURE.md) | JSON-LD viewer architecture, patterns |
+| | [GENERIC_USAGE.md](../cdi-viewer/docs/GENERIC_USAGE.md) | Generic JSON-LD usage guide |
 
 ### Build Infrastructure
 
@@ -1580,8 +1617,86 @@ npm start
 
 ---
 
-**Document Version:** 1.2  
+## Appendix D: Original Vision (Structured)
+
+This appendix preserves the original requirements and vision that led to this architecture document, structured for clarity.
+
+### Core Concept
+
+Extract **standalone UI components from the SPA** that can work both within the Dataverse SPA and as **embeddable iframes** in JSF pages or external tools.
+
+### Standalone Components Envisioned
+
+1. **Search Component**
+   - Includes: facets, search box, list of results
+   - Supports different search engines (dockerized, swappable backends)
+   - AI-enhanced options (e.g., RAG - Retrieval Augmented Generation)
+   - Custom result views as separate standalone components
+
+2. **File Tree Browser**
+   - Hierarchical tree view with file/folder selection
+   - Lazy loading and collapsible folders for efficiency
+   - Multi-select: whole folders, deselect individual files, select specific files
+   - Download functionality for selected files/folders
+   - Designed from scratch to be part of SPA with standalone build option
+
+3. **File Uploader** (DVWebloader V2)
+   - Already implemented as proof of concept
+   - Embedded in JSF pages via iframe
+   - Uses standalone build from dataverse-frontend
+
+4. **File Metadata Viewer/Editor**
+   - View and edit file-level metadata
+   - Extracted from existing SPA components
+
+5. **Dataset Metadata Viewer/Editor**
+   - View and edit dataset-level metadata
+   - For JSON-LD editing/validation pattern, see [cdi-viewer](../cdi-viewer/ARCHITECTURE.md)
+
+### Microservices Architecture
+
+- **Swappable backend services** behind defined API contracts
+- Different implementations for different needs:
+  - Standard Solr search vs AI-enhanced search
+  - Different storage backends (S3, Azure, local)
+  - AI services for metadata enhancement
+- **Dockerized** for easy deployment and replacement
+- **Future-proof** for new technology stacks
+
+### Composition Patterns
+
+1. **External Tool Development**
+   - Combine: Tree Browser + Uploader + File Metadata Editor + Dataset Metadata Editor
+   - Example: rdm-integration project demonstrates this pattern
+   - Accelerates external tool development on dataset level
+
+2. **"Dataverse Light"**
+   - Combine standalone components with search
+   - Easy to assemble and customize
+   - All basic functionality in lightweight package
+
+### Architectural Principles
+
+- **Flexible** - Components can be used independently or together
+- **Modularized** - Each component is self-contained
+- **Modernized** - React/TypeScript, modern build tools
+- **Moldable** - Easy to customize for different needs
+- **Loosely coupled** - Components communicate via defined APIs
+- **Maintainable** - Smaller, focused modules
+
+### Reference Implementations
+
+| Project | Demonstrates |
+|---------|--------------|
+| **DVWebloader V2** | Standalone component extraction, iframe embedding |
+| **rdm-integration** | External tool with file sync, metadata editing, DDI-CDI generation |
+| **cdi-viewer** | Browser-based JSON-LD viewer/editor with SHACL validation |
+| **dataverse-frontend** | SPA with components to extract |
+
+---
+
+**Document Version:** 1.3  
 **Created:** December 2024  
-**Updated:** December 2024 (API strategy clarification, component verification)  
+**Updated:** December 2024 (cdi-viewer reference, custom views, structured original vision)  
 **Author:** Architecture discussion with AI assistance  
 **Status:** Vision / Proposal
