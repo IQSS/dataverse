@@ -271,17 +271,17 @@ When implementing microservices that can replace Dataverse functionality:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                         API Contract                                     │
+│                         API Contract                                    │
 │                    (OpenAPI / Native API spec)                          │
 ├─────────────────────────────────────────────────────────────────────────┤
-│                              │                                           │
+│                              │                                          │
 │         ┌────────────────────┴────────────────────┐                     │
-│         │                                          │                     │
+│         │                                          │                    │
 │   ┌─────▼─────┐                           ┌────────▼────────┐           │
 │   │ Dataverse │  ◄─── Same API ───►       │ Microservice    │           │
 │   │  Backend  │      Contract             │ Implementation  │           │
 │   └───────────┘                           └─────────────────┘           │
-│                                                                          │
+│                                                                         │
 │   (Java/Payara)                           (Python/Go/Rust/etc.)         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -582,24 +582,24 @@ const myData = await getMyDataCollectionItems.execute(
 **Current UI Layout:**
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                  Homepage / Collection Page              │
+│                  Homepage / Collection Page             │
 ├─────────────────────────────────────────────────────────┤
-│  SearchInput (with service dropdown for AI search)       │
+│  SearchInput (with service dropdown for AI search)      │
 │  [🔍 Search datasets...                         ] [🔎]  │
 ├─────────────────────────────────────────────────────────┤
-│ ┌───────────────┐ ┌─────────────────────────────────────┐ │
-│ │  FilterPanel   │ │            ItemsList                 │ │
-│ │               │ │  (infinite scroll, selection)        │ │
-│ │ TypeFilters:  │ │  ┌─────────────────────────────────┐  │ │
-│ │ ☐ Collections │ │  │ 📊 Climate Dataset 2024        │  │ │
-│ │ ☑ Datasets    │ │  │ ⭐ 4.5 | 📥 1.2k downloads     │  │ │
-│ │ ☐ Files       │ │  └─────────────────────────────────┘  │ │
-│ │               │ │  ┌─────────────────────────────────┐  │ │
-│ │ FacetsFilters:│ │  │ 📊 Genomics Study            │  │ │
-│ │ Subject       │ │  │ ⭐ 4.8 | 📥 856               │  │ │
-│ │ ☑ Medicine   │ │  └─────────────────────────────────┘  │ │
-│ │ ☑ Biology    │ │                                       │ │
-│ └───────────────┘ └─────────────────────────────────────┘ │
+│ ┌───────────────┐ ┌───────────────────────────────────┐ │
+│ │  FilterPanel  │ │            ItemsList              │ │
+│ │               │ │  (infinite scroll, selection)     │ │
+│ │ TypeFilters:  │ │  ┌──────────────────────────────┐ │ │
+│ │ ☐ Collections │ │  │ 📊 Climate Dataset 2024      │ │ │
+│ │ ☑ Datasets    │ │  │ ⭐ 4.5 | 📥 1.2k downloads   │ │ │
+│ │ ☐ Files       │ │  └──────────────────────────────┘ │ │
+│ │               │ │  ┌─────────────────────────────┐  │ │
+│ │ FacetsFilters:│ │  │ 📊 Genomics Study           │  │ │
+│ │ Subject       │ │  │ ⭐ 4.8 | 📥 856             │  │ │
+│ │ ☑ Medicine    │ │  └─────────────────────────────┘  │ │
+│ │ ☑ Biology     │ │                                   │ │
+│ └───────────────┘ └───────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────┘
 ```
 
