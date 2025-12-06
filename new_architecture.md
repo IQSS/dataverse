@@ -1394,7 +1394,7 @@ type Events = {
 
 ### Phase 2: File Tree Browser (NEW)
 
-**Timeline:** Q1 2025
+**Timeline:** Q1 2026
 
 - [ ] Design tree component API (build on `FilesTable`)
 - [ ] Add folder expand/collapse to existing files view
@@ -1404,7 +1404,7 @@ type Events = {
 
 ### Phase 3: Extract Existing Components as Standalone
 
-**Timeline:** Q2 2025
+**Timeline:** Q2 2026
 
 > These components already work in the SPA. The task is to create standalone bundles like we did for the File Uploader.
 
@@ -1415,7 +1415,7 @@ type Events = {
 
 ### Phase 4: Search Service Abstraction
 
-**Timeline:** Q3 2025
+**Timeline:** Q3 2026
 
 - [ ] Formalize SearchService interface (already partially exists)
 - [ ] Build AI/RAG search implementation
@@ -1424,7 +1424,7 @@ type Events = {
 
 ### Phase 5: AI Enhancements
 
-**Timeline:** Q4 2025
+**Timeline:** Q4 2026
 
 - [ ] RAG search implementation
 - [ ] Embedding service for datasets
@@ -1433,7 +1433,7 @@ type Events = {
 
 ### Phase 6: Dataverse Light
 
-**Timeline:** 2026
+**Timeline:** 2027
 
 - [ ] Component orchestration framework
 - [ ] Minimal Docker deployment

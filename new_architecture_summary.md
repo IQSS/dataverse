@@ -101,11 +101,11 @@ Swap the standard search for AI-powered alternatives:
 | Phase | Timeline | Focus |
 |-------|----------|-------|
 | **Phase 1** | Now | File Uploader (complete), fix remaining issues |
-| **Phase 2** | Q1 2025 | File Tree Browser |
-| **Phase 3** | Q2 2025 | Extract search and metadata editors as standalone |
-| **Phase 4** | Q3 2025 | Swappable search service |
-| **Phase 5** | Q4 2025 | AI enhancements |
-| **Phase 6** | 2026 | Dataverse Light release |
+| **Phase 2** | Q1 2026 | File Tree Browser |
+| **Phase 3** | Q2 2026 | Extract search and metadata editors as standalone |
+| **Phase 4** | Q3 2026 | Swappable search service |
+| **Phase 5** | Q4 2026 | AI enhancements |
+| **Phase 6** | 2027 | Dataverse Light release |
 
 ---
 
