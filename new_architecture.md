@@ -358,7 +358,7 @@ The file metadata editing components (`EditFileMetadata`, `EditFilesList`) alrea
 
 The dataset metadata editing components (`EditDatasetMetadata`, `DatasetMetadataForm`, `CreateDataset`) already exist in `dataverse-frontend`.
 
-**Illustrative:** Could be extracted as standalone for use in external tools or lightweight dataset creation workflows.
+**Illustrative:** Could be extracted as standalone for use in external tools.
 
 ---
 
@@ -543,41 +543,6 @@ This is a key motivation for the standalone component approach: **accelerate ext
 │  └─────────────────────────────────────────────────────┘│
 │                                                         │
 └─────────────────────────────────────────────────────────┘
-```
-
-**Docker Compose (Minimal):**
-```yaml
-version: '3.8'
-services:
-  # Frontend - serves static components
-  frontend:
-    image: dataverse/frontend:light
-    ports:
-      - "80:80"
-  
-  # API Gateway - routes to services
-  gateway:
-    image: dataverse/gateway:latest
-    environment:
-      SEARCH_SERVICE: http://search:8080
-      STORAGE_SERVICE: http://storage:8080
-      METADATA_SERVICE: http://metadata:8080
-  
-  # Core services
-  search:
-    image: dataverse/search-service:solr
-  storage:
-    image: dataverse/storage-service:s3
-  metadata:
-    image: dataverse/metadata-service:postgres
-  
-  # Data layer
-  solr:
-    image: solr:9
-  postgres:
-    image: postgres:15
-  minio:
-    image: minio/minio
 ```
 
 ---
@@ -934,8 +899,7 @@ Extract **standalone UI components from the SPA** that can work both within the 
 ### Future Flexibility
 
 > 💭 **Theoretical:** Because components use the Native API, alternative backend implementations become possible (but are not planned):
->  - Different search backends (Elasticsearch, AI-enhanced search)
->  - Different storage backends (Azure, Google Cloud)
+>  - Different search implementations (Elasticsearch, AI-enhanced search)
 >  - AI services for metadata enhancement
 
 ### Composition Patterns
