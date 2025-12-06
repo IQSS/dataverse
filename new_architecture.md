@@ -31,9 +31,10 @@ This architecture vision builds upon existing projects in the Dataverse ecosyste
 3. [Standalone UI Components](#3-standalone-ui-components)
    - [File Uploader](#31-file-uploader-implemented)
    - [File Tree Browser](#32-file-tree-browser-planned)
-   - [Search & Discovery](#33-search--discovery-planned)
-   - [Metadata Viewer/Editor](#34-metadata-viewereditor-planned)
-   - [Dataset Metadata Editor](#35-dataset-metadata-editor-planned)
+   - [Search & Discovery](#33-search--discovery-exists-in-spa)
+   - [File Metadata Editor](#34-file-metadata-editor-exists-in-spa)
+   - [DDI-CDI Metadata Generator](#35-ddi-cdi-metadata-generator-existing)
+   - [Dataset Metadata Editor](#36-dataset-metadata-editor-exists-in-spa)
 4. [Backend Microservices](#4-backend-microservices)
    - [Search Service](#41-search-service)
    - [Storage Service](#42-storage-service)
@@ -151,6 +152,19 @@ This architecture aligns with the goals of the [Dataverse Frontend](https://gith
 
 ## 3. Standalone UI Components
 
+### Component Status Summary
+
+| Component | SPA Status | Standalone Status | Location in dataverse-frontend |
+|-----------|------------|-------------------|--------------------------------|
+| **File Uploader** | ✅ Complete | ✅ Complete | `src/standalone-uploader/` |
+| **File Tree Browser** | 🚧 Planned | 🚧 Planned | `src/sections/dataset/dataset-files/files-tree/` (proposed) |
+| **Search & Discovery** | ✅ Complete | 🚧 Needs extraction | `src/sections/collection/collection-items-panel/` |
+| **File Metadata Editor** | ✅ Complete | 🚧 Needs extraction | `src/sections/edit-file-metadata/` |
+| **Dataset Metadata Editor** | ✅ Complete | 🚧 Needs extraction | `src/sections/edit-dataset-metadata/` |
+| **DDI-CDI Generator** | ✅ Complete | ✅ External tool | `rdm-integration` (separate project) |
+
+**Key Insight:** Most components already exist in the SPA. The primary work is extracting them as standalone bundles (following the File Uploader pattern) and adding iframe embedding support.
+
 ### 3.1 File Uploader (IMPLEMENTED)
 
 **Status:** ✅ Working (DVWebloader V2)
@@ -221,16 +235,48 @@ rdm-build/images/previewers/dvwebloader-v2/
 
 ---
 
-### 3.2 File Tree Browser (PLANNED)
+### 3.2 File Tree Browser (PLANNED - builds on existing)
 
-**Purpose:** Browse, select, and download files/folders in a dataset
+**Status:** 🚧 Planned (will build on existing FilesTable components)
 
-**Modes:**
-- SPA mode - Integrated in dataset page
-- Standalone mode - External tool for file management
-- Embedded mode - iframe in JSF or other tools
+**Purpose:** Browse, select, and download files/folders in a dataset with hierarchical tree view
 
-**Features:**
+**Existing Related Components in `dataverse-frontend`:**
+
+| Component | Location | Reusable For |
+|-----------|----------|-------------|
+| `FilesTable` | [`src/sections/dataset/dataset-files/files-table/FilesTable.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/dataset/dataset-files/files-table/FilesTable.tsx) | Row rendering, selection, actions |
+| `FilesTableHeader` | [`files-table/FilesTableHeader.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/dataset/dataset-files/files-table/FilesTableHeader.tsx) | Column definitions, sorting |
+| `FilesTableBody` | [`files-table/FilesTableBody.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/dataset/dataset-files/files-table/FilesTableBody.tsx) | Row rendering with file info |
+| `RowSelectionMessage` | [`files-table/row-selection/RowSelectionMessage.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/dataset/dataset-files/files-table/row-selection/RowSelectionMessage.tsx) | "Select all" / clear selection UI |
+| `FileCriteriaForm` | [`dataset-files/file-criteria-form/`](https://github.com/IQSS/dataverse-frontend/tree/develop/src/sections/dataset/dataset-files/file-criteria-form) | Search, sort, filter controls |
+
+**Current FilesTable (flat list):**
+```tsx
+// From FilesTable.tsx - existing implementation
+export function FilesTable({ files, fileRepository, ... }) {
+  const { table, fileSelection, selectAllFiles, clearFileSelection } = 
+    useFilesTable(files, paginationInfo, fileRepository, datasetRepository)
+
+  return (
+    <>
+      <RowSelectionMessage
+        fileSelection={fileSelection}
+        selectAllRows={selectAllFiles}
+        totalFilesCount={paginationInfo.totalItems}
+        clearRowSelection={clearFileSelection}
+      />
+      <ZipDownloadLimitMessage ... />
+      <Table>
+        <FilesTableHeader headers={table.getHeaderGroups()} />
+        <FilesTableBody rows={table.getRowModel().rows} />
+      </Table>
+    </>
+  )
+}
+```
+
+**Proposed Tree View Extension:**
 ```
 ┌─────────────────────────────────────────────────────────┐
 │ 📁 Dataset: Climate Data 2024    [⬇️ Download Selected] │
@@ -248,123 +294,167 @@ rdm-build/images/previewers/dvwebloader-v2/
 └─────────────────────────────────────────────────────────┘
 ```
 
-**Key Behaviors:**
+**Key Behaviors to Add:**
+- **Hierarchical display** - Folders with expand/collapse
 - **Lazy loading** - Load folder contents on expand
 - **Tri-state checkboxes** - Folder: all/some/none selected
 - **Keyboard navigation** - Arrow keys, space to toggle
-- **Bulk operations** - Download ZIP, delete selected
 - **Virtual scrolling** - Handle 10,000+ files efficiently
 
-**API Contract:**
-```typescript
-interface FileTreeNode {
-  id: string;
-  name: string;
-  type: 'file' | 'folder';
-  size?: number;
-  mimeType?: string;
-  children?: FileTreeNode[];  // Lazy loaded for folders
-  path: string;
-}
+**Note:** The JSF application already has a tree view (`<p:tree>` in `filesFragment.xhtml`). The new component will provide a modern React alternative.
 
-interface FileTreeAPI {
-  getChildren(folderId: string): Promise<FileTreeNode[]>;
-  downloadFiles(fileIds: string[]): Promise<Blob>;
-  deleteFiles(fileIds: string[]): Promise<void>;
-}
-```
-
-**Design Approach:**
-- Build as SPA component first (`src/sections/dataset/file-tree/`)
-- Add standalone build option like uploader
-- Use same iframe embedding pattern
+**Implementation Plan:**
+1. Add to `dataverse-frontend` as `src/sections/dataset/dataset-files/files-tree/`
+2. Create standalone build option (like uploader)
+3. Use same selection/download infrastructure as FilesTable
 
 ---
 
-### 3.3 Search & Discovery (PLANNED)
+### 3.3 Search & Discovery (EXISTS IN SPA)
+
+**Status:** ✅ Working in SPA (needs standalone extraction)
 
 **Purpose:** Search datasets with facets, filters, and customizable result views
 
-**Architecture:**
+**Existing Components in `dataverse-frontend`:**
+
+| Component | Location | Purpose |
+|-----------|----------|--------|
+| `CollectionItemsPanel` | [`src/sections/collection/collection-items-panel/`](https://github.com/IQSS/dataverse-frontend/tree/develop/src/sections/collection/collection-items-panel) | Main search results panel with facets and items list |
+| `FilterPanel` | [`collection-items-panel/filter-panel/FilterPanel.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/collection/collection-items-panel/filter-panel/FilterPanel.tsx) | Facet filters sidebar (type filters, facet filters) |
+| `SearchInput` | [`src/sections/homepage/search-input/SearchInput.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/homepage/search-input/SearchInput.tsx) | Homepage search bar with service selection |
+| `ItemsList` | [`collection-items-panel/items-list/ItemsList.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/collection/collection-items-panel/items-list/ItemsList.tsx) | Results list with infinite scroll |
+| `AdvancedSearch` | [`src/sections/advanced-search/AdvancedSearch.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/advanced-search/AdvancedSearch.tsx) | Advanced search form with metadata block fields |
+
+**Current Architecture (from CollectionItemsPanel.tsx):**
+```tsx
+// HOW IT WORKS (from actual source code comments):
+// This component loads items on the following scenarios:
+// 1. When the component mounts
+// 2. When the user scrolls to the bottom (infinite scroll)
+// 3. When the user submits a search query
+// 4. When the user changes item types in the filter panel
+// 5. When the user selects or removes a facet filter
+// 6. When the user navigates back/forward in the browser
+// 7. When the user changes the sort and order of items
+```
+
+**Current UI Layout:**
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    Search Component                     │
+│                  Homepage / Collection Page              │
 ├─────────────────────────────────────────────────────────┤
-│ ┌─────────────────┐ ┌─────────────────────────────────┐ │
-│ │   Facet Panel   │ │         Results View            │ │
-│ │                 │ │  (Swappable implementations)    │ │
-│ │ ☑ Published     │ │  ┌─────────────────────────────┐│ │
-│ │ ☐ Draft         │ │  │ List View (default)         ││ │
-│ │                 │ │  │ Grid View                   ││ │
-│ │ Subject         │ │  │ Table View                  ││ │
-│ │ ☑ Medicine      │ │  │ Map View (geo data)         ││ │
-│ │ ☑ Biology       │ │  │ Custom View (plugin)        ││ │
-│ │ ☐ Physics       │ │  └─────────────────────────────┘│ │
-│ │                 │ │                                 │ │
-│ │ Date Range      │ │  📊 Dataset: Climate Study      │ │
-│ │ [2020] - [2024] │ │  ⭐ 4.5 | 📥 1.2k downloads     │ │
-│ │                 │ │  Tags: climate, temperature     │ │
-│ └─────────────────┘ └─────────────────────────────────┘ │
+│  SearchInput (with service dropdown for AI search)       │
+│  [🔍 Search datasets...                         ] [🔎]  │
+├─────────────────────────────────────────────────────────┤
+│ ┌───────────────┐ ┌─────────────────────────────────────┐ │
+│ │  FilterPanel   │ │            ItemsList                 │ │
+│ │               │ │  (infinite scroll, selection)        │ │
+│ │ TypeFilters:  │ │  ┌─────────────────────────────────┐  │ │
+│ │ ☐ Collections │ │  │ 📊 Climate Dataset 2024        │  │ │
+│ │ ☑ Datasets    │ │  │ ⭐ 4.5 | 📥 1.2k downloads     │  │ │
+│ │ ☐ Files       │ │  └─────────────────────────────────┘  │ │
+│ │               │ │  ┌─────────────────────────────────┐  │ │
+│ │ FacetsFilters:│ │  │ 📊 Genomics Study            │  │ │
+│ │ Subject       │ │  │ ⭐ 4.8 | 📥 856               │  │ │
+│ │ ☑ Medicine   │ │  └─────────────────────────────────┘  │ │
+│ │ ☑ Biology    │ │                                       │ │
+│ └───────────────┘ └─────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────┘
 ```
 
-**Swappable Backend:**
-```typescript
-// Search Service Interface
-interface SearchService {
-  search(query: SearchQuery): Promise<SearchResults>;
-  getFacets(query: SearchQuery): Promise<Facet[]>;
-  getSuggestions(term: string): Promise<string[]>;
+**Swappable Search Service (already supported):**
+```tsx
+// From SearchInput.tsx - already supports multiple search services!
+interface SearchInputProps {
+  searchServices: SearchService[]  // Multiple backends supported
 }
 
-// Implementation 1: Solr (current)
-class SolrSearchService implements SearchService { ... }
-
-// Implementation 2: AI-Enhanced (RAG)
-class RAGSearchService implements SearchService {
-  // Uses embeddings for semantic search
-  // Augments results with AI-generated summaries
-  // Handles natural language queries
-}
-
-// Implementation 3: Elasticsearch
-class ElasticsearchService implements SearchService { ... }
+// User can select which service to use (Solr, AI, etc.)
+const [searchServiceSelected, setSearchServiceSelected] = 
+  useState<string>(SOLR_SERVICE_NAME)
 ```
 
-**AI Enhancement Options:**
-- **Semantic search** - "Find datasets about climate change impacts on agriculture"
-- **Result summarization** - AI-generated dataset descriptions
-- **Query expansion** - Automatic synonym/related term inclusion
-- **Personalized ranking** - Based on user's research area
+**To Extract as Standalone:**
+1. Create `src/standalone-search/` (similar to `standalone-uploader/`)
+2. Bundle `CollectionItemsPanel` + `FilterPanel` + `SearchInput`
+3. Add URL parameter configuration
+4. Use same iframe embedding pattern
 
 ---
 
-### 3.4 Metadata Viewer/Editor (PLANNED)
+### 3.4 File Metadata Editor (EXISTS IN SPA)
+
+**Status:** ✅ Working in SPA (needs standalone extraction)
 
 **Purpose:** View and edit file-level metadata with validation
 
-**Based On:** cdi-viewer architecture (see `/home/eryk/projects/cdi-viewer/ARCHITECTURE.md`)
+**Existing Components in `dataverse-frontend`:**
 
-**Features:**
-- JSON-LD metadata display
-- SHACL-based validation
-- Inline editing with constraints
-- Support for any vocabulary (DDI-CDI, schema.org, Dublin Core)
+| Component | Location | Purpose |
+|-----------|----------|--------|
+| `EditFileMetadata` | [`src/sections/edit-file-metadata/EditFileMetadata.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/edit-file-metadata/EditFileMetadata.tsx) | Page wrapper with breadcrumbs and permissions |
+| `EditFilesList` | [`src/sections/edit-file-metadata/EditFilesList.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/edit-file-metadata/EditFilesList.tsx) | Form for editing file metadata (name, description, path) |
+| `EditFileMetadataRow` | [`src/sections/edit-file-metadata/EditFileMetadataRow.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/edit-file-metadata/EditFileMetadataRow.tsx) | Individual file row in the editor |
 
-**Architecture Reuse:**
+**Current Implementation:**
+```tsx
+// From EditFileMetadata.tsx
+export const EditFileMetadata = ({ fileId, fileRepository, referrer }) => {
+  const { file, isLoading } = useFile(fileRepository, fileId)
+  
+  return (
+    <section>
+      <BreadcrumbsGenerator hierarchy={file.hierarchy} ... />
+      <header><h1>{t('pageTitle')}</h1></header>
+      
+      {canEditOwnerDataset ? (
+        <Tabs defaultActiveKey="files">
+          <Tabs.Tab eventKey="files" title={t('files')}>
+            <EditFilesList
+              fileRepository={fileRepository}
+              editFileMetadataFormData={createEditFileMetadataFormData(file)}
+              referrer={referrer}
+              datasetPersistentId={file.hierarchy.parent?.persistentId}
+            />
+          </Tabs.Tab>
+        </Tabs>
+      ) : (
+        <Alert variant="danger">Not allowed</Alert>
+      )}
+    </section>
+  )
+}
 ```
-cdi-viewer concepts → File Metadata Component
-─────────────────────────────────────────────
-- JSON-LD normalization (@graph format)
-- SHACL shape loading and validation
-- Property classification (required/optional/extra)
-- Embedded mode with postMessage
+
+**Form Data Structure:**
+```typescript
+// From EditFilesList.tsx
+export interface FileMetadataFormRow {
+  id: number
+  fileName: string
+  fileType: string
+  fileSizeString: string
+  checksumValue?: string
+  checksumAlgorithm?: FixityAlgorithm
+  description: string
+  fileDir: string  // Directory path
+}
+
+export interface EditFileMetadataFormData {
+  files: FileMetadataFormRow[]
+}
 ```
 
-**Integration Points:**
-- File Tree Browser → Click file → Show metadata panel
-- Upload Component → After upload → Edit metadata
-- Search Results → Preview metadata
+**Integration with Other Components:**
+- Accessible from `FilesTable` → Edit menu → "Metadata"
+- Accessible from `File` page → `EditFileMenu`
+- Uses `react-hook-form` for form handling
+
+**To Extract as Standalone:** Similar pattern to file uploader:
+1. Create wrapper in `src/standalone-file-metadata/`
+2. Accept fileId/datasetPid via URL params
+3. Use postMessage for parent communication
 
 ---
 
@@ -413,38 +503,46 @@ cdi-viewer concepts → File Metadata Component
 
 ---
 
-### 3.6 Dataset Metadata Editor (PLANNED)
+### 3.6 Dataset Metadata Editor (EXISTS IN SPA)
+
+**Status:** ✅ Working in SPA (needs standalone extraction)
 
 **Purpose:** Edit dataset-level metadata with rich validation
 
-**Features:**
+**Existing Components in `dataverse-frontend`:**
+
+| Component | Location | Purpose |
+|-----------|----------|--------|
+| `EditDatasetMetadata` | [`src/sections/edit-dataset-metadata/`](https://github.com/IQSS/dataverse-frontend/tree/develop/src/sections/edit-dataset-metadata) | Dataset metadata editing page |
+| `DatasetMetadataForm` | [`src/sections/shared/form/DatasetMetadataForm/`](https://github.com/IQSS/dataverse-frontend/tree/develop/src/sections/shared/form/DatasetMetadataForm) | Reusable metadata form component |
+| `CreateDataset` | [`src/sections/create-dataset/`](https://github.com/IQSS/dataverse-frontend/tree/develop/src/sections/create-dataset) | Dataset creation wizard |
+
+**Features Already Implemented:**
 - Citation metadata editing
-- Controlled vocabulary support
-- Multi-language support
+- Controlled vocabulary support (with lookup)
+- Multi-language support (i18next)
 - Draft/Published state management
-- ORCID/ROR integration for authors/affiliations
+- Metadata block rendering based on collection configuration
+- Form validation with `react-hook-form`
 
-**Shared Infrastructure with File Metadata:**
-```typescript
-// Common metadata editing framework
-interface MetadataEditor<T> {
-  schema: JSONSchema | SHACLShape;
-  value: T;
-  onChange: (value: T) => void;
-  onValidate: () => ValidationResult;
-}
+**Shared Form Infrastructure:**
+```tsx
+// The DatasetMetadataForm is already designed for reuse
+import { DatasetMetadataForm } from '@/sections/shared/form/DatasetMetadataForm'
 
-// Specialized implementations
-const DatasetMetadataEditor = createMetadataEditor<DatasetMetadata>({
-  schema: dataverseMetadataSchema,
-  // ...
-});
-
-const FileMetadataEditor = createMetadataEditor<FileMetadata>({
-  schema: fileMetadataSchema,
-  // ...
-});
+// Used in both CreateDataset and EditDatasetMetadata
+<DatasetMetadataForm
+  metadataBlocksInfo={metadataBlocksInfo}
+  datasetMetadata={existingMetadata}  // null for create
+  onSubmit={handleSubmit}
+/>
 ```
+
+**To Extract as Standalone:**
+1. Create `src/standalone-dataset-editor/`
+2. Bundle `DatasetMetadataForm` with necessary context
+3. Accept datasetPid via URL params
+4. Can be used for both create and edit modes
 
 ---
 
@@ -926,48 +1024,52 @@ type Events = {
 
 **Status:** In Progress
 
-- [x] File Uploader standalone component
-- [x] iframe embedding pattern
-- [x] postMessage communication
-- [x] Feature flag system
-- [ ] Fix remaining uploader issues (background, shrinking)
+- [x] File Uploader standalone component (`src/standalone-uploader/`)
+- [x] iframe embedding pattern (postMessage communication)
+- [x] Feature flag system in Dataverse (`EMBED_WEBLOADER_V2`)
+- [x] Search components in SPA (`CollectionItemsPanel`, `FilterPanel`)
+- [x] File metadata editor in SPA (`EditFileMetadata`)
+- [x] Dataset metadata editor in SPA (`EditDatasetMetadata`)
+- [ ] Fix remaining uploader embedded mode issues (background, shrinking)
 
-### Phase 2: File Tree Browser
+### Phase 2: File Tree Browser (NEW)
 
 **Timeline:** Q1 2025
 
-- [ ] Design component API
-- [ ] Build SPA version
-- [ ] Add standalone build
+- [ ] Design tree component API (build on `FilesTable`)
+- [ ] Add folder expand/collapse to existing files view
+- [ ] Implement virtual scrolling for large datasets
+- [ ] Add standalone build option
 - [ ] Integrate with uploader
-- [ ] Add download functionality
 
-### Phase 3: Metadata Components
+### Phase 3: Extract Existing Components as Standalone
 
 **Timeline:** Q2 2025
 
-- [ ] Port cdi-viewer concepts
-- [ ] File metadata viewer/editor
-- [ ] Dataset metadata viewer/editor
-- [ ] SHACL validation integration
+> These components already work in the SPA. The task is to create standalone bundles like we did for the File Uploader.
 
-### Phase 4: Search Component
+- [ ] **Search Component** - Extract `CollectionItemsPanel` + `FilterPanel`
+- [ ] **File Metadata Editor** - Extract `EditFileMetadata`
+- [ ] **Dataset Metadata Editor** - Extract `EditDatasetMetadata`
+- [ ] Create shared standalone build infrastructure
+
+### Phase 4: Search Service Abstraction
 
 **Timeline:** Q3 2025
 
-- [ ] Abstract search service API
-- [ ] Build Solr implementation
-- [ ] Create search UI component
-- [ ] Swappable result views
+- [ ] Formalize SearchService interface (already partially exists)
+- [ ] Build AI/RAG search implementation
+- [ ] Add semantic search capabilities
+- [ ] Integrate with existing `searchServices` dropdown in UI
 
 ### Phase 5: AI Enhancements
 
 **Timeline:** Q4 2025
 
 - [ ] RAG search implementation
-- [ ] Embedding service
-- [ ] Semantic search integration
-- [ ] Query understanding
+- [ ] Embedding service for datasets
+- [ ] Natural language query parsing
+- [ ] Result summarization
 
 ### Phase 6: Dataverse Light
 
