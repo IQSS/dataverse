@@ -1698,5 +1698,5 @@ Extract **standalone UI components from the SPA** that can work both within the 
 **Document Version:** 1.3
 **Created:** December 2025
 **Updated:** December 2025
-**Authors:** Eryk Kulikowski, with AI assistance
+**Authors:** Eryk Kulikowski, with Claude Opus 4.5 (preview) via GitHub Copilot for VS Code
 **Status:** Vision / Proposal

@@ -146,5 +146,6 @@ For technical details, implementation specifics, and code examples, see the full
 
 **Document Version:** 1.0  
 **Created:** December 2025  
+**Authors:** Eryk Kulikowski, with Claude Opus 4.5 (preview) via GitHub Copilot for VS Code  
 **Based on:** new_architecture.md v1.3  
 **Audience:** Management, stakeholders, non-technical readers
