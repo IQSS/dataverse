@@ -28,6 +28,7 @@ This architecture vision builds upon existing projects in the Dataverse ecosyste
 
 1. [Architecture Overview](#1-architecture-overview)
 2. [Design Principles](#2-design-principles)
+   - [API Strategy](#26-api-strategy)
 3. [Standalone UI Components](#3-standalone-ui-components)
    - [File Uploader](#31-file-uploader-implemented)
    - [File Tree Browser](#32-file-tree-browser-planned)
@@ -148,6 +149,169 @@ This architecture aligns with the goals of the [Dataverse Frontend](https://gith
 - Cypress for E2E testing
 - i18next for localization
 
+### 2.6 API Strategy
+
+This architecture leverages the **existing Dataverse Native API** as its foundation. All standalone components and microservices communicate with Dataverse through this well-documented REST API.
+
+#### Native API as Foundation
+
+The Dataverse Native API (`/api/v1/*`) provides comprehensive access to all Dataverse functionality:
+
+- **Collections:** Create, read, update, delete Dataverse collections
+- **Datasets:** Full CRUD operations, versioning, publishing, deaccessioning
+- **Files:** Upload, download, metadata management, access restrictions
+- **Search:** Full-text and faceted search across all content
+- **Users & Permissions:** Authentication, authorization, role management
+- **Metadata Blocks:** Schema management, custom metadata types
+
+**Documentation:** See [native-api.rst](doc/sphinx-guides/source/api/native-api.rst) for the complete API reference.
+
+#### dataverse-client-javascript: The Official TypeScript Client
+
+For JavaScript/TypeScript applications (including all standalone React components), we use the official [dataverse-client-javascript](https://github.com/IQSS/dataverse-client-javascript) library.
+
+**Installation:**
+```bash
+npm install @iqss/dataverse-client-javascript
+```
+
+**Key Features:**
+- **Use case-centric API** – Organized around domain-specific actions
+- **TypeScript-first** – Strong typings for all inputs and outputs
+- **Domain-driven design** – Clean separation of concerns
+- **Promise-based** – Modern async/await patterns
+
+**Use Case Examples:**
+
+```typescript
+import { 
+  getDataset, 
+  getCollection, 
+  uploadFile,
+  addUploadedFilesToDataset,
+  updateFileMetadata,
+  getCollectionItems
+} from '@iqss/dataverse-client-javascript'
+
+// Fetch a dataset by persistent identifier
+const dataset = await getDataset.execute('doi:10.5072/FK2/AAAAAA', '1.0')
+
+// Get collection with facets for search UI
+const collection = await getCollection.execute('root')
+const items = await getCollectionItems.execute('root', 10, 0)
+
+// Direct upload to S3 with progress callback
+const storageId = await uploadFile.execute(
+  datasetId, 
+  file, 
+  (progress) => console.log(`${progress}%`),
+  abortController
+)
+
+// Add uploaded files to dataset
+await addUploadedFilesToDataset.execute(datasetId, [
+  {
+    fileName: 'data.csv',
+    storageId: storageId,
+    checksumType: 'md5',
+    checksumValue: 'abc123...',
+    mimeType: 'text/csv'
+  }
+])
+
+// Update file metadata
+await updateFileMetadata.execute(fileId, {
+  label: 'renamed-file.csv',
+  description: 'Updated description',
+  categories: ['Data']
+})
+```
+
+**Available Use Case Domains:**
+
+| Domain | Use Cases |
+|--------|-----------|
+| **Collections** | `getCollection`, `createCollection`, `getCollectionFacets`, `getCollectionItems`, `getMyDataCollectionItems` |
+| **Datasets** | `getDataset`, `createDataset`, `publishDataset`, `getDatasetUserPermissions`, `getDatasetCitation` |
+| **Files** | `getFile`, `uploadFile`, `addUploadedFilesToDataset`, `updateFileMetadata`, `restrictFile`, `getFileDataTables` |
+| **Metadata** | `getMetadataBlockByName`, `getCollectionMetadataBlocks` |
+| **Users** | `getCurrentAuthenticatedUser` |
+| **Search** | Full-text and faceted search |
+
+See [useCases.md](https://github.com/IQSS/dataverse-client-javascript/blob/main/docs/useCases.md) for the complete list.
+
+#### Extending the API
+
+When new functionality is needed:
+
+1. **Add endpoint to Dataverse Native API** - Implement in the Java backend
+2. **Implement use case in dataverse-client-javascript** - Create TypeScript wrapper
+3. **Use in components** - Import and use the new use case
+
+This ensures:
+- All clients (SPA, standalone components, external tools) have access to new functionality
+- Consistent API surface across all applications
+- Type safety in TypeScript consumers
+
+#### Microservices: Same API Contract
+
+When implementing microservices that can replace Dataverse functionality:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         API Contract                                     │
+│                    (OpenAPI / Native API spec)                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│                              │                                           │
+│         ┌────────────────────┴────────────────────┐                     │
+│         │                                          │                     │
+│   ┌─────▼─────┐                           ┌────────▼────────┐           │
+│   │ Dataverse │  ◄─── Same API ───►       │ Microservice    │           │
+│   │  Backend  │      Contract             │ Implementation  │           │
+│   └───────────┘                           └─────────────────┘           │
+│                                                                          │
+│   (Java/Payara)                           (Python/Go/Rust/etc.)         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Example: Search Service**
+
+The Search Service microservice implements the same search API as Dataverse:
+
+```yaml
+# OpenAPI contract (compatible with /api/search)
+paths:
+  /search:
+    get:
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: array
+            items:
+              enum: [dataverse, dataset, file]
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResults'
+```
+
+This allows:
+- **Drop-in replacement** - Switch from Dataverse Solr to AI-enhanced search
+- **A/B testing** - Route some traffic to experimental implementations
+- **Gradual migration** - Replace services one at a time
+
 ---
 
 ## 3. Standalone UI Components
@@ -226,6 +390,36 @@ rdm-build/images/previewers/dvwebloader-v2/
 - dataverse-client-javascript (for API communication)
 - i18next (for internationalization)
 - All CSS is inlined into the JavaScript bundle
+
+**API Integration:**
+
+The File Uploader uses `dataverse-client-javascript` for all API communication:
+
+```typescript
+import { uploadFile, addUploadedFilesToDataset } from '@iqss/dataverse-client-javascript'
+
+// 1. Upload file directly to S3 storage
+const storageId = await uploadFile.execute(
+  datasetId,
+  file,
+  (progress) => setUploadProgress(progress),
+  abortController
+)
+
+// 2. Register uploaded file with Dataverse
+await addUploadedFilesToDataset.execute(datasetId, [{
+  fileName: file.name,
+  storageId: storageId,
+  checksumType: 'md5',
+  checksumValue: calculatedChecksum,
+  mimeType: file.type
+}])
+```
+
+This follows the [Direct Upload API](https://guides.dataverse.org/en/latest/developers/s3-direct-upload-api.html) pattern, which:
+- Generates presigned S3 URLs for browser-direct upload
+- Supports multipart upload for large files with resumable chunks
+- Provides progress callbacks and abort support
 
 **Lessons Learned:**
 - iframe isolation solves CSS conflicts with JSF pages
@@ -316,6 +510,39 @@ export function FilesTable({ files, fileRepository, ... }) {
 
 **Purpose:** Search datasets with facets, filters, and customizable result views
 
+**API Integration:**
+
+Uses `dataverse-client-javascript` for all search operations:
+
+```typescript
+import { 
+  getCollectionItems, 
+  getCollectionFacets,
+  getMyDataCollectionItems 
+} from '@iqss/dataverse-client-javascript'
+
+// Fetch paginated collection items with filters
+const items = await getCollectionItems.execute(
+  collectionIdOrAlias,  // e.g., 'root' or collection alias
+  limit,                 // pagination
+  offset,
+  searchCriteria        // filters, types, query
+)
+
+// Get facets for filter sidebar
+const facets = await getCollectionFacets.execute(collectionIdOrAlias)
+
+// Get user's own datasets (My Data page)
+const myData = await getMyDataCollectionItems.execute(
+  roleIds,
+  collectionItemTypes,
+  publishingStatuses,
+  limit,
+  page,
+  searchText
+)
+```
+
 **Existing Components in `dataverse-frontend`:**
 
 | Component | Location | Purpose |
@@ -388,6 +615,26 @@ const [searchServiceSelected, setSearchServiceSelected] =
 **Status:** ✅ Working in SPA (needs standalone extraction)
 
 **Purpose:** View and edit file-level metadata with validation
+
+**API Integration:**
+
+Uses `dataverse-client-javascript` for file operations:
+
+```typescript
+import { getFile, updateFileMetadata } from '@iqss/dataverse-client-javascript'
+
+// Get file with metadata
+const file = await getFile.execute(fileId)
+
+// Update file metadata
+await updateFileMetadata.execute(fileId, {
+  label: 'new-filename.csv',
+  directoryLabel: 'data/processed',
+  description: 'Processed data from experiment',
+  categories: ['Data'],
+  restrict: false
+})
+```
 
 **Existing Components in `dataverse-frontend`:**
 
@@ -548,11 +795,31 @@ import { DatasetMetadataForm } from '@/sections/shared/form/DatasetMetadataForm'
 
 ## 4. Backend Microservices
 
+> **API Compatibility:** All microservices implement API contracts compatible with the [Dataverse Native API](doc/sphinx-guides/source/api/native-api.rst). This enables drop-in replacement and gradual migration. See [Section 2.6: API Strategy](#26-api-strategy) for details.
+
 ### 4.1 Search Service
 
 **Purpose:** Abstract search functionality with swappable implementations
 
-**Docker Deployment:**
+**Current Implementation:** Dataverse Native API provides search via `/api/search`.
+
+**JavaScript Client Usage:**
+```typescript
+import { getCollectionItems, getCollectionFacets } from '@iqss/dataverse-client-javascript'
+
+// Search with pagination
+const items = await getCollectionItems.execute(
+  collectionAlias, 
+  limit, 
+  offset, 
+  searchCriteria
+)
+
+// Get facets for filtering UI
+const facets = await getCollectionFacets.execute(collectionAlias)
+```
+
+**Docker Deployment (Alternative Implementations):**
 ```yaml
 # docker-compose.yml
 services:
@@ -568,6 +835,9 @@ services:
 ```
 
 **API Contract (OpenAPI):**
+
+Alternative implementations must be compatible with the Native API `/api/search` contract:
+
 ```yaml
 paths:
   /search:
@@ -616,6 +886,21 @@ paths:
 
 **Purpose:** Abstract file storage operations
 
+**Current Implementation:** Dataverse Native API already provides storage abstraction.
+
+See [`/api/files/` endpoints](doc/sphinx-guides/source/api/native-api.rst#files) and [Direct Upload API](https://guides.dataverse.org/en/latest/developers/s3-direct-upload-api.html).
+
+**JavaScript Client Usage:**
+```typescript
+import { uploadFile, getFile } from '@iqss/dataverse-client-javascript'
+
+// Upload with progress
+const storageId = await uploadFile.execute(datasetId, file, progressCallback, abortController)
+
+// Get file metadata
+const fileMetadata = await getFile.execute(fileId)
+```
+
 **Implementations:**
 - S3/MinIO (current)
 - Azure Blob Storage
@@ -623,7 +908,10 @@ paths:
 - Local filesystem
 - IRODS
 
-**API Contract:**
+**Alternative Microservice Contract:**
+
+If implementing a custom storage service that can replace Dataverse's storage:
+
 ```typescript
 interface StorageService {
   // Upload
@@ -643,11 +931,39 @@ interface StorageService {
 }
 ```
 
+**Note:** Any alternative implementation must maintain compatibility with the existing Native API contract.
+
 ---
 
 ### 4.3 Metadata Service
 
 **Purpose:** Manage dataset and file metadata with validation
+
+**Current Implementation:** Dataverse Native API provides metadata operations.
+
+See [`/api/datasets/` and `/api/files/` endpoints](doc/sphinx-guides/source/api/native-api.rst) for metadata management.
+
+**JavaScript Client Usage:**
+```typescript
+import { 
+  getDataset, 
+  updateFileMetadata, 
+  getMetadataBlockByName 
+} from '@iqss/dataverse-client-javascript'
+
+// Get dataset with full metadata
+const dataset = await getDataset.execute('doi:10.5072/FK2/AAAAAA')
+
+// Update file metadata
+await updateFileMetadata.execute(fileId, {
+  label: 'new-name.csv',
+  description: 'Updated description',
+  categories: ['Data']
+})
+
+// Get metadata block schema
+const citationBlock = await getMetadataBlockByName.execute('citation')
+```
 
 **Features:**
 - Schema validation (JSON Schema, SHACL)
@@ -655,7 +971,10 @@ interface StorageService {
 - Version history
 - Export formats (JSON-LD, XML, RDF)
 
-**API Contract:**
+**Alternative Microservice Contract:**
+
+For custom metadata processing (e.g., AI-enhanced metadata):
+
 ```typescript
 interface MetadataService {
   // CRUD
@@ -672,6 +991,7 @@ interface MetadataService {
   getVocabulary(name: string): Promise<Term[]>;
   lookupTerm(vocabulary: string, query: string): Promise<Term[]>;
 }
+```
 ```
 
 ---
