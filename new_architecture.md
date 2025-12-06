@@ -757,16 +757,16 @@ export interface EditFileMetadataFormData {
 **Architecture:**
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                   Angular Frontend                      │
+│                    Angular Frontend                     │
 ├─────────────────────────────────────────────────────────┤
-│                   SHACL Form Viewer                     │
-│  (JSON-LD display, validation, inline editing)          │
+│                    SHACL Form Viewer                    │
+│      (JSON-LD display, validation, inline editing)      │
 ├─────────────────────────────────────────────────────────┤
-│                    Python Pipeline                      │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐    │
-│  │ File     │→│ Data     │→│ Metadata │→│ CDI      │    │
-│  │ Access   │ │ Analysis │ │ Enrichment│ │ Generation│   │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────┘    │
+│                     Python Pipeline                     │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌─────────┐  │
+│  │  File    │  │   Data   │  │ Metadata │  │   CDI   │  │
+│  │  Access  │─▶│ Analysis │─▶│ Enrichmt │─▶│  Output │  │
+│  └──────────┘  └──────────┘  └──────────┘  └─────────┘  │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -1695,8 +1695,8 @@ Extract **standalone UI components from the SPA** that can work both within the 
 
 ---
 
-**Document Version:** 1.3  
-**Created:** December 2024  
-**Updated:** December 2024 (cdi-viewer reference, custom views, structured original vision)  
-**Author:** Architecture discussion with AI assistance  
+**Document Version:** 1.3
+**Created:** December 2025
+**Updated:** December 2025
+**Authors:** Eryk Kulikowski, with AI assistance
 **Status:** Vision / Proposal
