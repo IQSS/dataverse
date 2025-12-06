@@ -28,6 +28,11 @@ This architecture vision builds upon existing projects in the Dataverse ecosyste
 
 1. [Architecture Overview](#1-architecture-overview)
 2. [Design Principles](#2-design-principles)
+   - [Component Independence](#21-component-independence)
+   - [Service Abstraction](#22-service-abstraction)
+   - [Progressive Enhancement](#23-progressive-enhancement)
+   - [Technology Agnostic](#24-technology-agnostic)
+   - [Alignment with Dataverse Frontend Vision](#25-alignment-with-dataverse-frontend-vision)
    - [API Strategy](#26-api-strategy)
 3. [Standalone UI Components](#3-standalone-ui-components)
    - [File Uploader](#31-file-uploader-implemented)
@@ -549,7 +554,8 @@ const myData = await getMyDataCollectionItems.execute(
 |-----------|----------|--------|
 | `CollectionItemsPanel` | [`src/sections/collection/collection-items-panel/`](https://github.com/IQSS/dataverse-frontend/tree/develop/src/sections/collection/collection-items-panel) | Main search results panel with facets and items list |
 | `FilterPanel` | [`collection-items-panel/filter-panel/FilterPanel.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/collection/collection-items-panel/filter-panel/FilterPanel.tsx) | Facet filters sidebar (type filters, facet filters) |
-| `SearchInput` | [`src/sections/homepage/search-input/SearchInput.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/homepage/search-input/SearchInput.tsx) | Homepage search bar with service selection |
+| `SearchInput` (homepage) | [`src/sections/homepage/search-input/SearchInput.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/homepage/search-input/SearchInput.tsx) | Homepage search bar with swappable search services |
+| `SearchInput` (collection) | [`src/sections/collection/collection-items-panel/search-input/SearchInput.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/collection/collection-items-panel/search-input/SearchInput.tsx) | Collection page search (used in CollectionItemsPanel) |
 | `ItemsList` | [`collection-items-panel/items-list/ItemsList.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/collection/collection-items-panel/items-list/ItemsList.tsx) | Results list with infinite scroll |
 | `AdvancedSearch` | [`src/sections/advanced-search/AdvancedSearch.tsx`](https://github.com/IQSS/dataverse-frontend/blob/develop/src/sections/advanced-search/AdvancedSearch.tsx) | Advanced search form with metadata block fields |
 
@@ -991,7 +997,6 @@ interface MetadataService {
   getVocabulary(name: string): Promise<Term[]>;
   lookupTerm(vocabulary: string, query: string): Promise<Term[]>;
 }
-```
 ```
 
 ---
@@ -1575,8 +1580,8 @@ npm start
 
 ---
 
-**Document Version:** 1.1  
+**Document Version:** 1.2  
 **Created:** December 2024  
-**Updated:** December 2024 (added project references)  
+**Updated:** December 2024 (API strategy clarification, component verification)  
 **Author:** Architecture discussion with AI assistance  
 **Status:** Vision / Proposal
