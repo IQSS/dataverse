@@ -2,13 +2,31 @@
 
 ## Executive Summary
 
-This document proposes a **modular, microservices-based architecture** for Dataverse that extracts core functionality into **standalone UI components** backed by **swappable microservices**. This approach enables:
+This document proposes a **component-based development approach** for Dataverse frontend contributions. The core idea: build new UI features as **standalone components** that work both within the Dataverse SPA *and* as embeddable iframes in JSF pages or external tools.
 
-- **Rapid external tool development** - Compose tools from pre-built components
-- **"Dataverse Light"** - Lightweight deployments with essential features
-- **Technology flexibility** - Swap backends (AI search, different storage, etc.)
-- **Maintainability** - Loosely coupled, independently deployable modules
-- **Future-proofing** - Easy adoption of new technologies
+**This is not a rewrite proposal.** It's a way of structuring frontend work that:
+
+- **Bridges the transition** - New components work in both JSF (current) and SPA (future)
+- **Enables reuse** - Same component powers the SPA, external tools, and previewers
+- **Reduces duplication** - No need to build JSF and React versions of the same feature
+- **Proves the pattern** - DVWebloader V2 demonstrates this works in practice
+
+> **What's actually being proposed:** Continue developing new frontend features (like the planned File Tree Browser) using the standalone component pattern proven by DVWebloader V2.
+>
+> **What's illustrative:** The microservices architecture, AI enhancements, and "Dataverse Light" sections show what *becomes possible* with this approach - they are not planned work.
+
+### Scope & Intent
+
+| Category | Examples | Status |
+|----------|----------|--------|
+| **Core Proposal** | Standalone component pattern, iframe embedding, API-first design | ✅ Proven (DVWebloader V2) |
+| **Planned Work** | File Tree Browser as standalone component | 🚧 Next contribution |
+| **Illustrative Possibilities** | Microservices, AI search, Dataverse Light | 💭 Shows what becomes possible |
+
+This document serves as:
+1. **Justification** for the architectural approach used in existing contributions (DVWebloader V2)
+2. **Proposal** to continue this pattern for future frontend work
+3. **Vision** of what this approach enables long-term (for discussion, not commitment)
 
 ### Related Projects
 
@@ -52,7 +70,7 @@ This architecture vision builds upon existing projects in the Dataverse ecosyste
    - [External Tools](#52-external-tools)
    - [Dataverse Light](#53-dataverse-light)
 6. [Component Communication](#6-component-communication)
-7. [Implementation Roadmap](#7-implementation-roadmap)
+7. [What This Enables](#7-what-this-enables)
 8. [Benefits & Trade-offs](#8-benefits--trade-offs)
 
 **Appendices:**
@@ -836,7 +854,9 @@ import { DatasetMetadataForm } from '@/sections/shared/form/DatasetMetadataForm'
 
 ## 4. Backend Microservices
 
-> **API Compatibility:** All microservices implement API contracts compatible with the [Dataverse Native API](doc/sphinx-guides/source/api/native-api.rst). This enables drop-in replacement and gradual migration. See [Section 2.6: API Strategy](#26-api-strategy) for details.
+> ⚠️ **Note:** This section is **illustrative, not a planned implementation**. It shows what *becomes possible* when frontend components are decoupled from the backend. The Dataverse Native API remains the foundation - these examples demonstrate how alternative implementations could theoretically be swapped in without changing the UI components.
+
+> **API Compatibility:** All microservices would implement API contracts compatible with the [Dataverse Native API](doc/sphinx-guides/source/api/native-api.rst). This enables drop-in replacement and gradual migration. See [Section 2.6: API Strategy](#26-api-strategy) for details.
 
 ### 4.1 Search Service
 
@@ -1038,6 +1058,8 @@ interface MetadataService {
 
 ### 4.4 AI Enhancement Service
 
+> 💡 **Future Possibility:** This section explores how AI capabilities *could* be integrated. Given that many Dataverse installations are at academic institutions, AI-enhanced research discovery is a natural fit. The existing pluggable search service architecture (see `searchServices` in SearchInput.tsx) already provides the extension point. This is not currently planned work, but represents an area of potential future value.
+
 **Purpose:** Provide AI capabilities to other services
 
 **Capabilities:**
@@ -1231,6 +1253,8 @@ The [rdm-integration](https://github.com/libis/rdm-integration) project is a pro
 
 ### 5.3 Dataverse Light
 
+> ⚠️ **Theoretical Concept:** This is a thought experiment to illustrate the *logical conclusion* of the component-based approach - not a planned product. In practice, the complexity of Dataverse lies in its data model and permissions, not the UI layer. A truly "light" deployment would still require PostgreSQL, Solr, and storage infrastructure. This section exists to show what becomes architecturally *possible*, not what is practical or planned.
+
 **Concept:** Lightweight Dataverse deployment using standalone components
 
 ```
@@ -1378,108 +1402,104 @@ type Events = {
 
 ---
 
-## 7. Implementation Roadmap
+## 7. What This Enables
 
-### Phase 1: Foundation (Current)
+> **Note:** This is not a project roadmap with committed timelines. It describes what has been done, what is currently planned, and what becomes possible with this architecture.
 
-**Status:** In Progress
+### Already Proven ✅
 
-- [x] File Uploader standalone component (`src/standalone-uploader/`)
-- [x] iframe embedding pattern (postMessage communication)
-- [x] Feature flag system in Dataverse (`EMBED_WEBLOADER_V2`)
-- [x] Search components in SPA (`CollectionItemsPanel`, `FilterPanel`)
-- [x] File metadata editor in SPA (`EditFileMetadata`)
-- [x] Dataset metadata editor in SPA (`EditDatasetMetadata`)
-- [ ] Fix remaining uploader embedded mode issues (background, shrinking)
+The standalone component pattern is working in production:
 
-### Phase 2: File Tree Browser (NEW)
+- [x] **File Uploader** - Standalone component in `src/standalone-uploader/`
+- [x] **iframe embedding** - postMessage communication protocol
+- [x] **Feature flags** - `EMBED_WEBLOADER_V2` controls activation in Dataverse
+- [x] **SPA components** - Search, file metadata, dataset metadata editors exist
 
-**Timeline:** Q1 2026
+### Currently Planned 🚧
 
-- [ ] Design tree component API (build on `FilesTable`)
-- [ ] Add folder expand/collapse to existing files view
-- [ ] Implement virtual scrolling for large datasets
-- [ ] Add standalone build option
-- [ ] Integrate with uploader
+**File Tree Browser** - The next contribution following this pattern:
 
-### Phase 3: Extract Existing Components as Standalone
+- [ ] Design tree component API (building on existing `FilesTable`)
+- [ ] Implement folder expand/collapse with lazy loading
+- [ ] Add virtual scrolling for large datasets (10k+ files)
+- [ ] Create standalone build option from the start
+- [ ] Enable embedding in JSF pages (like DVWebloader V2)
 
-**Timeline:** Q2 2026
+**Why build it this way?** Instead of creating a JSF tree component that will be retired when the SPA is fully adopted, we build a React component that works in both contexts. One implementation, multiple deployment targets.
 
-> These components already work in the SPA. The task is to create standalone bundles like we did for the File Uploader.
+### Future Possibilities 💡
 
-- [ ] **Search Component** - Extract `CollectionItemsPanel` + `FilterPanel`
-- [ ] **File Metadata Editor** - Extract `EditFileMetadata`
-- [ ] **Dataset Metadata Editor** - Extract `EditDatasetMetadata`
-- [ ] Create shared standalone build infrastructure
+These become possible with the component architecture but are **not currently planned**:
 
-### Phase 4: Search Service Abstraction
+**Component Extraction:**
+> Other SPA components (search, metadata editors) could be extracted as standalone bundles following the File Uploader pattern. This would enable their use in external tools and previewers.
 
-**Timeline:** Q3 2026
+- [ ] Search Component - Extract `CollectionItemsPanel` + `FilterPanel`
+- [ ] File Metadata Editor - Extract `EditFileMetadata`
+- [ ] Dataset Metadata Editor - Extract `EditDatasetMetadata`
 
-- [ ] Formalize SearchService interface (already partially exists)
-- [ ] Build AI/RAG search implementation
-- [ ] Add semantic search capabilities
-- [ ] Integrate with existing `searchServices` dropdown in UI
+**Backend Flexibility:**
+> The component architecture decouples UI from backend implementation. This *theoretically* enables:
 
-### Phase 5: AI Enhancements
+- [ ] Alternative search implementations (AI-enhanced, different indexing)
+- [ ] Swappable services behind the Native API contract
 
-**Timeline:** Q4 2026
-
-- [ ] RAG search implementation
-- [ ] Embedding service for datasets
-- [ ] Natural language query parsing
-- [ ] Result summarization
-
-### Phase 6: Dataverse Light
-
-**Timeline:** 2027
-
-- [ ] Component orchestration framework
-- [ ] Minimal Docker deployment
-- [ ] Configuration system
-- [ ] Documentation & examples
+**Dataverse Light:**
+> A minimal deployment using standalone components. See Section 5.3 for why this is more of a thought experiment than a practical goal.
 
 ---
 
 ## 8. Benefits & Trade-offs
 
+### Why This Approach?
+
+The core value proposition is **building once for multiple contexts**:
+
+| Scenario | Without Standalone Components | With Standalone Components |
+|----------|------------------------------|---------------------------|
+| New feature in JSF | Build JSF component (retired later) | Embed React component via iframe |
+| Same feature in SPA | Build React component | Same React component |
+| External tool needs it | Build again or copy code | Import as standalone bundle |
+| Previewer needs it | Yet another implementation | Same standalone bundle |
+
+**Real example:** DVWebloader V2 is one codebase that works as:
+- SPA route in dataverse-frontend
+- Popup window (legacy behavior)
+- Embedded iframe in JSF pages
+- Potential use in external tools
+
 ### Benefits
 
 | Benefit | Description |
 |---------|-------------|
-| **Rapid Development** | Build external tools by composing components |
-| **Technology Flexibility** | Swap backends without UI changes |
-| **Maintainability** | Small, focused modules easier to maintain |
-| **Testability** | Components can be tested in isolation |
-| **Scalability** | Services can scale independently |
-| **Customization** | Easy to customize individual components |
-| **Gradual Migration** | No big-bang rewrite needed |
-| **Community** | Others can contribute components/services |
+| **Bridge the Transition** | New features work in JSF today and SPA tomorrow |
+| **Reduce Duplication** | One implementation serves multiple deployment contexts |
+| **Enable External Tools** | Previewers and tools can reuse core UI components |
+| **Maintainability** | Smaller, focused modules are easier to update |
+| **Testability** | Components can be tested in isolation via Storybook |
+| **Community Contributions** | Contributors can work on components independently |
 
 ### Trade-offs
 
 | Trade-off | Mitigation |
 |-----------|------------|
-| **Complexity** | Good documentation, clear contracts |
-| **Performance** | Careful optimization, lazy loading |
-| **Consistency** | Shared design system, style guide |
-| **Debugging** | Distributed tracing, good logging |
-| **Versioning** | Semantic versioning, compatibility matrix |
+| **iframe overhead** | Acceptable for complex components; postMessage is fast |
+| **Bundle size** | ~420KB gzipped for uploader; lazy loading helps |
+| **Debugging across frames** | Browser DevTools handle this well |
+| **Learning curve** | This document + existing examples (DVWebloader V2) |
 
-### When to Use This Architecture
+### When This Approach Applies
 
-**Good fit:**
-- Large Dataverse installations
-- Custom external tools needed
-- Different search requirements
-- AI enhancement desired
-- Technology modernization goals
+**This architecture pattern is valuable when:**
+- Building new UI components for dataverse-frontend that could be reused elsewhere
+- Creating external tools that need rich, interactive interfaces
+- Developing features that should work in both SPA and JSF contexts
+- Contributing components that other institutions might want to customize
 
-**May be overkill:**
-- Small, simple installations
-- Standard Dataverse features sufficient
-- Limited development resources
+**Traditional approaches remain appropriate when:**
+- Building features tightly coupled to SPA routing/state
+- Simple UI that doesn't need external reuse
+- Quick prototypes not intended for broad adoption
 
 ---
 

@@ -1,35 +1,44 @@
 # Dataverse Modular Architecture - Executive Summary
 
 > **For the full technical specification, see [new_architecture.md](new_architecture.md)**
+>
+> **Note:** This summary distinguishes between the **core proposal** (standalone component pattern) and **illustrative examples** (AI search, Dataverse Light) that show what becomes possible - not what's currently planned.
 
 ---
 
 ## What Is This?
 
-We're proposing a **building-block approach** to Dataverse development. Instead of one large monolithic application, we create **reusable components** that can be mixed and matched like LEGO bricks.
+We're proposing a **building-block approach** to Dataverse frontend development. Instead of building UI features that only work inside the SPA, we create **standalone components** that can be:
+
+- Embedded in the new React SPA
+- Used in the legacy JSF interface during the transition
+- Deployed as external tools or previewers
+- Reused in custom integrations
+
+**This is already working.** DVWebloader V2 proves the pattern - it's a file uploader that works standalone, embedded in JSF, and as an external tool.
 
 ---
 
-## The Big Picture
+## The Core Idea
 
 ```
-┌────────────────────────────────────────────────────────────────┐
-│                                                                │
-│   🔍 Search    📁 File Browser    📝 Metadata    ⬆️ Uploader   │
-│                                                                │
-│        ▼              ▼               ▼              ▼         │
-│   ┌────────────────────────────────────────────────────────┐   │
-│   │              Shared Services Layer                     │   │
-│   │         (Search, Storage, AI, Metadata)                │   │
-│   └────────────────────────────────────────────────────────┘   │
-│                              ▼                                 │
-│   ┌────────────────────────────────────────────────────────┐   │
-│   │              Data Storage                              │   │
-│   │       (Files, Databases, Search Index)                 │   │
-│   └────────────────────────────────────────────────────────┘   │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                    STANDALONE COMPONENT                      |
+|                    (e.g., File Uploader)                    |
++-------------------------------------------------------------+
+|  - Self-contained HTML/JS/CSS bundle                        |
+|  - Communicates via Dataverse Native API                    |
+|  - Receives config via URL params or postMessage            |
++-------------------------------------------------------------+
+              |                    |                    |
+              v                    v                    v
+    +-------------+     +-------------+     +-------------+
+    |  React SPA  |     |  JSF Pages  |     | External    |
+    |  (iframe)   |     |  (iframe)   |     | Tool        |
+    +-------------+     +-------------+     +-------------+
 ```
+
+**Build once, use everywhere.**
 
 ---
 
@@ -37,104 +46,89 @@ We're proposing a **building-block approach** to Dataverse development. Instead 
 
 | Benefit | What It Means |
 |---------|---------------|
-| **🚀 Faster Development** | Build new tools by combining existing components instead of starting from scratch |
-| **🔄 Flexibility** | Swap out parts (e.g., use AI-powered search) without rebuilding everything |
-| **📦 Lightweight Options** | Deploy only what you need - from full Dataverse to minimal "Dataverse Light" |
-| **🛠️ Easier Maintenance** | Smaller, focused modules are easier to update and fix |
-| **🌍 Community Growth** | Partners can contribute individual components |
-| **🔮 Future-Proof** | Adopt new technologies gradually, not all at once |
+| **Bridge the Transition** | Same component works in JSF now and SPA later |
+| **Reduce Duplication** | No need to build JSF and React versions of the same feature |
+| **Enable External Tools** | Rich UI components for previewers and integrations |
+| **Community Contributions** | Partners can contribute components independently |
+| **Flexibility** | Test new approaches without modifying the core |
 
 ---
 
-## The Building Blocks
+## What's Concrete vs. Illustrative
 
-### User-Facing Components (What People See)
+### Proven & Working
 
-| Component | Status | Description |
-|-----------|--------|-------------|
-| **File Uploader** | ✅ Ready | Drag-and-drop file uploads with progress tracking |
-| **Search & Discovery** | ✅ In SPA | Find datasets with filters and facets |
-| **File Browser** | 🚧 Planned | Navigate files in folders like a file manager |
-| **Metadata Editors** | ✅ In SPA | Edit dataset and file information |
-| **DDI-CDI Generator** | ✅ Ready | Auto-generate standardized metadata for data files |
+| Item | Description |
+|------|-------------|
+| **DVWebloader V2** | Standalone file uploader - embedded in JSF via iframe |
+| **Standalone Component Pattern** | Proven architecture for reusable UI |
+| **iframe + postMessage** | Communication protocol that works |
 
-### Behind-the-Scenes Services
+### Planned
 
-| Service | Purpose |
-|---------|---------|
-| **Search Service** | Find content (can be standard or AI-enhanced) |
-| **Storage Service** | Store and retrieve files (S3, Azure, etc.) |
-| **Metadata Service** | Manage dataset descriptions and validation |
-| **AI Service** | Smart features like semantic search and auto-suggestions |
+| Item | Description |
+|------|-------------|
+| **File Tree Browser** | Next component to build using this pattern |
 
----
+### Illustrative (What Becomes Possible)
 
-## Real-World Applications
+These sections in the full document show what the architecture *enables* - they are NOT planned work:
 
-### 1. Building Custom Tools Faster
-
-**Before:** Build everything from scratch  
-**After:** Combine pre-built components
-
-*Example:* The rdm-integration tool (already in production) demonstrates this - it combines file synchronization with metadata generation.
-
-### 2. "Dataverse Light"
-
-A minimal deployment for institutions that need:
-- Basic search and discovery
-- File upload and download
-- Essential metadata editing
-
-*Perfect for:* Smaller organizations, departmental repositories, or specialized use cases.
-
-### 3. AI-Enhanced Search
-
-Swap the standard search for AI-powered alternatives:
-- Natural language queries ("find datasets about climate change in Europe")
-- Similar dataset recommendations
-- Automatic metadata suggestions
+| Item | Purpose in Document |
+|------|---------------------|
+| **Backend Microservices** | Shows how components could connect to alternative services |
+| **AI-Enhanced Search** | Example of swappable service architecture |
+| **Dataverse Light** | Illustrates minimal deployment possibilities |
 
 ---
 
-## Implementation Timeline
+## How It Works
 
-| Phase | Timeline | Focus |
-|-------|----------|-------|
-| **Phase 1** | Now | File Uploader (complete), fix remaining issues |
-| **Phase 2** | Q1 2026 | File Tree Browser |
-| **Phase 3** | Q2 2026 | Extract search and metadata editors as standalone |
-| **Phase 4** | Q3 2026 | Swappable search service |
-| **Phase 5** | Q4 2026 | AI enhancements |
-| **Phase 6** | 2027 | Dataverse Light release |
+### 1. Component Development
+
+Build the component as a standalone web application:
+- Self-contained HTML/JS/CSS
+- Uses Dataverse Native API for data
+- Accepts configuration via URL parameters
+
+### 2. Integration via iframe
+
+Embed in any context using an iframe:
+```html
+<iframe src="component.html?datasetPid=doi:10.5072/FK2/ABC123&siteUrl=..."></iframe>
+```
+
+### 3. Communication
+
+Parent and component communicate via `postMessage`:
+- Parent sends configuration and tokens
+- Component reports status and completion
 
 ---
 
-## What We've Already Built
+## Real Example: DVWebloader V2
 
-| Project | What It Does |
-|---------|--------------|
-| **DVWebloader V2** | Proof of concept - standalone uploader embedded in Dataverse |
-| **rdm-integration** | Production tool for file sync and DDI-CDI metadata |
-| **cdi-viewer** | JSON-LD metadata viewer with validation |
-| **dataverse-frontend** | Modern React-based interface (components to extract) |
+The DVWebloader demonstrates this pattern in production:
+
+1. **Standalone**: Works as a complete web application
+2. **Embedded in JSF**: Runs inside Dataverse pages via iframe
+3. **External Tool**: Can be launched as an external tool
+
+Same codebase, three deployment contexts.
 
 ---
 
-## When Is This Right For You?
+## When This Approach Applies
 
-### ✅ Good Fit
+**Good for:**
+- New UI features that should work in both SPA and JSF
+- Components that external tools might want to reuse
+- Features that need to work during the JSF-to-SPA transition
 
-- Large or growing Dataverse installations
-- Need for custom external tools
-- Interest in AI-enhanced features
-- Multiple teams contributing to development
-- Long-term technology modernization goals
-
-### ⚠️ May Be Overkill
-
-- Small, simple installations
-- Standard features are sufficient
-- Very limited development resources
+**Traditional approach still works for:**
+- Features tightly coupled to SPA state/routing
+- Simple UI that won't need external reuse
+- Quick prototypes
 
 ---
 
@@ -144,7 +138,7 @@ For technical details, implementation specifics, and code examples, see the full
 
 ---
 
-**Document Version:** 1.0  
+**Document Version:** 1.1  
 **Created:** December 2025  
 **Authors:** Eryk Kulikowski, with Claude Opus 4.5 (preview) via GitHub Copilot for VS Code  
 **Based on:** new_architecture.md v1.3  
