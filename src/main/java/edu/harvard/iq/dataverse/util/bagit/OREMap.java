@@ -49,7 +49,7 @@ public class OREMap {
     public static final String NAME = "OREMap";
     
     //NOTE: Update this value whenever the output of this class is changed
-    private static final String DATAVERSE_ORE_FORMAT_VERSION = "Dataverse OREMap Format v1.0.1";
+    private static final String DATAVERSE_ORE_FORMAT_VERSION = "Dataverse OREMap Format v1.0.2";
     //v1.0.1 - added versionNote
     private static final String DATAVERSE_SOFTWARE_NAME = "Dataverse";
     private static final String DATAVERSE_SOFTWARE_URL = "https://github.com/iqss/dataverse";
@@ -280,7 +280,7 @@ public class OREMap {
                 JsonObject checksum = null;
                 // Add checksum. RDA recommends SHA-512
                 if (df.getChecksumType() != null && df.getChecksumValue() != null) {
-                    checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toString())
+                    checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toUri())
                             .add("@value", df.getChecksumValue()).build();
                     aggRes.add(JsonLDTerm.checksum.getLabel(), checksum);
                 }
