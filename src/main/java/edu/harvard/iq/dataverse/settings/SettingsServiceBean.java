@@ -757,7 +757,7 @@ public class SettingsServiceBean {
         // JSON specification of the targets to send announcements to
         COARNotifyRelationshipAnnouncementTargets,
 
-        // DCAT an json repository description entries
+        // DCAT and Schema.org repository description entries
         // The country in which the repository operates
         dcat_repository_country,
         // The native language of the user interface of the repository.
