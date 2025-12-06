@@ -13,7 +13,7 @@ This document proposes a **component-based development approach** for Dataverse 
 
 > **What's actually being proposed:** Continue developing new frontend features (like the planned File Tree Browser) using the standalone component pattern proven by DVWebloader V2.
 >
-> **What's illustrative:** The microservices architecture, AI enhancements, and "Dataverse Light" sections show what *becomes possible* with this approach - they are not planned work.
+> **What's illustrative:** The AI enhancements and "Dataverse Light" sections show what *becomes possible* with this approach - they are not planned work.
 
 ### Scope & Intent
 
@@ -21,7 +21,7 @@ This document proposes a **component-based development approach** for Dataverse 
 |----------|----------|--------|
 | **Core Proposal** | Standalone component pattern, iframe embedding, API-first design | ✅ Proven (DVWebloader V2) |
 | **Planned Work** | File Tree Browser as standalone component | 🚧 Next contribution |
-| **Illustrative Possibilities** | Microservices, AI search, Dataverse Light | 💭 Shows what becomes possible |
+| **Illustrative Possibilities** | AI search, Dataverse Light | 💭 Shows what becomes possible |
 
 This document serves as:
 1. **Justification** for the architectural approach used in existing contributions (DVWebloader V2)
@@ -60,11 +60,7 @@ This architecture vision builds upon existing projects in the Dataverse ecosyste
    - [File Metadata Editor](#34-file-metadata-editor-exists-in-spa)
    - [DDI-CDI Metadata Generator](#35-ddi-cdi-metadata-generator-existing)
    - [Dataset Metadata Editor](#36-dataset-metadata-editor-exists-in-spa)
-4. [Backend Microservices](#4-backend-microservices)
-   - [Search Service](#41-search-service)
-   - [Storage Service](#42-storage-service)
-   - [Metadata Service](#43-metadata-service)
-   - [AI Enhancement Service](#44-ai-enhancement-service)
+4. [Backend Architecture](#4-backend-architecture)
 5. [Integration Patterns](#5-integration-patterns)
    - [Embedding in Dataverse (iframe)](#51-embedding-in-dataverse-iframe)
    - [External Tools](#52-external-tools)
@@ -85,45 +81,39 @@ This architecture vision builds upon existing projects in the Dataverse ecosyste
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           PRESENTATION LAYER                                │
+│                         STANDALONE UI COMPONENTS                            │
 │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────────────────┐│
 │  │   Search    │ │  File Tree  │ │  Metadata   │ │    File Uploader        ││
 │  │  Component  │ │   Browser   │ │   Editor    │ │     (DVWebloader)       ││
 │  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ └───────────┬─────────────┘│
 │         │               │               │                    │              │
-│  ┌──────┴───────────────┴───────────────┴────────────────────┴───────┐      │
-│  │                    Unified API Gateway / BFF                      │      │
-│  └──────┬───────────────┬───────────────┬─────────────────────┬──────┘      │
-└─────────┼───────────────┼───────────────┼─────────────────────┼─────────────┘
-          │               │               │                     │
-┌─────────┼───────────────┼───────────────┼─────────────────────┼─────────────┐
-│         │       MICROSERVICES LAYER     │                     │             │
-│  ┌──────▼──────┐ ┌──────▼──────┐ ┌──────▼──────┐ ┌────────────▼────────────┐│
-│  │   Search    │ │   Storage   │ │  Metadata   │ │      Upload             ││
-│  │   Service   │ │   Service   │ │   Service   │ │      Service            ││
-│  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ └────────────┬────────────┘│
-│         │               │               │                     │             │
-│  ┌──────┴──────┐        │               │                     │             │
-│  │ AI Service  │        │               │                     │             │
-│  │   (RAG)     │        │               │                     │             │
-│  └─────────────┘        │               │                     │             │
-└─────────────────────────┼───────────────┼─────────────────────┼─────────────┘
-                          │               │                     │
-┌─────────────────────────┼───────────────┼─────────────────────┼─────────────┐
-│                  DATA LAYER             │                     │             │
-│  ┌──────────────┐ ┌─────▼─────┐ ┌───────▼───────┐ ┌──────────▼────────────┐ │
-│  │    Solr      │ │ PostgreSQL│ │  S3/MinIO     │ │   Vector DB           │ │
-│  │  (Search)    │ │   (Meta)  │ │  (Files)      │ │   (AI Embeddings)     │ │
-│  └──────────────┘ └───────────┘ └───────────────┘ └───────────────────────┘ │
+│         └───────────────┴───────────────┴────────────────────┘              │
+│                                    │                                        │
+│                          Dataverse Native API                               │
+│                       (dataverse-client-javascript)                         │
+└────────────────────────────────────┼────────────────────────────────────────┘
+                                     │
+┌────────────────────────────────────┼────────────────────────────────────────┐
+│                         DATAVERSE BACKEND                                   │
+│                          (Java / Payara)                                    │
+│  ┌─────────────────────────────────▼──────────────────────────────────────┐ │
+│  │                        Native API (/api/v1/*)                          │ │
+│  │   Collections │ Datasets │ Files │ Search │ Users │ Metadata           │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+│                                    │                                        │
+│  ┌─────────────┐  ┌─────────────┐  │  ┌─────────────┐  ┌─────────────┐      │
+│  │    Solr     │  │ PostgreSQL  │◄─┴─►│  S3/MinIO   │  │   Payara    │      │
+│  │  (Search)   │  │   (Data)    │     │  (Files)    │  │  (Runtime)  │      │
+│  └─────────────┘  └─────────────┘     └─────────────┘  └─────────────┘      │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Key Concepts
 
 1. **Standalone UI Components** - React components that work in SPA mode AND as embeddable iframes
-2. **Swappable Microservices** - Dockerized services with defined APIs, easily replaced
-3. **API Gateway / BFF** - Backend-for-Frontend that routes to appropriate microservices
-4. **Data Layer** - Existing Dataverse infrastructure (Solr, PostgreSQL, S3)
+2. **Dataverse Native API** - The existing REST API serves as the communication layer
+3. **dataverse-client-javascript** - Official TypeScript client for API access
+4. **Existing Infrastructure** - Solr, PostgreSQL, S3 - no changes required
 
 ---
 
@@ -134,30 +124,29 @@ This architecture vision builds upon existing projects in the Dataverse ecosyste
 Each UI component is:
 - **Self-contained** - Has its own build, can run standalone
 - **Embeddable** - Works in iframe with postMessage communication
-- **Configurable** - Accepts configuration via URL params or props
+- **Configurable** - Accepts configuration via URL params, props, or self-configures via API calls (to be discussed)
 - **Stateless** - Receives data via API, doesn't maintain global state
 
-### 2.2 Service Abstraction
+### 2.2 API-First Design
 
-Each microservice:
-- **Implements a contract** - Defined OpenAPI/GraphQL schema
-- **Is replaceable** - Can swap implementations without UI changes
-- **Is independently deployable** - Docker container with health checks
-- **Handles its own concerns** - Single responsibility
+Components communicate through the Dataverse Native API:
+- **Single source of truth** - All data access via `/api/v1/*`
+- **Well-documented** - Existing API documentation applies
+- **TypeScript client** - `dataverse-client-javascript` provides typed access
+- **Consistent** - Same API whether component runs in SPA, iframe, or external tool
 
 ### 2.3 Progressive Enhancement
 
 - Core Dataverse functionality remains intact
 - New components enhance, don't replace
-- Gradual migration path from JSF to React
+- Use new React components without migrating to the SPA (for installations that postpone that step)
 - Feature flags control which components are active
 
 ### 2.4 Technology Agnostic
 
 - UI components: React (TypeScript)
-- Microservices: Any language (Python, Go, Java, Rust)
-- Communication: REST/GraphQL + WebSocket for real-time
-- Storage: Pluggable (S3, Azure Blob, local filesystem)
+- External tools: Any language (Python, Go, Java, Angular, etc.)
+- Communication: REST + WebSocket for real-time
 
 ### 2.5 Alignment with Dataverse Frontend Vision
 
@@ -172,175 +161,12 @@ This architecture aligns with the goals of the [Dataverse Frontend](https://gith
 > - Increase cadence of development, decrease time between release cycles
 > — [dataverse-frontend README](https://github.com/IQSS/dataverse-frontend/blob/develop/README.md)
 
-**Technology Stack (from dataverse-frontend):**
-- React 18 with TypeScript
-- Bootstrap with custom theming
-- Storybook for component library
-- Cypress for E2E testing
-- i18next for localization
-
 ### 2.6 API Strategy
 
-This architecture leverages the **existing Dataverse Native API** as its foundation. All standalone components and microservices communicate with Dataverse through this well-documented REST API.
-
-#### Native API as Foundation
-
-The Dataverse Native API (`/api/v1/*`) provides comprehensive access to all Dataverse functionality:
-
-- **Collections:** Create, read, update, delete Dataverse collections
-- **Datasets:** Full CRUD operations, versioning, publishing, deaccessioning
-- **Files:** Upload, download, metadata management, access restrictions
-- **Search:** Full-text and faceted search across all content
-- **Users & Permissions:** Authentication, authorization, role management
-- **Metadata Blocks:** Schema management, custom metadata types
-
-**Documentation:** See [native-api.rst](doc/sphinx-guides/source/api/native-api.rst) for the complete API reference.
-
-#### dataverse-client-javascript: The Official TypeScript Client
-
-For JavaScript/TypeScript applications (including all standalone React components), we use the official [dataverse-client-javascript](https://github.com/IQSS/dataverse-client-javascript) library.
-
-**Installation:**
-```bash
-npm install @iqss/dataverse-client-javascript
-```
-
-**Key Features:**
-- **Use case-centric API** – Organized around domain-specific actions
-- **TypeScript-first** – Strong typings for all inputs and outputs
-- **Domain-driven design** – Clean separation of concerns
-- **Promise-based** – Modern async/await patterns
-
-**Use Case Examples:**
-
-```typescript
-import { 
-  getDataset, 
-  getCollection, 
-  uploadFile,
-  addUploadedFilesToDataset,
-  updateFileMetadata,
-  getCollectionItems
-} from '@iqss/dataverse-client-javascript'
-
-// Fetch a dataset by persistent identifier
-const dataset = await getDataset.execute('doi:10.5072/FK2/AAAAAA', '1.0')
-
-// Get collection with facets for search UI
-const collection = await getCollection.execute('root')
-const items = await getCollectionItems.execute('root', 10, 0)
-
-// Direct upload to S3 with progress callback
-const storageId = await uploadFile.execute(
-  datasetId, 
-  file, 
-  (progress) => console.log(`${progress}%`),
-  abortController
-)
-
-// Add uploaded files to dataset
-await addUploadedFilesToDataset.execute(datasetId, [
-  {
-    fileName: 'data.csv',
-    storageId: storageId,
-    checksumType: 'md5',
-    checksumValue: 'abc123...',
-    mimeType: 'text/csv'
-  }
-])
-
-// Update file metadata
-await updateFileMetadata.execute(fileId, {
-  label: 'renamed-file.csv',
-  description: 'Updated description',
-  categories: ['Data']
-})
-```
-
-**Available Use Case Domains:**
-
-| Domain | Use Cases |
-|--------|-----------|
-| **Collections** | `getCollection`, `createCollection`, `getCollectionFacets`, `getCollectionItems`, `getMyDataCollectionItems` |
-| **Datasets** | `getDataset`, `createDataset`, `publishDataset`, `getDatasetUserPermissions`, `getDatasetCitation` |
-| **Files** | `getFile`, `uploadFile`, `addUploadedFilesToDataset`, `updateFileMetadata`, `restrictFile`, `getFileDataTables` |
-| **Metadata** | `getMetadataBlockByName`, `getCollectionMetadataBlocks` |
-| **Users** | `getCurrentAuthenticatedUser` |
-| **Search** | Full-text and faceted search |
-
-See [useCases.md](https://github.com/IQSS/dataverse-client-javascript/blob/main/docs/useCases.md) for the complete list.
-
-#### Extending the API
-
-When new functionality is needed:
-
-1. **Add endpoint to Dataverse Native API** - Implement in the Java backend
-2. **Implement use case in dataverse-client-javascript** - Create TypeScript wrapper
-3. **Use in components** - Import and use the new use case
-
-This ensures:
-- All clients (SPA, standalone components, external tools) have access to new functionality
-- Consistent API surface across all applications
-- Type safety in TypeScript consumers
-
-#### Microservices: Same API Contract
-
-When implementing microservices that can replace Dataverse functionality:
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         API Contract                                    │
-│                    (OpenAPI / Native API spec)                          │
-├─────────────────────────────────────────────────────────────────────────┤
-│                              │                                          │
-│         ┌────────────────────┴────────────────────┐                     │
-│         │                                          │                    │
-│   ┌─────▼─────┐                           ┌────────▼────────┐           │
-│   │ Dataverse │  ◄─── Same API ───►       │ Microservice    │           │
-│   │  Backend  │      Contract             │ Implementation  │           │
-│   └───────────┘                           └─────────────────┘           │
-│                                                                         │
-│   (Java/Payara)                           (Python/Go/Rust/etc.)         │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
-**Example: Search Service**
-
-The Search Service microservice implements the same search API as Dataverse:
-
-```yaml
-# OpenAPI contract (compatible with /api/search)
-paths:
-  /search:
-    get:
-      parameters:
-        - name: q
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: type
-          in: query
-          schema:
-            type: array
-            items:
-              enum: [dataverse, dataset, file]
-        - name: per_page
-          in: query
-          schema:
-            type: integer
-      responses:
-        200:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SearchResults'
-```
-
-This allows:
-- **Drop-in replacement** - Switch from Dataverse Solr to AI-enhanced search
-- **A/B testing** - Route some traffic to experimental implementations
-- **Gradual migration** - Replace services one at a time
+- **Dataverse Native API** (`/api/v1/*`) is the single source of truth for all data operations
+- **dataverse-client-javascript** provides the TypeScript client for React components
+- Components use the same API whether running in SPA, iframe, or external tool
+- New API endpoints → new use cases in client library → available to all components
 
 ---
 
@@ -423,33 +249,7 @@ rdm-build/images/previewers/dvwebloader-v2/
 
 **API Integration:**
 
-The File Uploader uses `dataverse-client-javascript` for all API communication:
-
-```typescript
-import { uploadFile, addUploadedFilesToDataset } from '@iqss/dataverse-client-javascript'
-
-// 1. Upload file directly to S3 storage
-const storageId = await uploadFile.execute(
-  datasetId,
-  file,
-  (progress) => setUploadProgress(progress),
-  abortController
-)
-
-// 2. Register uploaded file with Dataverse
-await addUploadedFilesToDataset.execute(datasetId, [{
-  fileName: file.name,
-  storageId: storageId,
-  checksumType: 'md5',
-  checksumValue: calculatedChecksum,
-  mimeType: file.type
-}])
-```
-
-This follows the [Direct Upload API](https://guides.dataverse.org/en/latest/developers/s3-direct-upload-api.html) pattern, which:
-- Generates presigned S3 URLs for browser-direct upload
-- Supports multipart upload for large files with resumable chunks
-- Provides progress callbacks and abort support
+The File Uploader uses `dataverse-client-javascript` for all API communication.
 
 **Lessons Learned:**
 - iframe isolation solves CSS conflicts with JSF pages
@@ -852,258 +652,34 @@ import { DatasetMetadataForm } from '@/sections/shared/form/DatasetMetadataForm'
 
 ---
 
-## 4. Backend Microservices
+## 4. Backend Architecture
 
-> ⚠️ **Note:** This section is **illustrative, not a planned implementation**. It shows what *becomes possible* when frontend components are decoupled from the backend. The Dataverse Native API remains the foundation - these examples demonstrate how alternative implementations could theoretically be swapped in without changing the UI components.
+> **Key Point:** This proposal does not change the Dataverse backend. All standalone components communicate with the existing Dataverse Native API.
 
-> **API Compatibility:** All microservices would implement API contracts compatible with the [Dataverse Native API](doc/sphinx-guides/source/api/native-api.rst). This enables drop-in replacement and gradual migration. See [Section 2.6: API Strategy](#26-api-strategy) for details.
+### Current Architecture (No Changes Required)
 
-### 4.1 Search Service
+The existing Dataverse backend already provides everything needed:
 
-**Purpose:** Abstract search functionality with swappable implementations
+| Capability | Provided By | API |
+|------------|-------------|-----|
+| **Search** | Solr | `/api/search` |
+| **File Storage** | S3/MinIO (or local) | `/api/files/`, Direct Upload API |
+| **Metadata** | PostgreSQL | `/api/datasets/`, `/api/files/` |
+| **Authentication** | Dataverse auth | API tokens, sessions |
+| **Permissions** | Role-based access | Per-collection, per-dataset |
 
-**Current Implementation:** Dataverse Native API provides search via `/api/search`.
+### Why This Matters
 
-**JavaScript Client Usage:**
-```typescript
-import { getCollectionItems, getCollectionFacets } from '@iqss/dataverse-client-javascript'
+Because standalone components use the Native API:
 
-// Search with pagination
-const items = await getCollectionItems.execute(
-  collectionAlias, 
-  limit, 
-  offset, 
-  searchCriteria
-)
+1. **No backend changes** - Components work with any Dataverse installation
+2. **Version compatibility** - API versioning protects against breaking changes
+3. **Same security model** - Existing authentication and authorization apply
+4. **Existing documentation** - Native API is already well-documented
 
-// Get facets for filtering UI
-const facets = await getCollectionFacets.execute(collectionAlias)
-```
+### Future Possibility: Alternative Backends
 
-**Docker Deployment (Alternative Implementations):**
-```yaml
-# docker-compose.yml
-services:
-  search-service:
-    image: dataverse/search-service:${SEARCH_IMPL:-solr}
-    environment:
-      SEARCH_BACKEND: ${SEARCH_BACKEND:-solr}
-      SOLR_URL: http://solr:8983/solr
-      # OR for AI:
-      # SEARCH_BACKEND: rag
-      # EMBEDDING_SERVICE: http://embeddings:8000
-      # VECTOR_DB: http://qdrant:6333
-```
-
-**API Contract (OpenAPI):**
-
-Alternative implementations must be compatible with the Native API `/api/search` contract:
-
-```yaml
-paths:
-  /search:
-    post:
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SearchQuery'
-      responses:
-        200:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SearchResults'
-
-  /suggest:
-    get:
-      parameters:
-        - name: q
-          in: query
-          schema:
-            type: string
-      responses:
-        200:
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-```
-
-**Implementation Options:**
-
-| Implementation | Use Case | Technology |
-|----------------|----------|------------|
-| `search-solr` | Standard Dataverse | Solr + existing schema |
-| `search-elastic` | Alternative indexing | Elasticsearch 8.x |
-| `search-rag` | AI-enhanced search | Embeddings + Vector DB |
-| `search-hybrid` | Best of both | Solr + AI reranking |
-
----
-
-### 4.2 Storage Service
-
-**Purpose:** Abstract file storage operations
-
-**Current Implementation:** Dataverse Native API already provides storage abstraction.
-
-See [`/api/files/` endpoints](doc/sphinx-guides/source/api/native-api.rst#files) and [Direct Upload API](https://guides.dataverse.org/en/latest/developers/s3-direct-upload-api.html).
-
-**JavaScript Client Usage:**
-```typescript
-import { uploadFile, getFile } from '@iqss/dataverse-client-javascript'
-
-// Upload with progress
-const storageId = await uploadFile.execute(datasetId, file, progressCallback, abortController)
-
-// Get file metadata
-const fileMetadata = await getFile.execute(fileId)
-```
-
-**Implementations:**
-- S3/MinIO (current)
-- Azure Blob Storage
-- Google Cloud Storage
-- Local filesystem
-- IRODS
-
-**Alternative Microservice Contract:**
-
-If implementing a custom storage service that can replace Dataverse's storage:
-
-```typescript
-interface StorageService {
-  // Upload
-  getUploadUrl(fileInfo: FileInfo): Promise<PresignedUrl>;
-  confirmUpload(uploadId: string, checksum: string): Promise<void>;
-  
-  // Download
-  getDownloadUrl(fileId: string): Promise<PresignedUrl>;
-  streamFile(fileId: string): ReadableStream;
-  
-  // Management
-  deleteFile(fileId: string): Promise<void>;
-  copyFile(sourceId: string, destPath: string): Promise<string>;
-  
-  // Bulk operations
-  createZip(fileIds: string[]): Promise<PresignedUrl>;
-}
-```
-
-**Note:** Any alternative implementation must maintain compatibility with the existing Native API contract.
-
----
-
-### 4.3 Metadata Service
-
-**Purpose:** Manage dataset and file metadata with validation
-
-**Current Implementation:** Dataverse Native API provides metadata operations.
-
-See [`/api/datasets/` and `/api/files/` endpoints](doc/sphinx-guides/source/api/native-api.rst) for metadata management.
-
-**JavaScript Client Usage:**
-```typescript
-import { 
-  getDataset, 
-  updateFileMetadata, 
-  getMetadataBlockByName 
-} from '@iqss/dataverse-client-javascript'
-
-// Get dataset with full metadata
-const dataset = await getDataset.execute('doi:10.5072/FK2/AAAAAA')
-
-// Update file metadata
-await updateFileMetadata.execute(fileId, {
-  label: 'new-name.csv',
-  description: 'Updated description',
-  categories: ['Data']
-})
-
-// Get metadata block schema
-const citationBlock = await getMetadataBlockByName.execute('citation')
-```
-
-**Features:**
-- Schema validation (JSON Schema, SHACL)
-- Controlled vocabulary enforcement
-- Version history
-- Export formats (JSON-LD, XML, RDF)
-
-**Alternative Microservice Contract:**
-
-For custom metadata processing (e.g., AI-enhanced metadata):
-
-```typescript
-interface MetadataService {
-  // CRUD
-  getMetadata(id: string, version?: string): Promise<Metadata>;
-  updateMetadata(id: string, metadata: Metadata): Promise<void>;
-  
-  // Validation
-  validate(metadata: Metadata, schema: string): Promise<ValidationResult>;
-  
-  // Export
-  export(id: string, format: 'json-ld' | 'xml' | 'rdf'): Promise<string>;
-  
-  // Controlled vocabularies
-  getVocabulary(name: string): Promise<Term[]>;
-  lookupTerm(vocabulary: string, query: string): Promise<Term[]>;
-}
-```
-
----
-
-### 4.4 AI Enhancement Service
-
-> 💡 **Future Possibility:** This section explores how AI capabilities *could* be integrated. Given that many Dataverse installations are at academic institutions, AI-enhanced research discovery is a natural fit. The existing pluggable search service architecture (see `searchServices` in SearchInput.tsx) already provides the extension point. This is not currently planned work, but represents an area of potential future value.
-
-**Purpose:** Provide AI capabilities to other services
-
-**Capabilities:**
-```
-┌────────────────────────────────────────────────────────┐
-│              AI Enhancement Service                    │
-├────────────────────────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
-│  │  Embeddings │  │   RAG       │  │ Suggestions │     │
-│  │   Service   │  │   Search    │  │   Engine    │     │
-│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘     │
-│         │                │                │            │
-│         ▼                ▼                ▼            │
-│  ┌─────────────────────────────────────────────────┐   │
-│  │              Vector Database (Qdrant)           │   │
-│  └─────────────────────────────────────────────────┘   │
-│                                                        │
-│  Use Cases:                                            │
-│  • Semantic search ("datasets about X")                │
-│  • Metadata auto-completion                            │
-│  • Similar dataset recommendations                     │
-│  • Natural language query parsing                      │
-│  • Result summarization                                │
-└────────────────────────────────────────────────────────┘
-```
-
-**API Contract:**
-```typescript
-interface AIService {
-  // Embeddings
-  embed(text: string): Promise<number[]>;
-  embedBatch(texts: string[]): Promise<number[][]>;
-  
-  // Semantic search
-  semanticSearch(query: string, filters?: Filters): Promise<SearchResults>;
-  
-  // Generation
-  summarize(datasetId: string): Promise<string>;
-  suggestKeywords(abstract: string): Promise<string[]>;
-  
-  // Query understanding
-  parseNaturalQuery(query: string): Promise<StructuredQuery>;
-}
-```
+> 💭 **Theoretical:** Because components communicate via the Native API contract, it would be *possible* to create alternative implementations (e.g., an AI-enhanced search service). This is not planned - it simply becomes possible due to the decoupled architecture.
 
 ---
 
@@ -1673,15 +1249,12 @@ Extract **standalone UI components from the SPA** that can work both within the 
    - View and edit dataset-level metadata
    - For JSON-LD editing/validation pattern, see [cdi-viewer](../cdi-viewer/ARCHITECTURE.md)
 
-### Microservices Architecture
+### Future Flexibility
 
-- **Swappable backend services** behind defined API contracts
-- Different implementations for different needs:
-  - Standard Solr search vs AI-enhanced search
-  - Different storage backends (S3, Azure, local)
-  - AI services for metadata enhancement
-- **Dockerized** for easy deployment and replacement
-- **Future-proof** for new technology stacks
+> 💭 **Theoretical:** Because components use the Native API, alternative backend implementations become possible (but are not planned):
+>  - Different search backends (Elasticsearch, AI-enhanced search)
+>  - Different storage backends (Azure, Google Cloud)
+>  - AI services for metadata enhancement
 
 ### Composition Patterns
 
