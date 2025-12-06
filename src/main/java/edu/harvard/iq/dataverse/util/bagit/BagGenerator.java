@@ -548,7 +548,7 @@ public class BagGenerator {
 
                 String childHash = null;
                 if (child.has(JsonLDTerm.checksum.getLabel())) {
-                    ChecksumType childHashType = ChecksumType.fromString(
+                    ChecksumType childHashType = ChecksumType.fromUri(
                             child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@type").getAsString());
                     if (hashtype == null) {
                     	//If one wasn't set as a default, pick up what the first child with one uses
@@ -828,7 +828,7 @@ public class BagGenerator {
         // ToDo - make configurable
         info.append(CRLF);
 
-        info.append("Organization-Address: " + WordUtils.wrap(orgAddress, 78, CRLF + " ", true));
+        info.append("Organization-Address: " + multilineWrap(orgAddress));
 
         info.append(CRLF);
 
@@ -846,10 +846,8 @@ public class BagGenerator {
         if (descriptionTerm == null) {
             logger.warning("No description available for BagIt Info file");
         } else {
-            info.append(
-                    // FixMe - handle description having subfields better
-                    WordUtils.wrap(getSingleValue(aggregation.get(descriptionTerm.getLabel()),
-                            descriptionTextTerm.getLabel()), 78, CRLF + " ", true));
+            info.append(multilineWrap(getSingleValue(aggregation.get(descriptionTerm.getLabel()),
+                    descriptionTextTerm.getLabel())));
 
             info.append(CRLF);
         }
@@ -881,6 +879,20 @@ public class BagGenerator {
 
         return info.toString();
 
+    }
+
+    private String multilineWrap(String value) {
+        // Normalize line breaks and ensure all lines after the first are indented
+        String[] lines =value.split("\\r?\\n");
+        StringBuilder wrappedValue = new StringBuilder();
+        for (int i = 0; i < lines.length; i++) {
+            String wrapped = WordUtils.wrap(lines[i].trim(), 78, CRLF + " ", true);
+            wrappedValue.append(wrapped);
+            if (i < lines.length - 1) {
+                wrappedValue.append(CRLF).append(" ");
+            }
+        }
+        return wrappedValue.toString();
     }
 
     /**
