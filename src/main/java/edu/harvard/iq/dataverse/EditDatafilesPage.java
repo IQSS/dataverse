@@ -566,9 +566,10 @@ public class EditDatafilesPage implements java.io.Serializable {
      *
      * @return cached formatted storage size. '1,234 bytes'; '1.23 GB'; '1.00 TB'
      */
-    public String getCurrentStorageUse() {
+    public String getCurrentContainerStorageUse() {
         if (storageSizeStr == null) {
-            storageSizeStr = StringUtil.formatBytes(datafileService.currentStorageSizeInBytes(dataset));
+            Dataverse container = dataset.getOwner();
+            storageSizeStr = StringUtil.formatBytes(datafileService.currentStorageSizeInBytes(container));
         }
         return storageSizeStr;
     }
