@@ -568,8 +568,7 @@ public class EditDatafilesPage implements java.io.Serializable {
      */
     public String getCurrentContainerStorageUse() {
         if (storageSizeStr == null) {
-            Dataverse container = dataset.getOwner();
-            storageSizeStr = StringUtil.formatBytes(datafileService.currentStorageSizeInBytes(container));
+            storageSizeStr = StringUtil.formatBytes(datafileService.currentStorageSizeInBytes(dataset.getOwner()));
         }
         return storageSizeStr;
     }
