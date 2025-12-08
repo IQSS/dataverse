@@ -9,14 +9,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
@@ -236,5 +231,18 @@ public class StringUtil {
         sentence = sentence.trim().replaceAll(", *", ", ").replaceAll(" +", " ");
 
         return sentence;
+    }
+
+    public static final long BYTES_PER_GB = 1024L * 1024L * 1024L;
+    public static final long BYTES_PER_TB = BYTES_PER_GB * 1024L;
+    static public String formatBytes(long bytes) {
+        if (bytes < BYTES_PER_GB) {
+            return NumberFormat.getNumberInstance().format(bytes) + " bytes";
+        } else {
+            double dBytes = bytes;
+            NumberFormat formatter = new DecimalFormat("#,##0.00");
+            return bytes < BYTES_PER_TB ? formatter.format(dBytes / BYTES_PER_GB) + " GB" :
+                    formatter.format(dBytes / BYTES_PER_TB) + " TB";
+        }
     }
 }

@@ -35,16 +35,9 @@ import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
-import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.JsfHelper;
-import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.WebloaderUtil;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.EjbUtil;
-import edu.harvard.iq.dataverse.util.FileMetadataUtil;
+import edu.harvard.iq.dataverse.util.*;
 
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.File;
@@ -565,6 +558,11 @@ public class EditDatafilesPage implements java.io.Serializable {
     public boolean isFileUploadCountExceeded() {
         boolean ignoreLimit = this.session.getUser().isSuperuser();
         return !ignoreLimit && !isFileReplaceOperation() && fileUploadsAvailable != null && fileUploadsAvailable == 0;
+    }
+
+    public String getCurrentStorageUse() {
+        Long size = datafileService.currentStorageSizeInBytes(dataset);
+        return StringUtil.formatBytes(size);
     }
 
     public String init() {

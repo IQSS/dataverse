@@ -239,5 +239,14 @@ class StringUtilTest {
 
             // TODO: organization examples...
         }
+
+        @Test
+        public void testFormatBytes() {
+            assertEquals("1,073,741,823 bytes", StringUtil.formatBytes(StringUtil.BYTES_PER_GB - 1));
+            assertEquals("1.00 GB", StringUtil.formatBytes(StringUtil.BYTES_PER_GB));
+            assertEquals("341.33 GB", StringUtil.formatBytes(StringUtil.BYTES_PER_TB / 3));
+            assertEquals("1.29 GB", StringUtil.formatBytes(StringUtil.BYTES_PER_GB + 312345678)); // 1386087502 / 1073741824 = 1.290894581
+            assertEquals("1.49 TB", StringUtil.formatBytes(StringUtil.BYTES_PER_TB + (StringUtil.BYTES_PER_GB * 500))); // 1636382539776 / 1099511627776 = 1.48828125
+        }
     }
 }
