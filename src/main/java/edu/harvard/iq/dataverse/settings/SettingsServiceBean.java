@@ -303,13 +303,14 @@ public class SettingsServiceBean {
          */
         @Deprecated(since = "6.2", forRemoval = true)
         SystemEmail, 
-        /* size limit for Tabular data file ingests */
-        /* (can be set separately for specific ingestable formats; in which 
-        case the actual stored option will be TabularIngestSizeLimit:{FORMAT_NAME}
-        where {FORMAT_NAME} is the format identification tag returned by the 
-        getFormatName() method in the format-specific plugin; "sav" for the 
-        SPSS/sav format, "RData" for R, etc.
-        for example: :TabularIngestSizeLimit:RData */
+        
+        /**
+        <p>Size limit (in bytes) for tabular file ingest. Accepts either a single numeric value or JSON for per-format control.</p>
+        <p>Values: -1 (or absent) = no limit, 0 = disable ingest, >0 = byte threshold, or JSON object.</p>
+        <p>JSON object allows setting a "default" (same as single byte value) and override limits per-format for: CSV, DTA, POR, Rdata, SAV, XLSX.
+        Example: <code>{"default": "536870912", "CSV": "0", "Rdata": "1000000"}</code></p>
+        <p>Format names are case-insensitive. Invalid settings disable ingest until corrected.</p>
+        */
         TabularIngestSizeLimit,
         /* Validate physical files in the dataset when publishing, if the dataset size less than the threshold limit */
         DatasetChecksumValidationSizeLimit,
