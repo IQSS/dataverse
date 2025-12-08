@@ -181,6 +181,8 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     private String versionString = "";
 
+    private String storageSizeStr;
+
     private boolean saveEnabled = false;
 
     // Used to store results of permissions checks
@@ -560,9 +562,15 @@ public class EditDatafilesPage implements java.io.Serializable {
         return !ignoreLimit && !isFileReplaceOperation() && fileUploadsAvailable != null && fileUploadsAvailable == 0;
     }
 
+    /**
+     *
+     * @return cached formatted storage size. '1,234 bytes'; '1.23 GB'; '1.00 TB'
+     */
     public String getCurrentStorageUse() {
-        Long size = datafileService.currentStorageSizeInBytes(dataset);
-        return StringUtil.formatBytes(size);
+        if (storageSizeStr == null) {
+            storageSizeStr = StringUtil.formatBytes(datafileService.currentStorageSizeInBytes(dataset));
+        }
+        return storageSizeStr;
     }
 
     public String init() {
