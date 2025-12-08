@@ -1274,7 +1274,12 @@ public class FilesIT {
                 Arguments.of("{\"default\": -2}", BAD_REQUEST, "message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported"))),
                 
                 // Large enough :-)
+                Arguments.of("-1", OK, "data[0].varQuantity", equalTo(4)),
+                Arguments.of("123456", OK, "data[0].varQuantity", equalTo(4)),
+                Arguments.of("{\"default\": 123456}", OK, "data[0].varQuantity", equalTo(4)),
                 Arguments.of("{\"csv\": 123456}", OK, "data[0].varQuantity", equalTo(4)),
+                Arguments.of("{\"csv\": \"123457\"}", OK, "data[0].varQuantity", equalTo(4)),
+                Arguments.of("{\"csv\": 123458.0}", OK, "data[0].varQuantity", equalTo(4)),
                 // Default is disabled, but exception for CSV
                 Arguments.of("{\"default\": 0,\"csv\": 123456}", OK, "data[0].varQuantity", equalTo(4))
             );
@@ -1282,7 +1287,7 @@ public class FilesIT {
         
         @ParameterizedTest
         @MethodSource("configurations")
-        void testIngestSizeLimits(String ingestSizeLimitConfig, Status expectedStatus, String jsonPath, Matcher matcher) throws IOException {
+        void testIngestSizeLimits(String ingestSizeLimitConfig, Status expectedStatus, String jsonPath, Matcher matcher) {
             // given
             Response setLimit = UtilIT.setSetting(Key.TabularIngestSizeLimit, ingestSizeLimitConfig);
             setLimit.then().assertThat().statusCode(OK.getStatusCode());
