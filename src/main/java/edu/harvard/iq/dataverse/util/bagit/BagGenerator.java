@@ -886,10 +886,15 @@ public class BagGenerator {
         String[] lines =value.split("\\r?\\n");
         StringBuilder wrappedValue = new StringBuilder();
         for (int i = 0; i < lines.length; i++) {
-            String wrapped = WordUtils.wrap(lines[i].trim(), 78, CRLF + " ", true);
-            wrappedValue.append(wrapped);
-            if (i < lines.length - 1) {
-                wrappedValue.append(CRLF).append(" ");
+            // Skip empty lines - RFC8493 (section 7.3) doesn't allow truly empty lines,
+            // While trailing whitespace or whitespace-only lines appear to be allowed, it's not clear that handling them adds value (visually identical entries in Dataverse could result in entries w/ or w/o extra lines in the bag-info.txt file
+            String line = lines[i].trim();
+            if (line.length() > 0) {
+                String wrapped = WordUtils.wrap(line, 78, CRLF + " ", true);
+                wrappedValue.append(wrapped);
+                if (i < lines.length - 1) {
+                    wrappedValue.append(CRLF).append(" ");
+                }
             }
         }
         return wrappedValue.toString();
