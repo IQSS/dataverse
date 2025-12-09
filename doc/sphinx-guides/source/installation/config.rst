@@ -2132,35 +2132,56 @@ JSON files for `Creative Commons licenses <https://creativecommons.org/about/ccl
 
 .. _adding-custom-licenses:
 
+Adding Open Data Commons Licenses
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+JSON files for `Open Data Commons licenses <https://opendatacommons.org/licenses/>`_ are provided below.
+
+- :download:`licenseODbL-1.0.json <../../../../scripts/api/data/licenses/licenseODbL-1.0.json>`
+- :download:`licenseODC-By-1.0.json <../../../../scripts/api/data/licenses/licenseODC-By-1.0.json>`
+- :download:`licensePDDL-1.0.json <../../../../scripts/api/data/licenses/licensePDDL-1.0.json>`
+
 Adding Software Licenses
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 JSON files for software licenses are provided below.
 
-- :download:`licenseMIT.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
 - :download:`licenseApache-2.0.json <../../../../scripts/api/data/licenses/licenseApache-2.0.json>`
+- :download:`licenseMIT.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
+- :download:`licenseEUPL-1.2.json <../../../../scripts/api/data/licenses/licenseEUPL-1.2.json>`
 
 Adding Country-Specific Licenses
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - :download:`licenseEtalab-2.0.json <../../../../scripts/api/data/licenses/licenseEtalab-2.0.json>` used in France (Etalab Open License 2.0, CC-BY 2.0 compliant).
+- :download:`licenseOGL-UK-3.0.json <../../../../scripts/api/data/licenses/licenseOGL-UK-3.0.json>`
 
 Contributing to the Collection of Standard Licenses Above
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you do not find the license JSON you need above, you are encouraged to contribute it to this documentation. Following the Dataverse 6.2 release, we have standardized on the following procedure:
+If you do not find the license JSON you need above, you are encouraged to contribute it to this documentation. Following the Dataverse 6.9 release, we have standardized on the following procedure:
 
-- Look for the license at https://spdx.org/licenses/
-- ``cd scripts/api/data/licenses``
+- Look for the license at https://spdx.org/licenses/ and https://github.com/datacite/bracco/blob/main/app/spdx.js.
+- ``cd scripts/api/data/licenses``.
 - Copy an existing license as a starting point.
 - Name your file using the SPDX identifier. For example, if the identifier is ``Apache-2.0``, you should name your file ``licenseApache-2.0.json``.
 - For the ``name`` field, use the "short identifier" from the SPDX landing page (e.g. ``Apache-2.0``).
-- For the ``description`` field, use the "full name" from the SPDX landing page (e.g. ``Apache License 2.0``).
-- For the ``uri`` field, we encourage you to use the same resource that DataCite uses, which is often the same as the first "Other web pages for this license" on the SPDX page for the license. When these differ, or there are other concerns about the URI DataCite uses, please reach out to the community to see if a consensus can be reached.
+- For the ``shortDescription`` field, use the "full name" from the SPDX landing page (e.g. ``Apache License 2.0``) followed by a period (full-stop) (e.g. ``Apache License 2.0.``).
+- For the ``uri`` field, use the same resource that DataCite uses, which is often the same as the first "Other web pages for this license" on the SPDX page for the license. Look at the ``seeAlso`` array for the license at https://github.com/datacite/bracco/blob/main/app/spdx.js to be sure. When these differ, or there are other concerns about the URI DataCite uses, please reach out to the community to see if a consensus can be reached. See :ref:`support`.
 - For the ``active`` field, put ``true``.
 - For the ``sortOrder`` field, put the next sequential number after checking previous files with ``grep sortOrder scripts/api/data/licenses/*``.
+- For the ``rightsIdentifier`` field, use the "short identifier" from the SPDX landing page (e.g. ``Apache-2.0``).
+- For the ``rightsIdentifierScheme`` field, use "SPDX".
+- For the ``schemeUri`` field, use "https://spdx.org/licenses/".
+- For the ``languageCode`` field, use "en".
+- For all of the fields above, resist the urge to change the spelling of words like license/licence, center/centre, etc. SPDX is the upstream authority, and they have the following `varietal word spelling policy <https://github.com/spdx/license-list-XML/blob/v3.27.0/DOCS/license-matching-guidelines-and-templates.md#8-varietal-word-spelling->`_: "The words in each line of the text file available at https://spdx.org/licenses/equivalentwords.txt are considered equivalent and interchangeable."
 
-Note that prior to Dataverse 6.2, various license above have been added that do not adhere perfectly with this procedure. For example, the ``name`` for the CC0 license is ``CC0 1.0`` (no dash) rather than ``CC0-1.0`` (with a dash). We are keeping the existing names for backward compatibility. For more on standarizing license configuration, see https://github.com/IQSS/dataverse/issues/8512
+In the past, licenses have been added that do not adhere perfectly with the procedure above. Here are known inconsistencies:
+
+- The ``name`` for the CC licenses don't have a dash as their SPDX short identifiers do (e.g. CC-BY-4.0, CC-BY-NC-4.0, CC-BY-NC-ND-4.0, CC-BY-NC-SA-4.0, CC-BY-ND-4.0, CC-BY-SA-4.0, CC0-1.0). For example, the ``name`` for the CC0 license is ``CC0 1.0`` (no dash) rather than ``CC0-1.0`` (with a dash). We are keeping the existing names without dashes for backward compatibility.
+- The ``uri`` for Creative Commons licenses comes from the Creative Commons website rather than SPDX or DataCite. As with ``name``, we are keeping ``uri`` the as-is for these licenses for backward compatibility. For more on our attempts to standardize license configuration, see https://github.com/IQSS/dataverse/issues/8512 and https://github.com/IQSS/dataverse/pull/11522.
+- The ``uri`` for Etalab is https://spdx.org/licenses/etalab-2.0 rather than a link listed in SPDX or DataCite.
+- The ``shortDescription`` doesn't have a trailing period for Apache-2.0, Etalab, and MIT.
 
 Adding Custom Licenses
 ^^^^^^^^^^^^^^^^^^^^^^
