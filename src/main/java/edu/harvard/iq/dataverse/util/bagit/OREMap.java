@@ -130,7 +130,8 @@ public class OREMap {
         if(vs.equals(VersionState.DEACCESSIONED)) {
             JsonObjectBuilder deaccBuilder = Json.createObjectBuilder();
             deaccBuilder.add(JsonLDTerm.schemaOrg("name").getLabel(), vs.name());
-            deaccBuilder.add(JsonLDTerm.DVCore("reason").getLabel(), version.getDeaccessionNote());
+            // Reason is supposed to not be null, but historically this has not been enforced (in the API)
+            addIfNotNull(deaccBuilder, JsonLDTerm.DVCore("reason"), version.getDeaccessionNote());
             addIfNotNull(deaccBuilder, JsonLDTerm.DVCore("forwardUrl"), version.getDeaccessionLink());
             aggBuilder.add(JsonLDTerm.schemaOrg("creativeWorkStatus").getLabel(), deaccBuilder);
             
