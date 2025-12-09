@@ -482,14 +482,6 @@ public class BagGenerator {
     private void processContainer(JsonObject item, String currentPath) throws IOException {
         JsonArray children = getChildren(item);
         HashSet<String> titles = new HashSet<String>();
-        String title = null;
-        if (item.has(JsonLDTerm.dcTerms("Title").getLabel())) {
-            title = item.get("Title").getAsString();
-        } else if (item.has(JsonLDTerm.schemaOrg("name").getLabel())) {
-            title = item.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString();
-        }
-        logger.fine("Adding " + title + "/ to path " + currentPath);
-        currentPath = currentPath + title + "/";
         int containerIndex = -1;
         try {
             createDir(currentPath);
