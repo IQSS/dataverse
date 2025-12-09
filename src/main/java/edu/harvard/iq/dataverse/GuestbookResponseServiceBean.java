@@ -951,16 +951,12 @@ public class GuestbookResponseServiceBean {
         // somehow. -- L.A. 5.6
         
         
-        try {        
-            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("GuestbookResponse.estimateGuestBookResponseTableSize");
-            query.execute();
-            Long totalCount = (Long) query.getOutputParameterValue(1);
-        
-            if (totalCount != null) {
-                return totalCount;
-            }
-        } catch (IllegalArgumentException iae) {
-            // Don't do anything, we'll fall back to using "SELECT COUNT()"
+     // In GuestbookResponseServiceBean.java
+        try {
+            Query query = em.createNativeQuery("SELECT estimateGuestBookResponseTableSize()");
+            return ((Number) query.getSingleResult()).longValue();
+        } catch (Exception e) {
+            // Fall back to using "SELECT COUNT()"
         }
         Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o where eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"';");
         return (Long) query.getSingleResult();
