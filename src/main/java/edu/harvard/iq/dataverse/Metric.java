@@ -8,17 +8,8 @@ package edu.harvard.iq.dataverse;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+
+import jakarta.persistence.*;
 
 /**
  *
@@ -47,7 +38,7 @@ public class Metric implements Serializable {
     @Column(columnDefinition = "TEXT", nullable = true)
     private String dayString;
 
-    @ManyToOne(optional=true)
+    @ManyToOne(optional=true, cascade={CascadeType.REMOVE})
     @JoinColumn(name="dataverse_id", nullable=true)
     private Dataverse dataverse;
     
