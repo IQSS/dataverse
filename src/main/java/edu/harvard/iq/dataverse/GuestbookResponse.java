@@ -26,17 +26,12 @@ import java.util.Comparator;
  *
  * @author skraffmiller
  */
-@NamedStoredProcedureQuery(
-        name = "GuestbookResponse.estimateGuestBookResponseTableSize",
-        procedureName = "estimateGuestBookResponseTableSize",
-        parameters = {
-            @StoredProcedureParameter(mode = ParameterMode.OUT, type = Long.class)
-        }
-)
 @Entity
 @Table(indexes = {
         @Index(columnList = "guestbook_id"),
         @Index(columnList = "datafile_id"),
+        @Index(columnList = "datasetversion_id"),
+        @Index(columnList = "authenticateduser_id"),
         @Index(columnList = "dataset_id")
 })
 

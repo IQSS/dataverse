@@ -2401,7 +2401,7 @@ public class DatasetsIT {
         Response getDefaultSetting = UtilIT.getSetting(SettingsServiceBean.Key.FileFixityChecksumAlgorithm);
         getDefaultSetting.prettyPrint();
         getDefaultSetting.then().assertThat()
-                .body("message", equalTo("Setting :FileFixityChecksumAlgorithm not found"));
+                .body("message", equalTo("Setting :FileFixityChecksumAlgorithm not found."));
 
         Response uploadMd5File = UtilIT.uploadRandomFile(dataset1PersistentId, apiToken);
         uploadMd5File.prettyPrint();
@@ -2814,7 +2814,7 @@ public class DatasetsIT {
         Response authorsGetsBadNews = UtilIT.getNotifications(apiToken);
         authorsGetsBadNews.prettyPrint();
         authorsGetsBadNews.then().assertThat()
-                .body("data.notifications[0].type", equalTo("CHECKSUMFAIL"))
+                .body("data[0].type", equalTo("CHECKSUMFAIL"))
                 .statusCode(OK.getStatusCode());
 
         Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
@@ -3703,9 +3703,17 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Look for a second description
         jsonLDString = getData(response.getBody().asString());
         jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
-        assertEquals("New description",
-                ((JsonObject) jsonLDObject.getJsonArray("https://dataverse.org/schema/citation/dsDescription").get(1))
-                        .getString("https://dataverse.org/schema/citation/dsDescriptionValue"));
+        JsonArray descriptions = jsonLDObject.getJsonArray("https://dataverse.org/schema/citation/dsDescription");
+        assertEquals(2, descriptions.size(), "Should have two descriptions");
+        boolean foundNewDescription = false;
+        for (int i = 0; i < descriptions.size(); i++) {
+            JsonObject desc = descriptions.getJsonObject(i);
+            if ("New description".equals(desc.getString("https://dataverse.org/schema/citation/dsDescriptionValue"))) {
+                foundNewDescription = true;
+                break;
+            }
+        }
+        assertTrue(foundNewDescription, "Should find 'New description' in the descriptions array");
 
         // Can't add terms of use with replace=false and a value already set (single
         // valued field)
@@ -6612,12 +6620,21 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                         .add("Data")
                 );
         JsonObject jsonObj = json.build();
+
         String pathToFile = "src/main/webapp/resources/images/dataverse-icon-1200.png";
         Response uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, jsonObj, apiToken);
         uploadResponse.prettyPrint();
         uploadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        Integer modifyFileId = UtilIT.getDataFileIdFromResponse(uploadResponse);
+        Integer firstFileToModify = UtilIT.getDataFileIdFromResponse(uploadResponse);
+
+        pathToFile = "src/test/resources/images/coffeeshop.png";
+        uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, jsonObj, apiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Integer secondFileToModify = UtilIT.getDataFileIdFromResponse(uploadResponse);
+
         pathToFile = "src/main/webapp/resources/images/dataverseproject_logo.jpg";
         uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, jsonObj, apiToken);
         uploadResponse.then().assertThat()
@@ -6670,9 +6687,18 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         replaceResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        // Test modify by restricting the file
-        Response restrictResponse = UtilIT.restrictFile(modifyFileId.toString(), true, apiToken);
-        restrictResponse.prettyPrint();
+        // Test modify first file by adding a new category
+        Response setFileCategoriesResponse = UtilIT.setFileCategories(firstFileToModify.toString(), apiToken, List.of("Category"));
+        setFileCategoriesResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Test modify first file by restricting it
+        Response restrictResponse = UtilIT.restrictFile(firstFileToModify.toString(), true, apiToken);
+        restrictResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Test modify second file by restricting it
+        restrictResponse = UtilIT.restrictFile(secondFileToModify.toString(), true, apiToken);
         restrictResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
@@ -6681,7 +6707,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response updateTerms = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, jsonLDTerms, true);
         updateTerms.then().assertThat()
                 .statusCode(OK.getStatusCode());
-
 
         Response compareResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, apiToken);
         compareResponse.prettyPrint();
@@ -6701,7 +6726,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data[0].summary.'Life Sciences Metadata'.added", equalTo(2))
                 .body("data[0].summary.'Life Sciences Metadata'.deleted", equalTo(0))
                 .body("data[0].summary.files.added", equalTo(1))
-                .body("data[0].summary.files.changedFileMetaData", equalTo(2))
+                // Expected total file metadata field changes: 3 (File 1 has 2 modifications + File 2 has 1 modification)
+                .body("data[0].summary.files.changedFileMetaData", equalTo(3))
                 .statusCode(OK.getStatusCode());
 
         //user with no privileges will only see the published version
