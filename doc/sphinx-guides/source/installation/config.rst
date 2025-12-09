@@ -2170,7 +2170,7 @@ If you do not find the license JSON you need above, you are encouraged to contri
 - For the ``uri`` field, use the same resource that DataCite uses, which is often the same as the first "Other web pages for this license" on the SPDX page for the license. Look at the ``seeAlso`` array for the license at https://github.com/datacite/bracco/blob/main/app/spdx.js to be sure. When these differ, or there are other concerns about the URI DataCite uses, please reach out to the community to see if a consensus can be reached. See :ref:`support`.
 - For the ``active`` field, put ``true``.
 - For the ``sortOrder`` field, put the next sequential number after checking previous files with ``grep sortOrder scripts/api/data/licenses/*``.
-- For the ``rightsIdentifier`` field, use the identifier from SPDX (e.g. ``Apache-2.0``).
+- For the ``rightsIdentifier`` field, use the "short identifier" from the SPDX landing page (e.g. ``Apache-2.0``).
 - For the ``rightsIdentifierScheme`` field, use "SPDX".
 - For the ``schemeUri`` field, use "https://spdx.org/licenses/".
 - For the ``languageCode`` field, use "en".
