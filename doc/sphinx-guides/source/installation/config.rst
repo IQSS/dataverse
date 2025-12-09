@@ -10,27 +10,6 @@ Once you have finished securing and configuring your Dataverse installation, you
 .. contents:: |toctitle|
   :local:
 
-.. _comma-separated-config-values:
-
-Comma-separated configuration values
-------------------------------------
-
-Many configuration options (both MicroProfile/JVM settings and database settings) accept comma-separated lists. For all such settings, Dataverse applies consistent, lightweight parsing:
-
-- Whitespace immediately around commas is ignored (e.g., ``GET, POST`` is equivalent to ``GET,POST``).
-- Tokens are otherwise preserved exactly as typed. There is no quote parsing and no escape processing.
-- Embedded commas within a token are not supported.
-
-Examples include (but are not limited to):
-
-- :ref:`dataverse.cors.origin <dataverse.cors.origin>`
-- :ref:`dataverse.cors.methods <dataverse.cors.methods>`
-- :ref:`dataverse.cors.headers.allow <dataverse.cors.headers.allow>`
-- :ref:`dataverse.cors.headers.expose <dataverse.cors.headers.expose>`
-- :ref:`:UploadMethods`
-
-This behavior is implemented centrally and applies across all Dataverse settings that accept comma-separated values.
-
 .. _securing-your-installation:
 
 Securing Your Installation
@@ -2539,6 +2518,28 @@ Setting Up Integrations
 +++++++++++++++++++++++
 
 Before going live, you might want to consider setting up integrations to make it easier for your users to deposit or explore data. See the :doc:`/admin/integrations` section of the Admin Guide for details.
+
+.. _comma-separated-config-values:
+
+Comma-Separated Configuration Values
+------------------------------------
+
+Many configuration options (both MicroProfile/JVM settings and database settings) accept comma-separated lists. For all such settings, Dataverse applies consistent, lightweight parsing:
+
+- Whitespace immediately around commas is ignored (e.g., ``GET, POST`` is equivalent to ``GET,POST``).
+- Tokens are otherwise preserved exactly as typed. There is no quote parsing and no escape processing.
+- Embedded commas within a token are not supported.
+
+Examples include (but are not limited to):
+
+- :ref:`dataverse.cors.origin <dataverse.cors.origin>`
+- :ref:`dataverse.cors.methods <dataverse.cors.methods>`
+- :ref:`dataverse.cors.headers.allow <dataverse.cors.headers.allow>`
+- :ref:`dataverse.cors.headers.expose <dataverse.cors.headers.expose>`
+- :ref:`:UploadMethods`
+
+This behavior is implemented centrally and applies across all Dataverse settings that accept comma-separated values.
+
 
 .. _jvm-options:
 

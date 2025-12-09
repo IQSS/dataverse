@@ -1236,9 +1236,9 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/storage/quota")
-    public Response getCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) throws WrappedResponse {
+    public Response getCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("showInherited") boolean showInherited) throws WrappedResponse {
         try {
-            Long bytesAllocated = execCommand(new GetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf)));
+            Long bytesAllocated = execCommand(new GetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf), showInherited));
             if (bytesAllocated != null) {
                 return ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.storage.quota.allocation"),bytesAllocated));
             }
@@ -1248,11 +1248,17 @@ public class Dataverses extends AbstractApiBean {
         }
     }
     
-    @POST
+    @PUT
     @AuthRequired
-    @Path("{identifier}/storage/quota/{bytesAllocated}")
-    public Response setCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("bytesAllocated") Long bytesAllocated) throws WrappedResponse {
+    @Path("{identifier}/storage/quota")
+    public Response setCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String value) throws WrappedResponse {
         try {
+            Long bytesAllocated; 
+            try {
+                bytesAllocated = Long.parseLong(value);
+            } catch (NumberFormatException nfe){
+                return error(Status.BAD_REQUEST, value + " is not a valid number of bytes");
+            }
             execCommand(new SetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf), bytesAllocated));
             return ok(BundleUtil.getStringFromBundle("dataverse.storage.quota.updated"));
         } catch (WrappedResponse ex) {
