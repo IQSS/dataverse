@@ -340,13 +340,18 @@ public class DataversePage implements java.io.Serializable {
                 }
             }
 
-            // check if dv exists and user has permission
-            if (dataverse == null) {
-                return permissionsWrapper.notFound();
-            }
-            if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
-                // the permission lookup above should probably be moved into the permissionsWrapper -- L.A. 5.7
-                return permissionsWrapper.notAuthorized();
+            // Check permissions for unreleased dataverse and Locally FAIR permissions for released dataverses
+            Set<String> locallyFAIRraIds = dataverse.getLocallyFAIRRoleAssigneeIdentifiers();
+            boolean releasedAndCanView = dataverse.isReleased() && (locallyFAIRraIds.isEmpty() || permissionsWrapper
+                    .hasLocallyFAIRAccess(dvRequestService.getDataverseRequest(), locallyFAIRraIds));
+
+            if (!releasedAndCanView && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
+                // Return notFound for FAIR-restricted content, notAuthorized otherwise
+                if (!locallyFAIRraIds.isEmpty()) {
+                    return permissionsWrapper.notFound();
+                } else {
+                    return permissionsWrapper.notAuthorized();
+                }
             }
 
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
