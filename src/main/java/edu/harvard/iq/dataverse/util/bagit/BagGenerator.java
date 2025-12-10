@@ -249,7 +249,7 @@ public class BagGenerator {
         boolean first = true;
         for (Entry<String, String> pidEntry : pidMap.entrySet()) {
             if (!first) {
-                pidStringBuffer.append("\r\n");
+                pidStringBuffer.append(CRLF);
             } else {
                 first = false;
             }
@@ -264,7 +264,7 @@ public class BagGenerator {
         first = true;
         for (Entry<String, String> sha1Entry : checksumMap.entrySet()) {
             if (!first) {
-                sha1StringBuffer.append("\r\n");
+                sha1StringBuffer.append(CRLF);
             } else {
                 first = false;
             }
@@ -290,7 +290,7 @@ public class BagGenerator {
             createFileFromString("manifest-md5.txt", "");
         }
         // bagit.txt - Required by spec
-        createFileFromString("bagit.txt", "BagIt-Version: 1.0\r\nTag-File-Character-Encoding: UTF-8");
+        createFileFromString("bagit.txt", "BagIt-Version: 1.0" + CRLF + "Tag-File-Character-Encoding: UTF-8");
 
         aggregation.addProperty(JsonLDTerm.totalSize.getLabel(), totalDataSize);
         aggregation.addProperty(JsonLDTerm.fileCount.getLabel(), dataCount);
@@ -759,6 +759,11 @@ public class BagGenerator {
     }
 
     static final String CRLF = "\r\n";
+    static final String LF = "\n";
+    static final String CR = "\r";
+    // BagIt/BagPack formatting constants
+    private static final int BAGINFO_WRAP_WIDTH = 78;
+    private static final String CONTINUATION_INDENT = "  ";
 
     private String generateInfoFile() {
         logger.fine("Generating info file");
@@ -828,7 +833,7 @@ public class BagGenerator {
         // ToDo - make configurable
         info.append(CRLF);
 
-        info.append("Organization-Address: " + WordUtils.wrap(orgAddress, 78, CRLF + " ", true));
+        info.append("Organization-Address: " + wrapAndIndent(orgAddress));
 
         info.append(CRLF);
 
@@ -848,8 +853,8 @@ public class BagGenerator {
         } else {
             info.append(
                     // FixMe - handle description having subfields better
-                    WordUtils.wrap(getSingleValue(aggregation.get(descriptionTerm.getLabel()),
-                            descriptionTextTerm.getLabel()), 78, CRLF + " ", true));
+                    wrapAndIndent(getSingleValue(aggregation.get(descriptionTerm.getLabel()),
+                            descriptionTextTerm.getLabel())));
 
             info.append(CRLF);
         }
@@ -915,6 +920,44 @@ public class BagGenerator {
             logger.fine("Multiple values found for: " + key + ": " + val);
         }
         return val;
+    }
+
+    /**
+     * Wraps the provided value to BAGINFO_WRAP_WIDTH characters with BagIt-compliant continuation
+     * lines and ensures that any existing newlines within the value are treated as
+     * line breaks whose subsequent lines begin with two spaces, as used elsewhere
+     * in bag-info.txt.
+     */
+    private String wrapAndIndent(String value) {
+        if (value == null) {
+            return "";
+        }
+        final String continuation = CRLF + CONTINUATION_INDENT;
+        final int widthAfterIndent = BAGINFO_WRAP_WIDTH - CONTINUATION_INDENT.length();
+        // Normalize newline variants to LF for processing
+        String normalized = value.replace(CRLF, LF).replace(CR, LF);
+
+        // Split on existing newlines and wrap each segment separately so we can
+        // inject exactly one CRLF at embedded newline boundaries and ensure the
+        // two-space indent is counted toward the BAGINFO_WRAP_WIDTH-char width.
+        String[] segments = normalized.split(LF, -1);
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < segments.length; i++) {
+            String segment = segments[i];
+            if (i == 0) {
+                // First segment: wrap as-is
+                out.append(WordUtils.wrap(segment, BAGINFO_WRAP_WIDTH, continuation, true));
+            } else {
+                // Embedded newline: add a single CRLF, then add the two-space indent only once
+                // for the first line following the newline. For the content after the indent,
+                // wrap to a width of widthAfterIndent so the total line length (including the two spaces)
+                // does not exceed BAGINFO_WRAP_WIDTH. Additional wrapped lines will use the continuation
+                // (CRLF + two spaces) automatically.
+                out.append(CRLF).append(CONTINUATION_INDENT);
+                out.append(WordUtils.wrap(segment, widthAfterIndent, continuation, true));
+            }
+        }
+        return out.toString();
     }
 
     // Used in validation
