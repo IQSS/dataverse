@@ -1279,7 +1279,7 @@ public class Datasets extends AbstractApiBean {
                     AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, createDataverseRequest(user), updateVersion);
                     if (archiveCommand != null) {
                         // Delete the record of any existing copy since it is now out of date/incorrect
-                        updateVersion.setArchivalCopyLocation(null);
+                        datasetVersionSvc.setArchivalCopyLocation(updateVersion, null);
                         datasetVersionSvc.persistArchivalCopyLocation(updateVersion);
                         /*
                          * Then try to generate and submit an archival copy. Note that running this
@@ -1291,12 +1291,8 @@ public class Datasets extends AbstractApiBean {
                          * pulled this out as a separate submit().
                          */
                         try {
-                            updateVersion = commandEngine.submit(archiveCommand);
-                            if (!updateVersion.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
-                                successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
-                            } else {
-                                successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
-                            }
+                            commandEngine.submitAsync(archiveCommand);
+                            successMsg = BundleUtil.getStringFromBundle("datasetversion.archive.inprogress");
                         } catch (CommandException ex) {
                             successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure") + " - " + ex.toString();
                             logger.severe(ex.getMessage());
