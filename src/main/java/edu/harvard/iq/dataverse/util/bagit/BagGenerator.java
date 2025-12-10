@@ -77,6 +77,15 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.BagGeneratorThreads;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 
+/**
+ * Creates an archival zipped Bag for long-term storage. It is intended to
+ * include all the information needed to reconstruct the dataset version in a
+ * new Dataverse instance.
+ * 
+ * Note that the Dataverse-Bag-Version written in the generateInfoFile() method
+ * should be updated any time the content/structure of the bag is changed.
+ * 
+ */
 public class BagGenerator {
 
     private static final Logger logger = Logger.getLogger(BagGenerator.class.getCanonicalName());
@@ -864,9 +873,13 @@ public class BagGenerator {
         if (aggregation.has(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel())) {
             catalog = aggregation.get(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel()).getAsString();
         }
-        info.append(catalog + ":" + aggregation.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString());
+        catalog=catalog.trim().replaceAll("[\\r\\n:]","_");
+        info.append(catalog + ":" + multilineWrap(aggregation.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString()));
         info.append(CRLF);
 
+        //Add a version number for our bag type - should be updated with any change to the bag content/structure
+        info.append("Dataverse-Bag-Version: 1.0");
+        info.append(CRLF);
         return info.toString();
 
     }
