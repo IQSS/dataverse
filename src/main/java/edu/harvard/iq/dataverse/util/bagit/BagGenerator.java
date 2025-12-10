@@ -35,7 +35,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.archivers.zip.ParallelScatterZipCreator;
 import org.apache.commons.compress.archivers.zip.ScatterZipOutputStream;
@@ -77,7 +76,6 @@ import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.BagGeneratorThreads;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
-import java.util.Optional;
 
 public class BagGenerator {
 
@@ -873,7 +871,7 @@ public class BagGenerator {
 
     }
 
-    private String multilineWrap(String value) {
+    static private String multilineWrap(String value) {
         // Normalize line breaks and ensure all lines after the first are indented
         String[] lines =value.split("\\r?\\n");
         StringBuilder wrappedValue = new StringBuilder();
