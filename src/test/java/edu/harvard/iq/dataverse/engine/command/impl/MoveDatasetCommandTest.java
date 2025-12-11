@@ -241,7 +241,7 @@ public class MoveDatasetCommandTest {
 
             @Override
             public EntityManager em() {
-                return new TestEntityManager() {
+                return new MockEntityManager() {
 
                 };
             }
@@ -428,5 +428,14 @@ public class MoveDatasetCommandTest {
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         assertThrows(IllegalCommandException.class,
                 () -> testEngine.submit(new MoveDatasetCommand(aRequest, moved, childDraft, null)));
+    }
+    
+    private static class MockEntityManager extends TestEntityManager {
+
+        @Override
+        public <T> T merge(T entity) {
+            return entity;
+        }
+
     }
 }
