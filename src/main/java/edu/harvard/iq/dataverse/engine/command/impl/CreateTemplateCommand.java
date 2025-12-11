@@ -49,8 +49,9 @@ public class CreateTemplateCommand extends AbstractCommand<Template> {
         }
 
         Template createdTemplate = ctxt.templates().save(template);
-
-        if (initialize && template.isIsDefaultForDataverse()) {
+        
+        createdTemplate.setIsDefaultForDataverse(template.isIsDefaultForDataverse());
+        if (initialize && createdTemplate.isIsDefaultForDataverse()) {
             dataverse.setDefaultTemplate(createdTemplate);
             ctxt.em().merge(dataverse);
         }      
