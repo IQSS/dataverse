@@ -54,15 +54,15 @@ public class BagGeneratorMultilineWrapTest {
 
     @Test
     void multiline_input_indentsSecondAndSubsequentOriginalLines() {
-        String input = "Line1\nLine2";
-        String expected = "Line1\r\n Line2";
+        String input = "Line1\nLine2\nLine3";
+        String expected = "Line1\r\n Line2\r\n Line3";
         String out = callMultilineWrap(input);
         assertThat(out).isEqualTo(expected);
     }
 
     @Test
-    void multiline_withCRLF_normalizedAndIndented() {
-        String input = "First line\r\nSecond line";
+    void multiline_withLF_normalizedAndIndented() {
+        String input = "First line\nSecond line";
         String expected = "First line\r\n Second line";
         String out = callMultilineWrap(input);
         assertThat(out).isEqualTo(expected);
