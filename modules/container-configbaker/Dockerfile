@@ -20,6 +20,7 @@ ENV SCRIPT_DIR="/scripts" \
 ENV PATH="${PATH}:${SCRIPT_DIR}" \
     BOOTSTRAP_DIR="${SCRIPT_DIR}/bootstrap"
 
+# Packages to install
 ARG PKGS="bc curl dnsutils dumb-init ed jq netcat-openbsd postgresql-client"
 # renovate: datasource=github-releases depName=wait4x/wait4x
 ARG WAIT4X_VERSION="v3.2.0"
