@@ -39,15 +39,15 @@ public class BagGeneratorMultilineWrapTest {
 
     @Test
     void exactBoundary_78chars_noWrap() {
-        String input = repeat('a', 78);
+        String input = "a".repeat(78);
         String out = callMultilineWrap(input);
         assertThat(out).isEqualTo(input);
     }
 
     @Test
     void longSingleWord_wrapsAt78WithIndent() {
-        String input = repeat('a', 100);
-        String expected = repeat('a', 78) + "\r\n " + repeat('a', 22);
+        String input = "a".repeat(100);
+        String expected = "a".repeat(78) + "\r\n " + "a".repeat(22);
         String out = callMultilineWrap(input);
         assertThat(out).isEqualTo(expected);
     }
@@ -87,16 +87,10 @@ public class BagGeneratorMultilineWrapTest {
     @Test
     void longSecondLine_preservesIndentOnWraps() {
         String line1 = "Header";
-        String line2 = repeat('b', 90);
+        String line2 = "b".repeat(90);
         String input = line1 + "\n" + line2;
-        String expected = "Header\r\n " + repeat('b', 78) + "\r\n " + repeat('b', 12);
+        String expected = "Header\r\n " + "b".repeat(78) + "\r\n " + "b".repeat(12);
         String out = callMultilineWrap(input);
         assertThat(out).isEqualTo(expected);
-    }
-
-    private static String repeat(char c, int n) {
-        StringBuilder sb = new StringBuilder(n);
-        for (int i = 0; i < n; i++) sb.append(c);
-        return sb.toString();
     }
 }
