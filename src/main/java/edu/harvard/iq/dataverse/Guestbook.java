@@ -20,9 +20,8 @@ import jakarta.persistence.OrderBy;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
-
+import jakarta.validation.constraints.NotBlank;
 import edu.harvard.iq.dataverse.util.DateUtil;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *

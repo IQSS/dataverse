@@ -292,6 +292,22 @@
             <artifactId>jakarta.jakartaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+    <groupId>jakarta.servlet</groupId>
+    <artifactId>jakarta.servlet-api</artifactId>
+    <version>6.1.0</version>
+    <scope>provided</scope>
+</dependency>
+<dependency>
+    <groupId>jakarta.persistence</groupId>
+    <artifactId>jakarta.persistence-api</artifactId>
+    <version>3.2.0</version>
+    <scope>provided</scope>
+</dependency>
+        
+        
+        
+        
         
         <!-- Jakarta Activation, MIME support etc -->
         <!-- Runtime implementation here only, as necessary for testing. -->
@@ -306,7 +322,6 @@
             <artifactId>payara-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        
         <!-- JSON-P -->
         <!-- Runtime implementation here only, as necessary for testing. -->
         <dependency>
@@ -785,12 +800,6 @@
             Otherwise, we get very cryptic errors about missing bundle files on test runs.
             See also https://github.com/jakartaee/jakartaee-api/issues/61
         -->
-        <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
-            <version>4.0.4</version>
-            <scope>test</scope>
-        </dependency>
         
         <dependency>
             <groupId>org.mockito</groupId>
