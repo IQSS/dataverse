@@ -61,12 +61,12 @@ jobs:
             - name: Build app and configbaker container image with local architecture and submodules (profile will skip tests)
               run: >
                   mvn -B -f modules/dataverse-parent
-                  -P ct -pl edu.harvard.iq:dataverse -am
+                  -P ct -Ddocker.verbose -pl edu.harvard.iq:dataverse -am
                   install
             - name: Deploy multi-arch application and configbaker container image
               run: >
                   mvn -Pct deploy 
-                  -Dapp.image.tag=${{ env.IMAGE_TAG }}
+                  -Dapp.image.tag=${{ env.IMAGE_TAG }} -Ddocker.verbose
                   -Ddocker.registry=ghcr.io -Ddocker.platforms=${{ env.PLATFORMS }}
 
             - uses: marocchino/sticky-pull-request-comment@v2

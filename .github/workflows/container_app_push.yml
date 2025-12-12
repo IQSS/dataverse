@@ -130,7 +130,7 @@ jobs:
             - name: Build app and configbaker container image with local architecture and submodules (profile will skip tests)
               run: >
                   mvn -B -f modules/dataverse-parent
-                  -P ct -pl edu.harvard.iq:dataverse -am
+                  -P ct -pl edu.harvard.iq:dataverse -am -Ddocker.verbose
                   $( [[ -n "${{ inputs.base-image-ref }}" ]] && echo "-Dbase.image=${{ inputs.base-image-ref }}" )
                   install
             - name: Deploy multi-arch application and configbaker container image
@@ -138,7 +138,7 @@ jobs:
                   mvn 
                   -Dapp.image.tag=${{ env.IMAGE_TAG }} ${{ env.ADDITIONAL_TAGS }}
                   $( [[ -n "${{ inputs.base-image-ref }}" ]] && echo "-Dbase.image=${{ inputs.base-image-ref }}" )
-                  ${{ env.REGISTRY }} -Ddocker.platforms=${{ env.PLATFORMS }}
+                  ${{ env.REGISTRY }} -Ddocker.platforms=${{ env.PLATFORMS }} -Ddocker.verbose
                   -P ct deploy
 
             - uses: marocchino/sticky-pull-request-comment@v2
