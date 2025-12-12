@@ -8,7 +8,6 @@ package edu.harvard.iq.dataverse;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
