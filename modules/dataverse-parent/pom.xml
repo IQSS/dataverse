@@ -134,7 +134,7 @@
         <!-- This is a special Maven property name, do not change! -->
         <revision>6.8</revision>
     
-        <target.java.version>17</target.java.version>
+        <target.java.version>21</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <additionalparam>-Xdoclint:none</additionalparam>
         <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
