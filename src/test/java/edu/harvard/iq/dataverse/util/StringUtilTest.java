@@ -242,7 +242,8 @@ class StringUtilTest {
 
         @Test
         public void testFormatBytes() {
-            assertEquals("1,048,575 bytes", StringUtil.formatBytes(StringUtil.BYTES_PER_MB - 1));
+            assertEquals("1,023 bytes", StringUtil.formatBytes(StringUtil.BYTES_PER_KB - 1));
+            assertEquals("1,024.00 KB", StringUtil.formatBytes(StringUtil.BYTES_PER_MB - 1));
             assertEquals("1,024.00 MB", StringUtil.formatBytes(StringUtil.BYTES_PER_GB - 1));
             assertEquals("1.00 GB", StringUtil.formatBytes(StringUtil.BYTES_PER_GB));
             assertEquals("341.33 GB", StringUtil.formatBytes(StringUtil.BYTES_PER_TB / 3));
