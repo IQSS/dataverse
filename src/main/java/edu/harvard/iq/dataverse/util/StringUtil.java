@@ -233,16 +233,22 @@ public class StringUtil {
         return sentence;
     }
 
+    public static final long BYTES_PER_MB = 1024L * 1024L;
     public static final long BYTES_PER_GB = 1024L * 1024L * 1024L;
     public static final long BYTES_PER_TB = BYTES_PER_GB * 1024L;
     static public String formatBytes(long bytes) {
-        if (bytes < BYTES_PER_GB) {
+        if (bytes < BYTES_PER_MB) {
             return NumberFormat.getNumberInstance().format(bytes) + " bytes";
         } else {
             double dBytes = bytes;
             NumberFormat formatter = new DecimalFormat("#,##0.00");
-            return bytes < BYTES_PER_TB ? formatter.format(dBytes / BYTES_PER_GB) + " GB" :
-                    formatter.format(dBytes / BYTES_PER_TB) + " TB";
+            if (bytes < BYTES_PER_GB) {
+                return formatter.format(dBytes / BYTES_PER_MB) + " MB";
+            } else if (bytes < BYTES_PER_TB) {
+                return formatter.format(dBytes / BYTES_PER_GB) + " GB";
+            } else {
+                return formatter.format(dBytes / BYTES_PER_TB) + " TB";
+            }
         }
     }
 }
