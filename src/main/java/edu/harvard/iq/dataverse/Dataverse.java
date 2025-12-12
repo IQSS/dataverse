@@ -246,10 +246,10 @@ public class Dataverse extends DvObjectContainer {
 
     @OneToMany(mappedBy = "dataverse", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<Metric> dataverseMetrics = new ArrayList<>();
-    public List<Metric> getDatasetMetrics() {
+    public List<Metric> getDataverseMetrics() {
         return dataverseMetrics;
     }
-    public void setDatasetMetrics(List<Metric> dataverseMetrics) {
+    public void setDataverseMetrics(List<Metric> dataverseMetrics) {
         this.dataverseMetrics = dataverseMetrics;
     }
 
