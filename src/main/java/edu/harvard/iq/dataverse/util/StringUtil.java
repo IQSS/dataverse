@@ -234,7 +234,7 @@ public class StringUtil {
     }
 
     public static final long BYTES_PER_MB = 1024L * 1024L;
-    public static final long BYTES_PER_GB = 1024L * 1024L * 1024L;
+    public static final long BYTES_PER_GB = BYTES_PER_MB * 1024L;
     public static final long BYTES_PER_TB = BYTES_PER_GB * 1024L;
     static public String formatBytes(long bytes) {
         if (bytes < BYTES_PER_MB) {
