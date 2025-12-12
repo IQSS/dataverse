@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import jakarta.persistence.EntityManager;
 
 import java.util.Collections;
 import java.util.List;
@@ -46,6 +47,8 @@ public class CreateTemplateCommandTest {
     private LicenseServiceBean licenseServiceBeanMock;
     @Mock
     private DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevelServiceBeanMock;
+    @Mock
+    private EntityManager em;
 
     @Spy
     private Template templateSpy;
@@ -68,8 +71,10 @@ public class CreateTemplateCommandTest {
         when(templateServiceBeanStub.save(templateSpy)).thenReturn(savedTemplate);
 
         CreateTemplateCommand sut = new CreateTemplateCommand(templateSpy, dataverseRequestStub, dataverseMock, false);
-
+        Template savedTemplate = mock(Template.class);
+        when(templateServiceBeanStub.save(templateSpy)).thenReturn(savedTemplate);
         // Act
+        
 
         sut.execute(contextMock);
 
@@ -93,6 +98,9 @@ public class CreateTemplateCommandTest {
         when(templateServiceBeanStub.save(templateSpy)).thenReturn(savedTemplate);
         when(dataverseMock.getId()).thenReturn(42L);
         when(dataverseMock.isMetadataBlockRoot()).thenReturn(true);
+                
+        Template savedTemplate = mock(Template.class);
+        when(templateServiceBeanStub.save(templateSpy)).thenReturn(savedTemplate);
 
         // Mock system metadata blocks
 
