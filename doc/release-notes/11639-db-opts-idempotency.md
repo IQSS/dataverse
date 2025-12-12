@@ -43,3 +43,13 @@ The following database settings are were added to the official list within the c
 - `:LDNAnnounceRequiredFields`
 - `:LDNTarget`
 - `:WorkflowsAdminIpWhitelist` - formerly `WorkflowsAdmin#IP_WHITELIST_KEY`
+- `:PrePublishDatasetWorkflowId` - formerly `WorkflowServiceBean.WorkflowId:PrePublishDataset`
+- `:PostPublishDatasetWorkflowId` - formerly `WorkflowServiceBean.WorkflowId:PostPublishDataset`
+
+### Important Considerations During Upgrade Of Your Installation
+
+1. Running a customized fork? Make sure to add any custom settings to the SettingsServiceBean.Key enum before deploying!
+2. Any database settings not contained in the `SettingServiceBean.Key` will be removed from your database during each deployment cycle.
+3. As always when upgrading, make sure to backup your database beforehand!
+   You can also use the existing API endpoint `/api/admin/settings` to retrieve all settings as JSONish data for a quick backup before upgrading.
+

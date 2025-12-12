@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -202,10 +203,10 @@ class SystemConfigTest {
         assertEquals(0L, (long) result.get(SystemConfig.TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY));
     }
     
-    @Test
-    void testGetTabularIngestSizeLimitsWithJsonButUnsupportedJsonInt() {
+    @ParameterizedTest
+    @ValueSource(strings = {"", "{ invalid: }"})
+    void testGetTabularIngestSizeLimitsWithInvalidJson(String invalidJson) {
         // given
-        String invalidJson = "{\"default\": 0}";
         doReturn(invalidJson).when(settingsService).getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit);
         
         // when
@@ -216,10 +217,10 @@ class SystemConfigTest {
         assertEquals(0L, (long) result.get(SystemConfig.TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY));
     }
     
-    @Test
-    void testGetTabularIngestSizeLimitsWithInvalidJson() {
+    @ParameterizedTest
+    @ValueSource(strings = {"[]", "{[{\"tsv\": 1}]}", "{ \"invalid\": \"foobar\" }", "{ \"tsv\": 1.5}", "{ \"tsv\": \"1.0\"}"})
+    void testGetTabularIngestSizeLimitsWithInvalidNumbersInValidJson(String invalidJson) {
         // given
-        String invalidJson = "{invalid:}";
         doReturn(invalidJson).when(settingsService).getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit);
         
         // when
@@ -230,17 +231,33 @@ class SystemConfigTest {
         assertEquals(0L, (long) result.get(SystemConfig.TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY));
     }
     
-    @Test
-    void testGetTabularIngestSizeLimitsWithInvalidNumberInValidJson() {
+    @ParameterizedTest
+    @ValueSource(strings = {"{ \"tSv\": 1.0 }", "{ \"tsv\": \"1\"}", "{ \"tsv\": 1 }"})
+    void testGetTabularIngestSizeLimitsWithValidNumbersInValidJson(String validConfig) {
         // given
-        String invalidJson = "{\"csv\": \"this-is-not-a-number\", \"tSv\": \"10000\"}";
-        doReturn(invalidJson).when(settingsService).getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit);
+        doReturn(validConfig).when(settingsService).getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit);
         
         // when
         Map<String, Long> result = systemConfig.getTabularIngestSizeLimits();
         
         // then
-        assertEquals(1, result.size());
-        assertEquals(0L, (long) result.get(SystemConfig.TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY));
+        assertEquals(2, result.size());
+        assertEquals(-1L, (long) result.get(SystemConfig.TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY));
+        assertEquals(1L, (long) result.get("tsv"));
+    }
+    
+    @ParameterizedTest
+    @ValueSource(strings = {"{ \"tSv\": 429496729600.0 }", "{ \"tsv\": \"429496729600\"}", "{ \"tsv\": 429496729600 }"})
+    void testGetTabularIngestSizeLimitsWithValidLongNumbers(String validConfig) {
+        // given
+        doReturn(validConfig).when(settingsService).getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit);
+        
+        // when
+        Map<String, Long> result = systemConfig.getTabularIngestSizeLimits();
+        
+        // then
+        assertEquals(2, result.size());
+        assertEquals(-1L, (long) result.get(SystemConfig.TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY));
+        assertEquals(429496729600L, (long) result.get("tsv"));
     }
 }
