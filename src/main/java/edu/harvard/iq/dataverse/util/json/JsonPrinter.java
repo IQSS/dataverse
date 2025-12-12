@@ -246,16 +246,19 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DataverseRole role) {
-        JsonObjectBuilder bld = jsonObjectBuilder()
-                .add("alias", role.getAlias())
-                .add("name", role.getName())
-                .add("permissions", JsonPrinter.json(role.permissions()))
-                .add("description", role.getDescription());
-        if (role.getId() != null) {
-            bld.add("id", role.getId());
-        }
-        if (role.getOwner() != null && role.getOwner().getId() != null) {
-            bld.add("ownerId", role.getOwner().getId());
+        JsonObjectBuilder bld = jsonObjectBuilder();
+
+        if (role != null) {
+            bld.add("alias", role.getAlias())
+               .add("name", role.getName())
+               .add("permissions", JsonPrinter.json(role.permissions()))
+               .add("description", role.getDescription());
+            if (role.getId() != null) {
+                bld.add("id", role.getId());
+            }
+            if (role.getOwner() != null && role.getOwner().getId() != null) {
+                bld.add("ownerId", role.getOwner().getId());
+            }
         }
 
         return bld;
