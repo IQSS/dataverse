@@ -2132,35 +2132,56 @@ JSON files for `Creative Commons licenses <https://creativecommons.org/about/ccl
 
 .. _adding-custom-licenses:
 
+Adding Open Data Commons Licenses
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+JSON files for `Open Data Commons licenses <https://opendatacommons.org/licenses/>`_ are provided below.
+
+- :download:`licenseODbL-1.0.json <../../../../scripts/api/data/licenses/licenseODbL-1.0.json>`
+- :download:`licenseODC-By-1.0.json <../../../../scripts/api/data/licenses/licenseODC-By-1.0.json>`
+- :download:`licensePDDL-1.0.json <../../../../scripts/api/data/licenses/licensePDDL-1.0.json>`
+
 Adding Software Licenses
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 JSON files for software licenses are provided below.
 
-- :download:`licenseMIT.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
 - :download:`licenseApache-2.0.json <../../../../scripts/api/data/licenses/licenseApache-2.0.json>`
+- :download:`licenseMIT.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
+- :download:`licenseEUPL-1.2.json <../../../../scripts/api/data/licenses/licenseEUPL-1.2.json>`
 
 Adding Country-Specific Licenses
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - :download:`licenseEtalab-2.0.json <../../../../scripts/api/data/licenses/licenseEtalab-2.0.json>` used in France (Etalab Open License 2.0, CC-BY 2.0 compliant).
+- :download:`licenseOGL-UK-3.0.json <../../../../scripts/api/data/licenses/licenseOGL-UK-3.0.json>`
 
 Contributing to the Collection of Standard Licenses Above
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you do not find the license JSON you need above, you are encouraged to contribute it to this documentation. Following the Dataverse 6.2 release, we have standardized on the following procedure:
+If you do not find the license JSON you need above, you are encouraged to contribute it to this documentation. Following the Dataverse 6.9 release, we have standardized on the following procedure:
 
-- Look for the license at https://spdx.org/licenses/
-- ``cd scripts/api/data/licenses``
+- Look for the license at https://spdx.org/licenses/ and https://github.com/datacite/bracco/blob/main/app/spdx.js.
+- ``cd scripts/api/data/licenses``.
 - Copy an existing license as a starting point.
 - Name your file using the SPDX identifier. For example, if the identifier is ``Apache-2.0``, you should name your file ``licenseApache-2.0.json``.
 - For the ``name`` field, use the "short identifier" from the SPDX landing page (e.g. ``Apache-2.0``).
-- For the ``description`` field, use the "full name" from the SPDX landing page (e.g. ``Apache License 2.0``).
-- For the ``uri`` field, we encourage you to use the same resource that DataCite uses, which is often the same as the first "Other web pages for this license" on the SPDX page for the license. When these differ, or there are other concerns about the URI DataCite uses, please reach out to the community to see if a consensus can be reached.
+- For the ``shortDescription`` field, use the "full name" from the SPDX landing page (e.g. ``Apache License 2.0``) followed by a period (full-stop) (e.g. ``Apache License 2.0.``).
+- For the ``uri`` field, use the same resource that DataCite uses, which is often the same as the first "Other web pages for this license" on the SPDX page for the license. Look at the ``seeAlso`` array for the license at https://github.com/datacite/bracco/blob/main/app/spdx.js to be sure. When these differ, or there are other concerns about the URI DataCite uses, please reach out to the community to see if a consensus can be reached. See :ref:`support`.
 - For the ``active`` field, put ``true``.
 - For the ``sortOrder`` field, put the next sequential number after checking previous files with ``grep sortOrder scripts/api/data/licenses/*``.
+- For the ``rightsIdentifier`` field, use the "short identifier" from the SPDX landing page (e.g. ``Apache-2.0``).
+- For the ``rightsIdentifierScheme`` field, use "SPDX".
+- For the ``schemeUri`` field, use "https://spdx.org/licenses/".
+- For the ``languageCode`` field, use "en".
+- For all of the fields above, resist the urge to change the spelling of words like license/licence, center/centre, etc. SPDX is the upstream authority, and they have the following `varietal word spelling policy <https://github.com/spdx/license-list-XML/blob/v3.27.0/DOCS/license-matching-guidelines-and-templates.md#8-varietal-word-spelling->`_: "The words in each line of the text file available at https://spdx.org/licenses/equivalentwords.txt are considered equivalent and interchangeable."
 
-Note that prior to Dataverse 6.2, various license above have been added that do not adhere perfectly with this procedure. For example, the ``name`` for the CC0 license is ``CC0 1.0`` (no dash) rather than ``CC0-1.0`` (with a dash). We are keeping the existing names for backward compatibility. For more on standarizing license configuration, see https://github.com/IQSS/dataverse/issues/8512
+In the past, licenses have been added that do not adhere perfectly with the procedure above. Here are known inconsistencies:
+
+- The ``name`` for the CC licenses don't have a dash as their SPDX short identifiers do (e.g. CC-BY-4.0, CC-BY-NC-4.0, CC-BY-NC-ND-4.0, CC-BY-NC-SA-4.0, CC-BY-ND-4.0, CC-BY-SA-4.0, CC0-1.0). For example, the ``name`` for the CC0 license is ``CC0 1.0`` (no dash) rather than ``CC0-1.0`` (with a dash). We are keeping the existing names without dashes for backward compatibility.
+- The ``uri`` for Creative Commons licenses comes from the Creative Commons website rather than SPDX or DataCite. As with ``name``, we are keeping ``uri`` the as-is for these licenses for backward compatibility. For more on our attempts to standardize license configuration, see https://github.com/IQSS/dataverse/issues/8512 and https://github.com/IQSS/dataverse/pull/11522.
+- The ``uri`` for Etalab is https://spdx.org/licenses/etalab-2.0 rather than a link listed in SPDX or DataCite.
+- The ``shortDescription`` doesn't have a trailing period for Apache-2.0, Etalab, and MIT.
 
 Adding Custom Licenses
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -2395,6 +2416,9 @@ The workflow id returned in this call (or available by doing a GET of /api/admin
 ``curl -X PUT -d {id} http://localhost:8080/api/admin/workflows/default/PostPublishDataset``
 
 Once these steps are taken, new publication requests will automatically trigger submission of an archival copy to the specified archiver, Chronopolis' DuraCloud component in this example. For Chronopolis, as when using the API, it is currently the admin's responsibility to snap-shot the DuraCloud space and monitor the result. Failure of the workflow, (e.g. if DuraCloud is unavailable, the configuration is wrong, or the space for this dataset already exists due to a prior publication action or use of the API), will create a failure message but will not affect publication itself.
+
+Note: setting the default workflow is also available via the Settings API.
+See :ref:`:WorkflowsAdminIpWhitelist`, :ref:`:PrePublishDatasetWorkflowId` and :ref:`:PostPublishDatasetWorkflowId`
 
 .. _bag-info.txt:
 
@@ -3699,8 +3723,8 @@ The default value when not set is "chicago-author-date, ieee".
 
 .. _localcontexts:
 
-localcontexts.url
-+++++++++++++++++
+dataverse.localcontexts.url
++++++++++++++++++++++++++++
 
 .. note::
    For more information about LocalContexts integration, see :doc:`/installation/localcontexts`.
@@ -3712,8 +3736,8 @@ The URL for the Local Contexts Hub API.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_LOCALCONTEXTS_URL``.
 
-localcontexts.api-key
-+++++++++++++++++++++
+dataverse.localcontexts.api-key
++++++++++++++++++++++++++++++++
 
 The API key for accessing the Local Contexts Hub.
 
@@ -4515,7 +4539,11 @@ Using a JSON-based setting, you can set a global default and per-format limits f
 
 (In previous releases of Dataverse, a colon-separated form was used to specify per-format limits, such as ``:TabularIngestSizeLimit:Rdata``, but this is no longer supported. Now JSON is used.)
 
-The expected JSON is an object with key/value pairs like the following. Format names are case-insensitive, and all fields are optional. The size limits must be strings with double quotes around them (e.g. ``"10"``) rather than numbers (e.g. ``10``).
+The expected JSON is an object with key/value pairs like the following.
+Format names are case-insensitive, and all fields are optional (an empty JSON object equals not restricted).
+The size limits must be whole numbers, either presented as strings with double quotes around them (e.g. ``"10"``) or numeric values (e.g. ``10`` or ``10.0``).
+Note that decimal numbers like ``10.5`` are invalid.
+Any invalid setting will temporarily disable tabular ingest until corrected.
 
 .. code:: json
 
@@ -5133,6 +5161,43 @@ To enable redirects to the zipper on a different server:
 Number of errors to display to the user when creating DataFiles from a file upload. It defaults to 5 errors.
 
 ``curl -X PUT -d '1' http://localhost:8080/api/admin/settings/:CreateDataFilesMaxErrorsToDisplay``
+
+.. _:WorkflowsAdminIpWhitelist:
+
+:WorkflowsAdminIpWhitelist
+++++++++++++++++++++++++++
+
+A semicolon-separated list of IP addresses from which workflow resume requests are honored.
+By default, the Dataverse installation honors resume requests from localhost only (``127.0.0.1;::1``).
+This setting allows for preventing unauthorized resuming of workflows.
+
+``curl -X PUT -d '127.0.0.1;::1;192.168.0.1' http://localhost:8080/api/admin/settings/:WorkflowsAdminIpWhitelist``
+
+See :ref:`Workflow Admin section <workflow_admin>` for more details and context.
+
+.. _:PrePublishDatasetWorkflowId:
+
+:PrePublishDatasetWorkflowId
+++++++++++++++++++++++++++++
+
+The identifier of the workflow to be executed prior to dataset publication.
+This pre-publish workflow is useful for preparing a dataset for public access (e.g., moving files, checking metadata) or starting an approval process.
+
+``curl -X PUT -d '1' http://localhost:8080/api/admin/settings/:PrePublishDatasetWorkflowId``
+
+See :ref:`Workflow Admin section <workflow_admin>` for more details and context.
+
+.. _:PostPublishDatasetWorkflowId:
+
+:PostPublishDatasetWorkflowId
++++++++++++++++++++++++++++++
+
+The identifier of the workflow to be executed after a dataset has been successfully published.
+This post-publish workflow is useful for actions such as sending notifications about the newly published dataset or archiving.
+
+``curl -X PUT -d '2' http://localhost:8080/api/admin/settings/:PostPublishDatasetWorkflowId``
+
+See :ref:`Workflow Admin section <workflow_admin>` for more details and context.
 
 .. _:BagItHandlerEnabled:
 
