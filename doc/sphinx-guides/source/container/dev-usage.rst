@@ -216,7 +216,7 @@ Note that using this method, you may redeploy a complete WAR or single methods.
 Redeploying WARs supports swapping and adding classes and non-code materials, but is slower (still faster than rebuilding containers).
 Hotswapping methods requires using JDWP (Debug Mode), but does not allow switching non-code material or adding classes.
 
-#. | Download the version of Payara shown in :ref:`install-payara-dev` and unzip it to a reasonable location such as ``/usr/local/payara6``.
+#. | Download the version of Payara shown in :ref:`install-payara-dev` and unzip it to a reasonable location such as ``/usr/local/payara7``.
    | - Note that Payara can also be downloaded from `Maven Central <https://mvnrepository.com/artifact/fish.payara.distributions/payara>`_.
    | - Note that another way to check the expected version of Payara is to run this command:
    |   ``mvn help:evaluate -Dexpression=payara.version -q -DforceStdout``
@@ -247,7 +247,7 @@ Hotswapping methods requires using JDWP (Debug Mode), but does not allow switchi
    .. tabs::
      .. group-tab:: Netbeans
 
-        Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Payara Server" and set the installation location to ``/usr/local/payara6`` (or wherever you unzipped Payara). Choose "Remote Domain". Use the settings in the screenshot below. Most of the defaults are fine.
+        Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Payara Server" and set the installation location to ``/usr/local/payara7`` (or wherever you unzipped Payara). Choose "Remote Domain". Use the settings in the screenshot below. Most of the defaults are fine.
 
         Under "Common", the username and password should be "admin". Make sure "Enable Hot Deploy" is checked.
 

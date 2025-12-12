@@ -1013,7 +1013,7 @@ This way, the database connection can be automatically recovered after a failure
 File Storage
 ------------
 
-By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara6/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
+By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara7/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
 
 A Dataverse installation can alternately store files in a Swift or S3-compatible object store, or on a Globus endpoint, and can now be configured to support multiple stores at once.
 A Dataverse installation may also be configured to reference some files (e.g. large and/or sensitive data) stored in a web or Globus accessible trusted remote store.
@@ -1588,7 +1588,7 @@ All of these processes are triggered after finishing transfers over the wire and
 Before being moved there,
 
 - JSF Web UI uploads are stored at :ref:`${dataverse.files.uploads} <dataverse.files.uploads>`, defaulting to
-  ``/usr/local/payara6/glassfish/domains/domain1/uploads`` folder in a standard installation. This place is
+  ``/usr/local/payara7/glassfish/domains/domain1/uploads`` folder in a standard installation. This place is
   configurable and might be set to a separate disk volume where stale uploads are purged periodically.
 - API uploads are stored at the system's temporary files location indicated by the Java system property
   ``java.io.tmpdir``, defaulting to ``/tmp`` on Linux. If this location is backed by a `tmpfs <https://www.kernel.org/doc/html/latest/filesystems/tmpfs.html>`_
@@ -1693,7 +1693,7 @@ Custom Navbar Logo
 
 The Dataverse Software allows you to replace the default Dataverse Project icon and name branding in the navbar with your own custom logo. Note that this logo is separate from the logo used in the theme of the root Dataverse collection (see :ref:`theme`).
 
-The custom logo image file is expected to be small enough to fit comfortably in the navbar, no more than 50 pixels in height and 160 pixels in width. Create a ``navbar`` directory in your Payara ``logos`` directory and place your custom logo there. By default, your logo image file will be located at ``/usr/local/payara6/glassfish/domains/domain1/docroot/logos/navbar/logo.png``.
+The custom logo image file is expected to be small enough to fit comfortably in the navbar, no more than 50 pixels in height and 160 pixels in width. Create a ``navbar`` directory in your Payara ``logos`` directory and place your custom logo there. By default, your logo image file will be located at ``/usr/local/payara7/glassfish/domains/domain1/docroot/logos/navbar/logo.png``.
 
 Given this location for the custom logo image file, run this curl command to add it to your settings:
 
@@ -2336,7 +2336,7 @@ The Google Cloud Archiver also requires a key file that must be renamed to 'goog
 
 For example:
 
-``cp <your key file> /usr/local/payara6/glassfish/domains/domain1/files/googlecloudkey.json``
+``cp <your key file> /usr/local/payara7/glassfish/domains/domain1/files/googlecloudkey.json``
 
 .. _S3 Archiver Configuration:
 
@@ -2474,7 +2474,7 @@ You have a couple of options for putting an updated robots.txt file into product
 
 For more of an explanation of ``ProxyPassMatch`` see the :doc:`shibboleth` section.
 
-If you are not fronting Payara with Apache you'll need to prevent Payara from serving the robots.txt file embedded in the war file by overwriting robots.txt after the war file has been deployed. The downside of this technique is that you will have to remember to overwrite robots.txt in the "exploded" war file each time you deploy the war file, which probably means each time you upgrade to a new version of the Dataverse Software. Furthermore, since the version of the Dataverse Software is always incrementing and the version can be part of the file path, you will need to be conscious of where on disk you need to replace the file. For example, for Dataverse Software 4.6.1 the path to robots.txt may be ``/usr/local/payara6/glassfish/domains/domain1/applications/dataverse-4.6.1/robots.txt`` with the version number ``4.6.1`` as part of the path.
+If you are not fronting Payara with Apache you'll need to prevent Payara from serving the robots.txt file embedded in the war file by overwriting robots.txt after the war file has been deployed. The downside of this technique is that you will have to remember to overwrite robots.txt in the "exploded" war file each time you deploy the war file, which probably means each time you upgrade to a new version of the Dataverse Software. Furthermore, since the version of the Dataverse Software is always incrementing and the version can be part of the file path, you will need to be conscious of where on disk you need to replace the file. For example, for Dataverse Software 4.6.1 the path to robots.txt may be ``/usr/local/payara7/glassfish/domains/domain1/applications/dataverse-4.6.1/robots.txt`` with the version number ``4.6.1`` as part of the path.
 
 Creating a Sitemap and Submitting it to Search Engines
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2497,7 +2497,7 @@ Single Sitemap File
 
 If you have 50,000 items or fewer, a single sitemap will be generated in the following location (unless you have customized your installation directory for Payara):
 
-``/usr/local/payara6/glassfish/domains/domain1/docroot/sitemap/sitemap.xml``
+``/usr/local/payara7/glassfish/domains/domain1/docroot/sitemap/sitemap.xml``
 
 Once the sitemap has been generated in the location above, it will be served at ``/sitemap.xml`` like this: https://demo.dataverse.org/sitemap.xml
 
@@ -2508,7 +2508,7 @@ According to the `Sitemaps.org protocol <https://www.sitemaps.org/protocol.html#
 
 If you have over 50,000 items, a sitemap index file will be generated in the following location (unless you have customized your installation directory for Payara):
 
-``/usr/local/payara6/glassfish/domains/domain1/docroot/sitemap/sitemap_index.xml``
+``/usr/local/payara7/glassfish/domains/domain1/docroot/sitemap/sitemap_index.xml``
 
 Once the sitemap has been generated in the location above, it will be served at ``/sitemap_index.xml`` like this: https://demo.dataverse.org/sitemap_index.xml
 
@@ -2577,7 +2577,7 @@ When changing values these values with ``asadmin``, you'll need to delete the ol
 
 ``./asadmin create-jvm-options "-Ddataverse.fqdn=dataverse.example.com"``
 
-It's also possible to change these values by stopping Payara, editing ``payara6/glassfish/domains/domain1/config/domain.xml``, and restarting Payara.
+It's also possible to change these values by stopping Payara, editing ``payara7/glassfish/domains/domain1/config/domain.xml``, and restarting Payara.
 
 In addition, JVM options enabled for "MicroProfile Config" (see docs of any option), can be used with any
 `supported MicroProfile Config API source`_ to provide their values. The most notable source are environment variables;
@@ -2701,7 +2701,7 @@ Notes:
 
 - Please provide an absolute path to a directory backed by some mounted file system.
 - Defaults to ``${com.sun.aas.instanceRoot}/uploads`` in a :doc:`default installation <installation-main>`
-  (resolving to ``/usr/local/payara6/glassfish/domains/domain1/uploads``).
+  (resolving to ``/usr/local/payara7/glassfish/domains/domain1/uploads``).
 - Defaults to ``${STORAGE_DIR}/uploads`` using our :ref:`Dataverse container <app-locations>` (resolving to ``/dv/uploads``).
 - Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_UPLOADS``.
 - During startup, this directory will be checked for existence and write access. It will be created for you
@@ -2719,7 +2719,7 @@ See also logo customization above.
 Notes:
 
 - Defaults to ``${com.sun.aas.instanceRoot}/docroot`` in a :doc:`default installation <installation-main>`
-  (resolves to ``/usr/local/payara6/glassfish/domains/domain1/docroot``).
+  (resolves to ``/usr/local/payara7/glassfish/domains/domain1/docroot``).
 - Defaults to ``${STORAGE_DIR}/docroot`` using our :ref:`Dataverse container <app-locations>` (resolving to ``/dv/docroot``).
 - Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_DOCROOT``.
 - During startup, this directory will be checked for existence and write access. It will be created for you
@@ -5068,7 +5068,7 @@ Sets how long a cached metrics result is used before re-running the query for a 
 
 Sets the path where the raw Make Data Count logs are stored before being processed. If not set, no logs will be created for Make Data Count. See also the :doc:`/admin/make-data-count` section of the Admin Guide.
 
-``curl -X PUT -d '/usr/local/payara6/glassfish/domains/domain1/logs' http://localhost:8080/api/admin/settings/:MDCLogPath``
+``curl -X PUT -d '/usr/local/payara7/glassfish/domains/domain1/logs' http://localhost:8080/api/admin/settings/:MDCLogPath``
 
 .. _:DisplayMDCMetrics:
 

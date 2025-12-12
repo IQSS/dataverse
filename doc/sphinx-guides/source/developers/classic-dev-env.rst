@@ -37,7 +37,7 @@ Windows is gaining support through Docker as described in the :doc:`windows` sec
 Install Java
 ~~~~~~~~~~~~
 
-The Dataverse Software requires Java 17.
+The Dataverse Software requires Java 21.
 
 We suggest downloading OpenJDK from https://adoptopenjdk.net
 
@@ -93,17 +93,17 @@ On Linux, install ``jq`` from your package manager or download a binary from htt
 Install Payara
 ~~~~~~~~~~~~~~
 
-Payara 6.2025.10 or higher is required.
+Payara 7.2025.2 or higher is required.
 
 To install Payara, run the following commands:
 
 ``cd /usr/local``
 
-``sudo curl -O -L https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2025.10/payara-6.2025.10.zip``
+``sudo curl -O -L https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/7.2025.2/payara-7.2025.2.zip``
 
-``sudo unzip payara-6.2025.10.zip``
+``sudo unzip payara-7.2025.2.zip``
 
-``sudo chown -R $USER /usr/local/payara6``
+``sudo chown -R $USER /usr/local/payara7``
 
 If nexus.payara.fish is ever down for maintenance, Payara distributions are also available from https://repo1.maven.org/maven2/fish/payara/distributions/payara/
 
@@ -113,7 +113,7 @@ Install Service Dependencies Directly on localhost
 Install PostgreSQL
 ^^^^^^^^^^^^^^^^^^
 
-The Dataverse Software has been tested with PostgreSQL versions up to 17. PostgreSQL version 10+ is required.
+The Dataverse Software has been tested with PostgreSQL versions up to 21. PostgreSQL version 10+ is required.
 
 On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EDB" option. Note that version 16 is used in the command line examples below, but the process should be similar for other versions. When prompted to set a password for the "database superuser (postgres)" just enter "password".
 
