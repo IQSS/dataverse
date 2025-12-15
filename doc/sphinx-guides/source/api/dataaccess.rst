@@ -415,7 +415,7 @@ Query parameters have been added to retrieve the historical list of "created", "
 .. note:: Pagination is only available when `includeHistory` is `true`
 
 If requesting a page beyond the last page this API will return a 404 "There are no access requests for this file:..."
-If requesting a page before page 0 or requesting the number of items to be 0 or less this API will ignore these parameters and return the entire list.
+If requesting a page before page 1 or requesting the number of items to be 0 or less this API will ignore these parameters and return the entire list.
 
 A curl example using an ``id``::
 
