@@ -36,12 +36,12 @@ import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.mydata.Pager;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 import java.util.logging.Logger;
@@ -63,7 +63,6 @@ import jakarta.inject.Inject;
 import jakarta.json.Json;
 import java.net.URI;
 import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
 import jakarta.persistence.TypedQuery;
 
 import jakarta.ws.rs.GET;
@@ -1509,13 +1508,13 @@ public class Access extends AbstractApiBean {
         }
 
         // Check for pagination request
-        if (includeHistory && numResultsPerPageRequested > 0 && paginationStart >= 0) {
+        if (includeHistory && numResultsPerPageRequested > 0 && paginationStart > 0) {
             JsonObjectBuilder builder = Json.createObjectBuilder()
                     .add("status", ApiConstants.STATUS_OK)
                     .add("data", userArray);
 
-            builder = JsonPrinter.jsonAddPagination(builder, paginationStart, numResultsPerPageRequested,
-                    requests.size(), dataFile.getFileAccessRequests().size());
+            Pager pager = new Pager(dataFile.getFileAccessRequests().size(), numResultsPerPageRequested, paginationStart);
+            builder.add("pagination", pager.asJsonObjectBuilder());
 
             return Response.ok( builder.build() )
                     .type(MediaType.APPLICATION_JSON)

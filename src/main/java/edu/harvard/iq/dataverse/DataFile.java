@@ -231,11 +231,17 @@ public class DataFile extends DvObject implements Comparable {
         return getFileAccessRequests(0, 0);
     }
 
+    /**
+     * Get Requests with pagination option
+     * @param numResultsPerPageRequested
+     * @param paginationStart starts at 1
+     * @return
+     */
     public List<FileAccessRequest> getFileAccessRequests(int numResultsPerPageRequested, int paginationStart) {
-        if (numResultsPerPageRequested <= 0 || paginationStart < 0) {
+        if (numResultsPerPageRequested < 1 || paginationStart < 1) {
             return fileAccessRequests;
         } else {
-            int startIndex = paginationStart * numResultsPerPageRequested;
+            int startIndex = (paginationStart - 1) * numResultsPerPageRequested;
             int endIndex = startIndex + numResultsPerPageRequested;
             if (startIndex >= fileAccessRequests.size()) {
                 return List.of();

@@ -603,46 +603,42 @@ public class AccessIT {
                 .body("data.size()", equalTo(17));
 
         // include paginated history
-        for (int page = 0; page <= 8; page++) {
-            // There are 9 pages (0 though 8). The first 8 pages should have 2 entries each. The last page should have 1 entry. (Total 17)
-            int expectedCount = page < 8 ? 2 : 1;
+        for (int page = 1; page <= 9; page++) {
+            // There are 9 pages (1 though 9). The first 8 pages should have 2 entries each. The last page should have 1 entry. (Total 17)
+            int expectedCount = page < 9 ? 2 : 1;
             listAccessRequestWithHistoryResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken, page, 2);
             listAccessRequestWithHistoryResponse.prettyPrint();
             listAccessRequestWithHistoryResponse.then()
                     .assertThat()
                     .statusCode(OK.getStatusCode())
-                    .body("selectedPage", equalTo(page))
-                    .body("pageCount", equalTo(expectedCount))
-                    .body("totalCount", equalTo(17))
-                    .body("hasPrevPage", equalTo(page > 0))
-                    .body("hasNextPage", equalTo(page < 8))
-                    .body("data.size()", equalTo(expectedCount));
+                    .body("data.size()", equalTo(expectedCount))
+                    .body("pagination.selectedPageNumber", equalTo(page))
+                    .body("pagination.pageCount", equalTo(9))
+                    .body("pagination.hasPreviousPageNumber", equalTo(page > 1))
+                    .body("pagination.hasNextPageNumber", equalTo(page < 9))
+                    .body("pagination.numResults", equalTo(17));
         }
         // Edge cases.
         // Return 404 if requesting a page to high.
-        // Gets the entire list if requesting page = negative index or number of items <= 0
+        // Gets the entire list if requesting page < 1 or number of items per page < 1
         listAccessRequestWithHistoryResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken, 99, 2);
         listAccessRequestWithHistoryResponse.prettyPrint();
         listAccessRequestWithHistoryResponse.then()
                 .assertThat()
                 .statusCode(NOT_FOUND.getStatusCode());
-        listAccessRequestWithHistoryResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken, -1, 2);
+        listAccessRequestWithHistoryResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken, 0, 2);
         listAccessRequestWithHistoryResponse.prettyPrint();
         listAccessRequestWithHistoryResponse.then()
                 .assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("selectedPage", nullValue())
-                .body("pageCount", nullValue())
-                .body("totalCount", nullValue())
+                .body("pagination", nullValue())
                 .body("data.size()", equalTo(17));
-        listAccessRequestWithHistoryResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken, 0, 0);
+        listAccessRequestWithHistoryResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken, 1, 0);
         listAccessRequestWithHistoryResponse.prettyPrint();
         listAccessRequestWithHistoryResponse.then()
                 .assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("selectedPage", nullValue())
-                .body("pageCount", nullValue())
-                .body("totalCount", nullValue())
+                .body("pagination", nullValue())
                 .body("data.size()", equalTo(17));
     }
 
