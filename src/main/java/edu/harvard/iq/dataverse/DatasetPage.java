@@ -6251,6 +6251,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private String termsOfAccess;
     private boolean fileAccessRequest;
+    private boolean legalDisclaimerAcknowledged;
 
     public String getTermsOfAccess() {
         return termsOfAccess;
@@ -6266,6 +6267,14 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setFileAccessRequest(boolean fileAccessRequest) {
         this.fileAccessRequest = fileAccessRequest;
+    }
+
+    public boolean isLegalDisclaimerAcknowledged() {
+        return legalDisclaimerAcknowledged;
+    }
+
+    public void setLegalDisclaimerAcknowledged(boolean legalDisclaimerAcknowledged) {
+        this.legalDisclaimerAcknowledged = legalDisclaimerAcknowledged;
     }
 
     // wrapper method to see if the file has been deleted (or replaced) in the current version

@@ -2029,8 +2029,18 @@
                                 <p class="col-sm-12 help-block">#{bundle['dataset.publish.terms.help.tip']}</p>
                             </div>
                         </ui:fragment>
+                        <ui:fragment rendered="#{valid}">
+                            <div class="form-group">
+                                <p:selectBooleanCheckbox class="text-danger" id="legalDisclaimer"
+                                                         itemLabel="#{bundle['dataset.publish.legal.disclaimer']}"
+                                                         value="#{DatasetPage.legalDisclaimerAcknowledged}">
+                                    <p:ajax event="change" update="releaseDatasetButton"/>
+                                </p:selectBooleanCheckbox>
+                            </div>
+                        </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton rendered="#{valid}" styleClass="btn btn-default" value="#{bundle.continue}" 
+                            <p:commandButton id="releaseDatasetButton" rendered="#{valid}" styleClass="btn btn-default" value="#{bundle.continue}"
+                                             disabled="#{!DatasetPage.legalDisclaimerAcknowledged}"
                                              onclick="PF('publishDataset').hide();
                                                      PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}" />
                             <button class="btn btn-link" onclick="PF('publishDataset').hide();
@@ -2085,7 +2095,7 @@
                         <p class="text-warning">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.rejectMessage']} #{disableReasonField ? '':bundle['dataset.rejectMessageReason']}
                         </p>
-                        
+
                         <ui:fragment  rendered="#{!disableReasonField}">
                             <p:inputTextarea id="returnReason" rows="4" value="#{DatasetPage.returnReason}" title="#{bundle['dataset.rejectMessage.label']}" maxlength="2000" widgetVar="returnReason"
                                              cols="70" counter="display" counterTemplate="{0} characters remaining." autoResize="false"
@@ -2097,7 +2107,7 @@
                             <p:watermark for="returnReason" value="#{bundle['dataset.rejectWatermark']}" id="returnReasonWatermark"/>
                             <h:message for="returnReason" styleClass="bg-danger text-danger"/>
                         </ui:fragment>
-                        
+
                         <div class="button-block">
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}"
                                              update="@form"
@@ -2182,7 +2192,7 @@
                             <script>
                                 Cite.CSL.register.addTemplate("#{requestedCSL}",
                                         "#{CSLUtil:getCitationFormat((requestedCSL == '') ? 'apa' : requestedCSL)}");
-                                
+
                                 document.getElementById('datasetForm:cslOutput').innerHTML = cite.format("bibliography", {
                                     format: "html",
                                     template: "#{requestedCSL}",
