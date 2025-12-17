@@ -89,7 +89,7 @@ UPGRADE_SOURCE_PATH="${UPGRADE_SOURCE_PATH:-${DEFAULT_UPGRADE_SOURCE_PATH}}"
 METADATA_ENDPOINT=""
 LOCK_FD=""
 SOLR_AUTH_HEADER=""
-DATAVERSE_AUTH_PARAM=""
+DATAVERSE_AUTH_HEADER=""
 SCHEMA_SOURCE_PATH_SET_BY_USER="false"
 
 # Logging functions
@@ -436,16 +436,7 @@ check_solr_status() {
 # Check Dataverse API status
 check_dataverse_status() {
     local status_url="${DATAVERSE_URL}/api/admin/settings"
-    if [[ -n "${DATAVERSE_AUTH_PARAM}" ]]; then
-        status_url="${status_url}?${DATAVERSE_AUTH_PARAM}"
-    fi
-
-    local auth_header=""
-    if [[ -n "${DATAVERSE_BEARER_TOKEN:-}" ]]; then
-        auth_header="Authorization: Bearer ${DATAVERSE_BEARER_TOKEN}"
-    fi
-
-    check_endpoint "${status_url}" "Dataverse API" "${auth_header}"
+    check_endpoint "${status_url}" "Dataverse API" "${DATAVERSE_AUTH_HEADER}"
 }
 
 # Perform startup checks with configured behavior
@@ -548,18 +539,13 @@ fetch_metadata_fields() {
     local output_file="$1"
     local url="${METADATA_ENDPOINT}"
 
-    # Add query parameters if needed
-    if [[ -n "${DATAVERSE_AUTH_PARAM}" ]]; then
-        url="${url}?${DATAVERSE_AUTH_PARAM}"
-    fi
-
     log_info "Fetching metadata fields from ${METADATA_ENDPOINT}"
 
     local curl_opts=(-sf -o "${output_file}")
 
-    # Add bearer token if configured
-    if [[ -n "${DATAVERSE_BEARER_TOKEN:-}" ]]; then
-        curl_opts+=(-H "Authorization: Bearer ${DATAVERSE_BEARER_TOKEN}")
+    # Add authentication header if configured
+    if [[ -n "${DATAVERSE_AUTH_HEADER}" ]]; then
+        curl_opts+=(-H "${DATAVERSE_AUTH_HEADER}")
     fi
 
     if ! curl "${curl_opts[@]}" "${url}"; then
@@ -1020,19 +1006,36 @@ main() {
     fi
 
     # Dataverse authentication
-    if [[ -n "${DATAVERSE_BEARER_TOKEN_FILE:-}" && -f "${DATAVERSE_BEARER_TOKEN_FILE}" ]]; then
-        DATAVERSE_BEARER_TOKEN=$(cat "${DATAVERSE_BEARER_TOKEN_FILE}")
-    fi
-
-    if [[ -n "${DATAVERSE_UNBLOCK_KEY_FILE:-}" && -f "${DATAVERSE_UNBLOCK_KEY_FILE}" ]]; then
-        DATAVERSE_UNBLOCK_KEY=$(cat "${DATAVERSE_UNBLOCK_KEY_FILE}")
-    fi
-
+    # Priority 1: Bearer token (env var or file)
     if [[ -n "${DATAVERSE_BEARER_TOKEN:-}" ]]; then
+        # Bearer token already set, use it
+        DATAVERSE_AUTH_HEADER="Authorization: Bearer ${DATAVERSE_BEARER_TOKEN}"
         log_info "Dataverse authentication configured (Bearer Token)"
+    elif [[ -n "${DATAVERSE_BEARER_TOKEN_FILE:-}" ]]; then
+        # Bearer token file specified, try to read it
+        if [[ -f "${DATAVERSE_BEARER_TOKEN_FILE}" ]]; then
+            DATAVERSE_BEARER_TOKEN=$(cat "${DATAVERSE_BEARER_TOKEN_FILE}")
+            DATAVERSE_AUTH_HEADER="Authorization: Bearer ${DATAVERSE_BEARER_TOKEN}"
+            log_info "Dataverse authentication configured (Bearer Token from file)"
+        else
+            log_error "DATAVERSE_BEARER_TOKEN_FILE specified but file not found: ${DATAVERSE_BEARER_TOKEN_FILE}"
+            exit 1
+        fi
+    # Priority 2: Unblock key (only if no bearer token)
     elif [[ -n "${DATAVERSE_UNBLOCK_KEY:-}" ]]; then
-        DATAVERSE_AUTH_PARAM="unblock-key=${DATAVERSE_UNBLOCK_KEY}"
+        # Unblock key already set, use it
+        DATAVERSE_AUTH_HEADER="X-Dataverse-unblock-key: ${DATAVERSE_UNBLOCK_KEY}"
         log_info "Dataverse authentication configured (Unblock Key)"
+    elif [[ -n "${DATAVERSE_UNBLOCK_KEY_FILE:-}" ]]; then
+        # Unblock key file specified, try to read it
+        if [[ -f "${DATAVERSE_UNBLOCK_KEY_FILE}" ]]; then
+            DATAVERSE_UNBLOCK_KEY=$(cat "${DATAVERSE_UNBLOCK_KEY_FILE}")
+            DATAVERSE_AUTH_HEADER="X-Dataverse-unblock-key: ${DATAVERSE_UNBLOCK_KEY}"
+            log_info "Dataverse authentication configured (Unblock Key from file)"
+        else
+            log_error "DATAVERSE_UNBLOCK_KEY_FILE specified but file not found: ${DATAVERSE_UNBLOCK_KEY_FILE}"
+            exit 1
+        fi
     fi
 
     # Set metadata endpoint based on Dataverse URL
