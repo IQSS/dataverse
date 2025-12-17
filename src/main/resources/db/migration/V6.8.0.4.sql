@@ -1,1 +1,2 @@
 CREATE INDEX IF NOT EXISTS  INDEX_GUESTBOOKRESPONSE_dataset_id_guestbook_id ON GUESTBOOKRESPONSE (dataset_id, guestbook_id);
+CREATE INDEX IF NOT EXISTS  INDEX_GUESTBOOKRESPONSE_dataset_id_eventtype ON GUESTBOOKRESPONSE (dataset_id, eventtype);
