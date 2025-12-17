@@ -763,7 +763,6 @@ public class BagGenerator {
         logger.fine("Generating info file");
         StringBuffer info = new StringBuffer();
 
-        JsonArray contactsArray = new JsonArray();
         /* Contact, and it's subfields, are terms from citation.tsv whose mapping to a formal vocabulary and label in the oremap may change
          * so we need to find the labels used.
          */ 
@@ -775,6 +774,7 @@ public class BagGenerator {
             JsonLDTerm contactEmailTerm = oremap.getContactEmailTerm();
             
             if (contacts.isJsonArray()) {
+                JsonArray contactsArray = contacts.getAsJsonArray();
                 for (int i = 0; i < contactsArray.size(); i++) {
                     info.append("Contact-Name: ");
                     JsonElement person = contactsArray.get(i);
