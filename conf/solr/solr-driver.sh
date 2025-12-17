@@ -851,58 +851,59 @@ run_watch() {
     log_info "Running in watch mode with ${POLL_INTERVAL}s polling interval"
 
     local last_checksum=""
-    local initial_sync_done=false
+    local needs_update="false"
+    local pending_metadata_file=""
+    local pending_checksum=""
 
     while true; do
         # Update liveness indicator at the start of each cycle
         update_liveness
 
-        local metadata_file="${WORK_DIR}/metadata_fields_check.xml"
+        # Only fetch metadata if we don't have a pending update
+        if [[ "${needs_update}" == "false" ]]; then
+            local metadata_file="${WORK_DIR}/metadata_fields_check.xml"
 
-        if fetch_metadata_fields "${metadata_file}"; then
-            local current_checksum
-            current_checksum=$(calculate_metadata_checksum "${metadata_file}")
+            if fetch_metadata_fields "${metadata_file}"; then
+                pending_checksum=$(calculate_metadata_checksum "${metadata_file}")
 
-            if [[ -n "${last_checksum}" && "${current_checksum}" != "${last_checksum}" ]]; then
-                log_info "Metadata change detected, processing schema update"
-
-                # Mark as not ready during update
-                mark_not_ready
-
-                if process_schema_update "true"; then
-                    last_checksum="${current_checksum}"
-                    mark_ready
+                if [[ -z "${last_checksum}" ]]; then
+                    log_info "Initial metadata fetch, setting baseline"
+                    mark_not_ready
+                    needs_update="true"
+                    pending_metadata_file="${metadata_file}"
+                elif [[ "${pending_checksum}" != "${last_checksum}" ]]; then
+                    log_info "Metadata change detected, processing schema update"
+                    mark_not_ready
+                    needs_update="true"
+                    pending_metadata_file="${metadata_file}"
                 else
-                    log_error "Schema update failed"
-                    # Stay not ready until successful update
-                fi
-            elif [[ -z "${last_checksum}" ]]; then
-                log_info "Initial metadata fetch, setting baseline"
-                last_checksum="${current_checksum}"
-
-                # Mark ready after first successful fetch
-                if [[ "${initial_sync_done}" == "false" ]]; then
-                    mark_ready
-                    initial_sync_done=true
+                    log_debug "No metadata changes detected"
                 fi
             else
-                log_info "No metadata changes detected"
-
-                # Ensure we're marked ready if we haven't done initial sync
-                if [[ "${initial_sync_done}" == "false" ]]; then
-                    mark_ready
-                    initial_sync_done=true
-                fi
+                log_error "Failed to fetch metadata fields, will retry"
+                mark_not_ready
             fi
         else
-            log_error "Failed to fetch metadata fields, will retry"
-            # Mark as not ready on fetch failure
-            mark_not_ready
+            log_info "Pending update not yet applied, retrying without re-fetching metadata"
         fi
 
-        # Update liveness before sleep
-        update_liveness
+        # Process pending update if needed
+        if [[ "${needs_update}" == "true" && -n "${pending_metadata_file}" ]]; then
+            if process_schema_update "true"; then
+                # Update successful - use the stored checksum
+                last_checksum="${pending_checksum}"
+                mark_ready
+                needs_update="false"
+                pending_metadata_file=""
+                pending_checksum=""
+            else
+                log_error "Schema update failed, will retry on next cycle"
+                # Keep needs_update="true", pending_metadata_file, and pending_checksum intact for retry
+            fi
+        fi
 
+        # Update liveness before sleep (just to be sure - the processing may have taking longer than expected)
+        update_liveness
         sleep "${POLL_INTERVAL}"
     done
 }
