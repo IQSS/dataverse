@@ -585,10 +585,10 @@ apply_field_definitions() {
         log_info "Using source schema as base: ${SCHEMA_SOURCE_PATH}"
         cp "${SCHEMA_SOURCE_PATH}" "${temp_schema}"
     elif [[ -f "${target_schema}" ]]; then
-        log_info "Source schema not found, using target schema as base: ${target_schema}"
+        log_info "Source schema not found at '$SCHEMA_SOURCE_PATH', using target schema as base: ${target_schema}"
         cp "${target_schema}" "${temp_schema}"
     else
-        log_error "No base schema file found (neither source nor target exist)"
+        log_error "No base schema file found (neither source '$SCHEMA_SOURCE_PATH' nor target '$target_schema' exist)"
         return 1
     fi
 
