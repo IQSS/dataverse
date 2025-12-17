@@ -488,15 +488,19 @@ public class GuestbookResponseServiceBean {
         return (Long) query.getSingleResult();
     }
 
-    public Long findCountAll() {
+    /*public Long findCountAll() {
         return findCountAll(null);
-    }
+    }*/
 
     public Long findCountAll(Long dataverseId) {
         String queryString;
         if (dataverseId != null) {
-            queryString = "select count(o.id) from GuestbookResponse  o,  DvObject v where o.dataset_id = v.id and v.owner_id = " + dataverseId + " ";
+            queryString = "select count(o.id) from GuestbookResponse  o, DvObject v, Dataset d where o.dataset_id = v.id and v.id = d.id and v.owner_id = " + dataverseId + " ";
         } else {
+            // I hope this is never called with null dataverseId!! - counting 
+            // all rows in this table can be insanely expensive. That's why we 
+            // use a stored function to "estimate" its size, for the total 
+            // number of downloads on the homepage. (L.A.)
             queryString = "select count(o.id) from GuestbookResponse  o ";
         }
 

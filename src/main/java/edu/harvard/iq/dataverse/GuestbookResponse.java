@@ -32,7 +32,8 @@ import java.util.Comparator;
         @Index(columnList = "datafile_id"),
         @Index(columnList = "datasetversion_id"),
         @Index(columnList = "authenticateduser_id"),
-        @Index(columnList = "dataset_id")
+        @Index(columnList = "dataset_id"),
+        @Index(columnList = "dataset_id, guestbook_id", name="INDEX_GUESTBOOKRESPONSE_dataset_id_guestbook_id")
 })
 
 @NamedQueries(
