@@ -53,7 +53,6 @@ import jakarta.persistence.TypedQuery;
 public class WorkflowServiceBean {
 
     private static final Logger logger = Logger.getLogger(WorkflowServiceBean.class.getName());
-    private static final String WORKFLOW_ID_KEY = "WorkflowServiceBean.WorkflowId:";
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
@@ -452,7 +451,7 @@ public class WorkflowServiceBean {
         if (doomedOpt.isPresent()) {
             // validate that this is not the default workflow
             for ( WorkflowContext.TriggerType tp : WorkflowContext.TriggerType.values() ) {
-                String defaultWorkflowId = settings.get(workflowSettingKey(tp));
+                String defaultWorkflowId = settings.getValueForKey(tp.getKey());
                 if (defaultWorkflowId != null
                         && Long.parseLong(defaultWorkflowId) == doomedOpt.get().getId()) {
                     throw new IllegalArgumentException("Workflow " + workflowId + " cannot be deleted as it is the default workflow for trigger " + tp.name() );
@@ -476,7 +475,7 @@ public class WorkflowServiceBean {
     }
 
     public Optional<Workflow> getDefaultWorkflow( WorkflowContext.TriggerType type ) {
-        String defaultWorkflowId = settings.get(workflowSettingKey(type));
+        String defaultWorkflowId = settings.getValueForKey(type.getKey());
         if (defaultWorkflowId == null) {
             return Optional.empty();
         }
@@ -491,16 +490,11 @@ public class WorkflowServiceBean {
      * @param type type of the workflow.
      */
     public void setDefaultWorkflowId(WorkflowContext.TriggerType type, Long id) {
-        String workflowKey = workflowSettingKey(type);
         if (id == null) {
-            settings.delete(workflowKey);
+            settings.deleteValueForKey(type.getKey());
         } else {
-            settings.set(workflowKey, id.toString());
+            settings.setValueForKey(type.getKey(), id.toString());
         }
-    }
-
-    private String workflowSettingKey(WorkflowContext.TriggerType type) {
-        return WORKFLOW_ID_KEY+type.name();
     }
 
     private WorkflowStep createStep(WorkflowStepData wsd) {

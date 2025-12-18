@@ -467,9 +467,9 @@
                                                 <o:importFunctions type="edu.harvard.iq.dataverse.util.json.JsonUtil" />
                                                     <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.datasetMentioned']}" escape="false">
-                                                    <f:param value="#{JsonUtil:getJsonObject(item.additionalInfo).getString('@type')}"/>
+                                                    <f:param value="#{JsonUtil:getJsonObject(item.additionalInfo).getString('@type', bundle['notification.datasetMentioned.itemType'])}"/>
                                                     <f:param value="#{JsonUtil:getJsonObject(item.additionalInfo).getString('@id')}"/>
-                                                    <f:param value="#{JsonUtil:getJsonObject(item.additionalInfo).getString('name')}"/>
+                                                    <f:param value="#{JsonUtil:getJsonObject(item.additionalInfo).getString('name', JsonUtil:getJsonObject(item.additionalInfo).getString('@id'))}"/>
                                                     <f:param value="#{JsonUtil:getJsonObject(item.additionalInfo).getString('relationship', 'isRelatedTo')}"/>
                                                         <o:param>
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>

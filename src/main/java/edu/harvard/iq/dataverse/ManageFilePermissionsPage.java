@@ -586,7 +586,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
     public String getSignedUrlForRAHistoryCsv() {
         //Including /v1 is required for the signature to validate
-        String apiPath = "/api/v1/datasets/" + dataset.getId() + "/files/permissions/history";
+        String apiPath = "/api/v1/datasets/" + dataset.getId() + "/files/assignments/history";
         
         try {
             // Get the application URL from the system config
