@@ -705,10 +705,10 @@ public class ManagePermissionsPage implements java.io.Serializable {
         //Including /v1 in these urls is required for the signature to validate
         if (dvObject instanceof Dataverse dv) {
             // For Dataverses, use the dataverses API endpoint with the alias
-            apiPath = "/api/v1/dataverses/" + dv.getAlias() + "/permissions/history";
+            apiPath = "/api/v1/dataverses/" + dv.getAlias() + "/assignments/history";
         } else if (dvObject instanceof Dataset) {
             // For Datasets, use the datasets API endpoint with the ID
-            apiPath = "/api/v1/datasets/" + dvObject.getId() + "/permissions/history";
+            apiPath = "/api/v1/datasets/" + dvObject.getId() + "/assignments/history";
         } else {
             // For other types (like DataFile), return null or a default path
             return null;

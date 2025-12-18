@@ -18,18 +18,16 @@ Configuration
 
 There are several steps to LocalContexts integration.
 
-First, you need to configure the LOCALCONTEXTS_URL and LOCALCONTEXTS_API_KEY as described in the :ref:`localcontexts` section of the Configuration Guide.
-API Keys are available to Local Contexts Integration Partners - see https://localcontexts.org/hub-agreements/integration-partners/ for details.
-
-Next, you should add the Local Contexts metadatablock and configure the associated external vocabulary script.
-The metadatablock contains one field allowing Dataverse to store the URL of an associated Local Contexts Hub project.
-The external vocabulary script interacts with the Local Contexts Hub (via the Dataverse server) to display the Labels and Notices associated with the proect and provide a link to it.
-The script also supports adding/removing such a link from the dataset's metadata. Note that only a project that references the dataset in its `publication_doi` field can be linked to a dataset. 
-See https://github.com/gdcc/dataverse-external-vocab-support/blob/main/packages/local_contexts/README.md for details on these steps.
-
-Lastly, if you wish the Local Contexts information to be shown in the summary section of the dataset page, as shown in the image above, you should add `LCProjectUrl` to list of custom summary fields via use of the :ref:`:CustomDatasetSummaryFields` setting.
-
-Optionally, one could also set the dataverse.feature.add-local-contexts-permission-check FeatureFlag to true. This assures that only users editing datasets can use the LocalContexts search functionality.
-However, as this currently would also require setting the dataverse.feature.api-session-auth, the security implications of which haven't been fully explored, it is not recommended unless problematic use is seen.
-(When API access via OpenIdConnect is available, use of api-session-auth would not be required.)
+- A Local Contexts Hub Institutional or Integration Partner account is required. See https://localcontexts.org/hub-agreements for more information and the associated costs.
+  (Institutions may wish to connect their Institutional accounts with `The Dataverse Project Integration Partner <https://localcontexts.org/integration-partners/view/12>`_ rather than having their own Integration Partner account.)
+  (Free accounts for testing can be created at https://sandbox.localcontextshub.org/.)
+- Create an API key in your Local Contexts account.
+- Configure the DATAVERSE_LOCALCONTEXTS_URL and DATAVERSE_LOCALCONTEXTS_API_KEY as described in the :ref:`localcontexts` section of the Configuration Guide.
+- Add the Local Contexts metadatablock and configure the associated external vocabulary script. Both are available, along with installation instructions, in the `Dataverse External Vocabulary GitHub Repository <https://github.com/gdcc/dataverse-external-vocab-support/blob/main/packages/local_contexts/README.md>`_.
+  The metadatablock contains one field allowing Dataverse to store the URL of an associated Local Contexts Hub project. Be sure to update the Solr schema after installing the metadatablock (see :ref:`update-solr-schema`).
+  The external vocabulary script interacts with the Local Contexts Hub (via the Dataverse server) to display the Labels and Notices associated with the proect and provide a link to it.
+  The script also supports adding/removing such a link from the dataset's metadata. Note that only a project that references the dataset's PID in its `Optional Project Information` field can be linked to a dataset.
+- Lastly, to show Local Contexts information in the summary section of the dataset page, as shown in the image above, you should add `LCProjectUrl` to list of custom summary fields via use of the :ref:`:CustomDatasetSummaryFields` setting.
+- Optionally, one can also set the dataverse.feature.add-local-contexts-permission-check FeatureFlag to true. This assures that only users editing datasets can use the LocalContexts search functionality (e.g. via API).
+  This is not recommended unless problematic use is seen.
 
