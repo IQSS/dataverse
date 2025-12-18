@@ -47,6 +47,7 @@ set -euo pipefail
 #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### ####
 
 # Default configuration variables
+DEFAULT_VERBOSE="false"
 DEFAULT_DATAVERSE_URL="http://localhost:8080"
 DEFAULT_SOLR_URL="http://localhost:8983"
 DEFAULT_SOLR_CORE="collection1"
@@ -67,6 +68,7 @@ DEFAULT_UPGRADE_MODE="false"
 DEFAULT_UPGRADE_SOURCE_PATH="${SOLR_TEMPLATE:-/opt/solr/template}/conf/schema.xml"
 
 # Initialize from environment or defaults
+VERBOSE="${VERBOSE:-${DEFAULT_VERBOSE}}"
 DATAVERSE_URL="${DATAVERSE_URL:-${DEFAULT_DATAVERSE_URL}}"
 SOLR_URL="${SOLR_URL:-${DEFAULT_SOLR_URL}}"
 SOLR_CORE="${SOLR_CORE:-${DEFAULT_SOLR_CORE}}"
@@ -103,6 +105,13 @@ log_error() {
 
 log_warn() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] [WARN] $*"
+}
+
+# Log info only when verbose mode is enabled
+log_verbose() {
+    if [[ "${MODE}" == "oneshot" || "${VERBOSE}" == "true" ]]; then
+        echo "[$(date +'%Y-%m-%d %H:%M:%S')] [INFO] $*"
+    fi
 }
 
 # Update liveness indicator
@@ -158,6 +167,7 @@ Options:
 
     -u, --update-script PATH       Path to update-fields.sh script
     -w, --work-dir PATH            Working directory path
+    -v, --verbose                  Enable verbose logging (Note: oneshot mode is always verbose!)
     -h, --help                     Show this help message
 
 Environment Variables (used as defaults if command-line options not provided):
@@ -178,6 +188,7 @@ Environment Variables (used as defaults if command-line options not provided):
     LOCK_TIMEOUT            File lock timeout in seconds (default: ${DEFAULT_LOCK_TIMEOUT})
     WAIT_RETRY_PERIOD       Retry period (in seconds) for 'wait' startup check mode (default: ${DEFAULT_WAIT_RETRY_PERIOD})
     WAIT_MAX_RETRIES        Max retries for 'wait' startup check mode (default: ${DEFAULT_WAIT_MAX_RETRIES})
+    VERBOSE                 Enable verbose logging for watch mode: 'true' or 'false' (default: ${DEFAULT_VERBOSE})
 
 Secret Configuration (only via environment variable or file):
     SOLR_USERNAME                 Solr HTTP Basic Auth username (optional)
@@ -554,7 +565,7 @@ fetch_metadata_fields() {
     local output_file="$1"
     local url="${METADATA_ENDPOINT}"
 
-    log_info "Fetching metadata fields from ${METADATA_ENDPOINT}"
+    log_verbose "Fetching metadata fields from ${METADATA_ENDPOINT}"
 
     local curl_opts=(-sf -o "${output_file}")
 
@@ -564,7 +575,7 @@ fetch_metadata_fields() {
     fi
 
     if ! curl "${curl_opts[@]}" "${url}"; then
-        log_error "Failed to fetch metadata fields from API"
+        log_error "Failed to fetch metadata fields from Dataverse API"
         return 1
     fi
 
@@ -574,7 +585,7 @@ fetch_metadata_fields() {
         return 1
     fi
 
-    log_info "Metadata fields saved to ${output_file}"
+    log_verbose "Metadata fields saved to ${output_file}"
     return 0
 }
 
@@ -895,7 +906,7 @@ run_watch() {
                     needs_update="true"
                     pending_metadata_file="${metadata_file}"
                 else
-                    log_info "No metadata changes detected"
+                    log_verbose "No metadata changes detected"
                 fi
             else
                 log_error "Failed to fetch metadata fields, will retry"
@@ -999,6 +1010,10 @@ main() {
             --wait-max-retries)
                 WAIT_MAX_RETRIES="$2"
                 shift 2
+                ;;
+            -v|--verbose)
+                VERBOSE="true"
+                shift
                 ;;
             -h|--help)
                 usage
@@ -1110,7 +1125,7 @@ main() {
         log_info "Upgrade Mode: ENABLED"
         log_info "Schema Source Path: ${SCHEMA_SOURCE_PATH}"
     fi
-    log_info "Dataverse API: ${DATAVERSE_URL}"
+    log_info "Dataverse API: ${METADATA_ENDPOINT}"
     log_info "Solr URL: ${SOLR_URL}"
     log_info "Solr Core: ${SOLR_CORE}"
     log_info "Schema Target Path: ${SCHEMA_TARGET_PATH}"
