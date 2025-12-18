@@ -185,7 +185,6 @@ Environment Variables (used as defaults if command-line options not provided):
     WORK_DIR                Working directory (default: ${DEFAULT_WORK_DIR})
     MODE                    Execution mode: 'watch' or 'oneshot' (default: ${DEFAULT_MODE})
     UPGRADE_MODE            Enable upgrade mode: 'true' or 'false' (default: ${DEFAULT_UPGRADE_MODE})
-    UPGRADE_SOURCE_PATH     Template schema path for upgrade mode (default: ${DEFAULT_UPGRADE_SOURCE_PATH})
     STARTUP_CHECK           Startup check mode: 'fail', 'warn', or 'wait' (default: ${DEFAULT_STARTUP_CHECK})
     HEALTH_CHECKS_ENABLED   Enable health checks: 'true' or 'false' (default: ${DEFAULT_HEALTH_CHECKS_ENABLED})
     LIVENESS_FILE           Path to liveness indicator file (default: ${DEFAULT_LIVENESS_FILE})
@@ -229,7 +228,7 @@ Examples:
     $0 --mode oneshot --upgrade --schema-source-path /custom/template/schema.xml
 
     # Upgrade mode with custom template via environment
-    UPGRADE_SOURCE_PATH=/custom/template.xml $0 --mode oneshot --upgrade
+    SCHEMA_SOURCE_PATH=/custom/template.xml $0 --mode oneshot --upgrade
 
     # Watch mode that waits for services to be ready with custom retry settings
     $0 --startup-check wait --wait-retry-period 10 --wait-max-retries 30
@@ -322,38 +321,54 @@ check_update_script() {
 # Check read/write permissions
 check_permissions() {
     local schema_dir
-    schema_dir="$(dirname "${SCHEMA_TARGET_PATH}")"
+
+    # Validate that source schema exists (if given by user)
+    if [[ "${SCHEMA_SOURCE_PATH}" != "${SCHEMA_TARGET_PATH}" ]]; then
+        if [[ ! -f "${SCHEMA_SOURCE_PATH}" ]]; then
+            log_error "Source Schema not found: ${SCHEMA_SOURCE_PATH}"
+            log_error "Please ensure the template schema exists or use -P to specify a different location"
+            return 1
+        fi
+        if [[ ! -r "${SCHEMA_SOURCE_PATH}" ]]; then
+            log_error "Source Schema is not readable: ${SCHEMA_SOURCE_PATH}"
+            return 1
+        fi
+    fi
 
     # Check schema directory is writable (for creating backups and updating schema)
+    schema_dir="$(dirname "${SCHEMA_TARGET_PATH}")"
     if [[ ! -d "${schema_dir}" ]]; then
-        log_error "Schema directory does not exist: ${schema_dir}"
+        log_error "Target Schema directory does not exist: ${schema_dir}"
         return 1
     fi
-
     if [[ ! -w "${schema_dir}" ]]; then
-        log_error "Schema directory is not writable: ${schema_dir}"
+        log_error "Target Schema directory is not writable: ${schema_dir}"
         return 1
     fi
+    log_info "Target Schema directory exists and is writable: ${schema_dir}"
 
     # If schema file exists, check if it's readable and writable
     if [[ -f "${SCHEMA_TARGET_PATH}" ]]; then
         if [[ ! -r "${SCHEMA_TARGET_PATH}" ]]; then
-            log_error "Schema file is not readable: ${SCHEMA_TARGET_PATH}"
+            log_error "Target Schema file is not readable: ${SCHEMA_TARGET_PATH}"
             return 1
         fi
-
         if [[ ! -w "${SCHEMA_TARGET_PATH}" ]]; then
-            log_error "Schema file is not writable: ${SCHEMA_TARGET_PATH}"
+            log_error "Target Schema file is not writable: ${SCHEMA_TARGET_PATH}"
             return 1
         fi
+        log_info "Target Schema file is readable and writable: ${SCHEMA_TARGET_PATH}"
 
-        log_info "Schema file is readable and writable: ${SCHEMA_TARGET_PATH}"
+    # We already checked for the source to exist, so we will copy it later on
+    elif [[ "${SCHEMA_SOURCE_PATH}" != "${SCHEMA_TARGET_PATH}" ]]; then
+        log_warn "Target Schema file does not exist yet: ${SCHEMA_TARGET_PATH}"
+        log_info "Will be created on first update."
+
     else
-        log_warn "Schema file does not exist yet: ${SCHEMA_TARGET_PATH}"
-        log_info "Will be created on first update"
+        log_warn "Target Schema file does not exist: ${SCHEMA_TARGET_PATH}"
+        return 1
     fi
 
-    log_info "Schema directory is writable: ${schema_dir}"
     return 0
 }
 
@@ -576,29 +591,22 @@ apply_field_definitions() {
 
     log_info "Applying field definitions using ${UPDATE_FIELDS_SCRIPT}"
 
-    # The update-fields.sh script takes: schema_file source_file
-    # It modifies the schema file in place, so we need to work with a copy
-    local temp_schema="${WORK_DIR}/schema.xml.temp"
-
     # Use source schema as base for updates
+    # NOTE: By default, SCHEMA_SOURCE_PATH == SCHEMA_TARGET_PATH
+    # NOTE: target_schema != SCHEMA_TARGET_PATH, as we want to work on a copy!
     if [[ -f "${SCHEMA_SOURCE_PATH}" ]]; then
-        log_info "Using source schema as base: ${SCHEMA_SOURCE_PATH}"
-        cp "${SCHEMA_SOURCE_PATH}" "${temp_schema}"
-    elif [[ -f "${target_schema}" ]]; then
-        log_info "Source schema not found at '$SCHEMA_SOURCE_PATH', using target schema as base: ${target_schema}"
-        cp "${target_schema}" "${temp_schema}"
+        log_info "Using base schema file from ${SCHEMA_SOURCE_PATH}"
+        cp "${SCHEMA_SOURCE_PATH}" "${target_schema}"
     else
-        log_error "No base schema file found (neither source '$SCHEMA_SOURCE_PATH' nor target '$target_schema' exist)"
+        log_error "No base schema file ${SCHEMA_SOURCE_PATH} found"
         return 1
     fi
 
-    if ! "${UPDATE_FIELDS_SCRIPT}" "${temp_schema}" "${metadata_file}"; then
+    # Run the update script
+    if ! "${UPDATE_FIELDS_SCRIPT}" "${target_schema}" "${metadata_file}"; then
         log_error "Failed to apply field definitions"
         return 1
     fi
-
-    # Move the updated temp schema to the target location
-    mv "${temp_schema}" "${target_schema}"
 
     log_info "Field definitions applied successfully"
     return 0
@@ -755,17 +763,13 @@ restore_schema() {
 
 # Process schema update (steps 2-4, optionally 5)
 process_schema_update() {
-    local reload_solr="${1:-false}"
-    local metadata_file="${WORK_DIR}/metadata_fields.xml"
+    local metadata_file="${1:-${WORK_DIR}/metadata_fields.xml}"
+    local reload_solr="${2:-ignore}"
     local new_schema="${WORK_DIR}/schema.xml.new"
     local backup_file=""
     local update_success=false
 
-    # Step 2: Download and apply field definitions
-    if ! fetch_metadata_fields "${metadata_file}"; then
-        return 1
-    fi
-
+    # Step 2b: Apply downloaded field definitions to a schema file
     if ! apply_field_definitions "${metadata_file}" "${new_schema}"; then
         return 1
     fi
@@ -797,7 +801,7 @@ process_schema_update() {
         fi
 
         # Step 5: Reload Solr (only in watch or upgrade mode)
-        if [[ "${reload_solr}" == "true" ]]; then
+        if [[ "${reload_solr}" == "reload" ]]; then
             if ! reload_solr_core; then
                 log_error "Solr reload failed, attempting to restore backup"
                 if [[ -n "${backup_file}" ]]; then
@@ -830,13 +834,21 @@ run_oneshot() {
     update_liveness
 
     # In oneshot, default to not reload Solr. But if upgrading, we want to reload.
-    local reload_solr="false"
+    local reload_solr="ignore"
     if [[ "${UPGRADE_MODE}" == "true" ]]; then
       log_info "Will attempt to RELOAD Solr after upgrading the schema."
-      reload_solr="true"
+      reload_solr="reload"
     fi
 
-    if process_schema_update "$reload_solr"; then
+    # Step 2a: Download field definitions
+    local metadata_file="${WORK_DIR}/metadata_fields.xml"
+    if ! fetch_metadata_fields "${metadata_file}"; then
+        log_error "Oneshot execution failed"
+        return 1
+    fi
+
+    # Steps 2b, 3, 4 and 5
+    if process_schema_update "${metadata_file}" "$reload_solr"; then
         mark_ready
         log_info "Oneshot execution completed successfully"
         return 0
@@ -889,7 +901,7 @@ run_watch() {
 
         # Process pending update if needed
         if [[ "${needs_update}" == "true" && -n "${pending_metadata_file}" ]]; then
-            if process_schema_update "true"; then
+            if process_schema_update "${pending_metadata_file}" "reload"; then
                 # Update successful - use the stored checksum
                 last_checksum="${pending_checksum}"
                 mark_ready
@@ -992,19 +1004,30 @@ main() {
         esac
     done
 
-    # Load secrets from files or environment variables
-    # Solr authentication
-    if [[ -n "${SOLR_USERNAME_FILE:-}" && -f "${SOLR_USERNAME_FILE}" ]]; then
-        SOLR_USERNAME=$(cat "${SOLR_USERNAME_FILE}")
-    fi
-    if [[ -n "${SOLR_PASSWORD_FILE:-}" && -f "${SOLR_PASSWORD_FILE}" ]]; then
-        SOLR_PASSWORD=$(cat "${SOLR_PASSWORD_FILE}")
-    fi
+    # Validate startup check mode
+    case "${STARTUP_CHECK}" in
+        fail|warn|wait)
+            ;;
+        *)
+            log_error "Invalid startup check mode: ${STARTUP_CHECK}. Must be 'fail', 'warn', or 'wait'"
+            exit 1
+            ;;
+    esac
 
-    if [[ -n "${SOLR_USERNAME:-}" && -n "${SOLR_PASSWORD:-}" ]]; then
-        SOLR_AUTH_HEADER="Authorization: Basic $(echo -n "${SOLR_USERNAME}:${SOLR_PASSWORD}" | base64 -w 0)"
-        log_info "Solr authentication configured (HTTP Basic)"
-    fi
+    # Validate mode
+    case "${MODE}" in
+        watch|oneshot)
+            ;;
+        *)
+            log_error "Invalid mode: ${MODE}. Must be 'watch' or 'oneshot'"
+            exit 1
+            ;;
+    esac
+
+    # Set metadata endpoint based on Dataverse URL
+    METADATA_ENDPOINT="${DATAVERSE_URL}/api/admin/index/solr/schema"
+
+    # Load secrets from files or environment variables
 
     # Dataverse authentication
     # Priority 1: Bearer token (env var or file)
@@ -1039,8 +1062,26 @@ main() {
         fi
     fi
 
-    # Set metadata endpoint based on Dataverse URL
-    METADATA_ENDPOINT="${DATAVERSE_URL}/api/admin/index/solr/schema"
+    # Solr authentication
+    if [[ -n "${SOLR_USERNAME_FILE:-}" && -f "${SOLR_USERNAME_FILE}" ]]; then
+        SOLR_USERNAME=$(cat "${SOLR_USERNAME_FILE}")
+    fi
+    if [[ -n "${SOLR_PASSWORD_FILE:-}" && -f "${SOLR_PASSWORD_FILE}" ]]; then
+        SOLR_PASSWORD=$(cat "${SOLR_PASSWORD_FILE}")
+    fi
+
+    if [[ -n "${SOLR_USERNAME:-}" && -n "${SOLR_PASSWORD:-}" ]]; then
+        SOLR_AUTH_HEADER="Authorization: Basic $(echo -n "${SOLR_USERNAME}:${SOLR_PASSWORD}" | base64 -w 0)"
+        log_info "Solr authentication configured (HTTP Basic)"
+    fi
+
+    # Handle schema source and upgrade mode
+
+    # If the schema source has not been explicitly set by the user (independent of any mode),
+    # but the target path has been, make sure to make them the same!
+    if [[ "${SCHEMA_SOURCE_PATH_SET_BY_USER}" == "false" && "${SCHEMA_TARGET_PATH}" != "${DEFAULT_SCHEMA_PATH}" ]]; then
+      SCHEMA_SOURCE_PATH="${SCHEMA_TARGET_PATH}"
+    fi
 
     # Validate upgrade mode restrictions
     if [[ "${UPGRADE_MODE}" == "true" && "${MODE}" == "watch" ]]; then
@@ -1052,35 +1093,10 @@ main() {
     # Handle upgrade mode: override source path if not explicitly set by user
     if [[ "${UPGRADE_MODE}" == "true" && "${SCHEMA_SOURCE_PATH_SET_BY_USER}" == "false" ]]; then
         log_info "Upgrade mode enabled: using template schema as source"
-        SCHEMA_SOURCE_PATH="${UPGRADE_SOURCE_PATH}"
+        SCHEMA_SOURCE_PATH="${DEFAULT_UPGRADE_SOURCE_PATH}"
     fi
 
-    # Validate that source schema exists in upgrade mode
-    if [[ "${UPGRADE_MODE}" == "true" && ! -f "${SCHEMA_SOURCE_PATH}" ]]; then
-        log_error "Upgrade mode enabled but source schema not found: ${SCHEMA_SOURCE_PATH}"
-        log_error "Please ensure the template schema exists or use -P to specify a different location"
-        exit 1
-    fi
-
-    # Validate startup check mode
-    case "${STARTUP_CHECK}" in
-        fail|warn|wait)
-            ;;
-        *)
-            log_error "Invalid startup check mode: ${STARTUP_CHECK}. Must be 'fail', 'warn', or 'wait'"
-            exit 1
-            ;;
-    esac
-
-    # Validate mode
-    case "${MODE}" in
-        watch|oneshot)
-            ;;
-        *)
-            log_error "Invalid mode: ${MODE}. Must be 'watch' or 'oneshot'"
-            exit 1
-            ;;
-    esac
+    # Log config info, then run preflight checks
 
     log_info "Starting Solr Driver for Dataverse Metadata Schemas"
     log_info "Mode: ${MODE}"
