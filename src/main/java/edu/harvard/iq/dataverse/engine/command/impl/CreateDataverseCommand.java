@@ -12,10 +12,10 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -103,11 +103,11 @@ public class CreateDataverseCommand extends AbstractWriteDataverseCommand {
         DataverseRole adminRole = ctxt.roles().findBuiltinRoleByAlias(DataverseRole.ADMIN);
         String privateUrlToken = null;
 
-        ctxt.roles().save(new RoleAssignment(adminRole, getRequest().getUser(), managedDv, privateUrlToken), false);
+        ctxt.roles().save(new RoleAssignment(adminRole, getRequest().getUser(), managedDv, privateUrlToken), false, getRequest());
         // Add additional role assignments if inheritance is set
         boolean inheritAllRoles = false;
         String rolesString = ctxt.settings().getValueForKey(SettingsServiceBean.Key.InheritParentRoleAssignments, "");
-        ArrayList<String> rolesToInherit = new ArrayList<String>(Arrays.asList(rolesString.split("\\s*,\\s*")));
+        ArrayList<String> rolesToInherit = new ArrayList<>(ListSplitUtil.split(rolesString));
         if (rolesString.length() > 0) {
             if (!rolesToInherit.isEmpty()) {
                 if (rolesToInherit.contains("*")) {
@@ -128,13 +128,13 @@ public class CreateDataverseCommand extends AbstractWriteDataverseCommand {
                             if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
                                 identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
                                 ctxt.roles().save(new RoleAssignment(role.getRole(),
-                                        ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken), false);
+                                        ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken), false, getRequest());
                             } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
                                 identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
                                 Group roleGroup = ctxt.groups().getGroup(identifier);
                                 if (roleGroup != null) {
                                     ctxt.roles().save(new RoleAssignment(role.getRole(),
-                                            roleGroup, managedDv, privateUrlToken), false);
+                                            roleGroup, managedDv, privateUrlToken), false, getRequest());
                                 }
                             }
                         }

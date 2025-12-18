@@ -57,6 +57,15 @@ Allow CORS for S3 Buckets
 **IMPORTANT:** One additional step that is required to enable direct uploads via a Dataverse installation and for direct download to work with previewers and direct upload to work with dvwebloader (:ref:`folder-upload`) is to allow cross site (CORS) requests on your S3 store.
 The example below shows how to enable CORS rules (to support upload and download) on a bucket using the AWS CLI command line tool. Note that you may want to limit the AllowedOrigins and/or AllowedHeaders further.  https://github.com/gdcc/dataverse-previewers/wiki/Using-Previewers-with-download-redirects-from-S3 has some additional information about doing this.
 
+Dataverse itself will only emit the necessary ``Access-Control-*`` headers to browsers when CORS has been explicitly enabled via the JVM/MicroProfile setting :ref:`dataverse.cors.origin <dataverse.cors.origin>`. You must both:
+
+* Configure an appropriate ``dataverse.cors.origin`` value (single origin, comma-separated list, or ``*``) on the Dataverse application server; and
+* Configure a matching/compatible CORS policy on each S3 bucket (and any CDN/proxy in front of it) that will be used for direct upload or for redirect (download-redirect) operations consumed by previewers.
+
+If you specify multiple origins in ``dataverse.cors.origin`` Dataverse will echo back the requesting origin (when it matches) and will include ``Vary: Origin`` so that shared caches do not serve one origin's response to another. If you configure ``*`` Dataverse will respond with ``Access-Control-Allow-Origin: *`` (note that browsers will not allow credentialed requests with a wildcard).
+
+Make sure the bucket CORS configuration ``AllowedOrigins`` is at least as permissive as the origins you configure in ``dataverse.cors.origin``. If the bucket allows ``*`` but the Dataverse application only allows a subset, the browser will still enforce the more restrictive application response.
+
 If you'd like to check the CORS configuration on your bucket before making changes:
 
 ``aws s3api get-bucket-cors --bucket <BUCKET_NAME>``
@@ -156,7 +165,7 @@ Globus File Transfer
 Note: Globus file transfer is still experimental but feedback is welcome! See :ref:`support`.
 
 Users can transfer files via `Globus <https://www.globus.org>`_ into and out of datasets, or reference files on a remote Globus endpoint, when their Dataverse installation is configured to use a Globus accessible store(s) 
-and a community-developed `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ app has been properly installed and configured.
+and a community-developed `dataverse-globus <https://github.com/gdcc/dataverse-globus>`_ app has been properly installed and configured.
 
 Globus endpoints can be in a variety of places, from data centers to personal computers. 
 This means that from within the Dataverse software, a Globus transfer can feel like an upload or a download (with Globus Personal Connect running on your laptop, for example) or it can feel like a true transfer from one server to another (from a cluster in a data center into a Dataverse dataset or vice versa).
@@ -187,6 +196,6 @@ As described in that document, Globus transfers can be initiated by choosing the
 
 An overview of the control and data transfer interactions between components was presented at the 2022 Dataverse Community Meeting and can be viewed in the `Integrations and Tools Session Video <https://youtu.be/3ek7F_Dxcjk?t=5289>`_ around the 1 hr 28 min mark.
 
-See also :ref:`Globus settings <:GlobusSettings>`.
+See also :ref:`Globus settings <:GlobusSettings>` and :ref:`globus-stores`.
 
 An alternative, experimental implementation of Globus polling of ongoing upload transfers has been added in v6.4. This framework does not rely on the instance staying up continuously for the duration of the transfer and saves the state information about Globus upload requests in the database. Due to its experimental nature it is not enabled by default. See the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`) and the JVM option :ref:`dataverse.files.globus-monitoring-server`.

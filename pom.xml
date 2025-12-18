@@ -20,7 +20,11 @@
     <properties>
         <skipUnitTests>false</skipUnitTests>
         <skipIntegrationTests>false</skipIntegrationTests>
-        <it.groups>integration</it.groups>
+        <it.groups>integration,migration</it.groups>
+        <!-- Provide a fallback value that won't break things if JaCoCo prepare-agent steps don't set it. -->
+        <!-- Note: you must use @{} style late variable binding in argLine, otherwise JaCoCo cannot inject the right settings! -->
+        <surefire.jacoco.args>-Ddummy.jacoco.property=true</surefire.jacoco.args>
+        <failsafe.jacoco.args>-Ddummy.jacoco.property=true</failsafe.jacoco.args>
         
         <!-- By default, this module will produce a WAR file. -->
         <!-- This will be switched within the container profile! -->
@@ -32,7 +36,7 @@
         <jhove.version>1.20.1</jhove.version>
         <poi.version>5.4.0</poi.version>
         <tika.version>3.2.2</tika.version>
-        <netcdf.version>5.5.3</netcdf.version>
+        <netcdf.version>5.9.1</netcdf.version>
         
         <openapi.infoTitle>Dataverse API</openapi.infoTitle>
         <openapi.infoVersion>${project.version}</openapi.infoVersion>
@@ -745,35 +749,35 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.dbunit</groupId>
+            <artifactId>dbunit</artifactId>
+            <version>3.0.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>postgresql</artifactId>
+            <artifactId>testcontainers-postgresql</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.github.dasniko</groupId>
             <artifactId>testcontainers-keycloak</artifactId>
-            <version>3.6.0</version>
+            <version>4.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>localstack</artifactId>
+            <artifactId>testcontainers-localstack</artifactId>
             <scope>test</scope>
         </dependency>
         <!--
@@ -834,6 +838,10 @@
                 <includes>
                     <include>*.properties</include>
                     <include>**/*.properties</include>
+                    <!-- As of https://github.com/payara/Payara/issues/7741, Payara uses the jakarta.mime.types file. 
+                         The original mime.types file (with the same content) is retained to support the FileUtilTest.testGZipFile.
+                     -->
+                    <include>**/jakarta.mime.types</include>
                     <include>**/mime.types</include>
                     <include>**/*.R</include>
                 </includes>
@@ -1036,7 +1044,13 @@
                     <!-- testsToExclude come from the profile-->
                     <excludedGroups>${testsToExclude}</excludedGroups>
                     <skip>${skipUnitTests}</skip>
-                    <argLine>${surefire.jacoco.args} ${argLine}</argLine>
+                    <!--
+                        Note: The @{} syntax here is used for late variable binding.
+                              Otherwise we would not be able to override the defaults in <properties> with prepare-agent above.
+                              See also https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html
+                              It's ignored by IntelliJ argLine parsing.
+                    -->
+                    <argLine>@{surefire.jacoco.args} ${argLine}</argLine>
                     <excludes>
                         <exclude>**/builtin-users-spi/**</exclude>
                     </excludes>
@@ -1048,8 +1062,17 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <groups>${it.groups}</groups>
-                    <argLine>${failsafe.jacoco.args} ${argLine}</argLine>
+                    <!--
+                        Note: The @{} syntax here is used for late variable binding.
+                              Otherwise we would not be able to override the defaults in <properties> with prepare-agent above.
+                              See also https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html
+                              It's ignored by IntelliJ argLine parsing.
+                    -->
+                    <argLine>@{failsafe.jacoco.args} ${argLine}</argLine>
                     <skip>${skipIntegrationTests}</skip>
+                    <systemPropertyVariables>
+                        <postgresql.server.version>${postgresql.server.version}</postgresql.server.version>
+                    </systemPropertyVariables>
                 </configuration>
                 <executions>
                     <execution>
@@ -1266,6 +1289,7 @@
                                 </image>
                             </images>
                             <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
+                            <containerNamePattern>%a</containerNamePattern>
                         </configuration>
                     </plugin>
                     <plugin>
