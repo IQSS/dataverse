@@ -4,8 +4,15 @@ import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonValue;
+
+import java.io.StringReader;
 
 import static edu.harvard.iq.dataverse.dataset.DatasetUtil.getLocaleCurationStatusLabel;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonRoleAssignments;
@@ -80,8 +87,6 @@ public class InAppNotificationsJsonPrinter {
                 addRequestFileAccessFields(notificationJson, userNotification, requestor);
                 break;
             case REQUESTEDFILEACCESS:
-            case GRANTFILEACCESS:
-            case REJECTFILEACCESS:
                 addDataFileFields(notificationJson, userNotification);
                 break;
             case DATASETCREATED:
@@ -116,6 +121,8 @@ public class InAppNotificationsJsonPrinter {
             case GLOBUSUPLOADLOCALFAILURE:
             case GLOBUSDOWNLOADCOMPLETEDWITHERRORS:
             case CHECKSUMFAIL:
+            case GRANTFILEACCESS:
+            case REJECTFILEACCESS:
                 addDatasetFields(notificationJson, userNotification);
                 break;
             case INGESTCOMPLETED:
@@ -187,6 +194,8 @@ public class InAppNotificationsJsonPrinter {
         if (dataFile != null) {
             notificationJson.add(KEY_DATAFILE_ID, dataFile.getId());
             notificationJson.add(KEY_DATAFILE_DISPLAY_NAME, dataFile.getDisplayName());
+            notificationJson.add(KEY_DATASET_DISPLAY_NAME, dataFile.getOwner().getDisplayName());
+            notificationJson.add(KEY_DATASET_PERSISTENT_ID, dataFile.getOwner().getGlobalId().asString());
         } else {
             notificationJson.add(KEY_OBJECT_DELETED, true);
         }
@@ -263,7 +272,25 @@ public class InAppNotificationsJsonPrinter {
 
     private void addDatasetMentionedFields(final NullSafeJsonBuilder notificationJson, final UserNotification userNotification) {
         addDatasetFields(notificationJson, userNotification);
-        notificationJson.add(KEY_ADDITIONAL_INFO, userNotification.getAdditionalInfo());
+
+        final String additionalInfo = userNotification.getAdditionalInfo();
+
+        if (additionalInfo != null && !additionalInfo.isEmpty()) {
+            try (StringReader stringReader = new StringReader(additionalInfo);
+                 JsonReader jsonReader = Json.createReader(stringReader)) {
+
+                // Try to parse the string into a JSON value
+                JsonValue additionalInfoJson = jsonReader.readValue();
+
+                // If successful, add the parsed JSON value.
+                notificationJson.add(KEY_ADDITIONAL_INFO, additionalInfoJson);
+
+            } catch (JsonException e) {
+                // If parsing fails, it's not a valid JSON string.
+                // Fall back to adding it as a simple string.
+                notificationJson.add(KEY_ADDITIONAL_INFO, additionalInfo);
+            }
+        }
     }
 
     private void addDatasetMovedFields(final NullSafeJsonBuilder notificationJson, final UserNotification userNotification, final AuthenticatedUser requestor) {
