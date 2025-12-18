@@ -8,7 +8,7 @@ set -euo pipefail
 # This script has two modes: watching and one-shot.
 #
 # In watching mode, it will:
-# 1. Watch changes for changes to the Dataverse Metadata Fields by polling the REST API
+# 1. Watch for changes to the Dataverse Metadata Fields by polling the REST API
 # 2. Download the field definitions and apply them using update-fields.sh
 # 3. Make sure there are actually changes between the current and the new schema.xml
 # 4. Create a backup copy of the live schema.xml before replacing it
@@ -64,7 +64,7 @@ DEFAULT_WAIT_RETRY_PERIOD="5"
 DEFAULT_WAIT_MAX_RETRIES="60"
 DEFAULT_UPGRADE_MODE="false"
 # Note: this is specific to the configbaker container use case. Override with -P!
-DEFAULT_UPGRADE_SOURCE_PATH="${SOLR_TEMPLATE}/conf/schema.xml"
+DEFAULT_UPGRADE_SOURCE_PATH="${SOLR_TEMPLATE:-/opt/solr/template}/conf/schema.xml"
 
 # Initialize from environment or defaults
 DATAVERSE_URL="${DATAVERSE_URL:-${DEFAULT_DATAVERSE_URL}}"
@@ -127,20 +127,6 @@ mark_not_ready() {
         log_info "Marked as not ready"
     fi
 }
-
-# Cleanup function
-cleanup() {
-    log_info "Shutting down..."
-    mark_not_ready
-    release_schema_lock
-    if [[ "${HEALTH_CHECKS_ENABLED}" == "true" ]]; then
-        rm -f "${LIVENESS_FILE}" 2>/dev/null || true
-    fi
-    exit 0
-}
-
-# Set up signal handlers
-trap cleanup SIGTERM SIGINT SIGQUIT
 
 # Usage information
 usage() {
@@ -401,9 +387,23 @@ release_schema_lock() {
     if [[ -n "${LOCK_FD}" ]]; then
         log_info "Releasing schema lock"
         exec {LOCK_FD}>&- 2>/dev/null || true
-        unset LOCK_FD
+        LOCK_FD=""
     fi
 }
+
+# Cleanup function
+cleanup() {
+    log_info "Shutting down..."
+    mark_not_ready
+    release_schema_lock
+    if [[ "${HEALTH_CHECKS_ENABLED}" == "true" ]]; then
+        rm -f "${LIVENESS_FILE}" 2>/dev/null || true
+    fi
+    exit 0
+}
+
+# Set up signal handlers (all necessary functions have been setup beforehand)
+trap cleanup SIGTERM SIGINT SIGQUIT
 
 # Initialize working directory
 init_work_dir() {
@@ -631,25 +631,30 @@ schema_has_changes() {
     return 0
 }
 
-# Backup current schema
-backup_schema() {
+generate_backup_filename() {
     local schema_file="$1"
     # shellcheck disable=2155
     local timestamp="$(date +'%Y%m%d_%H%M%S')"
     local backup_file="${schema_file}.backup.${timestamp}"
+    echo "$backup_file"
+}
+
+# Backup current schema
+backup_schema() {
+    local schema_file="$1"
+    local backup_file="$2"
 
     if [[ ! -f "${schema_file}" ]]; then
         log_warn "No existing schema to backup"
         return 0
     fi
 
-    log_info "Backing up schema to ${backup_file}"
+    log_info "Backing up schema ${schema_file} to ${backup_file}"
     if ! cp "${schema_file}" "${backup_file}"; then
         log_error "Failed to backup schema"
         return 1
     fi
 
-    echo "${backup_file}"
     return 0
 }
 
@@ -788,8 +793,9 @@ process_schema_update() {
 
     # Critical section begins here
     {
+        backup_file=$(generate_backup_filename "${SCHEMA_TARGET_PATH}")
         # Step 4: Backup current schema
-        if ! backup_file=$(backup_schema "${SCHEMA_TARGET_PATH}"); then
+        if ! backup_schema "${SCHEMA_TARGET_PATH}" "${backup_file}"; then
             release_schema_lock
             return 1
         fi
@@ -889,7 +895,7 @@ run_watch() {
                     needs_update="true"
                     pending_metadata_file="${metadata_file}"
                 else
-                    log_debug "No metadata changes detected"
+                    log_info "No metadata changes detected"
                 fi
             else
                 log_error "Failed to fetch metadata fields, will retry"
@@ -1071,7 +1077,7 @@ main() {
     fi
 
     if [[ -n "${SOLR_USERNAME:-}" && -n "${SOLR_PASSWORD:-}" ]]; then
-        SOLR_AUTH_HEADER="Authorization: Basic $(echo -n "${SOLR_USERNAME}:${SOLR_PASSWORD}" | base64 -w 0)"
+        SOLR_AUTH_HEADER="Authorization: Basic $(echo -n "${SOLR_USERNAME}:${SOLR_PASSWORD}" | base64 | tr -d '\n')"
         log_info "Solr authentication configured (HTTP Basic)"
     fi
 
@@ -1157,9 +1163,11 @@ main() {
     case "${MODE}" in
         watch)
             run_watch
+            exit $?
             ;;
         oneshot)
             run_oneshot
+            exit $?
             ;;
     esac
 }
