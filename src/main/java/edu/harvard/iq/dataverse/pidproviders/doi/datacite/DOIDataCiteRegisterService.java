@@ -95,7 +95,14 @@ public class DOIDataCiteRegisterService {
             }
             retString = "metadata:\\r" + client.postMetadata(xmlMetadata) + "\\r";
         }
-        if (!target.equals(client.getUrl(numericIdentifier))) {
+        String currentUrl = null;
+        try {
+            //May get a 204 if the DOI is still draft
+            currentUrl = client.getUrl(numericIdentifier);
+        } catch (RuntimeException ex) {
+            logger.fine("Error getting Url for " + numericIdentifier + ": " + ex.getMessage());
+        }
+        if (!target.equals(currentUrl)) {
             logger.info("Updating target URL to " +  target);
             client.postUrl(numericIdentifier, target);
             retString = retString + "url:\\r" + target;

@@ -7,6 +7,9 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DuraCloudContext;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DuraCloudHost;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DuraCloudPort;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
@@ -36,9 +39,9 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
     private static final Logger logger = Logger.getLogger(DuraCloudSubmitToArchiveCommand.class.getName());
     private static final String DEFAULT_PORT = "443";
     private static final String DEFAULT_CONTEXT = "durastore";
-    private static final String DURACLOUD_PORT = ":DuraCloudPort";
-    private static final String DURACLOUD_HOST = ":DuraCloudHost";
-    private static final String DURACLOUD_CONTEXT = ":DuraCloudContext";
+    private static final String DURACLOUD_PORT = DuraCloudPort.toString();
+    private static final String DURACLOUD_HOST = DuraCloudHost.toString();
+    private static final String DURACLOUD_CONTEXT = DuraCloudContext.toString();
 
 
     public DuraCloudSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {

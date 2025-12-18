@@ -2401,7 +2401,7 @@ public class DatasetsIT {
         Response getDefaultSetting = UtilIT.getSetting(SettingsServiceBean.Key.FileFixityChecksumAlgorithm);
         getDefaultSetting.prettyPrint();
         getDefaultSetting.then().assertThat()
-                .body("message", equalTo("Setting :FileFixityChecksumAlgorithm not found"));
+                .body("message", equalTo("Setting :FileFixityChecksumAlgorithm not found."));
 
         Response uploadMd5File = UtilIT.uploadRandomFile(dataset1PersistentId, apiToken);
         uploadMd5File.prettyPrint();
@@ -2814,7 +2814,7 @@ public class DatasetsIT {
         Response authorsGetsBadNews = UtilIT.getNotifications(apiToken);
         authorsGetsBadNews.prettyPrint();
         authorsGetsBadNews.then().assertThat()
-                .body("data.notifications[0].type", equalTo("CHECKSUMFAIL"))
+                .body("data[0].type", equalTo("CHECKSUMFAIL"))
                 .statusCode(OK.getStatusCode());
 
         Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
@@ -3703,9 +3703,17 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Look for a second description
         jsonLDString = getData(response.getBody().asString());
         jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
-        assertEquals("New description",
-                ((JsonObject) jsonLDObject.getJsonArray("https://dataverse.org/schema/citation/dsDescription").get(1))
-                        .getString("https://dataverse.org/schema/citation/dsDescriptionValue"));
+        JsonArray descriptions = jsonLDObject.getJsonArray("https://dataverse.org/schema/citation/dsDescription");
+        assertEquals(2, descriptions.size(), "Should have two descriptions");
+        boolean foundNewDescription = false;
+        for (int i = 0; i < descriptions.size(); i++) {
+            JsonObject desc = descriptions.getJsonObject(i);
+            if ("New description".equals(desc.getString("https://dataverse.org/schema/citation/dsDescriptionValue"))) {
+                foundNewDescription = true;
+                break;
+            }
+        }
+        assertTrue(foundNewDescription, "Should find 'New description' in the descriptions array");
 
         // Can't add terms of use with replace=false and a value already set (single
         // valued field)

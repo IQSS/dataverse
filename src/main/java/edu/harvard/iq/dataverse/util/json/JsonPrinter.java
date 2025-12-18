@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datasetversionsummaries.*;
@@ -1670,19 +1671,14 @@ public class JsonPrinter {
         return jsonArrayBuilder;
     }
 
-    public static JsonObjectBuilder jsonStorageDriver(String storageDriverId, Dataset dataset) {
+    public static JsonObjectBuilder jsonStorageDriver(String storageDriverId) {
         JsonObjectBuilder jsonObjectBuilder = new NullSafeJsonBuilder();
         jsonObjectBuilder.add("name", storageDriverId);
-        jsonObjectBuilder.add("type", DataAccess.getDriverType(storageDriverId));
-        jsonObjectBuilder.add("label", DataAccess.getStorageDriverLabelFor(storageDriverId));
-        if (dataset != null) {
-            jsonObjectBuilder.add("directUpload", DataAccess.uploadToDatasetAllowed(dataset, storageDriverId));
-            try {
-                jsonObjectBuilder.add("directDownload", DataAccess.getStorageIO(dataset).downloadRedirectEnabled());
-            } catch (IOException ex) {
-                logger.fine("Failed to get Storage IO for dataset " + ex.getMessage());
-            }
-        }
+        jsonObjectBuilder.add("type", StorageIO.getConfigParamForDriver(storageDriverId, StorageIO.TYPE));
+        jsonObjectBuilder.add("label", StorageIO.getConfigParamForDriver(storageDriverId, StorageIO.LABEL));
+        jsonObjectBuilder.add("directUpload", Boolean.parseBoolean(StorageIO.getConfigParamForDriver(storageDriverId, StorageIO.UPLOAD_REDIRECT)));
+        jsonObjectBuilder.add("directDownload", Boolean.parseBoolean(StorageIO.getConfigParamForDriver(storageDriverId, StorageIO.DOWNLOAD_REDIRECT)));
+        jsonObjectBuilder.add("uploadOutOfBand", Boolean.parseBoolean(StorageIO.getConfigParamForDriver(storageDriverId, StorageIO.UPLOAD_OUT_OF_BAND)));
 
         return jsonObjectBuilder;
     }
@@ -1719,7 +1715,17 @@ public class JsonPrinter {
 
         return notificationsArray;
     }
+    
+    public static JsonObjectBuilder jsonLanguage(String locale, String title) {
+        // returns a single metadata language entry
+        return jsonObjectBuilder().add("locale", locale).add("title", title);
+    }
 
+    public static JsonArrayBuilder jsonLanguage(Map<String, String> langMap) {
+        // returns an array of metadatalanguages
+        return Json.createArrayBuilder(langMap.entrySet().stream().map(entry -> jsonLanguage(entry.getKey(), entry.getValue())).toList());
+    }
+    
     public static JsonArrayBuilder jsonDatasetVersionSummaries(List<DatasetVersionSummary> summaries) {
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
         summaries.stream()
