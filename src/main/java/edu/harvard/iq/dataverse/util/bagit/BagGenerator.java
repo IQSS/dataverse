@@ -830,7 +830,7 @@ public class BagGenerator {
         String orgAddress = JvmSettings.BAGIT_SOURCEORG_ADDRESS.lookupOptional(String.class).orElse("<Full address>");
         String orgEmail = JvmSettings.BAGIT_SOURCEORG_EMAIL.lookupOptional(String.class).orElse("<Email address>");
 
-        info.append("Source-Organization: " + orgName);
+        info.append("Source-Organization: " + multilineWrap(orgName));
         // ToDo - make configurable
         info.append(CRLF);
 
@@ -880,8 +880,7 @@ public class BagGenerator {
         if (aggregation.has(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel())) {
             catalog = aggregation.get(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel()).getAsString();
         }
-        catalog=catalog.trim().replaceAll("[\\r\\n:]","_");
-        info.append(catalog + ":" + multilineWrap(aggregation.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString()));
+        info.append(multilineWrap(catalog + ":" + aggregation.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString()));
         info.append(CRLF);
 
         //Add a version number for our bag type - should be updated with any change to the bag content/structure
