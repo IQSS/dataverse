@@ -84,7 +84,7 @@ fi
 # API INTERACTION
 
 # Define an auth header argument (enabling usage of different ways)
-AUTH_HEADER_ARG=""
+AUTH_HEADER_ARG=()
 
 # Check for Dataverse Unblock API Key present (option with file/env var)
 # This is only required if the host is not localhost (then there may be no key necessary)
@@ -110,7 +110,7 @@ if ! [[ "${DATAVERSE_URL}" == *"://localhost"* ]] || [ -n "${ADMIN_API_UNBLOCK_K
   fi
 
   # Build the header argument for Admin API Authentication via unblock key
-  AUTH_HEADER_ARG="X-Dataverse-unblock-key: ${ADMIN_API_UNBLOCK_KEY}"
+  AUTH_HEADER_ARG=(-H "X-Dataverse-unblock-key: ${ADMIN_API_UNBLOCK_KEY}")
 fi
 
 # Check or wait for Dataverse API being responsive
@@ -121,7 +121,7 @@ wait4x http "${DATAVERSE_URL}/api/info/version" -i 8s -t "$TIMEOUT" --expect-sta
 CURRENT_SETTINGS=$(mktemp)
 echo "Retrieving settings from running instance."
 # TODO: Do we need to support pre v6.7 style unblock key query parameter?
-curl -sSL --fail-with-body -o "${CURRENT_SETTINGS}" -H "${AUTH_HEADER_ARG}" "${DATAVERSE_URL}/api/admin/settings" \
+curl -sSL --fail-with-body -o "${CURRENT_SETTINGS}" "${AUTH_HEADER_ARG[@]}" "${DATAVERSE_URL}/api/admin/settings" \
   || error "Failed. Response message: $( cat "${CURRENT_SETTINGS}")" \
   && echo "Success!"
   # TODO: while it's nice to have the current settings written out, it may contain sensitive information (so don't).
@@ -130,6 +130,6 @@ curl -sSL --fail-with-body -o "${CURRENT_SETTINGS}" -H "${AUTH_HEADER_ARG}" "${D
 # We need to make the settings update atomic.
 echo "Replacing settings."
 RESPONSE=$(mktemp)
-curl -sSL --fail-with-body -o "${RESPONSE}" -X PUT -H "${AUTH_HEADER_ARG}" --json @"${CONV_CONF_FILE}" "${DATAVERSE_URL}/api/admin/settings" \
+curl -sSL --fail-with-body -o "${RESPONSE}" -X PUT "${AUTH_HEADER_ARG[@]}" --json @"${CONV_CONF_FILE}" "${DATAVERSE_URL}/api/admin/settings" \
   || error "Failed. Response message: $( jq ".message" < "${RESPONSE}" )" \
   && ( echo -e "Success!\nOperations executed: "; jq '.data' < "$RESPONSE" )
