@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -21,6 +22,7 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -68,8 +70,8 @@ public class LocalContexts extends AbstractApiBean {
                 return error(Response.Status.NOT_FOUND, "LocalContexts API configuration is missing.");
             }
 
-            String datasetDoi = dataset.getGlobalId().asString();
-            String apiUrl = localContextsUrl + "api/v2/projects/?publication_doi=" + datasetDoi;
+            String datasetDoi = dataset.getGlobalId().asRawIdentifier();
+            String apiUrl = localContextsUrl + "api/v2/projects/?doi=" + datasetDoi;
             logger.fine("URL used: " + apiUrl);
             try {
                 HttpClient client = HttpClient.newHttpClient();
@@ -141,18 +143,20 @@ public class LocalContexts extends AbstractApiBean {
                     // Check if the response contains a "publication_doi" key
                     if (jsonResponse.containsKey("external_ids")) {
                         JsonObject externalIds = jsonResponse.getJsonObject("external_ids");
-                        if (externalIds.containsKey("publication_doi")) {
-                            String responseDoi = externalIds.getString("publication_doi");
-                            String datasetDoi = dataset.getGlobalId().asString();
+                        if (externalIds.containsKey("doi")) {
+                            JsonArray responseDois = externalIds.getJsonArray("doi");
+                            GlobalId datasetPid = dataset.getGlobalId();
                             // Compare the DOI from the response with the dataset's DOI
-                            if (responseDoi.equals(datasetDoi)) {
-                                // Return the JSON response as-is
-                                return ok(jsonResponse);
-                            } else {
-                                // DOI mismatch, return 404
-                                return error(Response.Status.NOT_FOUND,
-                                        "LocalContexts information not found for this dataset.");
+                            for (int i = 0; i < responseDois.size(); i++) {
+                                String doiValue = responseDois.getString(i);
+                                if (doiValue.equals(datasetPid.asString()) || doiValue.equals(datasetPid.asURL())) {
+                                    // Return the JSON response as-is
+                                    return ok(jsonResponse);
+                                }
                             }
+                            // DOI mismatch, return 404
+                            return error(Response.Status.NOT_FOUND,
+                                    "LocalContexts information not found for this dataset.");
                         } else {
                             // "publication_doi" key not found in the response, return 404
                             return error(Response.Status.NOT_FOUND, "Invalid response from Local Contexts API.");

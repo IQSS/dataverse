@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.pidproviders.FailedPIDResolutionLoggingServiceBe
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
@@ -1118,5 +1119,25 @@ public class DatasetServiceBean implements java.io.Serializable {
         Long c = em.createNamedQuery("Dataset.countFilesByOwnerId", Long.class).setParameter("ownerId", id).getSingleResult();
         return c.intValue(); // ignoring the truncation since the number should never be too large
     }
-
+    
+    /**
+     * 
+     * @todo: consider moving the quota method, from here and the DataverseServiceBean,
+     * to DvObjectServiceBean. 
+     */
+    public void saveStorageQuota(Dataset target, Long allocation) {
+        StorageQuota storageQuota = target.getStorageQuota();
+        
+        if (storageQuota != null) {
+            storageQuota.setAllocation(allocation);
+            em.merge(storageQuota);
+        } else {
+            storageQuota = new StorageQuota(); 
+            storageQuota.setDefinitionPoint(target);
+            storageQuota.setAllocation(allocation);
+            target.setStorageQuota(storageQuota);
+            em.persist(storageQuota);
+        }
+        em.flush();
+    }
 }
