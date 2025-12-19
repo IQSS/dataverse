@@ -2740,8 +2740,8 @@ public class DataversesIT {
                 .body("data.name", CoreMatchers.notNullValue())
                 .body("data.type", CoreMatchers.notNullValue())
                 .body("data.label", CoreMatchers.notNullValue())
-                .body("data.directUpload", CoreMatchers.nullValue())
-                .body("data.directDownload", CoreMatchers.nullValue())
+                .body("data.directUpload", CoreMatchers.notNullValue())
+                .body("data.directDownload", CoreMatchers.notNullValue())
                 .statusCode(200);
 
         // Root without default is undefined
