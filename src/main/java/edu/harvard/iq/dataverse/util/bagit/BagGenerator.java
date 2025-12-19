@@ -854,19 +854,17 @@ public class BagGenerator {
         String orgAddress = JvmSettings.BAGIT_SOURCEORG_ADDRESS.lookupOptional(String.class).orElse("<Full address>");
         String orgEmail = JvmSettings.BAGIT_SOURCEORG_EMAIL.lookupOptional(String.class).orElse("<Email address>");
 
-        info.append(SOURCE_ORGANIZATION + multilineWrap(orgName, SOURCE_ORGANIZATION.length()));
+        info.append(multilineWrap(SOURCE_ORGANIZATION + orgName));
         // ToDo - make configurable
         info.append(CRLF);
 
-        info.append(ORGANIZATION_ADDRESS + multilineWrap(orgAddress, ORGANIZATION_ADDRESS.length()));
+        info.append(multilineWrap(ORGANIZATION_ADDRESS + orgAddress));
 
         info.append(CRLF);
 
         // Not a BagIt standard name
-        info.append(ORGANIZATION_EMAIL + multilineWrap(orgEmail, ORGANIZATION_EMAIL.length()));
+        info.append(multilineWrap(ORGANIZATION_EMAIL + orgEmail));
         info.append(CRLF);
-
-        info.append(EXTERNAL_DESCRIPTION);
 
         /*
          * Description, and it's subfields, are terms from citation.tsv whose mapping to
@@ -878,9 +876,8 @@ public class BagGenerator {
         if (descriptionTerm == null) {
             logger.warning("No description available for BagIt Info file");
         } else {
-            info.append(multilineWrap(
-                    getSingleValue(aggregation.get(descriptionTerm.getLabel()), descriptionTextTerm.getLabel()),
-                    EXTERNAL_DESCRIPTION.length()));
+            info.append(multilineWrap(EXTERNAL_DESCRIPTION
+                    + getSingleValue(aggregation.get(descriptionTerm.getLabel()), descriptionTextTerm.getLabel())));
 
             info.append(CRLF);
         }
@@ -902,14 +899,12 @@ public class BagGenerator {
         info.append(Long.toString(dataCount));
         info.append(CRLF);
 
-        info.append(INTERNAL_SENDER_IDENTIFIER);
         String catalog = orgName + " Catalog";
         if (aggregation.has(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel())) {
             catalog = aggregation.get(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel()).getAsString();
         }
-        info.append(
-                multilineWrap(catalog + ":" + aggregation.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString(),
-                        INTERNAL_SENDER_IDENTIFIER.length()));
+        info.append(multilineWrap(INTERNAL_SENDER_IDENTIFIER + catalog + ":"
+                + aggregation.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString()));
         info.append(CRLF);
 
         // Add a version number for our bag type - should be updated with any change to
@@ -920,7 +915,7 @@ public class BagGenerator {
 
     }
 
-    static private String multilineWrap(String value, int labelLength) {
+    static private String multilineWrap(String value) {
         // Normalize line breaks and ensure all lines after the first are indented
         String[] lines = value.split("\\r?\\n");
         StringBuilder wrappedValue = new StringBuilder();
@@ -932,8 +927,7 @@ public class BagGenerator {
             // file
             String line = lines[i].trim();
             if (line.length() > 0) {
-                // Recommended line length, including the label or indents is 79, so we'll wrap
-                // at 78 to assure subsequent lines with a space are still < 79 total
+                // Recommended line length, including the label or indents is 79
                 String wrapped = lineWrap(line, 79, CRLF + " ", true);
                 wrappedValue.append(wrapped);
                 if (i < lines.length - 1) {
@@ -944,6 +938,7 @@ public class BagGenerator {
         return wrappedValue.toString();
     }
 
+    /** Adapted from Apache WordUtils.wrap() - make subsequent lines shorter by the length of any spaces in newLineStr*/
     public static String lineWrap(final String str, int wrapLength, String newLineStr, final boolean wrapLongWords) {
         if (str == null) {
             return null;
@@ -954,17 +949,30 @@ public class BagGenerator {
         if (wrapLength < 1) {
             wrapLength = 1;
         }
+
+        // Calculate the indent length (characters after CRLF in newLineStr)
+        int indentLength = 0;
+        int crlfIndex = newLineStr.lastIndexOf("\n");
+        if (crlfIndex != -1) {
+            indentLength = newLineStr.length() - crlfIndex -1;
+        }
+
         String wrapOn = " ";
         final Pattern patternToWrapOn = Pattern.compile(wrapOn);
         final int inputLineLength = str.length();
         int offset = 0;
         final StringBuilder wrappedLine = new StringBuilder(inputLineLength + 32);
         int matcherSize = -1;
+        boolean isFirstLine = true;
 
         while (offset < inputLineLength) {
+            // Adjust wrap length based on whether this is the first line or subsequent
+            // lines
+            int currentWrapLength = isFirstLine ? wrapLength : (wrapLength - indentLength);
+
             int spaceToWrapAt = -1;
             Matcher matcher = patternToWrapOn.matcher(str.substring(offset,
-                    Math.min((int) Math.min(Integer.MAX_VALUE, offset + wrapLength + 1L), inputLineLength)));
+                    Math.min((int) Math.min(Integer.MAX_VALUE, offset + currentWrapLength + 1L), inputLineLength)));
             if (matcher.find()) {
                 if (matcher.start() == 0) {
                     matcherSize = matcher.end();
@@ -978,7 +986,7 @@ public class BagGenerator {
             }
 
             // only last line without leading spaces is left
-            if (inputLineLength - offset <= wrapLength) {
+            if (inputLineLength - offset <= currentWrapLength) {
                 break;
             }
 
@@ -991,6 +999,7 @@ public class BagGenerator {
                 wrappedLine.append(str, offset, spaceToWrapAt);
                 wrappedLine.append(newLineStr);
                 offset = spaceToWrapAt + 1;
+                isFirstLine = false;
 
             } else // really long word or URL
             if (wrapLongWords) {
@@ -998,16 +1007,17 @@ public class BagGenerator {
                     offset--;
                 }
                 // wrap really long word one line at a time
-                wrappedLine.append(str, offset, wrapLength + offset);
+                wrappedLine.append(str, offset, currentWrapLength + offset);
                 wrappedLine.append(newLineStr);
-                offset += wrapLength;
+                offset += currentWrapLength;
                 matcherSize = -1;
+                isFirstLine = false;
             } else {
                 // do not wrap really long word, just extend beyond limit
-                matcher = patternToWrapOn.matcher(str.substring(offset + wrapLength));
+                matcher = patternToWrapOn.matcher(str.substring(offset + currentWrapLength));
                 if (matcher.find()) {
                     matcherSize = matcher.end() - matcher.start();
-                    spaceToWrapAt = matcher.start() + offset + wrapLength;
+                    spaceToWrapAt = matcher.start() + offset + currentWrapLength;
                 }
 
                 if (spaceToWrapAt >= 0) {
@@ -1017,6 +1027,7 @@ public class BagGenerator {
                     wrappedLine.append(str, offset, spaceToWrapAt);
                     wrappedLine.append(newLineStr);
                     offset = spaceToWrapAt + 1;
+                    isFirstLine = false;
                 } else {
                     if (matcherSize == 0 && offset != 0) {
                         offset--;
