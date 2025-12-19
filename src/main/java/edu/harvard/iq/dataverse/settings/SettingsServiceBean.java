@@ -178,6 +178,18 @@ public class SettingsServiceBean {
         WorkflowsAdminIpWhitelist,
         
         /**
+         * Represents the workflow identifier for the "pre-publish dataset" operation.
+         * This identifier is used to manage and define the specific workflow
+         * triggered before a dataset is published within the application.
+         */
+        PrePublishDatasetWorkflowId,
+        /**
+         * Represents the configuration key for specifying the workflow identifier that
+         * will be executed after a dataset has been published.
+         */
+        PostPublishDatasetWorkflowId,
+        
+        /**
          * A special secret that, if set, needs to be given when trying to manage internal users.
          * This key was formerly known as "BuiltinUsers.KEY", which never was a setting name aligning with the others.
          * At some future point this setting should be moved to JvmSettings (so we consume proper secrets)
@@ -291,13 +303,14 @@ public class SettingsServiceBean {
          */
         @Deprecated(since = "6.2", forRemoval = true)
         SystemEmail, 
-        /* size limit for Tabular data file ingests */
-        /* (can be set separately for specific ingestable formats; in which 
-        case the actual stored option will be TabularIngestSizeLimit:{FORMAT_NAME}
-        where {FORMAT_NAME} is the format identification tag returned by the 
-        getFormatName() method in the format-specific plugin; "sav" for the 
-        SPSS/sav format, "RData" for R, etc.
-        for example: :TabularIngestSizeLimit:RData */
+        
+        /**
+        <p>Size limit (in bytes) for tabular file ingest. Accepts either a single numeric value or JSON for per-format control.</p>
+        <p>Values: -1 (or absent) = no limit, 0 = disable ingest, >0 = byte threshold, or JSON object.</p>
+        <p>JSON object allows setting a "default" (same as single byte value) and override limits per-format for: CSV, DTA, POR, Rdata, SAV, XLSX.
+        Example: <code>{"default": "536870912", "CSV": "0", "Rdata": "1000000"}</code></p>
+        <p>Format names are case-insensitive. Invalid settings disable ingest until corrected.</p>
+        */
         TabularIngestSizeLimit,
         /* Validate physical files in the dataset when publishing, if the dataset size less than the threshold limit */
         DatasetChecksumValidationSizeLimit,
