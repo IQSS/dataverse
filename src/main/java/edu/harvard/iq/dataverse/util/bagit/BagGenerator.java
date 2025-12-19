@@ -806,40 +806,36 @@ public class BagGenerator {
             if (contacts.isJsonArray()) {
                 JsonArray contactsArray = contacts.getAsJsonArray();
                 for (int i = 0; i < contactsArray.size(); i++) {
-                    info.append(CONTACT_NAME);
+                    
                     JsonElement person = contactsArray.get(i);
                     if (person.isJsonPrimitive()) {
-                        info.append(person.getAsString());
+                        info.append(multilineWrap(CONTACT_NAME + person.getAsString()));
                         info.append(CRLF);
 
                     } else {
                         if (contactNameTerm != null) {
-                            info.append(((JsonObject) person).get(contactNameTerm.getLabel()).getAsString());
+                            info.append(multilineWrap(CONTACT_NAME + ((JsonObject) person).get(contactNameTerm.getLabel()).getAsString()));
                             info.append(CRLF);
                         }
                         if ((contactEmailTerm != null) && ((JsonObject) person).has(contactEmailTerm.getLabel())) {
-                            info.append(CONTACT_EMAIL);
-                            info.append(((JsonObject) person).get(contactEmailTerm.getLabel()).getAsString());
+                            info.append(multilineWrap(CONTACT_EMAIL + ((JsonObject) person).get(contactEmailTerm.getLabel()).getAsString()));
                             info.append(CRLF);
                         }
                     }
                 }
             } else {
-                info.append(CONTACT_NAME);
-
                 if (contacts.isJsonPrimitive()) {
-                    info.append((String) contacts.getAsString());
+                    info.append(multilineWrap(CONTACT_NAME + (String) contacts.getAsString()));
                     info.append(CRLF);
 
                 } else {
                     JsonObject person = contacts.getAsJsonObject();
                     if (contactNameTerm != null) {
-                        info.append(person.get(contactNameTerm.getLabel()).getAsString());
+                        info.append(multilineWrap(CONTACT_NAME + person.get(contactNameTerm.getLabel()).getAsString()));
                         info.append(CRLF);
                     }
                     if ((contactEmailTerm != null) && (person.has(contactEmailTerm.getLabel()))) {
-                        info.append(CONTACT_EMAIL);
-                        info.append(person.get(contactEmailTerm.getLabel()).getAsString());
+                        info.append(multilineWrap(CONTACT_EMAIL + person.get(contactEmailTerm.getLabel()).getAsString()));
                         info.append(CRLF);
                     }
                 }
@@ -885,8 +881,7 @@ public class BagGenerator {
         info.append((new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime())));
         info.append(CRLF);
 
-        info.append(EXTERNAL_IDENTIFIER);
-        info.append(aggregation.get("@id").getAsString());
+        info.append(multilineWrap(EXTERNAL_IDENTIFIER + aggregation.get("@id").getAsString()));
         info.append(CRLF);
 
         info.append(BAG_SIZE);
