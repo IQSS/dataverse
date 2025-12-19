@@ -102,7 +102,7 @@ if ! [[ "${DATAVERSE_URL}" == *"://localhost"* ]] || [ -n "${ADMIN_API_UNBLOCK_K
     if [ -z "${API_KEY_FILE_CONTENT}" ]; then
       error "API key file ${ADMIN_API_UNBLOCK_KEY} appears empty."
     fi
-    ADMIN_API_UNBLOCK_KEY="$API_KEY_CONTENT"
+    ADMIN_API_UNBLOCK_KEY="$API_KEY_FILE_CONTENT"
   fi
   # Very basic error check (as there is no clear format or formal spec for the key)
   if [ ${#ADMIN_API_UNBLOCK_KEY} -lt 5 ]; then
