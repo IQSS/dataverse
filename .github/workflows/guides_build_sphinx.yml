@@ -10,7 +10,7 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - id: lookup
       run: |
         echo "sphinx_version=$(grep Sphinx== ./doc/sphinx-guides/requirements.txt | tr -s "=" | cut -f 2 -d=)" | tee -a "${GITHUB_OUTPUT}"
