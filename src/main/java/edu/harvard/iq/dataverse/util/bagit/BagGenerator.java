@@ -235,8 +235,8 @@ public class BagGenerator {
         dirs = ScatterZipOutputStream.fileBased(tmp);
         // The oremapObject is javax.json.JsonObject and we need
         // com.google.gson.JsonObject for the aggregation object
-        aggregation = (JsonObject) new JsonParser()
-                .parse(oremapObject.getJsonObject(JsonLDTerm.ore("describes").getLabel()).toString());
+        aggregation = (JsonObject) JsonParser
+                .parseString(oremapObject.getJsonObject(JsonLDTerm.ore("describes").getLabel()).toString());
 
         String pidUrlString = aggregation.get("@id").getAsString();
         String pidString = PidUtil.parseAsGlobalID(pidUrlString).asString();
@@ -394,7 +394,6 @@ public class BagGenerator {
 
     public boolean generateBag(String bagName, boolean temp) {
         usetemp = temp;
-        FileOutputStream bagFileOS = null;
         try {
             File origBagFile = getBagFile(bagName);
             File bagFile = origBagFile;
@@ -403,36 +402,36 @@ public class BagGenerator {
                 logger.fine("Writing to: " + bagFile.getAbsolutePath());
             }
             // Create an output stream backed by the file
-            bagFileOS = new FileOutputStream(bagFile);
-            if (generateBag(bagFileOS)) {
-                // The generateBag call sets this.bagName to the correct value
-                validateBagFile(bagFile);
-                if (usetemp) {
-                    logger.fine("Moving tmp zip");
-                    origBagFile.delete();
-                    bagFile.renameTo(origBagFile);
+            try (FileOutputStream bagFileOS = new FileOutputStream(bagFile)) {
+                if (generateBag(bagFileOS)) {
+                    // The generateBag call sets this.bagName to the correct value
+                    validateBagFile(bagFile);
+                    if (usetemp) {
+                        logger.fine("Moving tmp zip");
+                        origBagFile.delete();
+                        bagFile.renameTo(origBagFile);
+                    }
+                    return true;
+                } else {
+                    return false;
                 }
-                return true;
-            } else {
-                return false;
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Bag Exception: ", e);
             e.printStackTrace();
             logger.warning("Failure: Processing failure during Bagit file creation");
             return false;
-        } finally {
-            IOUtils.closeQuietly(bagFileOS);
         }
     }
 
+    @SuppressWarnings("deprecation")
     public void validateBag(String bagId) {
         logger.info("Validating Bag");
         ZipFile zf = null;
         InputStream is = null;
         try {
             File bagFile = getBagFile(bagId);
-            zf = new ZipFile(bagFile);
+            zf = ZipFile.builder().setFile(bagFile).get();
             ZipArchiveEntry entry = zf.getEntry(getValidName(bagId) + "/manifest-sha1.txt");
             if (entry != null) {
                 logger.info("SHA1 hashes used");
@@ -602,9 +601,7 @@ public class BagGenerator {
                 try {
                     if ((childHash == null) | ignorehashes) {
                         // Generate missing hashInputStream inputStream = null;
-                        InputStream inputStream = null;
-                        try {
-                            inputStream = getInputStreamSupplier(dataUrl).get();
+                        try (InputStream inputStream = getInputStreamSupplier(dataUrl).get()) {
 
                             if (hashtype != null) {
                                 if (hashtype.equals(DataFile.ChecksumType.SHA1)) {
@@ -621,8 +618,6 @@ public class BagGenerator {
                         } catch (IOException e) {
                             logger.severe("Failed to read " + childPath);
                             throw e;
-                        } finally {
-                            IOUtils.closeQuietly(inputStream);
                         }
                         if (childHash != null) {
                             JsonObject childHashObject = new JsonObject();
@@ -732,9 +727,7 @@ public class BagGenerator {
 
     private void checkFiles(HashMap<String, String> shaMap, File bagFile) {
         ExecutorService executor = Executors.newFixedThreadPool(numConnections);
-        ZipFile zf = null;
-        try {
-            zf = new ZipFile(bagFile);
+        try (ZipFile zf = ZipFile.builder().setFile(bagFile).get()) {
 
             BagValidationJob.setZipFile(zf);
             BagValidationJob.setBagGenerator(this);
@@ -759,10 +752,7 @@ public class BagGenerator {
                 logger.log(Level.SEVERE, "Hash Calculations interrupted", e);
             }
         } catch (IOException e1) {
-            // TODO Auto-generated catch block
             e1.printStackTrace();
-        } finally {
-            IOUtils.closeQuietly(zf);
         }
         logger.fine("Hash Validations Completed");
 
@@ -1153,10 +1143,8 @@ public class BagGenerator {
                 urlString = urlString + ((urlString.indexOf('?') != -1) ? "&key=" : "?key=") + apiKey;
                 request = new HttpGet(new URI(urlString));
             } catch (MalformedURLException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (URISyntaxException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         } else {
@@ -1211,7 +1199,6 @@ public class BagGenerator {
                             }
                         } catch (ClientProtocolException e) {
                             tries += 5;
-                            // TODO Auto-generated catch block
                             e.printStackTrace();
                         } catch (IOException e) {
                             // Retry if this is a potentially temporary error such
@@ -1228,7 +1215,6 @@ public class BagGenerator {
                     }
 
                 } catch (URISyntaxException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
                 logger.severe("Could not read: " + uriString);
