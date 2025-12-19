@@ -75,7 +75,10 @@ import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.BagGeneratorThreads;
+
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
+import jakarta.enterprise.inject.spi.CDI;
 
 /**
  * Creates an archival zipped Bag for long-term storage. It is intended to
@@ -153,7 +156,6 @@ public class BagGenerator {
     public BagGenerator(OREMap oreMap, String dataciteXml) throws JsonSyntaxException, Exception {
         this.oremap = oreMap;
         this.oremapObject = oreMap.getOREMap();
-                //(JsonObject) new JsonParser().parse(oreMap.getOREMap().toString());
         this.dataciteXml = dataciteXml;
 
         try {
@@ -187,10 +189,6 @@ public class BagGenerator {
 
     public void setIgnoreHashes(boolean val) {
         ignorehashes = val;
-    }
-    
-    public void setDefaultCheckSumType(ChecksumType type) {
-    	hashtype=type;
     }
     
     public static void println(String s) {
@@ -277,6 +275,15 @@ public class BagGenerator {
             }
             String path = sha1Entry.getKey();
             sha1StringBuffer.append(sha1Entry.getValue() + " " + path);
+        }
+        if(hashtype == null) { // No files - still want to send an empty manifest to nominally comply with BagIT specification requirement.
+            try {
+                //Use the current type if we can retrieve it
+                hashtype = CDI.current().select(SystemConfig.class).get().getFileFixityChecksumAlgorithm();
+            } catch (Exception e) {
+                // Default to MD5 if we can't
+                hashtype=DataFile.ChecksumType.MD5;
+            }
         }
         if (!(hashtype == null)) {
             String manifestName = "manifest-";
