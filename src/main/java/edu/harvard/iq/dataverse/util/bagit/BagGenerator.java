@@ -33,6 +33,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -44,7 +46,6 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.parallel.InputStreamSupplier;
 import org.apache.commons.compress.utils.IOUtils;
-import org.apache.commons.text.WordUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -137,6 +138,20 @@ public class BagGenerator {
 
     static PrintWriter pw = null;
 
+    // Bag-info.txt field labels
+    private static final String CONTACT_NAME = "Contact-Name: ";
+    private static final String CONTACT_EMAIL = "Contact-Email: ";
+    private static final String SOURCE_ORGANIZATION = "Source-Organization: ";
+    private static final String ORGANIZATION_ADDRESS = "Organization-Address: ";
+    private static final String ORGANIZATION_EMAIL = "Organization-Email: ";
+    private static final String EXTERNAL_DESCRIPTION = "External-Description: ";
+    private static final String BAGGING_DATE = "Bagging-Date: ";
+    private static final String EXTERNAL_IDENTIFIER = "External-Identifier: ";
+    private static final String BAG_SIZE = "Bag-Size: ";
+    private static final String PAYLOAD_OXUM = "Payload-Oxum: ";
+    private static final String INTERNAL_SENDER_IDENTIFIER = "Internal-Sender-Identifier: ";
+    private static final String DATAVERSE_BAG_VERSION = "Dataverse-Bag-Version: ";
+
     /**
      * This BagGenerator creates a BagIt version 1.0
      * (https://tools.ietf.org/html/draft-kunze-bagit-16) compliant bag that is also
@@ -149,8 +164,9 @@ public class BagGenerator {
      * and zipping are done in parallel, using a connection pool. The required space
      * on disk is ~ n+1/n of the final bag size, e.g. 125% of the bag size for a
      * 4-way parallel zip operation.
-     * @throws Exception 
-     * @throws JsonSyntaxException 
+     * 
+     * @throws Exception
+     * @throws JsonSyntaxException
      */
 
     public BagGenerator(OREMap oreMap, String dataciteXml) throws JsonSyntaxException, Exception {
@@ -159,8 +175,13 @@ public class BagGenerator {
         this.dataciteXml = dataciteXml;
 
         try {
-            // Using Dataverse, all the URLs to be retrieved should be on the current server, so allowing self-signed certs and not verifying hostnames are useful in testing and 
-            // shouldn't be a significant security issue. This should not be allowed for arbitrary OREMap sources.
+            /*
+             * Using Dataverse, all the URLs to be retrieved should be on the current
+             * server, so allowing self-signed certs and not verifying hostnames are useful
+             * in testing and shouldn't be a significant security issue. This should not be
+             * allowed for arbitrary OREMap sources.
+             * 
+             */
             SSLContextBuilder builder = new SSLContextBuilder();
             try {
                 builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
@@ -168,10 +189,11 @@ public class BagGenerator {
                 e.printStackTrace();
             }
 
-            SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(builder.build(), NoopHostnameVerifier.INSTANCE);
+            SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(builder.build(),
+                    NoopHostnameVerifier.INSTANCE);
 
             Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-            		.register("http", PlainConnectionSocketFactory.getSocketFactory())
+                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
                     .register("https", sslConnectionFactory).build();
             cm = new PoolingHttpClientConnectionManager(registry);
 
@@ -190,7 +212,7 @@ public class BagGenerator {
     public void setIgnoreHashes(boolean val) {
         ignorehashes = val;
     }
-    
+
     public static void println(String s) {
         System.out.println(s);
         System.out.flush();
@@ -208,18 +230,18 @@ public class BagGenerator {
      * @return success true/false
      */
     public boolean generateBag(OutputStream outputStream) throws Exception {
-        
 
         File tmp = File.createTempFile("qdr-scatter-dirs", "tmp");
         dirs = ScatterZipOutputStream.fileBased(tmp);
-        // The oremapObject is javax.json.JsonObject and we need com.google.gson.JsonObject for the aggregation object
-        aggregation = (JsonObject) new JsonParser().parse(oremapObject.getJsonObject(JsonLDTerm.ore("describes").getLabel()).toString());
+        // The oremapObject is javax.json.JsonObject and we need
+        // com.google.gson.JsonObject for the aggregation object
+        aggregation = (JsonObject) new JsonParser()
+                .parse(oremapObject.getJsonObject(JsonLDTerm.ore("describes").getLabel()).toString());
 
         String pidUrlString = aggregation.get("@id").getAsString();
-        String pidString=PidUtil.parseAsGlobalID(pidUrlString).asString();
-        bagID = pidString + "v."
-                + aggregation.get(JsonLDTerm.schemaOrg("version").getLabel()).getAsString();
-        
+        String pidString = PidUtil.parseAsGlobalID(pidUrlString).asString();
+        bagID = pidString + "v." + aggregation.get(JsonLDTerm.schemaOrg("version").getLabel()).getAsString();
+
         logger.info("Generating Bag: " + bagID);
         try {
             // Create valid filename from identifier and extend path with
@@ -278,11 +300,11 @@ public class BagGenerator {
         }
         if(hashtype == null) { // No files - still want to send an empty manifest to nominally comply with BagIT specification requirement.
             try {
-                //Use the current type if we can retrieve it
+                // Use the current type if we can retrieve it
                 hashtype = CDI.current().select(SystemConfig.class).get().getFileFixityChecksumAlgorithm();
             } catch (Exception e) {
                 // Default to MD5 if we can't
-                hashtype=DataFile.ChecksumType.MD5;
+                hashtype = DataFile.ChecksumType.MD5;
             }
         }
         if (!(hashtype == null)) {
@@ -300,7 +322,7 @@ public class BagGenerator {
             }
             createFileFromString(manifestName, sha1StringBuffer.toString());
         } else {
-            logger.warning("No Hash values (no files?) sending empty manifest to nominally comply with BagIT specification requirement");
+            logger.warning("No Hash value defined sending empty manifest-md5 to nominally comply with BagIT specification requirement");
             createFileFromString("manifest-md5.txt", "");
         }
         // bagit.txt - Required by spec
@@ -383,7 +405,7 @@ public class BagGenerator {
             // Create an output stream backed by the file
             bagFileOS = new FileOutputStream(bagFile);
             if (generateBag(bagFileOS)) {
-                //The generateBag call sets this.bagName to the correct value
+                // The generateBag call sets this.bagName to the correct value
                 validateBagFile(bagFile);
                 if (usetemp) {
                     logger.fine("Moving tmp zip");
@@ -395,7 +417,7 @@ public class BagGenerator {
                 return false;
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE,"Bag Exception: ", e);
+            logger.log(Level.SEVERE, "Bag Exception: ", e);
             e.printStackTrace();
             logger.warning("Failure: Processing failure during Bagit file creation");
             return false;
@@ -452,9 +474,9 @@ public class BagGenerator {
             logger.info("HashMap Map contains: " + checksumMap.size() + " entries");
             checkFiles(checksumMap, bagFile);
         } catch (IOException io) {
-            logger.log(Level.SEVERE,"Could not validate Hashes", io);
+            logger.log(Level.SEVERE, "Could not validate Hashes", io);
         } catch (Exception e) {
-            logger.log(Level.SEVERE,"Could not validate Hashes", e);
+            logger.log(Level.SEVERE, "Could not validate Hashes", e);
         } finally {
             IOUtils.closeQuietly(zf);
         }
@@ -479,7 +501,7 @@ public class BagGenerator {
 
     private void validateBagFile(File bagFile) throws IOException {
         // Run a confirmation test - should verify all files and hashes
-        
+
         // Check files calculates the hashes and file sizes and reports on
         // whether hashes are correct
         checkFiles(checksumMap, bagFile);
@@ -547,28 +569,27 @@ public class BagGenerator {
                 }
                 String childPath = currentPath + childTitle;
                 JsonElement directoryLabel = child.get(JsonLDTerm.DVCore("directoryLabel").getLabel());
-                if(directoryLabel!=null) {
-                    childPath=currentPath + directoryLabel.getAsString() + "/" + childTitle;
+                if (directoryLabel != null) {
+                    childPath = currentPath + directoryLabel.getAsString() + "/" + childTitle;
                 }
-                
 
                 String childHash = null;
                 if (child.has(JsonLDTerm.checksum.getLabel())) {
-                    ChecksumType childHashType = ChecksumType.fromUri(
-                            child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@type").getAsString());
+                    ChecksumType childHashType = ChecksumType
+                            .fromUri(child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@type").getAsString());
                     if (hashtype == null) {
-                    	//If one wasn't set as a default, pick up what the first child with one uses
+                        // If one wasn't set as a default, pick up what the first child with one uses
                         hashtype = childHashType;
                     }
                     if (hashtype != null && !hashtype.equals(childHashType)) {
                         logger.warning("Multiple hash values in use - will calculate " + hashtype.toString()
-                            + " hashes for " + childTitle);
+                                + " hashes for " + childTitle);
                     } else {
                         childHash = child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@value").getAsString();
                         if (checksumMap.containsValue(childHash)) {
                             // Something else has this hash
                             logger.warning("Duplicate/Collision: " + child.get("@id").getAsString() + " has SHA1 Hash: "
-                                + childHash + " in: " + bagID);
+                                    + childHash + " in: " + bagID);
                         }
                         logger.fine("Adding " + childPath + " with hash " + childHash + " to checksumMap");
                         checksumMap.put(childPath, childHash);
@@ -736,7 +757,7 @@ public class BagGenerator {
                 }
             } catch (InterruptedException e) {
                 logger.log(Level.SEVERE, "Hash Calculations interrupted", e);
-            } 
+            }
         } catch (IOException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
@@ -770,39 +791,41 @@ public class BagGenerator {
         logger.fine("Generating info file");
         StringBuffer info = new StringBuffer();
 
-        /* Contact, and it's subfields, are terms from citation.tsv whose mapping to a formal vocabulary and label in the oremap may change
-         * so we need to find the labels used.
-         */ 
+        /*
+         * Contact, and it's subfields, are terms from citation.tsv whose mapping to a
+         * formal vocabulary and label in the oremap may change so we need to find the
+         * labels used.
+         */
         JsonLDTerm contactTerm = oremap.getContactTerm();
         if ((contactTerm != null) && aggregation.has(contactTerm.getLabel())) {
 
             JsonElement contacts = aggregation.get(contactTerm.getLabel());
             JsonLDTerm contactNameTerm = oremap.getContactNameTerm();
             JsonLDTerm contactEmailTerm = oremap.getContactEmailTerm();
-            
+
             if (contacts.isJsonArray()) {
                 JsonArray contactsArray = contacts.getAsJsonArray();
                 for (int i = 0; i < contactsArray.size(); i++) {
-                    info.append("Contact-Name: ");
+                    info.append(CONTACT_NAME);
                     JsonElement person = contactsArray.get(i);
                     if (person.isJsonPrimitive()) {
                         info.append(person.getAsString());
                         info.append(CRLF);
 
                     } else {
-                        if(contactNameTerm != null) {
-                          info.append(((JsonObject) person).get(contactNameTerm.getLabel()).getAsString());
-                          info.append(CRLF);
+                        if (contactNameTerm != null) {
+                            info.append(((JsonObject) person).get(contactNameTerm.getLabel()).getAsString());
+                            info.append(CRLF);
                         }
-                        if ((contactEmailTerm!=null) &&((JsonObject) person).has(contactEmailTerm.getLabel())) {
-                            info.append("Contact-Email: ");
+                        if ((contactEmailTerm != null) && ((JsonObject) person).has(contactEmailTerm.getLabel())) {
+                            info.append(CONTACT_EMAIL);
                             info.append(((JsonObject) person).get(contactEmailTerm.getLabel()).getAsString());
                             info.append(CRLF);
                         }
                     }
                 }
             } else {
-                info.append("Contact-Name: ");
+                info.append(CONTACT_NAME);
 
                 if (contacts.isJsonPrimitive()) {
                     info.append((String) contacts.getAsString());
@@ -810,12 +833,12 @@ public class BagGenerator {
 
                 } else {
                     JsonObject person = contacts.getAsJsonObject();
-                    if(contactNameTerm != null) {
-                      info.append(person.get(contactNameTerm.getLabel()).getAsString());
-                      info.append(CRLF);
+                    if (contactNameTerm != null) {
+                        info.append(person.get(contactNameTerm.getLabel()).getAsString());
+                        info.append(CRLF);
                     }
-                    if ((contactEmailTerm!=null) && (person.has(contactEmailTerm.getLabel()))) {
-                        info.append("Contact-Email: ");
+                    if ((contactEmailTerm != null) && (person.has(contactEmailTerm.getLabel()))) {
+                        info.append(CONTACT_EMAIL);
                         info.append(person.get(contactEmailTerm.getLabel()).getAsString());
                         info.append(CRLF);
                     }
@@ -826,80 +849,92 @@ public class BagGenerator {
             logger.warning("No contact info available for BagIt Info file");
         }
 
-        String orgName = JvmSettings.BAGIT_SOURCE_ORG_NAME.lookupOptional(String.class).orElse("Dataverse Installation (<Site Url>)");
+        String orgName = JvmSettings.BAGIT_SOURCE_ORG_NAME.lookupOptional(String.class)
+                .orElse("Dataverse Installation (<Site Url>)");
         String orgAddress = JvmSettings.BAGIT_SOURCEORG_ADDRESS.lookupOptional(String.class).orElse("<Full address>");
         String orgEmail = JvmSettings.BAGIT_SOURCEORG_EMAIL.lookupOptional(String.class).orElse("<Email address>");
 
-        info.append("Source-Organization: " + multilineWrap(orgName));
+        info.append(SOURCE_ORGANIZATION + multilineWrap(orgName, SOURCE_ORGANIZATION.length()));
         // ToDo - make configurable
         info.append(CRLF);
 
-        info.append("Organization-Address: " + multilineWrap(orgAddress));
+        info.append(ORGANIZATION_ADDRESS + multilineWrap(orgAddress, ORGANIZATION_ADDRESS.length()));
 
         info.append(CRLF);
 
         // Not a BagIt standard name
-        info.append("Organization-Email: " + orgEmail);
+        info.append(ORGANIZATION_EMAIL + multilineWrap(orgEmail, ORGANIZATION_EMAIL.length()));
         info.append(CRLF);
 
-        info.append("External-Description: ");
-        
-        /* Description, and it's subfields, are terms from citation.tsv whose mapping to a formal vocabulary and label in the oremap may change
-         * so we need to find the labels used.
+        info.append(EXTERNAL_DESCRIPTION);
+
+        /*
+         * Description, and it's subfields, are terms from citation.tsv whose mapping to
+         * a formal vocabulary and label in the oremap may change so we need to find the
+         * labels used.
          */
         JsonLDTerm descriptionTerm = oremap.getDescriptionTerm();
         JsonLDTerm descriptionTextTerm = oremap.getDescriptionTextTerm();
         if (descriptionTerm == null) {
             logger.warning("No description available for BagIt Info file");
         } else {
-            info.append(multilineWrap(getSingleValue(aggregation.get(descriptionTerm.getLabel()),
-                    descriptionTextTerm.getLabel())));
+            info.append(multilineWrap(
+                    getSingleValue(aggregation.get(descriptionTerm.getLabel()), descriptionTextTerm.getLabel()),
+                    EXTERNAL_DESCRIPTION.length()));
 
             info.append(CRLF);
         }
-        info.append("Bagging-Date: ");
+        info.append(BAGGING_DATE);
         info.append((new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime())));
         info.append(CRLF);
 
-        info.append("External-Identifier: ");
+        info.append(EXTERNAL_IDENTIFIER);
         info.append(aggregation.get("@id").getAsString());
         info.append(CRLF);
 
-        info.append("Bag-Size: ");
+        info.append(BAG_SIZE);
         info.append(byteCountToDisplaySize(totalDataSize));
         info.append(CRLF);
 
-        info.append("Payload-Oxum: ");
+        info.append(PAYLOAD_OXUM);
         info.append(Long.toString(totalDataSize));
         info.append(".");
         info.append(Long.toString(dataCount));
         info.append(CRLF);
 
-        info.append("Internal-Sender-Identifier: ");
+        info.append(INTERNAL_SENDER_IDENTIFIER);
         String catalog = orgName + " Catalog";
         if (aggregation.has(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel())) {
             catalog = aggregation.get(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel()).getAsString();
         }
-        info.append(multilineWrap(catalog + ":" + aggregation.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString()));
+        info.append(
+                multilineWrap(catalog + ":" + aggregation.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString(),
+                        INTERNAL_SENDER_IDENTIFIER.length()));
         info.append(CRLF);
 
-        //Add a version number for our bag type - should be updated with any change to the bag content/structure
-        info.append("Dataverse-Bag-Version: 1.0");
+        // Add a version number for our bag type - should be updated with any change to
+        // the bag content/structure
+        info.append(DATAVERSE_BAG_VERSION + "1.0");
         info.append(CRLF);
         return info.toString();
 
     }
 
-    static private String multilineWrap(String value) {
+    static private String multilineWrap(String value, int labelLength) {
         // Normalize line breaks and ensure all lines after the first are indented
-        String[] lines =value.split("\\r?\\n");
+        String[] lines = value.split("\\r?\\n");
         StringBuilder wrappedValue = new StringBuilder();
         for (int i = 0; i < lines.length; i++) {
             // Skip empty lines - RFC8493 (section 7.3) doesn't allow truly empty lines,
-            // While trailing whitespace or whitespace-only lines appear to be allowed, it's not clear that handling them adds value (visually identical entries in Dataverse could result in entries w/ or w/o extra lines in the bag-info.txt file
+            // While trailing whitespace or whitespace-only lines appear to be allowed, it's
+            // not clear that handling them adds value (visually identical entries in
+            // Dataverse could result in entries w/ or w/o extra lines in the bag-info.txt
+            // file
             String line = lines[i].trim();
             if (line.length() > 0) {
-                String wrapped = WordUtils.wrap(line, 78, CRLF + " ", true);
+                // Recommended line length, including the label or indents is 79, so we'll wrap
+                // at 78 to assure subsequent lines with a space are still < 79 total
+                String wrapped = lineWrap(line, 79, CRLF + " ", true);
                 wrappedValue.append(wrapped);
                 if (i < lines.length - 1) {
                     wrappedValue.append(CRLF).append(" ");
@@ -909,25 +944,117 @@ public class BagGenerator {
         return wrappedValue.toString();
     }
 
+    public static String lineWrap(final String str, int wrapLength, String newLineStr, final boolean wrapLongWords) {
+        if (str == null) {
+            return null;
+        }
+        if (newLineStr == null) {
+            newLineStr = System.lineSeparator();
+        }
+        if (wrapLength < 1) {
+            wrapLength = 1;
+        }
+        String wrapOn = " ";
+        final Pattern patternToWrapOn = Pattern.compile(wrapOn);
+        final int inputLineLength = str.length();
+        int offset = 0;
+        final StringBuilder wrappedLine = new StringBuilder(inputLineLength + 32);
+        int matcherSize = -1;
+
+        while (offset < inputLineLength) {
+            int spaceToWrapAt = -1;
+            Matcher matcher = patternToWrapOn.matcher(str.substring(offset,
+                    Math.min((int) Math.min(Integer.MAX_VALUE, offset + wrapLength + 1L), inputLineLength)));
+            if (matcher.find()) {
+                if (matcher.start() == 0) {
+                    matcherSize = matcher.end();
+                    if (matcherSize != 0) {
+                        offset += matcher.end();
+                        continue;
+                    }
+                    offset += 1;
+                }
+                spaceToWrapAt = matcher.start() + offset;
+            }
+
+            // only last line without leading spaces is left
+            if (inputLineLength - offset <= wrapLength) {
+                break;
+            }
+
+            while (matcher.find()) {
+                spaceToWrapAt = matcher.start() + offset;
+            }
+
+            if (spaceToWrapAt >= offset) {
+                // normal case
+                wrappedLine.append(str, offset, spaceToWrapAt);
+                wrappedLine.append(newLineStr);
+                offset = spaceToWrapAt + 1;
+
+            } else // really long word or URL
+            if (wrapLongWords) {
+                if (matcherSize == 0) {
+                    offset--;
+                }
+                // wrap really long word one line at a time
+                wrappedLine.append(str, offset, wrapLength + offset);
+                wrappedLine.append(newLineStr);
+                offset += wrapLength;
+                matcherSize = -1;
+            } else {
+                // do not wrap really long word, just extend beyond limit
+                matcher = patternToWrapOn.matcher(str.substring(offset + wrapLength));
+                if (matcher.find()) {
+                    matcherSize = matcher.end() - matcher.start();
+                    spaceToWrapAt = matcher.start() + offset + wrapLength;
+                }
+
+                if (spaceToWrapAt >= 0) {
+                    if (matcherSize == 0 && offset != 0) {
+                        offset--;
+                    }
+                    wrappedLine.append(str, offset, spaceToWrapAt);
+                    wrappedLine.append(newLineStr);
+                    offset = spaceToWrapAt + 1;
+                } else {
+                    if (matcherSize == 0 && offset != 0) {
+                        offset--;
+                    }
+                    wrappedLine.append(str, offset, str.length());
+                    offset = inputLineLength;
+                    matcherSize = -1;
+                }
+            }
+        }
+
+        if (matcherSize == 0 && offset < inputLineLength) {
+            offset--;
+        }
+
+        // Whatever is left in line is short enough to just pass through
+        wrappedLine.append(str, offset, str.length());
+
+        return wrappedLine.toString();
+    }
+
     /**
      * Kludge - compound values (e.g. for descriptions) are sent as an array of
      * objects containing key/values whereas a single value is sent as one object.
      * For cases where multiple values are sent, create a concatenated string so
      * that information is not lost.
      * 
-     * @param jsonElement
-     *            - the root json object
-     * @param key
-     *            - the key to find a value(s) for
+     * @param jsonElement - the root json object
+     * @param key         - the key to find a value(s) for
      * @return - a single string
      */
     String getSingleValue(JsonElement jsonElement, String key) {
         String val = "";
-        if(jsonElement.isJsonObject()) {
-            JsonObject jsonObject=jsonElement.getAsJsonObject();
+        if (jsonElement.isJsonObject()) {
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
             val = jsonObject.get(key).getAsString();
         } else if (jsonElement.isJsonArray()) {
-            
+
             Iterator<JsonElement> iter = jsonElement.getAsJsonArray().iterator();
             ArrayList<String> stringArray = new ArrayList<String>();
             while (iter.hasNext()) {
@@ -1127,8 +1254,7 @@ public class BagGenerator {
      * Returns a human-readable version of the file size, where the input represents
      * a specific number of bytes.
      *
-     * @param size
-     *            the number of bytes
+     * @param size the number of bytes
      * @return a human-readable display value (includes units)
      */
     public static String byteCountToDisplaySize(long size) {
