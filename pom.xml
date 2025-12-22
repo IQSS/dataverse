@@ -20,7 +20,7 @@
     <properties>
         <skipUnitTests>false</skipUnitTests>
         <skipIntegrationTests>false</skipIntegrationTests>
-        <it.groups>integration</it.groups>
+        <it.groups>integration,migration</it.groups>
         <!-- Provide a fallback value that won't break things if JaCoCo prepare-agent steps don't set it. -->
         <!-- Note: you must use @{} style late variable binding in argLine, otherwise JaCoCo cannot inject the right settings! -->
         <surefire.jacoco.args>-Ddummy.jacoco.property=true</surefire.jacoco.args>
@@ -237,7 +237,7 @@
         <dependency>
             <groupId>com.github.erosb</groupId>
             <artifactId>everit-json-schema</artifactId>
-            <version>1.14.1</version>
+            <version>1.14.6</version>
         </dependency>
         <dependency>
             <groupId>org.mindrot</groupId>
@@ -749,35 +749,35 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.dbunit</groupId>
+            <artifactId>dbunit</artifactId>
+            <version>3.0.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>postgresql</artifactId>
+            <artifactId>testcontainers-postgresql</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.github.dasniko</groupId>
             <artifactId>testcontainers-keycloak</artifactId>
-            <version>3.6.0</version>
+            <version>4.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>localstack</artifactId>
+            <artifactId>testcontainers-localstack</artifactId>
             <scope>test</scope>
         </dependency>
         <!--
@@ -838,6 +838,10 @@
                 <includes>
                     <include>*.properties</include>
                     <include>**/*.properties</include>
+                    <!-- As of https://github.com/payara/Payara/issues/7741, Payara uses the jakarta.mime.types file. 
+                         The original mime.types file (with the same content) is retained to support the FileUtilTest.testGZipFile.
+                     -->
+                    <include>**/jakarta.mime.types</include>
                     <include>**/mime.types</include>
                     <include>**/*.R</include>
                 </includes>
@@ -1066,6 +1070,9 @@
                     -->
                     <argLine>@{failsafe.jacoco.args} ${argLine}</argLine>
                     <skip>${skipIntegrationTests}</skip>
+                    <systemPropertyVariables>
+                        <postgresql.server.version>${postgresql.server.version}</postgresql.server.version>
+                    </systemPropertyVariables>
                 </configuration>
                 <executions>
                     <execution>

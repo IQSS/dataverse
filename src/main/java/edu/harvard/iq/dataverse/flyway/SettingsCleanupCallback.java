@@ -11,7 +11,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,6 +42,7 @@ public class SettingsCleanupCallback implements Callback {
 
     @Override
     public void handle(Event event, Context context) {
+        // Failsafe - we only run _after_ all migrations are done.
         if (event != Event.AFTER_MIGRATE) {
             return;
         }
@@ -61,10 +64,19 @@ public class SettingsCleanupCallback implements Callback {
         return "SettingsCleanup";
     }
     
+    /**
+     * Cleans up invalid settings from the database by identifying and removing
+     * rows in the `setting` table where the `name` attribute does not correspond
+     * to a valid SettingsServiceBean.Key.
+     *
+     * @param connection the database connection to use for querying and updating the `setting` table
+     * @throws SQLException if a database access error occurs or the query fails
+     */
     private void cleanupInvalidSettings(Connection connection) throws SQLException {
-        // Collect IDs of rows to delete
-        List<Long> idsToDelete = new ArrayList<>();
+        // Collect IDs of rows to delete, together with the setting's "name" attribute.
+        Map<Long, String> entriesToDelete = new HashMap<>();
 
+        // IMPORTANT: as we cannot use JPQL mid-Flyway, this query needs to be carefully aligned with the Setting class!
         String selectSql = "SELECT id, name FROM setting";
         try (PreparedStatement ps = connection.prepareStatement(selectSql);
              ResultSet rs = ps.executeQuery()) {
@@ -77,24 +89,25 @@ public class SettingsCleanupCallback implements Callback {
                 // to a SettingsServiceBean.Key is considered invalid and will be removed.
                 SettingsServiceBean.Key key = SettingsServiceBean.Key.parse(name);
                 if (key == null) {
-                    idsToDelete.add(id);
+                    entriesToDelete.put(id, name);
                 }
             }
         }
 
-        if (idsToDelete.isEmpty()) {
+        if (entriesToDelete.isEmpty()) {
             logger.fine("Settings cleanup: no invalid settings found");
             return;
         }
 
-        logger.info(() -> "Settings cleanup: found " + idsToDelete.size()
-                + " invalid settings; deleting them");
+        logger.info(() -> "Settings cleanup: found " + entriesToDelete.size()
+                + " invalid/obsolete settings; deleting them.");
 
         String deleteSql = "DELETE FROM setting WHERE id = ?";
         try (PreparedStatement delete = connection.prepareStatement(deleteSql)) {
-            for (Long id : idsToDelete) {
-                delete.setLong(1, id);
+            for (Map.Entry<Long, String> entry : entriesToDelete.entrySet()) {
+                delete.setLong(1, entry.getKey());
                 delete.addBatch();
+                logger.info("Settings cleanup: deleting \"" + entry.getValue() + "\"");
             }
             int[] counts = delete.executeBatch();
             logger.info(() -> "Settings cleanup: deleted " + counts.length + " rows with invalid keys");
