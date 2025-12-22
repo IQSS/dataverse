@@ -4,12 +4,15 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -46,23 +49,24 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.parallel.InputStreamSupplier;
 import org.apache.commons.compress.utils.IOUtils;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.util.EntityUtils;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.ClientProtocolException;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
+import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.TrustSelfSignedStrategy;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.config.Registry;
+import org.apache.hc.core5.http.config.RegistryBuilder;
+import org.apache.hc.core5.ssl.SSLContextBuilder;
+import org.apache.hc.core5.util.Timeout;
 import org.json.JSONArray;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -103,10 +107,11 @@ public class BagGenerator {
     private HashMap<String, String> pidMap = new LinkedHashMap<String, String>();
     private HashMap<String, String> checksumMap = new LinkedHashMap<String, String>();
 
-    private int timeout = 60;
-    private RequestConfig config = RequestConfig.custom().setConnectTimeout(timeout * 1000)
-            .setConnectionRequestTimeout(timeout * 1000).setSocketTimeout(timeout * 1000)
-            .setCookieSpec(CookieSpecs.STANDARD).build();
+    private int timeout = 300;
+    private RequestConfig config = RequestConfig.custom()
+            .setConnectionRequestTimeout(Timeout.ofSeconds(timeout))
+            .setResponseTimeout(Timeout.ofSeconds(timeout))
+            .build();
     protected CloseableHttpClient client;
     private PoolingHttpClientConnectionManager cm = null;
 
@@ -131,7 +136,7 @@ public class BagGenerator {
 
     private boolean usetemp = false;
 
-    private int numConnections = 8;
+    private static int numConnections = 2;
     public static final String BAG_GENERATOR_THREADS = BagGeneratorThreads.toString();
 
     private OREMap oremap;
@@ -152,6 +157,11 @@ public class BagGenerator {
     private static final String INTERNAL_SENDER_IDENTIFIER = "Internal-Sender-Identifier: ";
     private static final String DATAVERSE_BAG_VERSION = "Dataverse-Bag-Version: ";
 
+ // Implement exponential backoff with jitter
+    static final long baseWaitTimeMs = 1000; // Start with 1 second
+    static final long maxWaitTimeMs = 30000; // Cap at 30 seconds
+
+    
     /**
      * This BagGenerator creates a BagIt version 1.0
      * (https://tools.ietf.org/html/draft-kunze-bagit-16) compliant bag that is also
@@ -189,8 +199,10 @@ public class BagGenerator {
                 e.printStackTrace();
             }
 
-            SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(builder.build(),
-                    NoopHostnameVerifier.INSTANCE);
+            SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(
+                builder.build(), 
+                NoopHostnameVerifier.INSTANCE
+            );
 
             Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
                     .register("http", PlainConnectionSocketFactory.getSocketFactory())
@@ -200,11 +212,14 @@ public class BagGenerator {
             cm.setDefaultMaxPerRoute(numConnections);
             cm.setMaxTotal(numConnections > 20 ? numConnections : 20);
 
-            client = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(config).build();
+            client = HttpClients.custom()
+                    .setConnectionManager(cm)
+                    .setDefaultRequestConfig(config)
+                    .build();
 
             scatterZipCreator = new ParallelScatterZipCreator(Executors.newFixedThreadPool(numConnections));
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            logger.warning("Aint gonna work");
+            logger.warning("Failed to initialize HTTP client");
             e.printStackTrace();
         }
     }
@@ -424,7 +439,6 @@ public class BagGenerator {
         }
     }
 
-    @SuppressWarnings("deprecation")
     public void validateBag(String bagId) {
         logger.info("Validating Bag");
         ZipFile zf = null;
@@ -1156,6 +1170,10 @@ public class BagGenerator {
         return request;
     }
 
+    /** Get a stream supplier for the given URI.
+     * 
+     *  Caller must close the stream when done.
+     */
     InputStreamSupplier getInputStreamSupplier(final String uriString) {
 
         return new InputStreamSupplier() {
@@ -1168,56 +1186,88 @@ public class BagGenerator {
 
                         logger.fine("Get # " + tries + " for " + uriString);
                         HttpGet getFile = createNewGetRequest(uri, null);
-                        logger.finest("Retrieving " + tries + ": " + uriString);
-                        CloseableHttpResponse response = null;
+
                         try {
-                            response = client.execute(getFile);
-                            // Note - if we ever need to pass an HttpClientContext, we need a new one per
-                            // thread.
-                            int statusCode = response.getStatusLine().getStatusCode();
+                            // Execute the request directly and keep the response open
+                            final CloseableHttpResponse response = (CloseableHttpResponse) client.executeOpen(null, getFile, HttpClientContext.create());
+                            int statusCode = response.getCode();
+
                             if (statusCode == 200) {
                                 logger.finest("Retrieved: " + uri);
-                                return response.getEntity().getContent();
-                            }
-                            logger.warning("Attempt: " + tries + " - Unexpected Status when retrieving " + uriString
-                                    + " : " + statusCode);
-                            if (statusCode < 500) {
-                                logger.fine("Will not retry for 40x errors");
-                                tries += 5;
-                            } else {
-                                tries++;
-                            }
-                            // Error handling
-                            if (response != null) {
-                                try {
-                                    EntityUtils.consumeQuietly(response.getEntity());
+                                // Return a wrapped stream that will close the response when the stream is closed
+                                final HttpEntity entity = response.getEntity();
+                                if (entity != null) {
+                                    // Create a wrapper stream that closes the response when the stream is closed
+                                    return new FilterInputStream(entity.getContent()) {
+                                        @Override
+                                        public void close() throws IOException {
+                                            try {
+                                                super.close();
+                                            } finally {
+                                                response.close();
+                                            }
+                                        }
+                                    };
+                                } else {
                                     response.close();
-                                } catch (IOException io) {
-                                    logger.warning(
-                                            "Exception closing response after status: " + statusCode + " on " + uri);
+                                    logger.warning("No content in response for: " + uriString);
+                                    return null;
+                                }
+                            } else {
+                                // Close the response for non-200 responses
+                                response.close();
+
+                                logger.warning("Attempt: " + tries + " - Unexpected Status when retrieving " + uriString
+                                        + " : " + statusCode);
+                                tries++;
+                                try {
+                                    // Calculate exponential backoff: 2^tries * baseWaitTimeMs (1 sec)
+                                    long waitTime = (long) (Math.pow(2, tries) * baseWaitTimeMs);
+
+                                    // Add jitter: random value between 0-30% of the wait time
+                                    long jitter = (long) (waitTime * 0.3 * Math.random());
+                                    waitTime = waitTime + jitter;
+
+                                    // Cap the wait time at maxWaitTimeMs (30 seconds)
+                                    waitTime = Math.min(waitTime, maxWaitTimeMs);
+
+                                    logger.fine("Sleeping for " + waitTime + "ms before retry attempt " + tries);
+                                    Thread.sleep(waitTime);
+                                } catch (InterruptedException ie) {
+                                    logger.log(Level.SEVERE, "InterruptedException during retry delay for file: " + uriString, ie);
+                                    Thread.currentThread().interrupt(); // Restore interrupt status
+                                    tries += 5; // Skip remaining attempts
                                 }
                             }
                         } catch (ClientProtocolException e) {
                             tries += 5;
-                            e.printStackTrace();
-                        } catch (IOException e) {
-                            // Retry if this is a potentially temporary error such
-                            // as a timeout
+                            logger.log(Level.SEVERE, "ClientProtocolException when retrieving file: " + uriString + " (attempt " + tries + ")", e);
+                        } catch (SocketTimeoutException e) {
+                            // Specific handling for timeout exceptions
                             tries++;
-                            logger.log(Level.WARNING, "Attempt# " + tries + " : Unable to retrieve file: " + uriString,
-                                    e);
+                            logger.log(Level.SEVERE, "SocketTimeoutException when retrieving file: " + uriString + " (attempt " + tries + " of 5) - Request exceeded timeout", e);
                             if (tries == 5) {
-                                logger.severe("Final attempt failed for " + uriString);
+                                logger.log(Level.SEVERE, "FINAL FAILURE: File could not be retrieved after all retries due to timeouts: " + uriString, e);
                             }
-                            e.printStackTrace();
+                        } catch (InterruptedIOException e) {
+                            // Catches interruptions during I/O operations
+                            tries += 5;
+                            logger.log(Level.SEVERE, "InterruptedIOException when retrieving file: " + uriString + " - Operation was interrupted", e);
+                            Thread.currentThread().interrupt(); // Restore interrupt status
+                        } catch (IOException e) {
+                            // Retry if this is a potentially temporary error such as a timeout
+                            tries++;
+                            logger.log(Level.WARNING, "IOException when retrieving file: " + uriString + " (attempt " + tries + " of 5)", e);
+                            if (tries == 5) {
+                                logger.log(Level.SEVERE, "FINAL FAILURE: File could not be retrieved after all retries: " + uriString, e);
+                            }
                         }
 
                     }
-
                 } catch (URISyntaxException e) {
-                    e.printStackTrace();
+                    logger.log(Level.SEVERE, "URISyntaxException for file: " + uriString + " - Invalid URI format", e);
                 }
-                logger.severe("Could not read: " + uriString);
+                logger.severe("FAILED TO RETRIEVE FILE after all retries: " + uriString);
                 return null;
             }
         };
@@ -1268,9 +1318,9 @@ public class BagGenerator {
         apiKey = tokenString;
     }
 
-    public void setNumConnections(int numConnections) {
-        this.numConnections = numConnections;
-        logger.fine("BagGenerator will use " + numConnections + " threads");
+    public static void setNumConnections(int numConnections) {
+        BagGenerator.numConnections = numConnections;
+        logger.fine("All BagGenerators will use " + numConnections + " threads");
     }
 
 }
