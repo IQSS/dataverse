@@ -11,3 +11,4 @@ Archival Bag
 - values used in the bag-info.txt file that may be multi-line (with embedded CR or LF characters) are now properly indented/formatted per the BagIt specification (i.e. Internal-Sender-Identifier, External-Description, Source-Organization, Organization-Address).
 - the name of the dataset is no longer used as a subdirectory under the data directory (dataset names can be long enough to cause failures when unzipping)
 - a new key, "Dataverse-Bag-Version" has been added to bag-info.txt with a value "1.0", allowing tracking of changes to Dataverse's arhival bag generation
+- improvements to file retrieval w.r.t. retries on errors or throttling
