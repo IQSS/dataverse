@@ -1035,7 +1035,7 @@ public class BagGenerator {
     }
 
     /**
-     * Kludge - compound values (e.g. for descriptions) are sent as an array of
+     * Compound values (e.g. for descriptions) are sent as an array of
      * objects containing key/values whereas a single value is sent as one object.
      * For cases where multiple values are sent, create a concatenated string so
      * that information is not lost.
