@@ -11,6 +11,7 @@
 import sys
 from optparse import OptionParser
 import csv
+from itertools import groupby
 
 parser = OptionParser()
 options, args = parser.parse_args()
@@ -34,22 +35,30 @@ An overview of Dataverse features can be found at <https://dataverse.org/softwar
 reader = csv.DictReader(tsv_file, delimiter="\t")
 rows = [row for row in reader]
 missing = []
-for row in rows:
-    title = row["Title"]
-    description = row["Description"]
-    url = row["URL"]
-    dtype = row["DocLinkType"]
-    target = row["DocLinkTarget"]
-    print("## %s" % title)
+# Sort rows by category
+rows.sort(key=lambda x: x["Categories"])
+
+# Group by category
+for category, group in groupby(rows, key=lambda x: x["Categories"]):
+    # print('BEGIN')
+    print("## %s" % category)
     print()
-    print("%s" % description)
-    if target == 'url':
-        print("[More information.](%s)" % (url))
-    elif target != '':
-        print("{%s}`More information.<%s>`" % (dtype, target))
+    for row in group:
+        title = row["Title"]
+        description = row["Description"]
+        url = row["URL"]
+        dtype = row["DocLinkType"]
+        target = row["DocLinkTarget"]
+        print("### %s" % title)
         print()
-    else:
-        missing.append(url)
+        print("%s" % description)
+        if target == 'url':
+            print("[More information.](%s)" % (url))
+        elif target != '':
+            print("{%s}`More information.<%s>`" % (dtype, target))
+            print()
+        else:
+            missing.append(url)
 tsv_file.close()
 for item in missing:
     print(item)
