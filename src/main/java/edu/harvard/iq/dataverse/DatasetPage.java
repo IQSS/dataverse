@@ -160,6 +160,7 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
@@ -6872,4 +6873,18 @@ public class DatasetPage implements java.io.Serializable {
         this.requestedCSL = requestedCSL;
     }
 
+    public void validateEmbargoReasonNotBlank(FacesContext context, UIComponent component, Object value) {
+        if (value == null && FeatureFlags.REQUIRE_EMBARGO_REASON.enabled()) {
+            throw new ValidatorException(
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                    BundleUtil.getStringFromBundle("embargo.reason.required"), null)
+            );
+        }
+        if (value != null && value.toString().trim().isEmpty()) {
+            throw new ValidatorException(
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                    BundleUtil.getStringFromBundle("embargo.reason.blank"), null)
+            );
+        }
+    }
 }

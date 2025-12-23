@@ -1513,8 +1513,14 @@ public class Datasets extends AbstractApiBean {
                 return error(Status.BAD_REQUEST, "Date available can not exceed MaxEmbargoDurationInMonths: "+maxEmbargoDurationInMonths);
             }
         }
-
-        embargo.setReason(json.getString("reason"));
+        String reason = null;
+        if(json.containsKey("reason")) {
+            reason = json.getString("reason");
+        }
+        if(reason.isBlank() && FeatureFlags.REQUIRE_EMBARGO_REASON.enabled()) {
+            return error(Status.BAD_REQUEST, "Reason is required for embargoes");
+        }
+        embargo.setReason(reason);
 
         List<DataFile> datasetFiles = dataset.getFiles();
         List<DataFile> filesToEmbargo = new LinkedList<>();

@@ -35,6 +35,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -60,7 +61,9 @@ import java.util.stream.Collectors;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
+import jakarta.faces.validator.ValidatorException;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -1487,6 +1490,21 @@ public class FilePage implements java.io.Serializable {
      */
     public String editFileMetadata(){
         return "";
+    }
+
+    public void validateEmbargoReasonNotBlank(FacesContext context, UIComponent component, Object value) {
+        if (value == null && FeatureFlags.REQUIRE_EMBARGO_REASON.enabled()) {
+            throw new ValidatorException(
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                    BundleUtil.getStringFromBundle("embargo.reason.required"), null)
+            );
+        }
+        if (value != null && value.toString().trim().isEmpty()) {
+            throw new ValidatorException(
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                    BundleUtil.getStringFromBundle("embargo.reason.blank"), null)
+            );
+        }
     }
 
 }
