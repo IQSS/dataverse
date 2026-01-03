@@ -3607,7 +3607,7 @@ Set an Embargo on Files in a Dataset
 
 ``/api/datasets/$dataset-id/files/actions/:set-embargo`` can be used to set an embargo on one or more files in a dataset. Embargoes can be set on files that are only in a draft dataset version (and are not in any previously published version) by anyone who can edit the dataset. The same API call can be used by a superuser to add an embargo to files that have already been released as part of a previously published dataset version. 
 
-The API call requires a Json body that includes the embargo's end date (dateAvailable), a short reason (optional), and a list of the fileIds that the embargo should be set on. The dateAvailable must be after the current date and the duration (dateAvailable - today's date) must be less than the value specified by the :ref:`:MaxEmbargoDurationInMonths` setting. All files listed must be in the specified dataset. For example: 
+The API call requires a Json body that includes the embargo's end date (dateAvailable), a short reason (must not consiste of whitespace only, optional unless Dataverse is configured to make it required), and a list of the fileIds that the embargo should be set on. The dateAvailable must be after the current date and the duration (dateAvailable - today's date) must be less than the value specified by the :ref:`:MaxEmbargoDurationInMonths` setting. All files listed must be in the specified dataset. For example: 
 
 .. code-block:: bash
 
