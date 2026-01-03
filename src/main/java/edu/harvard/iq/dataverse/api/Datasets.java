@@ -1517,8 +1517,10 @@ public class Datasets extends AbstractApiBean {
         if(json.containsKey("reason")) {
             reason = json.getString("reason");
         }
-        if(reason.isBlank() && FeatureFlags.REQUIRE_EMBARGO_REASON.enabled()) {
+        if(reason == null && FeatureFlags.REQUIRE_EMBARGO_REASON.enabled()) {
             return error(Status.BAD_REQUEST, "Reason is required for embargoes");
+        } else if(reason.isBlank()) {
+            return error(Status.BAD_REQUEST, "Reason cannot be blank (whitespace only)");
         }
         embargo.setReason(reason);
 
