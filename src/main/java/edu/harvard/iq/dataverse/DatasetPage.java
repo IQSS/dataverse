@@ -6874,6 +6874,21 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void validateEmbargoReasonNotBlank(FacesContext context, UIComponent component, Object value) {
+
+        // Skip validation if removing embargo
+        if (removeEmbargo) {
+            return;
+        }
+        
+        // Get the source of the current request
+        String source = context.getExternalContext().getRequestParameterMap()
+            .get("jakarta.faces.source");
+        
+        // Only validate if the save button triggered this
+        if (source == null || !source.contains("fileEmbargoPopupSaveButton")) {
+            return;
+        }
+        
         if (value == null && FeatureFlags.REQUIRE_EMBARGO_REASON.enabled()) {
             throw new ValidatorException(
                 new FacesMessage(FacesMessage.SEVERITY_ERROR, 
