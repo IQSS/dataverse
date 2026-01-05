@@ -7436,6 +7436,16 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Require the acknowledgement
         UtilIT.setSetting(SettingsServiceBean.Key.DatasetPublishLegalDisclaimerAcknowledgementRequired, "true");
+        // Acknowledgement required means Draft datasets include publishLegalDisclaimer in Json GET response
+        Response getResp = UtilIT.nativeGetUsingPersistentId(datasetPersistentId1, apiToken);
+        getResp.then().assertThat().statusCode(OK.getStatusCode());
+        String json = getResp.prettyPrint();
+        assertTrue(json.contains("publishLegalDisclaimer"));
+        getResp = UtilIT.getDatasetVersion(datasetPersistentId1, ":draft", apiToken);
+        getResp.then().assertThat().statusCode(OK.getStatusCode());
+        json = getResp.prettyPrint();
+        assertTrue(json.contains("publishLegalDisclaimer"));
+
         Response publishDataset1 = UtilIT.publishDatasetViaNativeApi(datasetPersistentId1, "major", apiToken);
         Response publishDataset2 = UtilIT.publishDatasetViaNativeApi(datasetPersistentId2, "major", apiToken, false, "&legalDisclaimerAcknowledged=true");
         Response publishDataset3 = UtilIT.publishDatasetViaNativeApi(datasetPersistentId3, "major", adminApiToken);
@@ -7443,6 +7453,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Acknowledgement not required
         UtilIT.setSetting(SettingsServiceBean.Key.DatasetPublishLegalDisclaimerAcknowledgementRequired, "false");
         Response publishDataset4 = UtilIT.publishDatasetViaNativeApi(datasetPersistentId4, "major", apiToken, false, "&legalDisclaimerAcknowledged=false");
+        // No Acknowledgement means no publishLegalDisclaimer in Json GET response
+        getResp = UtilIT.nativeGetUsingPersistentId(datasetPersistentId1, apiToken);
+        getResp.then().assertThat().statusCode(OK.getStatusCode());
+        json = getResp.prettyPrint();
+        assertTrue(!json.contains("publishLegalDisclaimer"));
 
         // verify that the first publish failed since the acknowledgement was missing
         publishDataset1.then().assertThat()

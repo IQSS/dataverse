@@ -478,6 +478,7 @@ public class JsonPrinter {
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
                 .add("storageIdentifier", ds.getStorageIdentifier());
         addDatasetFileCountLimit(ds, bld);
+        includePublishLegalDisclaimer(bld, ds.getLatestVersion());
 
         if (DvObjectContainer.isMetadataLanguageSet(ds.getMetadataLanguage())) {
             bld.add("metadataLanguage", ds.getMetadataLanguage());
@@ -571,6 +572,7 @@ public class JsonPrinter {
                 .add("sizeOfCollection", dsv.getTermsOfUseAndAccess().getSizeOfCollection())
                 .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion())
                 .add("fileAccessRequest", dsv.getTermsOfUseAndAccess().isFileAccessRequest());
+        includePublishLegalDisclaimer(bld, dsv);
         if(includeMetadataBlocks) {
             bld.add("metadataBlocks",
                     jsonByBlocks(dsv.getDatasetFields(), anonymizedFieldTypeNamesList, ignoreSettingExcludeEmailFromExport));
@@ -1783,5 +1785,11 @@ public class JsonPrinter {
                 .forEach(arrayBuilder::add);
 
         return arrayBuilder;
+    }
+
+    private static void includePublishLegalDisclaimer(JsonObjectBuilder jsonbuilder, DatasetVersion dsv) {
+        if (dsv != null && dsv.isDraft() && settingsService.isTrueForKey(SettingsServiceBean.Key.DatasetPublishLegalDisclaimerAcknowledgementRequired, false)) {
+            jsonbuilder.add("publishLegalDisclaimer", BundleUtil.getStringFromBundle("dataset.publish.legal.disclaimer"));
+        }
     }
 }
