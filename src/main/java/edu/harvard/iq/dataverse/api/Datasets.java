@@ -1438,6 +1438,8 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/files/actions/:set-embargo")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response createFileEmbargo(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
 
         // user is authenticated
@@ -1496,7 +1498,12 @@ public class Datasets extends AbstractApiBean {
 
 
         LocalDate currentDateTime = LocalDate.now();
-        LocalDate dateAvailable = LocalDate.parse(json.getString("dateAvailable"));
+        LocalDate dateAvailable = null;
+        try {
+            dateAvailable = LocalDate.parse(json.getString("dateAvailable"));
+        } catch (DateTimeParseException e) {
+            return error(Status.BAD_REQUEST, "Unable to parse dateAvailable");
+        }
 
         // check :MaxEmbargoDurationInMonths if -1
         LocalDate maxEmbargoDateTime = maxEmbargoDurationInMonths != -1 ? LocalDate.now().plusMonths(maxEmbargoDurationInMonths) : null;
@@ -1602,6 +1609,8 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/files/actions/:unset-embargo")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response removeFileEmbargo(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
 
         // user is authenticated
