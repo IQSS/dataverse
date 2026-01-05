@@ -326,6 +326,10 @@ public class SettingsServiceBean {
         */
         DatasetPublishPopupCustomTextOnAllVersions,
         /*
+        Whether a Legal Disclaimer must be acknowledged before a Dataset can be published
+         */
+        DatasetPublishLegalDisclaimerAcknowledgementRequired,
+        /*
         Whether Harvesting (OAI) service is enabled
         */
         OAIServerEnabled,

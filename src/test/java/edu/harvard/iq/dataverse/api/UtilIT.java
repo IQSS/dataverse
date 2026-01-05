@@ -1614,8 +1614,11 @@ public class UtilIT {
     static Response publishDatasetViaNativeApi(String idOrPersistentId, String majorOrMinor, String apiToken) {
         return publishDatasetViaNativeApi(idOrPersistentId, majorOrMinor, apiToken, false);
     }
-    
     static Response publishDatasetViaNativeApi(String idOrPersistentId, String majorOrMinor, String apiToken, boolean mustBeIndexed) {
+        return publishDatasetViaNativeApi(idOrPersistentId, majorOrMinor, apiToken, mustBeIndexed, null);
+    }
+
+    static Response publishDatasetViaNativeApi(String idOrPersistentId, String majorOrMinor, String apiToken, boolean mustBeIndexed, String params) {
 
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
@@ -1625,6 +1628,9 @@ public class UtilIT {
         }
         if(mustBeIndexed) {
             optionalQueryParam = optionalQueryParam+"&assureIsIndexed=true";
+        }
+        if (params != null) {
+            optionalQueryParam = optionalQueryParam+params;
         }
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
