@@ -144,7 +144,7 @@
                             <p:inputText id="fileEmbargoAddReason" styleClass="form-control"
                                 disabled="#{bean.removeEmbargo}" type="text"
                                 value="#{bean.selectionEmbargo.reason}"
-                                validator="#{bean.validateEmbargoReasonNotBlank}"
+                                validator="#{bean.validateEmbargoReason}"
                                 placeholder="#{bundle['file.editEmbargoDialog.newReason']}"
                                 onkeypress="if (event.keyCode == 13) { return false;}" />
                             <div>

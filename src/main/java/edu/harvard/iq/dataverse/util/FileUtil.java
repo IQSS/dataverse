@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.settings.ConfigCheckService;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.file.BagItFileHandler;
 import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
@@ -89,6 +90,10 @@ import java.util.logging.Logger;
 import jakarta.activation.MimetypesFileTypeMap;
 import jakarta.ejb.EJBException;
 import jakarta.enterprise.inject.spi.CDI;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.validator.ValidatorException;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 
@@ -1835,6 +1840,47 @@ public class FileUtil implements java.io.Serializable  {
             }
         }
         return false;
+    }
+    
+    /**
+     * Validates that an embargo reason is not blank, and exists when required.
+     * This method is designed to be called from JSF validator methods.
+     * 
+     * @param context The FacesContext
+     * @param component The UIComponent being validated
+     * @param value The value to validate (embargo reason)
+     * @param removeEmbargo Whether the embargo is being removed (skips validation if true)
+     * @param saveButtonId The ID pattern of the save button that should trigger validation
+     * @throws ValidatorException if validation fails
+     */
+    public static void validateEmbargoReason(FacesContext context, UIComponent component, Object value,
+            boolean removeEmbargo) {
+        // Skip validation if removing embargo
+        if (removeEmbargo) {
+            return;
+        }
+        
+        // Get the source of the current request
+        String source = context.getExternalContext().getRequestParameterMap()
+            .get("jakarta.faces.source");
+        
+        // Only validate if the save button triggered this
+        if (source == null || !source.contains("fileEmbargoPopupSaveButton")) {
+            return;
+        }
+        
+        if (value == null && FeatureFlags.REQUIRE_EMBARGO_REASON.enabled()) {
+            throw new ValidatorException(
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                    BundleUtil.getStringFromBundle("embargo.reason.required"), null)
+            );
+        }
+        if (value != null && value.toString().trim().isEmpty()) {
+            throw new ValidatorException(
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                    BundleUtil.getStringFromBundle("embargo.reason.blank"), null)
+            );
+        }
     }
 
     public static boolean isRetentionExpired(DataFile df) {

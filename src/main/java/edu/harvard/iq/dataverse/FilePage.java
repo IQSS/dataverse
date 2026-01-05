@@ -1492,34 +1492,8 @@ public class FilePage implements java.io.Serializable {
         return "";
     }
 
-    public void validateEmbargoReasonNotBlank(FacesContext context, UIComponent component, Object value) {
-        
-        // Skip validation if removing embargo
-        if (removeEmbargo) {
-            return;
-        }
-        
-        // Get the source of the current request
-        String source = context.getExternalContext().getRequestParameterMap()
-            .get("jakarta.faces.source");
-        
-        // Only validate if the save button triggered this
-        if (source == null || !source.contains("fileEmbargoPopupSaveButton")) {
-            return;
-        }
-        
-        if (value == null && FeatureFlags.REQUIRE_EMBARGO_REASON.enabled()) {
-            throw new ValidatorException(
-                new FacesMessage(FacesMessage.SEVERITY_ERROR, 
-                    BundleUtil.getStringFromBundle("embargo.reason.required"), null)
-            );
-        }
-        if (value != null && value.toString().trim().isEmpty()) {
-            throw new ValidatorException(
-                new FacesMessage(FacesMessage.SEVERITY_ERROR, 
-                    BundleUtil.getStringFromBundle("embargo.reason.blank"), null)
-            );
-        }
+    public void validateEmbargoReason(FacesContext context, UIComponent component, Object value) {
+        FileUtil.validateEmbargoReason(context, component, value, removeEmbargo);
     }
-
+    
 }
