@@ -5042,7 +5042,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
                 .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Updated"))
                 .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
-                .body("resource.publicationYear", CoreMatchers.equalTo("2025"));
+                .body("resource.publicationYear", CoreMatchers.equalTo(currentYear));
 
         Response exportDatasetOaiDc = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken, true);
         exportDatasetOaiDc.prettyPrint();
