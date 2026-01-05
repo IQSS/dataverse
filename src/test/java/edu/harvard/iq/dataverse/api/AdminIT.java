@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -29,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
-
 import static io.restassured.RestAssured.given;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
@@ -43,6 +41,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import io.restassured.http.ContentType;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AdminIT {
@@ -683,6 +682,19 @@ public class AdminIT {
         assertEquals(200, deleteUserToConvert.getStatusCode());
     }
     
+    
+    @Test
+    void testCreateUserViaAPI_WithInvalidJson() {
+        Response response = given()
+            .body("{invalid}")
+            .contentType(ContentType.JSON)
+            .post("/api/admin/authenticatedUsers");
+        
+        response.then()
+            .assertThat()
+            .statusCode(BAD_REQUEST.getStatusCode())
+            .body("message", containsString("Unexpected char"));
+    }
 
 
     @Test
