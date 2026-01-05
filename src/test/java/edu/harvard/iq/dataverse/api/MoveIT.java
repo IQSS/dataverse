@@ -218,7 +218,7 @@ public class MoveIT {
         notificationListResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         boolean found = false;
-        List<Map<String, String>> notifications = notificationListResponse.body().jsonPath().getList("data.notifications");
+        List<Map<String, String>> notifications = notificationListResponse.body().jsonPath().getList("data");
 
         for (Map<String, String> notification : notifications) {
             if ("DATASETMOVED".equalsIgnoreCase(notification.get("type"))) {
