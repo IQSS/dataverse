@@ -1482,7 +1482,7 @@ public class Datasets extends AbstractApiBean {
         // check if embargoes are allowed(:MaxEmbargoDurationInMonths), gets the :MaxEmbargoDurationInMonths setting variable, if 0 or not set(null) return 400
         long maxEmbargoDurationInMonths = 0;
         try {
-            maxEmbargoDurationInMonths  = Long.parseLong(settingsService.get(SettingsServiceBean.Key.MaxEmbargoDurationInMonths.toString()));
+            maxEmbargoDurationInMonths  = Long.parseLong(settingsService.getValueForKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths));
         } catch (NumberFormatException nfe){
             if (nfe.getMessage().contains("null")) {
                 return error(Status.BAD_REQUEST, "No Embargoes allowed");
@@ -1527,7 +1527,7 @@ public class Datasets extends AbstractApiBean {
         }
         if(reason == null && FeatureFlags.REQUIRE_EMBARGO_REASON.enabled()) {
             return error(Status.BAD_REQUEST, "Reason is required for embargoes");
-        } else if(reason.isBlank()) {
+        } else if(reason != null && reason.isBlank()) {
             return error(Status.BAD_REQUEST, "Reason cannot be blank (whitespace only)");
         }
         embargo.setReason(reason);
