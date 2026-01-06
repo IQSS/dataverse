@@ -1787,7 +1787,15 @@ public class UtilIT {
     static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean excludeFiles, boolean includeDeaccessioned) {
         return getDatasetVersion(persistentId,versionNumber,apiToken,excludeFiles,false,includeDeaccessioned);
     }
-    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean excludeFiles,boolean excludeMetadataBlocks, boolean includeDeaccessioned) {
+    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean excludeFiles, boolean excludeMetadataBlocks, boolean includeDeaccessioned) {
+        return getDatasetVersion(persistentId, versionNumber, apiToken, excludeFiles, excludeMetadataBlocks, includeDeaccessioned, false);
+    }
+    // includeMetadataBlocksEmail is an override of the Setting ExcludeEmailFromExport. excludeMetadataBlocks must be false and user needs EditDataset permission
+    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken,
+                                      boolean excludeFiles,
+                                      boolean excludeMetadataBlocks,
+                                      boolean includeDeaccessioned,
+                                      boolean ignoreSettingExcludeEmailFromExport) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .queryParam("includeDeaccessioned", includeDeaccessioned)
@@ -1796,7 +1804,8 @@ public class UtilIT {
                         + "?persistentId="
                         + persistentId
                         + (excludeFiles ? "&excludeFiles=true" : "")
-                        + (excludeMetadataBlocks ? "&excludeMetadataBlocks=true" : ""));
+                        + (excludeMetadataBlocks ? "&excludeMetadataBlocks=true" : "")
+                        + (ignoreSettingExcludeEmailFromExport ? "&ignoreSettingExcludeEmailFromExport=true" : ""));
     }
     static Response compareDatasetVersions(String persistentId, String versionNumber1, String versionNumber2, String apiToken) {
         return given()
