@@ -3130,11 +3130,18 @@ public class DatasetPage implements java.io.Serializable {
         if (deleteCommandSuccess) {
             datafileService.finalizeFileDeletes(deleteStorageLocations);
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.deleteSuccess"));
-            // delay 1 second so solr has time to update the indexes. Without the delay the UI will continue to show the deleted dataset
-            try{Thread.sleep(1000L);}catch(Exception e){}
+            solrDelay();
         }
 
         return "/dataverse.xhtml?alias=" + dataset.getOwner().getAlias() + "&faces-redirect=true";
+    }
+    // delay 1 second so solr has time to update the indexes. Without the delay the UI will continue to show the deleted dataset
+    private void solrDelay() {
+        try {
+            Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String editFileMetadata(){
