@@ -920,6 +920,8 @@ public class DataversePage implements java.io.Serializable {
         try {
             commandEngine.submit(cmd);
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.delete.success"));
+            // delay 1 second so solr has time to update the indexes. Without the delay the UI will continue to show the deleted dataverse
+            try{Thread.sleep(1000L);}catch(Exception e){}
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Unexpected Exception calling  delete dataverse command", ex);
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.delete.failure"));
