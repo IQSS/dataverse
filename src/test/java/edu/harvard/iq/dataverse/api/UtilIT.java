@@ -5161,14 +5161,14 @@ public class UtilIT {
     public static Response getTemplate(String templateId) {
         return given()
                 .contentType(ContentType.JSON)
-                .get("/api/dataverses/template/" + templateId);
+                .get("/api/dataverses/" + templateId + "/template");
     }
     
     public static Response getTemplate(String templateId, String apiToken) {
         return given()
                 .contentType(ContentType.JSON)
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/dataverses/template/" + templateId);
+                .get("/api/dataverses/" + templateId + "/template");
     }
     
     /**

@@ -1997,7 +1997,7 @@ public class Dataverses extends AbstractApiBean {
     
     @GET
     @AuthRequired
-    @Path("/template/{id}")
+    @Path("{id}/template/")
     public Response getTemplate(@Context ContainerRequestContext crc, @PathParam("id") Long templateId) {
         try {
             Template template = templateService.find(templateId);
