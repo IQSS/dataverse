@@ -1,0 +1,12 @@
+{
+    "customTermsOfAccess": {
+        "fileAccessRequest": true,
+        "termsOfAccess": "For access to restricted files please see read me file",
+        "dataAccessPlace": "dataAccessPlace",
+        "originalArchive": "originalArchive",
+        "availabilityStatus": "availabilityStatus",
+        "contactForAccess": "contactForAccess",
+        "sizeOfCollection": "sizeOfCollection",
+        "studyCompletion": "studyCompletion"
+    }
+}
