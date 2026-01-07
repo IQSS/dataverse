@@ -648,8 +648,6 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         JsonObjectBuilder job = Json.createObjectBuilder();
         JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
         logger.fine("RF: " + filtering.toString());
-        JsonObject managedFields = cvocEntry.getJsonObject("managed-fields");
-        logger.fine("MF: " + managedFields.toString());
         int nrOfNotFound = 0;
         for (String filterKey : filtering.keySet()) {
             if (!filterKey.equals("@context")) {
