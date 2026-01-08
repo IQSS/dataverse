@@ -22,28 +22,6 @@ set -euo pipefail
 # - By default uses template from $SOLR_TEMPLATE/conf/schema.xml
 # - Template location can be overridden with --schema-source-path or UPGRADE_SOURCE_PATH
 #
-# Health Checks (for Kubernetes):
-# - Liveness: Check if /tmp/watcher-alive timestamp is recent (updated each cycle)
-# - Readiness: Check if /tmp/watcher-ready file exists
-# - These are opt-in via --enable-health-checks flag
-#
-# Example Kubernetes probes:
-#   livenessProbe:
-#     exec:
-#       command:
-#       - /bin/bash
-#       - -c
-#       - test $(( $(date +%s) - $(stat -c %Y /tmp/watcher-alive 2>/dev/null || echo 0) )) -lt 300
-#     initialDelaySeconds: 30
-#     periodSeconds: 60
-#   readinessProbe:
-#     exec:
-#       command:
-#       - test
-#       - -f
-#       - /tmp/watcher-ready
-#     initialDelaySeconds: 5
-#     periodSeconds: 10
 #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### ####
 
 # Default configuration variables
@@ -57,9 +35,6 @@ DEFAULT_POLL_INTERVAL="60"
 DEFAULT_WORK_DIR="/tmp/dataverse-schema-watcher"
 DEFAULT_MODE="oneshot"
 DEFAULT_STARTUP_CHECK="fail"
-DEFAULT_HEALTH_CHECKS_ENABLED="false"
-DEFAULT_LIVENESS_FILE="/tmp/watcher-alive"
-DEFAULT_READINESS_FILE="/tmp/watcher-ready"
 DEFAULT_LOCK_TIMEOUT="300"
 DEFAULT_WAIT_RETRY_PERIOD="5"
 DEFAULT_WAIT_MAX_RETRIES="60"
@@ -79,9 +54,6 @@ POLL_INTERVAL="${POLL_INTERVAL:-${DEFAULT_POLL_INTERVAL}}"
 WORK_DIR="${WORK_DIR:-${DEFAULT_WORK_DIR}}"
 MODE="${MODE:-${DEFAULT_MODE}}"
 STARTUP_CHECK="${STARTUP_CHECK:-${DEFAULT_STARTUP_CHECK}}"
-HEALTH_CHECKS_ENABLED="${HEALTH_CHECKS_ENABLED:-${DEFAULT_HEALTH_CHECKS_ENABLED}}"
-LIVENESS_FILE="${LIVENESS_FILE:-${DEFAULT_LIVENESS_FILE}}"
-READINESS_FILE="${READINESS_FILE:-${DEFAULT_READINESS_FILE}}"
 LOCK_TIMEOUT="${LOCK_TIMEOUT:-${DEFAULT_LOCK_TIMEOUT}}"
 WAIT_RETRY_PERIOD="${WAIT_RETRY_PERIOD:-${DEFAULT_WAIT_RETRY_PERIOD}}"
 WAIT_MAX_RETRIES="${WAIT_MAX_RETRIES:-${DEFAULT_WAIT_MAX_RETRIES}}"
@@ -114,29 +86,6 @@ log_verbose() {
     fi
 }
 
-# Update liveness indicator
-update_liveness() {
-    if [[ "${HEALTH_CHECKS_ENABLED}" == "true" ]]; then
-        touch "${LIVENESS_FILE}" 2>/dev/null || log_warn "Failed to update liveness file"
-    fi
-}
-
-# Mark as ready
-mark_ready() {
-    if [[ "${HEALTH_CHECKS_ENABLED}" == "true" ]]; then
-        touch "${READINESS_FILE}" 2>/dev/null || log_warn "Failed to create readiness file"
-        log_info "Marked as ready"
-    fi
-}
-
-# Mark as not ready
-mark_not_ready() {
-    if [[ "${HEALTH_CHECKS_ENABLED}" == "true" ]]; then
-        rm -f "${READINESS_FILE}" 2>/dev/null || true
-        log_info "Marked as not ready"
-    fi
-}
-
 # Usage information
 usage() {
     cat << EOF
@@ -161,10 +110,6 @@ Options:
     --wait-retry-period SECONDS    Retry period in seconds for 'wait' startup mode
     --wait-max-retries NUMBER      Maximum number of retries for 'wait' startup mode
 
-    -e, --enable-health-checks     Enable Kubernetes liveness/readiness health checks
-    -l, --liveness-file PATH       Path to liveness indicator file
-    -r, --readiness-file PATH      Path to readiness indicator file
-
     -u, --update-script PATH       Path to update-fields.sh script
     -w, --work-dir PATH            Working directory path
     -v, --verbose                  Enable verbose logging (Note: oneshot mode is always verbose!)
@@ -182,9 +127,6 @@ Environment Variables (used as defaults if command-line options not provided):
     MODE                    Execution mode: 'watch' or 'oneshot' (default: ${DEFAULT_MODE})
     UPGRADE_MODE            Enable upgrade mode: 'true' or 'false' (default: ${DEFAULT_UPGRADE_MODE})
     STARTUP_CHECK           Startup check mode: 'fail', 'warn', or 'wait' (default: ${DEFAULT_STARTUP_CHECK})
-    HEALTH_CHECKS_ENABLED   Enable health checks: 'true' or 'false' (default: ${DEFAULT_HEALTH_CHECKS_ENABLED})
-    LIVENESS_FILE           Path to liveness indicator file (default: ${DEFAULT_LIVENESS_FILE})
-    READINESS_FILE          Path to readiness indicator file (default: ${DEFAULT_READINESS_FILE})
     LOCK_TIMEOUT            File lock timeout in seconds (default: ${DEFAULT_LOCK_TIMEOUT})
     WAIT_RETRY_PERIOD       Retry period (in seconds) for 'wait' startup check mode (default: ${DEFAULT_WAIT_RETRY_PERIOD})
     WAIT_MAX_RETRIES        Max retries for 'wait' startup check mode (default: ${DEFAULT_WAIT_MAX_RETRIES})
@@ -207,10 +149,6 @@ Schema Path Behavior:
       - Target remains as specified (or default)
     Use -P to explicitly override source path in any mode.
 
-Health Checks (for Kubernetes):
-    Liveness:  Check if ${DEFAULT_LIVENESS_FILE} timestamp is recent
-    Readiness: Check if ${DEFAULT_READINESS_FILE} exists
-
 Examples:
     # Watch mode with defaults
     $0
@@ -230,9 +168,6 @@ Examples:
     # Watch mode that waits for services to be ready with custom retry settings
     $0 --startup-check wait --wait-retry-period 10 --wait-max-retries 30
 
-    # Enable health checks for Kubernetes
-    $0 --enable-health-checks
-
     # Using environment variables
     MODE=oneshot SOLR_CORE=mycore $0
 
@@ -244,26 +179,6 @@ Examples:
 
     # With Dataverse bearer token
     DATAVERSE_BEARER_TOKEN=\$(cat /run/secrets/dv_token) $0
-
-Kubernetes Probe Examples:
-    livenessProbe:
-      exec:
-        command:
-        - /bin/bash
-        - -c
-        - test \$(( \$(date +%s) - \$(stat -c %Y ${DEFAULT_LIVENESS_FILE} 2>/dev/null || echo 0) )) -lt 300
-      initialDelaySeconds: 30
-      periodSeconds: 60
-
-    readinessProbe:
-      exec:
-        command:
-        - test
-        - -f
-        - ${DEFAULT_READINESS_FILE}
-      initialDelaySeconds: 5
-      periodSeconds: 10
-
 EOF
     exit 0
 }
@@ -405,11 +320,7 @@ release_schema_lock() {
 # Cleanup function
 cleanup() {
     log_info "Shutting down..."
-    mark_not_ready
     release_schema_lock
-    if [[ "${HEALTH_CHECKS_ENABLED}" == "true" ]]; then
-        rm -f "${LIVENESS_FILE}" 2>/dev/null || true
-    fi
     exit 0
 }
 
@@ -490,9 +401,6 @@ perform_startup_checks() {
             local retry_count=1
             while [[ ${retry_count} -lt ${WAIT_MAX_RETRIES} ]]; do
                 all_ok=true
-
-                # Update liveness during wait
-                update_liveness
 
                 local status_msg=""
                 if ! check_solr_status >/dev/null 2>&1; then
@@ -847,9 +755,6 @@ process_schema_update() {
 run_oneshot() {
     log_info "Running in oneshot mode"
 
-    # Initial liveness update
-    update_liveness
-
     # In oneshot, default to not reload Solr. But if upgrading, we want to reload.
     local reload_solr="ignore"
     if [[ "${UPGRADE_MODE}" == "true" ]]; then
@@ -866,7 +771,6 @@ run_oneshot() {
 
     # Steps 2b, 3, 4 and 5
     if process_schema_update "${metadata_file}" "$reload_solr"; then
-        mark_ready
         log_info "Oneshot execution completed successfully"
         return 0
     else
@@ -885,9 +789,6 @@ run_watch() {
     local pending_checksum=""
 
     while true; do
-        # Update liveness indicator at the start of each cycle
-        update_liveness
-
         # Only fetch metadata if we don't have a pending update
         if [[ "${needs_update}" == "false" ]]; then
             local metadata_file="${WORK_DIR}/metadata_fields_check.xml"
@@ -897,12 +798,10 @@ run_watch() {
 
                 if [[ -z "${last_checksum}" ]]; then
                     log_info "Initial metadata fetch, setting baseline"
-                    mark_not_ready
                     needs_update="true"
                     pending_metadata_file="${metadata_file}"
                 elif [[ "${pending_checksum}" != "${last_checksum}" ]]; then
                     log_info "Metadata change detected, processing schema update"
-                    mark_not_ready
                     needs_update="true"
                     pending_metadata_file="${metadata_file}"
                 else
@@ -910,7 +809,6 @@ run_watch() {
                 fi
             else
                 log_error "Failed to fetch metadata fields, will retry"
-                mark_not_ready
             fi
         else
             log_info "Pending update not yet applied, retrying without re-fetching metadata"
@@ -921,7 +819,6 @@ run_watch() {
             if process_schema_update "${pending_metadata_file}" "reload"; then
                 # Update successful - use the stored checksum
                 last_checksum="${pending_checksum}"
-                mark_ready
                 needs_update="false"
                 pending_metadata_file=""
                 pending_checksum=""
@@ -931,8 +828,7 @@ run_watch() {
             fi
         fi
 
-        # Update liveness before sleep (just to be sure - the processing may have taking longer than expected)
-        update_liveness
+        # Sleep until next check is due
         sleep "${POLL_INTERVAL}"
     done
 }
@@ -985,18 +881,6 @@ main() {
                 ;;
             -k|--startup-check)
                 STARTUP_CHECK="$2"
-                shift 2
-                ;;
-            -e|--enable-health-checks)
-                HEALTH_CHECKS_ENABLED="true"
-                shift
-                ;;
-            -l|--liveness-file)
-                LIVENESS_FILE="$2"
-                shift 2
-                ;;
-            -r|--readiness-file)
-                READINESS_FILE="$2"
                 shift 2
                 ;;
             -t|--lock-timeout)
@@ -1135,19 +1019,11 @@ main() {
     log_info "Update Script: ${UPDATE_FIELDS_SCRIPT}"
     log_info "Work Directory: ${WORK_DIR}"
     log_info "Startup Check Mode: ${STARTUP_CHECK}"
-    log_info "Health Checks Enabled: ${HEALTH_CHECKS_ENABLED}"
-    if [[ "${HEALTH_CHECKS_ENABLED}" == "true" ]]; then
-        log_info "Liveness File: ${LIVENESS_FILE}"
-        log_info "Readiness File: ${READINESS_FILE}"
-    fi
     log_info "Lock Timeout: ${LOCK_TIMEOUT}s"
     if [[ "${STARTUP_CHECK}" == "wait" ]]; then
         log_info "Wait Retry Period: ${WAIT_RETRY_PERIOD}s"
         log_info "Wait Max Retries: ${WAIT_MAX_RETRIES}"
     fi
-
-    # Initialize liveness indicator early
-    update_liveness
 
     # Pre-flight checks
     log_info "Running pre-flight checks..."
