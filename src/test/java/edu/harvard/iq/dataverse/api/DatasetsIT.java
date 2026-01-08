@@ -111,7 +111,6 @@ public class DatasetsIT {
                 .statusCode(200);
 
         UtilIT.deleteSetting(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
-        UtilIT.deleteSetting(SettingsServiceBean.Key.DatasetPublishLegalDisclaimerAcknowledgementRequired);
 
         /* See above
         Response removeDcmUrl = UtilIT.deleteSetting(SettingsServiceBean.Key.DataCaptureModuleUrl);
@@ -7412,68 +7411,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         json = response.prettyPrint();
         assertTrue(json.contains("datasetContactName"));
         assertTrue(!json.contains("datasetContactEmail"));
-    }
-
-    @Test
-    public void testDatasetPublishLegalDisclaimerAcknowledgementRequired() {
-        // Test setup: Create a user and a published dataverse to host the datasets.
-        Response createUser = UtilIT.createRandomUser();
-        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        String adminApiToken = getSuperuserToken();
-        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
-        String ownerAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-        UtilIT.publishDataverseViaNativeApi(ownerAlias, apiToken);
-
-        // Test setup: Create datasets within the new dataverse.
-        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(ownerAlias, apiToken);
-        String datasetPersistentId1 = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
-        createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(ownerAlias, apiToken);
-        String datasetPersistentId2 = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
-        createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(ownerAlias, apiToken);
-        String datasetPersistentId3 = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
-        createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(ownerAlias, apiToken);
-        String datasetPersistentId4 = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
-
-        // Require the acknowledgement
-        UtilIT.setSetting(SettingsServiceBean.Key.DatasetPublishLegalDisclaimerAcknowledgementRequired, "true");
-        // Acknowledgement required means Draft datasets include publishLegalDisclaimer in Json GET response
-        Response getResp = UtilIT.nativeGetUsingPersistentId(datasetPersistentId1, apiToken);
-        getResp.then().assertThat().statusCode(OK.getStatusCode());
-        String json = getResp.prettyPrint();
-        assertTrue(json.contains("publishLegalDisclaimer"));
-        getResp = UtilIT.getDatasetVersion(datasetPersistentId1, ":draft", apiToken);
-        getResp.then().assertThat().statusCode(OK.getStatusCode());
-        json = getResp.prettyPrint();
-        assertTrue(json.contains("publishLegalDisclaimer"));
-
-        Response publishDataset1 = UtilIT.publishDatasetViaNativeApi(datasetPersistentId1, "major", apiToken);
-        Response publishDataset2 = UtilIT.publishDatasetViaNativeApi(datasetPersistentId2, "major", apiToken, false, "&legalDisclaimerAcknowledged=true");
-        Response publishDataset3 = UtilIT.publishDatasetViaNativeApi(datasetPersistentId3, "major", adminApiToken);
-
-        // Acknowledgement not required
-        UtilIT.setSetting(SettingsServiceBean.Key.DatasetPublishLegalDisclaimerAcknowledgementRequired, "false");
-        Response publishDataset4 = UtilIT.publishDatasetViaNativeApi(datasetPersistentId4, "major", apiToken, false, "&legalDisclaimerAcknowledged=false");
-        // No Acknowledgement means no publishLegalDisclaimer in Json GET response
-        getResp = UtilIT.nativeGetUsingPersistentId(datasetPersistentId1, apiToken);
-        getResp.then().assertThat().statusCode(OK.getStatusCode());
-        json = getResp.prettyPrint();
-        assertTrue(!json.contains("publishLegalDisclaimer"));
-
-        // verify that the first publish failed since the acknowledgement was missing
-        publishDataset1.then().assertThat()
-                .statusCode(PRECONDITION_FAILED.getStatusCode())
-                .body("message", equalTo("Legal Disclaimer not Acknowledged"));
-        // verify that the second publish passed since the acknowledgement was true
-        publishDataset2.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        // verify that the third publish passed without acknowledgement since the user was a superuser
-        publishDataset3.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        // verify that the forth publish passes with legalDisclaimerAcknowledged=false since the acknowledgement isn't required
-        publishDataset4.then().assertThat()
-                .statusCode(OK.getStatusCode());
-
-        UtilIT.deleteSetting(SettingsServiceBean.Key.DatasetPublishLegalDisclaimerAcknowledgementRequired);
     }
 
     private String getSuperuserToken() {

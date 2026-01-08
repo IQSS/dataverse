@@ -124,7 +124,9 @@ public class SettingsWrapper implements java.io.Serializable {
     
     private Boolean webloaderUpload = null;
     
-    private String metricsUrl = null; 
+    private String metricsUrl = null;
+
+    private String publishDatasetDisclaimer = null;
     
     private Boolean dataFilePIDSequentialDependent = null;
     
@@ -871,5 +873,16 @@ public class SettingsWrapper implements java.io.Serializable {
         }
 
         return systemMetadataBlocks;
+    }
+
+    public String getPublishDatasetDisclaimer() {
+        if (publishDatasetDisclaimer == null) {
+            publishDatasetDisclaimer = getValueForKey(Key.PublishDatasetDisclaimer);
+        }
+        return publishDatasetDisclaimer;
+    }
+
+    public Boolean isHasPublishDatasetDisclaimer() {
+        return !StringUtil.isEmpty(getPublishDatasetDisclaimer());
     }
 }

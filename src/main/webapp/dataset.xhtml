@@ -2029,18 +2029,18 @@
                                 <p class="col-sm-12 help-block">#{bundle['dataset.publish.terms.help.tip']}</p>
                             </div>
                         </ui:fragment>
-                        <ui:fragment rendered="#{valid}">
+                        <ui:fragment rendered="#{valid and settingsWrapper.isHasPublishDatasetDisclaimer()}">
                             <div class="form-group">
-                                <p:selectBooleanCheckbox class="text-danger" id="legalDisclaimer"
-                                                         itemLabel="#{bundle['dataset.publish.legal.disclaimer']}"
-                                                         value="#{DatasetPage.legalDisclaimerAcknowledged}">
+                                <p:selectBooleanCheckbox class="text-danger" id="publishDisclaimer"
+                                                         itemLabel="#{settingsWrapper.getPublishDatasetDisclaimer()}"
+                                                         value="#{DatasetPage.publishDisclaimerAcknowledged}">
                                     <p:ajax event="change" update="releaseDatasetButton"/>
                                 </p:selectBooleanCheckbox>
                             </div>
                         </ui:fragment>
                         <div class="button-block">
                             <p:commandButton id="releaseDatasetButton" rendered="#{valid}" styleClass="btn btn-default" value="#{bundle.continue}"
-                                             disabled="#{!DatasetPage.legalDisclaimerAcknowledged}"
+                                             disabled="#{!DatasetPage.publishDisclaimerAcknowledged}"
                                              onclick="PF('publishDataset').hide();
                                                      PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}" />
                             <button class="btn btn-link" onclick="PF('publishDataset').hide();

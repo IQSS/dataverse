@@ -1196,16 +1196,13 @@ public class Datasets extends AbstractApiBean {
     @Deprecated
     public Response publishDataseUsingGetDeprecated(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("type") String type ) {
         logger.info("publishDataseUsingGetDeprecated called on id " + id + ". Encourage use of POST rather than GET, which is deprecated.");
-        return publishDataset(crc, id, type, false, false);
+        return publishDataset(crc, id, type, false);
     }
 
     @POST
     @AuthRequired
     @Path("{id}/actions/:publish")
-    public Response publishDataset(@Context ContainerRequestContext crc, @PathParam("id") String id,
-                                   @QueryParam("type") String type,
-                                   @QueryParam("assureIsIndexed") boolean mustBeIndexed,
-                                   @QueryParam("legalDisclaimerAcknowledged") boolean legalDisclaimerAcknowledged) {
+    public Response publishDataset(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("type") String type, @QueryParam("assureIsIndexed") boolean mustBeIndexed) {
         try {
             if (type == null) {
                 return error(Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major','minor', or 'updatecurrent').");
@@ -1319,23 +1316,14 @@ public class Datasets extends AbstractApiBean {
                             .build();
                 }
             } else {
-                if (isLegalDisclaimerAcknowledged(user, legalDisclaimerAcknowledged)) {
-                    PublishDatasetResult res = execCommand(new PublishDatasetCommand(ds,
-                            createDataverseRequest(user),
-                            isMinor));
-                    return res.isWorkflow() ? accepted(json(res.getDataset())) : ok(json(res.getDataset()));
-                } else {
-                    return error(Status.PRECONDITION_FAILED, "Legal Disclaimer not Acknowledged"); // 412
-                }
+                PublishDatasetResult res = execCommand(new PublishDatasetCommand(ds,
+                        createDataverseRequest(user),
+                        isMinor));
+                return res.isWorkflow() ? accepted(json(res.getDataset())) : ok(json(res.getDataset()));
             }
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-    }
-    private boolean isLegalDisclaimerAcknowledged(AuthenticatedUser user, boolean legalDisclaimerAcknowledged) {
-        return (user.isSuperuser()
-                || !("true".equalsIgnoreCase(settingsService.getValueForKey(SettingsServiceBean.Key.DatasetPublishLegalDisclaimerAcknowledgementRequired)))
-                || legalDisclaimerAcknowledged);
     }
 
     @POST

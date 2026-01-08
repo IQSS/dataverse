@@ -326,9 +326,9 @@ public class SettingsServiceBean {
         */
         DatasetPublishPopupCustomTextOnAllVersions,
         /*
-        Whether a Legal Disclaimer must be acknowledged before a Dataset can be published
+        Publish Disclaimer text. If this setting exists user must acknowledge before a Dataset can be published
          */
-        DatasetPublishLegalDisclaimerAcknowledgementRequired,
+        PublishDatasetDisclaimer,
         /*
         Whether Harvesting (OAI) service is enabled
         */
