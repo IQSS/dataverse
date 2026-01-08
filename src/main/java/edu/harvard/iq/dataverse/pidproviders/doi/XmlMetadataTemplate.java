@@ -927,7 +927,7 @@ public class XmlMetadataTemplate {
         }
 
         for (DatasetFieldCompoundValue otherIdentifier : otherIdentifiers) {
-            String identifierType = ":unav";;
+            String identifierType = ":unav";
             String identifier = null;
             for (DatasetField subField : otherIdentifier.getChildDatasetFields()) {
                 switch (subField.getDatasetFieldType().getName()) {
