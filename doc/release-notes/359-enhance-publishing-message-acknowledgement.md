@@ -14,3 +14,6 @@ To enable/disable the acknowledgement requirement an Admin can set/delete the se
 The UI will prevent the user from publishing a Dataset unless the disclaimer is acknowledged.
 
 The APIs will continue to publish without the acknowledgement for now.
+
+See:
+- [#359](https://github.com/IQSS/dataverse.harvard.edu/issues/359)  
