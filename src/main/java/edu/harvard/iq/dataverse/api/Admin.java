@@ -2275,9 +2275,9 @@ public class Admin extends AbstractApiBean {
         }
 
         if (getEffective != null && getEffective) {
-            return ok(JsonPrinter.jsonStorageDriver(dataverse.getEffectiveStorageDriverId(), null));
+            return ok(JsonPrinter.jsonStorageDriver(dataverse.getEffectiveStorageDriverId()));
         } else {
-            return ok(JsonPrinter.jsonStorageDriver(dataverse.getStorageDriverId(), null));
+            return ok(JsonPrinter.jsonStorageDriver(dataverse.getStorageDriverId()));
         }
     }
     

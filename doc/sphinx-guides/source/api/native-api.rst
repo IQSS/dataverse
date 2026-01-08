@@ -1250,16 +1250,22 @@ Collection Storage Quotas
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota"
 
-Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for the specific collection. The user identified by the API token must have the ``Manage`` permission on the collection. 
+Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for the collection. If this is an unpublished collection, the user must have the ``ViewUnpublishedDataverse`` permission. 
+With an optional query parameter ``showInherited=true`` it will show the applicable quota potentially defined on the nearest parent when the collection does not have a quota configured directly.
 
+.. code-block:: 
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/use"
+
+Will output the dynamically cached total storage size (in bytes) used by the collection. The user identified by the API token must have the ``Edit`` permission on the collection. 
 
 To set or change the storage allocation quota for a collection:
 
 .. code-block:: 
 
-  curl -X POST -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota/$SIZE_IN_BYTES"
+  curl -X PUT -H "X-Dataverse-key:$API_TOKEN" -d $SIZE_IN_BYTES "$SERVER_URL/api/dataverses/$ID/storage/quota"
 
-This is API is superuser-only.
+This API is superuser-only.
   
 
 To delete a storage quota configured for a collection:
@@ -1268,9 +1274,70 @@ To delete a storage quota configured for a collection:
 
   curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota"
 
-This is API is superuser-only.
+This API is superuser-only.
 
-Use the ``/settings`` API to enable or disable the enforcement of storage quotas that are defined across the instance via the following setting. For example,
+Storage Quotas on Individual Datasets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: 
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/$ID/storage/quota"
+
+Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for this dataset. If this is an unpublished dataset, the user must have the ``ViewUnpublishedDataset`` permission.  
+With an optional query parameter ``showInherited=true`` it will show the applicable quota potentially defined on the nearest parent collection when the dataset does not have a quota configured directly.
+
+.. code-block:: 
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/$ID/storage/use"
+
+Will output the dynamically cached total storage size (in bytes) used by the dataset. The user identified by the API token must have the ``Edit`` permission on the dataset.
+
+To set or change the storage allocation quota for a dataset:
+
+.. code-block:: 
+
+  curl -X PUT -H "X-Dataverse-key:$API_TOKEN" -d $SIZE_IN_BYTES "$SERVER_URL/api/datasets/$ID/storage/quota"
+
+This API is superuser-only.
+  
+
+To delete a storage quota configured for a dataset:
+
+.. code-block:: 
+
+  curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/$ID/storage/quota"
+
+This API is superuser-only.
+
+The following convenience API shows the dynamic values of the *remaining* storage size and/or file number quotas on the dataset, if present. For example:
+
+.. code-block::
+
+   curl  -H "X-Dataverse-key: $API_TOKEN" "http://localhost:8080/api/datasets/$dataset-id/uploadlimits" 
+   {
+     "status": "OK",
+     "data": {
+       "uploadLimits": {
+         "numberOfFilesRemaining": 20,
+         "storageQuotaRemaining": 1048576
+       }
+     } 
+   }
+
+Or, when neither limit is present: 
+
+.. code-block::
+
+   {
+     "status": "OK",
+     "data": {
+       "uploadLimits": {}
+     }
+   }
+
+This API requires the Edit permission on the dataset. 
+
+Use the ``/settings`` API to enable or disable the enforcement of storage quotas that are defined across the instance via the following setting:
 
 .. code-block:: 
 
@@ -1509,6 +1576,48 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/dataverses/1/templates"
 
+List Single Template by its Identifier
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Gets the json representation of a template by its ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/dataverses/{ID}/template"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/dataverses/1/template"
+
+You must have Create Dataset permission within the given dataverse collection to invoke this api.
+
+Delete a Template by its Identifier
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Deletes a template by its ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/dataverses/{ID}/template"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverses/1/template"
+
+You must have Edit Dataverse permission within the given dataverse collection to invoke this api.
+
 Create a Template for a Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1625,6 +1734,8 @@ Get JSON Representation of a Dataset
 
 .. note:: Datasets can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the dataset is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
 
+If a user with EditDataset permissions wants to ignore the setting ``ExcludeEmailFromExport`` in order to see the contact email, they must include the ``ignoreSettingExcludeEmailFromExport`` query parameter  (Required by SPA).
+
 Example: Getting the dataset whose DOI is *10.5072/FK2/J8SJZB*:
 
 .. code-block:: bash
@@ -1632,13 +1743,13 @@ Example: Getting the dataset whose DOI is *10.5072/FK2/J8SJZB*:
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
 
-  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/?persistentId=$PERSISTENT_IDENTIFIER"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/?persistentId=$PERSISTENT_IDENTIFIER&ignoreSettingExcludeEmailFromExport"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:$API_TOKEN" "https://demo.dataverse.org/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB"
+  curl -H "X-Dataverse-key:$API_TOKEN" "https://demo.dataverse.org/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB&ignoreSettingExcludeEmailFromExport"
 
 Getting its draft version:
 
@@ -6520,44 +6631,65 @@ The expected OK (200) response looks something like this:
 
   {
       "status": "OK",
-      "data": {
-          "notifications": [
-              {
-                  "id": 38,
-                  "type": "CREATEACC",
-                  "displayAsRead": true,
-                  "subjectText": "Root: Your account has been created",
-                  "messageText": "Hello, \nWelcome to...",
-                  "sentTimestamp": "2025-07-21T19:15:37Z"
-              }
+      "totalCount": 15,
+      "data": [
+        {
+            "id": 38,
+            "type": "CREATEACC",
+            "displayAsRead": true,
+            "subjectText": "Root: Your account has been created",
+            "messageText": "Hello, \nWelcome to...",
+            "sentTimestamp": "2025-07-21T19:15:37Z"
+        }
   ...
 
-This endpoint supports an optional query parameter ``inAppNotificationFormat`` which, if sent as ``true``, retrieves the fields needed to build the in-app notifications for the Notifications section of the Dataverse UI, omitting fields related to email notifications.
+This endpoint supports several optional query parameters to filter and paginate the results.
+
+The ``inAppNotificationFormat`` parameter, if sent as ``true``, retrieves the fields needed to build the in-app notifications for the Notifications section of the Dataverse UI, omitting fields related to email notifications.
 
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all?inAppNotificationFormat=true"
 
-The expected OK (200) response looks something like this:
+The ``onlyUnread`` parameter, if sent as ``true``, filters the results to include only notifications that have not been marked as read.
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all?onlyUnread=true"
+
+The ``limit`` and ``offset`` parameters can be used for pagination. ``limit`` specifies the maximum number of notifications to return, and ``offset`` specifies the number of notifications to skip from the beginning of the list. For example, to retrieve notifications 11 through 15:
+
+To aid in pagination the JSON response also includes the total number of rows (totalCount) available.
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all?limit=5&offset=10"
+
+All parameters can be combined. For instance, to get the first page of 10 unread notifications in the in-app format:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all?inAppNotificationFormat=true&onlyUnread=true&limit=1&offset=0"
+
+The expected OK (200) response for an in-app format request looks something like this:
 
 .. code-block:: text
 
   {
       "status": "OK",
-      "data": {
-          "notifications": [
-              {
-                  "id": 79,
-                  "type": "CREATEACC",
-                  "displayAsRead": false,
-                  "sentTimestamp": "2025-08-08T08:00:16Z",
-                  "installationBrandName": "Your Installation Name",
-                  "userGuidesBaseUrl": "https://guides.dataverse.org",
-                  "userGuidesVersion": "6.7.1",
-                  "userGuidesSectionPath": "user/index.html"
-              }
-          ]
-      }
+      "totalCount": 15,
+      "data": [
+        {
+            "id": 79,
+            "type": "CREATEACC",
+            "displayAsRead": false,
+            "sentTimestamp": "2025-08-08T08:00:16Z",
+            "installationBrandName": "Your Installation Name",
+            "userGuidesBaseUrl": "https://guides.dataverse.org",
+            "userGuidesVersion": "6.7.1",
+            "userGuidesSectionPath": "user/index.html"
+        }
+      ]
   }
   ...
 
@@ -8241,7 +8373,7 @@ Get details of a workflow with a given id::
 
    GET http://$SERVER/api/admin/workflows/$id
 
-Add a new workflow. Request body specifies the workflow properties and steps in JSON format.
+Add a new workflow. Request body specifies the workflow properties and steps in JSON format. Specifically, the body of the message should be a JSON Object with a String "name" for the workflow and a "steps" JSON Array containing a JSON Object per workflow step. (See :doc:`/developers/workflows` for the exiting steps and their required JSON representations.)
 Sample ``json`` files are available at ``scripts/api/data/workflows/``::
 
    POST http://$SERVER/api/admin/workflows

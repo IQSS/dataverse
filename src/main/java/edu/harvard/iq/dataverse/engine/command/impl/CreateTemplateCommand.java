@@ -49,13 +49,15 @@ public class CreateTemplateCommand extends AbstractCommand<Template> {
         }
 
         Template createdTemplate = ctxt.templates().save(template);
-
-        if (initialize && template.isIsDefaultForDataverse()) {
+        createdTemplate.setIsDefaultForDataverse(template.isIsDefaultForDataverse());
+        if (initialize && createdTemplate.isIsDefaultForDataverse()) {
             dataverse.setDefaultTemplate(createdTemplate);
             ctxt.em().merge(dataverse);
             ctxt.em().flush();
         }
         
+        //Flush so that api response can include the id
+        ctxt.em().flush();
         return createdTemplate;
     }
 

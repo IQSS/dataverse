@@ -2608,23 +2608,39 @@ public class DataversesIT {
     }
 
     @Test
-    public void testCreateAndGetTemplates() throws JsonParseException {
-            Response createUserResponse = UtilIT.createRandomUser();
-            String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
-            String username = UtilIT.getUsernameFromResponse(createUserResponse);
+    public void testCreateAndGetTemplates() throws JsonParseException  {
+        /*
+          Also Delete...and get single template
+        */
+        
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String username = UtilIT.getUsernameFromResponse(createUserResponse);
 
             Response createSecondUserResponse = UtilIT.createRandomUser();
             String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
             String secondUsername = UtilIT.getUsernameFromResponse(createSecondUserResponse);
 
-            /*
-             * We need to make this a non-inherited metadatablocks so the get template will
-             * only get templates from current dv
-             */
-
-            Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
-            createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
-            String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+        /*
+        We need to make this a non-inherited metadatablocks so the get template will only get templates from current dv
+         */
+        
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
+        
+        System.out.print("dataverseId: " + dataverseId);
+        
+        String newName = "New Test Dataverse Name";
+        String newAffiliation = "New Test Dataverse Affiliation";
+        String newDataverseType = Dataverse.DataverseType.TEACHING_COURSES.toString();
+        String[] newContactEmails = new String[]{"new_email@dataverse.com"};
+        String[] newInputLevelNames = new String[]{"geographicCoverage"};
+        String[] newFacetIds = new String[]{"contributorName"};
+        String[] newMetadataBlockNames = new String[]{"citation", "geospatial", "biomedical"};
 
             String newName = "New Test Dataverse Name";
             String newAffiliation = "New Test Dataverse Affiliation";
@@ -2644,7 +2660,25 @@ public class DataversesIT {
             updateDataverseResponse.then().assertThat()
                             .statusCode(OK.getStatusCode());
 
-            // Create a template
+        Response createTemplateResponse = UtilIT.createTemplate(
+                dataverseAlias,
+                jsonString,
+                apiToken
+        );
+
+        createTemplateResponse.prettyPrint();
+        Long templateId = UtilIT.getTemplateIdFromResponse(createTemplateResponse);
+        
+        createTemplateResponse.then().assertThat().statusCode(CREATED.getStatusCode())
+                .body("data.name", equalTo("Dataverse template"))
+                .body("data.isDefault", equalTo(true))
+                .body("data.usageCount", equalTo(0))
+                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.datasetFields.citation.fields.size()", equalTo(1))
+                .body("data.instructions.size()", equalTo(1))
+                .body("data.instructions[0].instructionField", equalTo("author"))
+                .body("data.instructions[0].instructionText", equalTo("The author data"))
+                .body("data.dataverseAlias", equalTo(dataverseAlias));
 
             String jsonString = """
                             {
@@ -2723,6 +2757,59 @@ public class DataversesIT {
                             .body("data[0].instructions[0].instructionText", equalTo("The author data"))
                             .body("data[0].dataverseAlias", equalTo(dataverseAlias));
 
+        
+        //set to super to update role 
+        UtilIT.setSuperuserStatus(username, true);
+
+        Response grantRoleResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, "@" + secondUsername, apiToken);
+        grantRoleResponse.prettyPrint();
+        grantRoleResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
+        getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        Response getTemplateByIdResponse = UtilIT.getTemplate(templateId.toString(), apiToken);
+        getTemplateByIdResponse.prettyPrint();
+        getTemplateByIdResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        //guest user shouldn't get it
+        getTemplateByIdResponse = UtilIT.getTemplate(templateId.toString());
+        getTemplateByIdResponse.prettyPrint();
+        getTemplateByIdResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+        
+        Response deleteTemplateResponse = UtilIT.deleteTemplate(templateId.toString(), secondApiToken);
+        deleteTemplateResponse.prettyPrint();
+        deleteTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+        
+        //set back to show super not needed for delete - just Edit Dataverse
+        UtilIT.setSuperuserStatus(username, false);
+        
+        String badId = "8675309";
+        
+        deleteTemplateResponse = UtilIT.deleteTemplate(badId, apiToken);
+        deleteTemplateResponse.prettyPrint();
+        deleteTemplateResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        
+        deleteTemplateResponse = UtilIT.deleteTemplate(templateId.toString(), apiToken);
+        deleteTemplateResponse.prettyPrint();
+        deleteTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // back to super for cleanup
+        
+        UtilIT.setSuperuserStatus(username, true);
+        
+        Response deleteDataverse1Response = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverse1Response.prettyPrint();
+        assertEquals(200, deleteDataverse1Response.getStatusCode());
+        
+        Response deleteUserResponse = UtilIT.deleteUser(secondUsername);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+        
+        deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+        
+        
             // Remove default template
             Response removeDefaultResp = UtilIT.removeDefaultTemplate(dataverseAlias, apiToken);
             removeDefaultResp.then().assertThat().statusCode(OK.getStatusCode());       
@@ -2760,8 +2847,8 @@ public class DataversesIT {
                 .body("data.name", CoreMatchers.notNullValue())
                 .body("data.type", CoreMatchers.notNullValue())
                 .body("data.label", CoreMatchers.notNullValue())
-                .body("data.directUpload", CoreMatchers.nullValue())
-                .body("data.directDownload", CoreMatchers.nullValue())
+                .body("data.directUpload", CoreMatchers.notNullValue())
+                .body("data.directDownload", CoreMatchers.notNullValue())
                 .statusCode(200);
 
         // Root without default is undefined
