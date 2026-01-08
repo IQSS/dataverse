@@ -337,6 +337,13 @@ public class UtilIT {
         logger.info("Id found in create dataverse response: " + dataverseId);
         return dataverseId;
     }
+    
+    static Long getTemplateIdFromResponse(Response createTemplateResponse) {
+        JsonPath createdTemplate = JsonPath.from(createTemplateResponse.body().asString());
+        Long templateId = createdTemplate.getLong("data.id");
+        logger.info("Id found in create template response: " + templateId);
+        return templateId;
+    }
 
     static Integer getDatasetIdFromResponse(Response createDatasetResponse) {
         JsonPath createdDataset = JsonPath.from(createDatasetResponse.body().asString());
@@ -1614,11 +1621,8 @@ public class UtilIT {
     static Response publishDatasetViaNativeApi(String idOrPersistentId, String majorOrMinor, String apiToken) {
         return publishDatasetViaNativeApi(idOrPersistentId, majorOrMinor, apiToken, false);
     }
+    
     static Response publishDatasetViaNativeApi(String idOrPersistentId, String majorOrMinor, String apiToken, boolean mustBeIndexed) {
-        return publishDatasetViaNativeApi(idOrPersistentId, majorOrMinor, apiToken, mustBeIndexed, null);
-    }
-
-    static Response publishDatasetViaNativeApi(String idOrPersistentId, String majorOrMinor, String apiToken, boolean mustBeIndexed, String params) {
 
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
@@ -1628,9 +1632,6 @@ public class UtilIT {
         }
         if(mustBeIndexed) {
             optionalQueryParam = optionalQueryParam+"&assureIsIndexed=true";
-        }
-        if (params != null) {
-            optionalQueryParam = optionalQueryParam+params;
         }
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
@@ -5143,12 +5144,31 @@ public class UtilIT {
                 .body(jsonString)
                 .post("/api/dataverses/" + dataverseAlias + "/templates");
     }
+    
+    public static Response deleteTemplate(String id,  String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/dataverses/"+id+"/template");
+    }
 
     public static Response getTemplates(String dataverseAlias, String apiToken) {
         return given()
                 .contentType(ContentType.JSON)
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/dataverses/" + dataverseAlias + "/templates");
+    }
+    
+    public static Response getTemplate(String templateId) {
+        return given()
+                .contentType(ContentType.JSON)
+                .get("/api/dataverses/" + templateId + "/template");
+    }
+    
+    public static Response getTemplate(String templateId, String apiToken) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/" + templateId + "/template");
     }
     
     /**
