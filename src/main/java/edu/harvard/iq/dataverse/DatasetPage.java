@@ -6104,7 +6104,7 @@ public class DatasetPage implements java.io.Serializable {
                     
                     // Set initial pending status
                     dv.setArchivalCopyLocation(DatasetVersion.ARCHIVAL_STATUS_PENDING);
-                    dv = datasetVersionService.merge(dv);
+                    datasetVersionService.persistArchivalCopyLocation(dv);
                     
                     commandEngine.submitAsync(cmd);
 

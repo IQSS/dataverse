@@ -1333,4 +1333,21 @@ w
 
         return em.createQuery(cq).getSingleResult();
     }
+
+
+    /**
+     * Update the archival copy location for a specific version of a dataset. Archiving can be long-running and other parallel updates to the datasetversion have likely occurred
+     *
+     * @param dv
+     *            The dataset version whose archival copy location we want to update. Must not be {@code null}.
+     * @param archivalStatusPending
+     *            the JSON status string, may be {@code null}.
+     */
+    public void persistArchivalCopyLocation(DatasetVersion dv) {
+        em.createNativeQuery(
+                "UPDATE datasetversion SET archivalcopylocation = ?1 WHERE id = ?2")
+                .setParameter(1, dv.getArchivalCopyLocation())
+                .setParameter(2, dv.getId())
+                .executeUpdate();
+    }
 }
