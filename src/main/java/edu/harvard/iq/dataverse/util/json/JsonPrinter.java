@@ -518,17 +518,17 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv, boolean includeFiles) {
-        return json(dsv, null, includeFiles, false, true);
+        return json(dsv, null, includeFiles, false, true, false);
     }
     public static JsonObjectBuilder json(DatasetVersion dsv, boolean includeFiles, boolean includeMetadataBlocks) {
-        return json(dsv, null, includeFiles, false, includeMetadataBlocks);
+        return json(dsv, null, includeFiles, false, includeMetadataBlocks, false);
     }
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList,
                                          boolean includeFiles, boolean returnOwners) {
-        return  json( dsv,  anonymizedFieldTypeNamesList, includeFiles,  returnOwners,true);
+        return  json(dsv, anonymizedFieldTypeNamesList, includeFiles, returnOwners, true, false);
     }
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList,
-        boolean includeFiles, boolean returnOwners, boolean includeMetadataBlocks) {
+        boolean includeFiles, boolean returnOwners, boolean includeMetadataBlocks, boolean ignoreSettingExcludeEmailFromExport) {
         Dataset dataset = dsv.getDataset();
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dataset.getId())
@@ -577,10 +577,8 @@ public class JsonPrinter {
                 .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion())
                 .add("fileAccessRequest", dsv.getTermsOfUseAndAccess().isFileAccessRequest());
         if(includeMetadataBlocks) {
-            bld.add("metadataBlocks", (anonymizedFieldTypeNamesList != null) ?
-                    jsonByBlocks(dsv.getDatasetFields(), anonymizedFieldTypeNamesList)
-                    : jsonByBlocks(dsv.getDatasetFields())
-            );
+            bld.add("metadataBlocks",
+                    jsonByBlocks(dsv.getDatasetFields(), anonymizedFieldTypeNamesList, ignoreSettingExcludeEmailFromExport));
         }
         if(returnOwners){
             bld.add("isPartOf", getOwnersFromDvObject(dataset));
@@ -664,15 +662,15 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder jsonByBlocks(List<DatasetField> fields) {
-        return jsonByBlocks(fields, null);
+        return jsonByBlocks(fields, null, false);
     }
 
-    public static JsonObjectBuilder jsonByBlocks(List<DatasetField> fields, List<String> anonymizedFieldTypeNamesList) {
+    public static JsonObjectBuilder jsonByBlocks(List<DatasetField> fields, List<String> anonymizedFieldTypeNamesList, boolean ignoreSettingExcludeEmailFromExport) {
         JsonObjectBuilder blocksBld = jsonObjectBuilder();
 
         for (Map.Entry<MetadataBlock, List<DatasetField>> blockAndFields : DatasetField.groupByBlock(fields).entrySet()) {
             MetadataBlock block = blockAndFields.getKey();
-            blocksBld.add(block.getName(), JsonPrinter.json(block, blockAndFields.getValue(), anonymizedFieldTypeNamesList));
+            blocksBld.add(block.getName(), JsonPrinter.json(block, blockAndFields.getValue(), anonymizedFieldTypeNamesList, ignoreSettingExcludeEmailFromExport));
         }
         return blocksBld;
     }
@@ -690,6 +688,10 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(MetadataBlock block, List<DatasetField> fields, List<String> anonymizedFieldTypeNamesList) {
+        return json(block, fields, anonymizedFieldTypeNamesList, false);
+    }
+
+    public static JsonObjectBuilder json(MetadataBlock block, List<DatasetField> fields, List<String> anonymizedFieldTypeNamesList, boolean ignoreSettingExcludeEmailFromExport) {
         JsonObjectBuilder blockBld = jsonObjectBuilder();
 
         blockBld.add("displayName", block.getDisplayName());
@@ -697,7 +699,12 @@ public class JsonPrinter {
 
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
         Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(true);
-        DatasetFieldWalker.walk(fields, settingsService, cvocMap, new DatasetFieldsToJson(fieldsArray, anonymizedFieldTypeNamesList));
+        List<DatasetFieldType.FieldType> excludedFieldTypeList = new ArrayList<>();
+        // Exclude the Email field or override the exclusion of the Email field type based on the settings ExcludeEmailFromExport and ignoreSettingExcludeEmailFromExport
+        if ((settingsService != null) && settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false) && !ignoreSettingExcludeEmailFromExport) {
+            excludedFieldTypeList.add(DatasetFieldType.FieldType.EMAIL);
+        }
+        DatasetFieldWalker.walk(fields, excludedFieldTypeList, cvocMap, new DatasetFieldsToJson(fieldsArray, anonymizedFieldTypeNamesList));
 
         blockBld.add("fields", fieldsArray);
         return blockBld;

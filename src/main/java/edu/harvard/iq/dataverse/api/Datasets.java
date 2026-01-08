@@ -475,12 +475,16 @@ public class Datasets extends AbstractApiBean {
                                @QueryParam("excludeMetadataBlocks") Boolean excludeMetadataBlocks,
                                @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                @QueryParam("returnOwners") boolean returnOwners,
+                               @QueryParam("ignoreSettingExcludeEmailFromExport") Boolean ignoreSettingToExcludeEmailFromExport,
                                @Context UriInfo uriInfo,
                                @Context HttpHeaders headers) {
         return response( req -> {
+            boolean includeMetadataBlocks = excludeMetadataBlocks == null ? true : !excludeMetadataBlocks;
+            boolean includeFiles = excludeFiles == null ? true : !excludeFiles;
+            boolean ignoreSettingExcludeEmailFromExport = ignoreSettingToExcludeEmailFromExport != null ? ignoreSettingToExcludeEmailFromExport : false;
 
             //If excludeFiles is null the default is to provide the files and because of this we need to check permissions.
-            boolean checkPerms = excludeFiles == null ? true : !excludeFiles;
+            boolean checkPerms = includeFiles;
 
             Dataset dataset = findDatasetOrDie(datasetId);
             DatasetVersion requestedDatasetVersion = getDatasetVersionOrDie(req,
@@ -494,16 +498,19 @@ public class Datasets extends AbstractApiBean {
             if (requestedDatasetVersion == null || requestedDatasetVersion.getId() == null) {
                 return notFound("Dataset version not found");
             }
-
-            if (excludeFiles == null ? true : !excludeFiles) {
+            if (includeFiles) {
                 requestedDatasetVersion = datasetversionService.findDeep(requestedDatasetVersion.getId());
             }
-            Boolean includeMetadataBlocks = excludeMetadataBlocks == null ? true : !excludeMetadataBlocks;
 
-            JsonObjectBuilder jsonBuilder = json(requestedDatasetVersion,
-                                                 null,
-                                                 excludeFiles == null ? true : !excludeFiles,
-                                                 returnOwners, includeMetadataBlocks);
+            // Check to see if the caller wants to ignore the ExcludeEmailFromExport setting in the metadata block and that they have permission to do so
+            // Let the JsonPrinter know to ignore the ExcludeEmailFromExport setting so the emails will show for this API call by permitted user
+            if (ignoreSettingExcludeEmailFromExport && (!includeMetadataBlocks || !permissionService.userOn(getRequestUser(crc), dataset).has(Permission.EditDataset))) {
+                // either not showing metadata block or user isn't allowed to override the setting
+                ignoreSettingExcludeEmailFromExport = false;
+            }
+
+            JsonObjectBuilder jsonBuilder = json(requestedDatasetVersion, null, includeFiles,
+                    returnOwners, includeMetadataBlocks, ignoreSettingExcludeEmailFromExport);
             return ok(jsonBuilder);
 
         }, getRequestUser(crc));
@@ -1423,8 +1430,7 @@ public class Datasets extends AbstractApiBean {
             }
             //Command requires Super user - it will be tested by the command
             execCommand(new MoveDatasetCommand(
-                    createDataverseRequest(u), ds, target, force
-            ));
+                    createDataverseRequest(u), ds, target, force, true));
             return ok(BundleUtil.getStringFromBundle("datasets.api.moveDataset.success"));
         } catch (WrappedResponse ex) {
             if (ex.getCause() instanceof UnforcedCommandException) {
