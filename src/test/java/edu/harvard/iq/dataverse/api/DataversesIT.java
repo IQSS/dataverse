@@ -2656,7 +2656,7 @@ public class DataversesIT {
         String jsonString = """
                             {
                               "name": "Dataverse template",
-                              "isDefault": false,
+                              "isDefault": true,
                               "fields": [
                                 {
                                   "typeName": "author",
@@ -2690,7 +2690,7 @@ public class DataversesIT {
 
         createTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.name", equalTo("Dataverse template"))
-                .body("data.isDefault", equalTo(false))
+                .body("data.isDefault", equalTo(true))
                 .body("data.usageCount", equalTo(0))
                 .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
                 .body("data.datasetFields.citation.fields.size()", equalTo(1))
