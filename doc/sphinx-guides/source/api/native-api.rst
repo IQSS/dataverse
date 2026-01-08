@@ -1576,6 +1576,48 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/dataverses/1/templates"
 
+List Single Template by its Identifier
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Gets the json representation of a template by its ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/dataverses/{ID}/template"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/dataverses/1/template"
+
+You must have Create Dataset permission within the given dataverse collection to invoke this api.
+
+Delete a Template by its Identifier
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Deletes a template by its ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/dataverses/{ID}/template"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverses/1/template"
+
+You must have Edit Dataverse permission within the given dataverse collection to invoke this api.
+
 Create a Template for a Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1692,6 +1734,8 @@ Get JSON Representation of a Dataset
 
 .. note:: Datasets can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the dataset is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
 
+If a user with EditDataset permissions wants to ignore the setting ``ExcludeEmailFromExport`` in order to see the contact email, they must include the ``ignoreSettingExcludeEmailFromExport`` query parameter  (Required by SPA).
+
 Example: Getting the dataset whose DOI is *10.5072/FK2/J8SJZB*:
 
 .. code-block:: bash
@@ -1699,13 +1743,13 @@ Example: Getting the dataset whose DOI is *10.5072/FK2/J8SJZB*:
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
 
-  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/?persistentId=$PERSISTENT_IDENTIFIER"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/?persistentId=$PERSISTENT_IDENTIFIER&ignoreSettingExcludeEmailFromExport"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:$API_TOKEN" "https://demo.dataverse.org/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB"
+  curl -H "X-Dataverse-key:$API_TOKEN" "https://demo.dataverse.org/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB&ignoreSettingExcludeEmailFromExport"
 
 Getting its draft version:
 

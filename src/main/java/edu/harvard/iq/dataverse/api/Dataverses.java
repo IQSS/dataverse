@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import com.google.common.collect.Lists;
 import com.google.api.client.util.ArrayMap;
 import edu.harvard.iq.dataverse.*;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
 import edu.harvard.iq.dataverse.api.dto.*;
@@ -23,6 +24,7 @@ import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
@@ -118,6 +120,9 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     PermissionServiceBean permissionService;
+    
+    @EJB
+    TemplateServiceBean templateService;
 
     @EJB
     DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
@@ -1989,6 +1994,21 @@ public class Dataverses extends AbstractApiBean {
             return e.getResponse();
         }
     }
+    
+    @GET
+    @AuthRequired
+    @Path("{id}/template/")
+    public Response getTemplate(@Context ContainerRequestContext crc, @PathParam("id") Long templateId) {
+        try {
+            Template template = templateService.find(templateId);
+            if (template == null){
+                return error(Response.Status.NOT_FOUND, "Template with id " + templateId + " -  not found.");
+            }
+            return ok(jsonTemplate(execCommand(new GetTemplateCommand(createDataverseRequest(getRequestUser(crc)), template))));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
 
     @POST
     @AuthRequired
@@ -2002,7 +2022,10 @@ public class Dataverses extends AbstractApiBean {
             } catch (JsonParseException ex) {
                 return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.createTemplate.error.jsonParseMetadataFields"), ex.getMessage()));
             }
-            return ok(jsonTemplate(execCommand(new CreateTemplateCommand(newTemplateDTO.toTemplate(), createDataverseRequest(getRequestUser(crc)), dataverse, true))));
+            Template created = execCommand(new CreateTemplateCommand(newTemplateDTO.toTemplate(), createDataverseRequest(getRequestUser(crc)), dataverse, true));
+            
+            return created("/dataverses/template/" + created.getId(), jsonTemplate(created));
+        
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
@@ -2034,6 +2057,27 @@ public class Dataverses extends AbstractApiBean {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             return ok(jsonLanguage(execCommand(new SetDataverseMetadataLanguageCommand(req, dataverse, lang))));
         }, getRequestUser(crc));
+    }
+    
+    @Path("{id}/template")
+    @AuthRequired
+    @DELETE
+    public Response deleteTemplate(@Context ContainerRequestContext crc, @PathParam("id") long id) {
+
+        Template doomed = templateService.find(id);
+        if (doomed == null) {
+            return error(Response.Status.NOT_FOUND, "Template with id " + id + " -  not found.");
+        }
+
+        Dataverse dv = doomed.getDataverse();
+        List<Dataverse> dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(doomed.getId());
+        try {
+            execCommand(new DeleteTemplateCommand(createDataverseRequest(getRequestUser(crc)), dv, doomed, dataverseWDefaultTemplate));
+        } catch (WrappedResponse wr) {
+            return handleWrappedResponse(wr);
+        }
+
+        return ok("Template " + doomed.getName() + " deleted.");
     }
     
     @GET
