@@ -49,8 +49,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
     }
 
     @Override
-    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token,
-            Map<String, String> requestedSettings) {
+    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token) {
 
         String port = requestedSettings.get(DURACLOUD_PORT) != null ? requestedSettings.get(DURACLOUD_PORT)
                 : DEFAULT_PORT;

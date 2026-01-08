@@ -45,7 +45,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
     }
 
     @Override
-    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token, Map<String, String> requestedSettings) {
+    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token) {
         logger.fine("In GoogleCloudSubmitToArchiveCommand...");
         String bucketName = requestedSettings.get(GOOGLECLOUD_BUCKET);
         String projectName = requestedSettings.get(GOOGLECLOUD_PROJECT);

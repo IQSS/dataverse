@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
@@ -37,7 +36,7 @@ import java.util.logging.Logger;
 public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<DatasetVersion> {
 
     private final DatasetVersion version;
-    private final Map<String, String> requestedSettings = new HashMap<String, String>();
+    protected final Map<String, String> requestedSettings = new HashMap<String, String>();
     protected boolean success=false;
     private static final Logger logger = Logger.getLogger(AbstractSubmitToArchiveCommand.class.getName());
     private static final int MAX_ZIP_WAIT = 20000;
@@ -50,8 +49,6 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-
-
         
         String settings = ctxt.settings().getValueForKey(SettingsServiceBean.Key.ArchiverSettings);
         List<String> settingsList = ListSplitUtil.split(settings);
@@ -85,7 +82,9 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
      * @param token - an API Token for the user performing this action
      * @param requestedSettings - a map of the names/values for settings required by this archiver (sent because this class is not part of the EJB context (by design) and has no direct access to service beans).
      */
-    public WorkflowStepResult runArchivingProcess(DatasetVersion version, ApiToken token, Map<String, String> requestedSetttings) {
+    public WorkflowStepResult runArchivingProcess(DatasetVersion version, ApiToken token, Map<String, String> requestedSettings) {
+        // this.requestedSettings won't be set yet in the workflow case, so set it now (used in getNumberOfBagGeneratorThreads)
+        this.requestedSettings.putAll(requestedSettings);
         // Check if earlier versions must be archived first
         String requireEarlierArchivedValue = requestedSettings.get(SettingsServiceBean.Key.ArchiverOnlyIfEarlierVersionsAreArchived.toString());
         boolean requireEarlierArchived = Boolean.parseBoolean(requireEarlierArchivedValue);
@@ -127,7 +126,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
             }
         }
         // Delegate to the archiver-specific implementation
-        return performArchiveSubmission(version, token, requestedSettings);
+        return performArchiveSubmission(version, token);
     }
 
 
@@ -141,10 +140,8 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
      * 
      * @param version - the DatasetVersion to archive
      * @param token - an API Token for the user performing this action
-     * @param requestedSettings - a map of the names/values for settings required by this archiver (sent because this class is not part of the EJB context (by design) and has no direct access to service beans).
      */
-   protected abstract WorkflowStepResult performArchiveSubmission(DatasetVersion version, ApiToken token,
-            Map<String, String> requestedSettings);
+   protected abstract WorkflowStepResult performArchiveSubmission(DatasetVersion version, ApiToken token);
 
     protected int getNumberOfBagGeneratorThreads() {
         if (requestedSettings.get(BagGenerator.BAG_GENERATOR_THREADS) != null) {
