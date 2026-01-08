@@ -1430,8 +1430,7 @@ public class Datasets extends AbstractApiBean {
             }
             //Command requires Super user - it will be tested by the command
             execCommand(new MoveDatasetCommand(
-                    createDataverseRequest(u), ds, target, force
-            ));
+                    createDataverseRequest(u), ds, target, force, true));
             return ok(BundleUtil.getStringFromBundle("datasets.api.moveDataset.success"));
         } catch (WrappedResponse ex) {
             if (ex.getCause() instanceof UnforcedCommandException) {

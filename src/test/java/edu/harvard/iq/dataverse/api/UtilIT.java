@@ -337,6 +337,13 @@ public class UtilIT {
         logger.info("Id found in create dataverse response: " + dataverseId);
         return dataverseId;
     }
+    
+    static Long getTemplateIdFromResponse(Response createTemplateResponse) {
+        JsonPath createdTemplate = JsonPath.from(createTemplateResponse.body().asString());
+        Long templateId = createdTemplate.getLong("data.id");
+        logger.info("Id found in create template response: " + templateId);
+        return templateId;
+    }
 
     static Integer getDatasetIdFromResponse(Response createDatasetResponse) {
         JsonPath createdDataset = JsonPath.from(createDatasetResponse.body().asString());
@@ -5137,12 +5144,31 @@ public class UtilIT {
                 .body(jsonString)
                 .post("/api/dataverses/" + dataverseAlias + "/templates");
     }
+    
+    public static Response deleteTemplate(String id,  String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/dataverses/"+id+"/template");
+    }
 
     public static Response getTemplates(String dataverseAlias, String apiToken) {
         return given()
                 .contentType(ContentType.JSON)
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/dataverses/" + dataverseAlias + "/templates");
+    }
+    
+    public static Response getTemplate(String templateId) {
+        return given()
+                .contentType(ContentType.JSON)
+                .get("/api/dataverses/" + templateId + "/template");
+    }
+    
+    public static Response getTemplate(String templateId, String apiToken) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/" + templateId + "/template");
     }
     
     /**
