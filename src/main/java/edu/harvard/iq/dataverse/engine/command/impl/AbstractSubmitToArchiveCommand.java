@@ -20,6 +20,9 @@ import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
+
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 
@@ -48,6 +51,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
         
         String settings = ctxt.settings().getValueForKey(SettingsServiceBean.Key.ArchiverSettings);
@@ -174,8 +178,8 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
             public void run() {
                 try (PipedOutputStream out = new PipedOutputStream(in)) {
                     // Generate bag
+                    BagGenerator.setNumConnections(getNumberOfBagGeneratorThreads());
                     BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
-                    bagger.setNumConnections(getNumberOfBagGeneratorThreads());
                     bagger.setAuthenticationKey(token.getTokenString());
                     bagger.generateBag(out);
                     success = true;
@@ -246,5 +250,17 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
    //Check if the chosen archiver imposes single-version-only archiving - in the API
    public static boolean isSingleVersion(SettingsServiceBean settingsService) {
        return false;
+  }
+
+  /** Whether the archiver can delete existing archival files (and thus can retry when the existing files are incomplete/obsolete)
+   * A static version supports calls via reflection while the instance method supports inheritance for use on actual command instances (see DatasetPage for both use cases).
+   * @return
+   */
+  public static boolean supportsDelete() {
+      return false;
+  }
+
+  public boolean canDelete() {
+      return supportsDelete();
   }
 }

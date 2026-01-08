@@ -120,7 +120,7 @@ public class BagGenerator {
 
     private boolean usetemp = false;
 
-    private int numConnections = 8;
+    private static int numConnections = 2;
     public static final String BAG_GENERATOR_THREADS = BagGeneratorThreads.toString();
 
     private OREMap oremap;
@@ -1124,9 +1124,9 @@ public class BagGenerator {
         apiKey = tokenString;
     }
 
-    public void setNumConnections(int numConnections) {
-        this.numConnections = numConnections;
-        logger.fine("BagGenerator will use " + numConnections + " threads");
+    public static void setNumConnections(int numConnections) {
+        BagGenerator.numConnections = numConnections;
+        logger.fine("All BagGenerators will use " + numConnections + " threads");
     }
 
 }
