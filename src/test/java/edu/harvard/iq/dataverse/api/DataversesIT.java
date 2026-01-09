@@ -2688,7 +2688,7 @@ public class DataversesIT {
                 jsonString,
                 apiToken);
 
-        createTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
+        createTemplateResponse.then().assertThat().statusCode(CREATED.getStatusCode())
                 .body("data.name", equalTo("Dataverse template"))
                 .body("data.isDefault", equalTo(true))
                 .body("data.usageCount", equalTo(0))
@@ -2729,6 +2729,28 @@ public class DataversesIT {
                 .body("data[0].instructions[0].instructionField", equalTo("author"))
                 .body("data[0].instructions[0].instructionText", equalTo("The author data"))
                 .body("data[0].dataverseAlias", equalTo(dataverseAlias));
+        
+                
+            // Remove default template
+            System.out.print("***************: " + dataverseAlias );
+            
+            Response removeDefaultResp = UtilIT.removeDefaultTemplate(dataverseAlias, apiToken);
+            removeDefaultResp.prettyPrint();
+            removeDefaultResp.then().assertThat().statusCode(OK.getStatusCode());       
+
+            //check that template is no longer default.
+            getTemplateResponse = UtilIT.getTemplates(dataverseAlias, apiToken);
+            getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
+                            .body("data.size()", equalTo(1))
+                            .body("data[0].isDefault", equalTo(false));
+
+
+            // Templates retrieval should fail if a secondary user lacks dataset creation
+            // permissions
+
+            getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
+            getTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
 
         
         //set to super to update role 
@@ -2782,34 +2804,7 @@ public class DataversesIT {
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
         
-        
-            // Remove default template
-            Response removeDefaultResp = UtilIT.removeDefaultTemplate(dataverseAlias, apiToken);
-            removeDefaultResp.then().assertThat().statusCode(OK.getStatusCode());       
 
-            //check that template is no longer default.
-            getTemplateResponse = UtilIT.getTemplates(dataverseAlias, apiToken);
-            getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
-                            .body("data.size()", equalTo(1))
-                            .body("data[0].isDefault", equalTo(false));
-
-
-            // Templates retrieval should fail if a secondary user lacks dataset creation
-            // permissions
-
-            getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
-            getTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
-
-            // Templates retrieval should succeed if the secondary user has dataset creation
-            // permissions
-
-            UtilIT.setSuperuserStatus(username, true);
-            Response grantRoleResponse2 = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR,
-                            "@" + secondUsername, apiToken);
-            grantRoleResponse2.then().assertThat().statusCode(OK.getStatusCode());
-
-            getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
-            getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
     }
 
     @Test

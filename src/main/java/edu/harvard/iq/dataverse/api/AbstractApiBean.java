@@ -373,7 +373,12 @@ public abstract class AbstractApiBean {
 
     protected Template findTemplateOrDie(Long templateId, Dataverse dataverse) throws WrappedResponse {
         
-        Template template = dataverse.getTemplates().stream()
+        List<Template> templates = new ArrayList<>();
+        
+        templates.addAll(dataverse.getTemplates());
+        templates.addAll(dataverse.getParentTemplates());
+        
+        Template template = templates.stream()
                 .filter(t -> Objects.equals(t.getId(), templateId))
                 .findFirst()
                 .orElse(null);
