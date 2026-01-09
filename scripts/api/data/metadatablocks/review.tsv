@@ -1,0 +1,40 @@
+#metadataBlock	name	dataverseAlias	displayName													
+	review		Review Metadata													
+#datasetField	name	title	description	watermark	fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id	termURI
+	itemReviewed	Item Reviewed	The item being reviewed		none	1		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		review	
+	itemReviewedUrl	URL	The URL of the item being reviewed		url	2		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	itemReviewed	review	
+	itemReviewedType	Type	The type of the item being reviewed		text	3		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	itemReviewed	review	
+	itemReviewedCitation	Citation	The full bibliographic citation of the item being reviewed		textbox	4		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	itemReviewed	review	
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder												
+	itemReviewedType	Audiovisual		0												
+	itemReviewedType	Award		1												
+	itemReviewedType	Book		2												
+	itemReviewedType	Book Chapter		3												
+	itemReviewedType	Collection		4												
+	itemReviewedType	Computational Notebook		5												
+	itemReviewedType	Conference Paper		6												
+	itemReviewedType	Conference Proceeding		7												
+	itemReviewedType	DataPaper		8												
+	itemReviewedType	Dataset		9												
+	itemReviewedType	Dissertation		10												
+	itemReviewedType	Event		11												
+	itemReviewedType	Image		12												
+	itemReviewedType	Interactive Resource		13												
+	itemReviewedType	Instrument		14												
+	itemReviewedType	Journal		15												
+	itemReviewedType	Journal Article		16												
+	itemReviewedType	Model		17												
+	itemReviewedType	Output Management Plan		18												
+	itemReviewedType	Peer Review		19												
+	itemReviewedType	Physical Object		20												
+	itemReviewedType	Preprint		21												
+	itemReviewedType	Project		22												
+	itemReviewedType	Report		23												
+	itemReviewedType	Service		24												
+	itemReviewedType	Software		25												
+	itemReviewedType	Sound		26												
+	itemReviewedType	Standard		27												
+	itemReviewedType	Study Registration		28												
+	itemReviewedType	Text		29												
+	itemReviewedType	Workflow		30												
+	itemReviewedType	Other		31												
