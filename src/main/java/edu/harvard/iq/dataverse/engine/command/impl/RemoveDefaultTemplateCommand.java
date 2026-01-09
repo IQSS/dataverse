@@ -14,11 +14,11 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  * Removes the default template {@link Template} for a {@link Dataverse}.
  */
 @RequiredPermissions(Permission.EditDataverse)
-public class RemoveDefaultDatasetCommand extends AbstractCommand<Dataverse>{
+public class RemoveDefaultTemplateCommand extends AbstractCommand<Dataverse>{
 
     private final Dataverse dataverse;
 
-    public RemoveDefaultDatasetCommand(DataverseRequest request, Dataverse dataverse) {
+    public RemoveDefaultTemplateCommand(DataverseRequest request, Dataverse dataverse) {
         super(request, dataverse);
         this.dataverse = dataverse;
     }

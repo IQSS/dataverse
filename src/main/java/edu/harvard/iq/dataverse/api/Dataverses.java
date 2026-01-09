@@ -2061,7 +2061,7 @@ public class Dataverses extends AbstractApiBean {
             @PathParam("identifier") String dvId) {
         try {
             Dataverse dataverse = findDataverseOrDie(dvId);
-            RemoveDefaultDatasetCommand command = new RemoveDefaultDatasetCommand(createDataverseRequest(getRequestUser(crc)), dataverse);
+            RemoveDefaultTemplateCommand command = new RemoveDefaultTemplateCommand(createDataverseRequest(getRequestUser(crc)), dataverse);
             execCommand(command);
             return ok(BundleUtil.getStringFromBundle("dataverse.removeDefaultTemplate.success"));
         } catch (WrappedResponse e) {
