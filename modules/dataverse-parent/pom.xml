@@ -153,7 +153,7 @@
         <postgresql.version>42.7.7</postgresql.version>
         <solr.version>9.8.0</solr.version>
         <postgresql.server.version>16</postgresql.server.version>
-        <aws.version>2.33.0</aws.version>
+        <aws.version>2.41.4</aws.version>
         <google.library.version>26.30.0</google.library.version>
     
         <!-- Basic libs, logging -->
