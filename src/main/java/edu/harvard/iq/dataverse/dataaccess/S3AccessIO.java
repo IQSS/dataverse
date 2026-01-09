@@ -1558,4 +1558,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return driverId + DataAccess.SEPARATOR + getConfigParamForDriver(driverId, BUCKET_NAME) + ":"
                 + FileUtil.generateStorageIdentifier();
     }
+
+    public static void closeAll() {
+        logger.info("Closing all S3 clients and transfer managers.");
+        driverTMMap.values().forEach(S3TransferManager::close);
+        driverTMMap.clear();
+        driverClientMap.values().forEach(S3AsyncClient::close);
+        driverClientMap.clear();
+        driverPresignerMap.values().forEach(S3Presigner::close);
+        driverPresignerMap.clear();
+        // AwsCredentialsProvider does not need to be closed unless it's a specific implementation that requires it.
+        driverCredentialsProviderMap.clear();
+    }
 }
