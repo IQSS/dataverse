@@ -120,7 +120,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             bucketName = getBucketName(driverId);
             minPartSize = getMinPartSize(driverId);
-            credentialsProvider = getCredentialsProvider(driverId);
             s3 = getClient(driverId);
             tm = getTransferManager(driverId);
             s3Presigner = getPresigner(driverId);
@@ -156,7 +155,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     private S3AsyncClient s3 = null;
     private S3Presigner s3Presigner = null;
-    private AwsCredentialsProvider credentialsProvider;
     private S3TransferManager tm = null;
     private String bucketName = null;
     private String key = null;
