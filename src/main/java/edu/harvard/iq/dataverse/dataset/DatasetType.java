@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.dataset;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
@@ -66,6 +67,12 @@ public class DatasetType implements Serializable {
     private String displayName;
 
     /**
+     * Human readable description to show in the UI.
+     */
+    @Column(nullable = true, columnDefinition = "VARCHAR(255) DEFAULT ''")
+    private String description;
+
+    /**
      * The metadata blocks this dataset type is linked to.
      */
     @ManyToMany(cascade = {CascadeType.MERGE})
@@ -108,6 +115,18 @@ public class DatasetType implements Serializable {
         this.displayName = displayName;
     }
 
+    /**
+     * In most cases, you should call the getDescription(locale) version. This is
+     * here in case you really want the value from the database.
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public List<MetadataBlock> getMetadataBlocks() {
         return metadataBlocks;
     }
@@ -133,10 +152,11 @@ public class DatasetType implements Serializable {
         for (License license : this.getLicenses()) {
             availableLicenses.add(license.getName());
         }
-        return Json.createObjectBuilder()
+        return NullSafeJsonBuilder.jsonObjectBuilder()
                 .add("id", getId())
                 .add("name", getName())
                 .add("displayName", getDisplayName(locale))
+                .add("description", getDescription(locale))
                 .add("linkedMetadataBlocks", linkedMetadataBlocks)
                 .add("availableLicenses", availableLicenses);
     }
@@ -166,4 +186,31 @@ public class DatasetType implements Serializable {
             return displayName;
         }
     }
+
+    public String getDescription(Locale locale) {
+        logger.fine("Getting description for dataset type " + name + " and locale " + locale);
+        if (locale == null) {
+            logger.fine("Locale is null, returning default description: " + description);
+            return description;
+        }
+        if (locale.getLanguage().isBlank()) {
+            logger.fine("Locale couldn't be parsed, returning default description: " + description);
+            return description;
+        }
+        if (locale.getLanguage().equals(Locale.ENGLISH.getLanguage())) {
+            // This is here to prevent looking up datasetTypes_en.properties, which doesn't exist.
+            // The English strings are in datasetTypes.properties (no _en).
+            logger.fine("Locale is English, returning default description: " + description);
+            return description;
+        }
+        String propertiesFile = "datasetTypes_" + locale.toLanguageTag() + ".properties";
+        try {
+            logger.fine("Looking up " + name + ".description in " + propertiesFile);
+            return BundleUtil.getStringFromPropertyFile(name + ".description", "datasetTypes", locale);
+        } catch (MissingResourceException e) {
+            logger.warning(name + ".description missing from " + propertiesFile + " (or file does not exist). Returning English version.");
+            return description;
+        }
+    }
+
 }

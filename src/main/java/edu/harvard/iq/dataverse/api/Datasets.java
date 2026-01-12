@@ -5771,6 +5771,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
 
         String nameIn = null;
         String displayNameIn = null;
+        String descriptionIn = null;
 
         JsonArrayBuilder datasetTypesAfter = Json.createArrayBuilder();
         List<MetadataBlock> metadataBlocksToSave = new ArrayList<>();
@@ -5780,6 +5781,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             JsonObject datasetTypeObj =  JsonUtil.getJsonObject(jsonIn);
             nameIn = datasetTypeObj.getString("name");
             displayNameIn = datasetTypeObj.getString("displayName", null);
+            descriptionIn = datasetTypeObj.getString("description", null);
 
             JsonArray arr = datasetTypeObj.getJsonArray("linkedMetadataBlocks");
             if (arr != null && !arr.isEmpty()) {
@@ -5829,6 +5831,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             DatasetType datasetType = new DatasetType();
             datasetType.setName(nameIn);
             datasetType.setDisplayName(displayNameIn);
+            datasetType.setDescription(descriptionIn);
             datasetType.setMetadataBlocks(metadataBlocksToSave);
             datasetType.setLicenses(licensesToSave);
             DatasetType saved = datasetTypeSvc.save(datasetType);

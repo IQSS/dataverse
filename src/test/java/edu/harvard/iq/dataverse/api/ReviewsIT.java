@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.dataset.DatasetType;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -23,30 +24,37 @@ public class ReviewsIT {
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
 
-        ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_REVIEW, apiToken);
+        String datasetDescription = "A traditional dataset.";
+        ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_DATASET, "Dataset", datasetDescription, apiToken);
+
+        String reviewDescription = "A review of a dataset compiled by community experts.";
+        ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_REVIEW, "Review", reviewDescription, apiToken);
     }
 
-    private static void ensureDatasetTypeIsPresent(String datasetType, String apiToken) {
-        Response getDatasetType = UtilIT.getDatasetType(datasetType);
+    private static void ensureDatasetTypeIsPresent(String name, String displayName, String description,
+            String apiToken) {
+        Response getDatasetType = UtilIT.getDatasetType(name);
         getDatasetType.prettyPrint();
-        String typeFound = JsonPath.from(getDatasetType.getBody().asString()).getString("data.name");
-        System.out.println("type found: " + typeFound);
-        if (datasetType.equals(typeFound)) {
+        String nameFound = JsonPath.from(getDatasetType.getBody().asString()).getString("data.name");
+        String displayNameFound = JsonPath.from(getDatasetType.getBody().asString()).getString("data.displayName");
+        String descriptionFound = JsonPath.from(getDatasetType.getBody().asString()).getString("data.description");
+        System.out.println("Found: name=" + nameFound + ". Display name=" + displayNameFound + ". Description="
+                + descriptionFound);
+        if (name.equals(nameFound)) {
+            System.out.println(name + "=" + nameFound + ". Exists. No need to create. Returning.");
             return;
+        } else {
+            System.out.println(name + " wasn't found. Create it.");
         }
-        System.out.println("The " + datasetType + "type wasn't found. Create it.");
-        String displayName = capitalize(datasetType);
-        String jsonIn = Json.createObjectBuilder()
-                .add("name", datasetType)
+        String jsonIn = NullSafeJsonBuilder.jsonObjectBuilder()
+                .add("name", name)
                 .add("displayName", displayName)
+                .add("description", description)
                 .build().toString();
+        // System.out.println(JsonUtil.prettyPrint(jsonIn));
         Response typeAdded = UtilIT.addDatasetType(jsonIn, apiToken);
         typeAdded.prettyPrint();
         typeAdded.then().assertThat().statusCode(OK.getStatusCode());
-    }
-
-    private static String capitalize(String stringIn) {
-        return stringIn.substring(0, 1).toUpperCase() + stringIn.substring(1);
     }
 
     @Test
