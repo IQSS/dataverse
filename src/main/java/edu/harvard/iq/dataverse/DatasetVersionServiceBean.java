@@ -33,6 +33,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
@@ -1336,18 +1337,25 @@ w
 
 
     /**
-     * Update the archival copy location for a specific version of a dataset. Archiving can be long-running and other parallel updates to the datasetversion have likely occurred
+     * Update the archival copy location for a specific version of a dataset. Archiving can be long-running and other parallel updates to the datasetversion have likely occurred so this method will check
+     * for OptimisticLockExceptions and retry the update with the latest version.
      *
      * @param dv
      *            The dataset version whose archival copy location we want to update. Must not be {@code null}.
-     * @param archivalStatusPending
-     *            the JSON status string, may be {@code null}.
      */
     public void persistArchivalCopyLocation(DatasetVersion dv) {
-        em.createNativeQuery(
-                "UPDATE datasetversion SET archivalcopylocation = ?1 WHERE id = ?2")
-                .setParameter(1, dv.getArchivalCopyLocation())
-                .setParameter(2, dv.getId())
-                .executeUpdate();
+        try {
+            em.merge(dv);
+            em.flush(); // Force the update and version check immediately
+        } catch (OptimisticLockException ole) {
+            logger.log(Level.INFO, "OptimisticLockException while persisting archival copy location for DatasetVersion id={0}. Retrying on latest version.", dv.getId());
+            DatasetVersion currentVersion = find(dv.getId());
+            if (currentVersion != null) {
+                currentVersion.setArchivalCopyLocation(dv.getArchivalCopyLocation());
+                em.merge(currentVersion);
+            } else {
+                logger.log(Level.SEVERE, "Could not find DatasetVersion with id={0} to retry persisting archival copy location after OptimisticLockException.", dv.getId());
+            }
+        }
     }
 }
