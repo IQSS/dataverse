@@ -488,17 +488,25 @@ public class GuestbookResponseServiceBean {
         return (Long) query.getSingleResult();
     }
 
-    public Long findCountAll() {
-        return findCountAll(null);
-    }
-
     public Long findCountAll(Long dataverseId) {
-        String queryString;
-        if (dataverseId != null) {
-            queryString = "select count(o.id) from GuestbookResponse  o,  DvObject v where o.dataset_id = v.id and v.owner_id = " + dataverseId + " ";
-        } else {
-            queryString = "select count(o.id) from GuestbookResponse  o ";
+      
+        if (dataverseId == null) {
+            return null;
         }
+        
+        // Note that this method used to support NULL dataverseId, 
+        // in which case it counted ALL the guestbookresponse rows
+        // for the entire instance: 
+        // queryString = "select count(o.id) from GuestbookResponse  o ";
+        // I removed this code (it was not being used, thankfully) since
+        // the query can be insanely expensive on a large production table. 
+        // That's why we use a stored procedure to "estimate" its size, in 
+        // the dedicated getTotalDownloadCount() method further below, for 
+        // example, when we need to show the total number of downloads on 
+        // the homepage. (L.A.)
+        
+        String queryString = "select count(o.id) from GuestbookResponse  o, DvObject v, Dataset d where o.dataset_id = v.id and v.id = d.id and v.owner_id = " + dataverseId + " ";
+            
 
         Query query = em.createNativeQuery(queryString);
         return (Long) query.getSingleResult();
@@ -951,16 +959,12 @@ public class GuestbookResponseServiceBean {
         // somehow. -- L.A. 5.6
         
         
-        try {        
-            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("GuestbookResponse.estimateGuestBookResponseTableSize");
-            query.execute();
-            Long totalCount = (Long) query.getOutputParameterValue(1);
-        
-            if (totalCount != null) {
-                return totalCount;
-            }
-        } catch (IllegalArgumentException iae) {
-            // Don't do anything, we'll fall back to using "SELECT COUNT()"
+     // In GuestbookResponseServiceBean.java
+        try {
+            Query query = em.createNativeQuery("SELECT estimateGuestBookResponseTableSize()");
+            return ((Number) query.getSingleResult()).longValue();
+        } catch (Exception e) {
+            // Fall back to using "SELECT COUNT()"
         }
         Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o where eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"';");
         return (Long) query.getSingleResult();

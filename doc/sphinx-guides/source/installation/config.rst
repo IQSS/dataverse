@@ -10,27 +10,6 @@ Once you have finished securing and configuring your Dataverse installation, you
 .. contents:: |toctitle|
   :local:
 
-.. _comma-separated-config-values:
-
-Comma-separated configuration values
-------------------------------------
-
-Many configuration options (both MicroProfile/JVM settings and database settings) accept comma-separated lists. For all such settings, Dataverse applies consistent, lightweight parsing:
-
-- Whitespace immediately around commas is ignored (e.g., ``GET, POST`` is equivalent to ``GET,POST``).
-- Tokens are otherwise preserved exactly as typed. There is no quote parsing and no escape processing.
-- Embedded commas within a token are not supported.
-
-Examples include (but are not limited to):
-
-- :ref:`dataverse.cors.origin <dataverse.cors.origin>`
-- :ref:`dataverse.cors.methods <dataverse.cors.methods>`
-- :ref:`dataverse.cors.headers.allow <dataverse.cors.headers.allow>`
-- :ref:`dataverse.cors.headers.expose <dataverse.cors.headers.expose>`
-- :ref:`:UploadMethods`
-
-This behavior is implemented centrally and applies across all Dataverse settings that accept comma-separated values.
-
 .. _securing-your-installation:
 
 Securing Your Installation
@@ -851,7 +830,7 @@ Bearer tokens are defined in `RFC 6750`_ and can be used as an alternative to AP
 
 .. _RFC 6750: https://tools.ietf.org/html/rfc6750
 
-To enable bearer tokens, you must install and configure Keycloak (for now, see :ref:`oidc-dev` in the Developer Guide) and enable ``api-bearer-auth`` under :ref:`feature-flags`.
+To enable bearer tokens, you must install and configure Keycloak (for now, see :ref:`oidc-dev` in the Developer Guide) and enable the :ref:`dataverse.feature.api-bearer-auth` feature flag.
 
 You can test that bearer tokens are working by following the example under :ref:`bearer-tokens` in the API Guide.
 
@@ -2153,35 +2132,56 @@ JSON files for `Creative Commons licenses <https://creativecommons.org/about/ccl
 
 .. _adding-custom-licenses:
 
+Adding Open Data Commons Licenses
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+JSON files for `Open Data Commons licenses <https://opendatacommons.org/licenses/>`_ are provided below.
+
+- :download:`licenseODbL-1.0.json <../../../../scripts/api/data/licenses/licenseODbL-1.0.json>`
+- :download:`licenseODC-By-1.0.json <../../../../scripts/api/data/licenses/licenseODC-By-1.0.json>`
+- :download:`licensePDDL-1.0.json <../../../../scripts/api/data/licenses/licensePDDL-1.0.json>`
+
 Adding Software Licenses
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 JSON files for software licenses are provided below.
 
-- :download:`licenseMIT.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
 - :download:`licenseApache-2.0.json <../../../../scripts/api/data/licenses/licenseApache-2.0.json>`
+- :download:`licenseMIT.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
+- :download:`licenseEUPL-1.2.json <../../../../scripts/api/data/licenses/licenseEUPL-1.2.json>`
 
 Adding Country-Specific Licenses
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - :download:`licenseEtalab-2.0.json <../../../../scripts/api/data/licenses/licenseEtalab-2.0.json>` used in France (Etalab Open License 2.0, CC-BY 2.0 compliant).
+- :download:`licenseOGL-UK-3.0.json <../../../../scripts/api/data/licenses/licenseOGL-UK-3.0.json>`
 
 Contributing to the Collection of Standard Licenses Above
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you do not find the license JSON you need above, you are encouraged to contribute it to this documentation. Following the Dataverse 6.2 release, we have standardized on the following procedure:
+If you do not find the license JSON you need above, you are encouraged to contribute it to this documentation. Following the Dataverse 6.9 release, we have standardized on the following procedure:
 
-- Look for the license at https://spdx.org/licenses/
-- ``cd scripts/api/data/licenses``
+- Look for the license at https://spdx.org/licenses/ and https://github.com/datacite/bracco/blob/main/app/spdx.js.
+- ``cd scripts/api/data/licenses``.
 - Copy an existing license as a starting point.
 - Name your file using the SPDX identifier. For example, if the identifier is ``Apache-2.0``, you should name your file ``licenseApache-2.0.json``.
 - For the ``name`` field, use the "short identifier" from the SPDX landing page (e.g. ``Apache-2.0``).
-- For the ``description`` field, use the "full name" from the SPDX landing page (e.g. ``Apache License 2.0``).
-- For the ``uri`` field, we encourage you to use the same resource that DataCite uses, which is often the same as the first "Other web pages for this license" on the SPDX page for the license. When these differ, or there are other concerns about the URI DataCite uses, please reach out to the community to see if a consensus can be reached.
+- For the ``shortDescription`` field, use the "full name" from the SPDX landing page (e.g. ``Apache License 2.0``) followed by a period (full-stop) (e.g. ``Apache License 2.0.``).
+- For the ``uri`` field, use the same resource that DataCite uses, which is often the same as the first "Other web pages for this license" on the SPDX page for the license. Look at the ``seeAlso`` array for the license at https://github.com/datacite/bracco/blob/main/app/spdx.js to be sure. When these differ, or there are other concerns about the URI DataCite uses, please reach out to the community to see if a consensus can be reached. See :ref:`support`.
 - For the ``active`` field, put ``true``.
 - For the ``sortOrder`` field, put the next sequential number after checking previous files with ``grep sortOrder scripts/api/data/licenses/*``.
+- For the ``rightsIdentifier`` field, use the "short identifier" from the SPDX landing page (e.g. ``Apache-2.0``).
+- For the ``rightsIdentifierScheme`` field, use "SPDX".
+- For the ``schemeUri`` field, use "https://spdx.org/licenses/".
+- For the ``languageCode`` field, use "en".
+- For all of the fields above, resist the urge to change the spelling of words like license/licence, center/centre, etc. SPDX is the upstream authority, and they have the following `varietal word spelling policy <https://github.com/spdx/license-list-XML/blob/v3.27.0/DOCS/license-matching-guidelines-and-templates.md#8-varietal-word-spelling->`_: "The words in each line of the text file available at https://spdx.org/licenses/equivalentwords.txt are considered equivalent and interchangeable."
 
-Note that prior to Dataverse 6.2, various license above have been added that do not adhere perfectly with this procedure. For example, the ``name`` for the CC0 license is ``CC0 1.0`` (no dash) rather than ``CC0-1.0`` (with a dash). We are keeping the existing names for backward compatibility. For more on standarizing license configuration, see https://github.com/IQSS/dataverse/issues/8512
+In the past, licenses have been added that do not adhere perfectly with the procedure above. Here are known inconsistencies:
+
+- The ``name`` for the CC licenses don't have a dash as their SPDX short identifiers do (e.g. CC-BY-4.0, CC-BY-NC-4.0, CC-BY-NC-ND-4.0, CC-BY-NC-SA-4.0, CC-BY-ND-4.0, CC-BY-SA-4.0, CC0-1.0). For example, the ``name`` for the CC0 license is ``CC0 1.0`` (no dash) rather than ``CC0-1.0`` (with a dash). We are keeping the existing names without dashes for backward compatibility.
+- The ``uri`` for Creative Commons licenses comes from the Creative Commons website rather than SPDX or DataCite. As with ``name``, we are keeping ``uri`` the as-is for these licenses for backward compatibility. For more on our attempts to standardize license configuration, see https://github.com/IQSS/dataverse/issues/8512 and https://github.com/IQSS/dataverse/pull/11522.
+- The ``uri`` for Etalab is https://spdx.org/licenses/etalab-2.0 rather than a link listed in SPDX or DataCite.
+- The ``shortDescription`` doesn't have a trailing period for Apache-2.0, Etalab, and MIT.
 
 Adding Custom Licenses
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -2417,6 +2417,9 @@ The workflow id returned in this call (or available by doing a GET of /api/admin
 
 Once these steps are taken, new publication requests will automatically trigger submission of an archival copy to the specified archiver, Chronopolis' DuraCloud component in this example. For Chronopolis, as when using the API, it is currently the admin's responsibility to snap-shot the DuraCloud space and monitor the result. Failure of the workflow, (e.g. if DuraCloud is unavailable, the configuration is wrong, or the space for this dataset already exists due to a prior publication action or use of the API), will create a failure message but will not affect publication itself.
 
+Note: setting the default workflow is also available via the Settings API.
+See :ref:`:WorkflowsAdminIpWhitelist`, :ref:`:PrePublishDatasetWorkflowId` and :ref:`:PostPublishDatasetWorkflowId`
+
 .. _bag-info.txt:
 
 Configuring bag-info.txt
@@ -2536,6 +2539,28 @@ Setting Up Integrations
 +++++++++++++++++++++++
 
 Before going live, you might want to consider setting up integrations to make it easier for your users to deposit or explore data. See the :doc:`/admin/integrations` section of the Admin Guide for details.
+
+.. _comma-separated-config-values:
+
+Comma-Separated Configuration Values
+------------------------------------
+
+Many configuration options (both MicroProfile/JVM settings and database settings) accept comma-separated lists. For all such settings, Dataverse applies consistent, lightweight parsing:
+
+- Whitespace immediately around commas is ignored (e.g., ``GET, POST`` is equivalent to ``GET,POST``).
+- Tokens are otherwise preserved exactly as typed. There is no quote parsing and no escape processing.
+- Embedded commas within a token are not supported.
+
+Examples include (but are not limited to):
+
+- :ref:`dataverse.cors.origin <dataverse.cors.origin>`
+- :ref:`dataverse.cors.methods <dataverse.cors.methods>`
+- :ref:`dataverse.cors.headers.allow <dataverse.cors.headers.allow>`
+- :ref:`dataverse.cors.headers.expose <dataverse.cors.headers.expose>`
+- :ref:`:UploadMethods`
+
+This behavior is implemented centrally and applies across all Dataverse settings that accept comma-separated values.
+
 
 .. _jvm-options:
 
@@ -3685,7 +3710,7 @@ Can also be set via *MicroProfile Config API* sources, e.g. the environment vari
 dataverse.files.globus-monitoring-server
 ++++++++++++++++++++++++++++++++++++++++
 
-This setting is required in conjunction with the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`). Setting it to true designates the Dataverse instance to serve as the dedicated polling server. It is needed so that the new framework can be used in a multi-node installation. 
+This setting is required in conjunction with the :ref:`dataverse.feature.globus-use-experimental-async-framework` feature flag. Setting it to true designates the Dataverse instance to serve as the dedicated polling server. It is needed so that the new framework can be used in a multi-node installation. 
 
 .. _dataverse.csl.common-styles:
 
@@ -3698,8 +3723,8 @@ The default value when not set is "chicago-author-date, ieee".
 
 .. _localcontexts:
 
-localcontexts.url
-+++++++++++++++++
+dataverse.localcontexts.url
++++++++++++++++++++++++++++
 
 .. note::
    For more information about LocalContexts integration, see :doc:`/installation/localcontexts`.
@@ -3711,8 +3736,8 @@ The URL for the Local Contexts Hub API.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_LOCALCONTEXTS_URL``.
 
-localcontexts.api-key
-+++++++++++++++++++++
+dataverse.localcontexts.api-key
++++++++++++++++++++++++++++++++
 
 The API key for accessing the Local Contexts Hub.
 
@@ -3842,82 +3867,162 @@ Certain features might be deactivated because they are experimental and/or opt-i
 please find all known feature flags below. Any of these flags can be activated using a boolean value
 (case-insensitive, one of "true", "1", "YES", "Y", "ON") for the setting.
 
-.. list-table::
-    :widths: 35 50 15
-    :header-rows: 1
-    :align: left
-
-    * - Flag Name
-      - Description
-      - Default status
-    * - api-session-auth
-      - Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and for the feature to be removed in the future.
-      - ``Off``
-    * - api-bearer-auth
-      - Enables API authentication via Bearer Token.
-      - ``Off``
-    * - api-bearer-auth-provide-missing-claims
-      - Enables sending missing user claims in the request JSON provided during OIDC user registration, when these claims are not returned by the identity provider and are required for registration. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this feature flag exposes the installation to potential user impersonation issues.**
-      - ``Off``
-    * - api-bearer-auth-handle-tos-acceptance-in-idp
-      - Specifies that Terms of Service acceptance is handled by the IdP, eliminating the need to include ToS acceptance boolean parameter (termsAccepted) in the OIDC user registration request body. This feature only works when the feature flag ``api-bearer-auth`` is also enabled.
-      - ``Off``
-    * - api-bearer-auth-use-builtin-user-on-id-match
-      - Allows the use of a built-in user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing built-in user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
-      - ``Off``
-    * - api-bearer-auth-use-shib-user-on-id-match
-      - Allows the use of a Shibboleth user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing Shibboleth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
-      - ``Off``
-    * - api-bearer-auth-use-oauth-user-on-id-match
-      - Allows the use of an OAuth user account (GitHub, Google, or ORCID) when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing OAuth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
-      - ``Off``
-    * - avoid-expensive-solr-join
-      - Changes the way Solr queries are constructed for public content (published Collections, Datasets and Files). It removes a very expensive Solr join on all such documents, improving overall performance, especially for large instances under heavy load. Before this feature flag is enabled, the corresponding indexing feature (see next feature flag) must be turned on and a full reindex performed (otherwise public objects are not going to be shown in search results). See :doc:`/admin/solr-search-index`. 
-      - ``Off``
-    * - add-publicobject-solr-field
-      - Adds an extra boolean field `PublicObject_b:true` for public content (published Collections, Datasets and Files). Once reindexed with these fields, we can rely on it to remove a very expensive Solr join on all such documents in Solr queries, significantly improving overall performance (by enabling the feature flag above, `avoid-expensive-solr-join`). These two flags are separate so that an instance can reindex their holdings before enabling the optimization in searches, thus avoiding having their public objects temporarily disappear from search results while the reindexing is in progress. 
-      - ``Off``
-    * - reduce-solr-deletes
-      - Avoids deleting and recreating solr documents for dataset files when reindexing. 
-      - ``Off``
-    * - disable-return-to-author-reason
-      - Removes the reason field in the `Publish/Return To Author` dialog that was added as a required field in v6.2 and makes the reason an optional parameter in the :ref:`return-a-dataset` API call. 
-      - ``Off``
-    * - disable-dataset-thumbnail-autoselect
-      - Turns off automatic selection of a dataset thumbnail from image files in that dataset. When set to ``On``, a user can still manually pick a thumbnail image or upload a dedicated thumbnail image.
-      - ``Off``
-    * - globus-use-experimental-async-framework
-      - Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4; extended in v6.6 to cover download transfers, in addition to uploads. Affects :ref:`:GlobusPollingInterval`. Note that the JVM option :ref:`dataverse.files.globus-monitoring-server` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance. 
-      - ``Off``
-    * - index-harvested-metadata-source
-      - Index the nickname or the source name (See the optional ``sourceName`` field in :ref:`create-a-harvesting-client`) of the harvesting client as the "metadata source" of harvested datasets and files. If enabled, the Metadata Source facet will show separate groupings of the content harvested from different sources (by harvesting client nickname or source name) instead of the default behavior where there is one "Harvested" grouping for all harvested content.
-      - ``Off``
-    * - enable-version-note
-      - Turns on the ability to add/view/edit/delete per-dataset-version notes intended to provide :ref:`provenance` information about why the dataset/version was created.  
-      - ``Off``
-    * - shibboleth-use-wayfinder
-      - This flag allows an instance to use Shibboleth with InCommon federation services. Our original Shibboleth implementation that relies on DiscoFeed can no longer be used since InCommon discontinued their old-style metadata feed. An alternative mechanism had to be implemented in order to use WayFinder service, their recommended replacements, instead.
-      - ``Off``
-    * - shibboleth-use-localhost
-      - A Shibboleth-using Dataverse instance needs to make network calls to the locally-running ``shibd`` service. The default behavior is to use the address configured via the ``siteUrl`` setting. There are however situations (firewalls, etc.) where localhost would be preferable.
-      - ``Off``
-    * - add-local-contexts-permission-check
-      - Adds a permission check to ensure that the user calling the /api/localcontexts/datasets/{id} API can edit the dataset with that id. This is currently the only use case - see https://github.com/gdcc/dataverse-external-vocab-support/tree/main/packages/local_contexts. The flag adds additional security to stop other uses, but would currently have to be used in conjunction with the api-session-auth feature flag (the security implications of which have not been fully investigated) to still allow adding Local Contexts metadata to a dataset.
-      - ``Off``
-    * - enable-pid-failure-log
-      - Turns on creation of a monthly log file (logs/PIDFailures_<yyyy-MM>.log) showing failed requests for dataset/file PIDs. Can be used directly or with scripts at https://github.com/gdcc/dataverse-recipes/python/pid_reports to alert admins.
-      - ``Off``
-    * - role-assignment-history
-      - Turns on tracking/display of role assignments and revocations for collections, datasets, and files
-      - ``Off``
-    * - only-update-datacite-when-needed
-      - Only contact DataCite to update a DOI after checking to see if DataCite has outdated information (for efficiency, lighter load on DataCite, especially when using file DOIs).
-      - ``Off``
+The default status, as long there is not any other information,  is Off.
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_FEATURE_XXX`` (e.g. ``DATAVERSE_FEATURE_API_SESSION_AUTH=1``). These environment variables can be set in your shell before starting Payara. If you are using :doc:`Docker for development </container/dev-usage>`, you can set them in the `docker compose <https://docs.docker.com/compose/environment-variables/set-environment-variables/>`_ file.
 
 To check the status of feature flags via API, see :ref:`list-all-feature-flags` in the API Guide.
+
+.. _dataverse.feature.api-session-auth:
+
+dataverse.feature.api-session-auth
+++++++++++++++++++++++++++++++++++
+
+Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and for the feature to be removed in the future.
+
+.. _dataverse.feature.api-bearer-auth:
+
+dataverse.feature.api-bearer-auth
++++++++++++++++++++++++++++++++++
+
+Enables API authentication via Bearer Token.
+
+.. _dataverse.feature.api-bearer-auth-provide-missing-claims:
+
+dataverse.feature.api-bearer-auth-provide-missing-claims
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Enables sending missing user claims in the request JSON provided during OIDC user registration, when these claims are not returned by the identity provider and are required for registration. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this feature flag exposes the installation to potential user impersonation issues.**
+
+.. _dataverse.feature.api-bearer-auth-handle-tos-acceptance-in-idp:
+
+dataverse.feature.api-bearer-auth-handle-tos-acceptance-in-idp
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Specifies that Terms of Service acceptance is handled by the IdP, eliminating the need to include ToS acceptance boolean parameter (termsAccepted) in the OIDC user registration request body. This feature only works when the feature flag ``api-bearer-auth`` is also enabled.
+
+.. _dataverse.feature.api-bearer-auth-use-builtin-user-on-id-match:
+
+dataverse.feature.api-bearer-auth-use-builtin-user-on-id-match
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Allows the use of a built-in user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing built-in user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
+
+.. _dataverse.feature.api-bearer-auth-use-shib-user-on-id-match:
+
+dataverse.feature.api-bearer-auth-use-shib-user-on-id-match
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Allows the use of a Shibboleth user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing Shibboleth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
+
+.. _dataverse.feature.api-bearer-auth-use-oauth-user-on-id-match:
+
+dataverse.feature.api-bearer-auth-use-oauth-user-on-id-match
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Allows the use of an OAuth user account (GitHub, Google, or ORCID) when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing OAuth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
+
+.. _dataverse.feature.avoid-expensive-solr-join:
+
+dataverse.feature.avoid-expensive-solr-join
++++++++++++++++++++++++++++++++++++++++++++
+
+Changes the way Solr queries are constructed for public content (published Collections, Datasets and Files). It removes a very expensive Solr join on all such documents, improving overall performance, especially for large instances under heavy load. Before this feature flag is enabled, the corresponding indexing feature (see next feature flag) must be turned on and a full reindex performed (otherwise public objects are not going to be shown in search results). See :doc:`/admin/solr-search-index`.
+
+.. _dataverse.feature.add-publicobject-solr-field:
+
+dataverse.feature.add-publicobject-solr-field
++++++++++++++++++++++++++++++++++++++++++++++
+
+Adds an extra boolean field `PublicObject_b:true` for public content (published Collections, Datasets and Files). Once reindexed with these fields, we can rely on it to remove a very expensive Solr join on all such documents in Solr queries, significantly improving overall performance (by enabling the feature flag above, `avoid-expensive-solr-join`). These two flags are separate so that an instance can reindex their holdings before enabling the optimization in searches, thus avoiding having their public objects temporarily disappear from search results while the reindexing is in progress.
+
+.. _dataverse.feature.reduce-solr-deletes:
+
+dataverse.feature.reduce-solr-deletes
++++++++++++++++++++++++++++++++++++++
+
+Avoids deleting and recreating solr documents for dataset files when reindexing.
+
+.. _dataverse.feature.disable-return-to-author-reason:
+
+dataverse.feature.disable-return-to-author-reason
++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Removes the reason field in the `Publish/Return To Author` dialog that was added as a required field in v6.2 and makes the reason an optional parameter in the :ref:`return-a-dataset` API call.
+
+.. _dataverse.feature.disable-dataset-thumbnail-autoselect:
+
+dataverse.feature.disable-dataset-thumbnail-autoselect
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Turns off automatic selection of a dataset thumbnail from image files in that dataset. When set to ``On``, a user can still manually pick a thumbnail image or upload a dedicated thumbnail image.
+
+.. _dataverse.feature.globus-use-experimental-async-framework:
+
+dataverse.feature.globus-use-experimental-async-framework
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4; extended in v6.6 to cover download transfers, in addition to uploads. Affects :ref:`:GlobusPollingInterval`. Note that the JVM option :ref:`dataverse.files.globus-monitoring-server` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance.
+
+.. _dataverse.feature.index-harvested-metadata-source:
+
+dataverse.feature.index-harvested-metadata-source
++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Index the nickname or the source name (See the optional ``sourceName`` field in :ref:`create-a-harvesting-client`) of the harvesting client as the "metadata source" of harvested datasets and files. If enabled, the Metadata Source facet will show separate groupings of the content harvested from different sources (by harvesting client nickname or source name) instead of the default behavior where there is one "Harvested" grouping for all harvested content.
+
+.. _dataverse.feature.enable-version-note:
+
+dataverse.feature.enable-version-note
++++++++++++++++++++++++++++++++++++++
+
+Turns on the ability to add/view/edit/delete per-dataset-version notes intended to provide :ref:`provenance` information about why the dataset/version was created.
+
+.. _dataverse.feature.shibboleth-use-wayfinder:
+
+dataverse.feature.shibboleth-use-wayfinder
+++++++++++++++++++++++++++++++++++++++++++
+
+This flag allows an instance to use Shibboleth with InCommon federation services. Our original Shibboleth implementation that relies on DiscoFeed can no longer be used since InCommon discontinued their old-style metadata feed. An alternative mechanism had to be implemented in order to use WayFinder service, their recommended replacements, instead.
+
+.. _dataverse.feature.shibboleth-use-localhost:
+
+dataverse.feature.shibboleth-use-localhost
+++++++++++++++++++++++++++++++++++++++++++
+
+A Shibboleth-using Dataverse instance needs to make network calls to the locally-running ``shibd`` service. The default behavior is to use the address configured via the ``siteUrl`` setting. There are however situations (firewalls, etc.) where localhost would be preferable.
+
+.. _dataverse.feature.add-local-contexts-permission-check:
+
+dataverse.feature.add-local-contexts-permission-check
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Adds a permission check to ensure that the user calling the /api/localcontexts/datasets/{id} API can edit the dataset with that id. This is currently the only use case - see https://github.com/gdcc/dataverse-external-vocab-support/tree/main/packages/local_contexts. The flag adds additional security to stop other uses, but would currently have to be used in conjunction with the api-session-auth feature flag (the security implications of which have not been fully investigated) to still allow adding Local Contexts metadata to a dataset.
+
+.. _dataverse.feature.enable-pid-failure-log:
+
+dataverse.feature.enable-pid-failure-log
+++++++++++++++++++++++++++++++++++++++++
+
+Turns on creation of a monthly log file (logs/PIDFailures_<yyyy-MM>.log) showing failed requests for dataset/file PIDs. Can be used directly or with scripts at https://github.com/gdcc/dataverse-recipes/python/pid_reports to alert admins.
+
+.. _dataverse.feature.role-assignment-history:
+
+dataverse.feature.role-assignment-history
++++++++++++++++++++++++++++++++++++++++++
+
+Turns on tracking/display of role assignments and revocations for collections, datasets, and files
+
+.. _dataverse.feature.only-update-datacite-when-needed:
+
+dataverse.feature.only-update-datacite-when-needed
+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Only contact DataCite to update a DOI after checking to see if DataCite has outdated information (for efficiency, lighter load on DataCite, especially when using file DOIs).
+
+
+
 
 .. _:ApplicationServerSettings:
 
@@ -4514,7 +4619,11 @@ Using a JSON-based setting, you can set a global default and per-format limits f
 
 (In previous releases of Dataverse, a colon-separated form was used to specify per-format limits, such as ``:TabularIngestSizeLimit:Rdata``, but this is no longer supported. Now JSON is used.)
 
-The expected JSON is an object with key/value pairs like the following. Format names are case-insensitive, and all fields are optional. The size limits must be strings with double quotes around them (e.g. ``"10"``) rather than numbers (e.g. ``10``).
+The expected JSON is an object with key/value pairs like the following.
+Format names are case-insensitive, and all fields are optional (an empty JSON object equals not restricted).
+The size limits must be whole numbers, either presented as strings with double quotes around them (e.g. ``"10"``) or numeric values (e.g. ``10`` or ``10.0``).
+Note that decimal numbers like ``10.5`` are invalid.
+Any invalid setting will temporarily disable tabular ingest until corrected.
 
 .. code:: json
 
@@ -5132,6 +5241,43 @@ To enable redirects to the zipper on a different server:
 Number of errors to display to the user when creating DataFiles from a file upload. It defaults to 5 errors.
 
 ``curl -X PUT -d '1' http://localhost:8080/api/admin/settings/:CreateDataFilesMaxErrorsToDisplay``
+
+.. _:WorkflowsAdminIpWhitelist:
+
+:WorkflowsAdminIpWhitelist
+++++++++++++++++++++++++++
+
+A semicolon-separated list of IP addresses from which workflow resume requests are honored.
+By default, the Dataverse installation honors resume requests from localhost only (``127.0.0.1;::1``).
+This setting allows for preventing unauthorized resuming of workflows.
+
+``curl -X PUT -d '127.0.0.1;::1;192.168.0.1' http://localhost:8080/api/admin/settings/:WorkflowsAdminIpWhitelist``
+
+See :ref:`Workflow Admin section <workflow_admin>` for more details and context.
+
+.. _:PrePublishDatasetWorkflowId:
+
+:PrePublishDatasetWorkflowId
+++++++++++++++++++++++++++++
+
+The identifier of the workflow to be executed prior to dataset publication.
+This pre-publish workflow is useful for preparing a dataset for public access (e.g., moving files, checking metadata) or starting an approval process.
+
+``curl -X PUT -d '1' http://localhost:8080/api/admin/settings/:PrePublishDatasetWorkflowId``
+
+See :ref:`Workflow Admin section <workflow_admin>` for more details and context.
+
+.. _:PostPublishDatasetWorkflowId:
+
+:PostPublishDatasetWorkflowId
++++++++++++++++++++++++++++++
+
+The identifier of the workflow to be executed after a dataset has been successfully published.
+This post-publish workflow is useful for actions such as sending notifications about the newly published dataset or archiving.
+
+``curl -X PUT -d '2' http://localhost:8080/api/admin/settings/:PostPublishDatasetWorkflowId``
+
+See :ref:`Workflow Admin section <workflow_admin>` for more details and context.
 
 .. _:BagItHandlerEnabled:
 
