@@ -24,7 +24,7 @@ public class ReviewsIT {
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
 
-        String datasetDescription = "A traditional dataset.";
+        String datasetDescription = "A study, experiment, set of observations, or publication that is uploaded by a user. A dataset can comprise a single file or multiple files.";
         ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_DATASET, "Dataset", datasetDescription, apiToken);
 
         String reviewDescription = "A review of a dataset compiled by community experts.";
