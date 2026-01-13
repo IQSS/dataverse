@@ -165,7 +165,7 @@ Globus File Transfer
 Note: Globus file transfer is still experimental but feedback is welcome! See :ref:`support`.
 
 Users can transfer files via `Globus <https://www.globus.org>`_ into and out of datasets, or reference files on a remote Globus endpoint, when their Dataverse installation is configured to use a Globus accessible store(s) 
-and a community-developed `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ app has been properly installed and configured.
+and a community-developed `dataverse-globus <https://github.com/gdcc/dataverse-globus>`_ app has been properly installed and configured.
 
 Globus endpoints can be in a variety of places, from data centers to personal computers. 
 This means that from within the Dataverse software, a Globus transfer can feel like an upload or a download (with Globus Personal Connect running on your laptop, for example) or it can feel like a true transfer from one server to another (from a cluster in a data center into a Dataverse dataset or vice versa).
@@ -196,6 +196,6 @@ As described in that document, Globus transfers can be initiated by choosing the
 
 An overview of the control and data transfer interactions between components was presented at the 2022 Dataverse Community Meeting and can be viewed in the `Integrations and Tools Session Video <https://youtu.be/3ek7F_Dxcjk?t=5289>`_ around the 1 hr 28 min mark.
 
-See also :ref:`Globus settings <:GlobusSettings>`.
+See also :ref:`Globus settings <:GlobusSettings>` and :ref:`globus-stores`.
 
-An alternative, experimental implementation of Globus polling of ongoing upload transfers has been added in v6.4. This framework does not rely on the instance staying up continuously for the duration of the transfer and saves the state information about Globus upload requests in the database. Due to its experimental nature it is not enabled by default. See the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`) and the JVM option :ref:`dataverse.files.globus-monitoring-server`.
+An alternative, experimental implementation of Globus polling of ongoing upload transfers has been added in v6.4. This framework does not rely on the instance staying up continuously for the duration of the transfer and saves the state information about Globus upload requests in the database. Due to its experimental nature it is not enabled by default. See the :ref:`dataverse.feature.globus-use-experimental-async-framework` feature flag and the JVM option :ref:`dataverse.files.globus-monitoring-server`.

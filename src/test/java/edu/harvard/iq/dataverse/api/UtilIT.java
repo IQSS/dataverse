@@ -337,6 +337,13 @@ public class UtilIT {
         logger.info("Id found in create dataverse response: " + dataverseId);
         return dataverseId;
     }
+    
+    static Long getTemplateIdFromResponse(Response createTemplateResponse) {
+        JsonPath createdTemplate = JsonPath.from(createTemplateResponse.body().asString());
+        Long templateId = createdTemplate.getLong("data.id");
+        logger.info("Id found in create template response: " + templateId);
+        return templateId;
+    }
 
     static Integer getDatasetIdFromResponse(Response createDatasetResponse) {
         JsonPath createdDataset = JsonPath.from(createDatasetResponse.body().asString());
@@ -1712,16 +1719,31 @@ public class UtilIT {
     }
 
     static Response getNotifications(String apiToken) {
-        return getNotifications(apiToken, false);
+        return getNotifications(apiToken, null, null, null, null);
     }
 
-    static Response getNotifications(String apiToken, boolean inAppNotificationFormat) {
-        RequestSpecification requestSpecification = given();
+    static Response getNotifications(String apiToken, Boolean inAppNotificationFormat, Boolean onlyUnread, Integer limit, Integer offset) {
+        RequestSpecification request = given();
         if (apiToken != null) {
-            requestSpecification = given()
-                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+            request.header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
-        return requestSpecification.get("/api/notifications/all?inAppNotificationFormat=" + inAppNotificationFormat);
+
+        // Add Optional parameters
+        if (inAppNotificationFormat != null) {
+            request.queryParam("inAppNotificationFormat", inAppNotificationFormat);
+        }
+        if (onlyUnread != null) {
+            request.queryParam("onlyUnread", onlyUnread);
+        }
+        // Conditionally add pagination parameters only if they are not null
+        if (limit != null) {
+            request.queryParam("limit", limit);
+        }
+        if (offset != null) {
+            request.queryParam("offset", offset);
+        }
+
+        return request.get("/api/notifications/all");
     }
 
     static Response getUnreadNotificationsCount(String apiToken) {
@@ -1765,7 +1787,15 @@ public class UtilIT {
     static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean excludeFiles, boolean includeDeaccessioned) {
         return getDatasetVersion(persistentId,versionNumber,apiToken,excludeFiles,false,includeDeaccessioned);
     }
-    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean excludeFiles,boolean excludeMetadataBlocks, boolean includeDeaccessioned) {
+    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean excludeFiles, boolean excludeMetadataBlocks, boolean includeDeaccessioned) {
+        return getDatasetVersion(persistentId, versionNumber, apiToken, excludeFiles, excludeMetadataBlocks, includeDeaccessioned, false);
+    }
+    // includeMetadataBlocksEmail is an override of the Setting ExcludeEmailFromExport. excludeMetadataBlocks must be false and user needs EditDataset permission
+    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken,
+                                      boolean excludeFiles,
+                                      boolean excludeMetadataBlocks,
+                                      boolean includeDeaccessioned,
+                                      boolean ignoreSettingExcludeEmailFromExport) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .queryParam("includeDeaccessioned", includeDeaccessioned)
@@ -1774,7 +1804,8 @@ public class UtilIT {
                         + "?persistentId="
                         + persistentId
                         + (excludeFiles ? "&excludeFiles=true" : "")
-                        + (excludeMetadataBlocks ? "&excludeMetadataBlocks=true" : ""));
+                        + (excludeMetadataBlocks ? "&excludeMetadataBlocks=true" : "")
+                        + (ignoreSettingExcludeEmailFromExport ? "&ignoreSettingExcludeEmailFromExport=true" : ""));
     }
     static Response compareDatasetVersions(String persistentId, String versionNumber1, String versionNumber2, String apiToken) {
         return given()
@@ -3674,10 +3705,11 @@ public class UtilIT {
                 .get("/api/dataverses/" + collectionId + "/storage/quota");
     }
     
-    static Response setCollectionQuota(String collectionId, long allocatedSize, String apiToken) {
+    static Response setCollectionQuota(String collectionId, Long allocatedSize, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .post("/api/dataverses/" + collectionId + "/storage/quota/" + allocatedSize);
+                .body(allocatedSize.toString())
+                .put("/api/dataverses/" + collectionId + "/storage/quota");
         return response;
     }
     
@@ -3692,6 +3724,33 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/dataverses/" + collectionId + "/storage/use");
+    }
+    
+    static Response checkDatasetQuota(String datasetId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/storage/quota");
+    }
+    
+    static Response setDatasetQuota(String datasetId, Long allocatedSize, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(allocatedSize.toString())
+                .put("/api/datasets/" + datasetId + "/storage/quota");
+        return response;
+    }
+    
+    static Response disableDatasetQuota(String datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/" + datasetId + "/storage/quota");
+        return response;
+    }
+    
+    static Response checkDatasetStorageUse(String datasetId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/storage/use");
     }
     
     /**
@@ -5085,12 +5144,31 @@ public class UtilIT {
                 .body(jsonString)
                 .post("/api/dataverses/" + dataverseAlias + "/templates");
     }
+    
+    public static Response deleteTemplate(String id,  String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/dataverses/"+id+"/template");
+    }
 
     public static Response getTemplates(String dataverseAlias, String apiToken) {
         return given()
                 .contentType(ContentType.JSON)
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/dataverses/" + dataverseAlias + "/templates");
+    }
+    
+    public static Response getTemplate(String templateId) {
+        return given()
+                .contentType(ContentType.JSON)
+                .get("/api/dataverses/" + templateId + "/template");
+    }
+    
+    public static Response getTemplate(String templateId, String apiToken) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/" + templateId + "/template");
     }
     
     /**
