@@ -2029,10 +2029,10 @@
                                 <p class="col-sm-12 help-block">#{bundle['dataset.publish.terms.help.tip']}</p>
                             </div>
                         </ui:fragment>
-                        <ui:fragment rendered="#{valid and settingsWrapper.hasPublishDatasetDisclaimerText()}">
+                        <ui:fragment rendered="#{valid and settingsWrapper.isHasPublishDatasetDisclaimerText()}">
                             <div class="form-group">
                                 <p:selectBooleanCheckbox class="text-danger" id="publishDisclaimer"
-                                                         itemLabel="#{settingsWrapper.publishDatasetDisclaimerText()}"
+                                                         itemLabel="#{settingsWrapper.getPublishDatasetDisclaimerText()}"
                                                          value="#{DatasetPage.publishDisclaimerAcknowledged}">
                                     <p:ajax event="change" update="releaseDatasetButton"/>
                                 </p:selectBooleanCheckbox>
