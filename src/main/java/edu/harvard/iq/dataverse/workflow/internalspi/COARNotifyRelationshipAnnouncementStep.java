@@ -239,6 +239,14 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
 
     private JsonObject getRelationshipObject(DatasetFieldType dft, JsonValue jval, Dataset d,
             Map<String, String> localContext) {
+        if (logger.isLoggable(Level.FINE)) {
+            if (jval.getValueType().equals(jakarta.json.JsonValue.ValueType.OBJECT)) {
+                logger.fine("Parsing : " + JsonUtil.prettyPrint(jval.asJsonObject()));
+            }
+            else if (jval.getValueType().equals(jakarta.json.JsonValue.ValueType.STRING)) {
+                logger.fine("Parsing : " + jval.toString());
+            }
+        }
         String[] answers = getBestIdAndType(dft, jval);
         String id = answers[0];
         String type = answers[1];
@@ -360,7 +368,8 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
                         break;
                     }
                 }
-            } else if (jo.containsKey(publicationURL.getLabel())) {
+            }
+            if (id == null && jo.containsKey(publicationURL.getLabel())) {
 
                 String value = jo.getString(publicationURL.getLabel());
                 if (isURI(value)) {
