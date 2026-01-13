@@ -6267,7 +6267,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isPublishDisclaimerAcknowledged() {
-        return publishDisclaimerAcknowledged || !settingsWrapper.isHasPublishDatasetDisclaimer();
+        return publishDisclaimerAcknowledged || !settingsWrapper.isHasPublishDatasetDisclaimerText();
     }
 
     public void setPublishDisclaimerAcknowledged(boolean publishDisclaimerAcknowledged) {
