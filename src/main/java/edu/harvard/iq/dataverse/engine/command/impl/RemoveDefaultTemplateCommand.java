@@ -26,7 +26,8 @@ public class RemoveDefaultTemplateCommand extends AbstractCommand<Dataverse>{
     @Override
     public Dataverse execute(CommandContext ctxt) throws CommandException {
         dataverse.setDefaultTemplate(null);
-        return dataverse;
+        Dataverse mergedDataverse = ctxt.em().merge(dataverse);
+        return mergedDataverse;
     }
     
 }
