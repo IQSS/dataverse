@@ -5157,6 +5157,22 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/dataverses/" + dataverseAlias + "/templates");
     }
+
+    public static Response setDefaultTemplate(String dataverseAlias, Long templateId, String apiToken) {
+    return given()
+            .contentType(ContentType.JSON)
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .post("/api/dataverses/" + dataverseAlias + "/template/default/" + templateId);
+    }
+
+    public static Response removeDefaultTemplate(String dataverseAlias, String apiToken) {
+    return given()
+            .contentType(ContentType.JSON)
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .delete("/api/dataverses/" + dataverseAlias + "/template/default");
+    }
+
+
     
     public static Response getTemplate(String templateId) {
         return given()
