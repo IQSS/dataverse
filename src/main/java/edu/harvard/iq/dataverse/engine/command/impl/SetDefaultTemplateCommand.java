@@ -29,6 +29,7 @@ public class SetDefaultTemplateCommand extends AbstractCommand<Template> {
     @Override
     public Template execute(CommandContext ctxt) throws CommandException {
         dataverse.setDefaultTemplate(template);
+        ctxt.em().merge(dataverse);
         return template;
     }
     
