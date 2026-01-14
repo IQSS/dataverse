@@ -698,6 +698,13 @@ public class DatasetServiceBean implements java.io.Serializable {
         exportAllDatasets(true);
     }
 
+    // reExportAll with a date *forces* a reexport on all published datasets that were not exported or were exported before the date;
+    @Asynchronous
+    public void reExportAllAsync(Date reExportDate) {
+        exportAllDatasets(true, reExportDate);
+        
+    }
+
     public void reExportAll() {
         exportAllDatasets(true);
     }
@@ -715,7 +722,12 @@ public class DatasetServiceBean implements java.io.Serializable {
         exportAllDatasets(false);
     }
 
-    public void exportAllDatasets(boolean forceReExport) {
+    private void exportAllDatasets(boolean b) {
+     exportAllDatasets(b, null);
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    private void exportAllDatasets(boolean forceReExport, Date reExportDate) {
         Integer countAll = 0;
         Integer countSuccess = 0;
         Integer countError = 0;
@@ -757,9 +769,17 @@ public class DatasetServiceBean implements java.io.Serializable {
 
                     // can't trust dataset.getPublicationDate(), no.
                     Date publicationDate = dataset.getReleasedVersion().getReleaseTime(); // we know this dataset has a non-null released version! Maybe not - SEK 8/19 (We do now! :)
-                    if (forceReExport || (publicationDate != null
-                            && (dataset.getLastExportTime() == null
-                            || dataset.getLastExportTime().before(publicationDate)))) {
+                    /**
+                     * Three cases: force is true and no date given - reexport every dataset force
+                     * is true and reExport date given - reexport datasets last exported before that
+                     * date force is false, reExportDate ignored - reexport datasets last exported
+                     * before they were last published
+                     */
+                    if ((forceReExport && reExportDate == null)
+                            || (forceReExport && dataset.getLastExportTime().before(reExportDate))
+                            || (forceReExport == false
+                                    && (publicationDate != null && (dataset.getLastExportTime() == null
+                                            || dataset.getLastExportTime().before(publicationDate))))) {
                         countAll++;
                         try {
                             recordService.exportAllFormatsInNewTransaction(dataset);
@@ -768,6 +788,15 @@ public class DatasetServiceBean implements java.io.Serializable {
                         } catch (Exception ex) {
                             exportLogger.log(Level.INFO, "Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage(), ex);
                             countError++;
+                        } catch (Throwable t) {
+                            exportLogger.log(Level.SEVERE, "Fatal error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + t.getClass().getName() + ": " + t.getMessage(), t);
+                            exportLogger.info("Datasets processed before fatal error: " + countAll.toString());
+                            exportLogger.info("Datasets exported successfully: " + countSuccess.toString());
+                            exportLogger.info("Datasets failures: " + countError.toString());
+                            if (fileHandlerSuceeded) {
+                                fileHandler.close();
+                            }
+                            throw t;
                         }
                     }
                 }
@@ -1140,4 +1169,5 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         em.flush();
     }
+
 }
