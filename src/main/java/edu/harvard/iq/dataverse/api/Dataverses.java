@@ -2033,7 +2033,7 @@ public class Dataverses extends AbstractApiBean {
 
     @POST
     @AuthRequired
-    @Path("{identifier}/templates/default/{templateId}")
+    @Path("{identifier}/template/default/{templateId}")
     public Response setDefaultTemplate(@Context ContainerRequestContext crc,
             @PathParam("identifier") String dvId,
             @PathParam("templateId") Long templateId) {
@@ -2056,7 +2056,7 @@ public class Dataverses extends AbstractApiBean {
 
     @DELETE
     @AuthRequired
-    @Path("{identifier}/templates/default")
+    @Path("{identifier}/template/default")
     public Response removeDefaultTemplate(@Context ContainerRequestContext crc,
             @PathParam("identifier") String dvId) {
         try {

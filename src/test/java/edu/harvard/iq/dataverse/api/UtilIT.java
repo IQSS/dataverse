@@ -5162,14 +5162,14 @@ public class UtilIT {
     return given()
             .contentType(ContentType.JSON)
             .header(API_TOKEN_HTTP_HEADER, apiToken)
-            .post("/api/dataverses/" + dataverseAlias + "/templates/default/" + templateId);
+            .post("/api/dataverses/" + dataverseAlias + "/template/default/" + templateId);
     }
 
     public static Response removeDefaultTemplate(String dataverseAlias, String apiToken) {
     return given()
             .contentType(ContentType.JSON)
             .header(API_TOKEN_HTTP_HEADER, apiToken)
-            .delete("/api/dataverses/" + dataverseAlias + "/templates/default");
+            .delete("/api/dataverses/" + dataverseAlias + "/template/default");
     }
 
 
