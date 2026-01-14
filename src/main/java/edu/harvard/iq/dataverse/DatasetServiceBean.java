@@ -768,7 +768,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                      * before they were last published
                      */
                     if ((forceReExport && reExportDate == null)
-                            || (forceReExport && dataset.getLastExportTime().before(reExportDate))
+                            || (forceReExport && (dataset.getLastExportTime() == null || dataset.getLastExportTime().before(reExportDate)))
                             || (forceReExport == false
                                     && (publicationDate != null && (dataset.getLastExportTime() == null
                                             || dataset.getLastExportTime().before(publicationDate))))) {
