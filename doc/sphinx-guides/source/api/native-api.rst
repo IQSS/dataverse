@@ -1651,7 +1651,7 @@ Sets a template as the default template for a collection:
   export ID=1
   export TEMPLATEID=2
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/dataverses/{ID}/template/default/{TEMPLATEID}"
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/dataverses/$ID/template/default/$TEMPLATEID"
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -1673,7 +1673,7 @@ Remove a template as the default template for a collection(Note: the template is
   export ID=1
 
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/dataverses/{ID}/template/default"
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/dataverses/$ID/template/default"
 
 The fully expanded example above (without environment variables) looks like this:
 
