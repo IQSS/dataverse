@@ -1648,8 +1648,8 @@ Sets a template as the default template for a collection:
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export TEMPLATEID=1
-  export ID=2
+  export ID=1
+  export TEMPLATEID=2
 
   curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/dataverses/{ID}/template/default/{TEMPLATEID}"
 
