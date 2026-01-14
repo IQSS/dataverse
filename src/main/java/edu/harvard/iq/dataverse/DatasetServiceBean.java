@@ -735,20 +735,12 @@ public class DatasetServiceBean implements java.io.Serializable {
         Logger exportLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.DatasetServiceBean." + "ExportAll" + logTimestamp);
         String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "export_" + logTimestamp + ".log";
         FileHandler fileHandler;
-        boolean fileHandlerSuceeded;
         try {
             fileHandler = new FileHandler(logFileName);
             exportLogger.setUseParentHandlers(false);
-            fileHandlerSuceeded = true;
         } catch (IOException | SecurityException ex) {
             Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
             return;
-        }
-
-        if (fileHandlerSuceeded) {
-            exportLogger.addHandler(fileHandler);
-        } else {
-            exportLogger = logger;
         }
 
         exportLogger.info("Starting an export all job");
@@ -793,9 +785,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                             exportLogger.info("Datasets processed before fatal error: " + countAll.toString());
                             exportLogger.info("Datasets exported successfully: " + countSuccess.toString());
                             exportLogger.info("Datasets failures: " + countError.toString());
-                            if (fileHandlerSuceeded) {
-                                fileHandler.close();
-                            }
+                            fileHandler.close();
                             throw t;
                         }
                     }
@@ -807,10 +797,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         exportLogger.info("Datasets failures: " + countError.toString());
         exportLogger.info("Finished export-all job.");
 
-        if (fileHandlerSuceeded) {
-            fileHandler.close();
-        }
-
+        fileHandler.close();
     }
 
     @Asynchronous
