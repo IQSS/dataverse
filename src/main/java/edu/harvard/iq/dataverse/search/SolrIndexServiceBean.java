@@ -458,7 +458,7 @@ public class SolrIndexServiceBean {
      * @param draftVersionId the ID of the draft dataset version
      * @param changedFileMetadataIds the list to populate with changed file metadata IDs
      */
-    protected void populateChangedFileIds(Long releasedVersionId, Long draftVersionId, List<Long> changedFileIds) {
+    public void populateChangedFileIds(Long releasedVersionId, Long draftVersionId, List<Long> changedFileIds) {
         Query query = em.createNamedQuery("FileMetadata.getDatafilesWithChangedMetadata", Long.class);
         query.setParameter(1, releasedVersionId);
         query.setParameter(2, draftVersionId);
