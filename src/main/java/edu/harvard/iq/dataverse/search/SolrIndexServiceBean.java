@@ -411,7 +411,7 @@ public class SolrIndexServiceBean {
 
                 // Process files for this dataset
                 for (DatasetVersion version : datasetVersionsToBuildCardsFor(dataset)) {
-                        processDatasetVersionFiles(version, fileCounter, fileQueryMin);
+                        processDatasetVersionFiles(version, fileCounter, fileQueryMin, versions.size()>1);
                     }
                 }
             }
@@ -422,32 +422,45 @@ public class SolrIndexServiceBean {
         for (DatasetVersion version : versions) {
             // The version object is detached, but its fileMetadatas collection is already loaded.
             // We only need its ID and state, which are available.
-            processDatasetVersionFiles(version, fileCounter, fileQueryMin);
+            processDatasetVersionFiles(version, fileCounter, fileQueryMin, versions.size()>1);
         }
     }
 
     private void processDatasetVersionFiles(DatasetVersion version,
-            final int[] fileCounter, int fileQueryMin) {
+            final int[] fileCounter, int fileQueryMin, boolean isReleased) {
         List<String> cachedPerms = searchPermissionsService.findDatasetVersionPerms(version);
         String solrIdEnd = getDatasetOrDataFileSolrEnding(version.getVersionState());
         Long versionId = version.getId();
         List<DataFileProxy> filesToReindexAsBatch = new ArrayList<>();
 
+        // If the version is draft and there is a released version, 
+        // we only need perm docs for the files with filemetadata changes == those with _draft solr docs already
+        Set<Long> fileIdsToReindex = null;
+        if (version.getVersionState().equals(DatasetVersion.VersionState.DRAFT) && isReleased) {
+            fileIdsToReindex = getFileIdsWithSolrDocs(versionId);
+            logger.fine("Found " + fileIdsToReindex.size() + " files with draft Solr docs for version " + versionId);
+        }
+        
         // Process files in batches of 100
         int batchSize = 100;
 
+        final Set<Long> finalFileIdsToReindex = fileIdsToReindex;
         if (dataFileService.findCountByDatasetVersionId(version.getId()).intValue() > fileQueryMin) {
             // For large datasets, use a more efficient SQL query
+            // ToDo - only get the ones in finalFileIdsToReindex
             try (Stream<DataFileProxy> fileStream = getDataFileInfoForPermissionIndexing(version.getId())) {
 
                 // Process files in batches to avoid memory issues
                 fileStream.forEach(fileInfo -> {
-                    filesToReindexAsBatch.add(fileInfo);
-                    fileCounter[0]++;
+                    // Only add files that need reindexing
+                    if (finalFileIdsToReindex == null || finalFileIdsToReindex.contains(fileInfo.getFileId())) {
+                        filesToReindexAsBatch.add(fileInfo);
+                        fileCounter[0]++;
 
-                    if (filesToReindexAsBatch.size() >= batchSize) {
-                        reindexFilesInBatches(filesToReindexAsBatch, cachedPerms, versionId, solrIdEnd);
-                        filesToReindexAsBatch.clear();
+                        if (filesToReindexAsBatch.size() >= batchSize) {
+                            reindexFilesInBatches(filesToReindexAsBatch, cachedPerms, versionId, solrIdEnd);
+                            filesToReindexAsBatch.clear();
+                        }
                     }
                 });
             }
@@ -455,13 +468,16 @@ public class SolrIndexServiceBean {
             // For smaller datasets, process files directly
             // We only call getFileMetadatas() in the case where we know they have already been loaded
             for (FileMetadata fmd : version.getFileMetadatas()) {
+                // Only add files that need reindexing
                 DataFileProxy fileProxy = new DataFileProxy(fmd);
-                filesToReindexAsBatch.add(fileProxy);
-                fileCounter[0]++;
+                if (finalFileIdsToReindex == null || finalFileIdsToReindex.contains(fileProxy.getFileId())) {
+                    filesToReindexAsBatch.add(fileProxy);
+                    fileCounter[0]++;
 
-                if (filesToReindexAsBatch.size() >= batchSize) {
-                    reindexFilesInBatches(filesToReindexAsBatch, cachedPerms, versionId, solrIdEnd);
-                    filesToReindexAsBatch.clear();
+                    if (filesToReindexAsBatch.size() >= batchSize) {
+                        reindexFilesInBatches(filesToReindexAsBatch, cachedPerms, versionId, solrIdEnd);
+                        filesToReindexAsBatch.clear();
+                    }
                 }
             }
         }
@@ -494,6 +510,55 @@ public class SolrIndexServiceBean {
         }
     }
 
+    /**
+     * Queries Solr to find file IDs that have draft documents for the given dataset version.
+     * This is used to optimize permission reindexing by only processing files that have
+     * metadata changes in the draft version.
+     * 
+     * @param datasetVersionId The ID of the dataset version
+     * @return A set of file IDs that have Solr documents associated with this version
+     */
+    private Set<Long> getFileIdsWithSolrDocs(Long datasetVersionId) {
+        Set<Long> fileIds = new HashSet<>();
+        
+        try {
+            SolrQuery solrQuery = new SolrQuery();
+            
+            // Query for files in this specific version with draft suffix
+            solrQuery.setQuery("*:*");
+            solrQuery.addFilterQuery(SearchFields.TYPE + ":" + SearchConstants.FILES);
+            solrQuery.addFilterQuery(SearchFields.DATASET_VERSION_ID + ":" + datasetVersionId);
+            
+            // Only return the entity ID field
+            solrQuery.setFields(SearchFields.ENTITY_ID);
+            
+            // We want all matching documents
+            solrQuery.setRows(Integer.MAX_VALUE);
+            
+            logger.fine("Solr query to find draft files: " + solrQuery);
+            
+            QueryResponse queryResponse = solrClientService.getSolrClient().query(solrQuery);
+            SolrDocumentList docs = queryResponse.getResults();
+            
+            for (SolrDocument doc : docs) {
+                Long entityId = (Long) doc.getFieldValue(SearchFields.ENTITY_ID);
+                if (entityId != null) {
+                    fileIds.add(entityId);
+                }
+            }
+            
+            logger.fine("Found " + fileIds.size() + " files with draft Solr docs for version " + datasetVersionId);
+            
+        } catch (SolrServerException | IOException ex) {
+            logger.log(Level.WARNING, "Error querying Solr for draft file IDs for version " + datasetVersionId + 
+                    ". Will reindex all files as fallback.", ex);
+            // Return null to indicate we should process all files
+            return null;
+        }
+        
+        return fileIds;
+    }
+    
     public IndexResponse deleteMultipleSolrIds(List<String> solrIdsToDelete) {
         if (solrIdsToDelete.isEmpty()) {
             return new IndexResponse("nothing to delete");
