@@ -75,7 +75,7 @@ import jakarta.validation.constraints.Pattern;
                 "    JOIN DataFileCategory dfc ON fmd.filecategories_id = dfc.id " +
                 "    GROUP BY fmd.filemetadatas_id " +
                 ") " +
-                "SELECT fm1.datafile_id " +
+                "SELECT fm1.datafile_id AS id " +
                 "FROM FileMetadata fm1 " +
                 "LEFT JOIN FileMetadata fm2 ON fm1.datafile_id = fm2.datafile_id " +
                 "    AND fm2.datasetversion_id = ?1 " +
