@@ -411,11 +411,19 @@ public class SolrIndexServiceBean {
                 indexPermissionsForOneDvObject(dataset);
 
                 // Process files for this dataset
-                List<DatasetVersion> versions = datasetVersionsToBuildCardsFor(dataset);
+                Set<DatasetVersion> versions = datasetVersionsToBuildCardsFor(dataset);
                 final List<Long> changedFileIds = new ArrayList<>();
                 if(versions.size()>1) {
-                    Long releasedVersionId = versions.get(versions.get(0).isReleased() ? 0 : 1).getId();
-                    Long draftVersionId = versions.get(versions.get(0).isReleased() ? 1 : 0).getId();
+                    Long releasedVersionId = null;
+                    Long draftVersionId = null;
+                    
+                    for (DatasetVersion version : versions) {
+                        if (version.isReleased()) {
+                            releasedVersionId = version.getId();
+                        } else if (version.isDraft()) {
+                            draftVersionId = version.getId();
+                        }
+                    }
                     
                     populateChangedFileIds(
                             releasedVersionId, 
