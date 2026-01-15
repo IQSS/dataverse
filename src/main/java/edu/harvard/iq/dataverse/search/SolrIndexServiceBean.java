@@ -36,6 +36,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
@@ -410,8 +411,20 @@ public class SolrIndexServiceBean {
                 indexPermissionsForOneDvObject(dataset);
 
                 // Process files for this dataset
-                for (DatasetVersion version : datasetVersionsToBuildCardsFor(dataset)) {
-                        processDatasetVersionFiles(version, fileCounter, fileQueryMin, versions.size()>1);
+                List<DatasetVersion> versions = datasetVersionsToBuildCardsFor(dataset);
+                final List<Long> changedFileIds = new ArrayList<>();
+                if(versions.size()>1) {
+                    Long releasedVersionId = versions.get(versions.get(0).isReleased() ? 0 : 1).getId();
+                    Long draftVersionId = versions.get(versions.get(0).isReleased() ? 1 : 0).getId();
+                    
+                    populateChangedFileIds(
+                            releasedVersionId, 
+                            draftVersionId, 
+                            changedFileIds
+                        );
+                }
+                for (DatasetVersion version : versions) {
+                    processDatasetVersionFiles(version, fileCounter, fileQueryMin, (versions.size()>1 && version.isDraft()) ? changedFileIds : null);
                     }
                 }
             }
@@ -419,32 +432,79 @@ public class SolrIndexServiceBean {
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void indexDatasetFilesInNewTransaction(List<DatasetVersion> versions, final int[] fileCounter, int fileQueryMin) {
+        final List<Long> changedFileIds = new ArrayList<>();
+        if(versions.size()>1) {
+            Long releasedVersionId = versions.get(versions.get(0).isReleased() ? 0 : 1).getId();
+            Long draftVersionId = versions.get(versions.get(0).isReleased() ? 1 : 0).getId();
+            
+            populateChangedFileIds(
+                    releasedVersionId, 
+                    draftVersionId, 
+                    changedFileIds
+                );
+        }
         for (DatasetVersion version : versions) {
             // The version object is detached, but its fileMetadatas collection is already loaded.
             // We only need its ID and state, which are available.
-            processDatasetVersionFiles(version, fileCounter, fileQueryMin, versions.size()>1);
+            processDatasetVersionFiles(version, fileCounter, fileQueryMin, (versions.size()>1 && version.isDraft()) ? changedFileIds : null);
         }
     }
 
+    /**
+     * Retrieves the IDs of file metadatas that have changed between the released version
+     * and the draft version of a dataset.
+     * 
+     * @param releasedVersionId the ID of the released dataset version
+     * @param draftVersionId the ID of the draft dataset version
+     * @param changedFileMetadataIds the list to populate with changed file metadata IDs
+     */
+    protected void populateChangedFileIds(Long releasedVersionId, Long draftVersionId, List<Long> changedFileIds) {
+        Query query = em.createNamedQuery("FileMetadata.getDatafilesWithChangedMetadata", Long.class);
+        query.setParameter(1, releasedVersionId);
+        query.setParameter(2, draftVersionId);
+
+        /*
+         * When the query was configured to return Long, it was returning Integer. 
+         * The query has been changed to return Integer now. The code here is robust 
+         * if that changes in the future.
+         */
+        List<Object> queryResults = query.getResultList();
+        for (Object result : queryResults) {
+            if (result != null) {
+                // Ensure we're adding Long objects to the list
+                if (result instanceof Integer intResult) {
+                    logger.finest("Converted Integer result to Long: " + result);
+                    changedFileIds.add(Long.valueOf(intResult));
+                } else if (result instanceof Long longResult) {
+                    // Already a Long, add directly
+                    logger.finest("Added existing Long to list: " + result);
+                    changedFileIds.add(longResult);
+                } else {
+                    // If it's not a Long, convert it to one via String
+                    try {
+                        changedFileIds.add(Long.valueOf(result.toString()));
+                        logger.finest("Converted non-Long result to Long: " + result + " of type " + result.getClass().getName());
+                    } catch (NumberFormatException e) {
+                        logger.warning("Could not convert query result to Long: " + result);
+                    }
+                }
+            }
+        }
+    }
+    
     private void processDatasetVersionFiles(DatasetVersion version,
-            final int[] fileCounter, int fileQueryMin, boolean isReleased) {
+            final int[] fileCounter, int fileQueryMin, List<Long> changedFileIds) {
         List<String> cachedPerms = searchPermissionsService.findDatasetVersionPerms(version);
         String solrIdEnd = getDatasetOrDataFileSolrEnding(version.getVersionState());
         Long versionId = version.getId();
         List<DataFileProxy> filesToReindexAsBatch = new ArrayList<>();
 
         // If the version is draft and there is a released version, 
-        // we only need perm docs for the files with filemetadata changes == those with _draft solr docs already
-        Set<Long> fileIdsToReindex = null;
-        if (version.getVersionState().equals(DatasetVersion.VersionState.DRAFT) && isReleased) {
-            fileIdsToReindex = getFileIdsWithSolrDocs(versionId);
-            logger.fine("Found " + fileIdsToReindex.size() + " files with draft Solr docs for version " + versionId);
-        }
+        // we only need perm docs for the files with filemetadata changes == those in changedFileMetadataIds
         
         // Process files in batches of 100
         int batchSize = 100;
 
-        final Set<Long> finalFileIdsToReindex = fileIdsToReindex;
         if (dataFileService.findCountByDatasetVersionId(version.getId()).intValue() > fileQueryMin) {
             // For large datasets, use a more efficient SQL query
             // ToDo - only get the ones in finalFileIdsToReindex
@@ -453,7 +513,7 @@ public class SolrIndexServiceBean {
                 // Process files in batches to avoid memory issues
                 fileStream.forEach(fileInfo -> {
                     // Only add files that need reindexing
-                    if (finalFileIdsToReindex == null || finalFileIdsToReindex.contains(fileInfo.getFileId())) {
+                if (changedFileIds == null || changedFileIds.contains(fileInfo.getFileId())) {
                         filesToReindexAsBatch.add(fileInfo);
                         fileCounter[0]++;
 
@@ -470,7 +530,7 @@ public class SolrIndexServiceBean {
             for (FileMetadata fmd : version.getFileMetadatas()) {
                 // Only add files that need reindexing
                 DataFileProxy fileProxy = new DataFileProxy(fmd);
-                if (finalFileIdsToReindex == null || finalFileIdsToReindex.contains(fileProxy.getFileId())) {
+                if (changedFileIds == null || changedFileIds.contains(fileProxy.getFileId())) {
                     filesToReindexAsBatch.add(fileProxy);
                     fileCounter[0]++;
 
@@ -510,55 +570,6 @@ public class SolrIndexServiceBean {
         }
     }
 
-    /**
-     * Queries Solr to find file IDs that have draft documents for the given dataset version.
-     * This is used to optimize permission reindexing by only processing files that have
-     * metadata changes in the draft version.
-     * 
-     * @param datasetVersionId The ID of the dataset version
-     * @return A set of file IDs that have Solr documents associated with this version
-     */
-    private Set<Long> getFileIdsWithSolrDocs(Long datasetVersionId) {
-        Set<Long> fileIds = new HashSet<>();
-        
-        try {
-            SolrQuery solrQuery = new SolrQuery();
-            
-            // Query for files in this specific version with draft suffix
-            solrQuery.setQuery("*:*");
-            solrQuery.addFilterQuery(SearchFields.TYPE + ":" + SearchConstants.FILES);
-            solrQuery.addFilterQuery(SearchFields.DATASET_VERSION_ID + ":" + datasetVersionId);
-            
-            // Only return the entity ID field
-            solrQuery.setFields(SearchFields.ENTITY_ID);
-            
-            // We want all matching documents
-            solrQuery.setRows(Integer.MAX_VALUE);
-            
-            logger.fine("Solr query to find draft files: " + solrQuery);
-            
-            QueryResponse queryResponse = solrClientService.getSolrClient().query(solrQuery);
-            SolrDocumentList docs = queryResponse.getResults();
-            
-            for (SolrDocument doc : docs) {
-                Long entityId = (Long) doc.getFieldValue(SearchFields.ENTITY_ID);
-                if (entityId != null) {
-                    fileIds.add(entityId);
-                }
-            }
-            
-            logger.fine("Found " + fileIds.size() + " files with draft Solr docs for version " + datasetVersionId);
-            
-        } catch (SolrServerException | IOException ex) {
-            logger.log(Level.WARNING, "Error querying Solr for draft file IDs for version " + datasetVersionId + 
-                    ". Will reindex all files as fallback.", ex);
-            // Return null to indicate we should process all files
-            return null;
-        }
-        
-        return fileIds;
-    }
-    
     public IndexResponse deleteMultipleSolrIds(List<String> solrIdsToDelete) {
         if (solrIdsToDelete.isEmpty()) {
             return new IndexResponse("nothing to delete");

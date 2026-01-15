@@ -67,7 +67,7 @@ import jakarta.validation.constraints.Pattern;
  */
 @Table(indexes = {@Index(columnList="datafile_id"), @Index(columnList="datasetversion_id")} )
 @NamedNativeQuery(
-        name = "FileMetadata.compareFileMetadata",
+        name = "FileMetadata.getDatafilesWithChangedMetadata",
         query = "WITH fm_categories AS (" +
                 "    SELECT fmd.filemetadatas_id, " +
                 "           STRING_AGG(dfc.name, ',' ORDER BY dfc.name) AS categories " +
@@ -75,7 +75,7 @@ import jakarta.validation.constraints.Pattern;
                 "    JOIN DataFileCategory dfc ON fmd.filecategories_id = dfc.id " +
                 "    GROUP BY fmd.filemetadatas_id " +
                 ") " +
-                "SELECT fm1.id " +
+                "SELECT fm1.datafile_id " +
                 "FROM FileMetadata fm1 " +
                 "LEFT JOIN FileMetadata fm2 ON fm1.datafile_id = fm2.datafile_id " +
                 "    AND fm2.datasetversion_id = ?1 " +
@@ -93,11 +93,11 @@ import jakarta.validation.constraints.Pattern;
                 "                 ) " +
                 "            ) " +
                 "        )",
-                resultSetMapping = "IdToLongMapping"
+                resultSetMapping = "IdToIntegerMapping"
     )
 /* When this mapping was to Long.class, Postgres was still returning an Integer, causing indexing failures - see #11776 */ 
 @SqlResultSetMapping(
-        name = "IdToLongMapping",
+        name = "IdToIntegerMapping",
         columns = @ColumnResult(name = "id", type = Integer.class)
     )
 @Entity
