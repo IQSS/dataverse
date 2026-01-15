@@ -412,16 +412,12 @@ public class SolrIndexServiceBean {
                 indexPermissionsForOneDvObject(dataset);
 
                 // Process files for this dataset
-                Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(dataset);
-
                 for (DatasetVersion version : versionsToReIndexPermissionsFor(dataset)) {
-                    if (desiredCards.get(version.getVersionState())) {
                         processDatasetVersionFiles(version, fileCounter, fileQueryMin);
                     }
                 }
             }
         }
-    }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void indexDatasetFilesInNewTransaction(List<DatasetVersion> versions, final int[] fileCounter, int fileQueryMin) {
