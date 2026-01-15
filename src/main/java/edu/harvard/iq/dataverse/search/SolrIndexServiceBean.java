@@ -490,6 +490,7 @@ public class SolrIndexServiceBean {
                 }
             }
         }
+        logger.fine("Found " + changedFileIds.size() + " datafiles whose metadata has changed between versions " + releasedVersionId + " and " + draftVersionId);
     }
     
     private void processDatasetVersionFiles(DatasetVersion version,
