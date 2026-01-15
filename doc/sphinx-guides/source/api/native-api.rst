@@ -8734,6 +8734,16 @@ Parameters:
 
 ``per_page`` Number of results returned per page.
 
+``metadata_fields`` Includes the requested fields for each dataset in the response. Multiple "metadata_fields" parameters can be used to include several fields. See :doc:`search` for further information on this parameter.
+
+``show_collections`` Whether or not to include a list of parent and linked collections for each dataset search result.
+
+``sort`` The sort field. Supported values include "name", "date" and "relevance".
+
+``order`` The order in which to sort. Can either be "asc" or "desc".
+
+``fq`` A filter query to filter the list returned. Multiple "fq" parameters can be used.
+
 MyData Collection List
 ~~~~~~~~~~~~~~~~~~~~~~
 

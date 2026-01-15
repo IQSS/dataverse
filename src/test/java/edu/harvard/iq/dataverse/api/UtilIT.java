@@ -4170,15 +4170,19 @@ public class UtilIT {
     }
 
 
-    static Response retrieveMyDataAsJsonString(String apiToken, String userIdentifier, ArrayList<Long> roleIds) {
+    static Response retrieveMyDataAsJsonString(String apiToken, String userIdentifier, ArrayList<Long> roleIds, String parameterString) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType("application/json; charset=utf-8")
                 .queryParam("role_ids", roleIds)
                 .queryParam("dvobject_types", MyDataFilterParams.defaultDvObjectTypes)
                 .queryParam("published_states", MyDataFilterParams.defaultPublishedStates)
-                .get("/api/mydata/retrieve?userIdentifier=" + userIdentifier);
+                .get("/api/mydata/retrieve?userIdentifier=" + userIdentifier + parameterString);
         return response;
+    }
+
+    static Response retrieveMyDataAsJsonString(String apiToken, String userIdentifier, ArrayList<Long> roleIds) {
+        return retrieveMyDataAsJsonString(apiToken, userIdentifier, roleIds, "");
     }
 
     static Response retrieveMyCollectionList(String apiToken, String userIdentifier) {
