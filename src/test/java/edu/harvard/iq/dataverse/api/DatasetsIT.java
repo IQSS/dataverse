@@ -31,10 +31,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hamcrest.CoreMatchers;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import javax.xml.stream.XMLInputFactory;
@@ -79,10 +76,6 @@ public class DatasetsIT {
         removeIdentifierGenerationStyle.then().assertThat()
                 .statusCode(200);
 
-        Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
-        removeExcludeEmail.then().assertThat()
-                .statusCode(200);
-
         Response removeAnonymizedFieldTypeNames = UtilIT.deleteSetting(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
         removeAnonymizedFieldTypeNames.then().assertThat()
                 .statusCode(200);
@@ -101,16 +94,16 @@ public class DatasetsIT {
          */
     }
 
+    @AfterEach
+    public void afterEach() {
+        UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
+    }
 
     @AfterAll
     public static void afterClass() {
 
         Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
         removeIdentifierGenerationStyle.then().assertThat()
-                .statusCode(200);
-
-        Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
-        removeExcludeEmail.then().assertThat()
                 .statusCode(200);
 
         Response removeAnonymizedFieldTypeNames = UtilIT.deleteSetting(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
@@ -1757,11 +1750,6 @@ public class DatasetsIT {
         Response deleteUserResponse = UtilIT.deleteUser(username);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
-
-        Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
-        removeExcludeEmail.then().assertThat()
-                .statusCode(200);
-
     }
 
     @Disabled
@@ -2401,7 +2389,7 @@ public class DatasetsIT {
         Response getDefaultSetting = UtilIT.getSetting(SettingsServiceBean.Key.FileFixityChecksumAlgorithm);
         getDefaultSetting.prettyPrint();
         getDefaultSetting.then().assertThat()
-                .body("message", equalTo("Setting :FileFixityChecksumAlgorithm not found"));
+                .body("message", equalTo("Setting :FileFixityChecksumAlgorithm not found."));
 
         Response uploadMd5File = UtilIT.uploadRandomFile(dataset1PersistentId, apiToken);
         uploadMd5File.prettyPrint();
@@ -2814,7 +2802,7 @@ public class DatasetsIT {
         Response authorsGetsBadNews = UtilIT.getNotifications(apiToken);
         authorsGetsBadNews.prettyPrint();
         authorsGetsBadNews.then().assertThat()
-                .body("data.notifications[0].type", equalTo("CHECKSUMFAIL"))
+                .body("data[0].type", equalTo("CHECKSUMFAIL"))
                 .statusCode(OK.getStatusCode());
 
         Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
@@ -3703,9 +3691,17 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Look for a second description
         jsonLDString = getData(response.getBody().asString());
         jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
-        assertEquals("New description",
-                ((JsonObject) jsonLDObject.getJsonArray("https://dataverse.org/schema/citation/dsDescription").get(1))
-                        .getString("https://dataverse.org/schema/citation/dsDescriptionValue"));
+        JsonArray descriptions = jsonLDObject.getJsonArray("https://dataverse.org/schema/citation/dsDescription");
+        assertEquals(2, descriptions.size(), "Should have two descriptions");
+        boolean foundNewDescription = false;
+        for (int i = 0; i < descriptions.size(); i++) {
+            JsonObject desc = descriptions.getJsonObject(i);
+            if ("New description".equals(desc.getString("https://dataverse.org/schema/citation/dsDescriptionValue"))) {
+                foundNewDescription = true;
+                break;
+            }
+        }
+        assertTrue(foundNewDescription, "Should find 'New description' in the descriptions array");
 
         // Can't add terms of use with replace=false and a value already set (single
         // valued field)
@@ -5034,7 +5030,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
                 .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Updated"))
                 .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
-                .body("resource.publicationYear", CoreMatchers.equalTo("2025"));
+                .body("resource.publicationYear", CoreMatchers.equalTo(currentYear));
 
         Response exportDatasetOaiDc = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken, true);
         exportDatasetOaiDc.prettyPrint();
@@ -7365,6 +7361,56 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         updateLicenseResponse = UtilIT.updateLicense(datasetId.toString(), "{ \"name\": \"CC BY 4.0\" }", apiToken);
         updateLicenseResponse.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    public void testExcludeEmailOverride() {
+        // Create super user
+        String apiToken = getSuperuserToken();
+        // Create user with no permission
+        String apiTokenNoPerms = UtilIT.createRandomUserGetToken();
+        // Create Collection
+        String collectionAlias = UtilIT.createRandomCollectionGetAlias(apiToken);
+        // Publish Collection
+        UtilIT.publishDataverseViaNativeApi(collectionAlias, apiToken).prettyPrint();
+        // Create Dataset
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(collectionAlias, apiToken);
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+        // Publish Dataset
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
+
+        // Setting is not set - datasetContactEmail will NOT be excluded
+        Response response = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+        String json = response.prettyPrint();
+        assertTrue(json.contains("datasetContactName"));
+        assertTrue(json.contains("datasetContactEmail"));
+
+        UtilIT.setSetting(SettingsServiceBean.Key.ExcludeEmailFromExport, "true");
+
+        // User does not ignore the setting - datasetContactEmail will be excluded
+        response = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+        json = response.prettyPrint();
+        assertTrue(json.contains("datasetContactName"));
+        assertTrue(!json.contains("datasetContactEmail"));
+
+        // User has permission to ignore the setting allowing the datasetContactEmail to be included in the response
+        response = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, true, false, false, true);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+        json = response.prettyPrint();
+        assertTrue(json.contains("datasetContactName"));
+        assertTrue(json.contains("datasetContactEmail"));
+
+        // User has no permission to override the setting - datasetContactEmail will be excluded
+        response = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, true, false, false, true);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+        json = response.prettyPrint();
+        assertTrue(json.contains("datasetContactName"));
+        assertTrue(!json.contains("datasetContactEmail"));
     }
 
     private String getSuperuserToken() {

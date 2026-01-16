@@ -1,0 +1,1 @@
+This release removes an undocumented restriction on the API calls to get, set, and delete archival status. They did not work on deaccessioned dataset versions and now do. (See https://guides.dataverse.org/en/latest/api/native-api.html#get-the-archival-status-of-a-dataset-by-version )
