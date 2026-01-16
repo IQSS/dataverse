@@ -337,6 +337,13 @@ public class UtilIT {
         logger.info("Id found in create dataverse response: " + dataverseId);
         return dataverseId;
     }
+    
+    static Long getTemplateIdFromResponse(Response createTemplateResponse) {
+        JsonPath createdTemplate = JsonPath.from(createTemplateResponse.body().asString());
+        Long templateId = createdTemplate.getLong("data.id");
+        logger.info("Id found in create template response: " + templateId);
+        return templateId;
+    }
 
     static Integer getDatasetIdFromResponse(Response createDatasetResponse) {
         JsonPath createdDataset = JsonPath.from(createDatasetResponse.body().asString());
@@ -1780,7 +1787,15 @@ public class UtilIT {
     static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean excludeFiles, boolean includeDeaccessioned) {
         return getDatasetVersion(persistentId,versionNumber,apiToken,excludeFiles,false,includeDeaccessioned);
     }
-    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean excludeFiles,boolean excludeMetadataBlocks, boolean includeDeaccessioned) {
+    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean excludeFiles, boolean excludeMetadataBlocks, boolean includeDeaccessioned) {
+        return getDatasetVersion(persistentId, versionNumber, apiToken, excludeFiles, excludeMetadataBlocks, includeDeaccessioned, false);
+    }
+    // includeMetadataBlocksEmail is an override of the Setting ExcludeEmailFromExport. excludeMetadataBlocks must be false and user needs EditDataset permission
+    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken,
+                                      boolean excludeFiles,
+                                      boolean excludeMetadataBlocks,
+                                      boolean includeDeaccessioned,
+                                      boolean ignoreSettingExcludeEmailFromExport) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .queryParam("includeDeaccessioned", includeDeaccessioned)
@@ -1789,7 +1804,8 @@ public class UtilIT {
                         + "?persistentId="
                         + persistentId
                         + (excludeFiles ? "&excludeFiles=true" : "")
-                        + (excludeMetadataBlocks ? "&excludeMetadataBlocks=true" : ""));
+                        + (excludeMetadataBlocks ? "&excludeMetadataBlocks=true" : "")
+                        + (ignoreSettingExcludeEmailFromExport ? "&ignoreSettingExcludeEmailFromExport=true" : ""));
     }
     static Response compareDatasetVersions(String persistentId, String versionNumber1, String versionNumber2, String apiToken) {
         return given()
@@ -4154,15 +4170,19 @@ public class UtilIT {
     }
 
 
-    static Response retrieveMyDataAsJsonString(String apiToken, String userIdentifier, ArrayList<Long> roleIds) {
+    static Response retrieveMyDataAsJsonString(String apiToken, String userIdentifier, ArrayList<Long> roleIds, String parameterString) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType("application/json; charset=utf-8")
                 .queryParam("role_ids", roleIds)
                 .queryParam("dvobject_types", MyDataFilterParams.defaultDvObjectTypes)
                 .queryParam("published_states", MyDataFilterParams.defaultPublishedStates)
-                .get("/api/mydata/retrieve?userIdentifier=" + userIdentifier);
+                .get("/api/mydata/retrieve?userIdentifier=" + userIdentifier + parameterString);
         return response;
+    }
+
+    static Response retrieveMyDataAsJsonString(String apiToken, String userIdentifier, ArrayList<Long> roleIds) {
+        return retrieveMyDataAsJsonString(apiToken, userIdentifier, roleIds, "");
     }
 
     static Response retrieveMyCollectionList(String apiToken, String userIdentifier) {
@@ -5128,12 +5148,47 @@ public class UtilIT {
                 .body(jsonString)
                 .post("/api/dataverses/" + dataverseAlias + "/templates");
     }
+    
+    public static Response deleteTemplate(String id,  String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/dataverses/"+id+"/template");
+    }
 
     public static Response getTemplates(String dataverseAlias, String apiToken) {
         return given()
                 .contentType(ContentType.JSON)
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/dataverses/" + dataverseAlias + "/templates");
+    }
+
+    public static Response setDefaultTemplate(String dataverseAlias, Long templateId, String apiToken) {
+    return given()
+            .contentType(ContentType.JSON)
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .post("/api/dataverses/" + dataverseAlias + "/template/default/" + templateId);
+    }
+
+    public static Response removeDefaultTemplate(String dataverseAlias, String apiToken) {
+    return given()
+            .contentType(ContentType.JSON)
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .delete("/api/dataverses/" + dataverseAlias + "/template/default");
+    }
+
+
+    
+    public static Response getTemplate(String templateId) {
+        return given()
+                .contentType(ContentType.JSON)
+                .get("/api/dataverses/" + templateId + "/template");
+    }
+    
+    public static Response getTemplate(String templateId, String apiToken) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/" + templateId + "/template");
     }
     
     /**
