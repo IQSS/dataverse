@@ -1,6 +1,6 @@
 # Features
 
-An overview of Dataverse features can be found at <https://dataverse.org/software-features>. This is a more comprehensive list.
+An overview of Dataverse features can be found at {ref}`core-capabilities` and <https://dataverse.org/software-features>. This is a more comprehensive list.
 
 ```{contents} Contents:
 :local:
