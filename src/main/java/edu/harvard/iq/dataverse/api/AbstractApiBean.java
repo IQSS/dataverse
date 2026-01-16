@@ -997,7 +997,7 @@ public abstract class AbstractApiBean {
     protected Response ok( String msg, JsonObjectBuilder bld  ) {
         return Response.ok().entity(Json.createObjectBuilder()
             .add("status", ApiConstants.STATUS_OK)
-            .add("message", Json.createObjectBuilder().add("message",msg))     
+            .add("message", msg)     
             .add("data", bld).build())      
             .type(MediaType.APPLICATION_JSON)
             .build();
