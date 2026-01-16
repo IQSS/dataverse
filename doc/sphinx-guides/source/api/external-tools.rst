@@ -11,6 +11,9 @@ Introduction
 
 External tools are additional applications the user can access or open from your Dataverse installation to preview, explore, and manipulate data files and datasets. The term "external" is used to indicate that the tool is not part of the main Dataverse Software.
 
+.. note::
+  Browser-based tools must have CORS explicitly enabled via :ref:`dataverse.cors.origin <dataverse.cors.origin>`. List every origin that will host your tool (or use ``*`` when a wildcard is acceptable). If an origin is not listed, the browser will block that tool's API requests even if the tool page itself loads.
+
 Once you have created the external tool itself (which is most of the work!), you need to teach a Dataverse installation how to construct URLs that your tool needs to operate. For example, if you've deployed your tool to fabulousfiletool.com your tool might want the ID of a file and the siteUrl of the Dataverse installation like this: https://fabulousfiletool.com?fileId=42&siteUrl=https://demo.dataverse.org
 
 In short, you will be creating a manifest in JSON format that describes not only how to construct URLs for your tool, but also what types of files your tool operates on, where it should appear in the Dataverse installation web interfaces, etc. 
@@ -206,7 +209,7 @@ Testing Your External Tool
 
 As the author of an external tool, you are not expected to learn how to install and operate a Dataverse installation. There's a very good chance your tool can be added to a server Dataverse Community developers use for testing if you reach out on any of the channels listed under :ref:`getting-help-developers` in the Developer Guide.
 
-By all means, if you'd like to install a Dataverse installation yourself, a number of developer-centric options are available. For example, there's a script to spin up a Dataverse installation on EC2 at https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible . The process for using curl to add your external tool to your Dataverse installation is documented under :ref:`managing-external-tools` in the Admin Guide.
+By all means, if you'd like to install a Dataverse installation yourself, a number of developer-centric options are available. For example, there's a script to spin up a Dataverse installation on EC2 at https://github.com/gdcc/dataverse-ansible . The process for using curl to add your external tool to your Dataverse installation is documented under :ref:`managing-external-tools` in the Admin Guide.
 
 Spreading the Word About Your External Tool
 -------------------------------------------
@@ -223,7 +226,7 @@ If you've thought to yourself that there ought to be an app store for Dataverse 
 Demoing Your External Tool
 ++++++++++++++++++++++++++
 
-https://demo.dataverse.org is the place to play around with the Dataverse Software and your tool can be included. Please email support@dataverse.org to start the conversation about adding your tool. Additionally, you are welcome to open an issue at https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible which already includes a number of the tools listed above.
+https://demo.dataverse.org is the place to play around with the Dataverse Software and your tool can be included. Please email support@dataverse.org to start the conversation about adding your tool. Additionally, you are welcome to open an issue at https://github.com/gdcc/dataverse-ansible which already includes a number of the tools listed above.
 
 Announcing Your External Tool
 +++++++++++++++++++++++++++++

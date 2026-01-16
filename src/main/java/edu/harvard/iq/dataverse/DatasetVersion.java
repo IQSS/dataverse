@@ -73,7 +73,11 @@ import org.apache.commons.lang3.StringUtils;
     @NamedQuery(name = "DatasetVersion.findById", 
                 query = "SELECT o FROM DatasetVersion o LEFT JOIN FETCH o.fileMetadatas WHERE o.id=:id"), 
     @NamedQuery(name = "DatasetVersion.findByDataset",
-                query = "SELECT o FROM DatasetVersion o WHERE o.dataset.id=:datasetId ORDER BY o.versionNumber DESC, o.minorVersionNumber DESC"), 
+                query = "SELECT o FROM DatasetVersion o WHERE o.dataset.id=:datasetId ORDER BY o.versionNumber DESC, o.minorVersionNumber DESC"),
+    @NamedQuery(name = "DatasetVersion.findByDesiredStatesAndDataset",
+            query = "SELECT o FROM DatasetVersion o " +
+                    "WHERE o.dataset.id = :datasetId AND o.versionState IN :states " +
+                    "ORDER BY o.versionNumber DESC, o.minorVersionNumber DESC"),
     @NamedQuery(name = "DatasetVersion.findReleasedByDataset",
                 query = "SELECT o FROM DatasetVersion o WHERE o.dataset.id=:datasetId AND o.versionState=edu.harvard.iq.dataverse.DatasetVersion.VersionState.RELEASED ORDER BY o.versionNumber DESC, o.minorVersionNumber DESC")/*,
     @NamedQuery(name = "DatasetVersion.findVersionElements",
@@ -155,7 +159,7 @@ public class DatasetVersion implements Serializable {
      * @todo versionState should never be null so when we are ready, uncomment
      * the `nullable = false` below.
      */
-//    @Column(nullable = false)
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private VersionState versionState;
 

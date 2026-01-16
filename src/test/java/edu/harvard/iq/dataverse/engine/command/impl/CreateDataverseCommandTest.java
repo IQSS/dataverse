@@ -101,15 +101,15 @@ public class CreateDataverseCommandTest {
         }
 
         @Override
-        public RoleAssignment save(RoleAssignment assignment) {
+        public RoleAssignment save(RoleAssignment assignment, DataverseRequest req) {
             assignment.setId( nextId() );
             assignments.add(assignment);
             return assignment;
         }
         
         @Override
-        public RoleAssignment save(RoleAssignment assignment, boolean index) {
-            return save (assignment);
+        public RoleAssignment save(RoleAssignment assignment, boolean index, DataverseRequest req) {
+            return save (assignment, req);
         }        
 
         @Override
@@ -307,7 +307,7 @@ public class CreateDataverseCommandTest {
             i++;
         }
         
-        assertTrue( dftilsDeleted );
+       // assertTrue( dftilsDeleted ); we no longer delete when adding new input levels to preserve previously created
         for ( DataverseFieldTypeInputLevel dftil : createdDftils ) {
             assertEquals( result, dftil.getDataverse() );
         }

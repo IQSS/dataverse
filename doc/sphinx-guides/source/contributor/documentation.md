@@ -50,75 +50,77 @@ If you would like to read more about the Dataverse's use of GitHub, please see t
 
 ## Building the Guides with Sphinx
 
-While the "quick fix" technique shown above should work fine for minor changes, especially for larger changes, we recommend installing Sphinx on your computer or using a Sphinx Docker container to build the guides locally so you can get an accurate preview of your changes.
+While the "quick fix" technique shown above should work fine for minor changes, in many cases, you're going to want to preview changes locally before committing them.
 
-In case you decide to use a Sphinx Docker container to build the guides, you can skip the next two installation sections, but you will need to have Docker installed.
+Before we worry about pushing changes to the code, let's make sure we can build the guides.
 
-### Installing Sphinx
+Go to <https://github.com/IQSS/dataverse> and click "Code" and then follow the instructions to clone the code locally.
 
-First, make a fork of <https://github.com/IQSS/dataverse> and clone your fork locally. Then change to the ``doc/sphinx-guides`` directory.
+### Docker
 
-``cd doc/sphinx-guides``
+Install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+
+From a terminal, switch to the "dataverse" directory you just cloned. This is the root of the git repo.
+
+`cd dataverse`
+
+Then try running this command:
+
+`docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx:7.4.0 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make html"`
+
+If all goes well, you should be able to open `doc/sphinx-guides/build/html/index.html` to see the guides you just built.
+
+#### Docker with a Makefile
+
+Once you've confirmed you have Docker working, if you have [make](https://en.wikipedia.org/wiki/Make_(software)) installed, you can try the following commands:
+
+`make docs-html`
+
+`make docs-pdf`
+
+`make docs-epub`
+
+`make docs-all`
+
+### Sphinx Installed Locally
+
+First, run `python --version` or `python3 --version` to determine the version of Python you have. If you don't have Python 3.10 or higher, you must upgrade.
+
+Next, change to the `doc/sphinx-guides` directory.
+
+`cd doc/sphinx-guides`
 
 Create a Python virtual environment, activate it, then install dependencies:
 
-``python3 -m venv venv``
+`python3 -m venv venv`
 
-``source venv/bin/activate``
+`source venv/bin/activate`
 
-``pip install -r requirements.txt``
+`pip install -r requirements.txt`
 
-### Installing GraphViz
-
-In some parts of the documentation, graphs are rendered as images using the Sphinx GraphViz extension.
-
-Building the guides requires the ``dot`` executable from GraphViz.
-
-This requires having [GraphViz](https://graphviz.org) installed and either having ``dot`` on the path or
-[adding options to the `make` call](https://groups.google.com/forum/#!topic/sphinx-users/yXgNey_0M3I).
+Next, install [GraphViz](https://graphviz.org) because building the guides requires having the `dot` executable from GraphViz either on the path or passed [as an argument](https://groups.google.com/g/sphinx-users/c/yXgNey_0M3I/m/3T2NipFlBgAJ).
 
 On a Mac we recommend installing GraphViz through [Homebrew](<https://brew.sh>). Once you have Homebrew installed and configured to work with your shell, you can type `brew install graphviz`.
 
-### Editing and Building the Guides
+Finally, you can try building the guides with the following command.
+
+`make html`
+
+If all goes well, you should be able to open `doc/sphinx-guides/build/html/index.html` to see the guides you just built.
+
+## Editing, Building, and Previewing the Guides
 
 To edit the existing documentation:
 
 - Create a branch (see {ref}`how-to-make-a-pull-request`).
-- In ``doc/sphinx-guides/source`` you will find the .rst files that correspond to https://guides.dataverse.org.
+- In `doc/sphinx-guides/source` you will find the .rst or .md files that correspond to https://guides.dataverse.org.
 - Using your preferred text editor, open and edit the necessary files, or create new ones.
 
-Once you are done, you can preview the changes by building the guides locally. As explained, you can build the guides with Sphinx locally installed, or with a Docker container.
-
-#### Building the Guides with Sphinx Installed Locally
-
-Open a terminal, change directories to `doc/sphinx-guides`, activate (or reactivate) your Python virtual environment, and build the guides.
-
-`cd doc/sphinx-guides`
-
-`source venv/bin/activate`
-
-`make clean`
-
-`make html`
-
-#### Building the Guides with a Sphinx Docker Container and a Makefile
-
-We have added a Makefile to simplify the process of building the guides using a Docker container, you can use the following commands from the repository root:
-
-- `make docs-html`
-- `make docs-pdf`
-- `make docs-epub`
-- `make docs-all`
-
-#### Building the Guides with a Sphinx Docker Container and CLI
-
-If you want to build the guides using a Docker container, execute the following command in the repository root:
-
-`docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx:7.2.6 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make html"`
-
-#### Previewing the Guides
+Once you are done, you can preview the changes by building the guides using one of the options above.
 
 After Sphinx is done processing the files you should notice that the `html` folder in `doc/sphinx-guides/build` directory has been updated. You can click on the files in the `html` folder to preview the changes.
+
+## Making a Pull Request
 
 Now you can make a commit with the changes to your own fork in GitHub and submit a pull request. See {ref}`how-to-make-a-pull-request`.
 
@@ -153,15 +155,21 @@ If the page is written in Markdown (.md), use this form:
 
 ### Links
 
-Getting links right with .rst files can be tricky.
+Getting links right can be tricky.
 
 #### Custom Titles
 
-You can use a custom title when linking to a document like this:
+In .rst files you can use a custom title when linking to a document like this:
 
     :doc:`Custom title </api/intro>`
 
 See also <https://docs.readthedocs.io/en/stable/guides/cross-referencing-with-sphinx.html#the-doc-role>
+
+In .md files, the same pattern can be used. Here's an example of using a custom title with a ref:
+
+    {ref}`Log in <account-log-in-options>`
+
+See also <https://myst-parser.readthedocs.io/en/v0.16.1/syntax/syntax.html#targets-and-cross-referencing>
 
 ### Images
 
@@ -179,7 +187,7 @@ The HTML version of the guides is the official one. Any other formats are mainta
 
 If you would like to build a PDF version of the guides and have Docker installed, please try the command below from the root of the git repo:
 
-`docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx-latexpdf:7.2.6 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make latexpdf LATEXMKOPTS=\"-interaction=nonstopmode\"; cd ../.. && ls -1 doc/sphinx-guides/build/latex/Dataverse.pdf"`
+`docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx-latexpdf:7.4.0 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make latexpdf LATEXMKOPTS=\"-interaction=nonstopmode\"; cd ../.. && ls -1 doc/sphinx-guides/build/latex/Dataverse.pdf"`
 
 A few notes about the command above:
 

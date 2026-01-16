@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import com.google.common.collect.Lists;
 import com.google.api.client.util.ArrayMap;
 import edu.harvard.iq.dataverse.*;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
 import edu.harvard.iq.dataverse.api.dto.*;
@@ -15,6 +16,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
@@ -22,6 +24,7 @@ import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
@@ -68,6 +71,7 @@ import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.StreamingOutput;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -116,10 +120,13 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     PermissionServiceBean permissionService;
+    
+    @EJB
+    TemplateServiceBean templateService;
 
     @EJB
     DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
-
+    
     @POST
     @AuthRequired
     public Response addRoot(@Context ContainerRequestContext crc, String body) {
@@ -714,7 +721,7 @@ public class Dataverses extends AbstractApiBean {
         return response(req -> {
             Dataverse dataverse = execCommand(new GetDataverseCommand(req, findDataverseOrDie(idtf)));
             boolean hideEmail = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false);
-            return ok(json(dataverse, hideEmail, returnOwners, returnChildCount ? dataverseService.getChildCount(dataverse) : null));
+            return ok(json(dataverse, hideEmail, returnOwners, false, returnChildCount ? dataverseService.getChildCount(dataverse) : null));
         }, getRequestUser(crc));
     }
 
@@ -1234,9 +1241,9 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/storage/quota")
-    public Response getCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) throws WrappedResponse {
+    public Response getCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("showInherited") boolean showInherited) throws WrappedResponse {
         try {
-            Long bytesAllocated = execCommand(new GetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf)));
+            Long bytesAllocated = execCommand(new GetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf), showInherited));
             if (bytesAllocated != null) {
                 return ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.storage.quota.allocation"),bytesAllocated));
             }
@@ -1246,11 +1253,17 @@ public class Dataverses extends AbstractApiBean {
         }
     }
     
-    @POST
+    @PUT
     @AuthRequired
-    @Path("{identifier}/storage/quota/{bytesAllocated}")
-    public Response setCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("bytesAllocated") Long bytesAllocated) throws WrappedResponse {
+    @Path("{identifier}/storage/quota")
+    public Response setCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String value) throws WrappedResponse {
         try {
+            Long bytesAllocated; 
+            try {
+                bytesAllocated = Long.parseLong(value);
+            } catch (NumberFormatException nfe){
+                return error(Status.BAD_REQUEST, value + " is not a valid number of bytes");
+            }
             execCommand(new SetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf), bytesAllocated));
             return ok(BundleUtil.getStringFromBundle("dataverse.storage.quota.updated"));
         } catch (WrappedResponse ex) {
@@ -1771,6 +1784,36 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }
+    
+    @GET
+    @AuthRequired
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("{identifier}/{type}/linkingDataverses")
+    public Response getLinkingDataverseList(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("searchTerm") String searchTerm, @QueryParam("alreadyLinking") boolean alreadyLinking, @PathParam("type") String type) {
+
+        try {
+
+            DvObject dvObject = findDvoByIdAndTypeOrDie(dvIdtf, type, false);
+            List<Dataverse> dataversesForLinking = execCommand(new GetLinkingDataverseListCommand(
+                    createDataverseRequest(getRequestUser(crc)),
+                    dvObject,
+                    searchTerm,
+                    alreadyLinking
+            ));
+
+            JsonArrayBuilder dvBuilder = Json.createArrayBuilder();
+            if (dataversesForLinking != null && !dataversesForLinking.isEmpty()) {
+                for (Dataverse dv : dataversesForLinking) {
+                    dvBuilder.add(json(dv, true));
+                }
+            }
+            return ok(dvBuilder);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+    
+    
 
     @GET
     @AuthRequired
@@ -1811,7 +1854,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             dataverse = findDataverseOrDie(dvIdtf);
             if (dvObjectIdtf != null) {
-                dvObject = findDvoByIdAndFeaturedItemTypeOrDie(dvObjectIdtf, type);
+                dvObject = findDvoByIdAndTypeOrDie(dvObjectIdtf, type, true);
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -1899,7 +1942,7 @@ public class Dataverses extends AbstractApiBean {
 
                 // ignore dvObject if the id is missing or an empty string
                 DvObject dvObject = dvObjectIdtf.get(i) != null && !dvObjectIdtf.get(i).isEmpty()
-                        ? findDvoByIdAndFeaturedItemTypeOrDie(dvObjectIdtf.get(i), types.get(i)) : null;
+                        ? findDvoByIdAndTypeOrDie(dvObjectIdtf.get(i), types.get(i), true) : null;
                 if (ids.get(i) == 0) {
                     newItems.add(NewDataverseFeaturedItemDTO.fromFormData(
                             contents.get(i), displayOrders.get(i), fileInputStream, contentDisposition, types.get(i), dvObject));
@@ -1951,6 +1994,21 @@ public class Dataverses extends AbstractApiBean {
             return e.getResponse();
         }
     }
+    
+    @GET
+    @AuthRequired
+    @Path("{id}/template/")
+    public Response getTemplate(@Context ContainerRequestContext crc, @PathParam("id") Long templateId) {
+        try {
+            Template template = templateService.find(templateId);
+            if (template == null){
+                return error(Response.Status.NOT_FOUND, "Template with id " + templateId + " -  not found.");
+            }
+            return ok(jsonTemplate(execCommand(new GetTemplateCommand(createDataverseRequest(getRequestUser(crc)), template))));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
 
     @POST
     @AuthRequired
@@ -1964,9 +2022,122 @@ public class Dataverses extends AbstractApiBean {
             } catch (JsonParseException ex) {
                 return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.createTemplate.error.jsonParseMetadataFields"), ex.getMessage()));
             }
-            return ok(jsonTemplate(execCommand(new CreateTemplateCommand(newTemplateDTO.toTemplate(), createDataverseRequest(getRequestUser(crc)), dataverse, true))));
+            Template created = execCommand(new CreateTemplateCommand(newTemplateDTO.toTemplate(), createDataverseRequest(getRequestUser(crc)), dataverse, true));
+            
+            return created("/dataverses/template/" + created.getId(), jsonTemplate(created));
+        
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
+    }
+
+    @POST
+    @AuthRequired
+    @Path("{identifier}/template/default/{templateId}")
+    public Response setDefaultTemplate(@Context ContainerRequestContext crc,
+            @PathParam("identifier") String dvId,
+            @PathParam("templateId") Long templateId) {
+
+        try {
+
+            Dataverse dataverse = findDataverseOrDie(dvId);
+            Template template = findTemplateOrDie(templateId, dataverse);
+            DataverseRequest dvReq = createDataverseRequest(getRequestUser(crc));
+            SetDefaultTemplateCommand command = new SetDefaultTemplateCommand(template, dvReq, dataverse);
+            
+            execCommand(command);
+
+            return ok(BundleUtil.getStringFromBundle("dataverse.setDefaultTemplate.success"));
+        
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("{identifier}/template/default")
+    public Response removeDefaultTemplate(@Context ContainerRequestContext crc,
+            @PathParam("identifier") String dvId) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(dvId);
+            RemoveDefaultTemplateCommand command = new RemoveDefaultTemplateCommand(createDataverseRequest(getRequestUser(crc)), dataverse);
+            execCommand(command);
+            return ok(BundleUtil.getStringFromBundle("dataverse.removeDefaultTemplate.success"));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/allowedMetadataLanguages")
+    public Response getMetadataLanguage(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+        return response(req -> {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            return ok(jsonLanguage(execCommand(
+                    new GetDataverseMetadataLanguageCommand(req, dataverse))));
+        }, getRequestUser(crc));
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/allowedMetadataLanguages/{metadataLanguage}")
+    public Response setMetadataLanguage(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("metadataLanguage") String lang) {
+        return response(req -> {
+            Map<String, String> langMap = settingsService.getBaseMetadataLanguageMap(null, true);
+            if (langMap.isEmpty()) {
+                return badRequest("There are no metadata languages configured on this server");
+            }
+            if (!langMap.containsKey(lang)) {
+                return badRequest("The specified metadata language " + lang + " is not allowed on this server!");
+            }
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            return ok(jsonLanguage(execCommand(new SetDataverseMetadataLanguageCommand(req, dataverse, lang))));
+        }, getRequestUser(crc));
+    }
+    
+    @Path("{id}/template")
+    @AuthRequired
+    @DELETE
+    public Response deleteTemplate(@Context ContainerRequestContext crc, @PathParam("id") long id) {
+
+        Template doomed = templateService.find(id);
+        if (doomed == null) {
+            return error(Response.Status.NOT_FOUND, "Template with id " + id + " -  not found.");
+        }
+
+        Dataverse dv = doomed.getDataverse();
+        List<Dataverse> dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(doomed.getId());
+        try {
+            execCommand(new DeleteTemplateCommand(createDataverseRequest(getRequestUser(crc)), dv, doomed, dataverseWDefaultTemplate));
+        } catch (WrappedResponse wr) {
+            return handleWrappedResponse(wr);
+        }
+
+        return ok("Template " + doomed.getName() + " deleted.");
+    }
+    
+    @GET
+    @AuthRequired
+    @Path("{identifier}/assignments/history")
+    @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
+    public Response getRoleAssignmentHistory(@Context ContainerRequestContext crc,
+            @PathParam("identifier") String id,
+            @Context HttpHeaders headers) {
+        return response(req -> {
+            Dataverse dataverse = findDataverseOrDie(id);
+
+            // user is authenticated
+            AuthenticatedUser authenticatedUser = null;
+            try {
+                authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+            } catch (WrappedResponse ex) {
+                return error(Status.UNAUTHORIZED, "Authentication is required.");
+            }
+
+            return getRoleAssignmentHistoryResponse(dataverse, authenticatedUser, false, headers);
+        }, getRequestUser(crc));
     }
 }
