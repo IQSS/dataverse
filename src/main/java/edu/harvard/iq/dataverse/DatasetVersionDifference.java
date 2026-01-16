@@ -225,6 +225,12 @@ public final class DatasetVersionDifference {
             newTerms = new TermsOfUseAndAccess();
         }
         
+        //get license name or bundle val for none
+        String originalLicenseName =  originalTerms.getLicense() != null ? originalTerms.getLicense().getName() : BundleUtil.getStringFromBundle("license.none.chosen");
+        String newLicenseName =newTerms.getLicense() != null ? newTerms.getLicense().getName() : BundleUtil.getStringFromBundle("license.none.chosen");
+       
+        checkAndAddToChangeList(originalLicenseName, newLicenseName,
+                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.license"));        
         checkAndAddToChangeList(originalTerms.getTermsOfUse(), newTerms.getTermsOfUse(),
                 BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.header"));
         checkAndAddToChangeList(originalTerms.getConfidentialityDeclaration(), newTerms.getConfidentialityDeclaration(),
