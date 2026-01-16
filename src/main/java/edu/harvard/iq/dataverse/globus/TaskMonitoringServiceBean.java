@@ -66,6 +66,11 @@ public class TaskMonitoringServiceBean {
             this.scheduler.scheduleWithFixedDelay(this::checkOngoingDownloadTasks,
                     0, pollingInterval,
                     TimeUnit.SECONDS);
+            
+            // The purpose of having 2 separate scheduling queues is to avoid
+            // potentially expensive/long-running processing of upload tasks 
+            // slowing down the handling of completed download transfers that 
+            // are always cheap. 
 
         } else {
             logger.info("Skipping Globus task monitor initialization");
@@ -82,28 +87,8 @@ public class TaskMonitoringServiceBean {
     public void checkOngoingUploadTasks() {
         logger.fine("Performing a scheduled external Globus UPLOAD task check");
         List<GlobusTaskInProgress> tasks = globusService.findAllOngoingTasks(GlobusTaskInProgress.TaskType.UPLOAD);
-
-        tasks.forEach(t -> {
-            GlobusTaskState retrieved = checkTaskState(t); 
-
-            if (GlobusUtil.isTaskCompleted(retrieved)) {
-                FileHandler taskLogHandler = getTaskLogHandler(t);
-                Logger taskLogger = getTaskLogger(t, taskLogHandler);
-
-                // Do our thing, finalize adding the files to the dataset
-                globusService.processCompletedTask(t, retrieved, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getCompletedTaskStatus(retrieved), true, taskLogger);
-                // Whether it finished successfully, or failed in the process, 
-                // there's no need to keep monitoring this task, so we can 
-                // delete it.
-                //globusService.deleteExternalUploadRecords(t.getTaskId());
-                globusService.deleteTask(t);
-
-                if (taskLogHandler != null) {
-                    taskLogHandler.close();
-                }
-            }
-
-        });
+        
+        processTasksQueue(tasks);
     }
     
     /**
@@ -115,10 +100,17 @@ public class TaskMonitoringServiceBean {
         logger.fine("Performing a scheduled external Globus DOWNLOAD task check");
         List<GlobusTaskInProgress> tasks = globusService.findAllOngoingTasks(GlobusTaskInProgress.TaskType.DOWNLOAD);
 
-        // Unlike with uploads, it is now possible for a user to run several 
-        // download transfers on the same dataset - with several download 
-        // tasks using the same access rule on the corresponding Globus
-        // pseudofolder. This means that we'll need to be careful not to 
+        processTasksQueue(tasks);
+    }
+    
+    /**
+     * The workhorse method that checks on Globus transfer tasks in the active 
+     * queue. 
+     */
+    private void processTasksQueue(List<GlobusTaskInProgress> tasks) {
+        // It is now possible for a user to run several transfer tasks
+        // using the same access rule on the corresponding Globus
+        // pseudofolder. That means that need to be careful not to 
         // delete any rule, without checking if there are still other 
         // active tasks using it: 
         Map <String, Long> rulesInUse = new HashMap<>(); 
@@ -136,23 +128,23 @@ public class TaskMonitoringServiceBean {
         
         tasks.forEach(t -> {
 
-            GlobusTaskState retrieved = checkTaskState(t); 
+            GlobusTaskState retrieved = checkTaskState(t);
+            String taskStatus = retrieved == null ? "N/A" : retrieved.getStatus();
 
             if (GlobusUtil.isTaskCompleted(retrieved)) {
                 FileHandler taskLogHandler = getTaskLogHandler(t);
                 Logger taskLogger = getTaskLogger(t, taskLogHandler);
                 
-                String taskStatus = retrieved == null ? "N/A" : retrieved.getStatus();
                 taskLogger.info("Processing completed task " + t.getTaskId() + ", status: " + taskStatus);
                 
                 boolean deleteRule = true;
                 
                 if (t.getRuleId() == null || rulesInUse.get(t.getRuleId()) > 1) {
-                    taskLogger.info("Access rule " + t.getRuleId() + " is still in use by other tasks.");
+                    taskLogger.fine("Access rule " + t.getRuleId() + " is still in use by other tasks.");
                     deleteRule = false;
                     rulesInUse.put(t.getRuleId(), rulesInUse.get(t.getRuleId()) - 1);
                 } else {
-                    taskLogger.info("Access rule " + t.getRuleId() + " is no longer in use by other tasks; will delete.");
+                    taskLogger.fine("Access rule " + t.getRuleId() + " is no longer in use by other tasks; will delete.");
                 }
 
                 globusService.processCompletedTask(t, retrieved, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getCompletedTaskStatus(retrieved), deleteRule, taskLogger);
@@ -165,7 +157,6 @@ public class TaskMonitoringServiceBean {
                     taskLogHandler.close();
                 }
             } else {
-                String taskStatus = retrieved == null ? "N/A" : retrieved.getStatus();
                 logger.fine("task "+t.getTaskId()+" is still running; " + ", status: " + taskStatus);
             }
             

@@ -941,6 +941,8 @@ public class GlobusServiceBean implements java.io.Serializable {
             fileHandler.close();
         }
     }
+    
+    
     /**
      * As the name suggests, the method completes and finalizes an upload task, 
      * whether it completed successfully or failed. (In the latter case, it 
@@ -955,6 +957,7 @@ public class GlobusServiceBean implements java.io.Serializable {
      *                          user will need to be obtained from the saved api token, when this
      *                          method is called via the TaskMonitoringService
      * @param ruleId            Globus rule/permission id associated with the task
+     * @param deleteRule        delete the rule above when done
      * @param myLogger          the Logger; if null, the main logger of the service bean will be used
      * @param fileHandler       FileHandler associated with the Logger, when not null
      * @param taskSuccess       boolean task status of the completed task
@@ -965,16 +968,20 @@ public class GlobusServiceBean implements java.io.Serializable {
     private void processCompletedUploadTask(Dataset dataset, 
             JsonArray filesJsonArray, 
             AuthenticatedUser authUser, 
-            String ruleId, 
+            String ruleId,
+            boolean deleteRule,
             Logger globusLogger,
             boolean taskSuccess, 
             String taskStatus) {
         
         Logger myLogger = globusLogger == null ? logger : globusLogger;
         
-        if (ruleId != null) {
-            // Transfer is complete, so delete rule
-            deletePermission(ruleId, dataset, myLogger);
+        if (deleteRule) {
+            // Transfer is complete, and there must be no other tasks using the rule so, delete it
+            myLogger.fine("Deleting access (upload) rule "+ruleId);
+            if (ruleId != null) {
+                deletePermission(ruleId, dataset, myLogger);
+            }
         }
         
         // If success, switch to an EditInProgress lock - do this before removing the
@@ -1048,16 +1055,22 @@ public class GlobusServiceBean implements java.io.Serializable {
                 myLogger.info("Exception from processUploadedFiles call " + e.getMessage());
                 datasetSvc.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
             }
-        }
-        
-        // @todo: this appears to be redundant - it was already deleted above - ?
-        if (ruleId != null) {
-            deletePermission(ruleId, dataset, myLogger);
-            myLogger.info("Removed upload permission: " + ruleId);
-        }
-        
+        }        
     }
     
+    /**
+     * Conveniece version of the method above that defaults to deleting the 
+     * access rule. 
+     */
+    private void processCompletedUploadTask(Dataset dataset, 
+            JsonArray filesJsonArray, 
+            AuthenticatedUser authUser, 
+            String ruleId,
+            Logger globusLogger,
+            boolean taskSuccess, 
+            String taskStatus) {
+        processCompletedUploadTask(dataset, filesJsonArray, authUser, ruleId, true, globusLogger, taskSuccess, taskStatus);
+    }
     
     /**
      * The code in this method is copy-and-pasted from the previous Borealis 
@@ -1766,7 +1779,7 @@ public class GlobusServiceBean implements java.io.Serializable {
 
                 JsonArray filesJsonArray = filesJsonArrayBuilder.build();
 
-                processCompletedUploadTask(dataset, filesJsonArray, authUser, ruleId, taskLogger, taskSuccess, taskStatus);
+                processCompletedUploadTask(dataset, filesJsonArray, authUser, ruleId, deleteRule, taskLogger, taskSuccess, taskStatus);
                 break;
                 
             case DOWNLOAD:
@@ -1806,8 +1819,10 @@ public class GlobusServiceBean implements java.io.Serializable {
                     // It is possible that, for whatever reason, we failed to look up 
                     // the rule id when the monitoring of the task was initiated - but 
                     // now that it has completed, let's try and look it up again:
-                    getRuleId(endpoint, taskState.getOwner_id(), "r");
+                    ruleId = getRuleId(endpoint, taskState.getOwner_id(), "r");
                 }
+                
+                taskLogger.fine("Deleting access (download) rule "+ruleId);
 
                 if (ruleId != null) {
                     deletePermission(ruleId, endpoint, taskLogger);
