@@ -4170,15 +4170,19 @@ public class UtilIT {
     }
 
 
-    static Response retrieveMyDataAsJsonString(String apiToken, String userIdentifier, ArrayList<Long> roleIds) {
+    static Response retrieveMyDataAsJsonString(String apiToken, String userIdentifier, ArrayList<Long> roleIds, String parameterString) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType("application/json; charset=utf-8")
                 .queryParam("role_ids", roleIds)
                 .queryParam("dvobject_types", MyDataFilterParams.defaultDvObjectTypes)
                 .queryParam("published_states", MyDataFilterParams.defaultPublishedStates)
-                .get("/api/mydata/retrieve?userIdentifier=" + userIdentifier);
+                .get("/api/mydata/retrieve?userIdentifier=" + userIdentifier + parameterString);
         return response;
+    }
+
+    static Response retrieveMyDataAsJsonString(String apiToken, String userIdentifier, ArrayList<Long> roleIds) {
+        return retrieveMyDataAsJsonString(apiToken, userIdentifier, roleIds, "");
     }
 
     static Response retrieveMyCollectionList(String apiToken, String userIdentifier) {
@@ -5157,6 +5161,22 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/dataverses/" + dataverseAlias + "/templates");
     }
+
+    public static Response setDefaultTemplate(String dataverseAlias, Long templateId, String apiToken) {
+    return given()
+            .contentType(ContentType.JSON)
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .post("/api/dataverses/" + dataverseAlias + "/template/default/" + templateId);
+    }
+
+    public static Response removeDefaultTemplate(String dataverseAlias, String apiToken) {
+    return given()
+            .contentType(ContentType.JSON)
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .delete("/api/dataverses/" + dataverseAlias + "/template/default");
+    }
+
+
     
     public static Response getTemplate(String templateId) {
         return given()

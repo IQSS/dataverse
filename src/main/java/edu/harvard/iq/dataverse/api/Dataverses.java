@@ -2031,6 +2031,45 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
+    @POST
+    @AuthRequired
+    @Path("{identifier}/template/default/{templateId}")
+    public Response setDefaultTemplate(@Context ContainerRequestContext crc,
+            @PathParam("identifier") String dvId,
+            @PathParam("templateId") Long templateId) {
+
+        try {
+
+            Dataverse dataverse = findDataverseOrDie(dvId);
+            Template template = findTemplateOrDie(templateId, dataverse);
+            DataverseRequest dvReq = createDataverseRequest(getRequestUser(crc));
+            SetDefaultTemplateCommand command = new SetDefaultTemplateCommand(template, dvReq, dataverse);
+            
+            execCommand(command);
+
+            return ok(BundleUtil.getStringFromBundle("dataverse.setDefaultTemplate.success"));
+        
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("{identifier}/template/default")
+    public Response removeDefaultTemplate(@Context ContainerRequestContext crc,
+            @PathParam("identifier") String dvId) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(dvId);
+            RemoveDefaultTemplateCommand command = new RemoveDefaultTemplateCommand(createDataverseRequest(getRequestUser(crc)), dataverse);
+            execCommand(command);
+            return ok(BundleUtil.getStringFromBundle("dataverse.removeDefaultTemplate.success"));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+
+
     @GET
     @AuthRequired
     @Path("{identifier}/allowedMetadataLanguages")
