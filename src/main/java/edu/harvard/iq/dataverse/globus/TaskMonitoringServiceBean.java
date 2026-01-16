@@ -110,7 +110,7 @@ public class TaskMonitoringServiceBean {
     private void processTasksQueue(List<GlobusTaskInProgress> tasks) {
         // It is now possible for a user to run several transfer tasks
         // using the same access rule on the corresponding Globus
-        // pseudofolder. That means that need to be careful not to 
+        // pseudofolder. That means that we need to be careful not to 
         // delete any rule, without checking if there are still other 
         // active tasks using it: 
         Map <String, Long> rulesInUse = new HashMap<>(); 
