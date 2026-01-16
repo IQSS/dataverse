@@ -608,8 +608,10 @@ public class IndexServiceBean {
                     logger.fine("Existing file docs: " + String.join(", ", solrIdsOfDocsToDelete));
                     if (!solrIdsOfDocsToDelete.isEmpty()) {
                         if (!latestVersion.isDraft()) {
-                            // For draft datasets after a published version, we're not reindexing the files unless their metadata changes
-                            // Therefore, to make sure their
+                            // After publication, we need to delete old draft perm docs
+                            // For the first draft, a perm doc will exist for each file
+                            // For subsequent drafts, perm docs should only exist for new files/those with changed metadata
+                            // This code adds the ids of draft perm docs for all files - if the docs don't exist, Solr will just ignore them
                             for (String fileDocId : solrIdsOfDocsToDelete) {
                                 if (!fileDocId.endsWith(draftSuffix)) {
                                     solrIdsOfPermissionDocsToDelete.add(fileDocId + draftSuffix + discoverabilityPermissionSuffix);
