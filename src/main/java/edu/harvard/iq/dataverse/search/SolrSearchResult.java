@@ -438,9 +438,9 @@ public class SolrSearchResult {
      *
      * @return
      */
-    public JsonObjectBuilder getJsonForMyData(boolean isValid) {
+    public JsonObjectBuilder getJsonForMyData(boolean isValid, List<String> metadataFields) {
 
-        JsonObjectBuilder myDataJson = json(true, true, true);// boolean showRelevance, boolean showEntityIds, boolean showApiUrls)
+        JsonObjectBuilder myDataJson = json(true, true, true, metadataFields);
 
         myDataJson.add("publication_statuses", this.getPublicationStatusesAsJSON())
                 .add("is_draft_state", this.isDraftState()).add("is_in_review_state", this.isInReviewState())
