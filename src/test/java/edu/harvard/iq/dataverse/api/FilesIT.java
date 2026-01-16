@@ -9,17 +9,22 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.Response.Status;
 import org.assertj.core.util.Lists;
+import org.hamcrest.Matcher;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import io.restassured.path.json.JsonPath;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import static io.restassured.path.json.JsonPath.with;
 import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -45,6 +50,10 @@ import java.time.Year;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -59,15 +68,11 @@ public class FilesIT {
 
         Response removePublicInstall = UtilIT.deleteSetting(SettingsServiceBean.Key.PublicInstall);
         removePublicInstall.then().assertThat().statusCode(200);
-
-        Response removeLimit = UtilIT.deleteSetting(SettingsServiceBean.Key.TabularIngestSizeLimit);
-        removeLimit.then().assertThat().statusCode(OK.getStatusCode());
     }
 
     @AfterAll
     public static void tearDownClass() {
         UtilIT.deleteSetting(SettingsServiceBean.Key.PublicInstall);
-        UtilIT.deleteSetting(SettingsServiceBean.Key.TabularIngestSizeLimit);
     }
 
     /**
@@ -1211,182 +1216,106 @@ public class FilesIT {
         }
 
     }
-
-    @Test
-    public void testIngestSizeLimits() throws InterruptedException, IOException {
-        Response createUser = UtilIT.createRandomUser();
-        createUser.then().assertThat().statusCode(OK.getStatusCode());
-        String username = UtilIT.getUsernameFromResponse(createUser);
-        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
-        makeSuperUser.then().assertThat().statusCode(OK.getStatusCode());
-
-        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
-        createDataverseResponse.prettyPrint();
-        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
-        createDatasetResponse.prettyPrint();
-        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
-
-        String tinyCsvOnly = """
-{
-  "csv": "50"
-}
-""";
-
-        Response setLimit = UtilIT.setSetting(SettingsServiceBean.Key.TabularIngestSizeLimit, tinyCsvOnly);
-        setLimit.then().assertThat().statusCode(OK.getStatusCode());
-
-        Path pathToDataFile = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.csv");
-        String contentOfCsv = ""
-                + "name,pounds,species,treats\n"
-                + "Midnight,15,dog,milkbones\n"
-                + "Tiger,17,cat,cat grass\n"
-                + "Panther,21,cat,cat nip\n";
-        java.nio.file.Files.write(pathToDataFile, contentOfCsv.getBytes());
-
-        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
-        uploadFile.prettyPrint();
-        uploadFile.then().assertThat()
+    
+    @Nested
+    class IngestSizeLimits {
+        
+        static String apiToken;
+        static int datasetId;
+        @TempDir
+        static Path tempDir;
+        static String csvFileName = "data.csv";
+        static Path csvFile;
+        static final String csvData =
+            """
+            name,pounds,species,treats
+            Midnight,15,dog,milkbones
+            Tiger,17,cat,cat grass
+            Panther,21,cat,cat nip
+            """;
+        
+        @BeforeAll
+        static void setup() throws IOException {
+            // Create random user, collection and dataset to work with
+            Response createUser = UtilIT.createRandomUser();
+            createUser.then().assertThat().statusCode(OK.getStatusCode());
+            String username = UtilIT.getUsernameFromResponse(createUser);
+            apiToken = UtilIT.getApiTokenFromResponse(createUser);
+            Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
+            makeSuperUser.then().assertThat().statusCode(OK.getStatusCode());
+            
+            Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+            createDataverseResponse.prettyPrint();
+            String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+            Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+            createDatasetResponse.prettyPrint();
+            datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+            
+            // Create CSV datafile to work with
+            csvFile = tempDir.resolve(csvFileName);
+            java.nio.file.Files.writeString(csvFile, csvData, StandardCharsets.UTF_8);
+        }
+        
+        @AfterAll
+        static void teardown() {
+            // Remove the setting for test isolation purposes
+            Response removeLimit = UtilIT.deleteSetting(Key.TabularIngestSizeLimit);
+            removeLimit.then().assertThat().statusCode(OK.getStatusCode());
+        }
+        
+        static List<Arguments> configurations() {
+            return List.of(
+                // Too small for 134 chars
+                Arguments.of("{\"csv\": 50}", BAD_REQUEST, "message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported"))),
+                Arguments.of("{\"default\": 50.0}", BAD_REQUEST, "message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported"))),
+                
+                // The behavior of `"default": "-2"` is not documented in the guides
+                // but it acts like `"default": "0"` which disables ingest.
+                Arguments.of("{\"default\": -2}", BAD_REQUEST, "message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported"))),
+                
+                // Large enough :-)
+                Arguments.of("-1", OK, "data[0].varQuantity", equalTo(4)),
+                Arguments.of("123456", OK, "data[0].varQuantity", equalTo(4)),
+                Arguments.of("{\"default\": 123456}", OK, "data[0].varQuantity", equalTo(4)),
+                Arguments.of("{\"csv\": 123456}", OK, "data[0].varQuantity", equalTo(4)),
+                Arguments.of("{\"csv\": \"123457\"}", OK, "data[0].varQuantity", equalTo(4)),
+                Arguments.of("{\"csv\": 123458.0}", OK, "data[0].varQuantity", equalTo(4)),
+                // Default is disabled, but exception for CSV
+                Arguments.of("{\"default\": 0,\"csv\": 123456}", OK, "data[0].varQuantity", equalTo(4))
+            );
+        }
+        
+        @ParameterizedTest
+        @MethodSource("configurations")
+        void testIngestSizeLimits(String ingestSizeLimitConfig, Status expectedStatus, String jsonPath, Matcher matcher) {
+            // given
+            Response setLimit = UtilIT.setSetting(Key.TabularIngestSizeLimit, ingestSizeLimitConfig);
+            setLimit.then().assertThat().statusCode(OK.getStatusCode());
+            
+            // when
+            Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), csvFile.toString(), apiToken);
+            //uploadResponse.prettyPrint();
+            uploadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.files[0].label", equalTo("data.csv"));
-
-        String fileId1 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
-
-        Response getTabularFails = UtilIT.getFileDataTables(fileId1, apiToken);
-        getTabularFails.prettyPrint();
-        getTabularFails.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported")));
-
-        String largerCsv = """
-{
-  "csv": "123456"
-}
-""";
-
-        setLimit = UtilIT.setSetting(SettingsServiceBean.Key.TabularIngestSizeLimit, largerCsv);
-        setLimit.then().assertThat().statusCode(OK.getStatusCode());
-
-        uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
-        uploadFile.prettyPrint();
-        uploadFile.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.files[0].label", equalTo("data-1.csv"));
-
-        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToDataFile);
-
-        String fileId2 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
-
-        Response getTabularWorks = UtilIT.getFileDataTables(fileId2, apiToken);
-        getTabularWorks.prettyPrint();
-        getTabularWorks.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data[0].varQuantity", equalTo(4));
-
-        String tinyDefaultSize = """
-{
-  "default": "50"
-}
-""";
-
-        setLimit = UtilIT.setSetting(SettingsServiceBean.Key.TabularIngestSizeLimit, tinyDefaultSize);
-        setLimit.then().assertThat().statusCode(OK.getStatusCode());
-
-        uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
-        uploadFile.prettyPrint();
-        uploadFile.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.files[0].label", equalTo("data-2.csv"));
-
-        String fileId3 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
-
-        getTabularFails = UtilIT.getFileDataTables(fileId3, apiToken);
-        getTabularFails.prettyPrint();
-        getTabularFails.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported")));
-
-        // The behavior of `"default": "-2"` is not documented in the guides
-        // but it acts like `"default": "0"` which disables ingest.
-        String unexpectedNegativeDefault = """
-{
-  "default": "-2"
-}
-""";
-
-        setLimit = UtilIT.setSetting(SettingsServiceBean.Key.TabularIngestSizeLimit, unexpectedNegativeDefault);
-        setLimit.then().assertThat().statusCode(OK.getStatusCode());
-
-        uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
-        uploadFile.prettyPrint();
-        uploadFile.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.files[0].label", equalTo("data-3.csv"));
-
-        String fileId4 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
-
-        getTabularFails = UtilIT.getFileDataTables(fileId4, apiToken);
-        getTabularFails.prettyPrint();
-        getTabularFails.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported")));
-
-        // As the guides say, you MUST provide a string, not a JSON number.
-        // That is, `"123"` in quotes rather than `123` with no quotes.
-        // If you provide a number (no quotes) rather than a string,
-        // all ingest will be disabled and you'll see an error in server.log
-        // about how the system is misconfigured.
-        String invalidNonString = """
-{
-  "default": 987654321
-}
-""";
-
-        setLimit = UtilIT.setSetting(SettingsServiceBean.Key.TabularIngestSizeLimit, invalidNonString);
-        setLimit.then().assertThat().statusCode(OK.getStatusCode());
-
-        uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
-        uploadFile.prettyPrint();
-        uploadFile.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.files[0].label", equalTo("data-4.csv"));
-
-        String fileId5 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
-
-        getTabularFails = UtilIT.getFileDataTables(fileId5, apiToken);
-        getTabularFails.prettyPrint();
-        getTabularFails.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported")));
-
-        String defaultDisabledAndLargeCsvLimit = """
-{
-  "default": "0",
-  "csv": "123456"
-}
-""";
-
-        setLimit = UtilIT.setSetting(SettingsServiceBean.Key.TabularIngestSizeLimit, defaultDisabledAndLargeCsvLimit);
-        setLimit.then().assertThat().statusCode(OK.getStatusCode());
-
-        uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
-        uploadFile.prettyPrint();
-        uploadFile.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.files[0].label", equalTo("data-5.csv"));
-
-        String fileId6 = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
-
-        getTabularWorks = UtilIT.getFileDataTables(fileId2, apiToken);
-        getTabularWorks.prettyPrint();
-        getTabularWorks.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data[0].varQuantity", equalTo(4));
-
-        Response removeLimit = UtilIT.deleteSetting(SettingsServiceBean.Key.TabularIngestSizeLimit);
-        removeLimit.then().assertThat().statusCode(OK.getStatusCode());
+                .body("data.files[0].label", equalTo(csvFileName));
+            String fileId = JsonPath.from(uploadResponse.body().asString()).getString("data.files[0].dataFile.id");
+            
+            // Wait for ingest to complete
+            assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION),
+                "Failed test if Ingest Lock exceeds max duration");
+            
+            // then
+            Response getTabularFails = UtilIT.getFileDataTables(fileId, apiToken);
+            //getTabularFails.prettyPrint();
+            getTabularFails.then().assertThat()
+                .statusCode(expectedStatus.getStatusCode())
+                .body(jsonPath, matcher);
+            
+            // delete the file for the next test
+            UtilIT.deleteFile(Integer.valueOf(fileId), apiToken);
+        }
     }
+
 
     @Test
     public void testUningestFileViaApi() throws InterruptedException {
@@ -3278,7 +3207,7 @@ public class FilesIT {
         assertEquals(BundleUtil.getStringFromBundle("dataverse.storage.quota.notdefined"), JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
         
         // Set quota to 1K:
-        Response setQuotaResponse = UtilIT.setCollectionQuota(dataverseAlias, 1024, apiToken);
+        Response setQuotaResponse = UtilIT.setCollectionQuota(dataverseAlias, Long.valueOf(1024), apiToken);
         setQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
         assertEquals(BundleUtil.getStringFromBundle("dataverse.storage.quota.updated"), JsonPath.from(setQuotaResponse.body().asString()).getString("data.message"));
         
@@ -3348,9 +3277,7 @@ public class FilesIT {
         // ... should work this time around:
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
             
-        // Let's confirm that the total storage use has been properly implemented:
-
-        //try {sleep(1000);}catch(InterruptedException ie){}
+        // Let's confirm that the total storage use has been properly incremented:
         
         checkStorageUseResponse = UtilIT.checkCollectionStorageUse(dataverseAlias, apiToken);
         checkStorageUseResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -3367,6 +3294,125 @@ public class FilesIT {
         UtilIT.deleteSetting(SettingsServiceBean.Key.UseStorageQuotas);
     }
     
+    @Test
+    public void testDatasetStorageQuotas() {
+        // This test largely replicates the collection-level storage quota test
+        // above. Both types of quotas share the same implementation underneath 
+        // (it operates on DvObjectContainers), so the separate tests here 
+        // are for testing the dataverses- and datasets-level APIs that expose
+        // the functionality. 
+        // A minimal storage quota functionality test: 
+        // - We create a dataset and define a storage quota
+        // - We configure the Dataverse instance to enforce it 
+        // - We confirm that we can upload a file with the size under the quota
+        // - We confirm that we cannot upload a file once the quota is reached
+        // - We disable the quota on the dataset and try again
+        
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        
+        System.out.println("dataset-level quota test, dataset id: "+datasetId);
+        
+        Response checkQuotaResponse = UtilIT.checkDatasetQuota(datasetId.toString(), apiToken);
+        checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // This brand new dataset shouldn't have any quota defined yet: 
+        assertEquals(BundleUtil.getStringFromBundle("dataset.storage.quota.notdefined"), JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
+        
+        // Set quota to 1K:
+        Response setQuotaResponse = UtilIT.setDatasetQuota(datasetId.toString(), Long.valueOf(1024), apiToken);
+        setQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        assertEquals(BundleUtil.getStringFromBundle("dataset.storage.quota.updated"), JsonPath.from(setQuotaResponse.body().asString()).getString("data.message"));
+        
+        // Check again:
+        checkQuotaResponse = UtilIT.checkDatasetQuota(datasetId.toString(), apiToken);
+        checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String expectedApiMessage = BundleUtil.getStringFromBundle("dataset.storage.quota.allocation", Arrays.asList("1,024"));
+        assertEquals(expectedApiMessage, JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
+
+        System.out.println(expectedApiMessage);
+        
+        UtilIT.enableSetting(SettingsServiceBean.Key.UseStorageQuotas);
+                
+        String pathToFile306bytes = "src/test/resources/FileRecordJobIT.properties"; 
+        String pathToFile1787bytes = "src/test/resources/datacite.xml";
+
+        // Upload a small file: 
+        
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile306bytes, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        // Check the recorded storage use: 
+        
+        Response checkStorageUseResponse = UtilIT.checkDatasetStorageUse(datasetId.toString(), apiToken);
+        checkStorageUseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataset.storage.use", Arrays.asList("306"));
+        assertEquals(expectedApiMessage, JsonPath.from(checkStorageUseResponse.body().asString()).getString("data.message"));
+
+        System.out.println(expectedApiMessage);
+        
+        // Attempt to upload the second file - this should get us over the quota, 
+        // so it should be rejected:
+        
+        uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile1787bytes, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        // We should get this error message made up from 2 Bundle strings:
+        expectedApiMessage = BundleUtil.getStringFromBundle("file.addreplace.error.ingest_create_file_err");
+        expectedApiMessage = expectedApiMessage + " " + BundleUtil.getStringFromBundle("file.addreplace.error.quota_exceeded", Arrays.asList("1.7 KB", "718 B"));
+        assertEquals(expectedApiMessage, JsonPath.from(uploadResponse.body().asString()).getString("message"));
+        
+        System.out.println(expectedApiMessage);
+        
+        // Check Storage Use again - should be unchanged: 
+        
+        checkStorageUseResponse = UtilIT.checkDatasetStorageUse(datasetId.toString(), apiToken);
+        checkStorageUseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataset.storage.use", Arrays.asList("306"));
+        assertEquals(expectedApiMessage, JsonPath.from(checkStorageUseResponse.body().asString()).getString("data.message"));
+
+        // Disable the quota on the dataset; try again:
+        
+        Response disableQuotaResponse = UtilIT.disableDatasetQuota(datasetId.toString(), apiToken);
+        disableQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataset.storage.quota.deleted");
+        assertEquals(expectedApiMessage, JsonPath.from(disableQuotaResponse.body().asString()).getString("data.message"));
+
+        // Check again: 
+        
+        checkQuotaResponse = UtilIT.checkDatasetQuota(datasetId.toString(), apiToken);
+        checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // ... should say "no quota", again: 
+        assertEquals(BundleUtil.getStringFromBundle("dataset.storage.quota.notdefined"), JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
+        
+        // And try to upload the larger file again:
+        
+        uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile1787bytes, Json.createObjectBuilder().build(), apiToken);
+        // ... should work this time around:
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+            
+        // Let's confirm that the storage use for the dataset has been properly incremented:
+        
+        checkStorageUseResponse = UtilIT.checkDatasetStorageUse(datasetId.toString(), apiToken);
+        checkStorageUseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataset.storage.use", Arrays.asList("2,093"));
+        assertEquals(expectedApiMessage, JsonPath.from(checkStorageUseResponse.body().asString()).getString("data.message"));
+
+        System.out.println(expectedApiMessage);
+        
+        UtilIT.deleteSetting(SettingsServiceBean.Key.UseStorageQuotas);
+    }
+
     @Test
     public void testIngestWithAndWithoutVariableHeader() throws NoSuchAlgorithmException {
         msgt("testIngestWithAndWithoutVariableHeader");
