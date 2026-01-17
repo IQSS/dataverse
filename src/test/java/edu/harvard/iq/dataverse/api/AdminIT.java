@@ -114,7 +114,7 @@ public class AdminIT {
                 .assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo("OK"))
-                .body("message.message", containsString("successfully updated"));
+                .body("message", containsString("successfully updated"));
             
             // Step 5: Verify the harmless setting is gone (restored to original state)
             Response verifyRestoredResponse = UtilIT.getSetting(harmlessSetting);
