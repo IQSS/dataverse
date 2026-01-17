@@ -10,7 +10,7 @@ This API changelog is experimental and we would love feedback on its usefulness.
 v6.10
 -----
 
-- Several API endpoints that return both a ``message`` and ``data`` field were incorrectly returning the message as a nested object (``{"message":{"message":"..."}}``). This has been fixed so that the message is now a plain string (``{"message":"..."}``). Affected endpoints: ``POST /api/datasets/{id}/add`` (duplicate file warning), ``PUT /api/admin/settings``, ``PUT /api/dataverses/{id}``, ``PUT /api/dataverses/{id}/inputLevels``, ``POST /api/admin/savedsearches``, ``PUT /api/harvest/clients/{nickName}``, ``PUT /api/harvest/server/oaisets/{specname}``. See :ref:`12096`.
+- Several API endpoints that return both a ``message`` and ``data`` field were incorrectly returning the message as a nested object (``{"message":{"message":"..."}}``). This has been fixed so that the message is now a plain string (``{"message":"..."}``). Affected endpoints: ``POST /api/datasets/{id}/add`` (duplicate file warning), ``PUT /api/admin/settings``, ``PUT /api/dataverses/{id}``, ``PUT /api/dataverses/{id}/inputLevels``, ``POST /api/admin/savedsearches``, ``PUT /api/harvest/clients/{nickName}``, ``PUT /api/harvest/server/oaisets/{specname}``. See `#12096 <https://github.com/IQSS/dataverse/issues/12096>`_.
 
 v6.9
 ----
