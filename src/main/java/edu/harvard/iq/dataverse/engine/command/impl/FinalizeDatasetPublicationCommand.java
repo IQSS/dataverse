@@ -28,6 +28,7 @@ import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 
 import java.awt.datatransfer.StringSelection;
@@ -248,6 +249,14 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         //Should this be in onSuccess()?
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
+                // Create the workflow lock BEFORE starting the workflow
+                DatasetLock workflowLock = new DatasetLock(DatasetLock.Reason.Workflow, (AuthenticatedUser) getRequest().getUser());
+                workflowLock.setDataset(ds);
+                ctxt.datasets().addDatasetLock(ds, workflowLock);
+                
+                // Build context with the lock attached
+                WorkflowContext context = buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased);
+                context.setLockId(ds.getLockFor(DatasetLock.Reason.Workflow).getId());
                 ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased), false);
             } catch (CommandException ex) {
                 ctxt.datasets().removeDatasetLocks(ds, DatasetLock.Reason.Workflow);
