@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 
 import jakarta.persistence.OptimisticLockException;
@@ -111,10 +112,15 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         if ( prePubWf.isPresent() ) {
             // We start a workflow
             try {
-                theDataset = ctxt.em().merge(theDataset);
-                ctxt.em().flush();
-                ctxt.workflows().start(prePubWf.get(),
-                        buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased), true);
+             // Create the workflow lock BEFORE starting the workflow
+             DatasetLock workflowLock = new DatasetLock(DatasetLock.Reason.Workflow, (AuthenticatedUser) getRequest().getUser());
+             workflowLock.setDataset(theDataset);
+             ctxt.datasets().addDatasetLock(theDataset, workflowLock);
+             theDataset = ctxt.em().merge(theDataset);
+             ctxt.em().flush();
+             WorkflowContext context = buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased);
+             context.setLockId(theDataset.getLockFor(DatasetLock.Reason.Workflow).getId());
+             ctxt.workflows().start(prePubWf.get(), context, true);
                 return new PublishDatasetResult(theDataset, Status.Workflow);
             } catch (OptimisticLockException e) {
                 throw new CommandException(e.getMessage(), e, this);

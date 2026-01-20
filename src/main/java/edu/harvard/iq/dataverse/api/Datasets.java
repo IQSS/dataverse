@@ -1388,17 +1388,25 @@ public class Datasets extends AbstractApiBean {
              */
             String errorMsg = null;
             Optional<Workflow> prePubWf = wfService.getDefaultWorkflow(TriggerType.PrePublishDataset);
-
+            DataverseRequest dataverseRequest = createDataverseRequest(user);
             try {
                 // ToDo - should this be in onSuccess()? May relate to todo above
                 if (prePubWf.isPresent()) {
+                    // Create the workflow lock BEFORE starting the workflow
+                    DatasetLock workflowLock = new DatasetLock(DatasetLock.Reason.Workflow, user);
+                    workflowLock.setDataset(ds);
+                    datasetSvc.addDatasetLock(ds, workflowLock);
+                    
+                    // Build context with the lock attached
+                    WorkflowContext context = new WorkflowContext(dataverseRequest, ds, TriggerType.PrePublishDataset, !contactPIDProvider);
+                    context.setLockId(ds.getLockFor(DatasetLock.Reason.Workflow).getId());
                     // Start the workflow, the workflow will call FinalizeDatasetPublication later
                     wfService.start(prePubWf.get(),
-                            new WorkflowContext(createDataverseRequest(user), ds, TriggerType.PrePublishDataset, !contactPIDProvider),
+                            new WorkflowContext(dataverseRequest, ds, TriggerType.PrePublishDataset, !contactPIDProvider),
                             false);
                 } else {
                     FinalizeDatasetPublicationCommand cmd = new FinalizeDatasetPublicationCommand(ds,
-                            createDataverseRequest(user), !contactPIDProvider);
+                            dataverseRequest, !contactPIDProvider);
                     ds = commandEngine.submit(cmd);
                 }
             } catch (CommandException ex) {
