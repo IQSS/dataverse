@@ -72,6 +72,7 @@ public class OIDCAuthenticationProviderFactory implements AuthenticationProvider
         oidc.setTitle(JvmSettings.OIDC_TITLE.lookupOptional().orElse("OpenID Connect"));
         oidc.setSubTitle(JvmSettings.OIDC_SUBTITLE.lookupOptional().orElse("OpenID Connect"));
         oidc.setEnabled(JvmSettings.OIDC_ENABLED.lookupOptional(Boolean.class).orElse(true));
+        oidc.setHidden(JvmSettings.OIDC_HIDDEN_JSF.lookupOptional(Boolean.class).orElse(false));
         
         return oidc;
     }

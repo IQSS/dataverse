@@ -94,6 +94,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     protected String baseUserEndpoint;
     protected String redirectUrl;
     protected boolean enabled = true;
+    protected boolean hidden = false; // Special flag to hide this provider in JSF UI
     
     /**
      * List of scopes to be requested for authorization at identity provider.
@@ -279,6 +280,13 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
 
     public boolean isEnabled() {
         return enabled;
+    }
+
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
+    }
+    public boolean isHidden() {
+        return hidden;
     }
 
     @Override

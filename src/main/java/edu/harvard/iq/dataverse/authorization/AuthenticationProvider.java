@@ -36,7 +36,10 @@ public interface AuthenticationProvider {
     default boolean isEnabled() {
         return true;
     };
-    
+    default boolean isHidden() {
+        return false;
+    };
+
     /**
      * Some providers (e.g organizational ones) provide verified email addresses.
      * @return {@code true} if we can treat email addresses coming from this provider as verified, {@code false} otherwise.
