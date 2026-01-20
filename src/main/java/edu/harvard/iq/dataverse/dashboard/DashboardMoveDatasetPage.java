@@ -153,8 +153,7 @@ public class DashboardMoveDatasetPage implements java.io.Serializable {
             HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
             DataverseRequest dataverseRequest = new DataverseRequest(authUser, httpServletRequest);
             commandEngine.submit(new MoveDatasetCommand(
-                    dataverseRequest, ds, target, false
-            ));
+                    dataverseRequest, ds, target, false, true));
             
             logger.info("Moved " + dsPersistentId + " from " + srcAlias + " to " + dstAlias);
             

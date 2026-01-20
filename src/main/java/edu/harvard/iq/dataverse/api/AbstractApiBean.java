@@ -370,6 +370,25 @@ public abstract class AbstractApiBean {
         }
         return dv;
     }
+
+    protected Template findTemplateOrDie(Long templateId, Dataverse dataverse) throws WrappedResponse {
+        
+        List<Template> templates = new ArrayList<>();
+        
+        templates.addAll(dataverse.getTemplates());
+        templates.addAll(dataverse.getParentTemplates());
+        
+        Template template = templates.stream()
+                .filter(t -> Objects.equals(t.getId(), templateId))
+                .findFirst()
+                .orElse(null);
+
+        if (template == null) {
+            throw new WrappedResponse(
+                    error(Response.Status.NOT_FOUND, "Can't find template with identifier='" + templateId + "'"));
+        }
+        return template;
+    }
     
     protected DataverseLinkingDataverse findDataverseLinkingDataverseOrDie(String dataverseId, String linkedDataverseId) throws WrappedResponse {
         DataverseLinkingDataverse dvld;

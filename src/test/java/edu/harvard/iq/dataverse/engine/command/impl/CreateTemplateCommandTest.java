@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import jakarta.persistence.EntityManager;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
@@ -32,6 +33,9 @@ import static org.mockito.Mockito.*;
 public class CreateTemplateCommandTest {
 
     private DataverseRequest dataverseRequestStub;
+    
+    @Mock
+    private EntityManager em;
 
     @Mock
     private CommandContext contextMock;
@@ -43,8 +47,6 @@ public class CreateTemplateCommandTest {
     private LicenseServiceBean licenseServiceBeanMock;
     @Mock
     private DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevelServiceBeanMock;
-    @Mock
-    private EntityManager em;
 
     @Spy
     private Template templateSpy;
@@ -62,9 +64,11 @@ public class CreateTemplateCommandTest {
     @Test
     public void execute_shouldSaveTemplate_noInitialization() throws CommandException {
         // Create the command with initialization set to false
+        
+        Template savedTemplate = mock(Template.class);
+        when(templateServiceBeanStub.save(templateSpy)).thenReturn(savedTemplate);
 
         CreateTemplateCommand sut = new CreateTemplateCommand(templateSpy, dataverseRequestStub, dataverseMock, false);
-        Template savedTemplate = mock(Template.class);
         when(templateServiceBeanStub.save(templateSpy)).thenReturn(savedTemplate);
         // Act
         
@@ -86,11 +90,12 @@ public class CreateTemplateCommandTest {
         when(contextMock.metadataBlocks()).thenReturn(metadataBlockServiceBeanMock);
         when(contextMock.licenses()).thenReturn(licenseServiceBeanMock);
         when(contextMock.fieldTypeInputLevels()).thenReturn(fieldTypeInputLevelServiceBeanMock);
+        Template savedTemplate = mock(Template.class);
 
+        when(templateServiceBeanStub.save(templateSpy)).thenReturn(savedTemplate);
         when(dataverseMock.getId()).thenReturn(42L);
         when(dataverseMock.isMetadataBlockRoot()).thenReturn(true);
                 
-        Template savedTemplate = mock(Template.class);
         when(templateServiceBeanStub.save(templateSpy)).thenReturn(savedTemplate);
 
         // Mock system metadata blocks

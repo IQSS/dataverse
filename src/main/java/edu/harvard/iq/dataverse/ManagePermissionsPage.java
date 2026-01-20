@@ -202,7 +202,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             commandEngine.submit(new RevokeRoleCommand(ra, dvRequestService.getDataverseRequest()));
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("permission.roleWasRemoved", Arrays.asList(ra.getRole().getName(), roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle())));
             RoleAssignee assignee = roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier());
-            notifyRoleChange(assignee, UserNotification.Type.REVOKEROLE);
+            notifyRoleChange(assignee, UserNotification.Type.REVOKEROLE, ra.getRole());
         } catch (PermissionException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"), BundleUtil.getStringFromBundle("permission.permissionsMissing", Arrays.asList(ex.getRequiredPermissions().toString())));
         } catch (CommandException ex) {
@@ -525,17 +525,21 @@ public class ManagePermissionsPage implements java.io.Serializable {
      * Will notify all members of a group.
      * @param ra The {@code RoleAssignee} to be notified.
      * @param type The type of notification.
+     * @param r The {@code DataverseRole} associated with the change
      */
-    private void notifyRoleChange(RoleAssignee ra, UserNotification.Type type) {
+    private void notifyRoleChange(RoleAssignee ra, UserNotification.Type type, DataverseRole r) {
+        String additionalInfo = r != null ? String.format("{ roleId: %d, roleName: %s }", r.getId(), r.getName()) : null;
         if (ra instanceof AuthenticatedUser) {
-            userNotificationService.sendNotification((AuthenticatedUser) ra, new Timestamp(new Date().getTime()), type, dvObject.getId());
+            userNotificationService.sendNotification((AuthenticatedUser) ra, new Timestamp(new Date().getTime()), type,
+                    dvObject.getId(), null, null, false, additionalInfo);
         } else if (ra instanceof ExplicitGroup) {
             ExplicitGroup eg = (ExplicitGroup) ra;
             Set<String> explicitGroupMembers = eg.getContainedRoleAssgineeIdentifiers();
             for (String id : explicitGroupMembers) {
                 RoleAssignee explicitGroupMember = roleAssigneeService.getRoleAssignee(id);
                 if (explicitGroupMember instanceof AuthenticatedUser) {
-                    userNotificationService.sendNotification((AuthenticatedUser) explicitGroupMember, new Timestamp(new Date().getTime()), type, dvObject.getId());
+                    userNotificationService.sendNotification((AuthenticatedUser) explicitGroupMember, new Timestamp(new Date().getTime()), type,
+                            dvObject.getId(), null, null, false, additionalInfo);
                 }
             }
         }
@@ -553,7 +557,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("permission.roleAssignedToFor", args));
             // don't notify if role = file downloader and object is not released
             if (!(r.getAlias().equals(DataverseRole.FILE_DOWNLOADER) && !dvObject.isReleased()) ){
-                notifyRoleChange(ra, UserNotification.Type.ASSIGNROLE);
+                notifyRoleChange(ra, UserNotification.Type.ASSIGNROLE, r);
             }
 
         } catch (PermissionException ex) {
