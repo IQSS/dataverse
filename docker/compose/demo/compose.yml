@@ -141,6 +141,8 @@ services:
     restart: on-failure
     ports:
       - "8983:8983"
+    environment:
+      - SOLR_OPTS=-Dsolr.jetty.request.header.size=102400
     networks:
       - dataverse
     command:
