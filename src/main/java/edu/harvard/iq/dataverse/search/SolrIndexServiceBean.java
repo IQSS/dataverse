@@ -381,7 +381,7 @@ public class SolrIndexServiceBean {
             List<DatasetVersion> versionsToIndex = new ArrayList<>();
             for (DatasetVersion version : datasetVersionsToBuildCardsFor(dataset)) {
                 int fileCount = dataFileService.findCountByDatasetVersionId(version.getId()).intValue();
-                if (fileCount >= fileQueryMin) {
+                    if (fileCount <= fileQueryMin) {
                     // IMPORTANT: This triggers the loading of fileMetadatas within the current transaction
                     version.getFileMetadatas().size();
                 }
