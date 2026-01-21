@@ -191,7 +191,6 @@ public class AuthenticationProvidersRegistrationServiceBean {
         // Add providers registered via MPCONFIG
         if (JvmSettings.OIDC_ENABLED.lookupOptional(Boolean.class).orElse(false)) {
             try {
-                logger.severe(">>>> registerProvider(OIDCAuthenticationProviderFactory.buildFromSettings()) JvmSettings.OIDC_HIDDEN_JSF " + JvmSettings.OIDC_HIDDEN_JSF.lookupOptional(Boolean.class).orElse(false));
                 registerProvider(OIDCAuthenticationProviderFactory.buildFromSettings());
             } catch (AuthorizationSetupException e) {
                 logger.log(Level.SEVERE, "Exception setting up an OIDC auth provider via MicroProfile Config", e);
