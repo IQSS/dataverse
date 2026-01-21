@@ -257,7 +257,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 // Build context with the lock attached
                 WorkflowContext context = buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased);
                 context.setLockId(ds.getLockFor(DatasetLock.Reason.Workflow).getId());
-                ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased), false);
+                ctxt.workflows().start(wf, context, false);
             } catch (CommandException ex) {
                 ctxt.datasets().removeDatasetLocks(ds, DatasetLock.Reason.Workflow);
                 logger.log(Level.SEVERE, "Error invoking post-publish workflow: " + ex.getMessage(), ex);
