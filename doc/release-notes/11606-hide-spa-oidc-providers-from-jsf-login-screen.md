@@ -3,3 +3,5 @@ This release fixes a bug where the value of the dataverse.auth.oidc.enabled sett
 A new JVM setting ('dataverse.auth.oidc.hidden-jsf') was added to hide an enabled OIDC Provider from the JSF UI. 
 
 For Dataverse instances deploying both the current JSF UI and the new SPA UI, this fix allows the OIDC Keycloak provider configured for the SPA to be hidden in the JSF UI (useful in cases where it would duplicate other configured providers).
+
+Note: The API to create a new Auth Provider can only be used to create a provider for both JSF and SPA. Use JVM / MicroProfile config setting to create SPA only providers.
