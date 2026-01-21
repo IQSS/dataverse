@@ -6147,22 +6147,27 @@ public class DatasetPage implements java.io.Serializable {
         return archivable;
     }
 
+    /** Method to decide if a 'Submit' button should be enabled for archiving a dataset version. */
     public boolean isVersionArchivable(Long id) {
         Boolean thisVersionArchivable = versionArchivable.get(id);
         if (thisVersionArchivable == null) {
             // If this dataset isn't in an archivable collection return false
             thisVersionArchivable = false;
             if (isArchivable()) {
-                boolean checkForArchivalCopy = false;
+                
                 // Otherwise, we need to know if the archiver is single-version-only
                 // If it is, we have to check for an existing archived version to answer the
                 // question
                 String className = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ArchiverClassName, null);
                 if (className != null) {
                     try {
+                        boolean checkForArchivalCopy = false;
                         Class<?> clazz = Class.forName(className);
                         Method m = clazz.getMethod("isSingleVersion", SettingsWrapper.class);
+                        Method m2 = clazz.getMethod("supportsDelete");
+
                         Object[] params = { settingsWrapper };
+                        boolean supportsDelete = (Boolean) m2.invoke(null);
                         checkForArchivalCopy = (Boolean) m.invoke(null, params);
 
                         if (checkForArchivalCopy) {
