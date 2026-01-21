@@ -246,7 +246,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         //Remove any pre-pub workflow lock (not needed as WorkflowServiceBean.workflowComplete() should already have removed it after setting the finalizePublication lock?)
         ctxt.datasets().removeDatasetLocks(ds, DatasetLock.Reason.Workflow);
         
-        //Should this be in onSuccess()?
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             // Create the workflow lock BEFORE starting the workflow
             DatasetLock workflowLock = new DatasetLock(DatasetLock.Reason.Workflow, (AuthenticatedUser) getRequest().getUser());
