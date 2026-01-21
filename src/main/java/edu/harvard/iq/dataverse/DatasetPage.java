@@ -3022,10 +3022,8 @@ public class DatasetPage implements java.io.Serializable {
                         }
                     } else if(status.equals(DatasetVersion.ARCHIVAL_STATUS_SUCCESS)) {
                         //Not automatically replacing the old archival copy as creating it is expensive
-                        JsonObject archivalLocation = JsonUtil.getJsonObject(updateVersion.getArchivalCopyLocation());
-                        JsonObjectBuilder job = Json.createObjectBuilder(archivalLocation);
-                        job.add(DatasetVersion.ARCHIVAL_STATUS,DatasetVersion.ARCHIVAL_STATUS_OBSOLETE);
-                        datasetVersionService.setArchivalCopyLocation(updateVersion, JsonUtil.prettyPrint(job.build()));
+                        updateVersion.setArchivalStatus(DatasetVersion.ARCHIVAL_STATUS_OBSOLETE);
+                        datasetVersionService.persistArchivalCopyLocation(updateVersion);
                         datasetVersionService.merge(updateVersion);
                     }
                 }
@@ -6113,18 +6111,18 @@ public class DatasetPage implements java.io.Serializable {
             if (cmd != null) {
                 try {
                     String status = dv.getArchivalCopyLocationStatus();
-                    if(status == null || (force && cmd.canDelete())){
-                        
-                    // Set initial pending status
-                    datasetVersionService.setArchivalCopyLocation(dv, DatasetVersion.ARCHIVAL_STATUS_PENDING);
-                    
-                    commandEngine.submitAsync(cmd);
+                    if (status == null || (force && cmd.canDelete())) {
 
-                    logger.info(
-                            "DatasetVersion id=" + dv.getId() + " submitted to Archive, status: " + dv.getArchivalCopyLocationStatus());
-                    setVersionTabList(resetVersionTabList());
-                    this.setVersionTabListForPostLoad(getVersionTabList());
-                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetversion.archive.inprogress"));
+                        // Set initial pending status
+                        dv.setArchivalCopyLocation(DatasetVersion.ARCHIVAL_STATUS_PENDING);
+                        datasetVersionService.persistArchivalCopyLocation(dv);
+                        commandEngine.submitAsync(cmd);
+
+                        logger.info(
+                                "DatasetVersion id=" + dv.getId() + " submitted to Archive, status: " + dv.getArchivalCopyLocationStatus());
+                        setVersionTabList(resetVersionTabList());
+                        this.setVersionTabListForPostLoad(getVersionTabList());
+                        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetversion.archive.inprogress"));
                     }
                 } catch (CommandException ex) {
                     logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
