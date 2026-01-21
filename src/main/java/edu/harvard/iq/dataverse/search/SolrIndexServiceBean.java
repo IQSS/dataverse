@@ -382,7 +382,7 @@ public class SolrIndexServiceBean {
             for (DatasetVersion version : versionsToReIndexPermissionsFor(dataset)) {
                 if (desiredCards.get(version.getVersionState())) {
                     int fileCount = dataFileService.findCountByDatasetVersionId(version.getId()).intValue();
-                    if (fileCount >= fileQueryMin) {
+                    if (fileCount <= fileQueryMin) {
                         // IMPORTANT: This triggers the loading of fileMetadatas within the current transaction
                         version.getFileMetadatas().size();
                     }
