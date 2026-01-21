@@ -392,7 +392,7 @@ public class DatasetVersion implements Serializable {
     }
     public String getArchivalCopyLocationMessage() {
         populateArchivalStatus(false);
-        if(archivalCopyLocationJson!=null) {
+        if(archivalCopyLocationJson!=null && archivalCopyLocationJson.containsKey(ARCHIVAL_STATUS_MESSAGE)) {
             return archivalCopyLocationJson.getString(ARCHIVAL_STATUS_MESSAGE);
         } 
         return null;
