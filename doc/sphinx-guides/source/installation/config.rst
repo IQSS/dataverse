@@ -2263,6 +2263,9 @@ At present, archiving classes include the DuraCloudSubmitToArchiveCommand, Local
 
 All current options support the :ref:`Archival Status API` calls and the same status is available in the dataset page version table (for contributors/those who could view the unpublished dataset, with more detail available to superusers).
 
+Archival Bags are created per dataset version. By default, if a version is republished (via the superuser-only 'Update Current Version' publication option in the UI/API), a new archival bag is not created for the version.
+If the archiver used is capable of deleting existing bags (Google, S3, and File Archivers) superusers can trigger a manual update of the archival bag, and, if the :ref:`:feature.archive-on-version-update` flag is set to true, this will be done automatically when 'Update Current Version' is used.
+
 .. _Duracloud Configuration:
 
 Duracloud Configuration
@@ -4031,6 +4034,13 @@ dataverse.feature.only-update-datacite-when-needed
 
 Only contact DataCite to update a DOI after checking to see if DataCite has outdated information (for efficiency, lighter load on DataCite, especially when using file DOIs).
 
+.. _dataverse.feature.archive-on-version-update:
+
+dataverse.feature.archive-on-version-update
++++++++++++++++++++++++++++++++++++++++++++
+
+Indicates whether archival bag creation should be triggered (if configured) when a version is updated and was already successfully archived,
+i.e via the Update-Current-Version publication option. Setting the flag true only works if the archiver being used supports deleting existing archival bags.
 
 
 
