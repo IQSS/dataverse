@@ -1,56 +1,53 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.*;
-import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.path.json.JsonPath;
-import io.restassured.response.Response;
-
-import java.io.*;
-import java.util.*;
-import java.util.logging.Logger;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
-
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import static jakarta.ws.rs.core.Response.Status.CREATED;
-
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.util.logging.Level;
-import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
-import io.restassured.path.xml.XmlPath;
-import edu.harvard.iq.dataverse.mydata.MyDataFilterParams;
-import jakarta.ws.rs.core.HttpHeaders;
-import org.apache.commons.lang3.StringUtils;
-import org.assertj.core.util.Lists;
-import org.junit.jupiter.api.Test;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import io.restassured.specification.RequestSpecification;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
+import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
+import edu.harvard.iq.dataverse.mydata.MyDataFilterParams;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
+import io.restassured.path.xml.XmlPath;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+import jakarta.json.*;
+import jakarta.ws.rs.core.HttpHeaders;
 import org.apache.commons.io.IOUtils;
-import java.nio.file.Path;
-
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.assertj.core.util.Lists;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.junit.jupiter.api.Test;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
-import static io.restassured.path.xml.XmlPath.from;
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static io.restassured.RestAssured.given;
-
-import edu.harvard.iq.dataverse.settings.FeatureFlags;
-import edu.harvard.iq.dataverse.util.StringUtil;
-
+import static io.restassured.path.xml.XmlPath.from;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UtilIT {
@@ -595,6 +592,30 @@ public class UtilIT {
         return requestSpec.get("/api/dataverses/" + dataverseAlias + "/guestbookResponses/");
     }
 
+    public static Response createGuestbook(String dataverseAlias, String guestbookAsJson, String apiToken) {
+        Response createGuestbookResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(guestbookAsJson)
+                .contentType("application/json")
+                .post("/api/guestbooks/" + dataverseAlias);
+        return createGuestbookResponse;
+    }
+
+    static Response getGuestbook(Long guestbookId, String apiToken) {
+        RequestSpecification requestSpec = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+        return requestSpec.get("/api/guestbooks/" + guestbookId );
+    }
+
+    static Response enableGuestbook(String dataverseAlias, Long guestbookId, String apiToken, String enable) {
+        Response createGuestbookResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(enable)
+                .contentType("application/json")
+                .put("/api/guestbooks/" + dataverseAlias + "/" + guestbookId + "/enabled");
+        return createGuestbookResponse;
+    }
+
     static Response getCollectionSchema(String dataverseAlias, String apiToken) {
         Response getCollectionSchemaResponse = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -806,6 +827,21 @@ public class UtilIT {
     static Response updateFieldLevelDatasetMetadataViaNative(String persistentId, String pathToJsonFile, String apiToken) {
         String jsonIn = getDatasetJson(pathToJsonFile);
         return editVersionMetadataFromJsonStr(persistentId, jsonIn, apiToken, null);
+    }
+
+    static Response updateDatasetGuestbook(String persistentId, Long guestbookId, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json");
+        String path = "/api/datasets/:persistentId/guestbook/?persistentId=" + persistentId;
+        if (guestbookId != null) {
+            return requestSpecification
+                    .body(guestbookId)
+                    .put(path);
+        } else {
+            return requestSpecification
+                    .delete(path);
+        }
     }
 
     static Response editVersionMetadataFromJsonStr(String persistentId, String jsonString, String apiToken) {

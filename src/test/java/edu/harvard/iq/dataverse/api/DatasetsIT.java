@@ -12,7 +12,10 @@ import edu.harvard.iq.dataverse.datavariable.VariableMetadataDDIParser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.*;
+import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlUtil;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -20,12 +23,7 @@ import io.restassured.parsing.Parser;
 import io.restassured.path.json.JsonPath;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.Response;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonValue;
-import jakarta.json.JsonArrayBuilder;
+import jakarta.json.*;
 import jakarta.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -45,6 +43,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Logger;
@@ -57,7 +56,6 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.path.json.JsonPath.with;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
-import java.time.Year;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.*;
@@ -7411,6 +7409,108 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         json = response.prettyPrint();
         assertTrue(json.contains("datasetContactName"));
         assertTrue(!json.contains("datasetContactEmail"));
+    }
+
+    @Test
+    public void testGetDatasetWithGuestbook() throws IOException {
+        File guestbookJson = new File("scripts/api/data/guestbook-test.json");
+        String guestbookAsJson = new String(Files.readAllBytes(Paths.get(guestbookJson.getAbsolutePath())));
+        String apiToken = getSuperuserToken();
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String ownerAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createGuestbookResponse = UtilIT.createGuestbook(ownerAlias, guestbookAsJson, apiToken);
+        createGuestbookResponse.prettyPrint();
+        JsonPath createdGuestbook = JsonPath.from(createGuestbookResponse.body().asString());
+        Long guestbookId = Long.parseLong(createdGuestbook.getString("data.message").split(" ")[1]);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(ownerAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        String persistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        // Enable the Guestbook
+        Response guestbookEnableResponse = UtilIT.enableGuestbook(ownerAlias, guestbookId, apiToken, "x");
+        guestbookEnableResponse.prettyPrint();
+        guestbookEnableResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", startsWith("Illegal value"));
+        guestbookEnableResponse = UtilIT.enableGuestbook(ownerAlias, guestbookId, apiToken, Boolean.TRUE.toString());
+        guestbookEnableResponse.prettyPrint();
+        guestbookEnableResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", startsWith("Guestbook"));
+
+        // Add the Guestbook to the Dataset
+        Response setGuestbook = UtilIT.updateDatasetGuestbook(persistentId, guestbookId, apiToken);
+        setGuestbook.prettyPrint();
+
+        Response getDataset = UtilIT.getDatasetVersions(persistentId, apiToken);
+        getDataset.prettyPrint();
+        getDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].guestbookId", equalTo(guestbookId.intValue()));
+
+        getDataset = UtilIT.nativeGet(datasetId, apiToken);
+        getDataset.prettyPrint();
+        getDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.guestbookId", equalTo(guestbookId.intValue()));
+
+        Response getGuestbook = UtilIT.getGuestbook(Long.valueOf(guestbookId), apiToken);
+        getGuestbook.prettyPrint();
+        getGuestbook.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.id", equalTo(guestbookId.intValue()));
+
+        getGuestbook = UtilIT.getGuestbook(-1L, apiToken);
+        getGuestbook.prettyPrint();
+        getGuestbook.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // remove the guestbook from the dataset
+        Response removeGuestbook = UtilIT.updateDatasetGuestbook(persistentId, null, apiToken);
+        removeGuestbook.prettyPrint();
+        removeGuestbook.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", startsWith("Guestbook removed"));
+        // remove the already removed guestbook from the dataset
+        removeGuestbook = UtilIT.updateDatasetGuestbook(persistentId, null, apiToken);
+        removeGuestbook.prettyPrint();
+        removeGuestbook.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", startsWith("No Guestbook to remove"));
+
+        // Get the dataset to show that the guestbook was removed
+        getDataset = UtilIT.nativeGet(datasetId, apiToken);
+        getDataset.prettyPrint();
+        getDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.guestbookId", equalTo(null));
+
+        // Disable the Guestbook
+        guestbookEnableResponse = UtilIT.enableGuestbook(ownerAlias, guestbookId, apiToken, Boolean.FALSE.toString());
+        guestbookEnableResponse.prettyPrint();
+        guestbookEnableResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", startsWith("Guestbook"));
+
+        // Fail to add a disabled Guestbook to the Dataset
+        setGuestbook = UtilIT.updateDatasetGuestbook(persistentId, guestbookId, apiToken);
+        setGuestbook.prettyPrint();
+        setGuestbook.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", startsWith("Could not find an available guestbook"));
+
+        // Enable the Guestbook. Add it to the Dataset. Then disable it.
+        // Show that the guestbook is still returned in the dataset Json even if it's disabled
+        UtilIT.enableGuestbook(ownerAlias, guestbookId, apiToken, Boolean.TRUE.toString()).prettyPrint();
+        UtilIT.updateDatasetGuestbook(persistentId, guestbookId, apiToken).prettyPrint();
+        UtilIT.enableGuestbook(ownerAlias, guestbookId, apiToken, Boolean.FALSE.toString()).prettyPrint();
+        getDataset = UtilIT.nativeGet(datasetId, apiToken);
+        getDataset.prettyPrint();
+        getDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.guestbookId", equalTo(guestbookId.intValue()));
     }
 
     private String getSuperuserToken() {
