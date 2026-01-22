@@ -2028,6 +2028,14 @@ public class UtilIT {
                 .get("/api/admin/authenticationProviders");
         return response;
     }
+    static Response addAuthProviders(String apiToken, JsonObject jsonObject) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonObject.toString())
+                .contentType("application/json")
+                .post("/api/admin/authenticationProviders");
+        return response;
+    }
 
     static Response migrateShibToBuiltin(Long userIdToConvert, String newEmailAddress, String apiToken) {
         Response response = given()
