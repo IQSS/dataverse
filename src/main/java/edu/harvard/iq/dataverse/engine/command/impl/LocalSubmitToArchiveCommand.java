@@ -34,6 +34,14 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
     public LocalSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         super(aRequest, version);
     }
+    
+    public static boolean supportsDelete() {
+        return true;
+    }
+    @Override
+    public boolean canDelete() {
+        return supportsDelete();
+    }
 
     @Override
     public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token,
@@ -57,15 +65,52 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
                 String spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
                         .replace('.', '-').toLowerCase();
 
+                // Define file paths
+                String dataciteFileName = localPath + "/" + spaceName + "-datacite.v" + dv.getFriendlyVersionNumber() + ".xml";
+                zipName = localPath + "/" + spaceName + "v" + dv.getFriendlyVersionNumber() + ".zip";
+
+                // Check for and delete existing files for this version
+                logger.fine("Checking for existing files in archive...");
+
+                File existingDatacite = new File(dataciteFileName);
+                if (existingDatacite.exists()) {
+                    logger.fine("Found existing datacite.xml, deleting: " + dataciteFileName);
+                    if (existingDatacite.delete()) {
+                        logger.fine("Deleted existing datacite.xml");
+                    } else {
+                        logger.warning("Failed to delete existing datacite.xml: " + dataciteFileName);
+                    }
+                }
+
+                File existingBag = new File(zipName);
+                if (existingBag.exists()) {
+                    logger.fine("Found existing bag file, deleting: " + zipName);
+                    if (existingBag.delete()) {
+                        logger.fine("Deleted existing bag file");
+                    } else {
+                        logger.warning("Failed to delete existing bag file: " + zipName);
+                    }
+                }
+
+                // Also check for and delete the .partial file if it exists
+                File existingPartial = new File(zipName + ".partial");
+                if (existingPartial.exists()) {
+                    logger.fine("Found existing partial bag file, deleting: " + zipName + ".partial");
+                    if (existingPartial.delete()) {
+                        logger.fine("Deleted existing partial bag file");
+                    } else {
+                        logger.warning("Failed to delete existing partial bag file: " + zipName + ".partial");
+                    }
+                }
+
                 String dataciteXml = getDataCiteXml(dv);
                 
                 FileUtils.writeStringToFile(
-                        new File(localPath + "/" + spaceName + "-datacite.v" + dv.getFriendlyVersionNumber() + ".xml"),
+                        new File(dataciteFileName),
                         dataciteXml, StandardCharsets.UTF_8);
                 BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
                 bagger.setNumConnections(getNumberOfBagGeneratorThreads());
                 bagger.setAuthenticationKey(token.getTokenString());
-                zipName = localPath + "/" + spaceName + "v" + dv.getFriendlyVersionNumber() + ".zip";
                 //ToDo: generateBag(File f, true) seems to do the same thing (with a .tmp extension) - since we don't have to use a stream here, could probably just reuse the existing code? 
                 bagger.generateBag(new FileOutputStream(zipName + ".partial"));
 
