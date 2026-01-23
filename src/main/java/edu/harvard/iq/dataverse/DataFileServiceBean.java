@@ -28,18 +28,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.*;
+import jakarta.persistence.criteria.*;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -281,60 +282,21 @@ public class DataFileServiceBean implements java.io.Serializable {
                     .setMaxResults(maxResults)
                     .getResultList();
     }
-    
-    public List<FileMetadata> findFileMetadataByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
-        FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
 
-        String sortField = sortFieldAndOrder.getSortField();
-        String sortOrder = sortFieldAndOrder.getSortOrder();
-        String searchClause = "";
-        if(searchTerm != null && !searchTerm.isEmpty()){
-            searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
-        }
-        
-        String queryString = "select o from FileMetadata o where o.datasetVersion.id = :datasetVersionId"
-                + searchClause
-                + " order by o." + sortField + " " + sortOrder;
-        return em.createQuery(queryString, FileMetadata.class) 
-            .setParameter("datasetVersionId", datasetVersionId)
-            .getResultList();
-    }
-    
-    public List<Integer> findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
+    public List<Long> findDataFileIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String userSuppliedSearchTerm, String userSuppliedSortField, String userSuppliedSortOrder) {
         FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
-        
-        searchTerm=searchTerm.trim();
-        String sortField = sortFieldAndOrder.getSortField();
-        String sortOrder = sortFieldAndOrder.getSortOrder();
-        String searchClause = "";
-        if(searchTerm != null && !searchTerm.isEmpty()){
-            searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
+        String searchTerm = !StringUtils.isBlank(userSuppliedSearchTerm) ? "%"+userSuppliedSearchTerm.trim().toLowerCase()+"%" : null;
+
+        String selectClause = "select o.datafile_id from FileMetadata o where o.datasetversion_id = " + datasetVersionId;
+        String searchClause = searchTerm != null ? " and (lower(o.label) like ? or lower(o.description) like ?)" : "";
+        String orderByClause = " order by o." + sortFieldAndOrder.getSortField() + " " + sortFieldAndOrder.getSortOrder();
+
+        Query query = em.createNativeQuery(selectClause + searchClause + orderByClause);
+        if (searchTerm != null) {
+            query.setParameter(1, searchTerm);
+            query.setParameter(2, searchTerm);
         }
-        
-        //the createNativeQuary takes persistant entities, which Integer.class is not,
-        //which is causing the exception. Hence, this query does not need an Integer.class
-        //as the second parameter. 
-        return em.createNativeQuery("select o.id from FileMetadata o where o.datasetVersion_id = "  + datasetVersionId
-                + searchClause
-                + " order by o." + sortField + " " + sortOrder)
-                .getResultList();
-    }
-    
-    public List<Long> findDataFileIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
-        FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
-        
-        searchTerm=searchTerm.trim();
-        String sortField = sortFieldAndOrder.getSortField();
-        String sortOrder = sortFieldAndOrder.getSortOrder();
-        String searchClause = "";
-        if(searchTerm != null && !searchTerm.isEmpty()){
-            searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
-        }
-        
-        return em.createNativeQuery("select o.datafile_id from FileMetadata o where o.datasetVersion_id = "  + datasetVersionId
-                + searchClause
-                + " order by o." + sortField + " " + sortOrder)
-                .getResultList();
+        return query.getResultList();
     }
     
     public List<FileMetadata> findFileMetadataByDatasetVersionIdLazy(Long datasetVersionId, int maxResults, String userSuppliedSortField, String userSuppliedSortOrder, int firstResult) {
@@ -372,6 +334,133 @@ public class DataFileServiceBean implements java.io.Serializable {
             FileMetadata retVal = (FileMetadata) query.getSingleResult();
             return retVal;
         } catch(Exception ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Finds the complete history of a file's presence across all dataset versions.
+     * <p>
+     * This method returns a {@link VersionedFileMetadata} entry for every version
+     * of the specified dataset. If a version does not contain the file, the
+     * {@code fileMetadata} field in the corresponding DTO will be {@code null}.
+     * It correctly handles file replacements by searching for all files sharing the
+     * same {@code rootDataFileId}.
+     *
+     * @param datasetId                  The ID of the parent dataset.
+     * @param dataFile                   The DataFile entity to find the history for.
+     * @param canViewUnpublishedVersions A boolean indicating if the user has permission to view non-released versions.
+     * @param limit                      (Optional) The maximum number of results to return.
+     * @param offset                     (Optional) The starting point of the result list.
+     * @return A chronologically sorted, paginated list of the file's version history, including versions where the file is absent.
+     */
+    public List<VersionedFileMetadata> findFileMetadataHistory(Long datasetId,
+                                                               DataFile dataFile,
+                                                               boolean canViewUnpublishedVersions,
+                                                               Integer limit,
+                                                               Integer offset) {
+        if (dataFile == null) {
+            return Collections.emptyList();
+        }
+
+        // Query 1: Get the paginated list of relevant DatasetVersions
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<DatasetVersion> versionQuery = cb.createQuery(DatasetVersion.class);
+        Root<DatasetVersion> versionRoot = versionQuery.from(DatasetVersion.class);
+
+        List<Predicate> versionPredicates = new ArrayList<>();
+        versionPredicates.add(cb.equal(versionRoot.join("dataset").get("id"), datasetId));
+        if (!canViewUnpublishedVersions) {
+            versionPredicates.add(versionRoot.get("versionState").in(
+                    VersionState.RELEASED, VersionState.DEACCESSIONED));
+        }
+        versionQuery.where(versionPredicates.toArray(new Predicate[0]));
+        versionQuery.orderBy(
+                cb.desc(versionRoot.get("versionNumber")),
+                cb.desc(versionRoot.get("minorVersionNumber"))
+        );
+
+        TypedQuery<DatasetVersion> typedVersionQuery = em.createQuery(versionQuery);
+        if (limit != null) {
+            typedVersionQuery.setMaxResults(limit);
+        }
+        if (offset != null) {
+            typedVersionQuery.setFirstResult(offset);
+        }
+        List<DatasetVersion> datasetVersions = typedVersionQuery.getResultList();
+
+        if (datasetVersions.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // Query 2: Get all FileMetadata for this file's history in this dataset
+        CriteriaQuery<FileMetadata> fmQuery = cb.createQuery(FileMetadata.class);
+        Root<FileMetadata> fmRoot = fmQuery.from(FileMetadata.class);
+
+        List<Predicate> fmPredicates = new ArrayList<>();
+        fmPredicates.add(cb.equal(fmRoot.get("datasetVersion").get("dataset").get("id"), datasetId));
+
+        // Find the file by its entire lineage
+        if (dataFile.getRootDataFileId() < 0) {
+            fmPredicates.add(cb.equal(fmRoot.get("dataFile").get("id"), dataFile.getId()));
+        } else {
+            fmPredicates.add(cb.equal(fmRoot.get("dataFile").get("rootDataFileId"), dataFile.getRootDataFileId()));
+        }
+        fmQuery.where(fmPredicates.toArray(new Predicate[0]));
+
+        List<FileMetadata> fileHistory = em.createQuery(fmQuery).getResultList();
+
+        // Combine results
+        Map<Long, FileMetadata> fmMap = fileHistory.stream()
+                .collect(Collectors.toMap(
+                        fm -> fm.getDatasetVersion().getId(),
+                        Function.identity()
+                ));
+
+        // Create the final list, looking up the FileMetadata for each version
+        return datasetVersions.stream()
+                .map(version -> new VersionedFileMetadata(
+                        version,
+                        fmMap.get(version.getId()) // This will be null if no entry exists for that version ID
+                ))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Finds the FileMetadata for a given file in the version immediately preceding a specified version.
+     *
+     * @param fileMetadata   The FileMetadata instance from the current version, used to identify the file's lineage.
+     * @return The FileMetadata from the immediately prior version, or {@code null} if this is the first version of the file.
+     */
+    public FileMetadata getPreviousFileMetadata(FileMetadata fileMetadata) {
+        if (fileMetadata == null || fileMetadata.getDataFile() == null) {
+            return null;
+        }
+
+        // 1. Get the ID of the file that was replaced.
+        Long previousId = fileMetadata.getDataFile().getPreviousDataFileId();
+
+        // If there's no previous ID, this is the first version of the file.
+        if (previousId == null) {
+            return null;
+        }
+
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<FileMetadata> cq = cb.createQuery(FileMetadata.class);
+        Root<FileMetadata> fileMetadataRoot = cq.from(FileMetadata.class);
+
+        // 2. Join FileMetadata to DataFile to access the ID.
+        Join<FileMetadata, DataFile> dataFileJoin = fileMetadataRoot.join("dataFile");
+
+        // 3. Find the FileMetadata whose DataFile ID matches the previousId.
+        cq.where(cb.equal(dataFileJoin.get("id"), previousId));
+
+        // --- Execution ---
+        TypedQuery<FileMetadata> query = em.createQuery(cq);
+        try {
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            // If no result is found, return null.
             return null;
         }
     }

@@ -68,8 +68,18 @@ public class SearchUtil {
     }
 
     public static SortBy getSortBy(String sortField, String sortOrder) throws Exception {
+        return getSortBy(sortField, sortOrder, SearchFields.RELEVANCE);
+    }
+
+    public static SortBy getSortBy(String sortField, String sortOrder, String defaultSortField) throws Exception {
+        List<String> allowedDefaultSortFieldValues = SortBy.allowedFieldStrings();
+        if (!allowedDefaultSortFieldValues.contains(defaultSortField)) {
+            throw new Exception("The 'defaultSortField' was set to '" + defaultSortField + "' but expected one of " + allowedDefaultSortFieldValues + ".");
+        }
 
         if (StringUtils.isBlank(sortField)) {
+            sortField = defaultSortField;
+        } else if (sortField.equals("relevance")) {
             sortField = SearchFields.RELEVANCE;
         } else if (sortField.equals("name")) {
             // "name" sounds better than "name_sort" so we convert it here so users don't have to pass in "name_sort"

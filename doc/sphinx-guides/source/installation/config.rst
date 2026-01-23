@@ -25,7 +25,7 @@ The default password for the "dataverseAdmin" superuser account is "admin", as m
 Blocking API Endpoints
 ++++++++++++++++++++++
 
-The :doc:`/api/native-api` contains a useful but potentially dangerous set of API endpoints called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The "builtin-users" endpoints let admins do tasks such as creating a local/builtin user account if they know the key defined in :ref:`BuiltinUsers.KEY`.
+The :doc:`/api/native-api` contains a useful but potentially dangerous set of API endpoints called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The "builtin-users" endpoints let admins do tasks such as creating a local/builtin user account if they know the key defined in :ref:`:BuiltinUsersKey`.
 
 By default in the code, most of these API endpoints can be operated on remotely and a number of endpoints do not require authentication. However, the endpoints "admin" and "builtin-users" are limited to localhost out of the box by the installer, using the JvmSettings :ref:`dataverse.api.blocked.endpoints` and :ref:`dataverse.api.blocked.policy`.
 
@@ -94,6 +94,16 @@ First of all, confirm that access is denied! If you are in fact able to access t
 
 Still feel like activating this option in your configuration? - Have fun and be safe!
 
+.. _signed-urls-forwarded-proto-header:
+
+Using X-Forwarded-Proto for Signed URLs
++++++++++++++++++++++++++++++++++++++++
+
+If you use a proxy such as Apache or Nginx, or have a firewall such as Anubis, and they are configured to forward traffic to Dataverse over HTTP
+(i.e. your proxy receives user calls over HTTPS but forwards locally to Dataverse over HTTP), signed URLs, used by external tools and 
+upload apps (such as DVWebloader), are likely to fail unless you configure your proxy to send an X-Forwarded-Proto HTTP Header.
+This allows Dataverse to recognize that the communication from the user was over HTTPS and that validation of signed URLs should assume 
+they started with https:// (rather than http:// as received from the proxy).
 
 .. _PrivacyConsiderations:
 
@@ -114,6 +124,23 @@ Run Payara as a User Other Than Root
 See the :ref:`payara` section of :doc:`prerequisites` for details and init scripts for running Payara as non-root.
 
 Related to this is that you should remove ``/root/.payara/pass`` to ensure that Payara isn't ever accidentally started as root. Without the password, Payara won't be able to start as root, which is a good thing.
+
+.. _payara-ports-localhost-only:
+
+Restricting Payara's Ports to localhost
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In the recommended setup of Dataverse, you do not expose Payara's ports directly to the Internet. Rather, you front Payara with a proxy such as Apache.
+
+If you are running Payara and your proxy on the same server, we recommend having Payara listen only to localhost, which is how your proxy talks to it, with the following command:
+
+``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-1.address=127.0.0.1``
+
+(You should **NOT** use the configuration option above if you are running in a load-balanced environment, or otherwise have your proxy on a different host than Payara.)
+
+To test that Payara is now only listening on localhost, try hitting port 8080 from the Internet. Payara should not respond.
+
+See also :ref:`network-ports`.
 
 .. _secure-password-storage:
 
@@ -245,6 +272,8 @@ If you are running an installation with Apache and Payara on the same server, an
 ``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-1.address=127.0.0.1``
 
 You should **NOT** use the configuration option above if you are running in a load-balanced environment, or otherwise have the web server on a different host than the application server.
+
+This security tip is also mentioned at :ref:`payara-ports-localhost-only`.
 
 .. _root-collection-permissions:
 
@@ -537,6 +566,8 @@ dataverse.pid.*.datacite.username
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 dataverse.pid.*.datacite.password
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.feature.only-update-datacite-when-needed
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 PID Providers of type ``datacite`` require four additional parameters that define how the provider connects to DataCite.
 DataCite has two APIs that are used in Dataverse:
@@ -551,6 +582,11 @@ DataCite uses `HTTP Basic authentication <https://en.wikipedia.org/wiki/Basic_ac
 for `Fabrica <https://doi.datacite.org/>`_ and their APIs. You need to provide
 the same credentials (``username``, ``password``) to Dataverse software to mint and manage DOIs for you.
 As noted above, you should use one of the more secure options for setting the password.
+
+The `only-update-datacite-when-needed feature` flag is a global option that causes Dataverse to GET the latest metadata from DataCite
+for a DOI and compare it with the current metadata in Dataverse and only sending a following POST request if needed. This potentially
+substitutes a read for an unnecessary write at DataCite, but would result in extra reads when all metadata in Dataverse is new. 
+Setting the flag to "true" is recommended when using DataCite file DOIs.
 
 CrossRef-specific Settings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -781,7 +817,7 @@ Both Local and Remote Auth
 
 The ``authenticationproviderrow`` database table controls which "authentication providers" are available within a Dataverse installation. Out of the box, a single row with an id of "builtin" will be present. For each user in a Dataverse installation, the ``authenticateduserlookup`` table will have a value under ``authenticationproviderid`` that matches this id. For example, the default "dataverseAdmin" user will have the value "builtin" under  ``authenticationproviderid``. Why is this important? Users are tied to a specific authentication provider but conversion mechanisms are available to switch a user from one authentication provider to the other. As explained in the :doc:`/user/account` section of the User Guide, a graphical workflow is provided for end users to convert from the "builtin" authentication provider to a remote provider. Conversion from a remote authentication provider to the builtin provider can be performed by a sysadmin with access to the "admin" API. See the :doc:`/api/native-api` section of the API Guide for how to list users and authentication providers as JSON.
 
-Adding and enabling a second authentication provider (:ref:`native-api-add-auth-provider` and :ref:`api-toggle-auth-provider`) will result in the Log In page showing additional providers for your users to choose from. By default, the Log In page will show the "builtin" provider, but you can adjust this via the :ref:`conf-default-auth-provider` configuration option. Further customization can be achieved by setting :ref:`conf-allow-signup` to "false", thus preventing users from creating local accounts via the web interface. Please note that local accounts can also be created through the API by enabling the ``builtin-users`` endpoint (:ref:`:BlockedApiEndpoints`) and setting the ``BuiltinUsers.KEY`` database setting (:ref:`BuiltinUsers.KEY`).
+Adding and enabling a second authentication provider (:ref:`native-api-add-auth-provider` and :ref:`api-toggle-auth-provider`) will result in the Log In page showing additional providers for your users to choose from. By default, the Log In page will show the "builtin" provider, but you can adjust this via the :ref:`conf-default-auth-provider` configuration option. Further customization can be achieved by setting :ref:`conf-allow-signup` to "false", thus preventing users from creating local accounts via the web interface. Please note that local accounts can also be created through the API by enabling the ``builtin-users`` endpoint (:ref:`:BlockedApiEndpoints`) and setting the ``:BuiltinUsersKey`` database setting (:ref:`:BuiltinUsersKey`).
 
 To configure Shibboleth see the :doc:`shibboleth` section and to configure OAuth see the :doc:`oauth2` section.
 
@@ -804,7 +840,7 @@ Bearer tokens are defined in `RFC 6750`_ and can be used as an alternative to AP
 
 .. _RFC 6750: https://tools.ietf.org/html/rfc6750
 
-To enable bearer tokens, you must install and configure Keycloak (for now, see :ref:`oidc-dev` in the Developer Guide) and enable ``api-bearer-auth`` under :ref:`feature-flags`.
+To enable bearer tokens, you must install and configure Keycloak (for now, see :ref:`oidc-dev` in the Developer Guide) and enable the :ref:`dataverse.feature.api-bearer-auth` feature flag.
 
 You can test that bearer tokens are working by following the example under :ref:`bearer-tokens` in the API Guide.
 
@@ -989,15 +1025,18 @@ File Storage
 
 By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara6/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
 
-A Dataverse installation can alternately store files in a Swift or S3-compatible object store, or on a Globus endpoint, and can now be configured to support multiple stores at once. With a multi-store configuration, the location for new files can be controlled on a per-Dataverse collection basis.
-
+A Dataverse installation can alternately store files in a Swift or S3-compatible object store, or on a Globus endpoint, and can now be configured to support multiple stores at once.
 A Dataverse installation may also be configured to reference some files (e.g. large and/or sensitive data) stored in a web or Globus accessible trusted remote store.
+With a multi-store configuration, the location for new files can be controlled on a per-Dataverse collection or per-dataset basis.
+:doc:`/admin/big-data-administration` provides more detail about the pros and cons of different types of storage.
 
 A Dataverse installation can be configured to allow out of band upload by setting the ``dataverse.files.\<id\>.upload-out-of-band`` JVM option to ``true``.
 By default, Dataverse supports uploading files via the :ref:`add-file-api`. With S3 stores, a direct upload process can be enabled to allow sending the file directly to the S3 store (without any intermediate copies on the Dataverse server).
 With the upload-out-of-band option enabled, it is also possible for file upload to be managed manually or via third-party tools, with the :ref:`Adding the Uploaded file to the Dataset <direct-add-to-dataset-api>` API call (described in the :doc:`/developers/s3-direct-upload-api` page) used to add metadata and inform Dataverse that a new file has been added to the relevant store.
 
-The following sections describe how to set up various types of stores and how to configure for multiple stores.
+The following sections describe how to set up various types of stores and how to configure for multiple stores. See also :ref:`choose-store`.
+
+.. _multiple-stores:
 
 Multi-store Basics
 ++++++++++++++++++
@@ -1057,6 +1096,8 @@ File stores have one option - the directory where files should be stored. This c
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.directory=<file directory>"
 
 Multiple file stores should specify different directories (which would nominally be the reason to use multiple file stores), but one may share the same directory as "\-Ddataverse.files.directory" option - this would result in temp files being stored in the /temp subdirectory within the file store's root directory.
+
+See also :ref:`file-stores`.
 
 Swift Storage
 +++++++++++++
@@ -1152,6 +1193,8 @@ The Dataverse Software supports Amazon S3 storage as well as other S3-compatible
 The Dataverse Software S3 driver supports multi-part upload for large files (over 1 GB by default - see the min-part-size option in the table below to change this).
 
 **Note:** The Dataverse Project Team is most familiar with AWS S3, and can provide support on its usage with the Dataverse Software. Thanks to community contributions, the application's architecture also allows non-AWS S3 providers. The Dataverse Project Team can provide very limited support on these other providers. We recommend reaching out to the wider Dataverse Project Community if you have questions.
+
+See also :ref:`s3-stores`.
 
 First: Set Up Accounts and Access Credentials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1383,6 +1426,8 @@ You may provide the values for these via any `supported MicroProfile Config API 
 2. A non-empty ``dataverse.files.<id>.profile`` will be ignored when no credentials can be found for this profile name.
    Current codebase does not make use of "named profiles" as seen for AWS CLI besides credentials.
 
+.. _s3-compatible:
+
 Reported Working S3-Compatible Storage
 ######################################
 
@@ -1469,29 +1514,33 @@ In addition to having the type "remote" and requiring a label, Trusted Remote St
 These and other available options are described in the table below.
 
 Trusted remote stores can range from being a static trusted website to a sophisticated service managing access requests and logging activity
-and/or managing access to a secure enclave.  See :doc:`/developers/big-data-support` for additional information on how to use a trusted remote store. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
+and/or managing access to a secure enclave.  See :doc:`/admin/big-data-administration` (specifically :ref:`remote-stores`) and :doc:`/developers/big-data-support` for additional information on how to use a trusted remote store. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
 
-Note that in the current implementation, activites where Dataverse needs access to data bytes, e.g. to create thumbnails or validate hash values at publication will fail if a remote store does not allow Dataverse access. Implementers of such trusted remote stores should consider using Dataverse's settings to disable ingest, validation of files at publication, etc. as needed.
+Note that in the current implementation, activities where Dataverse needs access to data bytes, e.g. to create thumbnails or validate hash values at publication will fail if a remote store does not allow Dataverse access. Implementers of such trusted remote stores should consider using Dataverse's settings to disable ingest, validation of files at publication, etc. as needed.
 
 Once you have configured a trusted remote store, you can point your users to the :ref:`add-remote-file-api` section of the API Guide.
 
 .. table::
     :align: left
 
-    ===========================================  ==================  ==========================================================================  ===================
-    JVM Option                                   Value               Description                                                                 Default value
-    ===========================================  ==================  ==========================================================================  ===================
-    dataverse.files.<id>.type                    ``remote``          **Required** to mark this storage as remote.                                (none)
-    dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage.                  (none)
-    dataverse.files.<id>.base-url                <?>                 **Required** All files must have URLs of the form <baseUrl>/* .             (none)
-    dataverse.files.<id>.base-store              <?>                 **Required** The id of a base store (of type file, s3, or swift).           (the default store)
-    dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download (should usually be true).                            ``false``
-    dataverse.files.<id>.secret-key               <?>                 A key used to sign download requests sent to the remote store. Optional.   (none)
-    dataverse.files.<id>.url-expiration-minutes  <?>                 If direct downloads and using signing: time until links expire. Optional.   60
-    dataverse.files.<id>.remote-store-name       <?>                 A short name used in the UI to indicate where a file is located. Optional.  (none)
-    dataverse.files.<id>.remote-store-url        <?>                 A url to an info page about the remote store used in the UI. Optional.      (none)
+    =======================================================  ==================  ==========================================================================  ===================
+    JVM Option                                               Value               Description                                                                 Default value
+    =======================================================  ==================  ==========================================================================  ===================
+    dataverse.files.<id>.type                                ``remote``          **Required** to mark this storage as remote.                                (none)
+    dataverse.files.<id>.label                               <?>                 **Required** label to be shown in the UI for this storage.                  (none)
+    dataverse.files.<id>.base-url                            <?>                 **Required** All files must have URLs of the form <baseUrl>/* .             (none)
+    dataverse.files.<id>.base-store                          <?>                 **Required** The id of a base store (of type file, s3, or swift).           (the default store)
+    dataverse.files.<id>.upload-out-of-band                  ``true``            **Required to be true** Dataverse does not manage file placement            ``false``
+    dataverse.files.<id>.download-redirect                   ``true``/``false``  Enable direct download (should usually be true).                            ``false``
+    dataverse.files.<id>.secret-key                          <?>                 A key used to sign download requests sent to the remote store. Optional.    (none)
+    dataverse.files.<id>.public                              ``true``/``false``  True if the remote store does not enforce Dataverse access controls         ``false``
+    dataverse.files.<id>.ingestsizelimit                     <size in bytes>     Maximum size of files that should be ingested                               (none)
+    dataverse.files.<id>.url-expiration-minutes              <?>                 If direct downloads and using signing: time until links expire. Optional.   60
+    dataverse.files.<id>.remote-store-name                   <?>                 A short name used in the UI to indicate where a file is located. Optional.  (none)
+    dataverse.files.<id>.remote-store-url                    <?>                 A URL to an info page about the remote store used in the UI. Optional.      (none)
+    dataverse.files.<id>.files-not-accessible-by-dataverse   ``true``/``false``  True if the file is at the URL provided, false if that is a landing page    ``false``
     
-    ===========================================  ==================  ==========================================================================  ===================
+    =======================================================  ==================  ==========================================================================  ===================
 
 .. _globus-storage:
 
@@ -1531,6 +1580,7 @@ Once you have configured a globus store, or configured an S3 store for Globus ac
                                                                                  for a managed store) - using a microprofile alias is recommended            (none)
     dataverse.files.<id>.reference-endpoints-with-basepaths  <?>                 A comma separated list of *remote* trusted Globus endpoint id/<basePath>s   (none)
     dataverse.files.<id>.files-not-accessible-by-dataverse   ``true``/``false``  Should be false for S3 Connector-based *managed* stores, true for others    ``false``
+    dataverse.files.<id>.public                              ``true``/``false``  True can be used to disable users ability restrict/embargo files            ``false``
     
     =======================================================  ==================  ==========================================================================  ===================
     
@@ -2092,35 +2142,56 @@ JSON files for `Creative Commons licenses <https://creativecommons.org/about/ccl
 
 .. _adding-custom-licenses:
 
+Adding Open Data Commons Licenses
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+JSON files for `Open Data Commons licenses <https://opendatacommons.org/licenses/>`_ are provided below.
+
+- :download:`licenseODbL-1.0.json <../../../../scripts/api/data/licenses/licenseODbL-1.0.json>`
+- :download:`licenseODC-By-1.0.json <../../../../scripts/api/data/licenses/licenseODC-By-1.0.json>`
+- :download:`licensePDDL-1.0.json <../../../../scripts/api/data/licenses/licensePDDL-1.0.json>`
+
 Adding Software Licenses
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 JSON files for software licenses are provided below.
 
-- :download:`licenseMIT.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
 - :download:`licenseApache-2.0.json <../../../../scripts/api/data/licenses/licenseApache-2.0.json>`
+- :download:`licenseMIT.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
+- :download:`licenseEUPL-1.2.json <../../../../scripts/api/data/licenses/licenseEUPL-1.2.json>`
 
 Adding Country-Specific Licenses
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - :download:`licenseEtalab-2.0.json <../../../../scripts/api/data/licenses/licenseEtalab-2.0.json>` used in France (Etalab Open License 2.0, CC-BY 2.0 compliant).
+- :download:`licenseOGL-UK-3.0.json <../../../../scripts/api/data/licenses/licenseOGL-UK-3.0.json>`
 
 Contributing to the Collection of Standard Licenses Above
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you do not find the license JSON you need above, you are encouraged to contribute it to this documentation. Following the Dataverse 6.2 release, we have standardized on the following procedure:
+If you do not find the license JSON you need above, you are encouraged to contribute it to this documentation. Following the Dataverse 6.9 release, we have standardized on the following procedure:
 
-- Look for the license at https://spdx.org/licenses/
-- ``cd scripts/api/data/licenses``
+- Look for the license at https://spdx.org/licenses/ and https://github.com/datacite/bracco/blob/main/app/spdx.js.
+- ``cd scripts/api/data/licenses``.
 - Copy an existing license as a starting point.
 - Name your file using the SPDX identifier. For example, if the identifier is ``Apache-2.0``, you should name your file ``licenseApache-2.0.json``.
 - For the ``name`` field, use the "short identifier" from the SPDX landing page (e.g. ``Apache-2.0``).
-- For the ``description`` field, use the "full name" from the SPDX landing page (e.g. ``Apache License 2.0``).
-- For the ``uri`` field, we encourage you to use the same resource that DataCite uses, which is often the same as the first "Other web pages for this license" on the SPDX page for the license. When these differ, or there are other concerns about the URI DataCite uses, please reach out to the community to see if a consensus can be reached.
+- For the ``shortDescription`` field, use the "full name" from the SPDX landing page (e.g. ``Apache License 2.0``) followed by a period (full-stop) (e.g. ``Apache License 2.0.``).
+- For the ``uri`` field, use the same resource that DataCite uses, which is often the same as the first "Other web pages for this license" on the SPDX page for the license. Look at the ``seeAlso`` array for the license at https://github.com/datacite/bracco/blob/main/app/spdx.js to be sure. When these differ, or there are other concerns about the URI DataCite uses, please reach out to the community to see if a consensus can be reached. See :ref:`support`.
 - For the ``active`` field, put ``true``.
 - For the ``sortOrder`` field, put the next sequential number after checking previous files with ``grep sortOrder scripts/api/data/licenses/*``.
+- For the ``rightsIdentifier`` field, use the "short identifier" from the SPDX landing page (e.g. ``Apache-2.0``).
+- For the ``rightsIdentifierScheme`` field, use "SPDX".
+- For the ``schemeUri`` field, use "https://spdx.org/licenses/".
+- For the ``languageCode`` field, use "en".
+- For all of the fields above, resist the urge to change the spelling of words like license/licence, center/centre, etc. SPDX is the upstream authority, and they have the following `varietal word spelling policy <https://github.com/spdx/license-list-XML/blob/v3.27.0/DOCS/license-matching-guidelines-and-templates.md#8-varietal-word-spelling->`_: "The words in each line of the text file available at https://spdx.org/licenses/equivalentwords.txt are considered equivalent and interchangeable."
 
-Note that prior to Dataverse 6.2, various license above have been added that do not adhere perfectly with this procedure. For example, the ``name`` for the CC0 license is ``CC0 1.0`` (no dash) rather than ``CC0-1.0`` (with a dash). We are keeping the existing names for backward compatibility. For more on standarizing license configuration, see https://github.com/IQSS/dataverse/issues/8512
+In the past, licenses have been added that do not adhere perfectly with the procedure above. Here are known inconsistencies:
+
+- The ``name`` for the CC licenses don't have a dash as their SPDX short identifiers do (e.g. CC-BY-4.0, CC-BY-NC-4.0, CC-BY-NC-ND-4.0, CC-BY-NC-SA-4.0, CC-BY-ND-4.0, CC-BY-SA-4.0, CC0-1.0). For example, the ``name`` for the CC0 license is ``CC0 1.0`` (no dash) rather than ``CC0-1.0`` (with a dash). We are keeping the existing names without dashes for backward compatibility.
+- The ``uri`` for Creative Commons licenses comes from the Creative Commons website rather than SPDX or DataCite. As with ``name``, we are keeping ``uri`` the as-is for these licenses for backward compatibility. For more on our attempts to standardize license configuration, see https://github.com/IQSS/dataverse/issues/8512 and https://github.com/IQSS/dataverse/pull/11522.
+- The ``uri`` for Etalab is https://spdx.org/licenses/etalab-2.0 rather than a link listed in SPDX or DataCite.
+- The ``shortDescription`` doesn't have a trailing period for Apache-2.0, Etalab, and MIT.
 
 Adding Custom Licenses
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -2356,6 +2427,9 @@ The workflow id returned in this call (or available by doing a GET of /api/admin
 
 Once these steps are taken, new publication requests will automatically trigger submission of an archival copy to the specified archiver, Chronopolis' DuraCloud component in this example. For Chronopolis, as when using the API, it is currently the admin's responsibility to snap-shot the DuraCloud space and monitor the result. Failure of the workflow, (e.g. if DuraCloud is unavailable, the configuration is wrong, or the space for this dataset already exists due to a prior publication action or use of the API), will create a failure message but will not affect publication itself.
 
+Note: setting the default workflow is also available via the Settings API.
+See :ref:`:WorkflowsAdminIpWhitelist`, :ref:`:PrePublishDatasetWorkflowId` and :ref:`:PostPublishDatasetWorkflowId`
+
 .. _bag-info.txt:
 
 Configuring bag-info.txt
@@ -2475,6 +2549,28 @@ Setting Up Integrations
 +++++++++++++++++++++++
 
 Before going live, you might want to consider setting up integrations to make it easier for your users to deposit or explore data. See the :doc:`/admin/integrations` section of the Admin Guide for details.
+
+.. _comma-separated-config-values:
+
+Comma-Separated Configuration Values
+------------------------------------
+
+Many configuration options (both MicroProfile/JVM settings and database settings) accept comma-separated lists. For all such settings, Dataverse applies consistent, lightweight parsing:
+
+- Whitespace immediately around commas is ignored (e.g., ``GET, POST`` is equivalent to ``GET,POST``).
+- Tokens are otherwise preserved exactly as typed. There is no quote parsing and no escape processing.
+- Embedded commas within a token are not supported.
+
+Examples include (but are not limited to):
+
+- :ref:`dataverse.cors.origin <dataverse.cors.origin>`
+- :ref:`dataverse.cors.methods <dataverse.cors.methods>`
+- :ref:`dataverse.cors.headers.allow <dataverse.cors.headers.allow>`
+- :ref:`dataverse.cors.headers.expose <dataverse.cors.headers.expose>`
+- :ref:`:UploadMethods`
+
+This behavior is implemented centrally and applies across all Dataverse settings that accept comma-separated values.
+
 
 .. _jvm-options:
 
@@ -2757,6 +2853,8 @@ when using it to configure your core name!
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_PATH``.
 
+.. _dataverse.solr.min-files-to-use-proxy:
+
 dataverse.solr.min-files-to-use-proxy
 +++++++++++++++++++++++++++++++++++++
 
@@ -2767,6 +2865,8 @@ This setting represents a number of files for which the datafile procy should be
 A recommended value would be ~1000 but the optimal value may vary depending on details of your installation.  
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_MIN_FILES_TO_USE_PROXY``.
+
+.. _dataverse.solr.concurrency.max-async-indexes:
 
 dataverse.solr.concurrency.max-async-indexes
 ++++++++++++++++++++++++++++++++++++++++++++
@@ -3620,7 +3720,7 @@ Can also be set via *MicroProfile Config API* sources, e.g. the environment vari
 dataverse.files.globus-monitoring-server
 ++++++++++++++++++++++++++++++++++++++++
 
-This setting is required in conjunction with the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`). Setting it to true designates the Dataverse instance to serve as the dedicated polling server. It is needed so that the new framework can be used in a multi-node installation. 
+This setting is required in conjunction with the :ref:`dataverse.feature.globus-use-experimental-async-framework` feature flag. Setting it to true designates the Dataverse instance to serve as the dedicated polling server. It is needed so that the new framework can be used in a multi-node installation. 
 
 .. _dataverse.csl.common-styles:
 
@@ -3633,8 +3733,8 @@ The default value when not set is "chicago-author-date, ieee".
 
 .. _localcontexts:
 
-localcontexts.url
-+++++++++++++++++
+dataverse.localcontexts.url
++++++++++++++++++++++++++++
 
 .. note::
    For more information about LocalContexts integration, see :doc:`/installation/localcontexts`.
@@ -3646,8 +3746,8 @@ The URL for the Local Contexts Hub API.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_LOCALCONTEXTS_URL``.
 
-localcontexts.api-key
-+++++++++++++++++++++
+dataverse.localcontexts.api-key
++++++++++++++++++++++++++++++++
 
 The API key for accessing the Local Contexts Hub.
 
@@ -3669,7 +3769,7 @@ Experimental. See :doc:`/developers/search-services`.
 .. _dataverse.cors:
 
 CORS Settings
--------------
++++++++++++++
 
 The following settings control Cross-Origin Resource Sharing (CORS) for your Dataverse installation.
 
@@ -3678,16 +3778,20 @@ The following settings control Cross-Origin Resource Sharing (CORS) for your Dat
 dataverse.cors.origin
 +++++++++++++++++++++
 
-Allowed origins for CORS requests. The default with no value set is to not include CORS headers. However, if the deprecated :AllowCors setting is explicitly set to true the default is "\*" (all origins).
-When the :AllowsCors setting is not used, you must set this setting to "\*" or a list of origins to enable CORS headers.
+Allowed origins for CORS requests. If this setting is not defined, CORS headers are not added. Set to ``*`` to allow all origins (note that browsers will not allow credentialed requests with ``*``) or provide a comma-separated list of explicit origins.
 
-Multiple origins can be specified as a comma-separated list.
+Multiple origins can be specified as a comma-separated list (whitespace is ignored):
 
 Example:
 
 ``./asadmin create-jvm-options '-Ddataverse.cors.origin=https://example.com,https://subdomain.example.com'``
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_CORS_ORIGIN``.
+
+Behavior:
+
+* When a list of origins is configured, Dataverse echoes the single matching request ``Origin`` value in ``Access-Control-Allow-Origin`` and adds ``Vary: Origin`` to support correct proxy/CDN caching.
+* When ``*`` is configured, ``Access-Control-Allow-Origin: *`` is sent and ``Vary`` is not modified.
 
 .. _dataverse.cors.methods:
 
@@ -3747,6 +3851,23 @@ Example: ``dataverse.api.mdc.min-delay-ms=100`` (enforces a minimum 100ms delay 
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_MDC_MIN_DELAY_MS``.
 
+.. dataverse.ldn
+
+Linked Data Notifications (LDN) Allowed Hosts
++++++++++++++++++++++++++++++++++++++++++++++
+
+Dataverse supports receiving LDN notifications via the /api/inbox endpoint. The dataverse.ldn.allowed-hosts allows you to specify the list of host IP addresses from which LDN notifications can be received, or ``*`` to receive messages from anywhere.
+
+Example: ``dataverse.ldn.allowed-hosts=*``
+
+COAR Notify Relationship Announcement Notify Superusers Only
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+When Dataverse receives an LDN message conforming to the COAR Notify Relationship Announcement format and the message is about a dataset hosted in the installation, Dataverse will send an notification to users who have permission to publish the dataset.
+This can instead be restricted to only superusers who can publish the dataset using this option.
+
+Example: ``dataverse.coar-notify.relationship-announcement.notify-superusers-only=true``
+
 .. _feature-flags:
 
 Feature Flags
@@ -3756,76 +3877,162 @@ Certain features might be deactivated because they are experimental and/or opt-i
 please find all known feature flags below. Any of these flags can be activated using a boolean value
 (case-insensitive, one of "true", "1", "YES", "Y", "ON") for the setting.
 
-.. list-table::
-    :widths: 35 50 15
-    :header-rows: 1
-    :align: left
-
-    * - Flag Name
-      - Description
-      - Default status
-    * - api-session-auth
-      - Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and for the feature to be removed in the future.
-      - ``Off``
-    * - api-bearer-auth
-      - Enables API authentication via Bearer Token.
-      - ``Off``
-    * - api-bearer-auth-provide-missing-claims
-      - Enables sending missing user claims in the request JSON provided during OIDC user registration, when these claims are not returned by the identity provider and are required for registration. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this feature flag exposes the installation to potential user impersonation issues.**
-      - ``Off``
-    * - api-bearer-auth-handle-tos-acceptance-in-idp
-      - Specifies that Terms of Service acceptance is handled by the IdP, eliminating the need to include ToS acceptance boolean parameter (termsAccepted) in the OIDC user registration request body. This feature only works when the feature flag ``api-bearer-auth`` is also enabled.
-      - ``Off``
-    * - api-bearer-auth-use-builtin-user-on-id-match
-      - Allows the use of a built-in user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing built-in user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
-      - ``Off``
-    * - api-bearer-auth-use-shib-user-on-id-match
-      - Allows the use of a Shibboleth user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing Shibboleth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
-      - ``Off``
-    * - api-bearer-auth-use-oauth-user-on-id-match
-      - Allows the use of an OAuth user account (GitHub, Google, or ORCID) when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing OAuth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
-      - ``Off``
-    * - avoid-expensive-solr-join
-      - Changes the way Solr queries are constructed for public content (published Collections, Datasets and Files). It removes a very expensive Solr join on all such documents, improving overall performance, especially for large instances under heavy load. Before this feature flag is enabled, the corresponding indexing feature (see next feature flag) must be turned on and a full reindex performed (otherwise public objects are not going to be shown in search results). See :doc:`/admin/solr-search-index`. 
-      - ``Off``
-    * - add-publicobject-solr-field
-      - Adds an extra boolean field `PublicObject_b:true` for public content (published Collections, Datasets and Files). Once reindexed with these fields, we can rely on it to remove a very expensive Solr join on all such documents in Solr queries, significantly improving overall performance (by enabling the feature flag above, `avoid-expensive-solr-join`). These two flags are separate so that an instance can reindex their holdings before enabling the optimization in searches, thus avoiding having their public objects temporarily disappear from search results while the reindexing is in progress. 
-      - ``Off``
-    * - reduce-solr-deletes
-      - Avoids deleting and recreating solr documents for dataset files when reindexing. 
-      - ``Off``
-    * - disable-return-to-author-reason
-      - Removes the reason field in the `Publish/Return To Author` dialog that was added as a required field in v6.2 and makes the reason an optional parameter in the :ref:`return-a-dataset` API call. 
-      - ``Off``
-    * - disable-dataset-thumbnail-autoselect
-      - Turns off automatic selection of a dataset thumbnail from image files in that dataset. When set to ``On``, a user can still manually pick a thumbnail image or upload a dedicated thumbnail image.
-      - ``Off``
-    * - globus-use-experimental-async-framework
-      - Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4; extended in v6.6 to cover download transfers, in addition to uploads. Affects :ref:`:GlobusPollingInterval`. Note that the JVM option :ref:`dataverse.files.globus-monitoring-server` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance. 
-      - ``Off``
-    * - index-harvested-metadata-source
-      - Index the nickname or the source name (See the optional ``sourceName`` field in :ref:`create-a-harvesting-client`) of the harvesting client as the "metadata source" of harvested datasets and files. If enabled, the Metadata Source facet will show separate groupings of the content harvested from different sources (by harvesting client nickname or source name) instead of the default behavior where there is one "Harvested" grouping for all harvested content.
-      - ``Off``
-    * - enable-version-note
-      - Turns on the ability to add/view/edit/delete per-dataset-version notes intended to provide :ref:`provenance` information about why the dataset/version was created.  
-      - ``Off``
-    * - shibboleth-use-wayfinder
-      - This flag allows an instance to use Shibboleth with InCommon federation services. Our original Shibboleth implementation that relies on DiscoFeed can no longer be used since InCommon discontinued their old-style metadata feed. An alternative mechanism had to be implemented in order to use WayFinder service, their recommended replacements, instead.
-      - ``Off``
-    * - shibboleth-use-localhost
-      - A Shibboleth-using Dataverse instance needs to make network calls to the locally-running ``shibd`` service. The default behavior is to use the address configured via the ``siteUrl`` setting. There are however situations (firewalls, etc.) where localhost would be preferable.
-      - ``Off``
-    * - add-local-contexts-permission-check
-      - Adds a permission check to ensure that the user calling the /api/localcontexts/datasets/{id} API can edit the dataset with that id. This is currently the only use case - see https://github.com/gdcc/dataverse-external-vocab-support/tree/main/packages/local_contexts. The flag adds additional security to stop other uses, but would currently have to be used in conjunction with the api-session-auth feature flag (the security implications of which have not been fully investigated) to still allow adding Local Contexts metadata to a dataset.
-      - ``Off``
-    * - enable-pid-failure-log
-      - Turns on creation of a monthly log file (logs/PIDFailures_<yyyy-MM>.log) showing failed requests for dataset/file PIDs. Can be used directly or with scripts at https://github.com/gdcc/dataverse-recipes/python/pid_reports to alert admins.
-      - ``Off``
+The default status, as long there is not any other information,  is Off.
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_FEATURE_XXX`` (e.g. ``DATAVERSE_FEATURE_API_SESSION_AUTH=1``). These environment variables can be set in your shell before starting Payara. If you are using :doc:`Docker for development </container/dev-usage>`, you can set them in the `docker compose <https://docs.docker.com/compose/environment-variables/set-environment-variables/>`_ file.
 
 To check the status of feature flags via API, see :ref:`list-all-feature-flags` in the API Guide.
+
+.. _dataverse.feature.api-session-auth:
+
+dataverse.feature.api-session-auth
+++++++++++++++++++++++++++++++++++
+
+Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and for the feature to be removed in the future.
+
+.. _dataverse.feature.api-bearer-auth:
+
+dataverse.feature.api-bearer-auth
++++++++++++++++++++++++++++++++++
+
+Enables API authentication via Bearer Token.
+
+.. _dataverse.feature.api-bearer-auth-provide-missing-claims:
+
+dataverse.feature.api-bearer-auth-provide-missing-claims
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Enables sending missing user claims in the request JSON provided during OIDC user registration, when these claims are not returned by the identity provider and are required for registration. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this feature flag exposes the installation to potential user impersonation issues.**
+
+.. _dataverse.feature.api-bearer-auth-handle-tos-acceptance-in-idp:
+
+dataverse.feature.api-bearer-auth-handle-tos-acceptance-in-idp
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Specifies that Terms of Service acceptance is handled by the IdP, eliminating the need to include ToS acceptance boolean parameter (termsAccepted) in the OIDC user registration request body. This feature only works when the feature flag ``api-bearer-auth`` is also enabled.
+
+.. _dataverse.feature.api-bearer-auth-use-builtin-user-on-id-match:
+
+dataverse.feature.api-bearer-auth-use-builtin-user-on-id-match
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Allows the use of a built-in user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing built-in user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
+
+.. _dataverse.feature.api-bearer-auth-use-shib-user-on-id-match:
+
+dataverse.feature.api-bearer-auth-use-shib-user-on-id-match
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Allows the use of a Shibboleth user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing Shibboleth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
+
+.. _dataverse.feature.api-bearer-auth-use-oauth-user-on-id-match:
+
+dataverse.feature.api-bearer-auth-use-oauth-user-on-id-match
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Allows the use of an OAuth user account (GitHub, Google, or ORCID) when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing OAuth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
+
+.. _dataverse.feature.avoid-expensive-solr-join:
+
+dataverse.feature.avoid-expensive-solr-join
++++++++++++++++++++++++++++++++++++++++++++
+
+Changes the way Solr queries are constructed for public content (published Collections, Datasets and Files). It removes a very expensive Solr join on all such documents, improving overall performance, especially for large instances under heavy load. Before this feature flag is enabled, the corresponding indexing feature (see next feature flag) must be turned on and a full reindex performed (otherwise public objects are not going to be shown in search results). See :doc:`/admin/solr-search-index`.
+
+.. _dataverse.feature.add-publicobject-solr-field:
+
+dataverse.feature.add-publicobject-solr-field
++++++++++++++++++++++++++++++++++++++++++++++
+
+Adds an extra boolean field `PublicObject_b:true` for public content (published Collections, Datasets and Files). Once reindexed with these fields, we can rely on it to remove a very expensive Solr join on all such documents in Solr queries, significantly improving overall performance (by enabling the feature flag above, `avoid-expensive-solr-join`). These two flags are separate so that an instance can reindex their holdings before enabling the optimization in searches, thus avoiding having their public objects temporarily disappear from search results while the reindexing is in progress.
+
+.. _dataverse.feature.reduce-solr-deletes:
+
+dataverse.feature.reduce-solr-deletes
++++++++++++++++++++++++++++++++++++++
+
+Avoids deleting and recreating solr documents for dataset files when reindexing.
+
+.. _dataverse.feature.disable-return-to-author-reason:
+
+dataverse.feature.disable-return-to-author-reason
++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Removes the reason field in the `Publish/Return To Author` dialog that was added as a required field in v6.2 and makes the reason an optional parameter in the :ref:`return-a-dataset` API call.
+
+.. _dataverse.feature.disable-dataset-thumbnail-autoselect:
+
+dataverse.feature.disable-dataset-thumbnail-autoselect
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Turns off automatic selection of a dataset thumbnail from image files in that dataset. When set to ``On``, a user can still manually pick a thumbnail image or upload a dedicated thumbnail image.
+
+.. _dataverse.feature.globus-use-experimental-async-framework:
+
+dataverse.feature.globus-use-experimental-async-framework
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4; extended in v6.6 to cover download transfers, in addition to uploads. Affects :ref:`:GlobusPollingInterval`. Note that the JVM option :ref:`dataverse.files.globus-monitoring-server` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance.
+
+.. _dataverse.feature.index-harvested-metadata-source:
+
+dataverse.feature.index-harvested-metadata-source
++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Index the nickname or the source name (See the optional ``sourceName`` field in :ref:`create-a-harvesting-client`) of the harvesting client as the "metadata source" of harvested datasets and files. If enabled, the Metadata Source facet will show separate groupings of the content harvested from different sources (by harvesting client nickname or source name) instead of the default behavior where there is one "Harvested" grouping for all harvested content.
+
+.. _dataverse.feature.enable-version-note:
+
+dataverse.feature.enable-version-note
++++++++++++++++++++++++++++++++++++++
+
+Turns on the ability to add/view/edit/delete per-dataset-version notes intended to provide :ref:`provenance` information about why the dataset/version was created.
+
+.. _dataverse.feature.shibboleth-use-wayfinder:
+
+dataverse.feature.shibboleth-use-wayfinder
+++++++++++++++++++++++++++++++++++++++++++
+
+This flag allows an instance to use Shibboleth with InCommon federation services. Our original Shibboleth implementation that relies on DiscoFeed can no longer be used since InCommon discontinued their old-style metadata feed. An alternative mechanism had to be implemented in order to use WayFinder service, their recommended replacements, instead.
+
+.. _dataverse.feature.shibboleth-use-localhost:
+
+dataverse.feature.shibboleth-use-localhost
+++++++++++++++++++++++++++++++++++++++++++
+
+A Shibboleth-using Dataverse instance needs to make network calls to the locally-running ``shibd`` service. The default behavior is to use the address configured via the ``siteUrl`` setting. There are however situations (firewalls, etc.) where localhost would be preferable.
+
+.. _dataverse.feature.add-local-contexts-permission-check:
+
+dataverse.feature.add-local-contexts-permission-check
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Adds a permission check to ensure that the user calling the /api/localcontexts/datasets/{id} API can edit the dataset with that id. This is currently the only use case - see https://github.com/gdcc/dataverse-external-vocab-support/tree/main/packages/local_contexts. The flag adds additional security to stop other uses, but would currently have to be used in conjunction with the api-session-auth feature flag (the security implications of which have not been fully investigated) to still allow adding Local Contexts metadata to a dataset.
+
+.. _dataverse.feature.enable-pid-failure-log:
+
+dataverse.feature.enable-pid-failure-log
+++++++++++++++++++++++++++++++++++++++++
+
+Turns on creation of a monthly log file (logs/PIDFailures_<yyyy-MM>.log) showing failed requests for dataset/file PIDs. Can be used directly or with scripts at https://github.com/gdcc/dataverse-recipes/python/pid_reports to alert admins.
+
+.. _dataverse.feature.role-assignment-history:
+
+dataverse.feature.role-assignment-history
++++++++++++++++++++++++++++++++++++++++++
+
+Turns on tracking/display of role assignments and revocations for collections, datasets, and files
+
+.. _dataverse.feature.only-update-datacite-when-needed:
+
+dataverse.feature.only-update-datacite-when-needed
+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Only contact DataCite to update a DOI after checking to see if DataCite has outdated information (for efficiency, lighter load on DataCite, especially when using file DOIs).
+
+
+
 
 .. _:ApplicationServerSettings:
 
@@ -3889,11 +4096,14 @@ You might also create your own profiles and use these, please refer to the upstr
 Database Settings
 -----------------
 
-These settings are stored in the ``setting`` database table but can be read and modified via the "admin" endpoint of the :doc:`/api/native-api` for easy scripting.
+These settings are stored in the ``setting`` database table but we recommend using the Settings Admin API (:ref:`admin-api-db-settings`) to view and modify them, as shown below.
+If changed in the database directly, you need to reload the application to make the ORM pickup the changes.
 
-The most commonly used configuration options are listed first.
+In short:
 
-The pattern you will observe in curl examples below is that an HTTP ``PUT`` is used to add or modify a setting. If you perform an HTTP ``GET`` (the default when using curl), the output will contain the value of the setting, if it has been set. You can also do a ``GET`` of all settings with ``curl http://localhost:8080/api/admin/settings`` which you may want to pretty-print by piping the output through a tool such as jq by appending ``| jq .``. If you want to remove a setting, use an HTTP ``DELETE`` such as ``curl -X DELETE http://localhost:8080/api/admin/settings/:GuidesBaseUrl`` .
+- HTTP ``GET`` is used to show settings.
+- HTTP ``PUT`` is used to add or modify settings.
+- HTTP ``DELETE`` is used to delete settings.
 
 .. _:BlockedApiPolicy:
 
@@ -3949,14 +4159,16 @@ Now that ``:BlockedApiKey`` has been enabled, blocked APIs can be accessed using
 
 ``curl https://demo.dataverse.org/api/admin/settings?unblock-key=theKeyYouChose``
 
-.. _BuiltinUsers.KEY:
+.. _:BuiltinUsersKey:
 
-BuiltinUsers.KEY
+:BuiltinUsersKey
 ++++++++++++++++
 
 The key required to create users via API as documented at :doc:`/api/native-api`. Unlike other database settings, this one doesn't start with a colon.
 
-``curl -X PUT -d builtInS3kretKey http://localhost:8080/api/admin/settings/BuiltinUsers.KEY``
+``curl -X PUT -d builtInS3kretKey http://localhost:8080/api/admin/settings/:BuiltinUsersKey``
+
+Note: this key used to be named ``BuiltinUsers.KEY`` until Dataverse 6.8.
 
 :SearchApiRequiresToken
 +++++++++++++++++++++++
@@ -4368,6 +4580,8 @@ Notes:
 
 - For larger file upload sizes, you may need to configure your reverse proxy timeout. If using apache2 (httpd) with Shibboleth, add a timeout to the ProxyPass defined in etc/httpd/conf.d/ssl.conf (which is described in the :doc:`/installation/shibboleth` setup).
 
+.. _:MultipleUploadFilesLimit:
+
 :MultipleUploadFilesLimit
 +++++++++++++++++++++++++
 
@@ -4386,33 +4600,71 @@ For performance reasons, your Dataverse installation will only allow creation of
 
 In the UI, users trying to download a zip file larger than the Dataverse installation's :ZipDownloadLimit will receive messaging that the zip file is too large, and the user will be presented with alternate access options. 
 
+.. _:TabularIngestSizeLimit:
+
 :TabularIngestSizeLimit
 +++++++++++++++++++++++
 
-Threshold in bytes for limiting whether or not "ingest" it attempted for tabular files (which can be resource intensive). For example, with the below in place, files greater than 2 GB in size will not go through the ingest process:
+Threshold in bytes for limiting whether or not "ingest" is attempted for an uploaded tabular file (which can be resource intensive).
+For more on the ingest feature, see :doc:`/user/tabulardataingest/index` in the User Guide.
+
+There are two ways to specify ingest size limits. You can set a global limit for all file types or you can use a JSON file for more granularity. We'll cover the global limit first.
+
+With the following value in place (again, expressed in bytes), files greater than 2 GB in size will not go through the ingest process:
 
 ``curl -X PUT -d 2000000000 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 
-(You can set this value to 0 to prevent files from being ingested at all.)
+You can set this value to ``0`` to prevent files from being ingested at all.
 
-You can override this global setting on a per-format basis for the following formats:
+Out of the box, the ``:TabularIngestSizeLimit`` setting is absent, which results in ingest being attempted no matter how large the file is. You can specify this "no size limit" default explicitly with the value ``-1``.
 
+Using a JSON-based setting, you can set a global default and per-format limits for the following formats:
+
+- CSV
 - DTA
 - POR
-- SAV
 - Rdata
-- CSV
-- XLSX (in lower-case)
+- SAV
+- XLSX
 
-For example :
+(In previous releases of Dataverse, a colon-separated form was used to specify per-format limits, such as ``:TabularIngestSizeLimit:Rdata``, but this is no longer supported. Now JSON is used.)
 
-* if you want your Dataverse installation to not attempt to ingest Rdata files larger than 1 MB, use this setting:
+The expected JSON is an object with key/value pairs like the following.
+Format names are case-insensitive, and all fields are optional (an empty JSON object equals not restricted).
+The size limits must be whole numbers, either presented as strings with double quotes around them (e.g. ``"10"``) or numeric values (e.g. ``10`` or ``10.0``).
+Note that decimal numbers like ``10.5`` are invalid.
+Any invalid setting will temporarily disable tabular ingest until corrected.
 
-``curl -X PUT -d 1000000 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit:Rdata``
+.. code:: json
 
-* if you want your Dataverse installation to not attempt to ingest XLSX files at all, use this setting:
+  {
+    "default": "-1",
+    "csv": "0",
+    "dta": "10",
+    "por": "100"
+  }
 
-``curl -X PUT -d 0 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit:xlsx``
+Whatever JSON you send will overwrite existing values. If you have any exiting ``:TabularIngestSizeLimit`` settings, you can use the following command to see them in the expected input format above (and then add the new settings you want):
+
+``curl http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit | jq -r '.data.message'``
+
+The ``default`` key is optional and can be used to give limits to formats that are not specified in the JSON. If you omit the ``default`` key or set it to ``"-1"``, no limits are applied to formats not specified in the JSON. If you set it to ``"0"``, ingest will be disabled (but you can override this per-format).
+
+Add a format name (``csv``, ``dta``, etc., as listed above) to change the limit for that particular format.
+
+Examples:
+
+1. If you want your Dataverse installation to not attempt to ingest Rdata files larger than 1 MB but otherwise be unlimited:
+
+   ``curl -X PUT -d '{"Rdata":"1000000"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
+2. If you want your Dataverse installation to not attempt to ingest XLSX files at all and apply a global limit of 512 MiB, use this setting:
+
+   ``curl -X PUT -d '{"default":"536870912", "XSLX":"0"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
+3. If you want your Dataverse installation to not attempt to ingest files at all except for CSV files that are 256 MiB or smaller, use this setting:
+
+   ``curl -X PUT -d '{"default":"0", "CSV":"268435456"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
+
+.. _:ZipUploadFilesLimit:
 
 :ZipUploadFilesLimit
 ++++++++++++++++++++
@@ -4432,12 +4684,16 @@ By default your Dataverse installation will attempt to connect to Solr on port 8
 
 **Note:** instead of using a database setting, you could alternatively use JVM settings like :ref:`dataverse.solr.host`.
 
+.. _:SolrFullTextIndexing:
+
 :SolrFullTextIndexing
 +++++++++++++++++++++
 
 Whether or not to index the content of files such as PDFs. The default is false.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:SolrFullTextIndexing``
+
+.. _:SolrMaxFileSizeForFullTextIndexing:
 
 :SolrMaxFileSizeForFullTextIndexing
 +++++++++++++++++++++++++++++++++++
@@ -4460,11 +4716,14 @@ To enable the setting::
 
   curl -X PUT -d true "http://localhost:8080/api/admin/settings/:DisableSolrFacets"
 
+.. _:DisableSolrFacetsForGuestUsers:
 
 :DisableSolrFacetsForGuestUsers
 +++++++++++++++++++++++++++++++
 
 Similar to the above, but will disable the facets for Guest (unauthenticated) users only. 
+
+.. _:DisableSolrFacetsWithoutJsession:
 
 :DisableSolrFacetsWithoutJsession
 +++++++++++++++++++++++++++++++++
@@ -4959,20 +5218,6 @@ This can be helpful in situations where multiple organizations are sharing one D
 or
 ``curl -X PUT -d '*' http://localhost:8080/api/admin/settings/:InheritParentRoleAssignments``
 
-:AllowCors (Deprecated)
-+++++++++++++++++++++++
-
-.. note::
-   This setting is deprecated. Please use the JVM settings above instead.
-   This legacy setting will only be used if the newer JVM settings are not set.
-
-Enable or disable support for Cross-Origin Resource Sharing (CORS) by setting ``:AllowCors`` to ``true`` or ``false``.
-
-``curl -X PUT -d true http://localhost:8080/api/admin/settings/:AllowCors``
-
-.. note::
-   New values for this setting will only be used after a server restart.
-
 :ChronologicalDateFacets
 ++++++++++++++++++++++++
 
@@ -4981,6 +5226,8 @@ Unlike other facets, those indexed by Date/Year are sorted chronologically by de
 If you don’t want date facets to be sorted chronologically, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:ChronologicalDateFacets``
+
+.. _:CustomZipDownloadServiceUrl:
 
 :CustomZipDownloadServiceUrl
 ++++++++++++++++++++++++++++
@@ -5004,6 +5251,43 @@ To enable redirects to the zipper on a different server:
 Number of errors to display to the user when creating DataFiles from a file upload. It defaults to 5 errors.
 
 ``curl -X PUT -d '1' http://localhost:8080/api/admin/settings/:CreateDataFilesMaxErrorsToDisplay``
+
+.. _:WorkflowsAdminIpWhitelist:
+
+:WorkflowsAdminIpWhitelist
+++++++++++++++++++++++++++
+
+A semicolon-separated list of IP addresses from which workflow resume requests are honored.
+By default, the Dataverse installation honors resume requests from localhost only (``127.0.0.1;::1``).
+This setting allows for preventing unauthorized resuming of workflows.
+
+``curl -X PUT -d '127.0.0.1;::1;192.168.0.1' http://localhost:8080/api/admin/settings/:WorkflowsAdminIpWhitelist``
+
+See :ref:`Workflow Admin section <workflow_admin>` for more details and context.
+
+.. _:PrePublishDatasetWorkflowId:
+
+:PrePublishDatasetWorkflowId
+++++++++++++++++++++++++++++
+
+The identifier of the workflow to be executed prior to dataset publication.
+This pre-publish workflow is useful for preparing a dataset for public access (e.g., moving files, checking metadata) or starting an approval process.
+
+``curl -X PUT -d '1' http://localhost:8080/api/admin/settings/:PrePublishDatasetWorkflowId``
+
+See :ref:`Workflow Admin section <workflow_admin>` for more details and context.
+
+.. _:PostPublishDatasetWorkflowId:
+
+:PostPublishDatasetWorkflowId
++++++++++++++++++++++++++++++
+
+The identifier of the workflow to be executed after a dataset has been successfully published.
+This post-publish workflow is useful for actions such as sending notifications about the newly published dataset or archiving.
+
+``curl -X PUT -d '2' http://localhost:8080/api/admin/settings/:PostPublishDatasetWorkflowId``
+
+See :ref:`Workflow Admin section <workflow_admin>` for more details and context.
 
 .. _:BagItHandlerEnabled:
 
@@ -5113,6 +5397,8 @@ A suggested minimum includes author, datasetContact, and contributor, but additi
 
 ``curl -X PUT -d 'author, datasetContact, contributor, depositor, grantNumber, publication' http://localhost:8080/api/admin/settings/:AnonymizedFieldTypeNames``
 
+.. _:DatasetChecksumValidationSizeLimit:
+
 :DatasetChecksumValidationSizeLimit
 +++++++++++++++++++++++++++++++++++
 
@@ -5127,6 +5413,8 @@ When this option is used to disable the checksum validation, it's strongly recom
 Refer to "Physical Files Validation in a Dataset" API :ref:`dataset-files-validation-api` section of our :doc:`/api/native-api` documentation.
 
 Also refer to the "Datafile Integrity" API  :ref:`datafile-integrity`
+
+.. _:DataFileChecksumValidationSizeLimit:
 
 :DataFileChecksumValidationSizeLimit
 ++++++++++++++++++++++++++++++++++++
@@ -5389,6 +5677,8 @@ To use the current GDCC version directly:
 
 ``curl -X PUT -d 'https://gdcc.github.io/dvwebloader/src/dvwebloader.html' http://localhost:8080/api/admin/settings/:WebloaderUrl``
 
+.. _:CategoryOrder:
+
 :CategoryOrder
 ++++++++++++++
 
@@ -5397,6 +5687,8 @@ The setting can include custom tag names along with the pre-defined tags (Docume
 The default is category ordering disabled.
 
 ``curl -X PUT -d 'Documentation,Data,Code' http://localhost:8080/api/admin/settings/:CategoryOrder``
+
+.. _:OrderByFolder:
 
 :OrderByFolder
 ++++++++++++++

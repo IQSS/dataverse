@@ -156,7 +156,7 @@ public class S3AccessIT {
         updatedStorageDriver.then().assertThat()
                 .body("data.type", CoreMatchers.notNullValue())
                 .body("data.label", CoreMatchers.notNullValue())
-                .body("data.directUpload", CoreMatchers.nullValue())
+                .body("data.directUpload", CoreMatchers.notNullValue())
                 .statusCode(200);
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);

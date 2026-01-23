@@ -43,6 +43,7 @@ import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.client.methods.HttpGet;
@@ -52,6 +53,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 
 /**
  *
@@ -764,13 +766,24 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                                 JsonValue val = jo.get(keyVal[0]);
                                 if (val != null) {
                                     if (val.getValueType().equals(ValueType.STRING)) {
+                                        //Match a string value
                                         if (((JsonString) val).getString().equals(expected)) {
                                             logger.fine("Found: " + jo);
                                             curPath = jo;
                                             return processPathSegment(index + 1, pathParts, curPath, termUri);
                                         }
-                                    } else {
-                                        logger.warning("Expected a string value for " + keyVal[0] + " but found: " + val.getValueType());
+                                    } else if (val.getValueType() == JsonValue.ValueType.ARRAY) {
+                                        // Match one string in an array
+                                        JsonArray jsonArray = (JsonArray) val;
+                                        for (JsonValue arrayVal : jsonArray) {
+                                            if (arrayVal.getValueType() == JsonValue.ValueType.STRING) {
+                                                if (((JsonString) arrayVal).getString().equals(expected)) {
+                                                    logger.fine("Found match in array: " + jo.toString());
+                                                    curPath = jo;
+                                                    return processPathSegment(index + 1, pathParts, curPath, termUri);
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -793,8 +806,18 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 }
 
             } else {
-                curPath = ((JsonObject) curPath).get(pathParts[index]);
-                logger.fine("Found next Path object " + curPath);
+                if ((curPath instanceof JsonArray) && NumberUtils.isCreatable(pathParts[index])) {
+                    try {
+                        int indexNumber = Integer.parseInt(pathParts[index]);
+                        curPath = ((JsonArray) curPath).get(indexNumber);
+                    } catch (NumberFormatException nfe) {
+                        logger.fine("Please provide a valid integer number " + pathParts[index]);
+                    }
+                } else {
+                    curPath = ((JsonObject) curPath).get(pathParts[index]);
+                }
+                // curPath = ((JsonObject) curPath).get(pathParts[index]);
+                logger.fine("Found next Path object " + ((curPath == null) ? "null" : curPath.toString()));
                 return processPathSegment(index + 1, pathParts, curPath, termUri);
             }
         } else {
@@ -886,12 +909,12 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         // If the fields list of supported languages contains the current locale (e.g.
         // the lang of the UI, or the current metadata input/display lang (tbd)), use
         // that. Otherwise, return the first in the list
-        String[] langStrings = languages.split("\\s*,\\s*");
-        if (langStrings.length > 0) {
-            if (Arrays.asList(langStrings).contains(localeCode)) {
+        final List<String> langStrings = ListSplitUtil.split(languages);
+        if (!langStrings.isEmpty()) {
+            if (langStrings.contains(localeCode)) {
                 return localeCode;
             } else {
-                return langStrings[0];
+                return langStrings.get(0);
             }
         }
         return null;

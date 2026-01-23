@@ -22,6 +22,7 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import jakarta.json.Json;
@@ -30,8 +31,12 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.core.Response.Status;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.api.parallel.ResourceAccessMode;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.CoreMatchers.*;
@@ -49,6 +54,8 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import static org.hamcrest.Matchers.greaterThan;
 
+@ResourceLock(value = "MetadataLanguages", mode = ResourceAccessMode.READ_WRITE)
+@Isolated
 public class DataversesIT {
 
     private static final Logger logger = Logger.getLogger(DataversesIT.class.getCanonicalName());
@@ -56,11 +63,18 @@ public class DataversesIT {
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+        UtilIT.deleteSetting(SettingsServiceBean.Key.MetadataLanguages);
     }
 
     @AfterAll
     public static void afterClass() {
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
+        UtilIT.deleteSetting(SettingsServiceBean.Key.MetadataLanguages);
+    }
+
+    @AfterEach
+    public void afterEach() {
+        UtilIT.deleteSetting(SettingsServiceBean.Key.MetadataLanguages);
     }
 
     @Test
@@ -2595,20 +2609,31 @@ public class DataversesIT {
 
     @Test
     public void testCreateAndGetTemplates() throws JsonParseException  {
+        /*
+          Also Delete...and get single template
+        */
+        
         Response createUserResponse = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String username = UtilIT.getUsernameFromResponse(createUserResponse);
 
-        Response createSecondUserResponse = UtilIT.createRandomUser();
-        String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
+            Response createSecondUserResponse = UtilIT.createRandomUser();
+            String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
+            String secondUsername = UtilIT.getUsernameFromResponse(createSecondUserResponse);
+
         
         /*
         We need to make this a non-inherited metadatablocks so the get template will only get templates from current dv
          */
         
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
+        
+        System.out.print("dataverseId: " + dataverseId);
+        
         String newName = "New Test Dataverse Name";
         String newAffiliation = "New Test Dataverse Affiliation";
         String newDataverseType = Dataverse.DataverseType.TEACHING_COURSES.toString();
@@ -2617,55 +2642,53 @@ public class DataversesIT {
         String[] newFacetIds = new String[]{"contributorName"};
         String[] newMetadataBlockNames = new String[]{"citation", "geospatial", "biomedical"};
 
-       //Giving the new Dataverse updated metadatablocks so that it will not inherit templates 
-       Response updateDataverseResponse = UtilIT.updateDataverse(
-                dataverseAlias, dataverseAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
+        // Giving the new Dataverse updated metadatablocks so that it will not inherit
+        // templates
+        Response updateDataverseResponse = UtilIT.updateDataverse(
+                dataverseAlias, dataverseAlias, newName, newAffiliation, newDataverseType, newContactEmails,
+                newInputLevelNames,
                 null, newMetadataBlockNames, apiToken,
-                Boolean.FALSE, Boolean.FALSE, null
-        );
-       
+                Boolean.FALSE, Boolean.FALSE, null);
+
         updateDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        // Create a template
-
         String jsonString = """
-                {
-                  "name": "Dataverse template",
-                  "isDefault": true,
-                  "fields": [
-                    {
-                      "typeName": "author",
-                      "value": [
-                        {
-                          "authorName": {
-                            "typeName": "authorName",
-                            "value": "Belicheck, Bill"
-                          },
-                          "authorAffiliation": {
-                            "typeName": "authorIdentifierScheme",
-                            "value": "ORCID"
-                          }
-                        }
-                      ]
-                    }
-                  ],
-                  "instructions": [
-                    {
-                        "instructionField": "author",
-                        "instructionText": "The author data"
-                    }
-                  ]
-                }
-                """;
+                            {
+                              "name": "Dataverse template",
+                              "isDefault": true,
+                              "fields": [
+                                {
+                                  "typeName": "author",
+                                  "value": [
+                                    {
+                                      "authorName": {
+                                        "typeName": "authorName",
+                                        "value": "Belicheck, Bill"
+                                      },
+                                      "authorAffiliation": {
+                                        "typeName": "authorIdentifierScheme",
+                                        "value": "ORCID"
+                                      }
+                                    }
+                                  ]
+                                }
+                              ],
+                              "instructions": [
+                                {
+                                    "instructionField": "author",
+                                    "instructionText": "The author data"
+                                }
+                              ]
+                            }
+                            """;
 
         Response createTemplateResponse = UtilIT.createTemplate(
                 dataverseAlias,
                 jsonString,
-                apiToken
-        );
-        
-        createTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
+                apiToken);
+
+        createTemplateResponse.then().assertThat().statusCode(CREATED.getStatusCode())
                 .body("data.name", equalTo("Dataverse template"))
                 .body("data.isDefault", equalTo(true))
                 .body("data.usageCount", equalTo(0))
@@ -2676,17 +2699,24 @@ public class DataversesIT {
                 .body("data.instructions[0].instructionText", equalTo("The author data"))
                 .body("data.dataverseAlias", equalTo(dataverseAlias));
 
-        // Template creation should fail if the user lacks dataverse edit permissions
+        Long templateId = createTemplateResponse.body().jsonPath().getLong("data.id");
 
+        //Check for failure due unauthorized user.
+        Response setDefaultResp = UtilIT.setDefaultTemplate(dataverseAlias, templateId, secondApiToken);
+        setDefaultResp.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Set default template
+        setDefaultResp = UtilIT.setDefaultTemplate(dataverseAlias, templateId, apiToken);
+        setDefaultResp.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Template creation should fail if the user lacks dataverse edit permissions
         createTemplateResponse = UtilIT.createTemplate(
                 dataverseAlias,
                 jsonString,
-                secondApiToken
-        );
+                secondApiToken);
         createTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
-        // Get templates
-
+        // Get templates and check this one is default now
         Response getTemplateResponse = UtilIT.getTemplates(dataverseAlias, apiToken);
         getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.size()", equalTo(1))
@@ -2699,10 +2729,82 @@ public class DataversesIT {
                 .body("data[0].instructions[0].instructionField", equalTo("author"))
                 .body("data[0].instructions[0].instructionText", equalTo("The author data"))
                 .body("data[0].dataverseAlias", equalTo(dataverseAlias));
+        
+                
+            // Remove default template
+            System.out.print("***************: " + dataverseAlias );
+            
+            Response removeDefaultResp = UtilIT.removeDefaultTemplate(dataverseAlias, apiToken);
+            removeDefaultResp.prettyPrint();
+            removeDefaultResp.then().assertThat().statusCode(OK.getStatusCode());       
 
-        // Templates retrieval should fail if the user lacks dataverse edit permissions
+            //check that template is no longer default.
+            getTemplateResponse = UtilIT.getTemplates(dataverseAlias, apiToken);
+            getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
+                            .body("data.size()", equalTo(1))
+                            .body("data[0].isDefault", equalTo(false));
+
+
+            // Templates retrieval should fail if a secondary user lacks dataset creation
+            // permissions
+
+            getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
+            getTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+
+        
+        //set to super to update role 
+        UtilIT.setSuperuserStatus(username, true);
+
+        Response grantRoleResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, "@" + secondUsername, apiToken);
+        grantRoleResponse.prettyPrint();
+        grantRoleResponse.then().assertThat().statusCode(OK.getStatusCode());
+
         getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
-        getTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+        getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        Response getTemplateByIdResponse = UtilIT.getTemplate(templateId.toString(), apiToken);
+        getTemplateByIdResponse.prettyPrint();
+        getTemplateByIdResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        //guest user shouldn't get it
+        getTemplateByIdResponse = UtilIT.getTemplate(templateId.toString());
+        getTemplateByIdResponse.prettyPrint();
+        getTemplateByIdResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+        
+        Response deleteTemplateResponse = UtilIT.deleteTemplate(templateId.toString(), secondApiToken);
+        deleteTemplateResponse.prettyPrint();
+        deleteTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+        
+        //set back to show super not needed for delete - just Edit Dataverse
+        UtilIT.setSuperuserStatus(username, false);
+        
+        String badId = "8675309";
+        
+        deleteTemplateResponse = UtilIT.deleteTemplate(badId, apiToken);
+        deleteTemplateResponse.prettyPrint();
+        deleteTemplateResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        
+        deleteTemplateResponse = UtilIT.deleteTemplate(templateId.toString(), apiToken);
+        deleteTemplateResponse.prettyPrint();
+        deleteTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // back to super for cleanup
+        
+        UtilIT.setSuperuserStatus(username, true);
+        
+        Response deleteDataverse1Response = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverse1Response.prettyPrint();
+        assertEquals(200, deleteDataverse1Response.getStatusCode());
+        
+        Response deleteUserResponse = UtilIT.deleteUser(secondUsername);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+        
+        deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+        
+
     }
 
     @Test
@@ -2713,8 +2815,8 @@ public class DataversesIT {
                 .body("data.name", CoreMatchers.notNullValue())
                 .body("data.type", CoreMatchers.notNullValue())
                 .body("data.label", CoreMatchers.notNullValue())
-                .body("data.directUpload", CoreMatchers.nullValue())
-                .body("data.directDownload", CoreMatchers.nullValue())
+                .body("data.directUpload", CoreMatchers.notNullValue())
+                .body("data.directDownload", CoreMatchers.notNullValue())
                 .statusCode(200);
 
         // Root without default is undefined
@@ -2797,4 +2899,37 @@ public class DataversesIT {
         UtilIT.makeSuperUser(username);
         return adminApiToken;
     }
+    
+    @Test
+    public void testDataverseMetadataLanguage() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken);
+
+        createDataverse1Response.prettyPrint();
+        createDataverse1Response.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        String alias = UtilIT.getAliasFromResponse(createDataverse1Response);
+
+        Response noLang = UtilIT.getDataverseMetadataLanguage(alias, apiToken);
+        noLang.prettyPrint();
+
+        noLang.then().assertThat().body("data", equalTo(List.of()));
+
+        UtilIT.setSetting(SettingsServiceBean.Key.MetadataLanguages,
+                        "[{\"locale\":\"en\",\"title\":\"English\"},{\"locale\":\"hu\",\"title\":\"magyar\"}]");
+        Response allLangs = UtilIT.getDataverseMetadataLanguage(alias, apiToken);
+        allLangs.prettyPrint();
+        allLangs.then().assertThat()
+                        .body("data.size()", equalTo(2))
+                        .and().body("data[0].locale", equalTo("en"))
+                        .and().body("data[1].locale", equalTo("hu"));
+        
+        Response english = UtilIT.setDataverseMetadataLanguage(alias, apiToken, "en");
+        english.then().assertThat().body("data", equalTo(List.of(Map.of("locale", "en", "title", "English"))));
+        Response singleLang = UtilIT.getDataverseMetadataLanguage(alias, apiToken);
+        singleLang.then().assertThat().body("data", equalTo(List.of(Map.of("locale", "en", "title", "English"))));
+    }
+
 }
