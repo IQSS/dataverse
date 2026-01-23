@@ -7654,6 +7654,8 @@ Add new authentication provider. The POST data is in JSON format, similar to the
 
   POST http://$SERVER/api/admin/authenticationProviders
 
+.. note:: This endpoint will create providers for both JSF and SPA. Use :ref:`jvm-options` / *MicroProfile Config* if you need to create SPA only providers.
+
 Show Authentication Provider
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
