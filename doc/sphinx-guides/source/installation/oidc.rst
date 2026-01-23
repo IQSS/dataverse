@@ -151,6 +151,10 @@ The following options are available:
     - Enable or disable provisioning the provider via MicroProfile.
     - N
     - ``false``
+  * - ``dataverse.auth.oidc.hidden-jsf``
+    - Show or Hide the provider from the JSF UI via MicroProfile.
+    - N
+    - ``false``
   * - ``dataverse.auth.oidc.client-id``
     - The client-id of the application to identify it at your provider.
     - Y
