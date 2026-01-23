@@ -7,7 +7,6 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageException;
 import com.google.cloud.storage.StorageOptions;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
@@ -16,11 +15,15 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.GoogleCloudBucket;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.GoogleCloudProject;
+import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
+import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
+
 import org.apache.commons.codec.binary.Hex;
 
 import jakarta.json.Json;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,7 +56,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
     }
     
     @Override
-    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token, Map<String, String> requestedSettings) {
+    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, String dataciteXml, JsonObject ore, Map<String, JsonLDTerm> terms, ApiToken token, Map<String, String> requestedSettings) {
         logger.fine("In GoogleCloudSubmitToArchiveCommand...");
         String bucketName = requestedSettings.get(GOOGLECLOUD_BUCKET);
         String projectName = requestedSettings.get(GOOGLECLOUD_PROJECT);
@@ -76,135 +79,127 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                 Bucket bucket = storage.get(bucketName);
 
                 Dataset dataset = dv.getDataset();
-                if (dataset.getLockFor(Reason.finalizePublication) == null) {
 
-                    String spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
-                            .replace('.', '-').toLowerCase();
+                String spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
+                        .replace('.', '-').toLowerCase();
 
-                    // Check for and delete existing files for this version
-                    String dataciteFileName = spaceName + "/datacite.v" + dv.getFriendlyVersionNumber() + ".xml";
-                    String bagFileName = spaceName + "/" + spaceName + ".v" + dv.getFriendlyVersionNumber() + ".zip";
+                // Check for and delete existing files for this version
+                String dataciteFileName = spaceName + "/datacite.v" + dv.getFriendlyVersionNumber() + ".xml";
+                String bagFileName = spaceName + "/" + spaceName + ".v" + dv.getFriendlyVersionNumber() + ".zip";
 
-                    logger.fine("Checking for existing files in archive...");
+                logger.fine("Checking for existing files in archive...");
 
-                    try {
-                        Blob existingDatacite = bucket.get(dataciteFileName);
-                        if (existingDatacite != null && existingDatacite.exists()) {
-                            logger.fine("Found existing datacite.xml, deleting: " + dataciteFileName);
-                            existingDatacite.delete();
-                            logger.fine("Deleted existing datacite.xml");
-                        }
-                    } catch (StorageException se) {
-                        logger.warning("Error checking/deleting existing datacite.xml: " + se.getMessage());
+                try {
+                    Blob existingDatacite = bucket.get(dataciteFileName);
+                    if (existingDatacite != null && existingDatacite.exists()) {
+                        logger.fine("Found existing datacite.xml, deleting: " + dataciteFileName);
+                        existingDatacite.delete();
+                        logger.fine("Deleted existing datacite.xml");
                     }
+                } catch (StorageException se) {
+                    logger.warning("Error checking/deleting existing datacite.xml: " + se.getMessage());
+                }
 
-                    try {
-                        Blob existingBag = bucket.get(bagFileName);
-                        if (existingBag != null && existingBag.exists()) {
-                            logger.fine("Found existing bag file, deleting: " + bagFileName);
-                            existingBag.delete();
-                            logger.fine("Deleted existing bag file");
-                        }
-                    } catch (StorageException se) {
-                        logger.warning("Error checking/deleting existing bag file: " + se.getMessage());
+                try {
+                    Blob existingBag = bucket.get(bagFileName);
+                    if (existingBag != null && existingBag.exists()) {
+                        logger.fine("Found existing bag file, deleting: " + bagFileName);
+                        existingBag.delete();
+                        logger.fine("Deleted existing bag file");
                     }
+                } catch (StorageException se) {
+                    logger.warning("Error checking/deleting existing bag file: " + se.getMessage());
+                }
 
-                    String dataciteXml = getDataCiteXml(dv);
-                    MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-                    try (PipedInputStream dataciteIn = new PipedInputStream();
-                            DigestInputStream digestInputStream = new DigestInputStream(dataciteIn, messageDigest)) {
-                        // Add datacite.xml file
+                // Upload datacite.xml
+                MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+                try (PipedInputStream dataciteIn = new PipedInputStream();
+                        DigestInputStream digestInputStream = new DigestInputStream(dataciteIn, messageDigest)) {
+                    // Add datacite.xml file
 
-                        Thread dcThread = new Thread(new Runnable() {
-                            public void run() {
-                                try (PipedOutputStream dataciteOut = new PipedOutputStream(dataciteIn)) {
+                    Thread dcThread = new Thread(new Runnable() {
+                        public void run() {
+                            try (PipedOutputStream dataciteOut = new PipedOutputStream(dataciteIn)) {
 
-                                    dataciteOut.write(dataciteXml.getBytes(StandardCharsets.UTF_8));
-                                    dataciteOut.close();
-                                    success = true;
-                                } catch (Exception e) {
-                                    logger.severe("Error creating datacite.xml: " + e.getMessage());
-                                    // TODO Auto-generated catch block
-                                    e.printStackTrace();
-                                    // throw new RuntimeException("Error creating datacite.xml: " + e.getMessage());
-                                }
+                                dataciteOut.write(dataciteXml.getBytes(StandardCharsets.UTF_8));
+                                dataciteOut.close();
+                                success = true;
+                            } catch (Exception e) {
+                                logger.severe("Error creating datacite.xml: " + e.getMessage());
+                                e.printStackTrace();
                             }
-                        });
-                        dcThread.start();
-                        // Have seen Pipe Closed errors for other archivers when used as a workflow
-                        // without this delay loop
-                        int i = 0;
-                        while (digestInputStream.available() <= 0 && i < 100) {
-                            Thread.sleep(10);
-                            i++;
                         }
-                        Blob dcXml = bucket.create(dataciteFileName, digestInputStream, "text/xml", Bucket.BlobWriteOption.doesNotExist());
+                    });
+                    dcThread.start();
+                    // Have seen Pipe Closed errors for other archivers when used as a workflow
+                    // without this delay loop
+                    int i = 0;
+                    while (digestInputStream.available() <= 0 && i < 100) {
+                        Thread.sleep(10);
+                        i++;
+                    }
+                    Blob dcXml = bucket.create(dataciteFileName, digestInputStream, "text/xml", Bucket.BlobWriteOption.doesNotExist());
 
-                        dcThread.join();
-                        String checksum = dcXml.getMd5ToHexString();
-                        logger.fine("Content: datacite.xml added with checksum: " + checksum);
-                        String localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
+                    dcThread.join();
+                    String checksum = dcXml.getMd5ToHexString();
+                    logger.fine("Content: datacite.xml added with checksum: " + checksum);
+                    String localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
+                    if (!success || !checksum.equals(localchecksum)) {
+                        logger.severe("Failure on " + spaceName);
+                        logger.severe(success ? checksum + " not equal to " + localchecksum : "datacite.xml transfer did not succeed");
+                        try {
+                            dcXml.delete(Blob.BlobSourceOption.generationMatch());
+                        } catch (StorageException se) {
+                            logger.warning(se.getMessage());
+                        }
+                        return new Failure("Error in transferring DataCite.xml file to GoogleCloud",
+                                "GoogleCloud Submission Failure: incomplete metadata transfer");
+                    }
+
+                    // Store BagIt file
+                    success = false;
+
+                    // Add BagIt ZIP file
+                    // Google uses MD5 as one way to verify the
+                    // transfer
+                    messageDigest = MessageDigest.getInstance("MD5");
+                    try (PipedInputStream in = new PipedInputStream(100000);
+                            DigestInputStream digestInputStream2 = new DigestInputStream(in, messageDigest)) {
+                        Thread bagThread = startBagThread(dv, in, digestInputStream2, dataciteXml, ore, terms, token);
+                        Blob bag = bucket.create(bagFileName, digestInputStream2, "application/zip",
+                                Bucket.BlobWriteOption.doesNotExist());
+                        if (bag.getSize() == 0) {
+                            throw new IOException("Empty Bag");
+                        }
+                        bagThread.join();
+
+                        checksum = bag.getMd5ToHexString();
+                        logger.fine("Bag: " + bagFileName + " added with checksum: " + checksum);
+                        localchecksum = Hex.encodeHexString(digestInputStream2.getMessageDigest().digest());
                         if (!success || !checksum.equals(localchecksum)) {
-                            logger.severe("Failure on " + spaceName);
-                            logger.severe(success ? checksum + " not equal to " + localchecksum : "datacite.xml transfer did not succeed");
+                            logger.severe(success ? checksum + " not equal to " + localchecksum
+                                    : "bag transfer did not succeed");
                             try {
-                                dcXml.delete(Blob.BlobSourceOption.generationMatch());
+                                bag.delete(Blob.BlobSourceOption.generationMatch());
                             } catch (StorageException se) {
                                 logger.warning(se.getMessage());
                             }
-                            return new Failure("Error in transferring DataCite.xml file to GoogleCloud",
-                                    "GoogleCloud Submission Failure: incomplete metadata transfer");
+                            return new Failure("Error in transferring Zip file to GoogleCloud",
+                                    "GoogleCloud Submission Failure: incomplete archive transfer");
                         }
-
-                        // Store BagIt file
-                        success = false;
-                        String fileName = spaceName + ".v" + dv.getFriendlyVersionNumber() + ".zip";
-
-                        // Add BagIt ZIP file
-                        // Google uses MD5 as one way to verify the
-                        // transfer
-                        messageDigest = MessageDigest.getInstance("MD5");
-                        try (PipedInputStream in = new PipedInputStream(100000);
-                                DigestInputStream digestInputStream2 = new DigestInputStream(in, messageDigest)) {
-                            Thread bagThread = startBagThread(dv, in, digestInputStream2, dataciteXml, token);
-                            Blob bag = bucket.create(bagFileName, digestInputStream2, "application/zip",
-                                    Bucket.BlobWriteOption.doesNotExist());
-                            if (bag.getSize() == 0) {
-                                throw new IOException("Empty Bag");
-                            }
-                            bagThread.join();
-
-                            checksum = bag.getMd5ToHexString();
-                            logger.fine("Bag: " + bagFileName + " added with checksum: " + checksum);
-                            localchecksum = Hex.encodeHexString(digestInputStream2.getMessageDigest().digest());
-                            if (!success || !checksum.equals(localchecksum)) {
-                                logger.severe(success ? checksum + " not equal to " + localchecksum
-                                        : "bag transfer did not succeed");
-                                try {
-                                    bag.delete(Blob.BlobSourceOption.generationMatch());
-                                } catch (StorageException se) {
-                                    logger.warning(se.getMessage());
-                                }
-                                return new Failure("Error in transferring Zip file to GoogleCloud",
-                                        "GoogleCloud Submission Failure: incomplete archive transfer");
-                            }
-                        }
-
-                        logger.fine("GoogleCloud Submission step: Content Transferred");
-
-                        // Document the location of dataset archival copy location (actually the URL
-                        // where you can view it as an admin)
-                        // Changed to point at bucket where the zip and datacite.xml are visible
-
-                        StringBuffer sb = new StringBuffer("https://console.cloud.google.com/storage/browser/");
-                        sb.append(bucketName + "/" + spaceName);
-                        statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
-                        statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, sb.toString());
-                        
                     }
-                } else {
-                    logger.warning("GoogleCloud Submision Workflow aborted: Dataset locked for pidRegister");
-                    return new Failure("Dataset locked");
+
+                    logger.fine("GoogleCloud Submission step: Content Transferred");
+
+                    // Document the location of dataset archival copy location (actually the URL
+                    // where you can view it as an admin)
+                    // Changed to point at bucket where the zip and datacite.xml are visible
+
+                    StringBuffer sb = new StringBuffer("https://console.cloud.google.com/storage/browser/");
+                    sb.append(bucketName + "/" + spaceName);
+                    statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
+                    statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, sb.toString());
+
                 }
             } catch (Exception e) {
                 logger.warning(e.getLocalizedMessage());

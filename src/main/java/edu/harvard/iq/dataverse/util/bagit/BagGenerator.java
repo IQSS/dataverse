@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Map.Entry;
@@ -72,6 +73,7 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -120,10 +122,10 @@ public class BagGenerator {
 
     private boolean usetemp = false;
 
-    private int numConnections = 8;
-    public static final String BAG_GENERATOR_THREADS = BagGeneratorThreads.toString();
+    private Map<String, JsonLDTerm> terms;
 
-    private OREMap oremap;
+    private static int numConnections = 8;
+    public static final String BAG_GENERATOR_THREADS = BagGeneratorThreads.toString();
 
     static PrintWriter pw = null;
 
@@ -139,15 +141,15 @@ public class BagGenerator {
      * and zipping are done in parallel, using a connection pool. The required space
      * on disk is ~ n+1/n of the final bag size, e.g. 125% of the bag size for a
      * 4-way parallel zip operation.
+     * @param terms 
      * @throws Exception 
      * @throws JsonSyntaxException 
      */
 
-    public BagGenerator(OREMap oreMap, String dataciteXml) throws JsonSyntaxException, Exception {
-        this.oremap = oreMap;
-        this.oremapObject = oreMap.getOREMap();
-                //(JsonObject) new JsonParser().parse(oreMap.getOREMap().toString());
+    public BagGenerator(jakarta.json.JsonObject oremapObject, String dataciteXml, Map<String, JsonLDTerm> terms) throws JsonSyntaxException, Exception {
+        this.oremapObject = oremapObject;
         this.dataciteXml = dataciteXml;
+        this.terms = terms;
 
         try {
             // Using Dataverse, all the URLs to be retrieved should be on the current server, so allowing self-signed certs and not verifying hostnames are useful in testing and 
@@ -768,12 +770,12 @@ public class BagGenerator {
         /* Contact, and it's subfields, are terms from citation.tsv whose mapping to a formal vocabulary and label in the oremap may change
          * so we need to find the labels used.
          */ 
-        JsonLDTerm contactTerm = oremap.getContactTerm();
+        JsonLDTerm contactTerm = terms.get(DatasetFieldConstant.datasetContact);
         if ((contactTerm != null) && aggregation.has(contactTerm.getLabel())) {
 
             JsonElement contacts = aggregation.get(contactTerm.getLabel());
-            JsonLDTerm contactNameTerm = oremap.getContactNameTerm();
-            JsonLDTerm contactEmailTerm = oremap.getContactEmailTerm();
+            JsonLDTerm contactNameTerm = terms.get(DatasetFieldConstant.datasetContactName);
+            JsonLDTerm contactEmailTerm = terms.get(DatasetFieldConstant.datasetContactEmail);
             
             if (contacts.isJsonArray()) {
                 for (int i = 0; i < contactsArray.size(); i++) {
@@ -841,8 +843,8 @@ public class BagGenerator {
         /* Description, and it's subfields, are terms from citation.tsv whose mapping to a formal vocabulary and label in the oremap may change
          * so we need to find the labels used.
          */
-        JsonLDTerm descriptionTerm = oremap.getDescriptionTerm();
-        JsonLDTerm descriptionTextTerm = oremap.getDescriptionTextTerm();
+        JsonLDTerm descriptionTerm = terms.get(DatasetFieldConstant.description);
+        JsonLDTerm descriptionTextTerm = terms.get(DatasetFieldConstant.descriptionText);
         if (descriptionTerm == null) {
             logger.warning("No description available for BagIt Info file");
         } else {
@@ -1124,9 +1126,9 @@ public class BagGenerator {
         apiKey = tokenString;
     }
 
-    public void setNumConnections(int numConnections) {
-        this.numConnections = numConnections;
-        logger.fine("BagGenerator will use " + numConnections + " threads");
+    public static void setNumConnections(int numConnections) {
+        BagGenerator.numConnections = numConnections;
+        logger.fine("All BagGenerators will now use " + numConnections + " threads");
     }
 
 }
