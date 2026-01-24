@@ -75,9 +75,15 @@ public class ArchivalSubmissionWorkflowStep implements WorkflowStep {
             
             // Call the updated method with all required parameters
             /*
-             * Note: because this must complete before the workflow can complete and update the version status in the db a long-running archive submission via workflow could hit a transaction timeout and fail.
-             * The commands themselves have been updated to run archive submission outside of any transaction and update the status in a separate transaction, so archiving a given version that way could succeed
-             * where this workflow failed.
+             * Note: because this must complete before the workflow can complete and update the version status
+             * in the db a long-running archive submission via workflow could hit a transaction timeout and fail.
+             * The commands themselves have been updated to run archive submission outside of any transaction
+             * and update the status in a separate transaction, so archiving a given version that way could 
+             * succeed where this workflow failed.
+             * 
+             * Another difference when running in a workflow - this step has no way to set the archiving status to 
+             * pending as is done when running archiving from the UI/API. Instead, there is a generic workflow
+             * lock on the dataset. 
              */
             return archiveCommand.performArchiveSubmission(
                 version, 

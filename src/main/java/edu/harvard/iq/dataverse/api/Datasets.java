@@ -1279,7 +1279,9 @@ public class Datasets extends AbstractApiBean {
                     AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, createDataverseRequest(user), updateVersion);
                     if (archiveCommand != null) {
                         // Delete the record of any existing copy since it is now out of date/incorrect
-                        updateVersion.setArchivalCopyLocation(null);
+                        JsonObjectBuilder job = Json.createObjectBuilder();
+                        job.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_PENDING);
+                        updateVersion.setArchivalCopyLocation(JsonUtil.prettyPrint(job.build()));
                         datasetVersionSvc.persistArchivalCopyLocation(updateVersion);
                         /*
                          * Then try to generate and submit an archival copy. Note that running this

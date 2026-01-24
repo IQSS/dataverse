@@ -416,8 +416,8 @@ public class DatasetVersion implements Serializable {
         populateArchivalStatus(true);
     }
 
-    // COnvenience method to set only the status
-    public void setArchivalStatus(String status) {
+    // Convenience method to just change the status without changing the location
+    public void setArchivalStatusOnly(String status) {
         populateArchivalStatus(false);
         JsonObjectBuilder job = Json.createObjectBuilder(archivalCopyLocationJson);
         job.add(DatasetVersion.ARCHIVAL_STATUS, status);
