@@ -28,6 +28,8 @@ import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
@@ -1337,25 +1339,21 @@ w
 
 
     /**
-     * Update the archival copy location for a specific version of a dataset. Archiving can be long-running and other parallel updates to the datasetversion have likely occurred so this method will check
-     * for OptimisticLockExceptions and retry the update with the latest version.
+     * Update the archival copy location for a specific version of a dataset.
+     * Archiving can be long-running and other parallel updates to the datasetversion have likely occurred
+     * so this method will just re-find the version rather than risking an
+     * OptimisticLockException and then having to retry in yert another transaction (since the OLE rolls this one back).
      *
      * @param dv
      *            The dataset version whose archival copy location we want to update. Must not be {@code null}.
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void persistArchivalCopyLocation(DatasetVersion dv) {
-        try {
-            em.merge(dv);
-            em.flush(); // Force the update and version check immediately
-        } catch (OptimisticLockException ole) {
-            logger.log(Level.INFO, "OptimisticLockException while persisting archival copy location for DatasetVersion id={0}. Retrying on latest version.", dv.getId());
-            DatasetVersion currentVersion = find(dv.getId());
-            if (currentVersion != null) {
-                currentVersion.setArchivalCopyLocation(dv.getArchivalCopyLocation());
-                em.merge(currentVersion);
-            } else {
-                logger.log(Level.SEVERE, "Could not find DatasetVersion with id={0} to retry persisting archival copy location after OptimisticLockException.", dv.getId());
-            }
+        DatasetVersion currentVersion = find(dv.getId());
+        if (currentVersion != null) {
+            currentVersion.setArchivalCopyLocation(dv.getArchivalCopyLocation());
+        } else {
+            logger.log(Level.SEVERE, "Could not find DatasetVersion with id={0} to retry persisting archival copy location after OptimisticLockException.", dv.getId());
         }
     }
 }
