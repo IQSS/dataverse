@@ -1496,8 +1496,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
     public Long currentStorageSizeInBytes(DvObjectContainer dvObjectContainer) {
-        return storageUseService.findStorageSizeByDvContainerId(dvObjectContainer.getId() != null ?
-                dvObjectContainer.getId() : dvObjectContainer.getOwner().getId());
+        return storageUseService.findStorageSizeByDvContainerId(dvObjectContainer.getId());
     }
 
     public boolean isInReleasedVersion(Long id) {

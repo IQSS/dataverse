@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -238,17 +239,6 @@ class StringUtilTest {
             assertEquals(StringUtil.normalize(null), "");
 
             // TODO: organization examples...
-        }
-
-        @Test
-        public void testFormatBytes() {
-            assertEquals("1,023 bytes", StringUtil.formatBytes(StringUtil.BYTES_PER_KB - 1));
-            assertEquals("1,024.00 KB", StringUtil.formatBytes(StringUtil.BYTES_PER_MB - 1));
-            assertEquals("1,024.00 MB", StringUtil.formatBytes(StringUtil.BYTES_PER_GB - 1));
-            assertEquals("1.00 GB", StringUtil.formatBytes(StringUtil.BYTES_PER_GB));
-            assertEquals("341.33 GB", StringUtil.formatBytes(StringUtil.BYTES_PER_TB / 3));
-            assertEquals("1.29 GB", StringUtil.formatBytes(StringUtil.BYTES_PER_GB + 312345678)); // 1386087502 / 1073741824 = 1.290894581
-            assertEquals("1.49 TB", StringUtil.formatBytes(StringUtil.BYTES_PER_TB + (StringUtil.BYTES_PER_GB * 500))); // 1636382539776 / 1099511627776 = 1.48828125
         }
     }
 }
