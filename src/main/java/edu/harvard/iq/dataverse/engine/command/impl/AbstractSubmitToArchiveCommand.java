@@ -156,7 +156,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
             public void run() {
                 try (PipedOutputStream out = new PipedOutputStream(in)) {
                     // Generate bag
-                    bagger.setNumConnections(getNumberOfBagGeneratorThreads());
+                    BagGenerator.setNumConnections(getNumberOfBagGeneratorThreads());
                     BagGenerator bagger = new BagGenerator(ore, dataciteXml, terms);
                     bagger.setAuthenticationKey(token.getTokenString());
                     bagger.generateBag(out);
