@@ -6018,7 +6018,8 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
 
                     commandEngine.submit(update_cmd);
 
-                } catch (CommandException ex) {
+                    logger.log(Level.WARNING, "Failed to remove guestbook from dataset " + dataset.getId(), ex);
+                    return error(BAD_REQUEST, "Failed to remove guestbook.");
                     logger.log(Level.WARNING, "Failed to remove dataset guestbook for dataset " + dataset.getId(), ex);
                     return error(BAD_REQUEST, "Failed to remove dataset guestbook.");
                 }
