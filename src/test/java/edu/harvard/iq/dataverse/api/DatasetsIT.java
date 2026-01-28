@@ -7412,7 +7412,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     @Test
-    public void testGetDatasetWithGuestbook() throws IOException, JsonParseException {
+    public void testGetDatasetWithTermsOfUseAndGuestbook() throws IOException, JsonParseException {
         String apiToken = getSuperuserToken();
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         String ownerAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
@@ -7425,6 +7425,19 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Create a Guestbook
         Guestbook guestbook = UtilIT.createRandomGuestbook(ownerAlias, persistentId, apiToken);
 
+        // Create a license for Terms of Use
+        String jsonString = """
+            {
+               "customTerms": {
+                 "termsOfUse": "testTermsOfUse"
+                }
+            }
+            """;
+        Response updateLicenseResponse = UtilIT.updateLicense(datasetId.toString(), jsonString, apiToken);
+        updateLicenseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success")));
+
         // Enable the Guestbook with invalid enable flag
         Response guestbookEnableResponse = UtilIT.enableGuestbook(ownerAlias, guestbook.getId(), apiToken, "x");
         guestbookEnableResponse.prettyPrint();
@@ -7436,6 +7449,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         getDataset.prettyPrint();
         getDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
+                .body("data[0].termsOfUse", equalTo("testTermsOfUse"))
                 .body("data[0].guestbookId", equalTo(guestbook.getId().intValue()));
 
         getDataset = UtilIT.nativeGet(datasetId, apiToken);
@@ -7498,58 +7512,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         getDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.guestbookId", equalTo(guestbook.getId().intValue()));
-    }
-
-    @Test
-    public void testGetDatasetWithTermsOfUseAndGuestbook() throws IOException, JsonParseException {
-        // update ds guestbook
-        // delete dataset guestbook
-        File guestbookJson = new File("scripts/api/data/guestbook-test.json");
-        String guestbookAsJson = new String(Files.readAllBytes(Paths.get(guestbookJson.getAbsolutePath())));
-        // Create users, Dataverse, and Dataset
-        String adminApiToken = getSuperuserToken();
-        Response createResponse = UtilIT.createRandomUser();
-        String apiToken = UtilIT.getApiTokenFromResponse(createResponse);
-        Response createDataverseResponse = UtilIT.createRandomDataverse(adminApiToken);
-        String ownerAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(ownerAlias, adminApiToken);
-        createDatasetResponse.prettyPrint();
-        String persistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
-        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
-        // Create a Guestbook
-        Guestbook guestbook = UtilIT.createRandomGuestbook(ownerAlias, persistentId, adminApiToken);
-        // Create a license for Terms of Use
-        String jsonString = """
-            {
-               "customTerms": {
-                 "termsOfUse": "testTermsOfUse"
-                }
-            }
-            """;
-        Response updateLicenseResponse = UtilIT.updateLicense(datasetId.toString(), jsonString, adminApiToken);
-        updateLicenseResponse.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.message", equalTo(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success")));
-
-        // Test update dataset guestbook
-        Response updateDatasetResponse = UtilIT.updateDatasetGuestbook(persistentId, guestbook.getId(), adminApiToken);
-        updateDatasetResponse.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        Response getDatasetResponse = UtilIT.getDatasetVersion(persistentId, ":latest", adminApiToken);
-        getDatasetResponse.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.termsOfUse", equalTo("testTermsOfUse"))
-                .body("data.guestbookId", equalTo(guestbook.getId().intValue()));
-
-        // Test delete dataset guestbook
-        updateDatasetResponse = UtilIT.updateDatasetGuestbook(persistentId, null, adminApiToken);
-        updateDatasetResponse.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        getDatasetResponse = UtilIT.getDatasetVersion(persistentId, ":latest", adminApiToken);
-        getDatasetResponse.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.termsOfUse", equalTo("testTermsOfUse"))
-                .body("data.guestbookId", nullValue());
     }
 
     private String getSuperuserToken() {
