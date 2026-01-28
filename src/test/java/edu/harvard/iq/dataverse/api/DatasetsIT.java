@@ -7502,6 +7502,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
     @Test
     public void testGetDatasetWithTermsOfUseAndGuestbook() throws IOException, JsonParseException {
+        // update ds guestbook
+        // delete dataset guestbook
         File guestbookJson = new File("scripts/api/data/guestbook-test.json");
         String guestbookAsJson = new String(Files.readAllBytes(Paths.get(guestbookJson.getAbsolutePath())));
         // Create users, Dataverse, and Dataset
@@ -7529,9 +7531,25 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 .body("data.message", equalTo(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success")));
 
-        // Publish
-        UtilIT.publishDataverseViaNativeApi(ownerAlias, adminApiToken).prettyPrint();
-        UtilIT.publishDatasetViaNativeApi(persistentId, "major", adminApiToken).prettyPrint();
+        // Test update dataset guestbook
+        Response updateDatasetResponse = UtilIT.updateDatasetGuestbook(persistentId, guestbook.getId(), adminApiToken);
+        updateDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Response getDatasetResponse = UtilIT.getDatasetVersion(persistentId, ":latest", adminApiToken);
+        getDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.termsOfUse", equalTo("testTermsOfUse"))
+                .body("data.guestbookId", equalTo(guestbook.getId().intValue()));
+
+        // Test delete dataset guestbook
+        updateDatasetResponse = UtilIT.updateDatasetGuestbook(persistentId, null, adminApiToken);
+        updateDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        getDatasetResponse = UtilIT.getDatasetVersion(persistentId, ":latest", adminApiToken);
+        getDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.termsOfUse", equalTo("testTermsOfUse"))
+                .body("data.guestbookId", nullValue());
     }
 
     private String getSuperuserToken() {

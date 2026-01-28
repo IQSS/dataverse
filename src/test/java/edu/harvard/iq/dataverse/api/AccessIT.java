@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Guestbook;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import io.restassured.RestAssured;
@@ -27,8 +28,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static jakarta.ws.rs.core.Response.Status.*;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -548,6 +548,12 @@ public class AccessIT {
         requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando, guestbookResponseJson);
         requestFileAccessResponse.prettyPrint();
         assertEquals(200, requestFileAccessResponse.getStatusCode());
+        // Request a second time should fail since the request was already made
+        requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando, guestbookResponseJson);
+        requestFileAccessResponse.prettyPrint();
+        requestFileAccessResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("access.api.requestAccess.failure.requestExists")));
 
         Response listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken);
         listAccessRequestResponse.prettyPrint();

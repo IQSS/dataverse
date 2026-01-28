@@ -616,7 +616,7 @@ public class JsonParser {
             cqr.setCustomQuestion(cq);
             String response = null;
             if (cq == null) {
-                throw new JsonParseException("Guestbook Custom Question ID not found!");
+                throw new JsonParseException(BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookresponseQuestionIdNotFound",List.of(cqId.toString())));
             } else if (cq.getQuestionType().equalsIgnoreCase("textarea")) {
                 String lineFeed = String.valueOf((char) 10);
                 JsonArray jsonArray = answer.getJsonArray("value");
@@ -625,7 +625,7 @@ public class JsonParser {
             } else if (cq.getQuestionType().equalsIgnoreCase("options")) {
                 String option = answer.getString("value");
                 if (!cq.getCustomQuestionOptions().contains(option)) {
-                    throw new JsonParseException("Guestbook Custom Question Answer not an option!");
+                    throw new JsonParseException(BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookresponseInvalidOption", List.of(option)));
                 }
                 response = option;
             } else {
@@ -633,9 +633,20 @@ public class JsonParser {
             }
             cqr.setResponse(response);
             customQuestionResponses.add(cqr);
+            cqMap.remove(cqId); // remove so we can check the remaining for missing required questions
         }
         guestbookResponse.setCustomQuestionResponses(customQuestionResponses);
         // verify each required question is in the response
+        List<String> missingReponses = new ArrayList<>();
+        for (Map.Entry<Long, CustomQuestion> e : cqMap.entrySet()) {
+            if (e.getValue().isRequired()) {
+                missingReponses.add(e.getValue().getQuestionString());
+            }
+        }
+        if (!missingReponses.isEmpty()) {
+            String missing = String.join(",", missingReponses);
+            throw new JsonParseException(BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookresponseMissingRequired", List.of(missing)));
+        }
 
         return guestbookResponse;
     }

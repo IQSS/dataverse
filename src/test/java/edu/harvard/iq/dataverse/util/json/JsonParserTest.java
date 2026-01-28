@@ -806,6 +806,7 @@ public class JsonParserTest {
         Long i = 1L;
         for (CustomQuestion cq : gb.getCustomQuestions()) {
             cq.setId(i++);
+            cq.setRequired(true);
         }
 
         final String guestbookResponseJson = """
@@ -826,10 +827,50 @@ public class JsonParserTest {
                             ]
                         }
                 """;
+        final String guestbookResponseJsonMissing3 = """
+                        {
+                            "answers": [
+                                {
+                                    "id": 1,
+                                    "value": "Good"
+                                },
+                                {
+                                    "id": 2,
+                                    "value": ["Multi","Line"]
+                                }
+                            ]
+                        }
+                """;
 
         GuestbookResponse guestbookResponse = new GuestbookResponse();
         guestbookResponse.setGuestbook(gb);
         jsonObj = JsonUtil.getJsonObject(guestbookResponseJson);
         GuestbookResponse gbr = sut.parseGuestbookResponse(jsonObj, guestbookResponse);
+        assertTrue(gbr.getCustomQuestionResponses().size() == 3);
+
+        // Test missing required question response
+        try {
+            jsonObj = JsonUtil.getJsonObject(guestbookResponseJsonMissing3);
+            gbr = sut.parseGuestbookResponse(jsonObj, guestbookResponse);
+        } catch (JsonParseException e) {
+            System.out.println(e.getMessage());
+            assertTrue(e.getMessage().contains("What color car do you drive"));
+        }
+        // Test invalid option in question response
+        try {
+            jsonObj = JsonUtil.getJsonObject(guestbookResponseJson.replace("Yellow", "Green"));
+            gbr = sut.parseGuestbookResponse(jsonObj, guestbookResponse);
+        } catch (JsonParseException e) {
+            System.out.println(e.getMessage());
+            assertTrue(e.getMessage().contains("not a valid option (Green)"));
+        }
+        // Test invalid Custom Question ID in question response
+        try {
+            jsonObj = JsonUtil.getJsonObject(guestbookResponseJson.replace("3", "4"));
+            gbr = sut.parseGuestbookResponse(jsonObj, guestbookResponse);
+        } catch (JsonParseException e) {
+            System.out.println(e.getMessage());
+            assertTrue(e.getMessage().contains("ID 4 not found"));
+        }
     }
 }
