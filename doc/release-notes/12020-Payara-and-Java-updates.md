@@ -1,6 +1,6 @@
 ### Payara 7.x and Java 21 support
 
-This version of Dataverse has a minimal requirement of Payara 7.2025.2 and Java 21. (Later versions may work.)
+This version of Dataverse has a minimal requirement of Payara 7.2026.1 and Java 21. (Later versions may work.)
 
 #### Update Instructions:
 

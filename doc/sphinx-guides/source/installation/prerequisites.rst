@@ -44,7 +44,7 @@ On RHEL/derivative you can make Java 21 the default with the ``alternatives`` co
 Payara
 ------
 
-Payara 7.2025.2 is recommended. Newer versions might work fine. Regular updates are recommended.
+Payara 7.2026.1 is recommended. Newer versions might work fine. Regular updates are recommended.
 
 Installing Payara
 =================
@@ -55,8 +55,8 @@ Installing Payara
 
 - Download and install Payara (installed in ``/usr/local/payara7`` in the example commands below)::
 
-	# wget https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/7.2025.2/payara-7.2025.2.zip
-	# unzip payara-7.2025.2.zip
+	# wget https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/7.2026.1/payara-7.2026.1.zip
+	# unzip payara-7.2026.1.zip
 	# mv payara7 /usr/local
 
 If nexus.payara.fish is ever down for maintenance, Payara distributions are also available from https://repo1.maven.org/maven2/fish/payara/distributions/payara/
