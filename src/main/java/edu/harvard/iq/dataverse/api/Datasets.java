@@ -5997,7 +5997,8 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             } catch (NumberFormatException nfe) {
                 return error(NOT_FOUND, "Could not find a guestbook with id " + guestbookId);
             } catch (CommandException ex) {
-                return error(BAD_REQUEST, ex.getMessage());
+                logger.log(Level.WARNING, "Failed to update dataset guestbook for dataset " + dataset.getId(), ex);
+                return error(BAD_REQUEST, "Failed to update dataset guestbook.");
             }
             return ok("Guestbook " + guestbookId + " set");
 
@@ -6018,7 +6019,8 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
                     commandEngine.submit(update_cmd);
 
                 } catch (CommandException ex) {
-                    return error(BAD_REQUEST, ex.getMessage());
+                    logger.log(Level.WARNING, "Failed to remove dataset guestbook for dataset " + dataset.getId(), ex);
+                    return error(BAD_REQUEST, "Failed to remove dataset guestbook.");
                 }
                 return ok("Guestbook removed " + guestbookId);
             } else {
