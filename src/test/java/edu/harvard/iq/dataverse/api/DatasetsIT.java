@@ -7500,7 +7500,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         setGuestbook.prettyPrint();
         setGuestbook.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", startsWith("Could not find an available guestbook"));
+                .body("message", startsWith("Failed to update dataset guestbook"));
 
         // Enable the Guestbook. Add it to the Dataset. Then disable it.
         // Show that the guestbook is still returned in the dataset Json even if it's disabled

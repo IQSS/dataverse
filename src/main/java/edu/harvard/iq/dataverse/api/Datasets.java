@@ -5989,11 +5989,8 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
                 if (guestbook == null) {
                     return error(NOT_FOUND, "Could not find a guestbook with id " + guestbookId);
                 }
-
                 UpdateDatasetGuestbookCommand update_cmd = new UpdateDatasetGuestbookCommand(dataset, guestbook, req);
-
                 commandEngine.submit(update_cmd);
-
             } catch (NumberFormatException nfe) {
                 return error(NOT_FOUND, "Could not find a guestbook with id " + guestbookId);
             } catch (CommandException ex) {
@@ -6015,12 +6012,9 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
                 Long guestbookId = dataset.getGuestbook().getId();
                 try {
                     UpdateDatasetGuestbookCommand update_cmd = new UpdateDatasetGuestbookCommand(dataset, null, req);
-
                     commandEngine.submit(update_cmd);
-
-                    logger.log(Level.WARNING, "Failed to remove guestbook from dataset " + dataset.getId(), ex);
-                    return error(BAD_REQUEST, "Failed to remove guestbook.");
-                    logger.log(Level.WARNING, "Failed to remove dataset guestbook for dataset " + dataset.getId(), ex);
+                } catch (CommandException ex) {
+                    logger.log(Level.WARNING, "Failed to remove dataset guestbook from dataset " + dataset.getId(), ex);
                     return error(BAD_REQUEST, "Failed to remove dataset guestbook.");
                 }
                 return ok("Guestbook removed " + guestbookId);
