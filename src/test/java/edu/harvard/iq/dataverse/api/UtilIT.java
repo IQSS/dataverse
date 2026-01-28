@@ -3,16 +3,16 @@ package edu.harvard.iq.dataverse.api;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import edu.harvard.iq.dataverse.mydata.MyDataFilterParams;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
@@ -48,6 +48,8 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 import static io.restassured.RestAssured.given;
 import static io.restassured.path.xml.XmlPath.from;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UtilIT {
@@ -2111,8 +2113,11 @@ public class UtilIT {
     }
 
     static Response requestFileAccess(String fileIdOrPersistentId, String apiToken) {
-        System.out.print ("Reuest file acceess + fileIdOrPersistentId: " + fileIdOrPersistentId);
-        System.out.print ("Reuest file acceess + apiToken: " + apiToken);
+        return requestFileAccess(fileIdOrPersistentId, apiToken, null);
+    }
+    static Response requestFileAccess(String fileIdOrPersistentId, String apiToken, String body) {
+        System.out.print ("Request file access + fileIdOrPersistentId: " + fileIdOrPersistentId);
+        System.out.print ("Request file access + apiToken: " + apiToken);
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
@@ -2124,10 +2129,16 @@ public class UtilIT {
         if (optionalQueryParam.isEmpty()) {
             keySeparator = "?";
         }
-        System.out.print ("URL:  " + "/api/access/datafile/" + idInPath + "/requestAccess" + optionalQueryParam + keySeparator + "key=" + apiToken);
-        Response response = given()
-                .put("/api/access/datafile/" + idInPath + "/requestAccess" + optionalQueryParam + keySeparator + "key=" + apiToken);
-        return response;
+        String path = "/api/access/datafile/" + idInPath + "/requestAccess" + optionalQueryParam + keySeparator + "key=" + apiToken;
+        System.out.print ("URL:  " + path);
+        RequestSpecification requestSpecification = given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json");
+        if (body != null) {
+            requestSpecification.body(body);
+        }
+
+        return requestSpecification.put(path);
     }
 
     static Response grantFileAccess(String fileIdOrPersistentId, String identifier, String apiToken) {
@@ -5355,5 +5366,57 @@ public class UtilIT {
                 .body(message)
                 .when()
                 .post("/api/inbox/");
+    }
+
+    public static Response setGuestbookEntryOnRequest(String datasetId, String apiToken, Boolean enabled) {
+        return given()
+                .body(enabled)
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/datasets/" + datasetId + "/guestbookEntryAtRequest");
+    }
+
+    public static Guestbook createRandomGuestbook(String ownerAlias, String persistentId, String apiToken) throws IOException, JsonParseException {
+        Guestbook gb = new Guestbook();
+        File guestbookJson = new File("scripts/api/data/guestbook-test.json");
+        String guestbookAsJson = new String(Files.readAllBytes(Paths.get(guestbookJson.getAbsolutePath())));
+        JsonObject jsonObj = JsonUtil.getJsonObject(guestbookAsJson);
+        JsonParser jsonParsor = new JsonParser();
+        jsonParsor.parseGuestbook(jsonObj, gb);
+
+        Response createGuestbookResponse = UtilIT.createGuestbook(ownerAlias, guestbookAsJson, apiToken);
+        createGuestbookResponse.prettyPrint();
+        JsonPath createdGuestbook = JsonPath.from(createGuestbookResponse.body().asString());
+        Long guestbookId = Long.parseLong(createdGuestbook.getString("data.message").split(" ")[1]);
+        Response guestbookEnableResponse = UtilIT.enableGuestbook(ownerAlias, guestbookId, apiToken, Boolean.TRUE.toString());
+        guestbookEnableResponse.prettyPrint();
+        guestbookEnableResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", startsWith("Guestbook"));
+        Response getGuestbookResponse = UtilIT.getGuestbook(guestbookId, apiToken);
+        getGuestbookResponse.prettyPrint();
+        JsonPath jsonPath = JsonPath.from(getGuestbookResponse.body().asString());
+        gb.setId(guestbookId);
+        gb.getCustomQuestions().get(0).setId(jsonPath.getLong("data.customQuestions[0].id"));
+        gb.getCustomQuestions().get(1).setId(jsonPath.getLong("data.customQuestions[1].id"));
+        gb.getCustomQuestions().get(2).setId(jsonPath.getLong("data.customQuestions[2].id"));
+
+        // Add the Guestbook to the Dataset
+        Response setGuestbook = UtilIT.updateDatasetGuestbook(persistentId, guestbookId, apiToken);
+        setGuestbook.prettyPrint();
+        return gb;
+    }
+
+    public static String generateGuestbookResponse(Guestbook gb) throws IOException {
+        File guestbookJson = new File("scripts/api/data/guestbook-test-response.json");
+        String guestbookAsJson = new String(Files.readAllBytes(Paths.get(guestbookJson.getAbsolutePath())));
+
+        List<Long> cqIDs = new ArrayList<>();
+        gb.getCustomQuestions().stream().forEach(cq -> cqIDs.add(cq.getId()));
+
+        return guestbookAsJson.replace("@ID", gb.getId().toString())
+                .replace("@QID1", cqIDs.get(0).toString())
+                .replace("@QID2", cqIDs.get(1).toString())
+                .replace("@QID3", cqIDs.get(2).toString());
     }
 }

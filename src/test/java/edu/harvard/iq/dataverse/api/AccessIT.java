@@ -5,31 +5,31 @@
  */
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Guestbook;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.util.FileUtil;
-import java.io.IOException;
-import java.util.zip.ZipInputStream;
-
-import jakarta.json.Json;
+import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import java.util.zip.ZipEntry;
+
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.hamcrest.collection.IsMapContaining;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import static jakarta.ws.rs.core.Response.Status.*;
-import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -489,12 +489,17 @@ public class AccessIT {
     }
     
     @Test
-    public void testRequestAccess() throws InterruptedException {
+    public void testRequestAccess() throws InterruptedException, IOException, JsonParseException {
     
         String pathToJsonFile = "scripts/api/data/dataset-create-new.json";
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetIdNew = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String persistentIdNew = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+
+        // Create a Guestbook
+        Guestbook guestbook = UtilIT.createRandomGuestbook(dataverseAlias, persistentId, apiToken);
+        String guestbookResponseJson = UtilIT.generateGuestbookResponse(guestbook);
         
         basicFileName = "004.txt";
         String basicPathToFile = "scripts/search/data/replace_test/" + basicFileName;
@@ -532,7 +537,16 @@ public class AccessIT {
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetIdNew, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
 
+        // Set the guestbook on the Dataset
+        UtilIT.updateDatasetGuestbook(persistentIdNew, guestbook.getId(), apiToken).prettyPrint();
+        // Request file access WITHOUT the required Guestbook Response (getEffectiveGuestbookEntryAtRequest)
+        UtilIT.setGuestbookEntryOnRequest(datasetId.toString(), apiToken, Boolean.TRUE).prettyPrint();
         requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
+        requestFileAccessResponse.prettyPrint();
+        assertEquals(400, requestFileAccessResponse.getStatusCode());
+        // Request file access with the required Guestbook Response (getEffectiveGuestbookEntryAtRequest)
+        requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando, guestbookResponseJson);
+        requestFileAccessResponse.prettyPrint();
         assertEquals(200, requestFileAccessResponse.getStatusCode());
 
         Response listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken);

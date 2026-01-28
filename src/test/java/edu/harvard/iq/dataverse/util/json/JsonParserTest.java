@@ -65,6 +65,58 @@ public class JsonParserTest {
     DatasetFieldType pubIdType;
     DatasetFieldType compoundSingleType;
     JsonParser sut;
+
+    final static String guestbookJson = """
+                {
+                  "name": "my test guestbook",
+                  "enabled": true,
+                  "emailRequired": true,
+                  "nameRequired": true,
+                  "institutionRequired": false,
+                  "positionRequired": false,
+                  "customQuestions": [
+                    {
+                      "question": "how's your day",
+                      "required": true,
+                      "displayOrder": 0,
+                      "type": "text",
+                      "hidden": false
+                    },
+                    {
+                      "question": "Describe yourself",
+                      "required": false,
+                      "displayOrder": 1,
+                      "type": "textarea",
+                      "hidden": false
+                    },
+                    {
+                      "question": "What color car do you drive",
+                      "required": true,
+                      "displayOrder": 2,
+                      "type": "options",
+                      "hidden": false,
+                      "optionValues": [
+                        {
+                          "value": "Red",
+                          "displayOrder": 0
+                        },
+                        {
+                          "value": "White",
+                          "displayOrder": 1
+                        },
+                        {
+                          "value": "Yellow",
+                          "displayOrder": 2
+                        },
+                        {
+                          "value": "Purple",
+                          "displayOrder": 3
+                        }
+                      ]
+                    }
+                  ]
+                }
+        """;
     
     public JsonParserTest() {
     }
@@ -736,58 +788,6 @@ public class JsonParserTest {
 
     @Test
     public void testGuestbook() throws JsonParseException {
-        final String guestbookJson = """
-                {
-                  "name": "my test guestbook",
-                  "enabled": true,
-                  "emailRequired": true,
-                  "nameRequired": true,
-                  "institutionRequired": false,
-                  "positionRequired": false,
-                  "customQuestions": [
-                    {
-                      "question": "how's your day",
-                      "required": true,
-                      "displayOrder": 0,
-                      "type": "text",
-                      "hidden": false
-                    },
-                    {
-                      "question": "Describe yourself",
-                      "required": false,
-                      "displayOrder": 1,
-                      "type": "textarea",
-                      "hidden": false
-                    },
-                    {
-                      "question": "What color car do you drive",
-                      "required": true,
-                      "displayOrder": 2,
-                      "type": "options",
-                      "hidden": false,
-                      "optionValues": [
-                        {
-                          "value": "Red",
-                          "displayOrder": 0
-                        },
-                        {
-                          "value": "White",
-                          "displayOrder": 1
-                        },
-                        {
-                          "value": "Yellow",
-                          "displayOrder": 2
-                        },
-                        {
-                          "value": "Purple",
-                          "displayOrder": 3
-                        }
-                      ]
-                    }
-                  ]
-                }
-        """;
-
         JsonObject jsonObj = JsonUtil.getJsonObject(guestbookJson);
         Guestbook gb = new Guestbook();
         gb = sut.parseGuestbook(jsonObj, gb);
@@ -796,5 +796,40 @@ public class JsonParserTest {
         assertEquals(4, gb.getCustomQuestions().get(2).getCustomQuestionValues().size());
         assertEquals("Purple", gb.getCustomQuestions().get(2).getCustomQuestionValues().get(3).getValueString());
         assertEquals(3, gb.getCustomQuestions().get(2).getCustomQuestionValues().get(3).getDisplayOrder());
+    }
+
+    @Test
+    public void testGuestbookResponse() throws JsonParseException {
+        JsonObject jsonObj = JsonUtil.getJsonObject(guestbookJson);
+        Guestbook gb = new Guestbook();
+        gb = sut.parseGuestbook(jsonObj, gb);
+        Long i = 1L;
+        for (CustomQuestion cq : gb.getCustomQuestions()) {
+            cq.setId(i++);
+        }
+
+        final String guestbookResponseJson = """
+                        {
+                            "answers": [
+                                {
+                                    "id": 1,
+                                    "value": "Good"
+                                },
+                                {
+                                    "id": 2,
+                                    "value": ["Multi","Line"]
+                                },
+                                {
+                                    "id": 3,
+                                    "value": "Yellow"
+                                }
+                            ]
+                        }
+                """;
+
+        GuestbookResponse guestbookResponse = new GuestbookResponse();
+        guestbookResponse.setGuestbook(gb);
+        jsonObj = JsonUtil.getJsonObject(guestbookResponseJson);
+        GuestbookResponse gbr = sut.parseGuestbookResponse(jsonObj, guestbookResponse);
     }
 }

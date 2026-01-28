@@ -7,9 +7,6 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.*;
-
-import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
-
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -17,13 +14,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.dataaccess.DataFileZipper;
-import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
-import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
-import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
@@ -40,64 +31,17 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-
-import java.util.logging.Logger;
 import jakarta.ejb.EJB;
-import java.io.InputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.logging.Level;
 import jakarta.inject.Inject;
-import jakarta.json.Json;
-import java.net.URI;
-import jakarta.json.JsonArrayBuilder;
+import jakarta.json.*;
 import jakarta.persistence.TypedQuery;
-
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.UriInfo;
-
-
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.ServiceUnavailableException;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
-import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
-import jakarta.ws.rs.core.StreamingOutput;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import java.net.URISyntaxException;
-
-import jakarta.json.JsonObjectBuilder;
-import jakarta.ws.rs.RedirectionException;
-import jakarta.ws.rs.ServerErrorException;
-import jakarta.ws.rs.core.MediaType;
-import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
-import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
-
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.*;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
@@ -106,6 +50,21 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static jakarta.ws.rs.core.Response.Status.*;
 
 /*
     Custom API exceptions [NOT YET IMPLEMENTED]
@@ -1394,14 +1353,14 @@ public class Access extends AbstractApiBean {
      *
      * @param crc
      * @param fileToRequestAccessId
-     * @param headers
      * @return
      */
     @PUT
     @AuthRequired
     @Path("/datafile/{id}/requestAccess")
-    public Response requestFileAccess(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId, @Context HttpHeaders headers) {
-        
+    public Response requestFileAccess(@Context ContainerRequestContext crc
+            ,@PathParam("id") String fileToRequestAccessId, String jsonBody) {
+
         DataverseRequest dataverseRequest;
         DataFile dataFile;
         
@@ -1438,8 +1397,32 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.requestExists"));
         }
 
+        // Is Guestbook response required?
+        // The response will be true (guestbook displays when making a request), false (guestbook displays at download), or will indicate that the dataset inherits one of these settings.
+        GuestbookResponse guestbookResponse = null;
+        if (dataFile.getOwner().getEffectiveGuestbookEntryAtRequest()) {
+            Dataset ds = dataFile.getOwner();
+            if (ds.getGuestbook() != null && ds.getGuestbook().isEnabled()) {
+                // response is required
+                try {
+                    if (jsonBody == null || jsonBody.isBlank()) {
+                        return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookresponseMissing"));
+                    }
+                    JsonObject jsonObj = JsonUtil.getJsonObject(jsonBody).getJsonObject("guestbookResponse");
+                    guestbookResponse = guestbookResponseService.initAPIGuestbookResponse(ds, dataFile, null, requestor);
+                    guestbookResponse.setEventType(GuestbookResponse.ACCESS_REQUEST);
+                    // Parse custom question answers
+                    jsonParser().parseGuestbookResponse(jsonObj, guestbookResponse);
+                    engineSvc.submit(new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, guestbookResponse.getDataset()));
+                } catch (JsonException | JsonParseException | CommandException ex) {
+                    List<String> args = Arrays.asList(dataFile.getDisplayName(), ex.getLocalizedMessage());
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.commandError", args));
+                }
+            }
+        }
+
         try {
-            engineSvc.submit(new RequestAccessCommand(dataverseRequest, dataFile, true));
+            engineSvc.submit(new RequestAccessCommand(dataverseRequest, dataFile, guestbookResponse, true));
         } catch (CommandException ex) {
             List<String> args = Arrays.asList(dataFile.getDisplayName(), ex.getLocalizedMessage());
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.commandError", args));

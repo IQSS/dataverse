@@ -54,7 +54,6 @@ public class Guestbooks extends AbstractApiBean {
     public Response createGuestbook(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, String jsonBody) {
             return response(req -> {
                 Dataverse dataverse = findDataverseOrDie(identifier);
-                logger.severe(">>> jsonBody " + jsonBody);
                 Guestbook guestbook = new Guestbook();
                 guestbook.setDataverse(dataverse);
                 try {

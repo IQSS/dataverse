@@ -598,6 +598,48 @@ public class JsonParser {
         return customQuestionList;
     }
 
+    public GuestbookResponse parseGuestbookResponse(JsonObject obj, GuestbookResponse guestbookResponse) throws JsonParseException {
+
+        if (obj == null || guestbookResponse == null || guestbookResponse.getGuestbook() == null || guestbookResponse.getGuestbook().getCustomQuestions() == null) {
+            return null;
+        }
+        Map<Long, CustomQuestion> cqMap = new HashMap<>();
+        guestbookResponse.getGuestbook().getCustomQuestions().stream().forEach(cq -> cqMap.put(cq.getId(),cq));
+        JsonArray answers = obj.getJsonArray("answers");
+        List<CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
+        for (JsonObject answer : answers.getValuesAs(JsonObject.class)) {
+            Long cqId = Long.valueOf(answer.getInt("id"));
+            // find the matching CustomQuestion
+            CustomQuestion cq = cqMap.get(cqId);
+            CustomQuestionResponse cqr = new CustomQuestionResponse();
+            cqr.setGuestbookResponse(guestbookResponse);
+            cqr.setCustomQuestion(cq);
+            String response = null;
+            if (cq == null) {
+                throw new JsonParseException("Guestbook Custom Question ID not found!");
+            } else if (cq.getQuestionType().equalsIgnoreCase("textarea")) {
+                String lineFeed = String.valueOf((char) 10);
+                JsonArray jsonArray = answer.getJsonArray("value");
+                List<JsonString> lines = jsonArray.getValuesAs(JsonString.class);
+                response = lines.stream().map(JsonString::getString).collect(Collectors.joining(lineFeed));
+            } else if (cq.getQuestionType().equalsIgnoreCase("options")) {
+                String option = answer.getString("value");
+                if (!cq.getCustomQuestionOptions().contains(option)) {
+                    throw new JsonParseException("Guestbook Custom Question Answer not an option!");
+                }
+                response = option;
+            } else {
+                response = answer.getString("value");
+            }
+            cqr.setResponse(response);
+            customQuestionResponses.add(cqr);
+        }
+        guestbookResponse.setCustomQuestionResponses(customQuestionResponses);
+        // verify each required question is in the response
+
+        return guestbookResponse;
+    }
+
     private edu.harvard.iq.dataverse.license.License parseLicense(String licenseNameOrUri) throws JsonParseException {
         if (licenseNameOrUri == null){
             boolean safeDefaultIfKeyNotFound = true;

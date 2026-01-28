@@ -7412,56 +7412,43 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     @Test
-    public void testGetDatasetWithGuestbook() throws IOException {
-        File guestbookJson = new File("scripts/api/data/guestbook-test.json");
-        String guestbookAsJson = new String(Files.readAllBytes(Paths.get(guestbookJson.getAbsolutePath())));
+    public void testGetDatasetWithGuestbook() throws IOException, JsonParseException {
         String apiToken = getSuperuserToken();
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         String ownerAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-
-        Response createGuestbookResponse = UtilIT.createGuestbook(ownerAlias, guestbookAsJson, apiToken);
-        createGuestbookResponse.prettyPrint();
-        JsonPath createdGuestbook = JsonPath.from(createGuestbookResponse.body().asString());
-        Long guestbookId = Long.parseLong(createdGuestbook.getString("data.message").split(" ")[1]);
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(ownerAlias, apiToken);
         createDatasetResponse.prettyPrint();
         String persistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
-        // Enable the Guestbook
-        Response guestbookEnableResponse = UtilIT.enableGuestbook(ownerAlias, guestbookId, apiToken, "x");
+        // Create a Guestbook
+        Guestbook guestbook = UtilIT.createRandomGuestbook(ownerAlias, persistentId, apiToken);
+
+        // Enable the Guestbook with invalid enable flag
+        Response guestbookEnableResponse = UtilIT.enableGuestbook(ownerAlias, guestbook.getId(), apiToken, "x");
         guestbookEnableResponse.prettyPrint();
         guestbookEnableResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", startsWith("Illegal value"));
-        guestbookEnableResponse = UtilIT.enableGuestbook(ownerAlias, guestbookId, apiToken, Boolean.TRUE.toString());
-        guestbookEnableResponse.prettyPrint();
-        guestbookEnableResponse.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.message", startsWith("Guestbook"));
-
-        // Add the Guestbook to the Dataset
-        Response setGuestbook = UtilIT.updateDatasetGuestbook(persistentId, guestbookId, apiToken);
-        setGuestbook.prettyPrint();
 
         Response getDataset = UtilIT.getDatasetVersions(persistentId, apiToken);
         getDataset.prettyPrint();
         getDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data[0].guestbookId", equalTo(guestbookId.intValue()));
+                .body("data[0].guestbookId", equalTo(guestbook.getId().intValue()));
 
         getDataset = UtilIT.nativeGet(datasetId, apiToken);
         getDataset.prettyPrint();
         getDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.guestbookId", equalTo(guestbookId.intValue()));
+                .body("data.guestbookId", equalTo(guestbook.getId().intValue()));
 
-        Response getGuestbook = UtilIT.getGuestbook(Long.valueOf(guestbookId), apiToken);
+        Response getGuestbook = UtilIT.getGuestbook(guestbook.getId(), apiToken);
         getGuestbook.prettyPrint();
         getGuestbook.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.id", equalTo(guestbookId.intValue()));
+                .body("data.id", equalTo(guestbook.getId().intValue()));
 
         getGuestbook = UtilIT.getGuestbook(-1L, apiToken);
         getGuestbook.prettyPrint();
@@ -7488,14 +7475,14 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data.guestbookId", equalTo(null));
 
         // Disable the Guestbook
-        guestbookEnableResponse = UtilIT.enableGuestbook(ownerAlias, guestbookId, apiToken, Boolean.FALSE.toString());
+        guestbookEnableResponse = UtilIT.enableGuestbook(ownerAlias, guestbook.getId(), apiToken, Boolean.FALSE.toString());
         guestbookEnableResponse.prettyPrint();
         guestbookEnableResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.message", startsWith("Guestbook"));
 
         // Fail to add a disabled Guestbook to the Dataset
-        setGuestbook = UtilIT.updateDatasetGuestbook(persistentId, guestbookId, apiToken);
+        Response setGuestbook = UtilIT.updateDatasetGuestbook(persistentId, guestbook.getId(), apiToken);
         setGuestbook.prettyPrint();
         setGuestbook.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
@@ -7503,14 +7490,48 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Enable the Guestbook. Add it to the Dataset. Then disable it.
         // Show that the guestbook is still returned in the dataset Json even if it's disabled
-        UtilIT.enableGuestbook(ownerAlias, guestbookId, apiToken, Boolean.TRUE.toString()).prettyPrint();
-        UtilIT.updateDatasetGuestbook(persistentId, guestbookId, apiToken).prettyPrint();
-        UtilIT.enableGuestbook(ownerAlias, guestbookId, apiToken, Boolean.FALSE.toString()).prettyPrint();
+        UtilIT.enableGuestbook(ownerAlias, guestbook.getId(), apiToken, Boolean.TRUE.toString()).prettyPrint();
+        UtilIT.updateDatasetGuestbook(persistentId, guestbook.getId(), apiToken).prettyPrint();
+        UtilIT.enableGuestbook(ownerAlias, guestbook.getId(), apiToken, Boolean.FALSE.toString()).prettyPrint();
         getDataset = UtilIT.nativeGet(datasetId, apiToken);
         getDataset.prettyPrint();
         getDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.guestbookId", equalTo(guestbookId.intValue()));
+                .body("data.guestbookId", equalTo(guestbook.getId().intValue()));
+    }
+
+    @Test
+    public void testGetDatasetWithTermsOfUseAndGuestbook() throws IOException, JsonParseException {
+        File guestbookJson = new File("scripts/api/data/guestbook-test.json");
+        String guestbookAsJson = new String(Files.readAllBytes(Paths.get(guestbookJson.getAbsolutePath())));
+        // Create users, Dataverse, and Dataset
+        String adminApiToken = getSuperuserToken();
+        Response createResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createResponse);
+        Response createDataverseResponse = UtilIT.createRandomDataverse(adminApiToken);
+        String ownerAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(ownerAlias, adminApiToken);
+        createDatasetResponse.prettyPrint();
+        String persistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        // Create a Guestbook
+        Guestbook guestbook = UtilIT.createRandomGuestbook(ownerAlias, persistentId, adminApiToken);
+        // Create a license for Terms of Use
+        String jsonString = """
+            {
+               "customTerms": {
+                 "termsOfUse": "testTermsOfUse"
+                }
+            }
+            """;
+        Response updateLicenseResponse = UtilIT.updateLicense(datasetId.toString(), jsonString, adminApiToken);
+        updateLicenseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success")));
+
+        // Publish
+        UtilIT.publishDataverseViaNativeApi(ownerAlias, adminApiToken).prettyPrint();
+        UtilIT.publishDatasetViaNativeApi(persistentId, "major", adminApiToken).prettyPrint();
     }
 
     private String getSuperuserToken() {
