@@ -1179,12 +1179,14 @@ public class BagGenerator {
         return new InputStreamSupplier() {
             public InputStream get() {
                 try {
-                    URI uri = new URI(uriString);
-
+                    // Adding gbrecs to suppress counting this access as a download (archiving is not a download indicating scientific use)
+                    String modifiedUriString = uriString + (uriString.contains("?") ? "&" : "?") + "gbrecs=true";
+                    URI uri = new URI(modifiedUriString);
+                    logger.finest("Final URI used (with gbrecs param): " + modifiedUriString);
                     int tries = 0;
                     while (tries < 5) {
 
-                        logger.fine("Get # " + tries + " for " + uriString);
+                        logger.finest("Get # " + tries + " for " + uriString);
                         HttpGet getFile = createNewGetRequest(uri, null);
 
                         try {
