@@ -21,6 +21,7 @@ import jakarta.ws.rs.core.Response;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
@@ -60,7 +61,8 @@ public class Guestbooks extends AbstractApiBean {
                     JsonObject jsonObj = JsonUtil.getJsonObject(jsonBody);
                     jsonParser().parseGuestbook(jsonObj, guestbook);
                 } catch (JsonException | JsonParseException ex) {
-                    return badRequest(ex.getMessage());
+                    logger.log(Level.WARNING, "Error parsing guestbook JSON", ex);
+                    return badRequest("Error parsing guestbook JSON");
                 }
                 guestbook.setCreateTime(Timestamp.from(Instant.now()));
                 execCommand(new CreateGuestbookCommand(guestbook, req, dataverse));
