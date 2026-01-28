@@ -247,6 +247,7 @@ public enum JvmSettings {
     // AUTH: OIDC SETTINGS
     SCOPE_OIDC(SCOPE_AUTH, "oidc"),
     OIDC_ENABLED(SCOPE_OIDC, "enabled"),
+    OIDC_HIDDEN_JSF(SCOPE_OIDC, "hidden-jsf"), // Special case when this provider needs to be hidden in JSF UI
     OIDC_TITLE(SCOPE_OIDC, "title"),
     OIDC_SUBTITLE(SCOPE_OIDC, "subtitle"),
     OIDC_AUTH_SERVER_URL(SCOPE_OIDC, "auth-server-url"),
