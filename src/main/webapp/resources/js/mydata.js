@@ -391,7 +391,7 @@ function submit_my_data_search(){
     // --------------------------------
     // ah, but with the horribly coded xhtml page, we can't use form tags...
     //var formData = $('#mydata_filter_form').serialize();
-    var formData = $("#my_data_filter_column :input").serialize() + '&' + $("#my_data_filter_column2 :input").serialize() ;
+    var formData = $("#my_data_filter_column :input").serialize() + '&' + $("#my_data_filter_column3 :input").serialize()+ '&' + $("#my_data_filter_column2 :input").serialize() ;
 
     // For debugging, show the search params
     if (MYDATA_DEBUG_ON){

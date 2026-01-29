@@ -225,6 +225,15 @@ public class DatasetFieldCompoundValue implements Serializable {
         return linkComponents.get(parentDatasetField.getDatasetFieldType().getName());
     }
 
+    public boolean hasChildOfType(String name) {
+        for (DatasetField child : childDatasetFields) {
+            if (child.getDatasetFieldType().getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private Map<DatasetField, String> removeLastComma(Map<DatasetField, String> mapIn) {
 
         Iterator<Map.Entry<DatasetField, String>> itr = mapIn.entrySet().iterator();

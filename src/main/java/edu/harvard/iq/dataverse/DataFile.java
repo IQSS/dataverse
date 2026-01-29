@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
+import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -50,6 +52,26 @@ import jakarta.validation.constraints.NotBlank;
         @NamedQuery(name="DataFile.findDataFileThatReplacedId",
                 query="SELECT s.id FROM DataFile s WHERE s.previousDataFileId=:identifier")
 })
+@NamedNativeQuery(
+        name = "DataFile.getDataFileInfoForPermissionIndexing",
+        query = "SELECT fm.label, df.id, dvo.publicationDate " +
+                "FROM filemetadata fm " +
+                "JOIN datafile df ON fm.datafile_id = df.id " +
+                "JOIN dvobject dvo ON df.id = dvo.id " +
+                "WHERE fm.datasetversion_id = ?",
+        resultSetMapping = "DataFileInfoMapping"
+    )
+    @SqlResultSetMapping(
+        name = "DataFileInfoMapping",
+        classes = @ConstructorResult(
+            targetClass = SolrIndexServiceBean.DataFileProxy.class,
+            columns = {
+                @ColumnResult(name = "label", type = String.class),
+                @ColumnResult(name = "id", type = Long.class),
+                @ColumnResult(name = "publicationDate", type = Date.class)
+            }
+        )
+    )
 @Entity
 @Table(indexes = {@Index(columnList="ingeststatus")
         , @Index(columnList="checksumvalue")
@@ -1118,6 +1140,33 @@ public class DataFile extends DvObject implements Comparable {
     private boolean tagExists(String tagLabel) {
         for (DataFileTag dataFileTag : dataFileTags) {
             if (dataFileTag.getTypeLabel().equals(tagLabel)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean isDeaccessioned() {
+        // return true, if all published versions were deaccessioned
+        boolean inDeaccessionedVersions = false;
+        for (FileMetadata fmd : getFileMetadatas()) {
+            DatasetVersion testDsv = fmd.getDatasetVersion();
+            if (testDsv.isReleased()) {
+                return false;
+            }
+            // Also check for draft version
+            if (testDsv.isDraft()) {
+                return false;
+            }
+            if (testDsv.isDeaccessioned()) {
+                inDeaccessionedVersions = true;
+            }
+        }
+        return inDeaccessionedVersions; // since any published version would have already returned
+    }
+    public boolean isInDatasetVersion(DatasetVersion version) {
+        for (FileMetadata fmd : getFileMetadatas()) {
+            if (fmd.getDatasetVersion().equals(version)) {
                 return true;
             }
         }

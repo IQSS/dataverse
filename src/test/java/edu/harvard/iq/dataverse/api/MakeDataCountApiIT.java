@@ -58,7 +58,7 @@ public class MakeDataCountApiIT {
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
         String testFile1Src = "src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json";
-        // TODO: Revisit how /tmp/sushi_sample_logs.json is copied to the phoenix server from the Jenkins server in the "build" job.
+        // TODO: Revisit how /tmp/sushi_sample_logs.json is copied to the AWS instance from the Jenkins server in the "build" job.
         String testFile1Tmp = "/tmp/sushi_sample_logs.json";
         FileUtils.copyFile(new File(testFile1Src), new File(testFile1Tmp));
         String reportOnDisk = testFile1Tmp;
@@ -181,13 +181,14 @@ public class MakeDataCountApiIT {
     @Test
     public void testGetUpdateDeleteProcessingState() {
         String yearMonth = "2000-01";
+        String server = "server1";
         // make sure it isn't in the DB
         Response deleteState = UtilIT.makeDataCountDeleteProcessingState(yearMonth);
         deleteState.then().assertThat().statusCode(anyOf(equalTo(200), equalTo(404)));
 
         Response getState = UtilIT.makeDataCountGetProcessingState(yearMonth);
         getState.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
-        Response updateState = UtilIT.makeDataCountUpdateProcessingState(yearMonth, MakeDataCountProcessState.MDCProcessState.PROCESSING.toString());
+        Response updateState = UtilIT.makeDataCountUpdateProcessingState(yearMonth, MakeDataCountProcessState.MDCProcessState.PROCESSING.toString(), server);
         updateState.then().assertThat().statusCode(OK.getStatusCode());
         getState = UtilIT.makeDataCountGetProcessingState(yearMonth);
         getState.then().assertThat().statusCode(OK.getStatusCode());
@@ -196,6 +197,7 @@ public class MakeDataCountApiIT {
         String state1 = stateJson.getString("data.state");
         assertThat(state1, Matchers.equalTo(MakeDataCountProcessState.MDCProcessState.PROCESSING.name()));
         String updateTimestamp1 = stateJson.getString("data.stateChangeTimestamp");
+        String updateServer1 = stateJson.getString("data.server");
 
         updateState = UtilIT.makeDataCountUpdateProcessingState(yearMonth, MakeDataCountProcessState.MDCProcessState.DONE.toString());
         updateState.then().assertThat().statusCode(OK.getStatusCode());
@@ -203,7 +205,9 @@ public class MakeDataCountApiIT {
         stateJson.prettyPrint();
         String state2 = stateJson.getString("data.state");
         String updateTimestamp2 = stateJson.getString("data.stateChangeTimestamp");
+        String updateServer2 = stateJson.getString("data.server");
         assertThat(state2, Matchers.equalTo(MakeDataCountProcessState.MDCProcessState.DONE.name()));
+        assertThat(updateServer2, Matchers.equalTo(updateServer1)); // once set the only way to remove the initial server name is to delete the state
 
         assertThat(updateTimestamp2, Matchers.is(Matchers.greaterThan(updateTimestamp1)));
 

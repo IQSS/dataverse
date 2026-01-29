@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse.pidproviders.doi.datacite;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -17,8 +15,17 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpStatus;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import jakarta.json.JsonObject;
+
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 
 /**
  *
@@ -124,6 +131,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         String identifier = getIdentifier(dvObject);
         try {
             Map<String, String> metadata = getIdentifierMetadata(dvObject);
+            metadata.put("_target", getTargetUrl(dvObject));
             doiDataCiteRegisterService.modifyIdentifier(identifier, metadata, dvObject);
         } catch (Exception e) {
             logger.log(Level.WARNING, "modifyMetadata failed", e);
@@ -137,7 +145,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
      * changes it from PUBLIC/FINDABLE to REGISTERED.
      */
     @Override
-    public void deleteIdentifier(DvObject dvObject) throws IOException, HttpException {
+    public void deleteIdentifier(DvObject dvObject) throws IOException {
         logger.log(Level.FINE, "deleteIdentifier");
         String identifier = getIdentifier(dvObject);
         String idStatus = getPidStatus(dvObject);
@@ -174,21 +182,28 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
          * deleted (because it's in "findable" state, for example, 404 if the DOI wasn't
          * found, and possibly other status codes such as 500 if DataCite is down.
          */
-
-        URL url = new URL(getApiUrl() + "/dois/" + doi.getAuthority() + "/" + doi.getIdentifier());
-        HttpURLConnection connection = null;
-        connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("DELETE");
+        String doiUrl = getApiUrl() + "/dois/" + doi.getAuthority() + "/" + doi.getIdentifier();
+        HttpDelete httpDelete = new HttpDelete(doiUrl);
+        
         String userpass = getUsername() + ":" + getPassword();
         String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userpass.getBytes()));
-        connection.setRequestProperty("Authorization", basicAuth);
-        int status = connection.getResponseCode();
-        if (status != HttpStatus.SC_NO_CONTENT) {
-            logger.warning(
-                    "Incorrect Response Status from DataCite: " + status + " : " + connection.getResponseMessage());
-            throw new HttpException("Status: " + status);
+        httpDelete.setHeader(HttpHeaders.AUTHORIZATION, basicAuth);
+        
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            httpClient.execute(httpDelete, response -> {
+                int status = response.getCode();
+                if (status != HttpStatus.SC_NO_CONTENT) {
+                    String responseBody = EntityUtils.toString(response.getEntity());
+                    logger.warning("Incorrect Response Status from DataCite: " + status + " : " + responseBody);
+                    throw new IOException("Status: " + status);
+                }
+                logger.fine("deleteDoi status for " + doi.asString() + ": " + status);
+                return null;
+            });
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Error deleting DOI: " + doi.asString(), e);
+            throw e;
         }
-        logger.fine("deleteDoi status for " + doi.asString() + ": " + status);
     }
 
     @Override
@@ -203,7 +218,11 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         metadata.put("datacite.publicationyear", generateYear(dvObject));
         metadata.put("_target", getTargetUrl(dvObject));
         try {
-            doiDataCiteRegisterService.registerIdentifier(identifier, metadata, dvObject);
+            if (FeatureFlags.ONLY_UPDATE_DATACITE_WHEN_NEEDED.enabled()) {
+                doiDataCiteRegisterService.reRegisterIdentifier(identifier, metadata, dvObject);
+            } else {
+                doiDataCiteRegisterService.registerIdentifier(identifier, metadata, dvObject);
+            }
             return true;
         } catch (Exception e) {
             logger.log(Level.WARNING, "modifyMetadata failed: " + e.getMessage(), e);
@@ -223,8 +242,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
 
     @Override
     public String getProviderType() {
-        // TODO Auto-generated method stub
-        return null;
+        return TYPE;
     }
 
     public String getMdsUrl() {
@@ -313,7 +331,69 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         return status;
     }
     
-
     
+    @Override
+    public boolean updateIdentifier(DvObject dvObject) {
+        logger.log(Level.FINE,"updateIdentifierStatus");
+        if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
+            dvObject = generatePid(dvObject);
+        }
+        String identifier = getIdentifier(dvObject);
+        Map<String, String> metadata = getUpdateMetadata(dvObject);
+        metadata.put("_status", "public");
+        metadata.put("datacite.publicationyear", generateYear(dvObject));
+        metadata.put("_target", getTargetUrl(dvObject));
+        try {
+            String updated = doiDataCiteRegisterService.reRegisterIdentifier(identifier, metadata, dvObject);
+            if(updated.length()!=0) {
+                logger.info(identifier + "updated: " + updated );
+                return true;
+            } else {
+                logger.info("No updated needed for " + identifier);
+                return false; //No update needed
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "updateIdentifier failed: " + e.getMessage(), e);
+            return false;
+        }
+    }
 
+    /** Retrieve the CSL JSON - used in cases where this is not directly available from https://doi.org/
+     * i.e. for test DOIs and non-findable DOIs.
+     *  
+     */
+    @Override
+    public JsonObject getCSLJson(DatasetVersion dsv) {
+        if (dsv.isLatestVersion() && dsv.isReleased()) {
+            String doi = dsv.getDataset().getGlobalId().asRawIdentifier();
+            String doiUrl = getApiUrl() + "/dois/" + doi;
+    
+            HttpGet httpGet = new HttpGet(doiUrl);
+            
+            String userpass = getUsername() + ":" + getPassword();
+            String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userpass.getBytes()));
+            httpGet.setHeader(HttpHeaders.AUTHORIZATION, basicAuth);
+            httpGet.setHeader(HttpHeaders.ACCEPT, "application/vnd.citationstyles.csl+json");
+            
+            try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+                return httpClient.execute(httpGet, response -> {
+                    int status = response.getCode();
+                    if (status != HttpStatus.SC_OK) {
+                        logger.warning("Incorrect Response Status from DataCite: " + status + " : " + response.getReasonPhrase());
+                        throw new IOException("Status: " + status);
+                    }
+                    logger.fine("getCSLJson status for " + doi + ": " + status);
+                    
+                    String cslString = EntityUtils.toString(response.getEntity());
+                    logger.fine(cslString);
+                    return JsonUtil.getJsonObject(cslString);
+                });
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "Error getting CSL JSON for " + doi, e);
+                return super.getCSLJson(dsv);
+            }
+        } else {
+            return super.getCSLJson(dsv);
+        }
+    }
 }

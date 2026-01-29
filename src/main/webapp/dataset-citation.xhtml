@@ -41,6 +41,11 @@
                         <li>
                             <h:commandLink id="bibLink" value="#{bundle['dataset.cite.downloadBtn.bib']}" action="#{DatasetPage.fileDownloadService.downloadDatasetCitationBibtex(DatasetPage.workingVersion)}" target="_blank"/>
                         </li>
+                        <li>
+                        <button class="btn btn-link" onclick="PF('cslCitationDialog').show();" type="button">
+                                #{bundle['dataset.cite.viewCitation']}
+                            </button>
+                        </li>
                     </ul>
                 </div>
                 <div class="col-sm-9 col-md-8 col-lg-9 text-muted margin-bottom citation-standards" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">

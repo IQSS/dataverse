@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
@@ -22,18 +23,14 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
-import java.util.Properties;
 
+import edu.harvard.iq.dataverse.validation.JSONDataValidation;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
@@ -266,14 +263,18 @@ public class DataverseServiceBean implements java.io.Serializable {
             return null;
         }
     }
-    
-	public boolean hasData( Dataverse dv ) {
-		TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
-								.setParameter("id", dv.getId());
-		
-		return (amountQry.getSingleResult()>0);
-	}
-	
+
+    public boolean hasData(Dataverse dataverse) {
+        return (getChildCount(dataverse) > 0);
+    }
+
+    public Long getChildCount(Dataverse dataverse) {
+        TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
+                .setParameter("id", dataverse.getId());
+
+        return amountQry.getSingleResult();
+    }
+
     public boolean isRootDataverseExists() {
         long count = em.createQuery("SELECT count(dv) FROM Dataverse dv WHERE dv.owner.id=null", Long.class).getSingleResult();
         return (count == 1);
@@ -360,7 +361,15 @@ public class DataverseServiceBean implements java.io.Serializable {
         } 
         return null;
     }
-        
+
+    public String getDataverseLogoThumbnailAsUrl(Long dvId) {
+        File dataverseLogoFile = getLogoById(dvId);
+        if (dataverseLogoFile != null && dataverseLogoFile.exists()) {
+            return SystemConfig.getDataverseSiteUrlStatic() + "/api/access/dvCardImage/" + dvId;
+        }
+        return null;
+    }
+
     private File getLogo(Dataverse dataverse) {
         if (dataverse.getId() == null) {
             return null; 
@@ -412,7 +421,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         Object[] result;
         
         try {
-                result = (Object[]) em.createNativeQuery("SELECT logo, logoFormat FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
+            result = (Object[]) em.createNativeQuery("SELECT logo, logoFormat, logothumbnail FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
             
         } catch (Exception ex) {
             return null;
@@ -439,6 +448,10 @@ public class DataverseServiceBean implements java.io.Serializable {
                     break;
             }
         }
+
+        if (result[2] != null) {
+            theme.setLogoThumbnail((String) result[2]);
+        }
         
         return theme;
     }
@@ -451,8 +464,26 @@ public class DataverseServiceBean implements java.io.Serializable {
         return dataverseLinkingService.findLinkingDataverses(dataverseId);
     }
 
+    public List<Dataset> findDatasetsThisIdHasLinkedTo(long dataverseId, boolean onlyPublished) {
+        List<Dataset> linkedDatasets = datasetLinkingService.findLinkedDatasets(dataverseId);
+
+        if (!onlyPublished) {
+            return linkedDatasets;
+        }
+
+        List<Dataset> retList = new ArrayList();
+
+        for (Dataset ds : linkedDatasets) {
+            if (ds.isReleased() && !ds.isDeaccessioned()) {
+                retList.add(ds);
+            }
+        }
+
+        return retList;
+    }
+
     public List<Dataset> findDatasetsThisIdHasLinkedTo(long dataverseId) {
-        return datasetLinkingService.findLinkedDatasets(dataverseId);
+        return this.findDatasetsThisIdHasLinkedTo(dataverseId, false);
     }
 
     public List<Dataverse> findDataversesThatLinkToThisDatasetId(long datasetId) {
@@ -474,17 +505,66 @@ public class DataverseServiceBean implements java.io.Serializable {
         return ret;
     }
     
-    public List<Dataverse> filterDataversesForLinking(String query, DataverseRequest req, Dataset dataset) {
+    public List<Dataverse> filterDataversesForLinking(String query, DataverseRequest req, DvObject dvo) {
 
         List<Dataverse> dataverseList = new ArrayList<>();
 
         List<Dataverse> results = filterDataversesByNamePattern(query);
-        
-        if (results == null || results.size() == 0) {
-            return null; 
+
+        if (results == null || results.isEmpty()) {
+            return null;
         }
 
-        List<Object> alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM datasetlinkingdataverse WHERE dataset_id = " + dataset.getId()).getResultList();
+        Dataset linkedDataset = null;
+        Dataverse linkedDataverse = null;
+        List<Object> alreadyLinkeddv_ids;
+
+        if ((dvo instanceof Dataset)) {
+            linkedDataset = (Dataset) dvo;
+            alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM datasetlinkingdataverse WHERE dataset_id = " + linkedDataset.getId()).getResultList();
+        } else {
+            linkedDataverse = (Dataverse) dvo;
+            alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM dataverselinkingdataverse WHERE dataverse_id = " + linkedDataverse.getId()).getResultList();
+        }
+
+        List<Dataverse> remove = new ArrayList<>();
+
+        if (alreadyLinkeddv_ids != null && !alreadyLinkeddv_ids.isEmpty()) {
+            alreadyLinkeddv_ids.stream().map((testDVId) -> this.find(testDVId)).forEachOrdered((removeIt) -> {
+                remove.add(removeIt);
+            });
+        }
+
+        if (dvo instanceof Dataverse dataverse) {
+            remove.add(dataverse);
+        }
+
+        for (Dataverse res : results) {
+            if (!remove.contains(res)) {
+                if ((linkedDataset != null && this.permissionService.requestOn(req, res).has(Permission.LinkDataset))
+                        || (linkedDataverse != null && this.permissionService.requestOn(req, res).has(Permission.LinkDataverse))) {
+                    dataverseList.add(res);
+                }
+            }
+        }
+
+        return dataverseList;
+    }
+
+    public List<Dataverse> removeUnlinkableDataverses(List<Dataverse> allWithPerms, DvObject dvo) {
+        List<Dataverse> dataverseList = new ArrayList<>();
+        Dataset linkedDataset = null;
+        Dataverse linkedDataverse = null;
+        List<Object> alreadyLinkeddv_ids;
+
+        if ((dvo instanceof Dataset)) {
+            linkedDataset = (Dataset) dvo;
+            alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id FROM datasetlinkingdataverse WHERE dataset_id = " + linkedDataset.getId()).getResultList();
+        } else {
+            linkedDataverse = (Dataverse) dvo;
+            alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id FROM dataverselinkingdataverse WHERE dataverse_id = " + linkedDataverse.getId()).getResultList();
+        }
+
         List<Dataverse> remove = new ArrayList<>();
 
         if (alreadyLinkeddv_ids != null && !alreadyLinkeddv_ids.isEmpty()) {
@@ -493,17 +573,44 @@ public class DataverseServiceBean implements java.io.Serializable {
             });
         }
         
-        for (Dataverse res : results) {
+
+        if (dvo instanceof Dataverse dataverse) {
+            remove.add(dataverse);
+        } 
+        
+        DvObject testDVO = dvo;
+        //Remove DVO's parent up to Root
+        while (testDVO != null) {
+            if (testDVO.getOwner() == null) {
+                break; // we are at the root; which by definition is metadata block root, regardless of the value
+            }           
+            remove.add((Dataverse) testDVO.getOwner());
+            testDVO = testDVO.getOwner();
+        }       
+
+        for (Dataverse res : allWithPerms) {
             if (!remove.contains(res)) {
-                if (this.permissionService.requestOn(req, res).has(Permission.PublishDataset)) {
-                    dataverseList.add(res);
-                }
+                dataverseList.add(res);
             }
         }
 
         return dataverseList;
     }
     
+  
+    public List<Dataverse> filterDataversesForUnLinking(String query, DataverseRequest req, Dataset dataset) {
+        List<Object> alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id FROM datasetlinkingdataverse WHERE dataset_id = " + dataset.getId()).getResultList();
+        List<Dataverse> dataverseList = new ArrayList<>();
+        if (alreadyLinkeddv_ids != null && !alreadyLinkeddv_ids.isEmpty()) {
+            alreadyLinkeddv_ids.stream().map((testDVId) -> this.find(testDVId)).forEachOrdered((dataverse) -> {
+                if (this.permissionService.requestOn(req, dataverse).has(Permission.LinkDataset)) {
+                    dataverseList.add(dataverse);
+                }
+            });
+        }
+        return dataverseList;
+    }
+
     public List<Dataverse> filterDataversesForHosting(String pattern, DataverseRequest req) {
 
         // Find the dataverses matching the search parameters: 
@@ -725,24 +832,28 @@ public class DataverseServiceBean implements java.io.Serializable {
     
     // function to recursively find ids of all children of a dataverse that are 
     // of type dataset
-    public List<Long> findAllDataverseDatasetChildren(Long dvId) {
+    public List<Long> findAllDataverseDatasetChildren(Long dvId, boolean onlyPublished, boolean includeHarvested) {
         // get list of Dataverse children
         List<Long> dataverseChildren = findIdsByOwnerId(dvId);
         // get list of Dataset children
-        List<Long> datasetChildren = datasetService.findIdsByOwnerId(dvId);
+        List<Long> datasetChildren = datasetService.findIdsByOwnerId(dvId, onlyPublished, includeHarvested);
         
         if (dataverseChildren == null) {
             return datasetChildren;
         } else {
             for (Long childDvId : dataverseChildren) {
-                datasetChildren.addAll(findAllDataverseDatasetChildren(childDvId));
+                datasetChildren.addAll(findAllDataverseDatasetChildren(childDvId, onlyPublished, includeHarvested));
             }
             return datasetChildren;
         }
     }
+
+    public List<Long> findAllDataverseDatasetChildren(Long dvId) {
+        return findAllDataverseDatasetChildren(dvId, false, false);
+    }
     
     public String addRoleAssignmentsToChildren(Dataverse owner, ArrayList<String> rolesToInherit,
-            boolean inheritAllRoles) {
+            boolean inheritAllRoles, DataverseRequest req) {
         /*
          * This query recursively finds all Dataverses that are inside/children of the
          * specified one. It recursively finds dvobjects of dtype 'Dataverse' whose
@@ -828,7 +939,7 @@ public class DataverseServiceBean implements java.io.Serializable {
                     try {
                         RoleAssignment ra = new RoleAssignment(inheritableRole, roleUser, childDv, privateUrlToken);
                         if (!existingRAs.get(childDv.getId()).contains(ra)) {
-                            rolesService.save(ra);
+                            rolesService.save(ra, req);
                         }
                     } catch (Exception e) {
                         logger.warning("Unable to assign " + roleAssignment.getAssigneeIdentifier()
@@ -848,7 +959,7 @@ public class DataverseServiceBean implements java.io.Serializable {
                             RoleAssignment ra = new RoleAssignment(inheritableRole, roleGroup, childDv,
                                     privateUrlToken);
                             if (!existingRAs.get(childDv.getId()).contains(ra)) {
-                                rolesService.save(ra);
+                                rolesService.save(ra, req);
                             }
                         } catch (Exception e) {
                             logger.warning("Unable to assign " + roleAssignment.getAssigneeIdentifier()
@@ -888,14 +999,16 @@ public class DataverseServiceBean implements java.io.Serializable {
         return em.createNativeQuery(cqString).getResultList();
     }
 
-        
     public  String getCollectionDatasetSchema(String dataverseAlias) {
+        return getCollectionDatasetSchema(dataverseAlias, null);
+    }
+    public  String getCollectionDatasetSchema(String dataverseAlias, Map<String, Map<String,List<String>>> schemaChildMap) {
         
         Dataverse testDV = this.findByAlias(dataverseAlias);
         
         while (!testDV.isMetadataBlockRoot()) {
             if (testDV.getOwner() == null) {
-                break; // we are at the root; which by defintion is metadata blcok root, regarldess of the value
+                break; // we are at the root; which by definition is metadata block root, regardless of the value
             }
             testDV = testDV.getOwner();
         }
@@ -921,42 +1034,63 @@ public class DataverseServiceBean implements java.io.Serializable {
         
         selectedBlocks.addAll(testDV.getMetadataBlocks());
 
+        // Process all fields in all metadata blocks
         for (MetadataBlock mdb : selectedBlocks) {
             for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
                 if (!dsft.isChild()) {
+                    // Get or set the input level settings for the parent field
                     DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(testDV.getId(), dsft.getId());
                     if (dsfIl != null) {
                         dsft.setRequiredDV(dsfIl.isRequired());
                         dsft.setInclude(dsfIl.isInclude());
+                        dsft.setLocalDisplayOnCreate(dsfIl.getDisplayOnCreate());
                     } else {
                         dsft.setRequiredDV(dsft.isRequired());
                         dsft.setInclude(true);
+                        // Default displayOnCreate to true for required fields
+                        dsft.setLocalDisplayOnCreate(dsft.isRequired());
                     }
+                    List<String> childrenRequired = new ArrayList<>();
+                    List<String> childrenAllowed = new ArrayList<>();
                     if (dsft.isHasChildren()) {
                         for (DatasetFieldType child : dsft.getChildDatasetFieldTypes()) {
                             DataverseFieldTypeInputLevel dsfIlChild = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(testDV.getId(), child.getId());
                             if (dsfIlChild != null) {
                                 child.setRequiredDV(dsfIlChild.isRequired());
                                 child.setInclude(dsfIlChild.isInclude());
+                                child.setLocalDisplayOnCreate(dsfIlChild.getDisplayOnCreate());
                             } else {
-                                // in the case of conditionally required (child = true, parent = false)
-                                // we set this to false; i.e this is the default "don't override" value
                                 child.setRequiredDV(child.isRequired() && dsft.isRequired());
                                 child.setInclude(true);
+                                // Default displayOnCreate to true for required child fields
+                                child.setLocalDisplayOnCreate(child.isRequired());
                             }
+                            if (child.isRequired()) {
+                                childrenRequired.add(child.getName());
+                            }
+                            childrenAllowed.add(child.getName());
                         }
                     }
+                    
+                    if (schemaChildMap != null) {
+                        Map<String, List<String>> map = new HashMap<>();
+                        map.put("required", childrenRequired);
+                        map.put("allowed", childrenAllowed);
+                        schemaChildMap.put(dsft.getName(), map);
+                    }
+                    
                     if(dsft.isRequiredDV()){
                         requiredDSFT.add(dsft);
                     }
                 }
             }            
-
         }
         
         String reqMDBNames = "";
         List<MetadataBlock> hasReqFields = new ArrayList<>();
         String retval = datasetSchemaPreface;
+        
+        // Build list of metadata blocks with required fields
         for (MetadataBlock mdb : selectedBlocks) {
             for (DatasetFieldType dsft : requiredDSFT) {
                 if (dsft.getMetadataBlock().equals(mdb)) {
@@ -967,9 +1101,11 @@ public class DataverseServiceBean implements java.io.Serializable {
                 }
             }
         }
+        
+        // Generate schema for each metadata block
         int countMDB = 0;
         for (MetadataBlock mdb : hasReqFields) {
-            if (countMDB>0){
+            if (countMDB > 0) {
                 retval += ",";
             }
             retval += getCustomMDBSchema(mdb, requiredDSFT);
@@ -977,55 +1113,69 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
         
         retval += "\n                     }";
-        
         retval += endOfjson.replace("blockNames", reqMDBNames);
 
         return retval;
-    
-    }    
+    }
     
     private String getCustomMDBSchema (MetadataBlock mdb, List<DatasetFieldType> requiredDSFT){
         String retval = "";
         boolean mdbHasReqField = false;
         int numReq = 0;
         List<DatasetFieldType> requiredThisMDB = new ArrayList<>();
+        List<DatasetFieldType> allFieldsThisMDB = new ArrayList<>(mdb.getDatasetFieldTypes());
         
-        for (DatasetFieldType dsft : requiredDSFT ){
-
+        // First collect all required fields for this metadata block
+        for (DatasetFieldType dsft : requiredDSFT) {
             if(dsft.getMetadataBlock().equals(mdb)){
                 numReq++;
                 mdbHasReqField = true;
                 requiredThisMDB.add(dsft);
             }
         }
-        if (mdbHasReqField){
-        retval  += startOfMDB.replace("blockName", mdb.getName());
+
+        // Start building the schema for this metadata block
+        retval += startOfMDB.replace("blockName", mdb.getName());
         
-        retval += minItemsTemplate.replace("numMinItems", Integer.toString(requiredThisMDB.size()));
-        int count = 0;
-        for (DatasetFieldType dsft:requiredThisMDB ){
-            count++;
-            String reqValImp = reqValTemplate.replace("reqFieldTypeName", dsft.getName());
-            if (count < requiredThisMDB.size()){
-                retval += reqValImp + "\n";
-            } else {
-               reqValImp = StringUtils.substring(reqValImp, 0, reqValImp.length() - 1);
-               retval += reqValImp+ "\n";
-               retval += endOfReqVal;
-            }            
-        }
-        
+        // Add minItems constraint only if there are required fields
+        if (mdbHasReqField) {
+            retval += minItemsTemplate.replace("numMinItems", Integer.toString(requiredThisMDB.size()));
+            
+            // Add contains validation for each required field
+            int count = 0;
+            for (DatasetFieldType dsft : requiredThisMDB) {
+                count++;
+                String reqValImp = reqValTemplate.replace("reqFieldTypeName", dsft.getName());
+                if (count < requiredThisMDB.size()) {
+                    retval += reqValImp + "\n";
+                } else {
+                    reqValImp = StringUtils.substring(reqValImp, 0, reqValImp.length() - 1);
+                    retval += reqValImp + "\n";
+                    retval += endOfReqVal;
+                }
+            }
+        } else {
+            // If no required fields, just close the items definition
+            retval += "\n                                    \"items\": {\n" +
+                     "                                        \"$ref\": \"#/$defs/field\"\n" +
+                     "                                    }\n" +
+                     "                                }\n" +
+                     "                            },\n" +
+                     "                            \"required\": [\"fields\"]\n" +
+                     "                        }";
         }
         
         return retval;
     }
     
     public String isDatasetJsonValid(String dataverseAlias, String jsonInput) {
-        JSONObject rawSchema = new JSONObject(new JSONTokener(getCollectionDatasetSchema(dataverseAlias)));
+        Map<String, Map<String,List<String>>> schemaChildMap = new HashMap<>();
+        JSONObject rawSchema = new JSONObject(new JSONTokener(getCollectionDatasetSchema(dataverseAlias, schemaChildMap)));
         
-        try {               
+        try {
             Schema schema = SchemaLoader.load(rawSchema);
             schema.validate(new JSONObject(jsonInput)); // throws a ValidationException if this object is invalid
+            JSONDataValidation.validate(schema, schemaChildMap, jsonInput); // throws a ValidationException if any objects are invalid
         } catch (ValidationException vx) {
             logger.info(BundleUtil.getStringFromBundle("dataverses.api.validate.json.failed") + " " + vx.getErrorMessage()); 
             String accumulatedexceptions = "";
@@ -1090,6 +1240,9 @@ public class DataverseServiceBean implements java.io.Serializable {
     "            },\n" +
     "            \"typeName\": {\n" + 
     "                \"type\": \"string\"\n" +
+    "            },\n" +
+    "            \"displayOnCreate\": {\n" +
+    "                \"type\": \"boolean\"\n" +
     "            }\n" +
     "        }\n" +
     "    }\n" + 
@@ -1154,7 +1307,12 @@ public class DataverseServiceBean implements java.io.Serializable {
 "    },\n" +
 "    \"required\": [\"datasetVersion\"]\n" +
 "}\n";
-    
+
+    /**
+     * 
+     * @todo: consider moving these quota methods, and the DatasetServiceBean
+     * equivalent to DvObjectServiceBean. 
+     */    
     public void saveStorageQuota(Dataverse target, Long allocation) {
         StorageQuota storageQuota = target.getStorageQuota();
         
@@ -1177,5 +1335,45 @@ public class DataverseServiceBean implements java.io.Serializable {
             em.merge(storageQuota);
             em.flush();
         }
+    }
+
+    /**
+     * Returns the total number of Dataverses
+     * @return the number of dataverse in the database
+     */
+    public long getDataverseCount() {
+        return em.createNamedQuery("Dataverse.countAll", Long.class).getSingleResult();
+    }
+
+    /**
+     * Returns the total number of published datasets within a Dataverse collection. The number includes harvested and
+     * linked datasets. Datasets in subcollections are also counted.
+     * @param dvId ID of a Dataverse collection
+     * @return the total number of published datasets within that Dataverse collection
+     */
+    public long getDatasetCount(Long dvId) {
+        Set<Long> dvIds = new HashSet<>();
+        Deque<Long> stack = new ArrayDeque<>();
+        dvIds.add(dvId);
+        stack.push(dvId);
+
+        // Collect IDs of all subdataverses
+        while (!stack.isEmpty()) {
+            Long currentId = stack.pop();
+            List<Long> children = em.createQuery("SELECT d.id FROM Dataverse d WHERE d.owner.id = :parentId", Long.class)
+                                    .setParameter("parentId", currentId)
+                                    .getResultList();
+
+            for (Long childId : children) {
+                if (dvIds.add(childId)) {
+                    stack.push(childId);
+                }
+            }
+        }
+
+        return em.createNamedQuery("Dataverse.getDatasetCount", Long.class)
+                 .setParameter("ids", dvIds)
+                 .setParameter("datasetState", VersionState.RELEASED)
+                 .getSingleResult();
     }
 }

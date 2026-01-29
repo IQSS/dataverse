@@ -9,10 +9,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -75,6 +75,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.BagGeneratorThreads;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import java.util.Optional;
 
@@ -120,7 +121,7 @@ public class BagGenerator {
     private boolean usetemp = false;
 
     private int numConnections = 8;
-    public static final String BAG_GENERATOR_THREADS = ":BagGeneratorThreads";
+    public static final String BAG_GENERATOR_THREADS = BagGeneratorThreads.toString();
 
     private OREMap oremap;
 
@@ -686,12 +687,7 @@ public class BagGenerator {
         archiveEntry.setMethod(ZipEntry.DEFLATED);
         InputStreamSupplier supp = new InputStreamSupplier() {
             public InputStream get() {
-                try {
-                    return new ByteArrayInputStream(content.getBytes("UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-                return null;
+                return new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
             }
         };
 
@@ -876,7 +872,7 @@ public class BagGenerator {
         info.append(CRLF);
 
         info.append("Internal-Sender-Identifier: ");
-        String catalog = BundleUtil.getStringFromBundle("bagit.sourceOrganization") + " Catalog";
+        String catalog = orgName + " Catalog";
         if (aggregation.has(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel())) {
             catalog = aggregation.get(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel()).getAsString();
         }

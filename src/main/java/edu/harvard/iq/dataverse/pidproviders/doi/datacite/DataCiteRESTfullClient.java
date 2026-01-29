@@ -21,6 +21,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.HttpEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -40,6 +41,10 @@ public class DataCiteRESTfullClient implements Closeable {
     
     private static final Logger logger = Logger.getLogger(DataCiteRESTfullClient.class.getCanonicalName());
 
+    // Constants for retry mechanism
+    private static final int MAX_RETRIES = 5;
+    private static final long RETRY_DELAY_MS = 10000; // 10 seconds
+    
     private String url;
     private CloseableHttpClient httpClient;
     private HttpClientContext context;
@@ -58,11 +63,78 @@ public class DataCiteRESTfullClient implements Closeable {
     public void close() {
         if (this.httpClient != null) {
             try {
-           httpClient.close();
+                httpClient.close();
             } catch (IOException io) {
-               logger.warning("IOException closing hhtpClient: " + io.getMessage());
-           }
+                logger.warning("IOException closing httpClient: " + io.getMessage());
+            }
         }
+    }
+    
+    /**
+     * Execute HTTP request with retry mechanism for specific status codes
+     * 
+     * @param request The HTTP request to execute
+     * @param operationName Name of the operation for logging
+     * @return HttpResponse The response from the server
+     * @throws IOException If an error occurs during the request
+     */
+    private HttpResponse executeWithRetry(org.apache.http.client.methods.HttpRequestBase request, String operationName) throws IOException {
+        int attempts = 0;
+        IOException lastException = null;
+        
+        while (attempts < MAX_RETRIES) {
+            try {
+                HttpResponse response = httpClient.execute(request, context);
+                int statusCode = response.getStatusLine().getStatusCode();
+                
+                // If we get a retry status code, try again after delay
+                if (statusCode == 429 || statusCode == 503 || statusCode == 504) {
+                    EntityUtils.consumeQuietly(response.getEntity());
+                    attempts++;
+                    
+                    if (attempts < MAX_RETRIES) {
+                        logger.warning("DataCite API returned status " + statusCode + 
+                                       " for " + operationName + ". Retrying in " + 
+                                       (RETRY_DELAY_MS / 1000) + " seconds (attempt " + attempts + " of " + MAX_RETRIES + ")");
+                        try {
+                            Thread.sleep(RETRY_DELAY_MS);
+                        } catch (InterruptedException ie) {
+                            Thread.currentThread().interrupt();
+                            throw new IOException("Retry interrupted", ie);
+                        }
+                    } else {
+                        logger.severe("DataCite API failed with status " + statusCode + 
+                                      " for " + operationName + " after " + MAX_RETRIES + " attempts");
+                        return response; // Return the last failed response
+                    }
+                } else {
+                    // Success or non-retry error code
+                    return response;
+                }
+            } catch (IOException ioe) {
+                lastException = ioe;
+                attempts++;
+                
+                if (attempts < MAX_RETRIES) {
+                    logger.warning("IOException during " + operationName + ": " + ioe.getMessage() + 
+                                   ". Retrying in " + (RETRY_DELAY_MS / 1000) + " seconds (attempt " + 
+                                   attempts + " of " + MAX_RETRIES + ")");
+                    try {
+                        Thread.sleep(RETRY_DELAY_MS);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new IOException("Retry interrupted", ie);
+                    }
+                } else {
+                    logger.severe("DataCite API failed for " + operationName + " after " + 
+                                  MAX_RETRIES + " attempts due to: " + ioe.getMessage());
+                    throw lastException;
+                }
+            }
+        }
+        
+        // This should never happen, but just in case
+        throw new IOException("Failed to execute request after " + MAX_RETRIES + " attempts");
     }
 
     /**
@@ -74,8 +146,13 @@ public class DataCiteRESTfullClient implements Closeable {
     public String getUrl(String doi) {
         HttpGet httpGet = new HttpGet(this.url + "/doi/" + doi);
         try {
-            HttpResponse response = httpClient.execute(httpGet,context);
-            String data = EntityUtils.toString(response.getEntity(), encoding);
+            HttpResponse response = executeWithRetry(httpGet, "getUrl");
+            HttpEntity entity = response.getEntity();
+            String data = null;
+
+            if(entity != null) {
+                data = EntityUtils.toString(entity, encoding);
+            }
             if (response.getStatusLine().getStatusCode() != 200) {
                 throw new RuntimeException("Response code: " + response.getStatusLine().getStatusCode() + ", " + data);
             }
@@ -98,7 +175,7 @@ public class DataCiteRESTfullClient implements Closeable {
         httpPost.setHeader("Content-Type", "text/plain;charset=UTF-8");
         httpPost.setEntity(new StringEntity("doi=" + doi + "\nurl=" + url, "utf-8"));
 
-        HttpResponse response = httpClient.execute(httpPost, context);
+        HttpResponse response = executeWithRetry(httpPost, "postUrl");
         String data = EntityUtils.toString(response.getEntity(), encoding);
         if (response.getStatusLine().getStatusCode() != 201) {
             String errMsg = "Response from postUrl: " + response.getStatusLine().getStatusCode() + ", " + data;
@@ -118,7 +195,7 @@ public class DataCiteRESTfullClient implements Closeable {
         HttpGet httpGet = new HttpGet(this.url + "/metadata/" + doi);
         httpGet.setHeader("Accept", "application/xml");
         try {
-            HttpResponse response = httpClient.execute(httpGet,context);
+            HttpResponse response = executeWithRetry(httpGet, "getMetadata");
             String data = EntityUtils.toString(response.getEntity(), encoding);
             if (response.getStatusLine().getStatusCode() != 200) {
                 String errMsg = "Response from getMetadata: " + response.getStatusLine().getStatusCode() + ", " + data;
@@ -127,7 +204,7 @@ public class DataCiteRESTfullClient implements Closeable {
             }
             return data;
         } catch (IOException ioe) {
-            logger.log(Level.SEVERE, "IOException when get metadata");
+            logger.log(Level.SEVERE, "IOException when get metadata", ioe);
             throw new RuntimeException("IOException when get metadata", ioe);
         }
     }
@@ -141,7 +218,7 @@ public class DataCiteRESTfullClient implements Closeable {
     public boolean testDOIExists(String doi) throws IOException {
         HttpGet httpGet = new HttpGet(this.url + "/metadata/" + doi);
         httpGet.setHeader("Accept", "application/xml");
-        HttpResponse response = httpClient.execute(httpGet, context);
+        HttpResponse response = executeWithRetry(httpGet, "testDOIExists");
         if (response.getStatusLine().getStatusCode() != 200) {
             EntityUtils.consumeQuietly(response.getEntity());
             return false;
@@ -160,7 +237,7 @@ public class DataCiteRESTfullClient implements Closeable {
         HttpPost httpPost = new HttpPost(this.url + "/metadata");
         httpPost.setHeader("Content-Type", "application/xml;charset=UTF-8");
         httpPost.setEntity(new StringEntity(metadata, "utf-8"));
-        HttpResponse response = httpClient.execute(httpPost, context);
+        HttpResponse response = executeWithRetry(httpPost, "postMetadata");
         String data = EntityUtils.toString(response.getEntity(), encoding);
         if (response.getStatusLine().getStatusCode() != 201) {
             String errMsg = "Response from postMetadata: " + response.getStatusLine().getStatusCode() + ", " + data;
@@ -179,7 +256,7 @@ public class DataCiteRESTfullClient implements Closeable {
     public String inactiveDataset(String doi) {
         HttpDelete httpDelete = new HttpDelete(this.url + "/metadata/" + doi);
         try {
-            HttpResponse response = httpClient.execute(httpDelete,context);
+            HttpResponse response = executeWithRetry(httpDelete, "inactiveDataset");
             String data = EntityUtils.toString(response.getEntity(), encoding);
             if (response.getStatusLine().getStatusCode() != 200) {
                 String errMsg = "Response code: " + response.getStatusLine().getStatusCode() + ", " + data;
@@ -188,7 +265,7 @@ public class DataCiteRESTfullClient implements Closeable {
             }
             return data;
         } catch (IOException ioe) {
-            logger.log(Level.SEVERE, "IOException when inactive dataset");
+            logger.log(Level.SEVERE, "IOException when inactive dataset", ioe);
             throw new RuntimeException("IOException when inactive dataset", ioe);
         }
     }

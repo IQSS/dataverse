@@ -55,4 +55,10 @@ public class Feedback {
                 .add("body", body);
     }
 
+    public JsonObjectBuilder toLimitedJsonObjectBuilder() {
+        return new NullSafeJsonBuilder()
+                .add("fromEmail", fromEmail)
+                .add("subject", subject)
+                .add("body", body);
+    }
 }

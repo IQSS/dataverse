@@ -8,7 +8,7 @@ SELinux
 Introduction
 ------------
 
-The ``shibboleth.te`` file below that is mentioned in the :doc:`/installation/shibboleth` section of the Installation Guide was created on CentOS 6 as part of https://github.com/IQSS/dataverse/issues/3406 but may need to be revised for future versions of RHEL/CentOS (pull requests welcome!). The file is versioned with the docs and can be found in the following location:
+The ``shibboleth.te`` file below that was mentioned in the :doc:`/installation/shibboleth` section of the Installation Guide was created on CentOS 6 as part of https://github.com/IQSS/dataverse/issues/3406 but may need to be revised for future versions of RHEL/CentOS (pull requests welcome!). The file is versioned with the docs and can be found in the following location:
 
 ``doc/sphinx-guides/source/_static/installation/files/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te``
 

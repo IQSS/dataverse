@@ -14,12 +14,14 @@
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{empty DataversePage.dataverse.name ? bundle.new : DataversePage.dataverse.name}"/>
             <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
-            <ui:define name="body">
+            <ui:define name="metadata">
                 <f:metadata>
                     <f:viewParam name="showDataverseHeader" value="false"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DataversePage.init}"/>
                 </f:metadata>
+            </ui:define>
+            <ui:define name="body">
                 
                 <o:resourceInclude path="/CustomizationFilesServlet?customFileType=homePage" />
 

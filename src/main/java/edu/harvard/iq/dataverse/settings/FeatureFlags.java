@@ -25,7 +25,7 @@ import java.util.Objects;
 public enum FeatureFlags {
 
     /**
-     * Enables API authentication via session cookie (JSESSIONID). Caution: Enabling this feature flag exposes the installation to CSRF risks
+     * Enables API authentication via session cookie (JSESSIONID). Caution: Enabling this feature flag may expose the installation to CSRF risks
      * @apiNote Raise flag by setting "dataverse.feature.api-session-auth"
      * @since Dataverse 5.14
      */
@@ -33,9 +33,71 @@ public enum FeatureFlags {
     /**
      * Enables API authentication via Bearer Token.
      * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth"
-     * @since Dataverse @TODO:
+     * @since Dataverse 5.14:
      */
     API_BEARER_AUTH("api-bearer-auth"),
+    /**
+     * Enables sending the missing user claims in the request JSON provided during OIDC user registration
+     * (see API endpoint /users/register) when these claims are not returned by the identity provider
+     * but are necessary for registering the user in Dataverse.
+     *
+     * <p>The value of this feature flag is only considered when the feature flag
+     * {@link #API_BEARER_AUTH} is enabled.</p>
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-provide-missing-claims"
+     * @since Dataverse 6.6:
+     */
+    API_BEARER_AUTH_PROVIDE_MISSING_CLAIMS("api-bearer-auth-provide-missing-claims"),
+    /**
+     * Specifies that Terms of Service acceptance is handled by the IdP, eliminating the need to include
+     * ToS acceptance boolean parameter (termsAccepted) in the OIDC user registration request body.
+     *
+     * <p>The value of this feature flag is only considered when the feature flag
+     * {@link #API_BEARER_AUTH} is enabled.</p>
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-handle-tos-acceptance-in-idp"
+     * @since Dataverse 6.6:
+     */
+    API_BEARER_AUTH_HANDLE_TOS_ACCEPTANCE_IN_IDP("api-bearer-auth-handle-tos-acceptance-in-idp"),
+    /**
+     * Allows the use of a built-in user account when an identity match is found during API bearer authentication.
+     * This feature enables automatic association of an incoming IdP identity with an existing built-in user account,
+     * bypassing the need for additional user registration steps.
+     *
+     * <p>The value of this feature flag is only considered when the feature flag
+     * {@link #API_BEARER_AUTH} is enabled.</p>
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-use-builtin-user-on-id-match"
+     * @since Dataverse @6.7:
+     */
+    API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH("api-bearer-auth-use-builtin-user-on-id-match"),
+
+    /**
+     * Allows the use of a Shibboleth user account when an identity match is found during API bearer authentication.
+     * This feature enables automatic association of an incoming IdP identity with an existing Shibboleth user account,
+     * bypassing the need for additional user registration steps.
+     *
+     * <p>The value of this feature flag is only considered when the feature flag
+     * {@link #API_BEARER_AUTH} is enabled.</p>
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-use-shib-user-on-id-match"
+     * @since Dataverse @TODO:
+     */
+    API_BEARER_AUTH_USE_SHIB_USER_ON_ID_MATCH("api-bearer-auth-use-shib-user-on-id-match"),
+
+    /**
+     * Allows the use of an OAuth user account (GitHub, Google, or ORCID) when an identity match is found during API bearer authentication.
+     * This feature enables automatic association of an incoming IdP identity with an existing OAuth user account,
+     * bypassing the need for additional user registration steps.
+     *
+     * <p>The value of this feature flag is only considered when the feature flag
+     * {@link #API_BEARER_AUTH} is enabled.</p>
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-use-oauth-user-on-id-match"
+     * @since Dataverse 6.8:
+     */
+    API_BEARER_AUTH_USE_OAUTH_USER_ON_ID_MATCH("api-bearer-auth-use-oauth-user-on-id-match"),
+
     /**
      * For published (public) objects, don't use a join when searching Solr. 
      * Experimental! Requires a reindex with the following feature flag enabled,
@@ -58,6 +120,136 @@ public enum FeatureFlags {
      * @since Dataverse 6.3
      */
     ADD_PUBLICOBJECT_SOLR_FIELD("add-publicobject-solr-field"),
+    /**
+     * With this flag set, Dataverse will index the actual origin of harvested
+     * metadata records, instead of the "Harvested" string in all cases. 
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.index-harvested-metadata-source"
+     * @since Dataverse 6.3
+     */
+    INDEX_HARVESTED_METADATA_SOURCE("index-harvested-metadata-source"),
+    /**
+     * Dataverse normally deletes all solr documents related to a dataset's files
+     * when the dataset is reindexed. With this flag enabled, additional logic is
+     * added to the reindex process to delete only the solr documents that are no
+     * longer needed. (Required docs will be updated rather than deleted and 
+     * replaced.) Enabling this feature flag should make the reindex process 
+     * faster without impacting the search results.
+     *
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.reduce-solr-deletes"
+     * @since Dataverse 6.3
+     */
+    REDUCE_SOLR_DELETES("reduce-solr-deletes"),
+    /**
+     * With this flag enabled, the Return To Author pop-up will not have a required
+     * "Reason" field, and a reason will not be required in the 
+     * /api/datasets/{id}/returnToAuthor api call.
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.disable-return-to-author-reason"
+     * @since Dataverse 6.3
+     */
+    DISABLE_RETURN_TO_AUTHOR_REASON("disable-return-to-author-reason"),
+    /**
+     * This flag disables the feature that automatically selects one of the 
+     * DataFile thumbnails in the dataset/version as the dedicated thumbnail
+     * for the dataset.
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.disable-dataset-thumbnail-autoselect"
+     * @since Dataverse 6.4
+     */
+    DISABLE_DATASET_THUMBNAIL_AUTOSELECT("disable-dataset-thumbnail-autoselect"),
+    /**
+     * Feature flag for the new Globus upload framework.
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.globus-use-experimental-async-framework"
+     * @since Dataverse 6.4
+     */
+    GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK("globus-use-experimental-async-framework"),
+    /**
+     * This flag adds a note field to input/display a reason explaining why a version was created.
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.enable-version-creation-note"
+     * @since Dataverse 6.5
+     */
+    VERSION_NOTE("enable-version-note"),
+    /**
+     * This flag allows an instance to use the new InCommon Shibboleth 
+     * implementation that relies on MDQ protocol for the federation metadata
+     * and the WayFinder service for the login page. As opposed to the default 
+     * behavior, that relies on the "XML"-type metadata and DiscoFeed 
+     * respectively. The majority of the Shibboleth-using instances that do not 
+     * rely on InCommon do not need this feature and will continue using the old
+     * implementation.
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.shibboleth-use-wayfinder"
+     * @since Dataverse 6.7
+     */
+    SHIBBOLETH_USE_WAYFINDER("shibboleth-use-wayfinder"),
+    /**
+     * Whether the Dataverse instance uses the "XML"-type metadata and the idp 
+     * javascript-based login page, or MDQ and WayFinder in the new implementation, 
+     * it needs to make network calls to the locally-running shibd service. 
+     * The default behavior is to use the address configured via the siteUrl 
+     * setting. There are however situations (firewalls, etc.) where localhost 
+     * would be preferable.
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.shibboleth-use-localhost"
+     * @since Dataverse 6.7
+     */
+    SHIBBOLETH_USE_LOCALHOST("shibboleth-use-localhost"),
+    /**
+     * This flag adds a permission check to assure that the user calling the
+     * /api/localcontexts/datasets/{id} can edit the dataset with that id. This is
+     * currently the only use case - see
+     * https://github.com/gdcc/dataverse-external-vocab-support/tree/main/packages/local_contexts.
+     * The flag adds additional security to stop other uses, but would currently
+     * have to be used in conjunction with the api-session-auth feature flag (the
+     * security implications of which have not been fully investigated) to still
+     * allow adding Local Contexts metadata to a dataset.
+     * 
+     * @apiNote Raise flag by setting
+     *          "dataverse.feature.add-local-contexts-permission-check"
+     * @since Dataverse 6.5
+     */
+    ADD_LOCAL_CONTEXTS_PERMISSION_CHECK("add-local-contexts-permission-check"),
+    
+    /**
+     * This flag turns on creation of a monthly log file that tracks when requests for
+     * datasets/files with PIDs fail due to the PIDs not existing. This helps in catching
+     * cases where the DOI of a draft dataset has been cited, etc.
+     * 
+     * @apiNote Raise flag by setting
+     *          "dataverse.feature.enable-pid-failure-log"
+     * @since Dataverse 6.8
+     */
+    ENABLE_PID_FAILURE_LOG("enable-pid-failure-log"),
+    
+    /**
+     * This flag turns on history tracking of role assignments - keeping a record of when roles were granted
+     * or revoked, at what times, and by whom.
+     */
+    ROLE_ASSIGNMENT_HISTORY("role-assignment-history"),
+
+    /**
+     * Only update a DataCite DOI when needed (for efficiency, lighter load on DataCite).
+     * This flag causes Dataverse to GET the latest metadata from DataCite for a DOI and 
+     * comparing it with the current metadata in Dataverse and only sending a following POST
+     * request if needed. This potentially substitutes a read for an unnecessary write at DataCite,
+     * but would result in extra reads when all metadata in Dataverse is new. Setting the flag
+     * to "true" is recommended when using DataCite file DOIs.
+     * 
+     * @apiNote Raise flag by setting
+     *          "dataverse.feature.only-update-datacite-when-needed"
+     * @since Dataverse 6.9
+     */ 
+    ONLY_UPDATE_DATACITE_WHEN_NEEDED("only-update-datacite-when-needed"),
+
     ;
     
     final String flag;

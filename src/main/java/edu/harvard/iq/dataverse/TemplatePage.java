@@ -166,9 +166,13 @@ public class TemplatePage implements java.io.Serializable {
         }        
         
         for (DatasetField dsf: template.getFlatDatasetFields()){ 
-           DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(dvIdForInputLevel, dsf.getDatasetFieldType().getId());
-           if (dsfIl != null){
+           DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(
+               dvIdForInputLevel, 
+               dsf.getDatasetFieldType().getId()
+           );
+           if (dsfIl != null) {
                dsf.setInclude(dsfIl.isInclude());
+               dsf.getDatasetFieldType().setLocalDisplayOnCreate(dsfIl.getDisplayOnCreate());
            } else {
                dsf.setInclude(true);
            } 

@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2LoginBackingBean;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -152,7 +152,7 @@ public class StringUtil {
                     .replaceAll("/", "_");
             
         } catch (  InvalidKeyException | NoSuchAlgorithmException | BadPaddingException
-                  | IllegalBlockSizeException | NoSuchPaddingException | UnsupportedEncodingException | InvalidAlgorithmParameterException ex) {
+                  | IllegalBlockSizeException | NoSuchPaddingException | InvalidAlgorithmParameterException ex) {
             Logger.getLogger(OAuth2LoginBackingBean.class.getName()).log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
         }
@@ -173,7 +173,7 @@ public class StringUtil {
             return new String(decrypted);
             
         } catch ( InvalidKeyException | NoSuchAlgorithmException | BadPaddingException
-                  | IllegalBlockSizeException | NoSuchPaddingException | UnsupportedEncodingException | InvalidAlgorithmParameterException ex) {
+                  | IllegalBlockSizeException | NoSuchPaddingException | InvalidAlgorithmParameterException ex) {
             Logger.getLogger(OAuth2LoginBackingBean.class.getName()).log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
         }
@@ -209,8 +209,8 @@ public class StringUtil {
     }
     
     
-    private static SecretKeySpec generateKeyFromString(final String secKey) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        byte[] key = (secKey).getBytes("UTF-8");
+    private static SecretKeySpec generateKeyFromString(final String secKey) throws NoSuchAlgorithmException {
+        byte[] key = (secKey).getBytes(StandardCharsets.UTF_8);
         MessageDigest sha = MessageDigest.getInstance("SHA-1");
         key = sha.digest(key);
         key = Arrays.copyOf(key, 16); // use only first 128 bits

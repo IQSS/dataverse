@@ -1,0 +1,50 @@
+{
+  "fields": [
+    {
+      "typeName": "alternativeTitle",
+      "multiple": true,
+      "typeClass": "primitive",
+      "value": []
+    },
+    {
+      "typeName": "distributor",
+      "multiple": true,
+      "typeClass": "compound",
+      "value": [
+        {
+          "distributorName": {
+            "typeName": "distributorName",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": ""
+          },
+          "distributorAffiliation": {
+            "typeName": "distributorAffiliation",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": ""
+          }
+        }
+      ]
+    },
+    {
+      "fields": [
+        {
+          "typeName": "author",
+          "value": [
+            {
+              "authorName": {
+                "typeName": "authorName",
+                "value": "Belicheck, Bill"
+              },
+              "authorAffiliation": {
+                "typeName": "authorIdentifierScheme",
+                "value": ""
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

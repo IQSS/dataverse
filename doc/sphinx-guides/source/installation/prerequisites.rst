@@ -19,7 +19,7 @@ We assume you plan to run your Dataverse installation on Linux and we recommend 
 Java
 ----
 
-The Dataverse Software requires Java SE 17 (or higher).
+The recommended version is Java 17 because it's the version we test with.
 
 Installing Java
 ===============
@@ -44,7 +44,7 @@ On RHEL/derivative you can make Java 17 the default with the ``alternatives`` co
 Payara
 ------
 
-Payara 6.2023.8 is recommended. Newer versions might work fine. Regular updates are recommended.
+Payara 6.2025.10 is recommended. Newer versions might work fine. Regular updates are recommended.
 
 Installing Payara
 =================
@@ -55,8 +55,8 @@ Installing Payara
 
 - Download and install Payara (installed in ``/usr/local/payara6`` in the example commands below)::
 
-	# wget https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2023.8/payara-6.2023.8.zip
-	# unzip payara-6.2023.8.zip
+	# wget https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2025.10/payara-6.2025.10.zip
+	# unzip payara-6.2025.10.zip
 	# mv payara6 /usr/local
 
 If nexus.payara.fish is ever down for maintenance, Payara distributions are also available from https://repo1.maven.org/maven2/fish/payara/distributions/payara/
@@ -97,23 +97,23 @@ Also note that Payara may utilize more than the default number of file descripto
 PostgreSQL
 ----------
 
-PostgreSQL 13 is recommended because it's the version we test against. Version 10 or higher is required because that's what's `supported by Flyway <https://documentation.red-gate.com/fd/postgresql-184127604.html>`_, which we use for database migrations.
+PostgreSQL 16 is recommended because it's the version we test against. Version 10 or higher is required because that's what's `supported by Flyway <https://documentation.red-gate.com/fd/postgresql-184127604.html>`_, which we use for database migrations.
 
 You are welcome to experiment with newer versions of PostgreSQL, but please note that as of PostgreSQL 15, permissions have been restricted on the ``public`` schema (`release notes <https://www.postgresql.org/docs/release/15.0/>`_, `EDB blog post <https://www.enterprisedb.com/blog/new-public-schema-permissions-postgresql-15>`_, `Crunchy Data blog post <https://www.crunchydata.com/blog/be-ready-public-schema-changes-in-postgres-15>`_). The Dataverse installer has been updated to restore the old permissions, but this may not be a long term solution.
 
 Installing PostgreSQL
 =====================
 
-The application is currently tested on PostgreSQL version 13, though versions 14-16 are supported as of v6.2. To install PostgreSQL 13 under RHEL9/derivative::
+*For example*, to install PostgreSQL 16 under RHEL9/derivative::
 
 	# sudo dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	# sudo dnf check-update
-	# sudo dnf install -y postgresql13-server
-	# sudo /usr/pgsql-13/bin/postgresql-13-setup initdb
-	# sudo /usr/bin/systemctl start postgresql-13
-	# sudo /usr/bin/systemctl enable postgresql-13
+	# sudo dnf install -y postgresql16-server
+	# sudo /usr/pgsql-16/bin/postgresql-16-setup initdb
+	# sudo /usr/bin/systemctl start postgresql-16
+	# sudo /usr/bin/systemctl enable postgresql-16
 
-For RHEL8/derivative the process would be identical but requires a disabling the OS's built-in postgresql module with ``dnf -qy module disable postgresql``.
+You may need to disable the OS's built-in postgresql module with ``dnf -qy module disable postgresql``.
 
 Configuring Database Access for the Dataverse Installation (and the Dataverse Software Installer)
 =================================================================================================
@@ -149,7 +149,7 @@ Configuring Database Access for the Dataverse Installation (and the Dataverse So
 
 - **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL9/derivative and similar (provided you installed Postgres as instructed above)::
 
-        # systemctl restart postgresql-13
+        # systemctl restart postgresql-16
 
   On MacOS X a "Reload Configuration" icon is usually supplied in the PostgreSQL application folder. Or you could look up the process id of the PostgreSQL postmaster process, and send it the SIGHUP signal::
 
@@ -163,7 +163,7 @@ The Dataverse software search index is powered by Solr.
 Supported Versions
 ==================
 
-The Dataverse software has been tested with Solr version 9.3.0. Future releases in the 9.x series are likely to be compatible. Please get in touch (:ref:`support`) if you are having trouble with a newer version.
+The Dataverse software has been tested with Solr version 9.8.0. Future releases in the 9.x series are likely to be compatible. Please get in touch (:ref:`support`) if you are having trouble with a newer version.
 
 Installing Solr
 ===============
@@ -178,19 +178,19 @@ Become the ``solr`` user and then download and configure Solr::
 
         su - solr
         cd /usr/local/solr
-        wget https://archive.apache.org/dist/solr/solr/9.3.0/solr-9.3.0.tgz
-        tar xvzf solr-9.3.0.tgz
-        cd solr-9.3.0
+        wget https://archive.apache.org/dist/solr/solr/9.8.0/solr-9.8.0.tgz
+        tar xvzf solr-9.8.0.tgz
+        cd solr-9.8.0
         cp -r server/solr/configsets/_default server/solr/collection1
 
 You should already have a "dvinstall.zip" file that you downloaded from https://github.com/IQSS/dataverse/releases . Unzip it into ``/tmp``. Then copy the files into place::
 
-        cp /tmp/dvinstall/schema*.xml /usr/local/solr/solr-9.3.0/server/solr/collection1/conf
-        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-9.3.0/server/solr/collection1/conf
+        cp /tmp/dvinstall/schema*.xml /usr/local/solr/solr-9.8.0/server/solr/collection1/conf
+        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-9.8.0/server/solr/collection1/conf
 
 Note: The Dataverse Project team has customized Solr to boost results that come from certain indexed elements inside the Dataverse installation, for example prioritizing results from Dataverse collections over Datasets. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents. If you have ideas about how this boosting could be improved, feel free to contact us through our Google Group https://groups.google.com/forum/#!forum/dataverse-dev .
 
-A Dataverse installation requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-9.3.0/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
+A Dataverse installation requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-9.8.0/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
 
 Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script, and the following to ``/etc/security/limits.conf``::
 
@@ -209,7 +209,7 @@ Solr launches asynchronously and attempts to use the ``lsof`` binary to watch fo
 
 Finally, you need to tell Solr to create the core "collection1" on startup::
 
-        echo "name=collection1" > /usr/local/solr/solr-9.3.0/server/solr/collection1/core.properties
+        echo "name=collection1" > /usr/local/solr/solr-9.8.0/server/solr/collection1/core.properties
 
 Dataverse collection ("dataverse") page uses Solr very heavily. On a busy instance this may cause the search engine to become the performance bottleneck, making these pages take increasingly longer to load, potentially affecting the overall performance of the application and/or causing Solr itself to crash. If this is observed on your instance, we recommend uncommenting the following lines in the ``<circuitBreaker ...>`` section of the ``solrconfig.xml`` file::
 
@@ -432,7 +432,7 @@ firewalled from your Dataverse installation host).
 Counter Processor
 -----------------
 
-Counter Processor is required to enable Make Data Count metrics in a Dataverse installation. See the :doc:`/admin/make-data-count` section of the Admin Guide for a description of this feature. Counter Processor is open source and we will be downloading it from https://github.com/CDLUC3/counter-processor
+Counter Processor is required to enable Make Data Count metrics in a Dataverse installation. See the :doc:`/admin/make-data-count` section of the Admin Guide for a description of this feature. Counter Processor is open source and we will be downloading it from https://github.com/gdcc/counter-processor
 
 Installing Counter Processor
 ============================
@@ -442,9 +442,9 @@ A scripted installation using Ansible is mentioned in the :doc:`/developers/make
 As root, download and install Counter Processor::
 
         cd /usr/local
-        wget https://github.com/CDLUC3/counter-processor/archive/v0.1.04.tar.gz
-        tar xvfz v0.1.04.tar.gz
-        cd /usr/local/counter-processor-0.1.04
+        wget https://github.com/gdcc/counter-processor/archive/refs/tags/v1.06.tar.gz
+        tar xvfz v1.06.tar.gz
+        cd /usr/local/counter-processor-1.06
 
 Installing GeoLite Country Database
 ===================================
@@ -455,7 +455,7 @@ The process required to sign up, download the database, and to configure automat
 
 As root, change to the Counter Processor directory you just created, download the GeoLite2-Country tarball from MaxMind, untar it, and copy the geoip database into place::
 
-        <download or move the GeoLite2-Country.tar.gz to the /usr/local/counter-processor-0.1.04 directory>
+        <download or move the GeoLite2-Country.tar.gz to the /usr/local/counter-processor-1.06 directory>
         tar xvfz GeoLite2-Country.tar.gz
         cp GeoLite2-Country_*/GeoLite2-Country.mmdb maxmind_geoip
 
@@ -465,12 +465,16 @@ Creating a counter User
 As root, create a "counter" user and change ownership of Counter Processor directory to this new user::
 
         useradd counter
-        chown -R counter:counter /usr/local/counter-processor-0.1.04
+        chown -R counter:counter /usr/local/counter-processor-1.06
 
 Installing Counter Processor Python Requirements
 ================================================
 
+<<<<<<< HEAD
 Counter Processor version 0.1.04 requires Python 3.7 or higher.
+=======
+Counter Processor version 1.06 requires Python 3.7 or higher.
+>>>>>>> upstream/develop
 
 The following commands are intended to be run as root but we are aware that Pythonistas might prefer fancy virtualenv or similar setups. Pull requests are welcome to improve these steps!
 
@@ -480,8 +484,13 @@ Install Python 3.9::
 
 Install Counter Processor Python requirements::
 
+<<<<<<< HEAD
         python3 -m ensurepip
         cd /usr/local/counter-processor-0.1.04
+=======
+        python3.9 -m ensurepip
+        cd /usr/local/counter-processor-1.06
+>>>>>>> upstream/develop
         pip3 install -r requirements.txt
 
 See the :doc:`/admin/make-data-count` section of the Admin Guide for how to configure and run Counter Processor.

@@ -5,7 +5,9 @@ import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ClockUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -125,6 +127,10 @@ public class OAuth2LoginBackingBean implements Serializable {
                         signUpDisabled = true; 
                         throw new OAuth2Exception(-1, "", MessageFormat.format(BundleUtil.getStringFromBundle("oauth2.callback.error.signupDisabledForProvider"), idp.getId())); 
                     } else {
+                        if (idp instanceof OrcidOAuth2AP) {
+                            oauthUser.getDisplayInfo()
+                                    .setOrcid(((OrcidOAuth2AP) idp).getOrcidUrl(oauthUser.getIdInService()));
+                        }
                         newAccountPage.setNewUser(oauthUser);
                         Faces.redirect("/oauth2/firstLogin.xhtml");
                     }
@@ -133,6 +139,13 @@ public class OAuth2LoginBackingBean implements Serializable {
                     // login the user and redirect to HOME of intended page (if any).
                     // setUser checks for deactivated users.
                     dvUser = userService.updateLastLogin(dvUser);
+                    // On the first login (after this code was added) via the Orcid provider, set the user's ORCID
+                    // Doing this here assures the user authenticated to ORCID before their profile's ORCID is set
+                    // (and not, for example, when an account was created via API)
+                    if((idp instanceof OrcidOAuth2AP) && dvUser.getAuthenticatedOrcid()==null) {
+                        dvUser.setAuthenticatedOrcid(((OrcidOAuth2AP)idp).getOrcidUrl(oauthUser.getIdInService()));
+                        userService.save(dvUser);
+                    }
                     session.setUser(dvUser);
                     final OAuth2TokenData tokenData = oauthUser.getTokenData();
                     if (tokenData != null) {
@@ -153,6 +166,53 @@ public class OAuth2LoginBackingBean implements Serializable {
             logger.log(Level.WARNING, "Threading exception caught. Message: {0}", ex.getLocalizedMessage());
         }
     }
+    
+    /**
+     * View action for orcidConfirm.xhtml, the browser redirect target for the OAuth2 provider.
+     * @throws IOException
+     */
+    public void setOrcidInProfile() throws IOException {
+        HttpServletRequest req = Faces.getRequest();
+        
+        try {
+            Optional<AbstractOAuth2AuthenticationProvider> oIdp = parseStateFromRequest(req.getParameter("state"));
+            Optional<String> code = parseCodeFromRequest(req);
+
+            if (oIdp.isPresent() && code.isPresent()) {
+                AbstractOAuth2AuthenticationProvider idp = oIdp.get();
+                oauthUser = idp.getUserRecord(code.get(), req.getParameter("state"), systemConfig.getDataverseSiteUrl() + "/oauth2/orcidConfirm.xhtml");
+                
+                UserRecordIdentifier idtf = oauthUser.getUserRecordIdentifier();
+                User user = session.getUser();
+                String orcid = ((OrcidOAuth2AP)idp).getOrcidUrl(oauthUser.getIdInService());
+                if(authenticationSvc.lookupUserByOrcid(orcid)!= null) {
+                    throw new OAuth2Exception(-1, "", MessageFormat.format(BundleUtil.getStringFromBundle("oauth2.callback.error.orcidInUse"), orcid));
+                }
+                if(user != null && user.isAuthenticated()) {
+                    AuthenticatedUser dvUser = (AuthenticatedUser) user;
+                    if((idp instanceof OrcidOAuth2AP) && dvUser.getAuthenticatedOrcid()==null) {
+                        dvUser.setAuthenticatedOrcid(orcid);
+                        userService.save(dvUser);
+                    }
+                    session.setUser(dvUser);
+                    
+                    Faces.redirect(redirectPage.orElse("/"));
+                
+                } else {
+                        throw new OAuth2Exception(-1, "", MessageFormat.format(BundleUtil.getStringFromBundle("oauth2.callback.error.accountNotFound"), idp.getId())); 
+        
+                } 
+            }
+        } catch (OAuth2Exception ex) {
+            error = ex;
+            logger.log(Level.INFO, "ORCID OAuth2Exception caught. HTTP return code: {0}. Message: {1}. Message body: {2}", new Object[]{error.getHttpReturnCode(), error.getLocalizedMessage(), error.getMessageBody()});
+            Logger.getLogger(OAuth2LoginBackingBean.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ExecutionException ex) {
+            error = new OAuth2Exception(-1, "Please see server logs for more details", "Could not login at ORCID due to threading exceptions.");
+            logger.log(Level.WARNING, "Threading exception caught. Message: {0}", ex.getLocalizedMessage());
+        }
+    }
+
     
     /**
      * TODO: Refactor this to be included in calling method.
@@ -204,8 +264,14 @@ public class OAuth2LoginBackingBean implements Serializable {
         }
         AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(topFields[0]);
         if (idp == null) {
-            logger.log(Level.INFO, "Can''t find IDP ''{0}''", topFields[0]);
-            return Optional.empty();
+            //No login enabled provider matches, try the Orcid provider as this could be an attempt to add an ORCID to a profile
+            AbstractOAuth2AuthenticationProvider possibleIdp = authenticationSvc.getOrcidAuthenticationProvider();
+            if(possibleIdp != null && possibleIdp.getId().equals(topFields[0])) {
+                idp = possibleIdp;
+            } else {
+                logger.log(Level.INFO, "Can''t find IDP ''{0}''", topFields[0]);
+                return Optional.empty();
+            }
         }
         
         // Verify the response by decrypting values and check for state valid timeout
@@ -235,7 +301,7 @@ public class OAuth2LoginBackingBean implements Serializable {
      * @param redirectPage
      * @return Random state string, composed from system time, random numbers and redirectPage parameter
      */
-    String createState(AbstractOAuth2AuthenticationProvider idp, Optional<String> redirectPage) {
+    public String createState(AbstractOAuth2AuthenticationProvider idp, Optional<String> redirectPage) {
         if (idp == null) {
             throw new IllegalArgumentException("idp cannot be null");
         }

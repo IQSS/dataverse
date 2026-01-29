@@ -32,11 +32,11 @@ jobs:
             contents: read
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
             - name: Determine Java version from Parent POM
               run: echo "JAVA_VERSION=$(grep '<target.java.version>' modules/dataverse-parent/pom.xml | cut -f2 -d'>' | cut -f1 -d'<')" >> ${GITHUB_ENV}
             - name: Set up JDK ${{ env.JAVA_VERSION }}
-              uses: actions/setup-java@v4
+              uses: actions/setup-java@v5
               with:
                   java-version: ${{ env.JAVA_VERSION }}
                   distribution: temurin
@@ -80,7 +80,7 @@ jobs:
             contents: read
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
             - name: Cleanup caches
               run: |
                   gh extension install actions/gh-actions-cache

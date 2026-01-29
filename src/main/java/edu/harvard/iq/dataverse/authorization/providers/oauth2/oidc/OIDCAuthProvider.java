@@ -33,11 +33,11 @@ import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderConfigurationRequest;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
-import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
@@ -47,11 +47,8 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -94,18 +91,6 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
         this.pkceMethod = CodeChallengeMethod.parse(pkceMethod);
     }
     
-    /**
-     * Although this is defined in {@link edu.harvard.iq.dataverse.authorization.AuthenticationProvider},
-     * this needs to be present due to bugs in ELResolver (has been modified for Spring).
-     * TODO: for the future it might be interesting to make this configurable via the provider JSON (it's used for ORCID!)
-     * @see <a href="https://issues.jboss.org/browse/JBEE-159">JBoss Issue 159</a>
-     * @see <a href="https://github.com/eclipse-ee4j/el-ri/issues/43">Jakarta EE Bug 43</a>
-     * @return false
-     */
-    @Override
-    public boolean isDisplayIdentifier() {
-        return false;
-    }
     
     /**
      * Setup metadata from OIDC provider during creation of the provider representation
@@ -242,17 +227,42 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * @param userInfo
      * @return the usable user record for processing ing {@link edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2LoginBackingBean}
      */
-    OAuth2UserRecord getUserRecord(UserInfo userInfo) {
+    public OAuth2UserRecord getUserRecord(UserInfo userInfo) {
+        // Extract Shibboleth persistent identifier claim if present
+        Object shibUniqueIdObj = userInfo.getClaim(ShibUtil.uniquePersistentIdentifier);
+
+        // Extract idp claim if present
+        Object idpObj = userInfo.getClaim(OAuth2UserRecord.IDP_CLAIM_NAME);
+
+        // Extract OIDC user id claim if present
+        Object oidcUserIdObj = userInfo.getClaim(OAuth2UserRecord.OIDC_USER_ID_CLAIM_NAME);
+
+        String shibUniqueId = (shibUniqueIdObj != null) ? shibUniqueIdObj.toString() : null;
+        String idp = (idpObj != null) ? idpObj.toString() : null;
+        String oidcUserId = (oidcUserIdObj != null) ? oidcUserIdObj.toString() : null;
+
+        // Build display info from user attributes
+        AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
+                userInfo.getGivenName(),
+                userInfo.getFamilyName(),
+                userInfo.getEmailAddress(),
+                "",
+                ""
+        );
+
         return new OAuth2UserRecord(
-            this.getId(),
-            userInfo.getSubject().getValue(),
-            userInfo.getPreferredUsername(),
-            null,
-            new AuthenticatedUserDisplayInfo(userInfo.getGivenName(), userInfo.getFamilyName(), userInfo.getEmailAddress(), "", ""),
-            null
+                this.getId(),
+                userInfo.getSubject().getValue(),
+                userInfo.getPreferredUsername(),
+                shibUniqueId,
+                idp,
+                oidcUserId,
+                null,
+                displayInfo,
+                null
         );
     }
-    
+
     /**
      * Retrieve the Access Token from provider. Encapsulate for testing.
      * @param grant
@@ -291,7 +301,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * Retrieve User Info from provider. Encapsulate for testing.
      * @param accessToken The access token to enable reading data from userinfo endpoint
      */
-    Optional<UserInfo> getUserInfo(BearerAccessToken accessToken) throws IOException, OAuth2Exception {
+    public Optional<UserInfo> getUserInfo(BearerAccessToken accessToken) throws IOException, OAuth2Exception {
         // Retrieve data
         HTTPResponse response = new UserInfoRequest(this.idpMetadata.getUserInfoEndpointURI(), accessToken)
                                         .toHTTPRequest()
@@ -315,45 +325,5 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
         } catch (ParseException ex) {
             throw new OAuth2Exception(-1, ex.getMessage(), BundleUtil.getStringFromBundle("auth.providers.exception.userinfo", Arrays.asList(this.getTitle())));
         }
-    }
-
-    /**
-     * Trades an access token for an {@link UserRecordIdentifier} (if valid).
-     *
-     * @apiNote The resulting {@link UserRecordIdentifier} may be used with
-     *          {@link edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean#lookupUser(UserRecordIdentifier)}
-     *          to look up an {@link edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser} from the database.
-     * @see edu.harvard.iq.dataverse.api.auth.BearerTokenAuthMechanism
-     *
-     * @param accessToken The token to use when requesting user information from the provider
-     * @return Returns an {@link UserRecordIdentifier} for a valid access token or an empty {@link Optional}.
-     * @throws IOException In case communication with the endpoint fails to succeed for an I/O reason
-     */
-    public Optional<UserRecordIdentifier> getUserIdentifier(BearerAccessToken accessToken) throws IOException {
-        OAuth2UserRecord userRecord;
-        try {
-            // Try to retrieve with given token (throws if invalid token)
-            Optional<UserInfo> userInfo = getUserInfo(accessToken);
-            
-            if (userInfo.isPresent()) {
-                // Take this detour to avoid code duplication and potentially hard to track conversion errors.
-                userRecord = getUserRecord(userInfo.get());
-            } else {
-                // This should not happen - an error at the provider side will lead to an exception.
-                logger.log(Level.WARNING,
-                    "User info retrieval from {0} returned empty optional but expected exception for token {1}.",
-                    List.of(getId(), accessToken).toArray()
-                );
-                return Optional.empty();
-            }
-        } catch (OAuth2Exception e) {
-            logger.log(Level.FINE,
-                "Could not retrieve user info with token {0} at provider {1}: {2}",
-                List.of(accessToken, getId(), e.getMessage()).toArray());
-            logger.log(Level.FINER, "Retrieval failed, details as follows: ", e);
-            return Optional.empty();
-        }
-        
-        return Optional.of(userRecord.getUserRecordIdentifier());
     }
 }

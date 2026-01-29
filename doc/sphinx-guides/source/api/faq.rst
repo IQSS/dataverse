@@ -82,12 +82,12 @@ The following tasks cannot currently be automated via API because no API exists 
 
 If you would like APIs for any of the features above, please open a GitHub issue at https://github.com/IQSS/dataverse/issues
 
-You are also welcome to open an issue to add to the list above. Or you are welcome to make a pull request. Please see the :doc:`/developers/documentation` section of the Developer Guide for instructions.
+You are also welcome to open an issue to add to the list above. Or you are welcome to make a pull request. Please see the :doc:`/contributor/documentation` section of the Contributor Guide for instructions.
 
 Why Are the Return Values (HTTP Status Codes) Not Documented?
 -------------------------------------------------------------
 
-They should be. Please consider making a pull request to help. The :doc:`/developers/documentation` section of the Developer Guide should help you get started. :ref:`create-dataverse-api` has an example you can follow or you can come up with a better way.
+They should be. Please consider making a pull request to help. The :doc:`/contributor/documentation` section of the Contriburor Guide should help you get started. :ref:`create-dataverse-api` has an example you can follow or you can come up with a better way.
 
 Also, please note that we are starting to experiment with putting response codes in our OpenAPI document. See :ref:`openapi`.
 

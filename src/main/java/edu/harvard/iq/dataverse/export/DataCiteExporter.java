@@ -7,6 +7,7 @@ import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import io.gdcc.spi.export.XMLExporter;
+import edu.harvard.iq.dataverse.pidproviders.doi.XmlMetadataTemplate;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -20,11 +21,7 @@ import java.util.Optional;
  */
 @AutoService(Exporter.class)
 public class DataCiteExporter implements XMLExporter {
-
-    private static String DEFAULT_XML_NAMESPACE = "http://datacite.org/schema/kernel-3";
-    private static String DEFAULT_XML_SCHEMALOCATION = "http://datacite.org/schema/kernel-3 http://schema.datacite.org/meta/kernel-3/metadata.xsd";
-    private static String DEFAULT_XML_VERSION = "3.0";
-
+    
     public static final String NAME = "Datacite";
 
     @Override
@@ -60,17 +57,17 @@ public class DataCiteExporter implements XMLExporter {
 
     @Override
     public String getXMLNameSpace() {
-        return DataCiteExporter.DEFAULT_XML_NAMESPACE;
+        return XmlMetadataTemplate.XML_NAMESPACE;
     }
 
     @Override
     public String getXMLSchemaLocation() {
-        return DataCiteExporter.DEFAULT_XML_SCHEMALOCATION;
+        return XmlMetadataTemplate.XML_SCHEMA_LOCATION;
     }
 
     @Override
     public String getXMLSchemaVersion() {
-        return DataCiteExporter.DEFAULT_XML_VERSION;
+        return XmlMetadataTemplate.XML_SCHEMA_VERSION;
     }
 
 }

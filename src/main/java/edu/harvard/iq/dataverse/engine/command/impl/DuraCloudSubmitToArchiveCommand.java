@@ -5,16 +5,18 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DuraCloudContext;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DuraCloudHost;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DuraCloudPort;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -32,14 +34,14 @@ import org.duracloud.common.model.Credential;
 import org.duracloud.error.ContentStoreException;
 
 @RequiredPermissions(Permission.PublishDataset)
-public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand implements Command<DatasetVersion> {
+public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
 
     private static final Logger logger = Logger.getLogger(DuraCloudSubmitToArchiveCommand.class.getName());
     private static final String DEFAULT_PORT = "443";
     private static final String DEFAULT_CONTEXT = "durastore";
-    private static final String DURACLOUD_PORT = ":DuraCloudPort";
-    private static final String DURACLOUD_HOST = ":DuraCloudHost";
-    private static final String DURACLOUD_CONTEXT = ":DuraCloudContext";
+    private static final String DURACLOUD_PORT = DuraCloudPort.toString();
+    private static final String DURACLOUD_HOST = DuraCloudHost.toString();
+    private static final String DURACLOUD_CONTEXT = DuraCloudContext.toString();
 
 
     public DuraCloudSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
@@ -117,7 +119,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                             public void run() {
                                 try (PipedOutputStream dataciteOut = new PipedOutputStream(dataciteIn)) {
 
-                                    dataciteOut.write(dataciteXml.getBytes(Charset.forName("utf-8")));
+                                    dataciteOut.write(dataciteXml.getBytes(StandardCharsets.UTF_8));
                                     dataciteOut.close();
                                     success=true;
                                 } catch (Exception e) {

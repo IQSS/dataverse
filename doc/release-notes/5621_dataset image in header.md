@@ -1,1 +1,0 @@
-Dataverse will use the Dataset thumbnail, if one is defined, rather than the generic Dataverse logo in the Open Graph metadata header. This means the image will be seen when, for example, the dataset is referenced in Facebook.

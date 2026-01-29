@@ -17,9 +17,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
-import static jakarta.ws.rs.core.Response.Status.OK;
-import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
-import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+
+import static jakarta.ws.rs.core.Response.Status.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
@@ -386,13 +385,6 @@ public class BuiltinUsersIT {
                 .body(userAsJson)
                 .contentType(ContentType.JSON)
                 .post("/api/builtin-users?key=" + builtinUserKey + "&password=" + password);
-        return response;
-    }
-
-    private Response getApiTokenUsingEmail(String email, String password) {
-        Response response = given()
-                .contentType(ContentType.JSON)
-                .get("/api/builtin-users/" + email + "/api-token?username=" + email + "&password=" + password);
         return response;
     }
 

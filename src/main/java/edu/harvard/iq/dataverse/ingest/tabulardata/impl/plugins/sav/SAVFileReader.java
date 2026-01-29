@@ -29,7 +29,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -58,10 +58,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
-import edu.harvard.iq.dataverse.datavariable.VariableRange;
-
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
@@ -633,7 +630,7 @@ public class SAVFileReader  extends TabularDataFileReader{
             int offset_end = LENGTH_SPSS_PRODUCT_INFO; // 60 bytes
             
             String productInfo = new String(Arrays.copyOfRange(recordType1, offset_start,
-                offset_end),"US-ASCII");
+                offset_end),StandardCharsets.US_ASCII);
                 
             dbgLog.fine("productInfo:\n"+productInfo+"\n");
             dataTable.setOriginalFormatVersion(productInfo);
@@ -872,7 +869,7 @@ public class SAVFileReader  extends TabularDataFileReader{
             offset_end += LENGTH_FILE_CREATION_INFO; // 84 bytes
             
             String fileCreationInfo = getNullStrippedString(new String(Arrays.copyOfRange(recordType1, offset_start,
-                offset_end),"US-ASCII"));
+                offset_end),StandardCharsets.US_ASCII));
                 
             dbgLog.fine("fileCreationInfo:\n"+fileCreationInfo+"\n");
             
@@ -1220,7 +1217,7 @@ public class SAVFileReader  extends TabularDataFileReader{
                     // borders. So we always read the bytes, but only use them for
                     // the real variable entries.
                         /*String variableLabel = new String(Arrays.copyOfRange(variable_label,
-                                0, rawVariableLabelLength),"US-ASCII");*/
+                                0, rawVariableLabelLength),StandardCharsets.US_ASCII);*/
 
                         variableLabelMap.put(variableName, variableLabel);
                     }
@@ -2075,7 +2072,7 @@ public class SAVFileReader  extends TabularDataFileReader{
                         byte[] work = new byte[unitLength*numberOfUnits];
                         int nbtyes13 = stream.read(work);
 
-                        String[] variableShortLongNamePairs = new String(work,"US-ASCII").split("\t");
+                        String[] variableShortLongNamePairs = new String(work,StandardCharsets.US_ASCII).split("\t");
 
                         for (int i=0; i<variableShortLongNamePairs.length; i++){
                             dbgLog.fine("RT7: "+i+"-th pair"+variableShortLongNamePairs[i]);
@@ -2166,7 +2163,7 @@ public class SAVFileReader  extends TabularDataFileReader{
                         byte[] rt7st20bytes = new byte[unitLength*numberOfUnits];
                         int nbytes20 = stream.read(rt7st20bytes);
 
-                        String dataCharSet = new String(rt7st20bytes,"US-ASCII");
+                        String dataCharSet = new String(rt7st20bytes,StandardCharsets.US_ASCII);
 
                         if (dataCharSet != null && !(dataCharSet.equals(""))) {
                             dbgLog.fine("RT7-20: data charset: "+ dataCharSet);
@@ -2347,7 +2344,7 @@ public class SAVFileReader  extends TabularDataFileReader{
 
             fileOutTab = new FileOutputStream(tabDelimitedDataFile);
             
-            pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, "utf8"), true);
+            pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, StandardCharsets.UTF_8), true);
 
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();

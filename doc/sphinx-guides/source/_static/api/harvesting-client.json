@@ -1,0 +1,12 @@
+{
+  "nickName": "zenodo",
+  "dataverseAlias": "zenodoHarvested",
+  "harvestUrl": "https://zenodo.org/oai2d",
+  "archiveUrl": "https://zenodo.org",
+  "archiveDescription": "Moissonné depuis la collection LMOPS de l'entrepôt Zenodo. En cliquant sur ce jeu de données, vous serez redirigé vers Zenodo.",
+  "metadataFormat": "oai_dc",
+  "customHeaders": "x-oai-api-key: xxxyyyzzz",
+  "set": "user-lmops",
+  "schedule": "Weekly, Sat 5 AM",
+  "allowHarvestingMissingCVV":true
+}

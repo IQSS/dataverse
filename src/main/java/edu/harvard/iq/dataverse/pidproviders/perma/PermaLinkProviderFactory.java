@@ -28,7 +28,7 @@ public class PermaLinkProviderFactory implements PidProviderFactory {
         String excludedList = JvmSettings.PID_PROVIDER_EXCLUDED_LIST.lookupOptional(providerId).orElse("");
 
         String baseUrl = JvmSettings.PERMALINK_BASE_URL.lookupOptional(providerId)
-                .orElse(SystemConfig.getDataverseSiteUrlStatic());
+                .orElse(SystemConfig.getDataverseSiteUrlStatic() + "/citation?persistentId=" + PermaLinkPidProvider.PERMA_PROTOCOL + ":");
         ;
         String separator = JvmSettings.PERMALINK_SEPARATOR.lookupOptional(providerId).orElse("");
 

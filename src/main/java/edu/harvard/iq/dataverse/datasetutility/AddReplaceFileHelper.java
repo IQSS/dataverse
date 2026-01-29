@@ -136,8 +136,6 @@ public class AddReplaceFileHelper{
     private String newFileName;                 // step 30
     private String newFileContentType;          // step 30
     private String newStorageIdentifier;        // step 30
-    private String newCheckSum;                 // step 30
-    private ChecksumType newCheckSumType;       //step 30
     
     // -- Optional  
     private DataFile fileToReplace;             // step 25
@@ -146,6 +144,7 @@ public class AddReplaceFileHelper{
     private DatasetVersion clone;
     List<DataFile> initialFileList; 
     List<DataFile> finalFileList;
+    private boolean trustSuppliedFileSizes; 
     
     // -----------------------------------
     // Ingested files
@@ -610,15 +609,9 @@ public class AddReplaceFileHelper{
             return false;
             
         }
-        if(optionalFileParams != null) {
-        	if(optionalFileParams.hasCheckSum()) {
-        		newCheckSum = optionalFileParams.getCheckSum();
-        		newCheckSumType = optionalFileParams.getCheckSumType();
-        	}
-        }
 
         msgt("step_030_createNewFilesViaIngest");
-        if (!this.step_030_createNewFilesViaIngest()){
+        if (!this.step_030_createNewFilesViaIngest(optionalFileParams)){
             return false;
             
         }
@@ -1191,7 +1184,7 @@ public class AddReplaceFileHelper{
     }
     
     
-    private boolean step_030_createNewFilesViaIngest(){
+    private boolean step_030_createNewFilesViaIngest(OptionalFileParams optionalFileParams){
         
         if (this.hasError()){
             return false;
@@ -1203,21 +1196,29 @@ public class AddReplaceFileHelper{
             //Don't repeatedly update the clone (losing changes) in multifile case
             clone = workingVersion.cloneDatasetVersion();
         }
+        
+        Long suppliedFileSize = null;
+        String newCheckSum = null;
+        ChecksumType newCheckSumType = null;
+        
+        
+        if (optionalFileParams != null) {
+            if (optionalFileParams.hasCheckSum()) {
+                newCheckSum = optionalFileParams.getCheckSum();
+                newCheckSumType = optionalFileParams.getCheckSumType();
+            }
+            if (trustSuppliedFileSizes && optionalFileParams.hasFileSize()) {
+                suppliedFileSize = optionalFileParams.getFileSize();
+            }
+        }
+        
         try {
-            /*CreateDataFileResult result = FileUtil.createDataFiles(workingVersion,
-                    this.newFileInputStream,
-                    this.newFileName,
-                    this.newFileContentType,
-                    this.newStorageIdentifier,
-                    this.newCheckSum,
-                    this.newCheckSumType,
-                    this.systemConfig);*/
-            
             UploadSessionQuotaLimit quota = null; 
             if (systemConfig.isStorageQuotasEnforced()) {
                 quota = fileService.getUploadSessionQuotaLimit(dataset);
             }
-            Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequest, workingVersion, newFileInputStream, newFileName, newFileContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType);
+            Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequest, workingVersion, newFileInputStream, newFileName, newFileContentType, newStorageIdentifier,
+                    quota, newCheckSum, newCheckSumType, suppliedFileSize, isFileReplaceOperation());
             CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
             initialFileList = createDataFilesResult.getDataFiles();
 
@@ -1593,7 +1594,8 @@ public class AddReplaceFileHelper{
         }
         
         int nFiles = finalFileList.size();
-        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace, tabIngest);
+        boolean ignoreUploadFileLimits = dvRequest.getAuthenticatedUser() != null ? dvRequest.getAuthenticatedUser().isSuperuser() : false;
+        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace, tabIngest, ignoreUploadFileLimits);
 
         if (nFiles != finalFileList.size()) {
             if (nFiles == 1) {
@@ -2033,9 +2035,15 @@ public class AddReplaceFileHelper{
      * @param jsonData - an array of jsonData entries (one per file) using the single add file jsonData format
      * @param dataset
      * @param authUser
+     * @param trustSuppliedSizes - whether to accept the fileSize values passed 
+     *        in jsonData (we don't want to trust the users of the S3 direct 
+     *        upload API with that information - we will verify the status of
+     *        the files in the S3 bucket and confirm the sizes in the process. 
+     *        we do want GlobusService to be able to pass the file sizes, since
+     *        they are obtained and verified via a Globus API lookup). 
      * @return
      */
-    public Response addFiles(String jsonData, Dataset dataset, User authUser) {
+    public Response addFiles(String jsonData, Dataset dataset, User authUser, boolean trustSuppliedFileSizes) {
         msgt("(addFilesToDataset) jsonData: " + jsonData.toString());
 
         JsonArrayBuilder jarr = Json.createArrayBuilder();
@@ -2044,6 +2052,7 @@ public class AddReplaceFileHelper{
 
         int totalNumberofFiles = 0;
         int successNumberofFiles = 0;
+        this.trustSuppliedFileSizes = trustSuppliedFileSizes; 
         // -----------------------------------------------------------
         // Read jsonData and Parse files information from jsondata  :
         // -----------------------------------------------------------
@@ -2055,6 +2064,19 @@ public class AddReplaceFileHelper{
                 totalNumberofFiles = filesJson.getValuesAs(JsonObject.class).size();
                 workingVersion = dataset.getOrCreateEditVersion();
                 clone = workingVersion.cloneDatasetVersion();
+
+                if (!authUser.isSuperuser()) {
+                    Integer effectiveDatasetFileCountLimit = dataset.getEffectiveDatasetFileCountLimit();
+                    boolean hasFileCountLimit = dataset.isDatasetFileCountLimitSet(effectiveDatasetFileCountLimit);
+                    if (hasFileCountLimit) {
+                        int uploadedFileCount = datasetService.getDataFileCountByOwner(dataset.getId());
+                        if (uploadedFileCount + totalNumberofFiles >= effectiveDatasetFileCountLimit) {
+                            return error(Response.Status.BAD_REQUEST,
+                                    BundleUtil.getStringFromBundle("file.add.count_exceeds_limit", Arrays.asList(String.valueOf(effectiveDatasetFileCountLimit))));
+                        }
+                    }
+                }
+
                 for (JsonObject fileJson : filesJson.getValuesAs(JsonObject.class)) {
 
                     OptionalFileParams optionalFileParams = null;
@@ -2139,9 +2161,9 @@ public class AddReplaceFileHelper{
                     logger.log(Level.WARNING, "Dataset not locked for EditInProgress ");
                 } else {
                     datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
-                    logger.log(Level.INFO, "Removed EditInProgress lock ");
+                    logger.log(Level.FINE, "Removed EditInProgress lock");
                 }
-
+                
                 try {
                     Command<Dataset> cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, clone);
                     ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
@@ -2167,13 +2189,17 @@ public class AddReplaceFileHelper{
         }
 
         JsonObjectBuilder result = Json.createObjectBuilder()
-                .add("Total number of files", totalNumberofFiles)
-                .add("Number of files successfully added", successNumberofFiles);
+                .add(ApiConstants.API_ADD_FILES_COUNT_PROCESSED, totalNumberofFiles)
+                .add(ApiConstants.API_ADD_FILES_COUNT_SUCCESSFUL, successNumberofFiles);
 
 
         return Response.ok().entity(Json.createObjectBuilder()
                 .add("status", ApiConstants.STATUS_OK)
                 .add("data", Json.createObjectBuilder().add("Files", jarr).add("Result", result)).build() ).build();
+    }
+    
+    public Response addFiles(String jsonData, Dataset dataset, User authUser) {
+        return addFiles(jsonData, dataset, authUser, false);
     }
     
     /**
@@ -2306,7 +2332,7 @@ public class AddReplaceFileHelper{
                     logger.warning("Dataset not locked for EditInProgress ");
                 } else {
                     datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
-                    logger.info("Removed EditInProgress lock ");
+                    logger.fine("Removed EditInProgress lock ");
                 }
 
                 try {

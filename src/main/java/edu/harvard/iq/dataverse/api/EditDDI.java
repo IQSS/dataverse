@@ -26,7 +26,7 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataDDIParser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
@@ -110,11 +110,15 @@ public class EditDDI  extends AbstractApiBean {
         Map<Long, VariableMetadata> mapVarToVarMet = new HashMap<Long, VariableMetadata>();
         Map<Long,VarGroup> varGroupMap = new HashMap<Long, VarGroup>();
         try {
-            readXML(body, mapVarToVarMet,varGroupMap);
+            readXML(body, mapVarToVarMet, varGroupMap);
+        } catch (NullPointerException e) {
+                return error(Response.Status.BAD_REQUEST,e.getMessage() );
         } catch (XMLStreamException e) {
             logger.warning(e.getMessage());
-            return error(Response.Status.NOT_ACCEPTABLE, "bad xml file" );
+            return error(Response.Status.BAD_REQUEST, "bad xml file");
         }
+
+
 
         DatasetVersion latestVersion = dataFile.getOwner().getLatestVersion();
         Dataset dataset = latestVersion.getDataset();
@@ -349,13 +353,21 @@ public class EditDDI  extends AbstractApiBean {
         return true;
     }
 
-    private  void readXML(InputStream body, Map<Long,VariableMetadata> mapVarToVarMet, Map<Long,VarGroup> varGroupMap) throws XMLStreamException {
-        XMLInputFactory factory=XMLInputFactory.newInstance();
+    private void readXML(InputStream body, Map<Long,VariableMetadata> mapVarToVarMet, Map<Long,VarGroup> varGroupMap) throws XMLStreamException, NullPointerException {
+
+        XMLInputFactory factory=XmlUtil.getSecureXMLInputFactory();
         XMLStreamReader xmlr=factory.createXMLStreamReader(body);
+
         VariableMetadataDDIParser vmdp = new VariableMetadataDDIParser();
 
-        vmdp.processDataDscr(xmlr,mapVarToVarMet, varGroupMap);
-
+        vmdp.processDataDscr(xmlr, mapVarToVarMet, varGroupMap);
+        if (xmlr != null) {
+            try {
+                xmlr.close();
+            } catch (XMLStreamException e) {
+                logger.warning("XMLStreamException closing XMLStreamReader in readXml");
+            }
+        }
     }
 
     private boolean newGroups(Map<Long,VarGroup> varGroupMap, FileMetadata fm) {

@@ -42,6 +42,7 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.file.BagItFileHandler;
 import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import edu.harvard.iq.dataverse.util.file.BagItFileHandlerFactory;
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
 import edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil;
 import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatDoc;
 import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.HTML_H1;
@@ -62,6 +63,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -89,6 +91,8 @@ import jakarta.ejb.EJBException;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+
+import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -100,9 +104,11 @@ import org.apache.commons.io.FilenameUtils;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.util.file.FileExceedsStorageQuotaException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.Tika;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.NetcdfFiles;
 
@@ -426,7 +432,43 @@ public class FileUtil implements java.io.Serializable  {
         return newType != null ? newType : fileType;
     }
     
-    public static String determineFileType(File f, String fileName) throws IOException{
+    public static String determineRemoteFileType(DataFile df, String fileName) {
+        String fileType = determineFileTypeByNameAndExtension(fileName);
+
+        if (!StringUtils.isBlank(fileType) && fileType.startsWith("application/x-stata")) {
+            String driverId = DataAccess
+                    .getStorageDriverFromIdentifier(df.getStorageIdentifier());
+            if (StorageIO.isDataverseAccessible(driverId)) {
+                try {
+                    StorageIO<DataFile> storage = df.getStorageIO();
+                    storage.open(DataAccessOption.READ_ACCESS);
+                    try (InputStream is = storage.getInputStream()) {
+
+                        // Read the first 42 bytes of the file to determine the file type
+                        byte[] buffer = new byte[42];
+                        is.read(buffer, 0, 42);
+                        ByteBuffer bb = ByteBuffer.allocate(42);
+                        bb.put(buffer);
+
+                        // step 1:
+                        // Apply our custom methods to try and recognize data files that can be
+                        // converted to tabular data
+                        logger.fine("Attempting to identify potential tabular data files;");
+                        IngestableDataChecker tabChk = new IngestableDataChecker(new String[] { "DTA" });
+                        fileType = tabChk.detectTabularDataFormat(bb);
+                    } catch (IOException ex) {
+                        logger.warning("Unable to getInputStream for storageIdentifier: " + df.getStorageIdentifier());
+                    }
+                } catch (IOException ex) {
+                    logger.warning("Unable to open storageIO for storageIdentifier: " + df.getStorageIdentifier());
+                }
+            }
+        }
+        return fileType;
+
+    }
+
+    public static String determineFileType(File f, String fileName) throws IOException {
         String fileType = lookupFileTypeByFileName(fileName);
         if (fileType != null) {
             return fileType;
@@ -495,6 +537,7 @@ public class FileUtil implements java.io.Serializable  {
                 logger.fine("mime type recognized by extension: "+fileType);
             }
         } else {
+            //ToDo - if the extension is null, how can this call do anything
             logger.fine("fileExtension is null");
             final String fileTypeByExtension = lookupFileTypeByExtensionFromPropertiesFile(fileName);
             if(!StringUtil.isEmpty(fileTypeByExtension)) {
@@ -525,15 +568,18 @@ public class FileUtil implements java.io.Serializable  {
             // Check for shapefile extensions as described here: http://en.wikipedia.org/wiki/Shapefile
             //logger.info("Checking for shapefile");
 
-            ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(f));
+            ShapefileHandler shp_handler = new ShapefileHandler(f);
              if (shp_handler.containsShapefile()){
               //  logger.info("------- shapefile FOUND ----------");
                  fileType = ShapefileHandler.SHAPEFILE_FILE_TYPE; //"application/zipped-shapefile";
              }
-
-            Optional<BagItFileHandler> bagItFileHandler = CDI.current().select(BagItFileHandlerFactory.class).get().getBagItFileHandler();
-             if(bagItFileHandler.isPresent() && bagItFileHandler.get().isBagItPackage(fileName, f)) {
-                 fileType = BagItFileHandler.FILE_TYPE;
+             try {
+                 Optional<BagItFileHandler> bagItFileHandler = CDI.current().select(BagItFileHandlerFactory.class).get().getBagItFileHandler();
+                 if (bagItFileHandler.isPresent() && bagItFileHandler.get().isBagItPackage(fileName, f)) {
+                     fileType = BagItFileHandler.FILE_TYPE;
+                 }
+             } catch (Exception e) {
+                 logger.warning("Error checking for BagIt package: " + e.getMessage());
              }
         } 
         
@@ -552,7 +598,10 @@ public class FileUtil implements java.io.Serializable  {
         return lookupFileTypeByExtension(fileName);
     }
 
-    private static String lookupFileTypeByExtension(final String fileName) {
+    /** determineFileTypeByNameAndExtension should be used instead for any user supplied content. 
+     *
+     */
+    public static String lookupFileTypeByExtension(final String fileName) {
         final String mimetypesFileTypeMapResult = MIME_TYPE_MAP.getContentType(fileName);
         logger.fine("MimetypesFileTypeMap type by extension, for " + fileName + ": " + mimetypesFileTypeMapResult);
         if (mimetypesFileTypeMapResult == null) {
@@ -565,21 +614,23 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     private static String lookupFileTypeByFileName(final String fileName) {
-        return lookupFileTypeFromPropertiesFile("MimeTypeDetectionByFileName", fileName);
+        return lookupFileTypeFromPropertiesFile(fileName, false);
     }
 
     private static String lookupFileTypeByExtensionFromPropertiesFile(final String fileName) {
         final String fileKey = FilenameUtils.getExtension(fileName);
-        return lookupFileTypeFromPropertiesFile("MimeTypeDetectionByFileExtension", fileKey);
+        return lookupFileTypeFromPropertiesFile(fileKey, true);
     }
 
-    private static String lookupFileTypeFromPropertiesFile(final String propertyFileName, final String fileKey) {
+    private static String lookupFileTypeFromPropertiesFile(final String fileKey, boolean byExtension) {
+        final String propertyFileName = byExtension ? "MimeTypeDetectionByFileExtension" : "MimeTypeDetectionByFileName";
         final String propertyFileNameOnDisk =  propertyFileName + ".properties";
         try {
             logger.fine("checking " + propertyFileNameOnDisk + " for file key " + fileKey);
             return BundleUtil.getStringFromPropertyFile(fileKey, propertyFileName);
         } catch (final MissingResourceException ex) {
-            logger.info(fileKey + " is a filename/extension Dataverse doesn't know about. Consider adding it to the " + propertyFileNameOnDisk + " file.");
+            //Only use info level if it's for an extension
+            logger.log(byExtension ? Level.INFO : Level.FINE, fileKey + " is a filename/extension Dataverse doesn't know about. Consider adding it to the " + propertyFileNameOnDisk + " file.");
             return null;
         }
     }
@@ -638,13 +689,11 @@ public class FileUtil implements java.io.Serializable  {
     private static boolean isGraphMLFile(File file) {
         boolean isGraphML = false;
         logger.fine("begin isGraphMLFile()");
-        FileReader fileReader = null;
-        try{
-            fileReader = new FileReader(file);
-            javax.xml.stream.XMLInputFactory xmlif = javax.xml.stream.XMLInputFactory.newInstance();
-            xmlif.setProperty("javax.xml.stream.isCoalescing", java.lang.Boolean.TRUE);
+        XMLStreamReader xmlr = null;
+        try(FileReader fileReader = new FileReader(file)) {
+            XMLInputFactory xmlif = XmlUtil.getSecureXMLInputFactory();
 
-            XMLStreamReader xmlr = xmlif.createXMLStreamReader(fileReader);
+            xmlr = xmlif.createXMLStreamReader(fileReader);
             for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
                 if (event == XMLStreamConstants.START_ELEMENT) {
                     if (xmlr.getLocalName().equals("graphml")) {
@@ -664,11 +713,11 @@ public class FileUtil implements java.io.Serializable  {
         } catch(IOException e) {
             throw new EJBException(e);
         } finally {
-            if (fileReader != null) {
+            if (xmlr != null) {
                 try {
-                    fileReader.close();
-                } catch (IOException ioex) {
-                    logger.warning("IOException closing file reader in GraphML type checker");
+                    xmlr.close();
+                } catch (XMLStreamException e) {
+                    logger.warning("XMLStreamException closing XMLStreamReader in GraphML type checker");
                 }
             }
         }
@@ -1816,5 +1865,40 @@ public class FileUtil implements java.io.Serializable  {
         String storageIdentifier = dataFile.getStorageIdentifier();
         return storageIdentifier.substring(0, storageIdentifier.indexOf(DataAccess.SEPARATOR));
     }
-    
+
+    /**
+     * Replace spaces with "_" and remove invalid chars
+     * @param fileNameIn - Name before sanitization NOTE: not full path since this method removes '/' and '\'
+     * @return filename without spaces or invalid chars
+     */
+    public static String sanitizeFileName(String fileNameIn) {
+        return fileNameIn == null ? null : fileNameIn.replace(' ', '_').replaceAll("[\\\\/:*?\"<>|,;]", "");
+    }
+
+    public static Path createDirStructure(String rootDirectory, String... subdirectories) throws IOException {
+        Path path = Path.of(rootDirectory, subdirectories);
+        Files.createDirectories(path);
+        return path;
+    }
+
+    public static boolean isFileOfImageType(File file) throws IOException {
+        Tika tika = new Tika();
+        String mimeType = tika.detect(file);
+        return mimeType != null && mimeType.startsWith("image/");
+    }
+
+    /**
+     * Converts a filename from ISO_8859_1 to UTF_8 to handle encoding issues.
+     * Ref: https://github.com/eclipse-ee4j/jersey/issues/1700
+     *
+     * @param originalFileName the original filename
+     * @return the filename converted to UTF_8
+     */
+    public static String decodeFileName(String originalFileName) {
+        if (originalFileName == null) {
+            return null;
+        }
+        return new String(originalFileName.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+    }
+
 }

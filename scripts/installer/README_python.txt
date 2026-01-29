@@ -39,7 +39,7 @@ in your PATH. If you have multiple versions of PostgresQL installed,
 make sure the version that you will be using with Dataverse is the
 first on your PATH. For example,
 
-   PATH=/usr/pgsql-13/bin:$PATH; export PATH
+   PATH=/usr/pgsql-16/bin:$PATH; export PATH
 
 Certain libraries and source include files, both for PostgresQL and
 Python, are also needed to compile the module. On
@@ -47,7 +47,7 @@ RedHat/CentOS/etc. you may need to install the -devel packages, *for
 the specific versions* of PostgreSQL and Python you will be using. For
 example:
 
-	yum install postgresql13-devel
+	yum install postgresql16-devel
 	yum install python37-devel
 	etc. 
 

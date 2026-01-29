@@ -46,7 +46,9 @@ public class BannerMessageServiceBean implements java.io.Serializable {
     
     public void save( BannerMessage message ) {
         em.persist(message);
+        em.flush();
     }
+    
     
     public void deleteBannerMessage(Object pk) {
         BannerMessage message = em.find(BannerMessage.class, pk);

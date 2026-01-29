@@ -132,9 +132,10 @@
 
                         <span class="icon-dataverse text-icon-inline"></span>
 
-                        <h:outputFormat styleClass="facetTypeDataverse" value="#{bundle['dataverse.results.types.dataverses']} &#40;{0}&#41;">
+                        <h:outputFormat rendered="#{!SearchIncludeFragment.uncheckedTypesFacetDisabled or SearchIncludeFragment.selectedTypesList.contains('dataverses')}" styleClass="facetTypeDataverse" value="#{bundle['dataverse.results.types.dataverses']} &#40;{0}&#41;">
                             <f:param value="#{SearchIncludeFragment.facetCountDataverses}"/>
                         </h:outputFormat>
+                        <h:outputText rendered="#{SearchIncludeFragment.uncheckedTypesFacetDisabled and !SearchIncludeFragment.selectedTypesList.contains('dataverses')}" value="#{bundle['dataverse.results.types.dataverses']}" styleClass="facetTypeDataverse"/>
                     </h:outputLink>
                 </div>
                 <!--DATASETS TOGGLE-->
@@ -164,9 +165,10 @@
 
                         <span class="icon-dataset text-icon-inline"></span>
 
-                        <h:outputFormat styleClass="facetTypeDataset" value="#{bundle['dataverse.results.types.datasets']} &#40;{0}&#41;">
+                        <h:outputFormat rendered="#{!SearchIncludeFragment.uncheckedTypesFacetDisabled or SearchIncludeFragment.selectedTypesList.contains('datasets')}" styleClass="facetTypeDataset" value="#{bundle['dataverse.results.types.datasets']} &#40;{0}&#41;">
                             <f:param value="#{SearchIncludeFragment.facetCountDatasets}"/>
                         </h:outputFormat>
+                        <h:outputText rendered="#{SearchIncludeFragment.uncheckedTypesFacetDisabled and !SearchIncludeFragment.selectedTypesList.contains('datasets')}" value="#{bundle['dataverse.results.types.datasets']}" styleClass="facetTypeDataset"/>
                     </h:outputLink>
                 </div>
                 <!--FILES TOGGLE-->
@@ -196,9 +198,10 @@
 
                         <span class="icon-file text-icon-inline"></span>
 
-                        <h:outputFormat styleClass="facetTypeFile" value="#{bundle['dataverse.results.types.files']} &#40;{0}&#41;">
+                        <h:outputFormat rendered="#{!SearchIncludeFragment.uncheckedTypesFacetDisabled or SearchIncludeFragment.selectedTypesList.contains('files')}" styleClass="facetTypeFile" value="#{bundle['dataverse.results.types.files']} &#40;{0}&#41;">
                             <f:param value="#{SearchIncludeFragment.facetCountFiles}"/>
                         </h:outputFormat>
+                        <h:outputText rendered="#{SearchIncludeFragment.uncheckedTypesFacetDisabled and !SearchIncludeFragment.selectedTypesList.contains('files')}" value="#{bundle['dataverse.results.types.files']}" styleClass="facetTypeFile"/>
                     </h:outputLink>
                 </div>
             </h:form>
@@ -491,7 +494,7 @@
             </div>
 
             <o:importFunctions type="org.omnifaces.el.functions.Strings" />
-            <ui:param name="descriptionAbbreviationThreshold" value="280"/>
+            <ui:param name="descriptionAbbreviationThreshold" value="350"/>
             <!--CARDS-->
             <h:dataTable id="resultsTable" styleClass="#{SearchIncludeFragment.searchResultsCount > 0 ? '' : 'resultsNone'}" value="#{SearchIncludeFragment.searchResultsList}" var="result"
                          rendered="#{SearchIncludeFragment.searchResultsList.size() > 0}">
@@ -567,7 +570,7 @@
                             <span class="glyphicon glyphicon-new-window text-info pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
                             <span class="icon-dataset text-info pull-right" title="#{bundle.dataset}"/>
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
-                                <h:outputText value="#{result.title}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet == null}"/>
+                                <h:outputText value="#{result.nameSort}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet == null}"/>
                                 <h:outputText value="#{result.titleHighlightSnippet}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
                                 <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{dataverseSession.debug}"/></a>
 
@@ -577,9 +580,9 @@
                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{result.deaccessionedState}"/>
                             <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{SearchIncludeFragment.isActivelyEmbargoed(result)}"/>
                             <h:outputText value="#{bundle['retentionExpired']}" styleClass="label label-warning" rendered="#{SearchIncludeFragment.isRetentionExpired(result)}"/>
-                            <h:outputText value="#{DatasetUtil:getLocaleExternalStatus(result.externalStatus)}" styleClass="label label-info" rendered="#{!empty result.externalStatus and SearchIncludeFragment.canPublishDataset(result.entityId)}"/>
+                            <h:outputText value="#{DatasetUtil:getLocaleCurationStatusLabelFromString(result.curationStatus)}" styleClass="label label-info curation-status" rendered="#{SearchIncludeFragment.canSeeCurationStatus(result.entityId)}"/>
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
-                            <h:outputText value="#{bundle['incomplete']}" styleClass="label label-danger" rendered="#{!SearchIncludeFragment.isValid(result)}"/>
+                            <h:outputText value="#{bundle['incomplete']}" styleClass="label label-danger" rendered="#{!result.harvested and !SearchIncludeFragment.isValid(result)}"/>
                         </div>
                         <div class="card-preview-icon-block text-center">
                             <a rel="nofollow" href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" aria-label="#{result.title}">

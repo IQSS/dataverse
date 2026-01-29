@@ -7,10 +7,10 @@ import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Optional;
 
-import jakarta.json.JsonObject;
 import jakarta.ws.rs.core.MediaType;
 
 
@@ -35,7 +35,7 @@ public class JSONExporter implements Exporter {
     @Override
     public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
         try{
-            outputStream.write(dataProvider.getDatasetJson().toString().getBytes("UTF8"));
+            outputStream.write(dataProvider.getDatasetJson().toString().getBytes(StandardCharsets.UTF_8));
             outputStream.flush();
         } catch (Exception e){
             throw new ExportException("Unknown exception caught during JSON export.");

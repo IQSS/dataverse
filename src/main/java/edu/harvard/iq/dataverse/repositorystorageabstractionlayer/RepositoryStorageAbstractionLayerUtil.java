@@ -13,10 +13,12 @@ import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 
+@Deprecated(forRemoval = true, since = "2024-07-07")
 public class RepositoryStorageAbstractionLayerUtil {
 
     private static final Logger logger = Logger.getLogger(RepositoryStorageAbstractionLayerUtil.class.getCanonicalName());
 
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public static List<RsyncSite> getRsyncSites(Dataset dataset, JsonArray rsalSitesAsJson) {
         List<RsyncSite> rsalSites = new ArrayList<>();
         boolean leafDirectoryOnly = false;
@@ -30,6 +32,7 @@ public class RepositoryStorageAbstractionLayerUtil {
         return rsalSites;
     }
 
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     static String getLocalDataAccessDirectory(String localDataAccessParentDir, Dataset dataset) {
         if (localDataAccessParentDir == null) {
             localDataAccessParentDir = File.separator + "UNCONFIGURED ( " + SettingsServiceBean.Key.LocalDataAccessPath + " )";
@@ -38,6 +41,7 @@ public class RepositoryStorageAbstractionLayerUtil {
         return localDataAccessParentDir + File.separator + getDirectoryContainingTheData(dataset, leafDirectoryOnly);
     }
 
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     static String getVerifyDataCommand(Dataset dataset) {
         boolean leafDirectoryOnly = true;
         // TODO: if "files.sha" is defined somewhere, use it.
@@ -51,6 +55,7 @@ public class RepositoryStorageAbstractionLayerUtil {
      * leafDirectoryOnly. See also
      * http://www.gnu.org/software/coreutils/manual/html_node/basename-invocation.html
      */
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public static String getDirectoryContainingTheData(Dataset dataset, boolean leafDirectoryOnly) {
         /**
          * FIXME: What if there is more than one package in the dataset?
@@ -81,6 +86,7 @@ public class RepositoryStorageAbstractionLayerUtil {
      * RSAL or some other "big data" component live for a list of remotes sites
      * to which a particular dataset is replicated to.
      */
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     static JsonArray getStorageSitesAsJson(List<StorageSite> storageSites) {
         JsonArrayBuilder arraybuilder = Json.createArrayBuilder();
         if (storageSites == null || storageSites.isEmpty()) {

@@ -14,7 +14,7 @@ import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.MailUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.UserNotification.Type;
@@ -98,6 +98,7 @@ public class SettingsWrapper implements java.io.Serializable {
     //External Vocabulary support
     private Map<Long, JsonObject> cachedCvocMap = null;
     private Map<Long, JsonObject> cachedCvocByTermFieldMap = null;
+    private Set<Long> cvocFieldSet;
     
     private Long zipDownloadLimit = null; 
     
@@ -217,7 +218,7 @@ public class SettingsWrapper implements java.io.Serializable {
     private void initSettingsMap() {
         // initialize settings map
         settingsMap = new HashMap<>();
-        for (Setting setting : settingsService.listAll()) {
+        for (Setting setting : settingsService.listAllWithoutLocalizations()) {
             settingsMap.put(setting.getName(), setting.getContent());
         }
     }
@@ -305,14 +306,16 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return publicInstall; 
     }
-    
+
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isRsyncUpload() {
         if (rsyncUpload == null) {
             rsyncUpload = getUploadMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString());
         }
         return rsyncUpload; 
     }
-    
+
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isRsyncDownload() {
         if (rsyncDownload == null) {
             rsyncDownload = systemConfig.isRsyncDownload();
@@ -379,7 +382,8 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return webloaderUpload;
     }
-    
+
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isRsyncOnly() {
         if (rsyncOnly == null) {
             String downloadMethods = getValueForKey(SettingsServiceBean.Key.DownloadMethods);
@@ -389,16 +393,18 @@ public class SettingsWrapper implements java.io.Serializable {
                 rsyncOnly = false;
             } else {
                 String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods);
-                if (uploadMethods==null){
+                if (uploadMethods == null) {
                     rsyncOnly = false;
                 } else {
-                    rsyncOnly = Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+                    String normalizedUploadMethods = uploadMethods.toLowerCase();
+                    rsyncOnly = ListSplitUtil.split(normalizedUploadMethods).size() == 1
+                            && normalizedUploadMethods.equals(SystemConfig.FileUploadMethods.RSYNC.toString());
                 }
             }
         }
         return rsyncOnly;
     }
-    
+
     public boolean isHTTPUpload(){
         if (httpUpload == null) {
             httpUpload = getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());
@@ -420,11 +426,11 @@ public class SettingsWrapper implements java.io.Serializable {
     
     public Integer getUploadMethodsCount() {
         if (uploadMethodsCount == null) {
-            String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods); 
-            if (uploadMethods==null){
+            String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods);
+            if (uploadMethods == null) {
                 uploadMethodsCount = 0;
             } else {
-                uploadMethodsCount = Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
+                uploadMethodsCount = ListSplitUtil.split(uploadMethods).size();
             } 
         }
         return uploadMethodsCount;
@@ -498,7 +504,7 @@ public class SettingsWrapper implements java.io.Serializable {
         if (anonymizedFieldTypes == null) {
             anonymizedFieldTypes = new ArrayList<String>();
             String names = get(SettingsServiceBean.Key.AnonymizedFieldTypeNames.toString(), "");
-            anonymizedFieldTypes.addAll(Arrays.asList(names.split(",\\s")));
+            anonymizedFieldTypes.addAll(ListSplitUtil.split(names));
         }
         return anonymizedFieldTypes.contains(df.getDatasetFieldType().getName());
     }
@@ -728,11 +734,11 @@ public class SettingsWrapper implements java.io.Serializable {
             if (target.getOwner() == null) {
                 boolean defaultOption = gbDefault.get();
                 useDefault = (defaultOption ? atRequest : atDownload)
-                        + BundleUtil.getStringFromBundle("dataverse.default");
+                        + " " + BundleUtil.getStringFromBundle("dataverse.default");
             } else {
                 boolean defaultOption = target.getOwner().getEffectiveGuestbookEntryAtRequest();
                 useDefault = (defaultOption ? atRequest : atDownload)
-                        + BundleUtil.getStringFromBundle("dataverse.inherited");
+                        + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
             }
             currentMap.put(DvObjectContainer.UNDEFINED_CODE, useDefault);
             currentMap.put(Boolean.toString(true), atRequest);
@@ -803,6 +809,17 @@ public class SettingsWrapper implements java.io.Serializable {
         }
     }
     
+    public boolean isCvocField(Long fieldId) {
+
+        if(cvocFieldSet == null) {
+            cvocFieldSet = fieldService.getCvocFieldSet();
+        }
+        if(cvocFieldSet == null) {
+         return false;
+        }
+        return cvocFieldSet.contains(fieldId);
+    }
+    
     public String getMetricsUrl() {
         if (metricsUrl == null) {
             metricsUrl = getValueForKey(SettingsServiceBean.Key.MetricsUrl);
@@ -811,17 +828,17 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     private Boolean getUploadMethodAvailable(String method){
-        String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods); 
-        if (uploadMethods==null){
+        String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods);
+        if (uploadMethods == null) {
             return false;
         } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
+            return ListSplitUtil.splitToLowerCaseSet(uploadMethods).contains(method);
         }
     }
 
     List<String> allowedExternalStatuses = null;
 
-    public List<String> getAllowedExternalStatuses(Dataset d) {
+    public List<String> getAllowedCurationStatuses(Dataset d) {
         String setName = d.getEffectiveCurationLabelSetName();
         if(setName.equals(SystemConfig.CURATIONLABELSDISABLED)) {
             return new ArrayList<String>();

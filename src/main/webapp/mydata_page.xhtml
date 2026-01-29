@@ -15,11 +15,13 @@
     <ui:composition template="/dataverse_template.xhtml">
       <ui:param name="pageTitle" value="Role/Permission Relationships - #{dataverseServiceBean.findRootDataverse().name}"/>
       <ui:param name="showDataverseHeader" value="false"/>
-      <ui:define name="body">
+      <ui:define name="metadata">
           <f:metadata>   
                 <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                 <f:viewAction action="#{MyDataPage.init}" />
           </f:metadata>
+      </ui:define>
+      <ui:define name="body">
           <ui:include src="mydata_fragment.xhtml"></ui:include>
     </ui:define>
     </ui:composition>

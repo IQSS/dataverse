@@ -226,6 +226,29 @@ public class SolrSearchResultTest {
     }
 
     @Test
+    public void testSetPublicationStatusesJson() {
+
+        boolean showRelevance = false;
+        boolean showEntityIds = false;
+        boolean showApiUrls = false;
+
+        SolrSearchResult result01 = new SolrSearchResult("myQuery", "myName");
+        result01.setType(SearchConstants.DATAVERSES);
+        result01.setPublicationStatuses(List.of("Unpublished", "Draft"));
+        JsonObjectBuilder actual01 = result01.json(showRelevance, showEntityIds, showApiUrls);
+        JsonObject actual = actual01.build();
+        System.out.println("actual: " + actual);
+
+        JsonObjectBuilder expResult = Json.createObjectBuilder();
+        expResult.add("type", SearchConstants.DATAVERSE);
+        expResult.add("publicationStatuses", Json.createArrayBuilder().add("Unpublished").add("Draft").build());
+        JsonObject expected = expResult.build();
+        System.out.println("expect: " + expected);
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testJson() {
 
         boolean showRelevance = false;

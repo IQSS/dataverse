@@ -1,10 +1,13 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
+import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -15,7 +18,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import com.beust.jcommander.Strings;
 
 public abstract class AbstractPidProvider implements PidProvider {
 
@@ -36,9 +38,9 @@ public abstract class AbstractPidProvider implements PidProvider {
 
     private String datafilePidFormat = null;
 
-    private HashSet<String> managedSet;
+    protected HashSet<String> managedSet = new HashSet<String>();
 
-    private HashSet<String> excludedSet;
+    protected HashSet<String> excludedSet = new HashSet<String>();
 
     private String id;
     private String label;
@@ -47,8 +49,6 @@ public abstract class AbstractPidProvider implements PidProvider {
         this.id = id;
         this.label = label;
         this.protocol = protocol;
-        this.managedSet = new HashSet<String>();
-        this.excludedSet = new HashSet<String>();
     }
 
     protected AbstractPidProvider(String id, String label, String protocol, String authority, String shoulder,
@@ -60,8 +60,12 @@ public abstract class AbstractPidProvider implements PidProvider {
         this.shoulder = shoulder;
         this.identifierGenerationStyle = identifierGenerationStyle;
         this.datafilePidFormat = datafilePidFormat;
-        this.managedSet = new HashSet<String>(Arrays.asList(managedList.split(",\\s")));
-        this.excludedSet = new HashSet<String>(Arrays.asList(excludedList.split(",\\s")));
+        if(!managedList.isEmpty()) {
+            this.managedSet.addAll(ListSplitUtil.split(managedList));
+        }
+        if(!excludedList.isEmpty()) {
+            this.excludedSet.addAll(ListSplitUtil.split(excludedList));
+        }
         if (logger.isLoggable(Level.FINE)) {
             Iterator<String> iter = managedSet.iterator();
             while (iter.hasNext()) {
@@ -192,7 +196,7 @@ public abstract class AbstractPidProvider implements PidProvider {
                         + ") doesn't match that of the provider, id: " + getId());
             }
         }
-        if (dvObject.getAuthority() == null) {
+        if (dvObject.getAuthority() == null) {            
             dvObject.setAuthority(getAuthority());
         } else {
             if (!dvObject.getAuthority().equals(getAuthority())) {
@@ -200,6 +204,24 @@ public abstract class AbstractPidProvider implements PidProvider {
                         + ") does not match the configured authority (" + getAuthority() + ")");
                 throw new IllegalArgumentException("The authority of the DvObject (" + dvObject.getAuthority()
                         + ") doesn't match that of the provider, id: " + getId());
+            }
+        }
+        if (dvObject.getSeparator() == null) {
+            dvObject.setSeparator(getSeparator());
+        } else {
+            //only check separator if identifier is not null because a null authority would be set above...
+            //SEK 06/26/25 #11546
+            if (dvObject.getIdentifier() != null
+                    && !dvObject.getSeparator().equals(getSeparator())) {
+                logger.warning("The separator of the DvObject (" + dvObject.getSeparator()
+                        + ") does not match the configured separator (" + getSeparator() + ")");
+                throw new IllegalArgumentException("The separator of the DvObject (" + dvObject.getSeparator()
+                        + ") doesn't match that of the provider, id: " + getId());
+            } else {
+                //we know it's not null so fill it if it's empty
+                if (dvObject.getSeparator().isEmpty()) {
+                    dvObject.setSeparator(getSeparator());
+                }
             }
         }
         if (dvObject.isInstanceofDataset()) {
@@ -313,9 +335,21 @@ public abstract class AbstractPidProvider implements PidProvider {
     }
 
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
+        return parsePersistentId(protocol, authority, identifier, false);
+    }
+    
+    public GlobalId parsePersistentId(String protocol, String authority, String identifier, boolean isCaseInsensitive) {
         logger.fine("Parsing: " + protocol + ":" + authority + getSeparator() + identifier + " in " + getId());
         if (!PidProvider.isValidGlobalId(protocol, authority, identifier)) {
             return null;
+        }
+        String comparableShoulder = getShoulder();
+        
+        if(isCaseInsensitive) {
+            identifier = identifier.toUpperCase();
+            if(comparableShoulder != null) {
+                comparableShoulder = comparableShoulder.toUpperCase();
+            }
         }
         // Check authority/identifier if this is a provider that manages specific
         // identifiers
@@ -333,7 +367,7 @@ public abstract class AbstractPidProvider implements PidProvider {
             logger.fine("managed in " + getId() + ": " + getManagedSet().contains(cleanIdentifier));
             logger.fine("excluded from " + getId() + ": " + getExcludedSet().contains(cleanIdentifier));
 
-            if (!(((authority.equals(getAuthority()) && identifier.startsWith(getShoulder()))
+            if (!(((authority.equals(getAuthority()) && identifier.startsWith(comparableShoulder))
                     || getManagedSet().contains(cleanIdentifier)) && !getExcludedSet().contains(cleanIdentifier))) {
                 return null;
             }
@@ -543,8 +577,20 @@ public abstract class AbstractPidProvider implements PidProvider {
         providerSpecification.add("shoulder", shoulder);
         providerSpecification.add("identifierGenerationStyle", identifierGenerationStyle);
         providerSpecification.add("datafilePidFormat", datafilePidFormat);
-        providerSpecification.add("managedSet", Strings.join(",", managedSet.toArray()));
-        providerSpecification.add("excludedSet", Strings.join(",", excludedSet.toArray()));
+        providerSpecification.add("managedSet", String.join(",", managedSet));
+        providerSpecification.add("excludedSet", String.join(",", excludedSet));
         return providerSpecification.build();
+    }
+    
+    @Override
+    public boolean updateIdentifier(DvObject dvObject) {
+        //By default, these are the same
+        return publicizeIdentifier(dvObject);
+    }
+    
+    /** By default, this is not implemented */
+    @Override
+    public JsonObject getCSLJson(DatasetVersion datasetVersion) {
+        return new DataCitation(datasetVersion).getCSLJsonFormat();
     }
 }

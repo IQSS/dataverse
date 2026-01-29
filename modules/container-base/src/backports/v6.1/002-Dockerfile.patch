@@ -1,0 +1,10 @@
+--- a/modules/container-base/src/main/docker/Dockerfile
++++ b/modules/container-base/src/main/docker/Dockerfile
+@@ -233,4 +233,6 @@ LABEL org.opencontainers.image.created="@git.build.time@" \
+       org.opencontainers.image.vendor="Global Dataverse Community Consortium" \
+       org.opencontainers.image.licenses="Apache-2.0" \
+       org.opencontainers.image.title="Dataverse Base Image" \
+-      org.opencontainers.image.description="This container image provides an application server tuned for Dataverse software"
++      org.opencontainers.image.description="This container image provides an application server tuned for Dataverse software" \
++      org.opencontainers.image.base.name="@java.image@" \
++      org.dataverse.deps.payara.version="@payara.version@"

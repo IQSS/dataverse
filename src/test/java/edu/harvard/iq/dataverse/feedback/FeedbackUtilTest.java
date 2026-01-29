@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
@@ -55,6 +56,7 @@ public class FeedbackUtilTest {
     private static InternetAddress systemAddress;
     private static final SettingsServiceBean settingsService = Mockito.mock(SettingsServiceBean.class);
     private static final LicenseServiceBean licenseService = Mockito.mock(LicenseServiceBean.class);
+    private static final DatasetTypeServiceBean datasetTypeService = Mockito.mock(DatasetTypeServiceBean.class);
     private static final String systemEmail = "support@librascholar.edu";
     private static final boolean weKnowHowToCreateMockAuthenticatedUsers = false;
 
@@ -144,7 +146,7 @@ public class FeedbackUtilTest {
         JsonReader jsonReader1 = Json.createReader(new StringReader(datasetVersionAsJson));
         JsonObject json1 = jsonReader1.readObject();
 
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService);
         dsVersion = jsonParser.parseDatasetVersion(json1.getJsonObject("datasetVersion"));
 
         File datasetVersionJson2 = new File("tests/data/datasetContacts1.json");
@@ -153,14 +155,14 @@ public class FeedbackUtilTest {
         JsonReader jsonReader12 = Json.createReader(new StringReader(datasetVersionAsJson2));
         JsonObject json12 = jsonReader12.readObject();
 
-        JsonParser jsonParser2 = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
+        JsonParser jsonParser2 = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService);
         dsVersion2 = jsonParser2.parseDatasetVersion(json12.getJsonObject("datasetVersion"));
 
         File datasetVersionJsonNoContacts = new File("tests/data/datasetNoContacts.json");
         String datasetVersionAsJsonNoContacts = new String(Files.readAllBytes(Paths.get(datasetVersionJsonNoContacts.getAbsolutePath())));
         JsonReader jsonReaderNoContacts = Json.createReader(new StringReader(datasetVersionAsJsonNoContacts));
         JsonObject jsonNoContacts = jsonReaderNoContacts.readObject();
-        JsonParser jsonParserNoContacts = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
+        JsonParser jsonParserNoContacts = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService);
         dsVersionNoContacts = jsonParserNoContacts.parseDatasetVersion(jsonNoContacts.getJsonObject("datasetVersion"));
 
         FeedbackUtil justForCodeCoverage = new FeedbackUtil();

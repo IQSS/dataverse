@@ -100,7 +100,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         if ( ! (getUser() instanceof AuthenticatedUser) ) {
             throw new IllegalCommandException("Only authenticated users can update datasets", this);
         }
-        
+
         Dataset theDataset = getDataset();        
         ctxt.permissions().checkUpdateDatasetVersionLock(theDataset, getRequest(), this);
         Dataset savedDataset = null;
@@ -115,7 +115,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
          */
         if(persistedVersion==null) {
             Long id = getDataset().getLatestVersion().getId();
-            persistedVersion = ctxt.datasetVersion().find(id!=null ? id: getDataset().getLatestVersionForCopy().getId());
+            persistedVersion = ctxt.datasetVersion().find(id!=null ? id : getDataset().getLatestVersionForCopy(true).getId());
         }
         
         //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
@@ -136,6 +136,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
             
             getDataset().getOrCreateEditVersion(fmVarMet).setDatasetFields(getDataset().getOrCreateEditVersion(fmVarMet).initDatasetFields());
+
             validateOrDie(getDataset().getOrCreateEditVersion(fmVarMet), isValidateLenient());
 
             final DatasetVersion editVersion = getDataset().getOrCreateEditVersion(fmVarMet);
@@ -154,7 +155,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             		throw e;
             	}
             }
-
+            //Set creator and create date for files if needed
             for (DataFile dataFile : theDataset.getFiles()) {
                 if (dataFile.getCreateDate() == null) {
                     dataFile.setCreateDate(getTimestamp());
@@ -230,7 +231,8 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     if (!theDataset.getOrCreateEditVersion().equals(fmd.getDatasetVersion())) {
                         fmd = FileMetadataUtil.getFmdForFileInEditVersion(fmd, theDataset.getOrCreateEditVersion());
                     }
-                } 
+                }
+                fmd.setDataFile(ctxt.em().merge(fmd.getDataFile()));
                 fmd = ctxt.em().merge(fmd);
 
                 // There are two datafile cases as well - the file has been released, so we're
@@ -241,13 +243,15 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getRequest()));
                     // and remove the file from the dataset's list
                     theDataset.getFiles().remove(fmd.getDataFile());
-                } else {
-                    // if we aren't removing the file, we need to explicitly remove the fmd from the
-                    // context and then remove it from the datafile's list
+                    ctxt.em().remove(fmd.getDataFile());
                     ctxt.em().remove(fmd);
+                } else {
+                    ctxt.em().remove(fmd);
+                    // if we aren't removing the file, we need to remove it from the datafile's list
                     FileMetadataUtil.removeFileMetadataFromList(fmd.getDataFile().getFileMetadatas(), fmd);
                 }
-                // In either case, to fully remove the fmd, we have to remove any other possible
+                // In either case, we've removed from the  context 
+                // And, to fully remove the fmd, we have to remove any other possible
                 // references
                 // From the datasetversion
                 FileMetadataUtil.removeFileMetadataFromList(theDataset.getOrCreateEditVersion().getFileMetadatas(), fmd);
@@ -255,10 +259,12 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 for (DataFileCategory cat : theDataset.getCategories()) {
                     FileMetadataUtil.removeFileMetadataFromList(cat.getFileMetadatas(), fmd);
                 }
+
             }
             for(FileMetadata fmd: theDataset.getOrCreateEditVersion().getFileMetadatas()) {
                 logger.fine("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId() + "is in final draft version");    
             }
+            registerFilePidsIfNeeded(theDataset, ctxt, true);
             
             if (recalculateUNF) {
                 ctxt.ingest().recalculateDatasetVersionUNF(theDataset.getOrCreateEditVersion());
@@ -297,5 +303,5 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         ctxt.index().asyncIndexDataset((Dataset) r, true);
         return true;
     }
-
+    
 }

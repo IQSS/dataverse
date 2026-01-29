@@ -98,8 +98,10 @@ public class DDIExportServiceBean {
     public static final String LEVEL_FILE = "file";
     public static final String NOTE_TYPE_UNF = "VDC:UNF";
     public static final String NOTE_TYPE_TAG = "DATAVERSE:TAG";
+    public static final String NOTE_TYPE_FILEDESCRIPTION = "DATAVERSE:FILEDESC";
     public static final String NOTE_SUBJECT_UNF = "Universal Numeric Fingerprint";
     public static final String NOTE_SUBJECT_TAG = "Data File Tag";
+    public static final String NOTE_SUBJECT_FILEDESCRIPTION = "DataFile Description"; 
 
     /*
      * Internal service objects:
@@ -742,11 +744,6 @@ public class DDIExportServiceBean {
                 xmlw.writeEndElement(); // fileName
             }
 
-            /*
-             xmlw.writeStartElement("fileCont");
-             xmlw.writeCharacters( df.getContentType() );
-             xmlw.writeEndElement(); // fileCont
-             */
             // dimensions
             if (checkField("dimensns", excludedFieldSet, includedFieldSet)) {
                 if (dt.getCaseQuantity() != null || dt.getVarQuantity() != null || dt.getRecordsPerCase() != null) {
@@ -801,26 +798,6 @@ public class DDIExportServiceBean {
             xmlw.writeEndElement(); // notes
         }
 
-        /*
-         xmlw.writeStartElement("notes");
-         writeAttribute( xmlw, "type", "vdc:category" );
-         xmlw.writeCharacters( fm.getCategory() );
-         xmlw.writeEndElement(); // notes
-         */
-        // A special note for LOCKSS crawlers indicating the restricted
-        // status of the file:
-
-        /*
-         if (tdf != null && isRestrictedFile(tdf)) {
-         xmlw.writeStartElement("notes");
-         writeAttribute( xmlw, "type", NOTE_TYPE_LOCKSS_CRAWL );
-         writeAttribute( xmlw, "level", LEVEL_FILE );
-         writeAttribute( xmlw, "subject", NOTE_SUBJECT_LOCKSS_PERM );
-         xmlw.writeCharacters( "restricted" );
-         xmlw.writeEndElement(); // notes
-
-         }
-         */
         if (checkField("tags", excludedFieldSet, includedFieldSet) && df.getTags() != null) {
             for (int i = 0; i < df.getTags().size(); i++) {
                 xmlw.writeStartElement("notes");
@@ -831,6 +808,17 @@ public class DDIExportServiceBean {
                 xmlw.writeEndElement(); // notes
             }
         }
+        
+        // A dedicated node for the Description entry 
+        if (!StringUtilisEmpty(fm.getDescription())) {
+            xmlw.writeStartElement("notes");
+            xmlw.writeAttribute("level", LEVEL_FILE);
+            xmlw.writeAttribute("type", NOTE_TYPE_FILEDESCRIPTION);
+            xmlw.writeAttribute("subject", NOTE_SUBJECT_FILEDESCRIPTION);
+            xmlw.writeCharacters(fm.getDescription());
+            xmlw.writeEndElement(); // notes
+        }
+        
         xmlw.writeEndElement(); // fileDscr   
     }
 

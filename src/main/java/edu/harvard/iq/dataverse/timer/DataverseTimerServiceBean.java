@@ -120,13 +120,13 @@ public class DataverseTimerServiceBean implements Serializable {
         }
         
         try {
-            logger.log(Level.INFO,"Handling timeout on " + InetAddress.getLocalHost().getCanonicalHostName());
+            logger.log(Level.FINE,"Handling timeout on " + InetAddress.getLocalHost().getCanonicalHostName());
         } catch (UnknownHostException ex) {
             Logger.getLogger(DataverseTimerServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         if (timer.getInfo() instanceof MotherTimerInfo) {
-            logger.info("Behold! I am the Master Timer, king of all timers! I'm here to create all the lesser timers!");
+            logger.fine("Behold! I am the Master Timer, king of all timers! I'm here to create all the lesser timers!");
             removeHarvestTimers();
             for (HarvestingClient client : harvestingClientService.getAllHarvestingClients()) {
                 createHarvestTimer(client);

@@ -11,3 +11,4 @@ curl "${DATAVERSE_URL}/api/admin/datasetfield/load" -X POST --data-binary @"$SCR
 curl "${DATAVERSE_URL}/api/admin/datasetfield/load" -X POST --data-binary @"$SCRIPT_PATH"/data/metadatablocks/astrophysics.tsv -H "Content-type: text/tab-separated-values"
 curl "${DATAVERSE_URL}/api/admin/datasetfield/load" -X POST --data-binary @"$SCRIPT_PATH"/data/metadatablocks/biomedical.tsv -H "Content-type: text/tab-separated-values"
 curl "${DATAVERSE_URL}/api/admin/datasetfield/load" -X POST --data-binary @"$SCRIPT_PATH"/data/metadatablocks/journals.tsv -H "Content-type: text/tab-separated-values"
+curl "${DATAVERSE_URL}/api/admin/datasetfield/load" -X POST --data-binary @"$SCRIPT_PATH"/data/metadatablocks/3d_objects.tsv -H "Content-type: text/tab-separated-values"

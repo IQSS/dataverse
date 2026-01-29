@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.MailServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -32,6 +33,8 @@ public class ConfigCheckService {
     MailSessionProducer mailSessionProducer;
     @Inject
     MailServiceBean mailService;
+    @Inject
+    PidProviderFactoryBean pidProviderFactoryBean;
 
     public static class ConfigurationError extends RuntimeException {
         public ConfigurationError(String message) {
@@ -132,6 +135,16 @@ public class ConfigCheckService {
      * @return True if all checks successful, false otherwise.
      */
     private boolean checkPidProviders() {
-        return PidUtil.getManagedProviderIds().size() > 0;
+        // Check if at least one PidProvider capable of editing/minting PIDs is configured.
+        boolean valid=true;
+        if(!(PidUtil.getManagedProviderIds().size() > 0)) {
+            valid = false;
+            logger.warning("No PID providers configured");
+        }
+        if (pidProviderFactoryBean.getDefaultPidGenerator()==null){
+            valid=false;
+            logger.warning("No default PID provider configured");
+        }
+        return valid;
     }
 }

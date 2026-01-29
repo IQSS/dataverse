@@ -148,5 +148,7 @@ public class RateLimitUtilTest {
         doReturn(enable ? "100,200" : "").when(config).getRateLimitingDefaultCapacityTiers();
         RateLimitUtil.rateLimitMap.clear();
         RateLimitUtil.rateLimits.clear();
+        // first call after setting changes returns RESET_CACHE so ignore it
+        RateLimitUtil.getCapacity(config, GuestUser.get(), "GetPrivateUrlCommand");
     }
 }

@@ -12,13 +12,15 @@
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{bundle['dashboard.title']} - #{dataverseServiceBean.findRootDataverse().name}"/>
             <ui:param name="showDataverseHeader" value="false"/>
-            <ui:define name="body">
+            <ui:define name="metadata">
                 <f:metadata>
                     <f:viewParam name="dataverseId" value="#{dashboardPage.dataverseId}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{dashboardPage.init}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), bundle['dashboard.title'])}"/>
                 </f:metadata>
+            </ui:define>
+            <ui:define name="body">
                
                 <div id="dashboard-block" class="content">
                     <div class="container">
@@ -126,21 +128,26 @@
 
                             <div class="col-md-4">
                                 <div class="card-box">
-                                    <h4 class="header-title">#{bundle['dashboard.card.datamove']}</h4>
+                                    <h4 class="header-title">#{bundle['dashboard.card.move.data']}</h4>
                                     <div class="row text-center">
                                         <div class="col-xs-6">
-                                            <h:outputText value="#{DashboardDatamovePage.getDataverseCount()}"/>
-                                            <p class="small text-muted">#{bundle['dataverses']}</p>
+                                            <h:outputText value="#{DashboardMoveDatasetPage.getDatasetCount()}"/>
+                                            <p class="small text-muted">#{bundle['datasets']}</p>
                                         </div>
                                         <div class="col-xs-6">
-                                            <h:outputText value="#{DashboardDatamovePage.getDatasetCount()}"/>
-                                            <p class="small text-muted">#{bundle['datasets']}</p>
+                                            <h:outputText value="#{DashboardMoveDataversePage.getDataverseCount()}"/>
+                                            <p class="small text-muted">#{bundle['dataverses']}</p>
                                         </div>
                                     </div>
                                     <div class="row text-center">
-                                        <div  class="col-xs-12">
+                                        <div  class="col-xs-6">
                                             <p>
-                                                <a href="/dashboard-datamove.xhtml" class="btn btn-primary" role="button">#{bundle['dashboard.card.datamove.manage']}</a>
+                                                <a href="/dashboard-movedataset.xhtml" class="btn btn-primary" role="button">#{bundle['dashboard.card.move.dataset.manage']}</a>
+                                            </p>
+                                        </div>
+                                        <div  class="col-xs-6">
+                                            <p>
+                                                <a href="/dashboard-movedataverse.xhtml" class="btn btn-primary" role="button">#{bundle['dashboard.card.move.dataverse.manage']}</a>
                                             </p>
                                         </div>
                                     </div>

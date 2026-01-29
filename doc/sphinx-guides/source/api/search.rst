@@ -21,13 +21,13 @@ Please note that in Dataverse Software 4.3 and older the "citation" field wrappe
 Parameters
 ----------
 
-===============  =======  ===========
+================ =======  ===========
 Name             Type     Description
-===============  =======  ===========
+================ =======  ===========
 q                string   The search term or terms. Using "title:data" will search only the "title" field. "*" can be used as a wildcard either alone or adjacent to a term (i.e. "bird*"). For example, https://demo.dataverse.org/api/search?q=title:data . For a list of fields to search, please see https://github.com/IQSS/dataverse/issues/2558 (for now).
 type             string   Can be either "dataverse", "dataset", or "file". Multiple "type" parameters can be used to include multiple types (i.e. ``type=dataset&type=file``). If omitted, all types will be returned.  For example, https://demo.dataverse.org/api/search?q=*&type=dataset
 subtree          string   The identifier of the Dataverse collection to which the search should be narrowed. The subtree of this Dataverse collection and all its children will be searched.  Multiple "subtree" parameters can be used to include multiple Dataverse collections. For example, https://demo.dataverse.org/api/search?q=data&subtree=birds&subtree=cats .
-sort             string   The sort field. Supported values include "name" and "date". See example under "order".
+sort             string   The sort field. Supported values include "name", "date" and "relevance". See example under "order".
 order            string   The order in which to sort. Can either be "asc" or "desc".  For example, https://demo.dataverse.org/api/search?q=data&sort=name&order=asc
 per_page         int      The number of results to return per request. The default is 10. The max is 1000. See :ref:`iteration example <iteration-example>`.
 start            int      A cursor for paging through search results. See :ref:`iteration example <iteration-example>`.
@@ -35,10 +35,15 @@ show_relevance   boolean  Whether or not to show details of which fields were ma
 show_facets      boolean  Whether or not to show facets that can be operated on by the "fq" parameter. False by default. See :ref:`advanced search example <advancedsearch-example>`.
 fq               string   A filter query on the search term. Multiple "fq" parameters can be used. See :ref:`advanced search example <advancedsearch-example>`.
 show_entity_ids  boolean  Whether or not to show the database IDs of the search results (for developer use).
-geo_point        string	  Latitude and longitude in the form ``geo_point=42.3,-71.1``. You must supply ``geo_radius`` as well. See also :ref:`geospatial-search`.
-geo_radius       string	  Radial distance in kilometers from ``geo_point`` (which must be supplied as well) such as ``geo_radius=1.5``.
-metadata_fields  string	  Includes the requested fields for each dataset in the response. Multiple "metadata_fields" parameters can be used to include several fields. The value must be in the form "{metadata_block_name}:{field_name}" to include a specific field from a metadata block (see :ref:`example <dynamic-citation-some>`) or "{metadata_field_set_name}:\*" to include all the fields for a metadata block (see :ref:`example <dynamic-citation-all>`). "{field_name}" cannot be a subfield of a compound field. If "{field_name}" is a compound field, all subfields are included.
-===============  =======  ===========
+show_api_urls    boolean  Whether or not to show API URLs for the search results
+query_entities   boolean  Whether to query entities for extra metadata (slower). Default is true.
+metadata_fields  string   Includes the requested fields for each dataset in the response. Multiple "metadata_fields" parameters can be used to include several fields. The value must be in the form "{metadata_block_name}:{field_name}" to include a specific field from a metadata block (see :ref:`example <dynamic-citation-some>`) or "{metadata_field_set_name}:\*" to include all the fields for a metadata block (see :ref:`example <dynamic-citation-all>`). "{field_name}" cannot be a subfield of a compound field. If "{field_name}" is a compound field, all subfields are included.
+geo_point        string   Latitude and longitude in the form ``geo_point=42.3,-71.1``. You must supply ``geo_radius`` as well. See also :ref:`geospatial-search`.
+geo_radius       string   Radial distance in kilometers from ``geo_point`` (which must be supplied as well) such as ``geo_radius=1.5``.
+show_type_counts boolean  Whether or not to include total_count_per_object_type for types: Dataverse, Dataset, and Files.
+show_collections boolean  Whether or not to include a list of parent and linked collections for each dataset search result.
+search_service   string   The name of the search service to use for this query. If omitted, the default search service will be used. For available search services, see :ref:`discovering-available-search-services`.
+================ =======  ===========
 
 Basic Search Example
 --------------------
@@ -61,25 +66,37 @@ https://demo.dataverse.org/api/search?q=trees
                     "name":"Trees",
                     "type":"dataverse",
                     "url":"https://demo.dataverse.org/dataverse/trees",
-                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/7",
+                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/1",
                     "identifier":"trees",
                     "description":"A tree dataverse with some birds",
-                    "published_at":"2016-05-10T12:53:38Z"
+                    "published_at":"2016-05-10T12:53:38Z",
+                    "publicationStatuses": [
+                        "Published"
+                    ],
+                    "affiliation": "Dataverse.org",
+                    "parentDataverseName": "Root",
+                    "parentDataverseIdentifier": "root"
                 },
                 {
                     "name":"Chestnut Trees",
                     "type":"dataverse",
                     "url":"https://demo.dataverse.org/dataverse/chestnuttrees",
-                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/9",
+                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/2",
                     "identifier":"chestnuttrees",
                     "description":"A dataverse with chestnut trees and an oriole",
-                    "published_at":"2016-05-10T12:52:38Z"
+                    "published_at":"2016-05-10T12:52:38Z",
+                    "publicationStatuses": [
+                        "Published"
+                    ],
+                    "affiliation": "Dataverse.org",
+                    "parentDataverseName": "Root",
+                    "parentDataverseIdentifier": "root"
                 },
                 {
                     "name":"trees.png",
                     "type":"file",
                     "url":"https://demo.dataverse.org/api/access/datafile/12",
-                    "image_url":"https://demo.dataverse.org/api/access/fileCardImage/12",
+                    "image_url":"https://demo.dataverse.org/api/access/datafile/12?imageThumb=true",
                     "file_id":"12",
                     "description":"",
                     "published_at":"2016-05-10T12:53:39Z",
@@ -91,16 +108,26 @@ https://demo.dataverse.org/api/search?q=trees
                     "dataset_name": "Dataset One",
                     "dataset_id": "32",
                     "dataset_persistent_id": "doi:10.5072/FK2/XTT5BV",
-                    "dataset_citation":"Spruce, Sabrina, 2016, \"Spruce Goose\", http://dx.doi.org/10.5072/FK2/XTT5BV, Root Dataverse, V1"
+                    "dataset_citation":"Spruce, Sabrina, 2016, \"Spruce Goose\", http://dx.doi.org/10.5072/FK2/XTT5BV, Root Dataverse, V1",
+                    "publicationStatuses": [
+                        "Published"
+                    ],
+                    "releaseOrCreateDate": "2016-05-10T12:53:39Z"
                 },
                 {
                     "name":"Birds",
                     "type":"dataverse",
                     "url":"https://demo.dataverse.org/dataverse/birds",
-                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/2",
+                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/3",
                     "identifier":"birds",
                     "description":"A bird Dataverse collection with some trees",
-                    "published_at":"2016-05-10T12:57:27Z"
+                    "published_at":"2016-05-10T12:57:27Z",
+                    "publicationStatuses": [
+                        "Published"
+                    ],
+                    "affiliation": "Dataverse.org",
+                    "parentDataverseName": "Root",
+                    "parentDataverseIdentifier": "root"
                 },
                 {  
                     "name":"Darwin's Finches",
@@ -114,6 +141,9 @@ https://demo.dataverse.org/api/search?q=trees
                     "identifier_of_dataverse":"dvbe69f5e1",
                     "name_of_dataverse":"dvbe69f5e1",
                     "citation":"Finch, Fiona; Spruce, Sabrina; Poe, Edgar Allen; Mulligan, Hercules, 2019, \"Darwin's Finches\", https://doi.org/10.70122/FK2/MB5VGR, Root, V3",
+                    "publicationStatuses": [
+                        "Published"
+                    ],
                     "storageIdentifier":"file://10.70122/FK2/MB5VGR",
                     "subjects":[  
                        "Astronomy and Astrophysics",
@@ -175,7 +205,7 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
                     "name":"Finches",
                     "type":"dataverse",
                     "url":"https://demo.dataverse.org/dataverse/finches",
-                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/3",
+                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/2",
                     "identifier":"finches",
                     "description":"A Dataverse collection with finches",
                     "published_at":"2016-05-10T12:57:38Z",
@@ -207,6 +237,9 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
                     "published_at":"2016-05-10T12:57:45Z",
                     "citationHtml":"Finch, Fiona, 2016, \"Darwin's Finches\", <a href=\"http://dx.doi.org/10.5072/FK2/G2VPE7\" target=\"_blank\">http://dx.doi.org/10.5072/FK2/G2VPE7</a>, Root Dataverse, V1",
                     "citation":"Finch, Fiona, 2016, \"Darwin's Finches\", http://dx.doi.org/10.5072/FK2/G2VPE7, Root Dataverse, V1",
+                    "publicationStatuses": [
+                        "Published"
+                    ],
                     "matches":[
                         {
                             "authorName":{
@@ -297,6 +330,9 @@ The above example ``fq=publicationStatus:Published`` retrieves only "RELEASED" v
                     "identifier_of_dataverse": "rahman",
                     "name_of_dataverse": "mdmizanur rahman Dataverse collection",
                     "citation": "Finch, Fiona, 2019, \"Darwin's Finches\", https://doi.org/10.70122/FK2/GUAS41, Demo Dataverse, V1",
+                    "publicationStatuses": [
+                        "Published"
+                    ],
                     "storageIdentifier": "file://10.70122/FK2/GUAS41",
                     "subjects": [
                         "Medicine, Health and Life Sciences"
@@ -330,6 +366,9 @@ The above example ``fq=publicationStatus:Published`` retrieves only "RELEASED" v
                     "identifier_of_dataverse": "demo",
                     "name_of_dataverse": "Demo Dataverse",
                     "citation": "Finch, Fiona, 2020, \"Darwin's Finches\", https://doi.org/10.70122/FK2/7ZXYRH, Demo Dataverse, V1",
+                    "publicationStatuses": [
+                        "Published"
+                    ],
                     "storageIdentifier": "file://10.70122/FK2/7ZXYRH",
                     "subjects": [
                         "Medicine, Health and Life Sciences"
@@ -386,6 +425,10 @@ The above example ``metadata_fields=citation:*`` returns under "metadataBlocks" 
                     "identifier_of_dataverse": "Sample_data",
                     "name_of_dataverse": "Sample Data",
                     "citation": "Métropole, 2021, \"JDD avec GeoJson 2021-07-13T10:23:46.409Z\", https://doi.org/10.5072/FK2/GIWCKB, Root, DRAFT VERSION",
+                    "publicationStatuses": [
+                        "Unpublished",
+                        "Draft"
+                    ],
                     "storageIdentifier": "file://10.5072/FK2/GIWCKB",
                     "subjects": [
                         "Other"
@@ -663,7 +706,11 @@ The above example ``metadata_fields=citation:dsDescription&metadata_fields=citat
                     "published_at": "2021-03-16T08:11:54Z"
                 }
             ],
-            "count_in_response": 4
+            "count_in_response": 4,
+            "total_count_per_object_type": {
+                "Datasets": 2,
+                "Dataverses": 2
+            }
         }
     }
 
@@ -732,3 +779,58 @@ Output from iteration example
       <span class="label label-success pull-right">
         CORS
       </span>
+
+.. _search-services:
+
+Search Services
+---------------
+
+.. _discovering-available-search-services:
+
+Discovering Available Search Services
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To discover available search services and their capabilities, you can use the Search Services API endpoint.
+Note: Configurable Search Services are an optional, experimental feature than may evolve faster than other parts of Dataverse.
+
+Example API endpoint: https://demo.dataverse.org/api/search/services
+
+This endpoint returns a list of available search services, including their names, and display names. It also indicates the default search service.
+
+Example response:
+
+.. code-block:: json
+
+    {
+        "status": "OK",
+        "data": {
+         "services": [
+            {
+                "name": "solr",
+                "displayName": "Solr Search",
+            },
+            {
+                "name": "externalSearch",
+                "displayName": "External Search for Datasets",
+            }
+        ],
+        "defaultService": "solr"
+    }
+
+You can use the ``name`` values returned by this endpoint in the ``search_service`` parameter of the main search API to specify which search service to use for a particular query.
+
+Using Different Search Services
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To use a specific search service, include the ``search_service`` parameter in your search query and pass the ``name``. For example:
+
+https://demo.dataverse.org/api/search?q=trees&search_service=externalSearch
+
+This query will use the ``externalSearch`` service (assuming it exists) instead of the default search service (``solr``).
+
+.. note:: Other search services may not be complete replacements for the included ``solr`` service. For example, they may not support searching for collections or files (just datasets).
+
+Developing Search Services
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+See :doc:`/developers/search-services` in the Developer Guide.

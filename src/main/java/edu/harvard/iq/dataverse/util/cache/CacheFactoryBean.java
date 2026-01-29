@@ -13,7 +13,6 @@ import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.configuration.CompleteConfiguration;
 import javax.cache.configuration.MutableConfiguration;
-import javax.cache.spi.CachingProvider;
 import java.util.logging.Logger;
 
 @Singleton
@@ -26,8 +25,6 @@ public class CacheFactoryBean implements java.io.Serializable {
     SystemConfig systemConfig;
     @Inject
     CacheManager manager;
-    @Inject
-    CachingProvider provider;
     public final static String RATE_LIMIT_CACHE = "rateLimitCache";
 
     @PostConstruct
@@ -52,9 +49,18 @@ public class CacheFactoryBean implements java.io.Serializable {
         int capacity = RateLimitUtil.getCapacity(systemConfig, user, action);
         if (capacity == RateLimitUtil.NO_LIMIT) {
             return true;
+        } else if (capacity == RateLimitUtil.RESET_CACHE) {
+            rateLimitCache.clear();
+            return true;
         } else {
             String cacheKey = RateLimitUtil.generateCacheKey(user, action);
             return (!RateLimitUtil.rateLimited(rateLimitCache, cacheKey, capacity));
         }
+    }
+    public String getStats(String cacheType, String filter) {
+        if (RATE_LIMIT_CACHE.equals(cacheType)) {
+            return RateLimitUtil.getStats(rateLimitCache, filter);
+        }
+        return "";
     }
 }

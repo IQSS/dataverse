@@ -162,7 +162,9 @@ A full backup of the table can be made with pg_dump, for example:
 
 ``pg_dump <CREDENTIALS> --table=actionlogrecord --data-only <DATABASE_NAME> > /tmp/actionlogrecord_backup.sql``
 
-(In the example above, the output will be saved in raw SQL format. It is portable and human-readable, but uses a lot of space. It does, however, compress very well. Add the ``-Fc`` option to save the output in a proprietary, binary format that's already compressed). 
+In the example above, the output will be saved in raw SQL format. It is portable and human-readable, but uses a lot of space. It does, however, compress very well.
+
+Add the ``-Fc`` option to save the output in a proprietary, compressed binary format which will dump and restore much more quickly, but note that in this format dead tuples will be copied as well. To reduce the amount of storage consumed by the newly-trimmed ``actionlogrecord`` table, you must issue ``vacuum full actionlogrecord`` before dumping the database in this custom format.
 
 
 Getting Help

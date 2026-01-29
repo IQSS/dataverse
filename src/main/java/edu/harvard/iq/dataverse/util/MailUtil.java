@@ -35,7 +35,10 @@ public class MailUtil {
             case CREATEDV:
                 return BundleUtil.getStringFromBundle("notification.email.create.dataverse.subject", rootDvNameAsList);
             case REQUESTFILEACCESS:
-                return BundleUtil.getStringFromBundle("notification.email.request.file.access.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
+                String userNameFirst = userNotification.getRequestor().getFirstName();
+                String userNameLast = userNotification.getRequestor().getLastName();
+                String userIdentifier = userNotification.getRequestor().getIdentifier();
+                return BundleUtil.getStringFromBundle("notification.email.request.file.access.subject", Arrays.asList(rootDvNameAsList.get(0), userNameFirst, userNameLast, userIdentifier, datasetDisplayName));
             case REQUESTEDFILEACCESS:
                 return BundleUtil.getStringFromBundle("notification.email.requested.file.access.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case GRANTFILEACCESS:
@@ -44,6 +47,8 @@ public class MailUtil {
                 return BundleUtil.getStringFromBundle("notification.email.rejected.file.access.subject", rootDvNameAsList);
             case DATASETCREATED:
                 return BundleUtil.getStringFromBundle("notification.email.dataset.created.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
+            case DATASETMOVED:
+                return BundleUtil.getStringFromBundle("notification.email.dataset.moved.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case CREATEDS:
                 return BundleUtil.getStringFromBundle("notification.email.create.dataset.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case SUBMITTEDDS:
@@ -60,6 +65,8 @@ public class MailUtil {
                 return BundleUtil.getStringFromBundle("notification.email.workflow.failure.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case STATUSUPDATED:
                 return BundleUtil.getStringFromBundle("notification.email.status.change.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
+            case PIDRECONCILED:
+                return BundleUtil.getStringFromBundle("notification.email.pid.reconciled.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case CREATEACC:
                 return BundleUtil.getStringFromBundle("notification.email.create.account.subject", rootDvNameAsList);
             case CHECKSUMFAIL:
@@ -95,6 +102,23 @@ public class MailUtil {
                     return BundleUtil.getStringFromBundle("notification.email.globus.uploadCompletedWithErrors.subject", dsNameAsList);
                 } catch (Exception e) {
                     return BundleUtil.getStringFromBundle("notification.email.globus.uploadCompletedWithErrors.subject", rootDvNameAsList);
+                }
+            case GLOBUSUPLOADREMOTEFAILURE:
+                try {
+                    DatasetVersion version =  (DatasetVersion)objectOfNotification;
+                    List<String> dsNameAsList = Arrays.asList(version.getDataset().getDisplayName());
+                    return BundleUtil.getStringFromBundle("notification.email.globus.uploadFailedRemotely.subject", dsNameAsList);
+                    
+                } catch (Exception e) {
+                    return BundleUtil.getStringFromBundle("notification.email.globus.uploadFailedRemotely.subject", rootDvNameAsList);
+                }
+            case GLOBUSUPLOADLOCALFAILURE:
+                try {
+                    DatasetVersion version =  (DatasetVersion)objectOfNotification;
+                    List<String> dsNameAsList = Arrays.asList(version.getDataset().getDisplayName());
+                    return BundleUtil.getStringFromBundle("notification.email.globus.uploadFailedLocally.subject", dsNameAsList);
+                } catch (Exception e) {
+                    return BundleUtil.getStringFromBundle("notification.email.globus.uploadFailedLocally.subject", rootDvNameAsList);
                 }
             case GLOBUSDOWNLOADCOMPLETEDWITHERRORS:
                 try {

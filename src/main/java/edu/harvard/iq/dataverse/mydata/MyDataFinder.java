@@ -439,19 +439,6 @@ public class MyDataFinder {
         if (results == null) {
             this.addErrorMessage(BundleUtil.getStringFromBundle("myDataFinder.error.result.null"));
             return false;
-        } else if (results.isEmpty()) {
-            List<String> roleNames = this.rolePermissionHelper.getRoleNamesByIdList(this.filterParams.getRoleIds());
-            if ((roleNames == null) || (roleNames.isEmpty())) {
-                this.addErrorMessage(BundleUtil.getStringFromBundle("myDataFinder.error.result.no.role"));
-            } else {
-                final List<String> args = Arrays.asList(StringUtils.join(roleNames, ", "));
-                if (roleNames.size() == 1) {
-                    this.addErrorMessage(BundleUtil.getStringFromBundle("myDataFinder.error.result.role.empty", args));
-                } else {
-                    this.addErrorMessage(BundleUtil.getStringFromBundle("myDataFinder.error.result.roles.empty", args));
-                }
-            }
-            return false;
         }
 
         // Iterate through assigned objects, a single object may end up in
@@ -484,6 +471,21 @@ public class MyDataFinder {
                 this.idsWithFilePermissions.put(dvId, true);
             }
             directDvObjectIds.add(dvId);
+        }
+
+        if (directDvObjectIds.isEmpty()) {
+            List<String> roleNames = this.rolePermissionHelper.getRoleNamesByIdList(this.filterParams.getRoleIds());
+            if ((roleNames == null) || (roleNames.isEmpty())) {
+                this.addErrorMessage(BundleUtil.getStringFromBundle("myDataFinder.error.result.no.role"));
+            } else {
+                final List<String> args = Arrays.asList(StringUtils.join(roleNames, ", "));
+                if (roleNames.size() == 1) {
+                    this.addErrorMessage(BundleUtil.getStringFromBundle("myDataFinder.error.result.role.empty", args));
+                } else {
+                    this.addErrorMessage(BundleUtil.getStringFromBundle("myDataFinder.error.result.roles.empty", args));
+                }
+            }
+            return false;
         }
         return true;
     }

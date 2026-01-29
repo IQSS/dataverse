@@ -21,7 +21,7 @@
             <ui:param name="version" value="#{EditDatafilesPage.workingVersion}"/>
             <ui:param name="fileMetadatas" value="#{EditDatafilesPage.fileMetadatas}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
-            <ui:define name="body">
+            <ui:define name="metadata">
                 <f:metadata>
                     <f:viewParam name="datasetId" value="#{EditDatafilesPage.dataset.id}"/>
                     <o:viewParam name="mode" value="#{EditDatafilesPage.mode}"/>
@@ -35,6 +35,8 @@
                     <o:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(EditDatafilesPage.singleFile, (EditDatafilesPage.mode == 'REPLACE' ? bundle['file.replaceFile'] : bundle['file.editFiles']))}"
                                   if="#{EditDatafilesPage.referrer == 'FILE'}" />
                 </f:metadata>
+            </ui:define>
+            <ui:define name="body">
                 <h:form id="datasetForm">
                     <!-- BEGIN: file replace original -->
                     <div class="row" jsf:rendered="#{EditDatafilesPage.fileReplaceOperation}">

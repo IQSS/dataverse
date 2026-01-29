@@ -2,13 +2,13 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
-import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import java.util.List;
@@ -45,10 +44,14 @@ import java.time.Instant;
 // line above, AND un-comment out the getRequiredPermissions() method below. 
 
 public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
-    private static final Logger logger = Logger.getLogger(CreateNewDatasetCommand.class.getName());
-    
+
     private final Template template;
-    private final Dataverse dv;
+    private boolean allowSelfNotification = false;
+
+    public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean validate, boolean allowSelfNotification) {
+        this(theDataset, aRequest, null, validate);
+        this.allowSelfNotification = allowSelfNotification;
+    }
 
     public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         this( theDataset, aRequest, null);
@@ -57,13 +60,11 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, Template template) {
         super(theDataset, aRequest);
         this.template = template;
-        dv = theDataset.getOwner();
     }
     
     public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, Template template, boolean validate) {
         super(theDataset, aRequest, false, validate);
         this.template = template;
-        dv = theDataset.getOwner();
     }
     
     /**
@@ -107,55 +108,69 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     
     @Override
     protected void postPersist( Dataset theDataset, CommandContext ctxt ){
-        // set the role to be default contributor role for its dataverse
-        String privateUrlToken = null;
-        if (theDataset.getOwner().getDefaultContributorRole() != null) {
-            RoleAssignment roleAssignment = new RoleAssignment(theDataset.getOwner().getDefaultContributorRole(),
-                    getRequest().getUser(), theDataset, privateUrlToken);
-            ctxt.roles().save(roleAssignment, false);
 
-            // TODO: the above may be creating the role assignments and saving them 
-            // in the database, but without properly linking them to the dataset
-            // (saveDataset, that the command returns). This may have been the reason 
-            // for the github issue #4783 - where the users were losing their contributor
-            // permissions, when creating datasets AND uploading files in one step. 
-            // In that scenario, an additional UpdateDatasetCommand is exectued on the
-            // dataset returned by the Create command. That issue was fixed by adding 
-            // a full refresh of the datast with datasetService.find() between the 
-            // two commands. But it may be a good idea to make sure they are properly
-            // linked here (?)
-            theDataset.setPermissionModificationTime(getTimestamp());
-        }
         
         if ( template != null ) {
             ctxt.templates().incrementUsageCount(template.getId());
         }
     }
     
-    /* Emails those able to publish the dataset (except the creator themselves who already gets an email)
+    /** Performs tasks that need the dataset to have an id (and hence can't be done in postPersist), such as
+     * Save role assignments for the dataset.
+     * Email those able to publish the dataset (except the creator themselves who already gets an email)
      * that a new dataset exists. 
-     * NB: Needs dataset id so has to be postDBFlush (vs postPersist())
+     *  <p>
+     * This method checks if dataset creation notifications are enabled. If so, it
+     * notifies all users with {@code Permission.PublishDataset} on the new dataset.
+     * The user who initiated the action can be included or excluded from this
+     * notification based on the allowSelfNotification flag.
+     *
+     * @param dataset The newly created {@code Dataset}.
+     * @param ctxt    The {@code CommandContext} providing access to application services.
      */
+     
     protected void postDBFlush( Dataset theDataset, CommandContext ctxt ){
-        if(ctxt.settings().isTrueForKey(SettingsServiceBean.Key.SendNotificationOnDatasetCreation, false)) {
-        //QDR - alert curators that a dataset has been created
-        //Should this create a notification too? (which would let us use the notification mailcapbilities to generate the subject/body.
-        AuthenticatedUser requestor = getUser().isAuthenticated() ? (AuthenticatedUser) getUser() : null;
-        List<AuthenticatedUser> authUsers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, theDataset);
-        for (AuthenticatedUser au : authUsers) {
-            if(!au.equals(requestor)) {
-                ctxt.notifications().sendNotification(
-                        au,
+        // set the role to be default contributor role for its dataverse
+        String privateUrlToken = null;
+        if (theDataset.getOwner().getDefaultContributorRole() != null) {
+            RoleAssignment roleAssignment = new RoleAssignment(theDataset.getOwner().getDefaultContributorRole(),
+                    getRequest().getUser(), theDataset, privateUrlToken);
+            ctxt.roles().save(roleAssignment, false, getRequest());
+
+            // TODO: the above may be creating the role assignments and saving them 
+            // in the database, but without properly linking them to the dataset
+            // (saveDataset, that the command returns). This may have been the reason 
+            // for the github issue #4783 - where the users were losing their contributor
+            // permissions, when creating datasets AND uploading files in one step. 
+            // In that scenario, an additional UpdateDatasetCommand is executed on the
+            // dataset returned by the Create command. That issue was fixed by adding 
+            // a full refresh of the dataset with datasetService.find() between the
+            // two commands. But it may be a good idea to make sure they are properly
+            // linked here (?)
+            theDataset.setPermissionModificationTime(getTimestamp());
+        }
+        // 1. Exit early if the SendNotificationOnDatasetCreation setting is disabled.
+        if (!ctxt.settings().isTrueForKey(SettingsServiceBean.Key.SendNotificationOnDatasetCreation, false)) {
+            return;
+        }
+
+        // 2. Identify the user who initiated the action.
+        final User user = getUser();
+        final AuthenticatedUser requestor = user.isAuthenticated() ? (AuthenticatedUser) user : null;
+
+        // 3. Get all users with publish permission and notify them.
+        ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, theDataset)
+                .stream()
+                .filter(recipient -> allowSelfNotification || !recipient.equals(requestor))
+                .forEach(recipient -> ctxt.notifications().sendNotification(
+                        recipient,
                         Timestamp.from(Instant.now()),
                         UserNotification.Type.DATASETCREATED,
                         theDataset.getId(),
                         null,
                         requestor,
                         true
-                );
-            }
-        }
-        }
+                ));
     }
     
     // Re-enabling the method below will change the permission setup to dynamic.
@@ -181,5 +196,5 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
         }
         return ret;
     }*/
-        
+
 }

@@ -12,7 +12,7 @@
     <ui:composition template="/dataverse_template.xhtml">
       <ui:param name="pageTitle" value="Role/Permission Relationships - #{dataverseServiceBean.findRootDataverse().name}"/>
       <ui:param name="showDataverseHeader" value="false"/>
-      <ui:define name="body">
+      <ui:define name="metadata">
           <f:metadata>
                 <ui:remove>
                     <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
@@ -24,6 +24,8 @@
                 <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                 <f:viewAction action="#{RolePermissionHelperPage.init}" />
           </f:metadata>
+      </ui:define>
+      <ui:define name="body">
           <div>
         
               <h4>Related roles for each DvObject type</h4>

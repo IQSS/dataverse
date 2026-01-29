@@ -30,7 +30,7 @@ public class PrivateUrl {
 
     public PrivateUrl(RoleAssignment roleAssignment, Dataset dataset, String dataverseSiteUrl) {
         this.token = roleAssignment.getPrivateUrlToken();
-        this.link = dataverseSiteUrl + "/privateurl.xhtml?token=" + token;
+        this.link = dataverseSiteUrl + "/previewurl.xhtml?token=" + token;
         this.dataset = dataset;
         this.roleAssignment = roleAssignment;
     }

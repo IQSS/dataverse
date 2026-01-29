@@ -1,9 +1,11 @@
 package edu.harvard.iq.dataverse.harvest.client.oai;
 
 import io.gdcc.xoai.model.oaipmh.Granularity;
+import io.gdcc.xoai.model.oaipmh.results.Record;
 import io.gdcc.xoai.model.oaipmh.results.record.Header;
 import io.gdcc.xoai.model.oaipmh.results.MetadataFormat;
 import io.gdcc.xoai.model.oaipmh.results.Set;
+import io.gdcc.xoai.model.oaipmh.verbs.Identify;
 import io.gdcc.xoai.serviceprovider.ServiceProvider;
 import io.gdcc.xoai.serviceprovider.exceptions.BadArgumentException;
 import io.gdcc.xoai.serviceprovider.exceptions.InvalidOAIResponse;
@@ -11,6 +13,7 @@ import io.gdcc.xoai.serviceprovider.exceptions.NoSetHierarchyException;
 import io.gdcc.xoai.serviceprovider.exceptions.IdDoesNotExistException;
 import io.gdcc.xoai.serviceprovider.model.Context;
 import io.gdcc.xoai.serviceprovider.parameters.ListIdentifiersParameters;
+import io.gdcc.xoai.serviceprovider.parameters.ListRecordsParameters;
 import edu.harvard.iq.dataverse.harvest.client.FastGetRecord;
 import static edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean.DATAVERSE_PROPRIETARY_METADATA_API;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
@@ -153,6 +156,7 @@ public class OaiHandler implements Serializable {
                 xoaiClientBuilder = xoaiClientBuilder.withCustomHeaders(getCustomHeaders());
             }
             context.withOAIClient(xoaiClientBuilder.build());
+            context.withSaveUnparsedMetadata();
             serviceProvider = new ServiceProvider(context);
         }
         
@@ -258,6 +262,16 @@ public class OaiHandler implements Serializable {
                 
     }
     
+    public Iterator<Record> runListRecords() throws OaiHandlerException {
+        ListRecordsParameters parameters = buildListRecordsParams();
+        try {
+            return getServiceProvider().listRecords(parameters);
+        } catch (BadArgumentException bae) {
+            throw new OaiHandlerException("BadArgumentException thrown when attempted to run ListRecords");
+        }
+                
+    }
+    
     public FastGetRecord runGetRecord(String identifier, HttpClient httpClient) throws OaiHandlerException { 
         if (StringUtils.isEmpty(this.baseOaiUrl)) {
             throw new OaiHandlerException("Attempted to execute GetRecord without server URL specified.");
@@ -289,6 +303,27 @@ public class OaiHandler implements Serializable {
         mip.withMetadataPrefix(metadataPrefix);
 
         if (this.fromDate != null) {
+            Identify identify = runIdentify();
+            mip.withGranularity(identify.getGranularity().toString());
+            mip.withFrom(this.fromDate.toInstant());
+        }
+
+        if (!StringUtils.isEmpty(this.setName)) {
+            mip.withSetSpec(this.setName);
+        }
+        
+        return mip;
+    }
+    
+    private ListRecordsParameters buildListRecordsParams() throws OaiHandlerException {
+        ListRecordsParameters mip = ListRecordsParameters.request();
+        
+        if (StringUtils.isEmpty(this.metadataPrefix)) {
+            throw new OaiHandlerException("Attempted to create a ListRecords request without metadataPrefix specified");
+        }
+        mip.withMetadataPrefix(metadataPrefix);
+
+        if (this.fromDate != null) {
             mip.withFrom(this.fromDate.toInstant());
         }
 
@@ -311,10 +346,13 @@ public class OaiHandler implements Serializable {
         return requestURL.toString();
     }
     
-    public void runIdentify() {
-        // not implemented yet
-        // (we will need it, both for validating the remote server,
-        // and to learn about its extended capabilities)
+    public Identify runIdentify() throws OaiHandlerException {
+        ServiceProvider sp = getServiceProvider();
+        try {
+            return sp.identify();
+        } catch (InvalidOAIResponse ior) {
+            throw new OaiHandlerException("No valid response received from the OAI server.");
+        }
     }
     
     public Map<String,String> makeCustomHeaders(String headersString) {

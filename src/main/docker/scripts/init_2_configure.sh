@@ -22,17 +22,35 @@ if [ "${dataverse_files_storage__driver__id}" = "local" ]; then
   export dataverse_files_local_directory="${dataverse_files_local_directory:-${STORAGE_DIR}/store}"
 fi
 
-# 0. Define postboot commands file to be read by Payara and clear it
-DV_POSTBOOT=${PAYARA_DIR}/dataverse_postboot
-echo "# Dataverse postboot configuration for Payara" > "${DV_POSTBOOT}"
+# If reload is enable via ENABLE_RELOAD=1, set according Jakarta Faces options
+ENABLE_RELOAD=${ENABLE_RELOAD:-0}
+if [ "${ENABLE_RELOAD}" = "1" ]; then
+  export DATAVERSE_JSF_PROJECT_STAGE=${DATAVERSE_JSF_PROJECT_STAGE:-"Development"}
+  export DATAVERSE_JSF_REFRESH_PERIOD=${DATAVERSE_JSF_REFRESH_PERIOD:-"0"}
+fi
 
-# 2. Domain-spaced resources (JDBC, JMS, ...)
-# TODO: This is ugly and dirty. It should be replaced with resources from
-#       EE 8 code annotations or at least glassfish-resources.xml
-# NOTE: postboot commands is not multi-line capable, thus spaghetti needed.
+# Check prerequisites for commands handling
+if [ -z "$POSTBOOT_COMMANDS_FILE" ]; then echo "Variable POSTBOOT_COMMANDS_FILE is not set."; exit 1; fi
+# Test if postboot file is writeable for us, exit otherwise
+touch "$POSTBOOT_COMMANDS_FILE" || exit 1
+# Copy and split the postboot contents to manipulate them
+EXISTING_DEPLOY_COMMANDS=$(mktemp)
+NEW_POSTBOOT_COMMANDS=$(mktemp)
+grep -e "^deploy " "$POSTBOOT_COMMANDS_FILE" > "$EXISTING_DEPLOY_COMMANDS" || true
+grep -v -e "^deploy" "$POSTBOOT_COMMANDS_FILE" > "$NEW_POSTBOOT_COMMANDS" || true
 
-# 3. Domain based configuration options
-# Set Dataverse environment variables
+function inject() {
+  if [ -z "$1" ]; then echo "No line specified"; exit 1; fi
+  # If the line is not yet in the file, try to add it
+  if ! grep -q "$1" "$NEW_POSTBOOT_COMMANDS"; then
+    # Check if the line is still not in the file when splitting at the first =
+    if ! grep -q "$(echo "$1" | cut -f1 -d"=")" "$NEW_POSTBOOT_COMMANDS"; then
+      echo "$1" >> "$NEW_POSTBOOT_COMMANDS"
+    fi
+  fi
+}
+
+# Domain based configuration options - set from Dataverse environment variables
 echo "INFO: Defining system properties for Dataverse configuration options."
 #env | grep -Ee "^(dataverse|doi)_" | sort -fd
 env -0 | grep -z -Ee "^(dataverse|doi)_" | while IFS='=' read -r -d '' k v; do
@@ -47,14 +65,12 @@ env -0 | grep -z -Ee "^(dataverse|doi)_" | while IFS='=' read -r -d '' k v; do
     v=$(echo "${v}" | sed -e 's/:/\\\:/g')
 
     echo "DEBUG: Handling ${KEY}=${v}."
-    echo "create-system-properties ${KEY}=${v}" >> "${DV_POSTBOOT}"
+    inject "create-system-properties ${KEY}=${v}"
 done
 
 # 4. Add the commands to the existing postboot file, but insert BEFORE deployment
-TMPFILE=$(mktemp)
-cat "${DV_POSTBOOT}" "${POSTBOOT_COMMANDS}" > "${TMPFILE}" && mv "${TMPFILE}" "${POSTBOOT_COMMANDS}"
+cat "$NEW_POSTBOOT_COMMANDS" "$EXISTING_DEPLOY_COMMANDS" > "${POSTBOOT_COMMANDS_FILE}"
 echo "DEBUG: postboot contains the following commands:"
 echo "--------------------------------------------------"
-cat "${POSTBOOT_COMMANDS}"
+cat "${POSTBOOT_COMMANDS_FILE}"
 echo "--------------------------------------------------"
-

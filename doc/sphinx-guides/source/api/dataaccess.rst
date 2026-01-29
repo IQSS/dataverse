@@ -21,7 +21,7 @@ There are a number of reasons why not all of the files can be downloaded:
 - Some of the files are restricted and your API token doesn't have access (you will still get the unrestricted files).
 - The Dataverse installation has limited how large the zip bundle can be.
 
-In the curl example below, the flags ``-O`` and ``J`` are used. When there are no errors, this has the effect of saving the file as "dataverse_files.zip" (just like the web interface). The flags force errors to be downloaded as a file.
+In the curl example below, the flags ``-O`` and ``-J`` are used. When there are no errors, this has the effect of saving the file under the name suggested by Dataverse (which as of v6.7 will be based on the persistent identifier of the dataset and the latest version number, for example ``doi-10.70122-fk2-n2xgbj_1.1.zip``; in prior versions the file name was ``dataverse_files.zip`` in all cases). This mirrors the way the files are saved when downloaded in a browser. The flags also force error messages to be downloaded as a file.
 
 Please note that in addition to the files from dataset, an additional file call "MANIFEST.TXT" will be included in the zipped bundle. It has additional information about the files.
 
@@ -69,6 +69,8 @@ A curl example using a DOI (with version):
   export VERSION=2.0
 
   curl -O -J -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/access/dataset/:persistentId/versions/$VERSION?persistentId=$PERSISTENT_ID
+
+Similarly to the API above, this will save the downloaded bundle under the name based on the persistent identifier and the version number, for example, ``doi-10.70122-fk2-n2xgbj_1.1.zip`` or ``doi-10.70122-fk2-n2xgbj_draft.zip``.
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -173,7 +175,7 @@ Multiple File ("bundle") download
 
 Alternate Form: POST to ``/api/access/datafiles`` with a ``fileIds`` input field containing the same comma separated list of file ids. This is most useful when your list of files surpasses the allowed URL length (varies but can be ~2000 characters).  
 
-Returns the files listed, zipped. 
+Returns the files listed, zipped. As of v6.7 the name of the zipped bundle will be based on the persistent identifier of the parent dataset, for example, ``doi-10.70122-fk2-xxyyzz.zip``; in prior versions the file name was ``dataverse_files.zip`` in all cases).
 
 .. note:: If the request can only be completed partially - if only *some* of the requested files can be served (because of the permissions and/or size restrictions), the file MANIFEST.TXT included in the zipped bundle will have entries specifying the reasons the missing files could not be downloaded. IN THE FUTURE the API will return a 207 status code to indicate that the result was a partial success. (As of writing this - v.4.11 - this hasn't been implemented yet)
 

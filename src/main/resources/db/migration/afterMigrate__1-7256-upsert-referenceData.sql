@@ -31,7 +31,7 @@ INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, datasetfieldname
               (15, 'affiliation', 'authorAffiliation', TRUE, 3, 1 ),
               (16, ':contributor', 'contributorName', FALSE, NULL, 1 ),
               (17, 'type', 'contributorType', TRUE, 16, 1 ),
-              (18, ':publisher', 'producerName', FALSE, NULL, 1 ),
+              (18, ':publisher', 'distributorName', FALSE, NULL, 1 ),
               (19, ':language', 'language', FALSE, NULL, 1 )
        ON CONFLICT DO NOTHING;
 

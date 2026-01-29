@@ -29,6 +29,8 @@ To stop the containers hit ``Ctrl-c`` (hold down the ``Ctrl`` key and then hit t
 
 To start the containers, run ``docker compose up``.
 
+.. _starting-over:
+
 Deleting Data and Starting Over
 -------------------------------
 
@@ -46,6 +48,8 @@ Starting Fresh
 
 For this exercise, please start fresh by stopping all containers and removing the ``data`` directory.
 
+.. _demo-persona:
+
 Creating and Running a Demo Persona
 +++++++++++++++++++++++++++++++++++
 
@@ -57,7 +61,7 @@ Edit the ``compose.yml`` file and look for the following section.
 
   bootstrap:
     container_name: "bootstrap"
-    image: gdcc/configbaker:alpha
+    image: gdcc/configbaker:latest
     restart: "no"
     environment:
       - TIMEOUT=3m
@@ -124,8 +128,6 @@ Some JVM options can be configured as environment variables. For example, you ca
 
 We are in the process of making more JVM options configurable as environment variables. Look for the term "MicroProfile Config" in under :doc:`/installation/config` in the Installation Guide to know if you can use them this way.
 
-Please note that for a few environment variables (the ones that start with ``%ct`` in :download:`microprofile-config.properties <../../../../../src/main/resources/META-INF/microprofile-config.properties>`), you have to prepend ``_CT_`` to make, for example, ``_CT_DATAVERSE_SITEURL``. We are working on a fix for this in https://github.com/IQSS/dataverse/issues/10285.
-
 There is a final way to configure JVM options that we plan to deprecate once all JVM options have been converted to MicroProfile Config. Look for "magic trick" under "tunables" at :doc:`../app-image` for more information.
 
 Database Settings
@@ -138,6 +140,128 @@ In the example below of configuring :ref:`:FooterCopyright` we use the default u
 ``curl -X PUT -d ", My Org" "http://localhost:8080/api/admin/settings/:FooterCopyright?unblock-key=unblockme"``
 
 One you make this change it should be visible in the copyright in the bottom left of every page.
+
+Root Collection Customization (Alias, Name, etc.)
++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Before running ``docker compose up`` for the first time, you can customize the root collection by placing a JSON file in the right place.
+
+First, in the "demo" directory you created (see :ref:`demo-persona`), create a subdirectory called "config":
+
+``mkdir demo/config``
+
+Next, download :download:`dataverse-complete.json <../../_static/api/dataverse-complete.json>` and put it in the "config" directory you just created. The contents of your "demo" directory should look something like this:
+
+.. code-block:: bash
+
+        % find demo
+        demo
+        demo/config
+        demo/config/dataverse-complete.json
+        demo/init.sh
+
+Edit ``dataverse-complete.json`` to have the values you want. You'll want to refer to :ref:`update-dataverse-api` in the API Guide to understand the format. In that documentation you can find optional parameters as well.
+
+To test your JSON file, run ``docker compose up``. Again, this only works when you are running ``docker compose up`` for the first time. (You can always start over. See :ref:`starting-over`.)
+
+Multiple Languages
+++++++++++++++++++
+
+Generally speaking, you'll want to follow :ref:`i18n` in the Installation Guide to set up multiple languages. (You need to create your own "languages.zip" file, for example.) Here will give you guidance specific to this demo tutorial. We'll be setting up a toggle between English and French.
+
+First, edit the ``compose.yml`` file and uncomment the following line:
+
+.. code-block:: text
+
+        #-Ddataverse.lang.directory=/dv/lang
+
+Next, upload "languages.zip" to the "loadpropertyfiles" API endpoint as shown below. This will place files ending in ".properties" into the ``/dv/lang`` directory configured above.
+
+Please note that we are using a slight variation on the command in the instructions above, adding the unblock key we created above:
+
+``curl "http://localhost:8080/api/admin/datasetfield/loadpropertyfiles?unblock-key=unblockme" -X POST --upload-file /tmp/languages/languages.zip -H "Content-Type: application/zip"``
+
+Next, set up the UI toggle between English and French, again using the unblock key:
+
+``curl "http://localhost:8080/api/admin/settings/:Languages?unblock-key=unblockme" -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
+
+Stop and start the Dataverse container in order for the language toggle to work.
+
+PID Providers
++++++++++++++
+
+Dataverse supports multiple Persistent ID (PID) providers. The ``compose.yml`` file uses the Permalink PID provider. Follow :ref:`pids-configuration` to reconfigure as needed.
+
+.. _file-previewers-ct:
+
+File Previewers
++++++++++++++++
+
+By default, all available file previewers are enabled (see :ref:`file-previews` in the User Guide for details). Specifically, we enable all the previewers that are available in the `trivadis/dataverse-previewers-provider <https://hub.docker.com/r/trivadis/dataverse-previewers-provider>`_ image (`code <https://github.com/TrivadisPF/docker-register-dataverse-previewers>`_). You can run the following command to see a list of available previewers:
+
+``docker run --rm trivadis/dataverse-deploy-previewers:latest previewers``
+
+You should expect to see output like this:
+
+.. code-block:: text
+
+        name     description
+        ----------------------------
+        text     Read the text file.
+        html     View the html file.
+        ...
+
+If you want to specify fewer previewers, you can edit the ``compose.yml`` file. Uncomment "INCLUDE_PREVIEWERS" and list the previewers you want, separated by commas, like this:
+
+``INCLUDE_PREVIEWERS=text,html,pdf,csv``
+
+
+.. _additional-metadata-blocks:
+
+Additional Metadata Blocks
+++++++++++++++++++++++++++
+
+Metadata fields such as "Title" are part of a metadata block such as "Citation". See :ref:`metadata-references` in the User Guide for the metadata blocks that ship with Dataverse.
+
+At a high level, we will be loading a metadata block and then adjusting our Solr config to know about it.
+
+Care should be taken when adding additional metadata blocks. There is no way to `preview <https://github.com/IQSS/dataverse/issues/2551>`_ or `delete <https://github.com/IQSS/dataverse/issues/9628>`_ a metadata block so please use a throwaway environment.
+
+:ref:`metadata-references` lists some experimental metadata blocks. In the example below, we'll use the CodeMeta block.
+
+First, download a metadata block or create one by following :doc:`/admin/metadatacustomization` in the Admin Guide.
+
+Load the metadata block like this:
+
+``curl http://localhost:8080/api/admin/datasetfield/load -H "Content-type: text/tab-separated-values" -X POST --upload-file codemeta.tsv``
+
+Next, reconfigure Solr to know about the new metadata block.
+
+You can back up your existing Solr schema like this:
+
+``cp docker-dev-volumes/solr/data/data/collection1/conf/schema.xml docker-dev-volumes/solr/data/data/collection1/conf/schema.xml.orig``
+
+You can see the existing fields Solr knows about like this:
+
+``curl http://localhost:8983/solr/collection1/schema/fields``
+
+Update your Solr schema with the following command:
+
+``curl http://localhost:8080/api/admin/index/solr/schema | docker run -i --rm -v ./docker-dev-volumes/solr/data:/var/solr gdcc/configbaker:unstable update-fields.sh /var/solr/data/collection1/conf/schema.xml``
+
+Then, reload Solr:
+
+``curl "http://localhost:8983/solr/admin/cores?action=RELOAD&core=collection1"``
+
+You can get a diff of your old and new Solr schema like this:
+
+``diff docker-dev-volumes/solr/data/data/collection1/conf/schema.xml.orig docker-dev-volumes/solr/data/data/collection1/conf/schema.xml``
+
+You should be able to see the new fields from the metadata block you added in the following output:
+
+``curl http://localhost:8983/solr/collection1/schema/fields``
+
+At this point you can proceed with testing the metadata block in the Dataverse UI. First you'll need to enable it for a collection (see :ref:`general-information` in the User Guide section about collections). Afterwards, create a new dataset, save it, and then edit the metadata for that dataset. Your metadata block should appear.
 
 Next Steps
 ----------
@@ -169,7 +293,10 @@ Additional containers are used in development (see :doc:`../dev-usage`), but for
 Tags and Versions
 +++++++++++++++++
 
-The compose file references a tag called "alpha", which corresponds to the latest released version of Dataverse. This means that if a release of Dataverse comes out while you are demo'ing or evaluating, the version of Dataverse you are using could change if you do a ``docker pull``. We are aware that there is a desire for tags that correspond to versions to ensure consistency. You are welcome to join `the discussion <https://dataverse.zulipchat.com/#narrow/stream/375812-containers/topic/tagging.20images.20with.20versions/near/366600747>`_ and otherwise get in touch (see :ref:`helping-containers`). For more on tags, see :ref:`supported-image-tags-app`.
+The compose file references a tag called "latest", which corresponds to the latest released version of Dataverse.
+This means that if a release of Dataverse comes out while you are demo'ing or evaluating, the version of Dataverse you are using could change if you do a ``docker pull``.
+Feel free to change it to a specific version to avoid this.
+For more on available tags, see supported tags section for :ref:`Application <app-image-supported-tags>` and :ref:`Config Baker <config-image-supported-tags>` images.
 
 Once Dataverse is running, you can check which version you have through the normal methods:
 

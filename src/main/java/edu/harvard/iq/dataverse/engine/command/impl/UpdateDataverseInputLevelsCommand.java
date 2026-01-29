@@ -29,23 +29,18 @@ public class UpdateDataverseInputLevelsCommand extends AbstractCommand<Dataverse
         if (inputLevelList == null || inputLevelList.isEmpty()) {
             throw new CommandException("Error while updating dataverse input levels: Input level list cannot be null or empty", this);
         }
-        addInputLevelMetadataBlocks();
-        dataverse.setMetadataBlockRoot(true);
-        return ctxt.engine().submit(new UpdateDataverseCommand(dataverse, null, null, getRequest(), inputLevelList));
-    }
-
-    private void addInputLevelMetadataBlocks() {
-        List<MetadataBlock> dataverseMetadataBlocks = dataverse.getMetadataBlocks();
-        for (DataverseFieldTypeInputLevel inputLevel : inputLevelList) {
-            MetadataBlock inputLevelMetadataBlock = inputLevel.getDatasetFieldType().getMetadataBlock();
-            if (!dataverseHasMetadataBlock(dataverseMetadataBlocks, inputLevelMetadataBlock)) {
-                dataverseMetadataBlocks.add(inputLevelMetadataBlock);
+        
+        if (!dataverse.isMetadataBlockRoot()) {
+            Dataverse root = ctxt.dataverses().findRootDataverse();
+            if (root != null) {
+                List<MetadataBlock> inheritedBlocks = new ArrayList<>(root.getMetadataBlocks());
+                dataverse.setMetadataBlocks(inheritedBlocks);
+                dataverse.setMetadataBlockRoot(true);
             }
         }
-        dataverse.setMetadataBlocks(dataverseMetadataBlocks);
-    }
-
-    private boolean dataverseHasMetadataBlock(List<MetadataBlock> dataverseMetadataBlocks, MetadataBlock metadataBlock) {
-        return dataverseMetadataBlocks.stream().anyMatch(block -> block.getId().equals(metadataBlock.getId()));
+        
+        dataverse.addInputLevelsMetadataBlocksIfNotPresent(inputLevelList);
+        
+        return ctxt.engine().submit(new UpdateDataverseCommand(dataverse, null, null, getRequest(), inputLevelList));
     }
 }

@@ -1,7 +1,7 @@
 Development Usage
 =================
 
-Please note! This Docker setup is not for production!
+Please note! This Docker setup is not for :doc:`production <running/production>`!
 
 .. contents:: |toctitle|
         :local:
@@ -140,6 +140,56 @@ Alternatives:
 - If you used Docker Compose for running, you may use ``docker compose -f docker-compose-dev.yml logs <service name>``.
   Options are the same.
 
+Accessing Harvesting Log Files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+\1. Open a terminal and access the Dataverse container.
+
+Run the following command to access the Dataverse container:
+
+.. code-block::
+
+  docker exec -it dev_dataverse bash
+
+This command opens an interactive shell within the dev_dataverse container.
+
+\2. Navigate to the log files directory.
+
+Once inside the container, navigate to the directory where Dataverse logs are stored:
+
+.. code-block::
+
+  cd /opt/payara/appserver/glassfish/domains/domain1/logs
+
+This directory contains various log files, including those relevant to harvesting.
+
+\3. Create a directory for copying files.
+
+Create a directory where you'll copy the files you want to access on your local machine:
+
+.. code-block::
+
+  mkdir /dv/filesToCopy
+
+This will create a new folder named filesToCopy inside /dv.
+
+\4. Copy the files to the new directory.
+
+Copy all files from the current directory to the newly created filesToCopy directory:
+
+.. code-block::
+
+  cp * /dv/filesToCopy
+
+This command copies all files in the logs directory to /dv/filesToCopy.
+
+\5. Access the files on your local machine.
+
+On your local machine, the copied files should appear in the following directory:
+
+.. code-block::
+
+  docker-dev-volumes/app/data/filesToCopy
 
 Redeploying
 -----------
@@ -182,6 +232,13 @@ Hotswapping methods requires using JDWP (Debug Mode), but does not allow switchi
 
        **Requires IntelliJ Ultimate!**
        (Note that `free educational licenses <https://www.jetbrains.com/community/education/>`_ are available)
+
+       Go to settings, then plugins. Install "Payara Ultimate Tools". For more information:
+
+       - `plugin homepage <https://plugins.jetbrains.com/plugin/15114-payara-ultimate-tools>`_
+       - `docs <https://docs.payara.fish/community/docs/Technical%20Documentation/Ecosystem/IDE%20Integration/IntelliJ%20Plugin/Overview.html>`_
+       - `source <https://github.com/payara/ecosystem-intellij-plugin>`_
+       - `issues <https://github.com/payara/ecosystem-support>`_
 
        .. image:: img/intellij-payara-plugin-install.png
 
@@ -234,6 +291,7 @@ Hotswapping methods requires using JDWP (Debug Mode), but does not allow switchi
 
         You might want to tweak the hot deploy behavior in the "Server" tab now.
         "Update action" can be found in the run window (see below).
+        By default it is "Hot Swap classes", which works fine, but as the screenshot shows you can also change it to "Redeploy".
         "Frame deactivation" means switching from IntelliJ window to something else, e.g. your browser.
         *Note: static resources like properties, XHTML etc will only update when redeploying!*
 
@@ -255,7 +313,11 @@ Hotswapping methods requires using JDWP (Debug Mode), but does not allow switchi
         See cheat sheet above for more options.
         Note that this command either assumes you built the :doc:`app-image` first or will download it from Docker Hub.
      .. group-tab:: IntelliJ
-        You can create a service configuration to automatically start services for you.
+        Note that you can skip this step if you're ok running the command under the "Maven" tab, which is this:
+
+        ``mvn -Pct docker:run -Dapp.skipDeploy``
+
+        In IntelliJ you can create a service configuration to automatically start services for you.
 
         **IMPORTANT**: This requires installation of the `Docker plugin <https://plugins.jetbrains.com/plugin/7724-docker>`_.
 
@@ -312,7 +374,7 @@ Hotswapping methods requires using JDWP (Debug Mode), but does not allow switchi
 
         .. image:: img/intellij-payara-run-output.png
 
-        Manually hotswap classes in "Debug" mode via "Run" > "Debugging Actions" > "Reload Changed Classes".
+        Manually hotswap classes in "Debug" mode via "Run" > "Debugging Actions" > "Compile and Reload Modified Files".
 
         .. image:: img/intellij-payara-run-menu-reload.png
 
@@ -340,6 +402,11 @@ The steps below describe options to enable the later in different IDEs.
     **IMPORTANT**: This tool assumes you are using the :ref:`ide-trigger-code-deploy` method to run Dataverse.
 
     **IMPORTANT**: This tool uses a Bash shell script and is thus limited to Mac and Linux OS.
+
+Exploring the Database
+----------------------
+
+See :ref:`db-name-creds` in the Developer Guide.
 
 Using a Debugger
 ----------------

@@ -1,14 +1,17 @@
 
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+
 import java.util.logging.Logger;
+
+import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -69,7 +72,15 @@ public class RolesIT {
         body = addBuiltinRoleResponse.getBody().asString();
         status = JsonPath.from(body).getString("status");
         assertEquals("OK", status);
-        
+
+        Response createNoPermsUser = UtilIT.createRandomUser();
+        createNoPermsUser.prettyPrint();
+        String noPermsapiToken = UtilIT.getApiTokenFromResponse(createNoPermsUser);
+
+        Response noPermsResponse = UtilIT.viewDataverseRole("testRole", noPermsapiToken);
+        noPermsResponse.prettyPrint();
+        noPermsResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+
         Response viewDataverseRoleResponse = UtilIT.viewDataverseRole("testRole", apiToken);
         viewDataverseRoleResponse.prettyPrint();
         body = viewDataverseRoleResponse.getBody().asString();
@@ -99,5 +110,55 @@ public class RolesIT {
         assertEquals("OK", status);
 
     }
-    
+
+    @Test
+    public void testGetUserSelectableRoles() {
+        Response createAdminUser = UtilIT.createRandomUser();
+
+        String adminUsername = UtilIT.getUsernameFromResponse(createAdminUser);
+        String adminApiToken = UtilIT.getApiTokenFromResponse(createAdminUser);
+        UtilIT.makeSuperUser(adminUsername);
+
+        Response createUser = UtilIT.createRandomUser();
+
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        // Non-superuser with no assigned roles: return all roles as fallback.
+
+        Response getUserSelectableRolesResponse = UtilIT.getUserSelectableRoles(apiToken);
+
+        getUserSelectableRolesResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(8));
+
+        // Non-superuser with assigned role: return assigned role.
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(adminApiToken);
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response grantUserAddDataset = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, "@" + username, adminApiToken);
+
+        grantUserAddDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.assignee", equalTo("@" + username))
+                .body("data._roleAlias", equalTo("dsContributor"));
+
+        getUserSelectableRolesResponse = UtilIT.getUserSelectableRoles(apiToken);
+        getUserSelectableRolesResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
+                .body("data[0].alias", equalTo(DataverseRole.DS_CONTRIBUTOR));
+
+        // Superuser: return all roles.
+
+        getUserSelectableRolesResponse = UtilIT.getUserSelectableRoles(adminApiToken);
+
+        getUserSelectableRolesResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(8));
+    }
 }

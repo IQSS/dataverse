@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
@@ -119,14 +118,12 @@ public class PidProviderFactoryBean {
     }
 
     private void loadProviders() {
-        Optional<String[]> providers = JvmSettings.PID_PROVIDERS.lookupOptional(String[].class);
-        if (!providers.isPresent()) {
+        Optional<List<String>> providersOpt = JvmSettings.PID_PROVIDERS.lookupSplittedListOptional();
+        if (!providersOpt.isPresent() || providersOpt.get().isEmpty()) {
             logger.warning(
                     "No PidProviders configured via dataverse.pid.providers. Please consider updating as older PIDProvider configuration mechanisms will be removed in a future version of Dataverse.");
         } else {
-            for (String id : providers.get()) {
-                //Allows spaces in PID_PROVIDERS setting
-                id=id.trim();
+            for (String id : providersOpt.get()) {
                 Optional<String> type = JvmSettings.PID_PROVIDER_TYPE.lookupOptional(id);
                 if (!type.isPresent()) {
                     logger.warning("PidProvider " + id
@@ -203,7 +200,7 @@ public class PidProviderFactoryBean {
                             passphrase);
                     break;
                 case "perma":
-                    String baseUrl = JvmSettings.LEGACY_PERMALINK_BASEURL.lookup();
+                    String baseUrl = JvmSettings.LEGACY_PERMALINK_BASEURL.lookupOptional().orElse(SystemConfig.getDataverseSiteUrlStatic());
                     legacy = new PermaLinkPidProvider("legacy", "legacy", authority, shoulder,
                             identifierGenerationStyle, dataFilePidFormat, "", "", baseUrl,
                             PermaLinkPidProvider.SEPARATOR);
@@ -224,7 +221,7 @@ public class PidProviderFactoryBean {
     }
 
     public boolean isGlobalIdLocallyUnique(GlobalId globalId) {
-        return dvObjectService.isGlobalIdLocallyUnique(globalId);
+         return dvObjectService.isGlobalIdLocallyUnique(globalId) && dvObjectService.isGlobalIdLocallyUniqueAlternativeIds(globalId);
     }
 
     String generateNewIdentifierByStoredProcedure() {
@@ -247,4 +244,5 @@ public class PidProviderFactoryBean {
             return PidUtil.getPidProvider(protocol, authority, shoulder);
         }
     }
+
 }

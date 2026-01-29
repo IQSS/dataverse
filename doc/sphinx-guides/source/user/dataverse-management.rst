@@ -69,7 +69,8 @@ The Theme features provides you with a way to customize the look of your Dataver
 
 - Inherit the theme from the parent Dataverse collection. This option is helpful if you'd like consistency across several Dataverse collections that all share the same parent.
 - Add or update a logo image, which will appear at the top of your Dataverse collection.
-- Add or update a footer image, which will appear at at the bottom of your Dataverse collection.
+- Add or update a thumbnail image, which will appear on featured dataverses of your Dataverse collection.
+- Add or update a footer image, which will appear at the bottom of your Dataverse collection.
 - Change the colors of the background, links, and text within the header of your Dataverse collection.
 - Add or update the tagline for your Dataverse collection, which can provide more information about your organization, journal, institution, etc.
 - Add a URL for a website that will be accessed when visitors click the tagline text.
@@ -110,7 +111,7 @@ Dataverse installation user accounts can be granted roles that define which acti
 
 Roles and permissions may also be granted to groups. Groups can be defined as a collection of Dataverse installation user accounts, a collection of IP addresses (e.g. all users of a library's computers), or a collection of all users who log in using a particular institutional login (e.g. everyone who logs in with a particular university's account credentials).
 
-Admins of a Dataverse collection can assign roles and permissions to the users of that Dataverse collection. If you are an admin on a Dataverse collection, then you will find the link to the Permissions page under the Edit dropdown on the Dataverse collection page. 
+The user who creates a dataverse is given the "Admin" role on that dataverse (see :ref:`root-collection-permissions`). Admins of a Dataverse collection can assign roles and permissions to the users of that Dataverse collection. If you are an admin on a Dataverse collection, then you will find the link to the Permissions page under the Edit dropdown on the Dataverse collection page.
 
 |image2|
 
@@ -118,13 +119,15 @@ Clicking on Permissions will bring you to this page:
 
 |image3|
 
-When you access a Dataverse collection's permissions page, you will see three sections:
+When you access a Dataverse collection's permissions page, you will see three or four sections:
 
 **Permissions:** Here you can decide the requirements that determine which types of users can add datasets and sub Dataverse collections to your Dataverse collection, and what permissions they'll be granted when they do so.
 
 **Users/Groups:** Here you can assign roles to specific users or groups, determining which actions they are permitted to take on your Dataverse collection. You can also reference a list of all users who have roles assigned to them for your Dataverse collection and remove their roles if you please.
 
 **Roles:** Here you can reference a full list of roles that can be assigned to users of your Dataverse collection. Each role lists the permissions that it offers.
+
+**Role Assignment History** If enabled, you'll be able to see the history of when roles have been assigned and revoked and by whom.
 
 Please note that even on a newly created Dataverse collection, you may see user and groups have already been granted role(s) if your installation has ``:InheritParentRoleAssignments`` set. For more on this setting, see the :doc:`/installation/config` section of the Installation Guide.
 
@@ -214,9 +217,11 @@ Dataset linking allows a Dataverse collection owner to "link" their Dataverse co
 
 For example, researchers working on a collaborative study across institutions can each link their own individual institutional Dataverse collections to the one collaborative dataset, making it easier for interested parties from each institution to find the study.
 
-In order to link a dataset, you will need your account to have the "Publish Dataset" permission on the Dataverse collection that is doing the linking. If you created the Dataverse collection then you should have this permission already, but if not then you will need to ask the admin of that Dataverse collection to assign that permission to your account. You do not need any special permissions on the dataset being linked.
+In order to link a dataset, you will need your account to have the "Link Dataset" permission on the Dataverse collection that is doing the linking. If you created the Dataverse collection then you should have this permission already, but if not then you will need to ask the admin of that Dataverse collection to assign that permission to your account. You do not need any special permissions on the dataset being linked.
 
 To link a dataset to your Dataverse collection, you must navigate to that dataset and click the white "Link" button in the upper-right corner of the dataset page. This will open up a window where you can type in the name of the Dataverse collection that you would like to link the dataset to. Select your Dataverse collection and click the save button. This will establish the link, and the dataset will now appear under your Dataverse collection.
+
+A draft dataset can be linked to other Dataverse collections. It will only become publicly visible in the linked collection(s) after it has been published. To publish the dataset, your account must have the "Publish Dataset" permission for the Dataverse collection in which the dataset was originally created. Permissions in the linked Dataverse collections do not apply.
 
 There is currently no way to remove established links in the UI. If you need to remove a link between a Dataverse collection and a dataset, please contact the support team for the Dataverse installation you are using (see the :ref:`unlink-a-dataset` section of the Admin Guide for more information).
 

@@ -117,10 +117,11 @@ public class MailServiceBean implements java.io.Serializable {
             return false;
         }
         InternetAddress systemAddress = optionalAddress.get();
+        InternetAddress supportAddress = getSupportAddress().orElse(systemAddress);
 
         String body = messageText +
             BundleUtil.getStringFromBundle(isHtmlContent ? "notification.email.closing.html" : "notification.email.closing",
-                List.of(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress)));
+                List.of(BrandingUtil.getSupportTeamEmailAddress(supportAddress), BrandingUtil.getSupportTeamName(supportAddress)));
 
         logger.fine(() -> "Sending email to %s. Subject: <<<%s>>>. Body: %s".formatted(to, subject, body));
         try {
@@ -282,7 +283,7 @@ public class MailServiceBean implements java.io.Serializable {
            if (objectOfNotification != null){
                String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification, comment, requestor);
                String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, objectOfNotification);
-               if (!(messageText.isEmpty() || subjectText.isEmpty())){
+               if (!(StringUtils.isEmpty(messageText) || StringUtils.isEmpty(subjectText))){
                    retval = sendSystemEmail(emailAddress, subjectText, messageText, isHtmlContent);
                } else {
                    logger.warning("Skipping " + notification.getType() +  " notification, because couldn't get valid message");
@@ -456,7 +457,7 @@ public class MailServiceBean implements java.io.Serializable {
                 GuestbookResponse gbr = far.getGuestbookResponse();
                 if (gbr != null) {
                     messageText += MessageFormat.format(
-                            BundleUtil.getStringFromBundle("notification.email.requestFileAccess.guestbookResponse"), gbr.toHtmlFormattedResponse());
+                        BundleUtil.getStringFromBundle("notification.email.requestFileAccess.guestbookResponse"), gbr.toHtmlFormattedResponse(requestor));
                 }
                 return messageText;
             case GRANTFILEACCESS:
@@ -476,6 +477,12 @@ public class MailServiceBean implements java.io.Serializable {
                 pattern = BundleUtil.getStringFromBundle("notification.email.datasetWasCreated");
                 String[] paramArrayDatasetCreated = {getDatasetLink(dataset), dataset.getDisplayName(), userNotification.getRequestor().getName(), dataset.getOwner().getDisplayName()};
                 messageText += MessageFormat.format(pattern, paramArrayDatasetCreated);
+                return messageText;
+            case DATASETMOVED:
+                dataset = (Dataset) targetObject;
+                pattern = BundleUtil.getStringFromBundle("notification.email.datasetWasMoved");
+                String[] paramArrayDatasetMoved = {getDatasetLink(dataset), dataset.getDisplayName(), userNotification.getRequestor().getName(), dataset.getOwner().getDisplayName()};
+                messageText += MessageFormat.format(pattern, paramArrayDatasetMoved);
                 return messageText;
             case CREATEDS:
                 version =  (DatasetVersion) targetObject;
@@ -568,8 +575,25 @@ public class MailServiceBean implements java.io.Serializable {
             case STATUSUPDATED:
                 version =  (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.status.change");
-                String[] paramArrayStatus = {version.getDataset().getDisplayName(), (version.getExternalStatusLabel()==null) ? "<none>" : DatasetUtil.getLocaleExternalStatus(version.getExternalStatusLabel())};
+                CurationStatus status = version.getCurationStatusAsOfDate(userNotification.getSendDateTimestamp());
+                String curationLabel = DatasetUtil.getLocaleCurationStatusLabel(status);
+                if(curationLabel == null) {
+                    curationLabel = BundleUtil.getStringFromBundle("dataset.curationstatus.none");
+                }
+                String[] paramArrayStatus = {
+                        version.getDataset().getDisplayName(),
+                        getDatasetLink(version.getDataset()),
+                        version.getDataset().getOwner().getDisplayName(),
+                        getDataverseLink(version.getDataset().getOwner()),
+                        curationLabel
+                    };
                 messageText += MessageFormat.format(pattern, paramArrayStatus);
+                  
+                return messageText;
+            case PIDRECONCILED:
+                version =  (DatasetVersion) targetObject;
+                pattern = BundleUtil.getStringFromBundle("notification.email.pid.reconciled");
+                messageText += MessageFormat.format(pattern, new String[] {version.getDataset().getDisplayName(), version.getDataset().getGlobalId().asString()});
                 return messageText;
             case CREATEACC:
                 String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
@@ -623,6 +647,7 @@ public class MailServiceBean implements java.io.Serializable {
                         comment
                 ))  ;
                 return downloadCompletedMessage;
+                        
             case GLOBUSUPLOADCOMPLETEDWITHERRORS:
                 dataset =  (Dataset) targetObject;
                 messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
@@ -633,8 +658,30 @@ public class MailServiceBean implements java.io.Serializable {
                         comment
                 ))  ;
                 return  uploadCompletedWithErrorsMessage;
+            
+            case GLOBUSUPLOADREMOTEFAILURE:
+                dataset =  (Dataset) targetObject;
+                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
+                String uploadFailedRemotelyMessage = messageText + BundleUtil.getStringFromBundle("notification.mail.globus.upload.failedRemotely", Arrays.asList(
+                        systemConfig.getDataverseSiteUrl(),
+                        dataset.getGlobalId().asString(),
+                        dataset.getDisplayName(),
+                        comment
+                ))  ;
+                return  uploadFailedRemotelyMessage;
 
-            case GLOBUSDOWNLOADCOMPLETEDWITHERRORS:
+            case GLOBUSUPLOADLOCALFAILURE:
+                dataset =  (Dataset) targetObject;
+                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
+                String uploadFailedLocallyMessage = messageText + BundleUtil.getStringFromBundle("notification.mail.globus.upload.failedLocally", Arrays.asList(
+                        systemConfig.getDataverseSiteUrl(),
+                        dataset.getGlobalId().asString(),
+                        dataset.getDisplayName(),
+                        comment
+                ))  ;
+                return  uploadFailedLocallyMessage;
+                
+                case GLOBUSDOWNLOADCOMPLETEDWITHERRORS:
                 dataset =  (Dataset) targetObject;
                 messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
                 String downloadCompletedWithErrorsMessage = messageText + BundleUtil.getStringFromBundle("notification.mail.globus.download.completedWithErrors", Arrays.asList(
@@ -696,9 +743,9 @@ public class MailServiceBean implements java.io.Serializable {
                 Object[] paramArrayDatasetMentioned = {
                         userNotification.getUser().getName(),
                         BrandingUtil.getInstallationBrandName(), 
-                        citingResource.getString("@type"),
+                        citingResource.getString("@type", "External Resource"),
                         citingResource.getString("@id"),
-                        citingResource.getString("name"),
+                        citingResource.getString("name", citingResource.getString("@id")),
                         citingResource.getString("relationship"), 
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalId().toString(), 
@@ -744,6 +791,7 @@ public class MailServiceBean implements java.io.Serializable {
             case GRANTFILEACCESS:
             case REJECTFILEACCESS:
             case DATASETCREATED:
+            case DATASETMOVED:
             case DATASETMENTIONED:
                 return datasetService.find(userNotification.getObjectId());
             case CREATEDS:
@@ -753,6 +801,7 @@ public class MailServiceBean implements java.io.Serializable {
             case RETURNEDDS:
             case WORKFLOW_SUCCESS:
             case WORKFLOW_FAILURE:
+            case PIDRECONCILED:
             case STATUSUPDATED:
                 return versionService.find(userNotification.getObjectId());
             case CREATEACC:
@@ -763,6 +812,8 @@ public class MailServiceBean implements java.io.Serializable {
                 return versionService.find(userNotification.getObjectId());
             case GLOBUSUPLOADCOMPLETED:
             case GLOBUSUPLOADCOMPLETEDWITHERRORS:
+            case GLOBUSUPLOADREMOTEFAILURE:
+            case GLOBUSUPLOADLOCALFAILURE: 
             case GLOBUSDOWNLOADCOMPLETED:
             case GLOBUSDOWNLOADCOMPLETEDWITHERRORS:
                 return datasetService.find(userNotification.getObjectId());

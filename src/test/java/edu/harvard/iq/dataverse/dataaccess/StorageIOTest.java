@@ -189,48 +189,48 @@ public class StorageIOTest {
 
     @Test
     public void testFileLocation() {
-        assertEquals(true, instance.isLocalFile());
+        assertTrue(instance.isLocalFile());
         instance.setIsLocalFile(false);
-        assertEquals(false, instance.isLocalFile());
+        assertFalse(instance.isLocalFile());
 
-        assertEquals(false, instance.isRemoteAccess());
+        assertFalse(instance.isRemoteAccess());
         instance.setIsRemoteAccess(true);
-        assertEquals(true, instance.isRemoteAccess());
+        assertTrue(instance.isRemoteAccess());
     }
 
     @Test
     public void testHttpAccess() {
-        assertEquals(false, instance.isHttpAccess());
+        assertFalse(instance.isHttpAccess());
         instance.setIsHttpAccess(true);
-        assertEquals(true, instance.isHttpAccess());
+        assertTrue(instance.isHttpAccess());
     }*/
 
     @Test
     public void testDownloadSupported() {
-        assertEquals(true, instance.isDownloadSupported());
+        assertTrue(instance.isDownloadSupported());
         instance.setIsDownloadSupported(false);
-        assertEquals(false, instance.isDownloadSupported());
+        assertFalse(instance.isDownloadSupported());
     }
 
     @Test
     public void testSubsetSupported() {
-        assertEquals(false, instance.isSubsetSupported());
+        assertFalse(instance.isSubsetSupported());
         instance.setIsSubsetSupported(true);
-        assertEquals(true, instance.isSubsetSupported());
+        assertTrue(instance.isSubsetSupported());
     }
 
     @Test
     public void testZippedStream() {
-        assertEquals(false, instance.isZippedStream());
+        assertFalse(instance.isZippedStream());
         instance.setIsZippedStream(true);
-        assertEquals(true, instance.isZippedStream());
+        assertTrue(instance.isZippedStream());
     }
 
     @Test
     public void testNoVarHeader() {
-        assertEquals(false, instance.noVarHeader());
+        assertFalse(instance.noVarHeader());
         instance.setNoVarHeader(true);
-        assertEquals(true, instance.noVarHeader());
+        assertTrue(instance.noVarHeader());
     }
 
     @Test

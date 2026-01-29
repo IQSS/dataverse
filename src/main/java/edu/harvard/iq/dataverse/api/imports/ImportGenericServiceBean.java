@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.*;  
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
@@ -22,6 +23,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -71,8 +74,12 @@ public class ImportGenericServiceBean {
     
     @EJB
     SettingsServiceBean settingsService;
+
     @EJB
     LicenseServiceBean licenseService;
+
+    @EJB
+    DatasetTypeServiceBean datasetTypeService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -101,7 +108,7 @@ public class ImportGenericServiceBean {
         
         try {
             reader = new StringReader(xmlToParse);
-            XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
+            XMLInputFactory xmlFactory = XmlUtil.getSecureXMLInputFactory();
             xmlr =  xmlFactory.createXMLStreamReader(reader);
             DatasetDTO datasetDTO = processXML(xmlr, mappingSupported);
         
@@ -110,7 +117,7 @@ public class ImportGenericServiceBean {
             logger.fine(json);
             JsonReader jsonReader = Json.createReader(new StringReader(json));
             JsonObject obj = jsonReader.readObject();
-            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService, licenseService).parseDatasetVersion(obj, datasetVersion);
+            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService).parseDatasetVersion(obj, datasetVersion);
         } catch (XMLStreamException ex) {
             //Logger.getLogger("global").log(Level.SEVERE, null, ex);
             throw new EJBException("ERROR occurred while parsing XML fragment  ("+xmlToParse.substring(0, 64)+"...); ", ex);
@@ -145,12 +152,16 @@ public class ImportGenericServiceBean {
 
     }
     
-    // Helper method for importing harvested Dublin Core xml.
+    // Helper methods for importing harvested Dublin Core xml.
     // Dublin Core is considered a mandatory, built in metadata format mapping. 
     // It is distributed as required content, in reference_data.sql. 
     // Note that arbitrary formatting tags are supported for the outer xml
     // wrapper. -- L.A. 4.5
     public DatasetDTO processOAIDCxml(String DcXmlToParse) throws XMLStreamException {
+        return processOAIDCxml(DcXmlToParse, null, false);
+    }
+    
+    public DatasetDTO processOAIDCxml(String DcXmlToParse, String oaiIdentifier, boolean preferSuppliedIdentifier) throws XMLStreamException {
         // look up DC metadata mapping: 
         
         ForeignMetadataFormatMapping dublinCoreMapping = findFormatMappingByName(DCTERMS);
@@ -164,7 +175,7 @@ public class ImportGenericServiceBean {
 
         try {
             reader = new StringReader(DcXmlToParse);
-            XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
+            XMLInputFactory xmlFactory = XmlUtil.getSecureXMLInputFactory();
             xmlr = xmlFactory.createXMLStreamReader(reader);
 
             //while (xmlr.next() == XMLStreamConstants.COMMENT); // skip pre root comments
@@ -175,23 +186,46 @@ public class ImportGenericServiceBean {
             processXMLElement(xmlr, ":", OAI_DC_OPENING_TAG, dublinCoreMapping, datasetDTO);
         } catch (XMLStreamException ex) {
             throw new EJBException("ERROR occurred while parsing XML fragment  (" + DcXmlToParse.substring(0, 64) + "...); ", ex);
+        } finally {
+            if (xmlr != null) {
+                try {
+                    xmlr.close();
+                } catch (XMLStreamException ex) {
+                }
+            }
         }
 
         
         datasetDTO.getDatasetVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
         
-        // Our DC import handles the contents of the dc:identifier field 
-        // as an "other id". In the context of OAI harvesting, we expect 
-        // the identifier to be a global id, so we need to rearrange that: 
+        // Note that in some harvesting cases we will want to use the OAI 
+        // identifier (the identifier from the <header> section of the OAI 
+        // record) for the global id of the harvested dataset, without expecting 
+        // to find a valid persistent id in the body of the DC record. This is  
+        // the use case when harvesting from DataCite: we always want to use the
+        // OAI identifier, disregarding any identifiers that may be found within
+        // the metadata record. 
+        // 
+        // Otherwise, we will look at the list of identifiers extracted from the 
+        // <dc:identifier> fields in the OAI_DC record. Our DC parser uses these
+        // to populate the "Other Id" field in the Citation block. The first one 
+        // of these that parses as a valid Persistent Identifier will be 
+        // selected to serve as the global id for the imported dataset. If none 
+        // are found there, we will try to use the OAI identifier as the last 
+        // resort. Note that this is the default behavior. 
         
-        String identifier = getOtherIdFromDTO(datasetDTO.getDatasetVersion());
-        logger.fine("Imported identifier: "+identifier);
-        
-        String globalIdentifier = reassignIdentifierAsGlobalId(identifier, datasetDTO);
-        logger.fine("Detected global identifier: "+globalIdentifier);
-        
+        String candidateGlobalId = selectIdentifier(datasetDTO.getDatasetVersion(), oaiIdentifier, preferSuppliedIdentifier);
+        logger.fine("Selected global identifier: " + candidateGlobalId);
+
+        // Re-assign the selected identifier to serve as the main persistent Id:
+        String globalIdentifier = reassignIdentifierAsGlobalId(candidateGlobalId, datasetDTO);
+        logger.fine("Successfully re-assigned the global identifier: " + globalIdentifier);
+
         if (globalIdentifier == null) {
-            throw new EJBException("Failed to find a global identifier in the OAI_DC XML record.");
+            String exceptionMsg = oaiIdentifier == null ? 
+                    "Failed to find a global identifier in the OAI_DC XML record." : 
+                    "Failed to parse the supplied identifier as a valid Persistent Id";
+            throw new EJBException(exceptionMsg);
         }
         
         return datasetDTO;
@@ -200,8 +234,17 @@ public class ImportGenericServiceBean {
     
     private void processXMLElement(XMLStreamReader xmlr, String currentPath, String openingTag, ForeignMetadataFormatMapping foreignFormatMapping, DatasetDTO datasetDTO) throws XMLStreamException {
         logger.fine("entering processXMLElement; ("+currentPath+")");
-        
-        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+
+        while (xmlr.hasNext()) {
+
+            int event;
+            try {
+                event = xmlr.next();
+            } catch (XMLStreamException ex) {
+                logger.warning("Error occurred in the XML parsing : " + ex.getMessage());
+                continue; // Skip Undeclared namespace prefix and Unexpected close tag related to com.ctc.wstx.exc.WstxParsingException
+            }
+
             if (event == XMLStreamConstants.START_ELEMENT) {
                 String currentElement = xmlr.getLocalName();
                 
@@ -262,9 +305,7 @@ public class ImportGenericServiceBean {
                             MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
                             citationBlock.addField(value);
                         }
-                    } else // Process the payload of this XML element:
-                    //xxString dataverseFieldName = mappingDefined.getDatasetfieldName();
-                    if (dataverseFieldName != null && !dataverseFieldName.isEmpty()) {
+                    } else if (dataverseFieldName != null && !dataverseFieldName.isEmpty()) {
                         DatasetFieldType dataverseFieldType = datasetfieldService.findByNameOpt(dataverseFieldName);
                         FieldDTO value;
                         if (dataverseFieldType != null) {
@@ -330,8 +371,20 @@ public class ImportGenericServiceBean {
         return value;
     }
     
-    private String getOtherIdFromDTO(DatasetVersionDTO datasetVersionDTO) {
+    public String selectIdentifier(DatasetVersionDTO datasetVersionDTO, String suppliedIdentifier) {
+        return selectIdentifier(datasetVersionDTO, suppliedIdentifier, false);
+    }
+    
+    private String selectIdentifier(DatasetVersionDTO datasetVersionDTO, String suppliedIdentifier, boolean preferSuppliedIdentifier) {
         List<String> otherIds = new ArrayList<>();
+        
+        if (suppliedIdentifier != null && preferSuppliedIdentifier) {
+            // This supplied identifier (in practice, his is likely the OAI-PMH 
+            // identifier from the <record> <header> section) will be our first 
+            // choice candidate for the pid of the imported dataset:
+            otherIds.add(suppliedIdentifier);
+        }
+        
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
@@ -349,6 +402,16 @@ public class ImportGenericServiceBean {
                 }
             }
         }
+        
+        if (suppliedIdentifier != null && !preferSuppliedIdentifier) {
+            // Unless specifically instructed to prefer this extra identifier 
+            // (in practice, this is likely the OAI-PMH identifier from the 
+            // <record> <header> section), we will try to use it as the *last*
+            // possible candidate for the pid, so, adding it to the end of the 
+            // list:
+            otherIds.add(suppliedIdentifier);
+        }
+        
         if (!otherIds.isEmpty()) {
             // We prefer doi or hdl identifiers like "doi:10.7910/DVN/1HE30F"
             for (String otherId : otherIds) {
@@ -501,9 +564,7 @@ public class ImportGenericServiceBean {
      
     public ImportGenericServiceBean(ImportType importType) {
         this.importType=importType;
-        xmlInputFactory = javax.xml.stream.XMLInputFactory.newInstance();
-        xmlInputFactory.setProperty("javax.xml.stream.isCoalescing", java.lang.Boolean.TRUE);
-
+        xmlInputFactory = XmlUtil.getSecureXMLInputFactory();
     }
     
       
@@ -529,21 +590,24 @@ public class ImportGenericServiceBean {
         Map<String, String> filesMap = new HashMap<>();
         StringReader reader = new StringReader(xmlToParse);
         XMLStreamReader xmlr = null;
-        XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
+        XMLInputFactory xmlFactory = XmlUtil.getSecureXMLInputFactory();
         xmlr = xmlFactory.createXMLStreamReader(reader);
         processDCTerms(xmlr, datasetDTO, filesMap);
-
+        if (xmlr != null) {
+            try {
+                xmlr.close();
+            } catch (XMLStreamException ex) {
+            }
+        }
         return filesMap;
     }
    
  
     public Map<String, String> mapDCTerms(File ddiFile, DatasetDTO datasetDTO) {
-        FileInputStream in = null;
         XMLStreamReader xmlr = null;
         Map<String, String> filesMap = new HashMap<>();
 
-        try {
-            in = new FileInputStream(ddiFile);
+        try (FileInputStream in = new FileInputStream(ddiFile)) {
             xmlr =  xmlInputFactory.createXMLStreamReader(in);
             processDCTerms( xmlr,  datasetDTO , filesMap );
         } catch (FileNotFoundException ex) {
@@ -552,14 +616,11 @@ public class ImportGenericServiceBean {
         } catch (XMLStreamException ex) {
             Logger.getLogger("global").log(Level.SEVERE, null, ex);
             throw new EJBException("ERROR occurred in mapDDI.", ex);
+        } catch (IOException e) {
         } finally {
             try {
                 if (xmlr != null) { xmlr.close(); }
             } catch (XMLStreamException ex) {}
-
-            try {
-                if (in != null) { in.close();}
-            } catch (IOException ex) {}
         }
 
         return filesMap;

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -240,5 +241,41 @@ public class DatasetTest {
 
         assertTrue(dataset.isDeaccessioned());
     }
- 
+
+    @Test
+    public void testGetMostRecentMajorVersionReleaseDateWithDeaccessionedVersions() {
+        List<DatasetVersion> versionList = new ArrayList<DatasetVersion>();
+
+        long ver = 5;
+        // 5.2
+        DatasetVersion relVersion = new DatasetVersion();
+        relVersion.setVersionState(VersionState.RELEASED);
+        relVersion.setMinorVersionNumber(2L);
+        relVersion.setVersionNumber(ver);
+        versionList.add(relVersion);
+
+        // 5.1
+        relVersion = new DatasetVersion();
+        relVersion.setVersionState(VersionState.DEACCESSIONED);
+        relVersion.setMinorVersionNumber(1L);
+        relVersion.setVersionNumber(ver);
+        versionList.add(relVersion);
+
+        // 5.0, 4.0, 3.0, 2.0, 1.0
+        while  (ver > 0) {
+            DatasetVersion deaccessionedVersion = new DatasetVersion();
+            deaccessionedVersion.setVersionState(VersionState.DEACCESSIONED);
+            // only add an actual date to v5.0 so the assertNotNull will only pass if this version's date is returned
+            deaccessionedVersion.setReleaseTime((ver == 5) ? new Date() : null);
+            deaccessionedVersion.setMinorVersionNumber(0L);
+            deaccessionedVersion.setVersionNumber(ver--);
+            versionList.add(deaccessionedVersion);
+        }
+
+        Dataset dataset = new Dataset();
+        dataset.setVersions(versionList);
+
+        Date releaseDate = dataset.getMostRecentMajorVersionReleaseDate();
+        assertNotNull(releaseDate);
+    }
 }

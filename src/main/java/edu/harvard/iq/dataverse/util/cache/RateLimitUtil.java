@@ -9,10 +9,7 @@ import jakarta.json.bind.JsonbBuilder;
 import jakarta.json.bind.JsonbException;
 
 import javax.cache.Cache;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
@@ -25,6 +22,8 @@ public class RateLimitUtil {
     static final List<RateLimitSetting> rateLimits = new CopyOnWriteArrayList<>();
     static final Map<String, Integer> rateLimitMap = new ConcurrentHashMap<>();
     public static final int NO_LIMIT = -1;
+    public static final int RESET_CACHE = -2;
+    static String settingRateLimitsJson = "";
 
     static String generateCacheKey(final User user, final String action) {
         return (user != null ? user.getIdentifier() : GuestUser.get().getIdentifier()) +
@@ -34,6 +33,15 @@ public class RateLimitUtil {
         if (user != null && user.isSuperuser()) {
             return NO_LIMIT;
         }
+
+        // If the setting changes then reset the cache
+        if (!settingRateLimitsJson.equals(systemConfig.getRateLimitsJson())) {
+            settingRateLimitsJson = systemConfig.getRateLimitsJson();
+            logger.fine("Setting RateLimitingCapacityByTierAndAction changed (" + settingRateLimitsJson + ").  Resetting cache");
+            rateLimits.clear();
+            return RESET_CACHE;
+        }
+
         // get the capacity, i.e. calls per hour, from config
         return (user instanceof AuthenticatedUser authUser) ?
                 getCapacityByTierAndAction(systemConfig, authUser.getRateLimitTier(), action) :
@@ -121,6 +129,33 @@ public class RateLimitUtil {
             }
         }
     }
+    static String getStats(final Cache<String, String> rateLimitCache, String filter) {
+        StringBuilder sb1 = new StringBuilder(); // available tokens list
+        StringBuilder sb2 = new StringBuilder(); // updated cache list
+        long currentTime = System.currentTimeMillis() / 60000L; // convert to minutes
+        Long deltaMinutesFilter = filter != null ? Long.parseLong(filter) : null;
+        Iterator<Cache.Entry<String, String>> iterator = rateLimitCache.iterator();
+        sb1.append("#<username>:<command>, <available tokens>\n");
+        sb2.append("#<username>:<command>, <timestamp>, <delta minutes>");
+        sb2.append(deltaMinutesFilter != null ? " ## deltaMinutesFilter=" + deltaMinutesFilter + "\n" : "\n");
+        int cacheEntries = 0;
+
+        while (iterator.hasNext()) {
+            Cache.Entry<String, String> entry = iterator.next();
+            if (entry.getKey().endsWith(":last_update")) {
+                long deltaMinutes = currentTime - Long.parseLong(String.valueOf(entry.getValue()));
+                if (deltaMinutesFilter == null || deltaMinutes <= deltaMinutesFilter) {
+                    sb2.append(entry.getKey() + ", " + entry.getValue() + ", " + deltaMinutes + "\n");
+                }
+            } else {
+                sb1.append(entry.getKey() + ", " + entry.getValue() + "\n");
+                cacheEntries++;
+            }
+        }
+
+        String header = "# Rate Limit Cache: Total number of cached entries (excluding \":last_update\") " + cacheEntries + "\n";
+        return header + sortString(sb1) + sortString(sb2);
+    }
     static String getMapKey(int tier) {
         return getMapKey(tier, null);
     }
@@ -130,5 +165,10 @@ public class RateLimitUtil {
     static long longFromKey(Cache<String, String> cache, String key) {
         Object l = cache.get(key);
         return l != null ? Long.parseLong(String.valueOf(l)) : 0L;
+    }
+    static String sortString(StringBuilder sb) {
+        String[] strings = sb.toString().split("\\R");
+        Arrays.sort(strings);
+        return String.join("\n", strings) + "\n";
     }
 }

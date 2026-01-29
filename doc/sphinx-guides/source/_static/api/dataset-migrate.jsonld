@@ -1,11 +1,31 @@
 {
 "citation:depositor": "Admin, Dataverse",
 "title": "Test Dataset",
+"socialscience:collectionMode": [
+  "demonstration"
+],
 "subject": "Computer and Information Science",
+"geospatial:geographicCoverage": [
+  {
+    "geospatial:otherGeographicCoverage": "Cambridge"
+  },
+  {
+    "geospatial:otherGeographicCoverage": "Massachusetts"
+  }
+],
 "author": {
   "citation:authorName": "Admin, Dataverse",
   "citation:authorAffiliation": "GDCC"
 },
+"kindOfData": "demonstration data",
+"citation:keyword": [
+  {
+    "citation:keywordValue": "first keyword"
+  },
+  {
+    "citation:keywordValue": "second keyword"
+  }
+],
 "dateOfDeposit": "2020-10-08",
 "citation:distributor": {
   "citation:distributorName": "Demo Dataverse Repository",
@@ -35,5 +55,9 @@
   "title": "http://purl.org/dc/terms/title",
   "citation": "https://dataverse.org/schema/citation/",
   "dvcore": "https://dataverse.org/schema/core#",
-  "schema": "http://schema.org/"
-}}
+  "schema": "http://schema.org/",
+  "geospatial": "dataverse.siteUrl/schema/geospatial#",
+  "socialscience": "dataverse.siteUrl/schema/socialscience#",
+  "kindOfData": "http://rdf-vocabulary.ddialliance.org/discovery#kindOfData"
+  }
+}

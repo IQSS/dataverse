@@ -27,6 +27,7 @@ import java.util.logging.Logger;
  * "actiontype" in the actionlogrecord rather than "InternalError" if you throw
  * a CommandExecutionException.
  */
+@Deprecated(forRemoval = true, since = "2024-07-07")
 @RequiredPermissions(Permission.EditDataset)
 public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResponse> {
 

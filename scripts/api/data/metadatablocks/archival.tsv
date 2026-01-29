@@ -1,0 +1,12 @@
+#metadataBlock	name	dataverseAlias	displayName	blockURI												
+	archival		Archival Metadata													
+#datasetField	name	title	description	watermark	fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id	termURI
+	submitToArchivalAppraisal	Submit to Archival Appraisal	Your assessment whether the dataset should be submitted for archival appraisal		text	0	#VALUE	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		archival	
+	archivedFrom	Archived from	A date (YYYY-MM-DD) from which the dataset is archived	YYYY-MM-DD	date	1	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		archival	
+	holdingArchive	Holding Archive	Information on the holding archive where the dataset is archived		none	3		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		archival	
+	holdingArchiveName	Archived at Holding Archive	The name of the holding archive		text	4	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	holdingArchive	archival	https://schema.org/holdingArchive
+	archivedAt	Archived at URL	URL to holding archive	URL	url	5	"<a href=""#VALUE"" target=""_blank"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	holdingArchive	archival	https://schema.org/archivedAt
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder												
+	submitToArchivalAppraisal	True		0
+	submitToArchivalAppraisal	False		1
+	submitToArchivalAppraisal	Unknown		2

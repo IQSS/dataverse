@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.export;
 
 import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.XMLExporter;
 
@@ -107,7 +108,7 @@ public class OpenAireExporterTest {
             System.out.println("XML: " + xmlAsString);
         }
         InputStream xmlStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory factory = XmlUtil.getSecureDocumentBuilderFactory();
         //factory.setValidating(true);
         factory.setNamespaceAware(true);
         factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaLanguage",

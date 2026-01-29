@@ -30,7 +30,7 @@ import java.util.logging.Logger;
  */
 public abstract class AbstractOAuth2AuthenticationProvider implements AuthenticationProvider {
 
-    final static Logger logger = Logger.getLogger(AbstractOAuth2AuthenticationProvider.class.getName());
+    static final Logger logger = Logger.getLogger(AbstractOAuth2AuthenticationProvider.class.getName());
 
     protected static class ParsedUserResponse {
         public final AuthenticatedUserDisplayInfo displayInfo;
@@ -93,6 +93,8 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     protected String clientSecret;
     protected String baseUserEndpoint;
     protected String redirectUrl;
+    protected boolean enabled = true;
+    protected boolean hidden = false; // Special flag to hide this provider in JSF UI
     
     /**
      * List of scopes to be requested for authorization at identity provider.
@@ -271,6 +273,21 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     public List<String> getScope() { return scope; }
     
     public String getSpacedScope() { return String.join(" ", getScope()); }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
+    }
+    public boolean isHidden() {
+        return hidden;
+    }
 
     @Override
     public int hashCode() {

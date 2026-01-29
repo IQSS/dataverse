@@ -3,7 +3,7 @@ Apps
 
 The introduction of Dataverse Software APIs has fostered the development of a variety of software applications that are listed in the :doc:`/admin/integrations`, :doc:`/admin/external-tools`, and :doc:`/admin/reporting-tools-and-queries` sections of the Admin Guide.
 
-The apps below are open source and demonstrate how to use Dataverse Software APIs. Some of these apps are built on :doc:`/api/client-libraries` that are available for Dataverse Software APIs in Python, Javascript, R, and Java.
+The apps below are open source and demonstrate how to use Dataverse Software APIs. Some of these apps are built on :doc:`/api/client-libraries` that are available for Dataverse Software APIs in Python, Javascript, R, Java, and Ruby.
 
 .. contents:: |toctitle|
 	:local:
@@ -68,9 +68,9 @@ https://github.com/IQSS/dataverse-metrics
 Whole Tale
 ~~~~~~~~~~
 
-Whole Tale enables researchers to analyze data using popular tools including Jupyter and RStudio with the ultimate goal of supporting publishing of reproducible research packages.
+Whole Tale enables researchers to analyze data using popular tools including Jupyter and RStudio with the ultimate goal of supporting publishing of reproducible research packages. As of 2025 the project is not active.
 
-https://github.com/whole-tale/girder_wholetale/tree/v0.7/server/lib/dataverse
+https://github.com/whole-tale/girder-wholetale/blob/v2.0.7/girder_wholetale/lib/dataverse/provider.py
 
 Archivematica
 ~~~~~~~~~~~~~
@@ -101,6 +101,18 @@ This module can, among others, help you migrate one dataverse to another. (see `
 
 https://github.com/iza-institute-of-labor-economics/idsc.dataverse
 
+dataverse-metadata-crawler
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A Python CLI tool for bulk extraction of dataverses, datasets, and data file metadata from any chosen level of dataverse collection (an entire Dataverse repository/sub-Dataverse), with flexible export options to JSON and CSV formats.
+
+https://github.com/scholarsportal/dataverse-metadata-crawler
+
+mcp-dataverse
+~~~~~~~~~~~~~
+
+The code at https://github.com/gdcc/mcp-dataverse powers a :ref:`mcp` server for Dataverse.
+
 Java
 ----
 
@@ -119,6 +131,13 @@ Dataverse for Android
 Dataverse Software on Android makes use of a Dataverse installation's Search API.
 
 https://github.com/IQSS/dataverse-android
+
+DVImportExport
+~~~~~~~~~~~~~~
+
+The open-source DVImportExport tool is a command-line tool for exporting/importing dataverses, datasets and files from one Dataverse instance to another. Source code, jar files and documentation are available on Gitlab. DVImportExport is developed at the Luxembourg Centre for Contemporary and Digital History of the Université de Luxembourg.
+
+https://gitlab.com/uniluxembourg/c2dh/dataverse/dataverse-import-export
 
 Go
 --
@@ -143,9 +162,9 @@ https://github.com/IQSS/doi2pmh-server
 OJS
 ~~~
 
-The Open Journal Systems (OJS) Dataverse Software Plugin adds data sharing and preservation to the OJS publication process.
+The Open Journal Systems (OJS) Dataverse Plugin adds data sharing and preservation to the OJS publication process.
 
-https://github.com/pkp/ojs/tree/ojs-stable-2_4_8/plugins/generic/dataverse
+https://github.com/lepidus/dataversePlugin
 
 OpenScholar
 ~~~~~~~~~~~
@@ -153,3 +172,13 @@ OpenScholar
 The Dataverse Software module from OpenScholar allows a Dataverse installation's widgets to be easily embedded in its web pages:
 
 https://github.com/openscholar/openscholar/tree/SCHOLAR-3.x/openscholar/modules/os_features/os_dataverse
+
+Ruby
+----
+
+Open OnDemand Loop
+~~~~~~~~~~~~~~~~~~
+
+Open OnDemand Loop integrates Dataverse with Open OnDemand, as :ref:`described <ood-upload>` in the Admin Guide.
+
+https://github.com/IQSS/ondemand-loop

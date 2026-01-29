@@ -56,13 +56,19 @@ To direct new files (uploaded when datasets are created or edited) for all datas
 
 (Note that for ``dataverse.files.store1.label=MyLabel``, you should pass ``MyLabel``.)
     
-The current driver can be seen using::
+A store assigned directly to a collection can be seen using::
 
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
 
-(Note that for ``dataverse.files.store1.label=MyLabel``, ``store1`` will be returned.)
+This may be null. To get the effective storageDriver for a collection, which may be inherited from a parent collection or be the installation default, you can use:: 
 
-and can be reset to the default store with::
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver?getEffective=true
+    
+This will never be null.
+
+(Note that for ``dataverse.files.store1.label=MyLabel``, the JSON response will include "name":"store1" and "label":"MyLabel".)
+
+To delete a store assigned directly to a collection (so that the colllection's effective store is inherted from it's parent or is the global default), use::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
     
@@ -118,9 +124,11 @@ Moves a dataset whose id is passed to a Dataverse collection whose alias is pass
 Link a Dataset
 ^^^^^^^^^^^^^^
 
-Creates a link between a dataset and a Dataverse collection (see the :ref:`dataset-linking` section of the User Guide for more information). ::
+Creates a link between a dataset and a Dataverse collection (see the :ref:`dataset-linking` section of the User Guide for more information). Accessible to users with Link Dataset permission on the Dataverse collection. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/datasets/$linked-dataset-id/link/$linking-dataverse-alias
+
+.. _list-collections-linked-from-dataset:
 
 List Collections that are Linked from a Dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -129,15 +137,21 @@ Lists the link(s) created between a dataset and a Dataverse collection (see the 
 
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/datasets/$linked-dataset-id/links
 
-It returns a list in the following format:
+It returns a list in the following format (new format as of v6.4):
 
 .. code-block:: json
 
   {
     "status": "OK",
     "data": {
-      "dataverses that link to dataset id 56782": [
-        "crc990 (id 18802)"
+      "id": 5,
+      "identifier": "FK2/OTCWMM",
+      "linked-dataverses": [
+        {
+          "id": 2,
+          "alias": "dataverse1",
+          "displayName": "Lab experiments 2023 June"
+        }
       ]
     }
   }
@@ -147,7 +161,7 @@ It returns a list in the following format:
 Unlink a Dataset
 ^^^^^^^^^^^^^^^^
 
-Removes a link between a dataset and a Dataverse collection. Only accessible to superusers. ::
+Removes a link between a dataset and a Dataverse collection. Accessible to users with Link Dataset permission on the Dataverse collection. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$linked-dataset-id/deleteLink/$linking-dataverse-alias
 
@@ -195,12 +209,41 @@ Mints a new identifier for a dataset previously registered with a handle. Only a
     
 .. _send-metadata-to-pid-provider:
 
-Send Dataset metadata to PID provider
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Update Target URL for a Published Dataset at the PID provider
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forces update to metadata provided to the PID provider of a published dataset. Only accessible to superusers. ::
+Forces update to the target URL provided to the PID provider of a published dataset and assures the PID is findable.
+Only accessible to superusers. ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/datasets/$dataset-id/modifyRegistration
+    
+Update Target URL for all Published Datasets at the PID provider
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Forces update to the target URL provided to the PID provider of all published datasets and assures the PID is findable.
+Only accessible to superusers. ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/datasets/modifyRegistrationAll
+    
+Update Metadata for a Published Dataset at the PID provider
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Checks to see that the PID metadata for a published dataset (and any released files in it using file PIDs)
+is up-to-date at the provider and updates the metadata if necessary.
+Only accessible to superusers. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/datasets/$dataset-id/modifyRegistrationMetadata
+    
+Update Metadata for all Published Datasets at the PID provider
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Checks to see that the PID metadata is up-to-date at the provider for all published datasets
+(and any released files in them using file PIDs) and updates the metadata if necessary.
+Only accessible to superusers. ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/datasets/modifyRegistrationPIDMetadataAll
+    
+The call returns 200/OK as long as the call completes. Any errors for individual datasets are reported in the log.
 
 Check for Unreserved PIDs and Reserve Them
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -220,15 +263,17 @@ To identify invalid data values in specific datasets (if, for example, an attemp
 Configure a Dataset to Store All New Files in a Specific File Store
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Configure a dataset to use a specific file store (this API can only be used by a superuser) ::
+Configure an individual dataset to use a specific file store (this API can only be used by a superuser) ::
  
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $storageDriverLabel http://$SERVER/api/datasets/$dataset-id/storageDriver
     
-The current driver can be seen using::
+The effective store can be seen using::
 
     curl http://$SERVER/api/datasets/$dataset-id/storageDriver
 
-It can be reset to the default store as follows (only a superuser can do this) ::
+The output of the API will include the id, label, type (for example, "file" or "s3") as well as the support for direct download and upload.
+
+To remove an assigned store, and allow the dataset to inherit the store from it's parent collection, use the following (only a superuser can do this) ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$dataset-id/storageDriver
     

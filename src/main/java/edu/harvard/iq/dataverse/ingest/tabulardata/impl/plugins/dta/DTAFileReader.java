@@ -29,6 +29,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -685,7 +686,7 @@ public class DTAFileReader extends TabularDataFileReader{
         }
 
         String data_label = new String(Arrays.copyOfRange(header, dl_offset,
-                (dl_offset + dataLabelLength)), "ISO-8859-1");
+                (dl_offset + dataLabelLength)), StandardCharsets.ISO_8859_1);
 
         if (dbgLog.isLoggable(Level.FINE)) {
             dbgLog.fine("data_label_length=" + data_label.length());
@@ -710,7 +711,7 @@ public class DTAFileReader extends TabularDataFileReader{
         if (releaseNumber > 104) {
             int ts_offset = dl_offset + dataLabelLength;
             String time_stamp = new String(Arrays.copyOfRange(header, ts_offset,
-                    ts_offset + TIME_STAMP_LENGTH), "ISO-8859-1");
+                    ts_offset + TIME_STAMP_LENGTH), StandardCharsets.ISO_8859_1);
             if (dbgLog.isLoggable(Level.FINE)) {
                 dbgLog.fine("time_stamp_length=" + time_stamp.length());
             }
@@ -912,7 +913,7 @@ public class DTAFileReader extends TabularDataFileReader{
         for (DataVariable dataVariable: dataTable.getDataVariables()) {
             offset_end += length_var_name;
             String vari = new String(Arrays.copyOfRange(variableNameBytes, offset_start,
-                    offset_end), "ISO-8859-1");
+                    offset_end), StandardCharsets.ISO_8859_1);
             String varName = getNullStrippedString(vari);
             dataVariable.setName(varName);
             dbgLog.fine("next name=[" + varName + "]");
@@ -978,7 +979,7 @@ public class DTAFileReader extends TabularDataFileReader{
         for (int i = 0; i < nvar; i++) {
             offset_end += length_var_format;
             String vari = new String(Arrays.copyOfRange(variableFormatList, offset_start,
-                    offset_end), "ISO-8859-1");
+                    offset_end), StandardCharsets.ISO_8859_1);
             String variableFormat = getNullStrippedString(vari);
             if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine(i + "-th format=[" + variableFormat + "]");
                         
@@ -1045,7 +1046,7 @@ public class DTAFileReader extends TabularDataFileReader{
         for (int i = 0; i < nvar; i++) {
             offset_end += length_label_name;
             String vari = new String(Arrays.copyOfRange(labelNameList, offset_start,
-                    offset_end), "ISO-8859-1");
+                    offset_end), StandardCharsets.ISO_8859_1);
             labelNames[i] = getNullStrippedString(vari);
             dbgLog.fine(i + "-th label=[" + labelNames[i] + "]");
             offset_start = offset_end;
@@ -1090,7 +1091,7 @@ public class DTAFileReader extends TabularDataFileReader{
         for (int i = 0; i < nvar; i++) {
             offset_end += length_var_label;
             String vari = new String(Arrays.copyOfRange(variableLabelBytes, offset_start,
-                    offset_end), "ISO-8859-1");
+                    offset_end), StandardCharsets.ISO_8859_1);
             
             String variableLabelParsed = getNullStrippedString(vari);
             if (dbgLog.isLoggable(Level.FINE)) {
@@ -1272,7 +1273,7 @@ public class DTAFileReader extends TabularDataFileReader{
                     valueLabelHeader,
                     value_label_table_length,
                     (value_label_table_length + length_label_name)),
-                    "ISO-8859-1");
+                    StandardCharsets.ISO_8859_1);
 
             if (dbgLog.isLoggable(Level.FINE)) {
                 dbgLog.fine("rawLabelName(length)=" + rawLabelName.length());
@@ -1335,7 +1336,7 @@ public class DTAFileReader extends TabularDataFileReader{
             for (int l = 0; l < no_value_label_pairs; l++) {
 
                 String string_l = new String(Arrays.copyOfRange(valueLabelTable_i, offset_start,
-                        offset_end), "ISO-8859-1");
+                        offset_end), StandardCharsets.ISO_8859_1);
 
                 int null_position = string_l.indexOf(0);
                 if (null_position != -1) {
@@ -1485,7 +1486,7 @@ public class DTAFileReader extends TabularDataFileReader{
                     valueLabelHeader,
                     value_label_table_length,
                     (value_label_table_length + length_label_name)),
-                    "ISO-8859-1");
+                    StandardCharsets.ISO_8859_1);
             String labelName = getNullStrippedString(rawLabelName);
 
             if (dbgLog.isLoggable(Level.FINE)) {
@@ -1581,7 +1582,7 @@ public class DTAFileReader extends TabularDataFileReader{
             String label_segment = new String(
                     Arrays.copyOfRange(valueLabelTable_i,
                             offset_value,
-                            (length_label_segment + offset_value)), "ISO-8859-1");
+                            (length_label_segment + offset_value)), StandardCharsets.ISO_8859_1);
 
             // L.A. -- 2011.2.25:
             // This assumes that the labels are already stored in the right
@@ -1701,7 +1702,7 @@ public class DTAFileReader extends TabularDataFileReader{
         ingesteddata.setTabDelimitedFile(tabDelimitedDataFile);
 
         fileOutTab = new FileOutputStream(tabDelimitedDataFile);
-        pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, "utf8"), true);
+        pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, StandardCharsets.UTF_8), true);
 
         /* Should we lose this dateFormat thing in 4.0? 
          * the UNF should be calculatable on the app side solely from the data
@@ -1932,7 +1933,7 @@ public class DTAFileReader extends TabularDataFileReader{
                         // String case
                         int strVarLength = StringLengthTable.get(columnCounter);
                         String raw_datum = new String(Arrays.copyOfRange(dataRowBytes, byte_offset,
-                                (byte_offset + strVarLength)), "ISO-8859-1");
+                                (byte_offset + strVarLength)), StandardCharsets.ISO_8859_1);
                         // TODO: 
                         // is it the right thing to do, to default to "ISO-8859-1"?
                         // (it may be; since there's no mechanism for specifying

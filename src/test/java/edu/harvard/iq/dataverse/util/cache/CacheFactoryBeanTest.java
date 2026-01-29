@@ -121,6 +121,7 @@ public class CacheFactoryBeanTest {
         Hazelcast.shutdownAll();
     }
     @Test
+    @ResourceLock(value = "cache")
     public void testGuestUserGettingRateLimited() {
         Command action = new ListDataverseContentCommand(null,null);
         boolean rateLimited = false;
@@ -133,10 +134,11 @@ public class CacheFactoryBeanTest {
         }
         String key = RateLimitUtil.generateCacheKey(guestUser, action.getClass().getSimpleName());
         assertTrue(cache.rateLimitCache.containsKey(key));
-        assertTrue(rateLimited && cnt > 1 && cnt <= 30, "rateLimited:"+rateLimited + " cnt:"+cnt);
+        assertTrue(rateLimited && cnt > 1 && cnt <= 31, "rateLimited:"+rateLimited + " cnt:"+cnt);
     }
 
     @Test
+    @ResourceLock(value = "cache")
     public void testAdminUserExemptFromGettingRateLimited() {
         Command action = new ListExplicitGroupsCommand(null,null);
         authUser.setSuperuser(true);

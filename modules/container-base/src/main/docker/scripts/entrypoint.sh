@@ -12,10 +12,14 @@
 
 # We do not define these variables within our Dockerfile so the location can be changed when trying to avoid
 # writes to the overlay filesystem. (CONFIG_DIR is defined within the Dockerfile, but might be overridden.)
-${PREBOOT_COMMANDS:="${CONFIG_DIR}/pre-boot-commands.asadmin"}
-export PREBOOT_COMMANDS
-${POSTBOOT_COMMANDS:="${CONFIG_DIR}/post-boot-commands.asadmin"}
-export POSTBOOT_COMMANDS
+PREBOOT_COMMANDS_FILE=${PREBOOT_COMMANDS:-"${CONFIG_DIR}/pre-boot-commands.asadmin"}
+export PREBOOT_COMMANDS_FILE
+POSTBOOT_COMMANDS_FILE=${POSTBOOT_COMMANDS:-"${CONFIG_DIR}/post-boot-commands.asadmin"}
+export POSTBOOT_COMMANDS_FILE
+
+# Remove existing POSTBOOT/PREBOOT files if they exist. Anything to be done needs to be injected by a script
+rm -rf "$POSTBOOT_COMMANDS_FILE" || exit 1
+rm -rf "$PREBOOT_COMMANDS_FILE" || exit 1
 
 # Execute any scripts BEFORE the appserver starts
 for f in "${SCRIPT_DIR}"/init_* "${SCRIPT_DIR}"/init.d/*; do

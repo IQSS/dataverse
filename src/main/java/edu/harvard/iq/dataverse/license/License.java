@@ -52,22 +52,22 @@ import java.util.Objects;
       @UniqueConstraint(columnNames = "uri")}
 )
 public class License {
-     public static String CC0 = "http://creativecommons.org/publicdomain/zero/1.0";
+    public static String CC0 = "http://creativecommons.org/publicdomain/zero/1.0";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition="TEXT", nullable = false, unique = true)
+    @Column(columnDefinition = "TEXT", nullable = false, unique = true)
     private String name;
 
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String shortDescription;
 
-    @Column(columnDefinition="TEXT", nullable = false, unique = true)
+    @Column(columnDefinition = "TEXT", nullable = false, unique = true)
     private String uri;
 
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String iconUrl;
 
     @Column(nullable = false)
@@ -78,8 +78,20 @@ public class License {
 
     @Column(nullable = false, columnDefinition = "BIGINT NOT NULL DEFAULT 0")
     private Long sortOrder;
+
+    @Column(name = "rights_identifier")
+    private String rightsIdentifier;
+
+    @Column(name = "rights_identifier_scheme")
+    private String rightsIdentifierScheme;
+
+    @Column(name = "scheme_uri")
+    private String schemeUri;
     
-    @OneToMany(mappedBy="license")
+    @Column(name = "language_code")
+    private String languageCode;
+
+    @OneToMany(mappedBy = "license")
     private List<TermsOfUseAndAccess> termsOfUseAndAccess;
 
     public License() {
@@ -186,18 +198,55 @@ public class License {
         this.sortOrder = sortOrder;
     }
 
+    public String getRightsIdentifier() {
+        return rightsIdentifier;
+    }
+
+    public void setRightsIdentifier(String rightsIdentifier) {
+        this.rightsIdentifier = rightsIdentifier;
+    }
+
+    public String getRightsIdentifierScheme() {
+        return rightsIdentifierScheme;
+    }
+
+    public void setRightsIdentifierScheme(String rightsIdentifierScheme) {
+        this.rightsIdentifierScheme = rightsIdentifierScheme;
+    }
+
+    public String getSchemeUri() {
+        return schemeUri;
+    }
+
+    public void setSchemeUri(String schemeUri) {
+        this.schemeUri = schemeUri;
+    }
+
+    public String getLanguageCode() {
+        return languageCode;
+    }
+
+    public void setLanguageCode(String languageCode) {
+        this.languageCode = languageCode;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         License license = (License) o;
-        return active == license.active && id.equals(license.id) && name.equals(license.name) && shortDescription.equals(license.shortDescription) && uri.equals(license.uri) && Objects.equals(iconUrl, license.iconUrl)
-        && Objects.equals(sortOrder, license.sortOrder);
+        return active == license.active && id.equals(license.id) && name.equals(license.name)
+                && shortDescription.equals(license.shortDescription) && uri.equals(license.uri)
+                && Objects.equals(iconUrl, license.iconUrl) && Objects.equals(sortOrder, license.sortOrder)
+                && Objects.equals(rightsIdentifier, license.rightsIdentifier)
+                && Objects.equals(rightsIdentifierScheme, license.rightsIdentifierScheme)
+                && Objects.equals(schemeUri, license.schemeUri);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, shortDescription, uri, iconUrl, active, sortOrder);
+        return Objects.hash(id, name, shortDescription, uri, iconUrl, active, sortOrder, rightsIdentifier,
+                rightsIdentifierScheme, schemeUri);
     }
 
     @Override
@@ -211,7 +260,10 @@ public class License {
                 ", active=" + active +
                 ", isDefault=" + isDefault +
                 ", sortOrder=" + sortOrder +
+                ", rightsIdentifier='" + rightsIdentifier + '\'' +
+                ", rightsIdentifierScheme='" + rightsIdentifierScheme + '\'' +
+                ", schemeUri='" + schemeUri + '\'' +
                 '}';
     }
-    
+
 }

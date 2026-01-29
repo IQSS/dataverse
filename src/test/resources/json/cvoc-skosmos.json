@@ -1,0 +1,69 @@
+[
+    {
+        "field-name": "keyword",
+        "term-uri-field": "keywordTermURL",
+        "cvoc-url": "https://demo.skosmos.org/",
+        "js-url": "https://github.com/gdcc/dataverse-external-vocab-support/blob/main/scripts/skosmos.js",
+        "protocol": "skosmos",
+        "retrieval-uri": "https://demo.skosmos.org/rest/v1/data?uri={0}",
+        "term-parent-uri": "",
+        "allow-free-text": true,
+        "languages": "en, fr",
+        "vocabs": {
+            "agrovoc": {
+                "vocabularyUri": "http://aims.fao.org/vest-registry/kos/agrovoc",
+                "uriSpace": "http://aims.fao.org/aos/agrovoc/"
+            }
+        },
+        "managed-fields": {
+            "vocabularyName": "keywordVocabulary",
+            "termName": "keywordValue",
+            "vocabularyUri": "keywordVocabularyURI"
+        },
+        "retrieval-filtering": {
+            "@context": {
+                "termName": "https://schema.org/name",
+                "vocabularyName": "https://dataverse.org/schema/vocabularyName",
+                "vocabularyUri": "https://dataverse.org/schema/vocabularyUri",
+                "lang": "@language",
+                "value": "@value"
+            },
+            "@id": {
+                "pattern": "{0}",
+                "params": [
+                    "@id"
+                ]
+            },
+            "termName": {
+                "pattern": "{0}",
+                "params": [
+                    "/graph/uri=@id/prefLabel"
+                ]
+            },
+            "vocabularyName": {
+                "pattern": "{0}",
+                "params": [
+                    "/graph/type=skos:ConceptScheme/prefLabel"
+                ]
+            },
+            "vocabularyUri": {
+                "pattern": "{0}",
+                "params": [
+                    "/graph/type=skos:ConceptScheme/uri"
+                ]
+            },
+            "synonyms": {
+                "pattern": "{0}",
+                "params": [
+                    "/graph/uri=@id/altLabel"
+                ]
+            },
+            "genericTerm": {
+                "pattern": "{0}",
+                "params": [
+                    "/graph/type=skos:Concept/prefLabel"
+                ]
+            }
+        }
+    }
+]

@@ -15,25 +15,26 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import edu.harvard.iq.dataverse.validation.ValidateEmail;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  *
  * @author skraffmiller
  */
-@NamedStoredProcedureQuery(
-        name = "GuestbookResponse.estimateGuestBookResponseTableSize",
-        procedureName = "estimateGuestBookResponseTableSize",
-        parameters = {
-            @StoredProcedureParameter(mode = ParameterMode.OUT, type = Long.class)
-        }
-)
 @Entity
 @Table(indexes = {
         @Index(columnList = "guestbook_id"),
         @Index(columnList = "datafile_id"),
-        @Index(columnList = "dataset_id")
+        @Index(columnList = "datasetversion_id"),
+        @Index(columnList = "authenticateduser_id"),
+        @Index(columnList = "dataset_id"),
+        @Index(columnList = "dataset_id, guestbook_id", name="INDEX_GUESTBOOKRESPONSE_dataset_id_guestbook_id"),
+        @Index(columnList = "dataset_id, eventtype", name="INDEX_GUESTBOOKRESPONSE_dataset_id_eventtype")
 })
 
 @NamedQueries(
@@ -78,8 +79,8 @@ public class GuestbookResponse implements Serializable {
     @Size(max = 255, message = "{guestbook.response.nameLength}")
     private String name;
 
-    // TODO: Consider using EMailValidator as well.
     @Size(max = 255, message = "{guestbook.response.nameLength}")
+    @ValidateEmail(message = "{user.invalidEmail}")
     private String email;
 
     @Size(max = 255, message = "{guestbook.response.nameLength}")
@@ -178,7 +179,7 @@ public class GuestbookResponse implements Serializable {
         this.setSessionId(source.getSessionId());
         List <CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
         if (!source.getCustomQuestionResponses().isEmpty()){
-            for (CustomQuestionResponse customQuestionResponse : source.getCustomQuestionResponses() ){
+            for (CustomQuestionResponse customQuestionResponse : source.getCustomQuestionResponsesSorted() ){
                 CustomQuestionResponse customQuestionResponseAdd = new CustomQuestionResponse();
                 customQuestionResponseAdd.setResponse(customQuestionResponse.getResponse());  
                 customQuestionResponseAdd.setCustomQuestion(customQuestionResponse.getCustomQuestion());
@@ -196,7 +197,8 @@ public class GuestbookResponse implements Serializable {
     }
 
     public void setEmail(String email) {
-        this.email = email;
+        // ValidateEmail requires NULL or valid email. Empty String will fail validation
+        this.email = (email == null || email.trim().isEmpty()) ? null : email;
     }
 
     public Guestbook getGuestbook() {
@@ -253,6 +255,18 @@ public class GuestbookResponse implements Serializable {
 
     public List<CustomQuestionResponse> getCustomQuestionResponses() {
         return customQuestionResponses;
+    }
+    
+    public List<CustomQuestionResponse> getCustomQuestionResponsesSorted(){
+        
+        Collections.sort(customQuestionResponses, (CustomQuestionResponse cqr1, CustomQuestionResponse cqr2) -> {
+            int a = cqr1.getCustomQuestion().getDisplayOrder();
+            int b = cqr2.getCustomQuestion().getDisplayOrder();
+            return Integer.valueOf(a).compareTo(b);
+        });
+       
+       
+       return customQuestionResponses;
     }
 
     public void setCustomQuestionResponses(List<CustomQuestionResponse> customQuestionResponses) {
@@ -317,7 +331,11 @@ public class GuestbookResponse implements Serializable {
         this.sessionId= sessionId;
     }
     
-    public String toHtmlFormattedResponse() {
+    public String toHtmlFormattedResponse(){
+        return toHtmlFormattedResponse(null);
+    }
+    
+    public String toHtmlFormattedResponse(AuthenticatedUser requestor) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -326,17 +344,25 @@ public class GuestbookResponse implements Serializable {
         sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.respondent") + "<br><ul style=\"list-style-type:none;\">\n<li>"
                 + BundleUtil.getStringFromBundle("name") + ": " + getName() + "</li>\n<li>");
         sb.append("  " + BundleUtil.getStringFromBundle("email") + ": " + getEmail() + "</li>\n<li>");
-        sb.append(
-                "  " + BundleUtil.getStringFromBundle("institution") + ": " + wrapNullAnswer(getInstitution()) + "</li>\n<li>");
-        sb.append("  " + BundleUtil.getStringFromBundle("position") + ": " + wrapNullAnswer(getPosition()) + "</li></ul>\n");
+        sb.append("  " + BundleUtil.getStringFromBundle("institution") + ": " + wrapNullAnswer(getInstitution()) + "</li>\n<li>");
+        sb.append("  " + BundleUtil.getStringFromBundle("position") + ": " + wrapNullAnswer(getPosition()) + "</li>");
+        
+        //Add requestor information to response to help dataset admin with request processing
+        if (requestor != null){
+            sb.append("\n<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.requestor.id") + ": " + requestor.getId()+ "</li>");
+            sb.append("\n<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.requestor.identifier") + ": " + requestor.getIdentifier()+ "</li></ul>\n");
+        } else {
+            sb.append("</ul>\n");
+        }
+
         sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.additionalQuestions")
                 + ":<ul style=\"list-style-type:none;\">\n");
 
-        for (CustomQuestionResponse cqr : getCustomQuestionResponses()) {
+        for (CustomQuestionResponse cqr : getCustomQuestionResponsesSorted()) {
             sb.append("<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.question") + ": "
                     + cqr.getCustomQuestion().getQuestionString() + "<br>"
                     + BundleUtil.getStringFromBundle("dataset.guestbookResponse.answer") + ": "
-                    + wrapNullAnswer(cqr.getResponse()) + "</li>\n");
+                    + wrapNullAnswer(cqr.getResponse()) + "</li>\n<br>");
         }
         sb.append("</ul>");
         return sb.toString();

@@ -19,8 +19,12 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.FailedPIDResolutionLoggingServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
@@ -37,6 +41,8 @@ import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -44,6 +50,7 @@ import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -86,6 +93,9 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     @EJB
     SystemConfig systemConfig;
+    
+    @Inject
+    FailedPIDResolutionLoggingServiceBean fprLogService;
 
     @EJB
     GlobusServiceBean globusServiceBean;
@@ -94,6 +104,8 @@ public class DatasetServiceBean implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+    
+    private static final boolean pidFailureLoggingEnabled = FeatureFlags.ENABLE_PID_FAILURE_LOG.enabled();
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
@@ -165,12 +177,12 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     public List<Long> findIdsByOwnerId(Long ownerId) {
-        return findIdsByOwnerId(ownerId, false);
+        return findIdsByOwnerId(ownerId, false, false);
     }
 
-    private List<Long> findIdsByOwnerId(Long ownerId, boolean onlyPublished) {
+    public List<Long> findIdsByOwnerId(Long ownerId, boolean onlyPublished, boolean includeHarvested) {
         List<Long> retList = new ArrayList<>();
-        if (!onlyPublished) {
+        if (!onlyPublished && includeHarvested) {
             return em.createNamedQuery("Dataset.findIdByOwnerId")
                     .setParameter("ownerId", ownerId)
                     .getResultList();
@@ -178,8 +190,18 @@ public class DatasetServiceBean implements java.io.Serializable {
             List<Dataset> results = em.createNamedQuery("Dataset.findByOwnerId")
                     .setParameter("ownerId", ownerId).getResultList();
             for (Dataset ds : results) {
-                if (ds.isReleased() && !ds.isDeaccessioned()) {
-                    retList.add(ds.getId());
+                // For harvested datasets, only add them if includeHarvested is true
+                if (ds.isHarvested()) {
+                    if (includeHarvested) {
+                        retList.add(ds.getId());
+                    }
+                // For non-harvested datasets, either
+                // - add them all (if onlyPublished is false) OR
+                // - only add them if they are released and not deaccessioned (if onlyPublished is true)
+                } else {
+                    if (!onlyPublished || (ds.isReleased() && !ds.isDeaccessioned())) {
+                        retList.add(ds.getId());
+                    }
                 }
             }
             return retList;
@@ -279,32 +301,9 @@ public class DatasetServiceBean implements java.io.Serializable {
         SEK - 11/09/2021
         */
 
-        String skipClause = skipIndexed ? "AND o.indexTime is null " : "";
-        Query query = em.createNativeQuery(" Select distinct(o.id), count(f.id) as numFiles FROM dvobject o " +
-            "left join dvobject f on f.owner_id = o.id  where o.dtype = 'Dataset' "
-                + skipClause
-                + " group by o.id "
-                + "ORDER BY count(f.id) asc, o.id");
-
-        List<Object[]> queryResults;
-        queryResults = query.getResultList();
-
-        List<Long> retVal = new ArrayList();
-        for (Object[] result : queryResults) {
-            Long dsId;
-            if (result[0] != null) {
-                try {
-                    dsId = Long.parseLong(result[0].toString()) ;
-                } catch (Exception ex) {
-                    dsId = null;
-                }
-                if (dsId == null) {
-                    continue;
-                }
-                retVal.add(dsId);
-            }
-        }
-        return retVal;
+        return em.createNamedQuery("Dataset.findAllOrSubsetOrderByFilesOwned", Long.class)
+                .setParameter(1, skipIndexed)
+                .getResultList();
     }
 
     /**
@@ -321,8 +320,19 @@ public class DatasetServiceBean implements java.io.Serializable {
         if (retVal != null){
             return retVal;
         } else {
-            //try to find with alternative PID
-            return (Dataset) dvObjectService.findByAltGlobalId(globalId, DvObject.DType.Dataset);
+            // try to find with alternative PID
+            retVal = (Dataset) dvObjectService.findByAltGlobalId(globalId, DvObject.DType.Dataset);
+            if (retVal == null  && pidFailureLoggingEnabled) {
+                try {
+
+                    HttpServletRequest httpRequest = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest());
+                    FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry entry = new FailedPIDResolutionEntry(globalId, httpRequest.getRequestURI(), httpRequest.getMethod(), new DataverseRequest(null, httpRequest).getSourceAddress());
+                    fprLogService.logEntry(entry);
+                } catch (NullPointerException npe) {
+                    // Do nothing - this is an API call with no FacesContext
+                }
+            }
+            return retVal;
         }
     }
 
@@ -412,12 +422,20 @@ public class DatasetServiceBean implements java.io.Serializable {
         List<DatasetLock> lock = lockCounter.getResultList();
         return lock.size()>0;
     }
-
+    
+    public List<DatasetLock> getLocksByDatasetId(Long datasetId) {
+        TypedQuery<DatasetLock> locksQuery = em.createNamedQuery("DatasetLock.getLocksByDatasetId", DatasetLock.class);
+        locksQuery.setParameter("datasetId", datasetId);
+        return locksQuery.getResultList();
+    }
+ 
     public List<DatasetLock> getDatasetLocksByUser( AuthenticatedUser user) {
 
         return listLocks(null, user);
     }
 
+    // @todo: we'll be better off getting rid of this method and using the other 
+    // version of addDatasetLock() (that uses datasetId instead of Dataset). 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public DatasetLock addDatasetLock(Dataset dataset, DatasetLock lock) {
         lock.setDataset(dataset);
@@ -467,6 +485,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * is {@code aReason}.
      * @param dataset the dataset whose locks (for {@code aReason}) will be removed.
      * @param aReason The reason of the locks that will be removed.
+     * @todo this should probably take dataset_id, not a dataset
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void removeDatasetLocks(Dataset dataset, DatasetLock.Reason aReason) {
@@ -851,6 +870,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         dataset = DatasetUtil.persistDatasetLogoToStorageAndCreateThumbnails(dataset, inputStream);
         dataset.setThumbnailFile(null);
+        dataset.setUseGenericThumbnail(false);
         return merge(dataset);
     }
 
@@ -946,7 +966,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         try {
             Thread.sleep(1000);
         } catch (Exception ex) {
-            logger.warning("Failed to sleep for a second.");
+            logger.warning("Failed to sleep for one second.");
         }
         logger.fine("Running FinalizeDatasetPublicationCommand, asynchronously");
         Dataset theDataset = find(datasetId);
@@ -1070,4 +1090,54 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
     
+    public List<String> getVersionStates(long id) {
+        try {
+            Query query = em.createNativeQuery("SELECT dv.versionState FROM datasetversion dv WHERE dataset_id=? ORDER BY id");
+            query.setParameter(1, id);
+            return (List<String>) query.getResultList();
+
+        } catch (Exception ex) {
+            logger.log(Level.WARNING, "exception trying to get versionstates of dataset " + id + ": {0}", ex);
+            return null;
+        }
+    }
+
+    /**
+     * Returns the total number of Datasets.
+     * @return the number of datasets in the database
+     */
+    public long getDatasetCount() {
+        return em.createNamedQuery("Dataset.countAll", Long.class).getSingleResult();
+    }
+
+    /**
+     *
+     * @param id - owner id
+     * @return Total number of datafiles for this dataset/owner
+     */
+    public int getDataFileCountByOwner(long id) {
+        Long c = em.createNamedQuery("Dataset.countFilesByOwnerId", Long.class).setParameter("ownerId", id).getSingleResult();
+        return c.intValue(); // ignoring the truncation since the number should never be too large
+    }
+    
+    /**
+     * 
+     * @todo: consider moving the quota method, from here and the DataverseServiceBean,
+     * to DvObjectServiceBean. 
+     */
+    public void saveStorageQuota(Dataset target, Long allocation) {
+        StorageQuota storageQuota = target.getStorageQuota();
+        
+        if (storageQuota != null) {
+            storageQuota.setAllocation(allocation);
+            em.merge(storageQuota);
+        } else {
+            storageQuota = new StorageQuota(); 
+            storageQuota.setDefinitionPoint(target);
+            storageQuota.setAllocation(allocation);
+            target.setStorageQuota(storageQuota);
+            em.persist(storageQuota);
+        }
+        em.flush();
+    }
 }

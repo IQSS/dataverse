@@ -15,13 +15,15 @@
             <ui:param name="pageTitle" value="#{thisPageTitle}"/>
             <ui:param name="dataverse" value="#{AdvancedSearchPage.dataverse}"/>
             <ui:param name="ownerId" value="#{DataversePage.ownerId}"/>
-            <ui:define name="body">
+            <ui:define name="metadata">
                 <f:metadata>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{AdvancedSearchPage.init}"/>
                     <f:viewParam name="dataverseIdentifier" value="#{AdvancedSearchPage.dataverseIdentifier}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(AdvancedSearchPage.dataverse, bundle['dataverse.search.advancedSearch'])}"/>
                 </f:metadata>
+            </ui:define>
+            <ui:define name="body">
                 <p:fragment>
                     <p:autoUpdate/>
                     <ui:repeat value="#{AdvancedSearchPage.vocabScripts}" var="vocabScriptUrl">

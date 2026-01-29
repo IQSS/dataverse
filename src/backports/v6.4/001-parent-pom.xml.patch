@@ -1,0 +1,10 @@
+--- a/modules/dataverse-parent/pom.xml
++++ b/modules/dataverse-parent/pom.xml
+@@ -448,6 +448,7 @@
+                 -->
+                 <!--<base.image.version>${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}</base.image.version>-->
+                 <base.image.version>${revision}</base.image.version>
++                <app.image.version>${base.image.version}</app.image.version>
+             </properties>
+
+             <bu

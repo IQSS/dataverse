@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
@@ -18,7 +19,9 @@ import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -77,7 +80,7 @@ public class CreatePrivateUrlCommandTest {
                     }
 
                     @Override
-                    public RoleAssignment save(RoleAssignment assignment) {
+                    public RoleAssignment save(RoleAssignment assignment, DataverseRequest req) {
                         // no-op
                         return assignment;
                     }
@@ -171,9 +174,9 @@ public class CreatePrivateUrlCommandTest {
         assertEquals(expectedUser.getIdentifier(), privateUrl.getRoleAssignment().getAssigneeIdentifier());
         assertEquals(expectedUser.isSuperuser(), false);
         assertEquals(expectedUser.isAuthenticated(), false);
-        assertEquals(expectedUser.getDisplayInfo().getTitle(), "Private URL Enabled");
+        assertEquals(expectedUser.getDisplayInfo().getTitle(), "Preview URL Enabled");
         assertNotNull(privateUrl.getToken());
-        assertEquals("https://dataverse.example.edu/privateurl.xhtml?token=" + privateUrl.getToken(), privateUrl.getLink());
+        assertEquals("https://dataverse.example.edu/previewurl.xhtml?token=" + privateUrl.getToken(), privateUrl.getLink());
     }
     
     @Test
@@ -188,22 +191,24 @@ public class CreatePrivateUrlCommandTest {
         assertEquals(expectedUser.getIdentifier(), privateUrl.getRoleAssignment().getAssigneeIdentifier());
         assertEquals(expectedUser.isSuperuser(), false);
         assertEquals(expectedUser.isAuthenticated(), false);
-        assertEquals(expectedUser.getDisplayInfo().getTitle(), "Private URL Enabled");
+        assertEquals(expectedUser.getDisplayInfo().getTitle(), "Preview URL Enabled");
         assertNotNull(privateUrl.getToken());
         assertTrue(privateUrl.isAnonymizedAccess());
-        assertEquals("https://dataverse.example.edu/privateurl.xhtml?token=" + privateUrl.getToken(), privateUrl.getLink());
+        assertEquals("https://dataverse.example.edu/previewurl.xhtml?token=" + privateUrl.getToken(), privateUrl.getLink());
     }
     
     @Test
-    public void testAttemptCreateAnonymizedAccessPrivateUrlOnReleased() {
+    public void testAttemptCreateAnonymizedAccessPrivateUrlOnReleased() throws CommandException {
         dataset = new Dataset();
         List<DatasetVersion> versions = new ArrayList<>();
+        dataset.setPublicationDate(new Timestamp(new Date().getTime()));
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         DatasetVersion datasetVersion2 = new DatasetVersion();
-        
-        versions.add(datasetVersion);
+        datasetVersion2.setVersionState(DatasetVersion.VersionState.DRAFT);
+
         versions.add(datasetVersion2);
+        versions.add(datasetVersion);
         dataset.setVersions(versions);
         dataset.setId(versionIsReleased);
         PrivateUrl privateUrl = null;
@@ -211,6 +216,7 @@ public class CreatePrivateUrlCommandTest {
             privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset, true));
             assertTrue(false);
         } catch (CommandException ex) {
+           
         }
         assertNull(privateUrl);
     }

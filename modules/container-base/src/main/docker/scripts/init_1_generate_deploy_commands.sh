@@ -35,12 +35,11 @@ set -euo pipefail
 
 # Check required variables are set
 if [ -z "$DEPLOY_DIR" ]; then echo "Variable DEPLOY_DIR is not set."; exit 1; fi
-if [ -z "$PREBOOT_COMMANDS" ]; then echo "Variable PREBOOT_COMMANDS is not set."; exit 1; fi
-if [ -z "$POSTBOOT_COMMANDS" ]; then echo "Variable POSTBOOT_COMMANDS is not set."; exit 1; fi
-
-# Create pre and post boot command files if they don't exist
-touch "$POSTBOOT_COMMANDS"
-touch "$PREBOOT_COMMANDS"
+if [ -z "$PREBOOT_COMMANDS_FILE" ]; then echo "Variable PREBOOT_COMMANDS_FILE is not set."; exit 1; fi
+if [ -z "$POSTBOOT_COMMANDS_FILE" ]; then echo "Variable POSTBOOT_COMMANDS_FILE is not set."; exit 1; fi
+# Test if files are writeable for us, exit otherwise
+touch "$PREBOOT_COMMANDS_FILE" || exit 1
+touch "$POSTBOOT_COMMANDS_FILE" || exit 1
 
 deploy() {
 
@@ -50,14 +49,14 @@ deploy() {
   fi
 
   DEPLOY_STATEMENT="deploy $DEPLOY_PROPS $1"
-  if grep -q "$1" "$POSTBOOT_COMMANDS"; then
-    echo "post boot commands already deploys $1";
+  if grep -q "$1" "$POSTBOOT_COMMANDS_FILE"; then
+    echo "Post boot commands already deploys $1, skip adding";
   else
     if [ -n "$SKIP_DEPLOY" ] && { [ "$SKIP_DEPLOY" = "1" ] || [ "$SKIP_DEPLOY" = "true" ]; }; then
       echo "Skipping deployment of $1 as requested.";
     else
       echo "Adding deployment target $1 to post boot commands";
-      echo "$DEPLOY_STATEMENT" >> "$POSTBOOT_COMMANDS";
+      echo "$DEPLOY_STATEMENT" >> "$POSTBOOT_COMMANDS_FILE";
     fi
   fi
 }

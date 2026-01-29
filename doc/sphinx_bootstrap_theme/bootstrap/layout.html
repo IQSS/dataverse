@@ -86,6 +86,22 @@
     {%- block sidebar1 %}{{ bsidebar() }}{% endblock %}
     <div class="{{ bs_span_prefix }}{{ bs_content_width }} content" role="main">
       {% block body %}{% endblock %}
+      <!-- Previous button -->
+      {%- if prev %}
+        <a href="{{ prev.link|e }}" title="{{ _('Previous Chapter: ') + prev.title|striptags }}">
+          {%- if theme_bootstrap_version == "2" -%}<span class="icon-chevron-left visible-tablet"></span>{%- endif -%}
+          {%- if theme_bootstrap_version == "3" -%}<span class="glyphicon glyphicon-chevron-left visible-sm"></span>{%- endif -%}
+          <span class="hidden-sm hidden-tablet">{{ "&laquo;Previous"|safe }}</span>
+        </a>
+      {%- endif %}
+      <!-- Next button -->
+      {%- if next %}
+        <a href="{{ next.link|e }}" title="{{ _('Next Chapter: ') + next.title|striptags }}" style="float: right;">
+          {%- if theme_bootstrap_version == "2" -%}<span class="icon-chevron-right visible-tablet"></span>{%- endif -%}
+          {%- if theme_bootstrap_version == "3" -%}<span class="glyphicon glyphicon-chevron-right visible-sm"></span>{%- endif -%}
+          <span class="hidden-sm hidden-tablet">{{ "Next&raquo"|safe }}</span>
+        </a>
+      {%- endif %}
     </div>
     {% block sidebar2 %} {# possible location for sidebar #} {% endblock %}
   </div>

@@ -11,6 +11,7 @@ This guide documents the functionality only available to superusers (such as "da
 **Contents:**
 
 .. toctree::
+   :maxdepth: 2
 
    dashboard
    external-tools
@@ -29,7 +30,9 @@ This guide documents the functionality only available to superusers (such as "da
    mail-groups
    collectionquotas
    monitoring
+   rate-limiting
    reporting-tools-and-queries
    maintenance
    backups
    troubleshooting
+   big-data-administration

@@ -24,14 +24,14 @@ public class BriefJsonPrinter {
 	}
     
     public JsonObjectBuilder json( MetadataBlock blk ) {
-		return ( blk==null ) 
-				? null
-				: jsonObjectBuilder().add("id", blk.getId())
-					.add("displayName", blk.getDisplayName())
-					.add("displayOnCreate", blk.isDisplayOnCreate())
-					.add("name", blk.getName())
-					;
-	}
+        if (blk == null) return null;
+        boolean displayOnCreate = blk.isDisplayOnCreate();
+        return jsonObjectBuilder().add("id", blk.getId())
+                    .add("displayName", blk.getDisplayName())
+                    .add("displayOnCreate", displayOnCreate)
+                    .add("name", blk.getName())
+                    ;
+    }
     
     public JsonObjectBuilder json( Workflow wf ) {
         return jsonObjectBuilder().add("id", wf.getId())

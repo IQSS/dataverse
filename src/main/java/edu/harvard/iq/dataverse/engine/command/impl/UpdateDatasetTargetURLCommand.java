@@ -46,11 +46,13 @@ public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand  {
                 ctxt.em().merge(target);
                 ctxt.em().flush();
                 for (DataFile df : target.getFiles()) {
-                    doiRetString = pidProvider.modifyIdentifierTargetURL(df);
-                    if (doiRetString != null && doiRetString.contains(df.getIdentifier())) {
-                        df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                        ctxt.em().merge(df);
-                        ctxt.em().flush();
+                    if (df.isReleased()) {
+                        doiRetString = pidProvider.modifyIdentifierTargetURL(df);
+                        if (doiRetString != null && doiRetString.contains(df.getIdentifier())) {
+                            df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                            ctxt.em().merge(df);
+                            ctxt.em().flush();
+                        }
                     }
                 }               
             } else {

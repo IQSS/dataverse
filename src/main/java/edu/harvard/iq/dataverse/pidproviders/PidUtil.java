@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.pidproviders;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
+import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.io.InputStream;
@@ -252,7 +253,12 @@ public class PidUtil {
      * Get a PidProvider by protocol/authority/shoulder.
      */
     public static PidProvider getPidProvider(String protocol, String authority, String shoulder) {
-        return getPidProvider(protocol, authority, shoulder, AbstractPidProvider.SEPARATOR);
+        switch(protocol) {
+        case PermaLinkPidProvider.PERMA_PROTOCOL: 
+            return getPidProvider(protocol, authority, shoulder, PermaLinkPidProvider.SEPARATOR);
+        default:
+            return getPidProvider(protocol, authority, shoulder, AbstractPidProvider.SEPARATOR);
+        }
     }
     
     public static PidProvider getPidProvider(String protocol, String authority, String shoulder, String separator) {

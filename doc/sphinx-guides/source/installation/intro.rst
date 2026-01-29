@@ -17,16 +17,18 @@ Jump ahead to :doc:`config` or :doc:`upgrading` for an existing Dataverse instal
 Intended Audience
 -----------------
 
-This guide is intended primarily for sysadmins who are installing, configuring, and upgrading a Dataverse installation. 
+This guide is intended primarily for sysadmins who are installing, configuring, and upgrading a Dataverse installation. This guide was written with non-Docker installation in mind but if you're interested in Docker, see the :doc:`/container/index`.
 
 Sysadmins are expected to be comfortable using standard Linux commands, issuing ``curl`` commands, and running SQL scripts.
 
 Related Guides
 --------------
 
+See the :doc:`/container/index` if you want to run Dataverse in Docker.
+
 Many "admin" functions can be performed by Dataverse installation users themselves (non-superusers) as documented in the :doc:`/user/index` and that guide is a good introduction to the features of the Dataverse Software from an end user perspective.
 
-If you are a sysadmin who likes to code, you may find the :doc:`/api/index` useful, and you may want to consider improving the installation script or hacking on the community-lead configuration management options mentioned in the :doc:`prep` section. If you **really** like to code and want to help with the Dataverse Software code, please check out the :doc:`/developers/index`!
+If you are a sysadmin who likes to code, you may find the :doc:`/api/index` useful, and you may want to consider improving the installation script or hacking on the community-lead configuration management options mentioned in the :doc:`prep` section. If you **really** like to code and want to help with the Dataverse code or documentation, please check out the :doc:`/contributor/index` and the :doc:`/developers/index`!
 
 .. _support:
 
@@ -53,6 +55,6 @@ If you've encountered a problem installing Dataverse and are ready to ask for he
 Improving this Guide
 --------------------
 
-If you spot a typo in this guide or would like to suggest an improvement, please find the appropriate file in https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/installation and send a pull request as explained in the :doc:`/developers/documentation` section of the Developer Guide. You are also welcome to simply open an issue at https://github.com/IQSS/dataverse/issues to describe the problem with this guide.
+If you spot a typo in this guide or would like to suggest an improvement, please find the appropriate file in https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/installation and send a pull request as explained in the :doc:`/contributor/documentation` section of the Contributor Guide. You are also welcome to simply open an issue at https://github.com/IQSS/dataverse/issues to describe the problem with this guide.
 
 Next is the :doc:`prep` section.
