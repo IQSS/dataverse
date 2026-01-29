@@ -1,0 +1,1 @@
+The My Data API now supports the `metadata_fields`, `sort` and `order`, `show_collections` and `fq` parameters, which enhances its functionality and brings it in line with the search API.
