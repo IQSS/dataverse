@@ -52,7 +52,8 @@ public class CroissantExporterTest {
                 new ExportDataProvider() {
                     @Override
                     public JsonObject getDatasetJson() {
-                        String pathToJsonFile = "src/test/resources/croissant/minimal/in/datasetJson.json";
+                        String pathToJsonFile =
+                                "src/test/resources/croissant/minimal/in/datasetJson.json";
                         try (JsonReader jsonReader =
                                 Json.createReader(new FileReader(pathToJsonFile))) {
                             return jsonReader.readObject();
@@ -63,7 +64,8 @@ public class CroissantExporterTest {
 
                     @Override
                     public JsonObject getDatasetORE() {
-                        String pathToJsonFile = "src/test/resources/croissant/minimal/in/datasetORE.json";
+                        String pathToJsonFile =
+                                "src/test/resources/croissant/minimal/in/datasetORE.json";
                         try (JsonReader jsonReader =
                                 Json.createReader(new FileReader(pathToJsonFile))) {
                             return jsonReader.readObject();
@@ -100,7 +102,8 @@ public class CroissantExporterTest {
                     public String getDataCiteXml() {
                         try {
                             return Files.readString(
-                                    Paths.get("src/test/resources/croissant/minimal/in/dataCiteXml.xml"),
+                                    Paths.get(
+                                            "src/test/resources/croissant/minimal/in/dataCiteXml.xml"),
                                     StandardCharsets.UTF_8);
                         } catch (IOException ex) {
                             return null;
@@ -113,7 +116,8 @@ public class CroissantExporterTest {
                 new ExportDataProvider() {
                     @Override
                     public JsonObject getDatasetJson() {
-                        String pathToJsonFile = "src/test/resources/croissant/max/in/datasetJson.json";
+                        String pathToJsonFile =
+                                "src/test/resources/croissant/max/in/datasetJson.json";
                         try (JsonReader jsonReader =
                                 Json.createReader(new FileReader(pathToJsonFile))) {
                             return jsonReader.readObject();
@@ -124,7 +128,8 @@ public class CroissantExporterTest {
 
                     @Override
                     public JsonObject getDatasetORE() {
-                        String pathToJsonFile = "src/test/resources/croissant/max/in/datasetORE.json";
+                        String pathToJsonFile =
+                                "src/test/resources/croissant/max/in/datasetORE.json";
                         try (JsonReader jsonReader =
                                 Json.createReader(new FileReader(pathToJsonFile))) {
                             return jsonReader.readObject();
@@ -135,7 +140,8 @@ public class CroissantExporterTest {
 
                     @Override
                     public JsonArray getDatasetFileDetails() {
-                        String pathToJsonFile = "src/test/resources/croissant/max/in/datasetFileDetails.json";
+                        String pathToJsonFile =
+                                "src/test/resources/croissant/max/in/datasetFileDetails.json";
                         try (JsonReader jsonReader =
                                 Json.createReader(new FileReader(pathToJsonFile))) {
                             return jsonReader.readArray();
@@ -160,7 +166,8 @@ public class CroissantExporterTest {
                     public String getDataCiteXml() {
                         try {
                             return Files.readString(
-                                    Paths.get("src/test/resources/croissant/max/in/dataCiteXml.xml"),
+                                    Paths.get(
+                                            "src/test/resources/croissant/max/in/dataCiteXml.xml"),
                                     StandardCharsets.UTF_8);
                         } catch (IOException ex) {
                             return null;
@@ -173,7 +180,8 @@ public class CroissantExporterTest {
                 new ExportDataProvider() {
                     @Override
                     public JsonObject getDatasetJson() {
-                        String pathToJsonFile = "src/test/resources/croissant/cars/in/datasetJson.json";
+                        String pathToJsonFile =
+                                "src/test/resources/croissant/cars/in/datasetJson.json";
                         try (JsonReader jsonReader =
                                 Json.createReader(new FileReader(pathToJsonFile))) {
                             return jsonReader.readObject();
@@ -184,7 +192,8 @@ public class CroissantExporterTest {
 
                     @Override
                     public JsonObject getDatasetORE() {
-                        String pathToJsonFile = "src/test/resources/croissant/cars/in/datasetORE.json";
+                        String pathToJsonFile =
+                                "src/test/resources/croissant/cars/in/datasetORE.json";
                         try (JsonReader jsonReader =
                                 Json.createReader(new FileReader(pathToJsonFile))) {
                             return jsonReader.readObject();
@@ -221,7 +230,8 @@ public class CroissantExporterTest {
                     public String getDataCiteXml() {
                         try {
                             return Files.readString(
-                                    Paths.get("src/test/resources/croissant/cars/in/dataCiteXml.xml"),
+                                    Paths.get(
+                                            "src/test/resources/croissant/cars/in/dataCiteXml.xml"),
                                     StandardCharsets.UTF_8);
                         } catch (IOException ex) {
                             return null;
@@ -234,7 +244,8 @@ public class CroissantExporterTest {
                 new ExportDataProvider() {
                     @Override
                     public JsonObject getDatasetJson() {
-                        String pathToJsonFile = "src/test/resources/croissant/restricted/in/datasetJson.json";
+                        String pathToJsonFile =
+                                "src/test/resources/croissant/restricted/in/datasetJson.json";
                         try (JsonReader jsonReader =
                                 Json.createReader(new FileReader(pathToJsonFile))) {
                             return jsonReader.readObject();
@@ -245,7 +256,8 @@ public class CroissantExporterTest {
 
                     @Override
                     public JsonObject getDatasetORE() {
-                        String pathToJsonFile = "src/test/resources/croissant/restricted/in/datasetORE.json";
+                        String pathToJsonFile =
+                                "src/test/resources/croissant/restricted/in/datasetORE.json";
                         try (JsonReader jsonReader =
                                 Json.createReader(new FileReader(pathToJsonFile))) {
                             return jsonReader.readObject();
@@ -282,7 +294,8 @@ public class CroissantExporterTest {
                     public String getDataCiteXml() {
                         try {
                             return Files.readString(
-                                    Paths.get("src/test/resources/croissant/restricted/in/dataCiteXml.xml"),
+                                    Paths.get(
+                                            "src/test/resources/croissant/restricted/in/dataCiteXml.xml"),
                                     StandardCharsets.UTF_8);
                         } catch (IOException ex) {
                             return null;
@@ -295,7 +308,8 @@ public class CroissantExporterTest {
                 new ExportDataProvider() {
                     @Override
                     public JsonObject getDatasetJson() {
-                        String pathToJsonFile = "src/test/resources/croissant/junk/in/datasetJson.json";
+                        String pathToJsonFile =
+                                "src/test/resources/croissant/junk/in/datasetJson.json";
                         try (JsonReader jsonReader =
                                 Json.createReader(new FileReader(pathToJsonFile))) {
                             return jsonReader.readObject();
@@ -306,7 +320,8 @@ public class CroissantExporterTest {
 
                     @Override
                     public JsonObject getDatasetORE() {
-                        String pathToJsonFile = "src/test/resources/croissant/junk/in/datasetORE.json";
+                        String pathToJsonFile =
+                                "src/test/resources/croissant/junk/in/datasetORE.json";
                         try (JsonReader jsonReader =
                                 Json.createReader(new FileReader(pathToJsonFile))) {
                             return jsonReader.readObject();
@@ -343,7 +358,8 @@ public class CroissantExporterTest {
                     public String getDataCiteXml() {
                         try {
                             return Files.readString(
-                                    Paths.get("src/test/resources/croissant/junk/in/dataCiteXml.xml"),
+                                    Paths.get(
+                                            "src/test/resources/croissant/junk/in/dataCiteXml.xml"),
                                     StandardCharsets.UTF_8);
                         } catch (IOException ex) {
                             return null;
@@ -356,7 +372,8 @@ public class CroissantExporterTest {
                 new ExportDataProvider() {
                     @Override
                     public JsonObject getDatasetJson() {
-                        String pathToJsonFile = "src/test/resources/croissant/draft/in/datasetJson.json";
+                        String pathToJsonFile =
+                                "src/test/resources/croissant/draft/in/datasetJson.json";
                         try (JsonReader jsonReader =
                                 Json.createReader(new FileReader(pathToJsonFile))) {
                             return jsonReader.readObject();
@@ -367,7 +384,8 @@ public class CroissantExporterTest {
 
                     @Override
                     public JsonObject getDatasetORE() {
-                        String pathToJsonFile = "src/test/resources/croissant/draft/in/datasetORE.json";
+                        String pathToJsonFile =
+                                "src/test/resources/croissant/draft/in/datasetORE.json";
                         try (JsonReader jsonReader =
                                 Json.createReader(new FileReader(pathToJsonFile))) {
                             return jsonReader.readObject();
@@ -404,7 +422,8 @@ public class CroissantExporterTest {
                     public String getDataCiteXml() {
                         try {
                             return Files.readString(
-                                    Paths.get("src/test/resources/croissant/draft/in/dataCiteXml.xml"),
+                                    Paths.get(
+                                            "src/test/resources/croissant/draft/in/dataCiteXml.xml"),
                                     StandardCharsets.UTF_8);
                         } catch (IOException ex) {
                             return null;
@@ -448,7 +467,8 @@ public class CroissantExporterTest {
         writeCroissantFile(actual, "minimal");
         String expected =
                 Files.readString(
-                        Paths.get("src/test/resources/croissant/minimal/expected/minimal-croissant.json"),
+                        Paths.get(
+                                "src/test/resources/croissant/minimal/expected/minimal-croissant.json"),
                         StandardCharsets.UTF_8);
         JSONAssert.assertEquals(expected, actual, true);
         assertEquals(prettyPrint(expected), prettyPrint(outputStreamMinimal.toString()));
@@ -542,14 +562,16 @@ public class CroissantExporterTest {
         writeCroissantFile(actual, "draft");
         String expected =
                 Files.readString(
-                        Paths.get("src/test/resources/croissant/draft/expected/draft-croissant.json"),
+                        Paths.get(
+                                "src/test/resources/croissant/draft/expected/draft-croissant.json"),
                         StandardCharsets.UTF_8);
         JSONAssert.assertEquals(expected, actual, true);
         assertEquals(prettyPrint(expected), prettyPrint(outputStreamDraft.toString()));
     }
 
     private void writeCroissantFile(String actual, String name) throws IOException {
-        Path dir = Files.createDirectories(Paths.get("src/test/resources/croissant/" + name + "/out"));
+        Path dir =
+                Files.createDirectories(Paths.get("src/test/resources/croissant/" + name + "/out"));
         Path out = Paths.get(dir + "/croissant.json");
         Files.writeString(out, prettyPrint(actual), StandardCharsets.UTF_8);
     }
