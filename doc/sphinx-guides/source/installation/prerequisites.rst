@@ -470,11 +470,7 @@ As root, create a "counter" user and change ownership of Counter Processor direc
 Installing Counter Processor Python Requirements
 ================================================
 
-<<<<<<< HEAD
-Counter Processor version 0.1.04 requires Python 3.7 or higher.
-=======
 Counter Processor version 1.06 requires Python 3.7 or higher.
->>>>>>> upstream/develop
 
 The following commands are intended to be run as root but we are aware that Pythonistas might prefer fancy virtualenv or similar setups. Pull requests are welcome to improve these steps!
 
@@ -484,13 +480,8 @@ Install Python 3.9::
 
 Install Counter Processor Python requirements::
 
-<<<<<<< HEAD
-        python3 -m ensurepip
-        cd /usr/local/counter-processor-0.1.04
-=======
         python3.9 -m ensurepip
         cd /usr/local/counter-processor-1.06
->>>>>>> upstream/develop
         pip3 install -r requirements.txt
 
 See the :doc:`/admin/make-data-count` section of the Admin Guide for how to configure and run Counter Processor.
