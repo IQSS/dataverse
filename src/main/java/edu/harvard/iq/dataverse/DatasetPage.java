@@ -387,6 +387,8 @@ public class DatasetPage implements java.io.Serializable {
     private boolean showIngestSuccess;
     
     private Boolean archivable = null;
+    private Boolean checkForArchivalCopy;
+    private Boolean supportsDelete;
     private HashMap<Long,Boolean> versionArchivable = new HashMap<>();
     private Boolean someVersionArchived = null;
 
@@ -6152,19 +6154,33 @@ public class DatasetPage implements java.io.Serializable {
         if (thisVersionArchivable == null) {
             // If this dataset isn't in an archivable collection return false
             thisVersionArchivable = false;
+            boolean requiresEarlierVersionsToBeArchived = settingsWrapper.isTrueForKey(SettingsServiceBean.Key.ArchiverOnlyIfEarlierVersionsAreArchived, false);
             if (isArchivable()) {
-                boolean checkForArchivalCopy = false;
                 // Otherwise, we need to know if the archiver is single-version-only
                 // If it is, we have to check for an existing archived version to answer the
                 // question
                 String className = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ArchiverClassName, null);
                 if (className != null) {
                     try {
-                        Class<?> clazz = Class.forName(className);
-                        Method m = clazz.getMethod("isSingleVersion", SettingsWrapper.class);
-                        Object[] params = { settingsWrapper };
-                        checkForArchivalCopy = (Boolean) m.invoke(null, params);
+                        DatasetVersion targetVersion = dataset.getVersions().stream()
+                                .filter(v -> v.getId().equals(id)).findFirst().orElse(null);
+                        if (requiresEarlierVersionsToBeArchived) {// Find the specific version by id
+                            DatasetVersion priorVersion = DatasetUtil.getPriorVersion(targetVersion);
 
+                            if (priorVersion== null || (isVersionArchivable(priorVersion.getId())
+                                    && ArchiverUtil.isVersionArchived(priorVersion))) {
+                                thisVersionArchivable = true;
+                            }
+                        }
+                        if (checkForArchivalCopy == null) {
+                            //Only check once
+                            Class<?> clazz = Class.forName(className);
+                            Method m = clazz.getMethod("isSingleVersion", SettingsWrapper.class);
+                            Method m2 = clazz.getMethod("supportsDelete");
+                            Object[] params = { settingsWrapper };
+                            checkForArchivalCopy = (Boolean) m.invoke(null, params);
+                            supportsDelete = (Boolean) m2.invoke(null);
+                        }
                         if (checkForArchivalCopy) {
                             // If we have to check (single version archiving), we can't allow archiving if
                             // one version is already archived (or attempted - any non-null status)
@@ -6175,16 +6191,12 @@ public class DatasetPage implements java.io.Serializable {
                             // the status is null or the archiver can delete prior runs and status isn't success,
                             // we can archive, so return true
                             // Find the specific version by id
-                            DatasetVersion targetVersion = dataset.getVersions().stream()
-                                    .filter(v -> v.getId().equals(id))
-                                    .findFirst()
-                                    .orElse(null);
                             String status = targetVersion.getArchivalCopyLocationStatus();
                             thisVersionArchivable = (status == null) || ((!status.equals(DatasetVersion.ARCHIVAL_STATUS_SUCCESS) && (!status.equals(DatasetVersion.ARCHIVAL_STATUS_PENDING)) && supportsDelete));
                         }
                     } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
                             | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                        logger.warning("Failed to call isSingleVersion on configured archiver class: " + className);
+                        logger.warning("Failed to call methods on configured archiver class: " + className);
                         e.printStackTrace();
                     }
                 }
