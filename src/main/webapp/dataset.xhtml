@@ -21,6 +21,7 @@
             <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
             <ui:param name="deaccessioned" value="#{version.deaccessioned}"/>
             <ui:param name="locked" value="#{DatasetPage.locked}"/>
+            <ui:param name="showDataverseHeader" value="#{!DatasetPage.anonymizedAccess}"/>
             <ui:param name="anonymizedAccess" value="#{DatasetPage.anonymizedAccess}"/>
             <ui:param name="anonymizedAccessEnabled" value="#{DatasetPage.anonymizedAccessEnabled}"/>
             <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
