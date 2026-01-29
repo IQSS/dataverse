@@ -15,6 +15,7 @@ public class NewTemplateDTO {
     private List<DatasetField> datasetFields;
     private Map<String, String> instructionsMap;
     private boolean isDefault;
+    private Map<String, String> termsOfUseAndAccess;
 
     public static NewTemplateDTO fromRequestBody(String requestBody, JsonParser jsonParser) throws JsonParseException {
         NewTemplateDTO newTemplateDTO = new NewTemplateDTO();
@@ -25,7 +26,8 @@ public class NewTemplateDTO {
         newTemplateDTO.datasetFields = jsonParser.parseMultipleFields(jsonObject);
         newTemplateDTO.instructionsMap = parseRequestBodyInstructionsMap(jsonObject);
         newTemplateDTO.isDefault = jsonObject.getBoolean("isDefault", false);
-
+        newTemplateDTO.termsOfUseAndAccess = parseRequestBodyTerms(jsonObject);
+               
         return newTemplateDTO;
     }
 
@@ -57,6 +59,44 @@ public class NewTemplateDTO {
 
     public boolean isDefault() {
         return isDefault;
+    }
+    
+    private static Map<String, String> parseRequestBodyTerms(JsonObject jsonObject){
+        Map<String, String> termsMap = new HashMap<>();
+        JsonArray termsJsonArray = jsonObject.getJsonArray("termsOfUseAndAccess");
+        if (termsJsonArray == null) {
+            return null;
+        }
+        /*
+                License license = termsOfUseAndAccess.getLicense();
+        return jsonObjectBuilder()
+                .add("id", termsOfUseAndAccess.getId())
+                .add("license", license != null ? json(license) : null)
+                .add("termsOfUse", termsOfUseAndAccess.getTermsOfUse())
+                .add("termsOfAccess", termsOfUseAndAccess.getTermsOfAccess())
+                .add("confidentialityDeclaration", termsOfUseAndAccess.getConfidentialityDeclaration())
+                .add("specialPermissions", termsOfUseAndAccess.getSpecialPermissions())
+                .add("restrictions", termsOfUseAndAccess.getRestrictions())
+                .add("citationRequirements", termsOfUseAndAccess.getCitationRequirements())
+                .add("depositorRequirements", termsOfUseAndAccess.getDepositorRequirements())
+                .add("conditions", termsOfUseAndAccess.getConditions())
+                .add("disclaimer", termsOfUseAndAccess.getDisclaimer())
+                .add("dataAccessPlace", termsOfUseAndAccess.getDataAccessPlace())
+                .add("originalArchive", termsOfUseAndAccess.getOriginalArchive())
+                .add("availabilityStatus", termsOfUseAndAccess.getAvailabilityStatus())
+                .add("sizeOfCollection", termsOfUseAndAccess.getSizeOfCollection())
+                .add("studyCompletion", termsOfUseAndAccess.getStudyCompletion())
+                .add("contactForAccess", termsOfUseAndAccess.getContactForAccess())
+                .add("fileAccessRequest", termsOfUseAndAccess.isFileAccessRequest());
+        */
+        
+        for (JsonObject instructionJsonObject : termsJsonArray.getValuesAs(JsonObject.class)) {
+            termsMap.put(
+                    instructionJsonObject.getString("instructionField"),
+                    instructionJsonObject.getString("instructionText")
+            );
+        }
+        return termsMap;
     }
 
     private static Map<String, String> parseRequestBodyInstructionsMap(JsonObject jsonObject) {

@@ -2729,10 +2729,6 @@ public class DataversesIT {
                 .body("data[0].instructions[0].instructionField", equalTo("author"))
                 .body("data[0].instructions[0].instructionText", equalTo("The author data"))
                 .body("data[0].dataverseAlias", equalTo(dataverseAlias));
-        
-                
-            // Remove default template
-            System.out.print("***************: " + dataverseAlias );
             
             Response removeDefaultResp = UtilIT.removeDefaultTemplate(dataverseAlias, apiToken);
             removeDefaultResp.prettyPrint();
