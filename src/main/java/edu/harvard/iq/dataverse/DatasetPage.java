@@ -6154,7 +6154,7 @@ public class DatasetPage implements java.io.Serializable {
         if (thisVersionArchivable == null) {
             // If this dataset isn't in an archivable collection return false
             thisVersionArchivable = false;
-            boolean requiresEarlierVersionsToBeArchived = settingsWrapper.isTrueForKey(SettingsServiceBean.Key.ArchiverOnlyIfEarlierVersionsAreArchived, false);
+            boolean requiresEarlierVersionsToBeArchived = settingsWrapper.isTrueForKey(SettingsServiceBean.Key.ArchiveOnlyIfEarlierVersionsAreArchived, false);
             if (isArchivable()) {
                 // Otherwise, we need to know if the archiver is single-version-only
                 // If it is, we have to check for an existing archived version to answer the

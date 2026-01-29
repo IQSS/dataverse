@@ -90,7 +90,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
         // this.requestedSettings won't be set yet in the workflow case, so set it now (used in getNumberOfBagGeneratorThreads)
         this.requestedSettings.putAll(requestedSettings);
         // Check if earlier versions must be archived first
-        String requireEarlierArchivedValue = requestedSettings.get(SettingsServiceBean.Key.ArchiverOnlyIfEarlierVersionsAreArchived.toString());
+        String requireEarlierArchivedValue = requestedSettings.get(SettingsServiceBean.Key.ArchiveOnlyIfEarlierVersionsAreArchived.toString());
         boolean requireEarlierArchived = Boolean.parseBoolean(requireEarlierArchivedValue);
         if (requireEarlierArchived) {
         

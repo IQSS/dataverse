@@ -2263,6 +2263,13 @@ At present, archiving classes include the DuraCloudSubmitToArchiveCommand, Local
 
 All current options support the :ref:`Archival Status API` calls and the same status is available in the dataset page version table (for contributors/those who could view the unpublished dataset, with more detail available to superusers).
 
+Two settings that can be used with all current Archivers are:
+
+- \:BagGeneratorThreads - the number of threads to use when adding data files to the zipped bag. The default is 2. Values of 4 or more may increase performance on larger machines but may cause problems if file access is throttled
+- \:ArchiveOnlyIfEarlierVersionsAreArchived - when true, requires dataset versions to be archived in order by confirming that all prior versions have been successfully archived before allowing a new version to be archived. Default is false 
+
+These must be included in the \:ArchiverSettings for the Archiver to work
+ 
 .. _Duracloud Configuration:
 
 Duracloud Configuration
@@ -5333,6 +5340,11 @@ This setting specifies which storage system to use by identifying the particular
 
 For examples, see the specific configuration above in :ref:`BagIt Export`.
  
+:ArchiveOnlyIfEarlierVersionsAreArchived
+++++++++++++++++++++++++++++++++++++++++
+
+This setting, if true, only allows creation of an archival Bag for a dataset version if all prior versions have been successfully archived. The default is false (any version can be archived independently as long as other settings allow it)
+         
 :ArchiverSettings
 +++++++++++++++++
 

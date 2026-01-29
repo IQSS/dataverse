@@ -489,7 +489,7 @@ public class SettingsServiceBean {
          * Only create an archival Bag for a dataset version if all prior versions have
          * been successfully archived
          */
-        ArchiverOnlyIfEarlierVersionsAreArchived,
+        ArchiveOnlyIfEarlierVersionsAreArchived,
         
         /**
          * Custom settings for each archiver. See list below.
