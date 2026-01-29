@@ -97,36 +97,31 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
             Dataset dataset = version.getDataset();
             List<DatasetVersion> versions = dataset.getVersions();
 
-            // Check all earlier versions (those with version numbers less than current)
-            for (DatasetVersion earlierVersion : versions) {
-                // Skip the current version and any versions that come after it
-                if (earlierVersion.getId().equals(version.getId())) {
-                    continue;
-                }
+            boolean foundCurrent = false;
 
-                // Compare version numbers to ensure we only check earlier versions
-                if (earlierVersion.getVersionNumber() != null && version.getVersionNumber() != null) {
-                    if (earlierVersion.getVersionNumber() < version.getVersionNumber()
-                            || (earlierVersion.getVersionNumber().equals(version.getVersionNumber())
-                                    && earlierVersion.getMinorVersionNumber() < version.getMinorVersionNumber())) {
-
-                        // Check if this earlier version has been successfully archived
-                        String archivalStatus = earlierVersion.getArchivalCopyLocationStatus();
-                        if (archivalStatus == null || !archivalStatus.equals(DatasetVersion.ARCHIVAL_STATUS_SUCCESS)
+            // versions are ordered, all versions after the current one have lower
+            // major/minor version numbers
+            for (DatasetVersion versionInLoop : versions) {
+                if (foundCurrent) {
+                    // Once foundCurrent is true, we are looking at prior versions
+                    // Check if this earlier version has been successfully archived
+                    String archivalStatus = versionInLoop.getArchivalCopyLocationStatus();
+                    if (archivalStatus == null || !archivalStatus.equals(DatasetVersion.ARCHIVAL_STATUS_SUCCESS)
 //                                || !archivalStatus.equals(DatasetVersion.ARCHIVAL_STATUS_OBSOLETE)
-                        ) {
-                            JsonObjectBuilder statusObjectBuilder = Json.createObjectBuilder();
-                            statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
-                            statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE,
-                                    "Successful archiving of earlier versions is required.");
-                            version.setArchivalCopyLocation(statusObjectBuilder.build().toString());
-                            return new Failure(
-                                    "Earlier versions must be successfully archived first",
-                                    "Archival prerequisites not met"
-                                );
-                        }
+                    ) {
+                        JsonObjectBuilder statusObjectBuilder = Json.createObjectBuilder();
+                        statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
+                        statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE,
+                                "Successful archiving of earlier versions is required.");
+                        version.setArchivalCopyLocation(statusObjectBuilder.build().toString());
+                        return new Failure("Earlier versions must be successfully archived first",
+                                "Archival prerequisites not met");
                     }
                 }
+                if (versionInLoop.equals(version)) {
+                    foundCurrent = true;
+                }
+
             }
         }
         // Delegate to the archiver-specific implementation
