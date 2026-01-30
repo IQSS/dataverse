@@ -48,6 +48,7 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntryRequest;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.compress.archivers.zip.ZipFile.Builder;
 import org.apache.commons.compress.parallel.InputStreamSupplier;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.hc.client5.http.ClientProtocolException;
@@ -466,57 +467,54 @@ public class BagGenerator {
 
     public void validateBag(String bagId) {
         logger.info("Validating Bag");
-        ZipFile zf = null;
-        InputStream is = null;
         try {
             File bagFile = getBagFile(bagId);
-            zf = ZipFile.builder().setFile(bagFile).get();
-            ZipArchiveEntry entry = zf.getEntry(getValidName(bagId) + "/manifest-sha1.txt");
-            if (entry != null) {
-                logger.info("SHA1 hashes used");
-                hashtype = DataFile.ChecksumType.SHA1;
-            } else {
-                entry = zf.getEntry(getValidName(bagId) + "/manifest-sha512.txt");
+            try (ZipFile zf = ZipFile.builder().setFile(bagFile).get()) {
+                ZipArchiveEntry entry = zf.getEntry(getValidName(bagId) + "/manifest-sha1.txt");
                 if (entry != null) {
-                    logger.info("SHA512 hashes used");
-                    hashtype = DataFile.ChecksumType.SHA512;
+                    logger.info("SHA1 hashes used");
+                    hashtype = DataFile.ChecksumType.SHA1;
                 } else {
-                    entry = zf.getEntry(getValidName(bagId) + "/manifest-sha256.txt");
+                    entry = zf.getEntry(getValidName(bagId) + "/manifest-sha512.txt");
                     if (entry != null) {
-                        logger.info("SHA256 hashes used");
-                        hashtype = DataFile.ChecksumType.SHA256;
+                        logger.info("SHA512 hashes used");
+                        hashtype = DataFile.ChecksumType.SHA512;
                     } else {
-                        entry = zf.getEntry(getValidName(bagId) + "/manifest-md5.txt");
+                        entry = zf.getEntry(getValidName(bagId) + "/manifest-sha256.txt");
                         if (entry != null) {
-                            logger.info("MD5 hashes used");
-                            hashtype = DataFile.ChecksumType.MD5;
+                            logger.info("SHA256 hashes used");
+                            hashtype = DataFile.ChecksumType.SHA256;
+                        } else {
+                            entry = zf.getEntry(getValidName(bagId) + "/manifest-md5.txt");
+                            if (entry != null) {
+                                logger.info("MD5 hashes used");
+                                hashtype = DataFile.ChecksumType.MD5;
+                            }
                         }
                     }
                 }
+                if (entry == null)
+                    throw new IOException("No manifest file found");
+                try (InputStream is = zf.getInputStream(entry)) {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                    String line = br.readLine();
+                    while (line != null) {
+                        logger.fine("Hash entry: " + line);
+                        int breakIndex = line.indexOf(' ');
+                        String hash = line.substring(0, breakIndex);
+                        String path = line.substring(breakIndex + 1);
+                        logger.fine("Adding: " + path + " with hash: " + hash);
+                        checksumMap.put(path, hash);
+                        line = br.readLine();
+                    }
+                }
             }
-            if (entry == null)
-                throw new IOException("No manifest file found");
-            is = zf.getInputStream(entry);
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            String line = br.readLine();
-            while (line != null) {
-                logger.fine("Hash entry: " + line);
-                int breakIndex = line.indexOf(' ');
-                String hash = line.substring(0, breakIndex);
-                String path = line.substring(breakIndex + 1);
-                logger.fine("Adding: " + path + " with hash: " + hash);
-                checksumMap.put(path, hash);
-                line = br.readLine();
-            }
-            IOUtils.closeQuietly(is);
             logger.info("HashMap Map contains: " + checksumMap.size() + " entries");
             checkFiles(checksumMap, bagFile);
         } catch (IOException io) {
             logger.log(Level.SEVERE, "Could not validate Hashes", io);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Could not validate Hashes", e);
-        } finally {
-            IOUtils.closeQuietly(zf);
         }
         return;
     }
@@ -667,10 +665,8 @@ public class BagGenerator {
             try {
                 if ((childHash == null) | ignorehashes) {
                     // Generate missing hash
-                    InputStream inputStream = null;
-                    try {
-                        inputStream = getInputStreamSupplier(dataUrl).get();
-
+                    
+                    try (InputStream inputStream = getInputStreamSupplier(dataUrl).get()){
                         if (hashtype != null) {
                             if (hashtype.equals(DataFile.ChecksumType.SHA1)) {
                                 childHash = DigestUtils.sha1Hex(inputStream);
@@ -686,8 +682,6 @@ public class BagGenerator {
                     } catch (IOException e) {
                         logger.severe("Failed to read " + childPath);
                         throw e;
-                    } finally {
-                        IOUtils.closeQuietly(inputStream);
                     }
                     if (childHash != null) {
                         JsonObject childHashObject = new JsonObject();
