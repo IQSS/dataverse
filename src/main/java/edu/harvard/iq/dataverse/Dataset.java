@@ -406,7 +406,7 @@ public class Dataset extends DvObjectContainer {
             in a pre-save validation SEK 12/6/2021
             */
             for (FileMetadata fm : latestVersion.getFileMetadatas()) {
-                FileMetadata newFm = fm.createCopy();
+                FileMetadata newFm = fm.createCopyInVersion(dsv);
                 newFm.setInPriorVersion(true);
 
                 //fmVarMet would be updated in DCT
@@ -418,8 +418,6 @@ public class Dataset extends DvObjectContainer {
                         newFm.copyVarGroups(fm.getVarGroups());
                     }
                 }
-                
-                dsv.getFileMetadatas().add(newFm);
             }
             
             if (latestVersion.getTermsOfUseAndAccess()!= null){

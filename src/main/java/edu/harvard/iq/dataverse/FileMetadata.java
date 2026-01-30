@@ -154,22 +154,21 @@ public class FileMetadata implements Serializable {
     private Collection<VariableMetadata> variableMetadatas;
         
     /**
-     * Creates a copy of {@code this}, with identical business logic fields.
-     * E.g., {@link #label} would be duplicated; {@link #version} will not.
+     * Creates a copy of {@code this}, with identical business logic fields, making the bi-drectional connections to the specified version.
      * 
-     * @return A copy of {@code this}, except for the DB-related data.
+     * @return A copy of {@code this}
      */
-    public FileMetadata createCopy() {
+    public FileMetadata createCopyInVersion(DatasetVersion dsv) {
         FileMetadata fmd = new FileMetadata();
         fmd.setCategories(new LinkedList<>(getCategories()) );
         fmd.setDataFile( getDataFile() );
-        fmd.setDatasetVersion( getDatasetVersion() );
+        fmd.setDatasetVersion( dsv );
         fmd.setDescription( getDescription() );
         fmd.setLabel( getLabel() );
         fmd.setRestricted( isRestricted() );
         fmd.setDirectoryLabel(getDirectoryLabel());
         fmd.setProvFreeForm(getProvFreeForm());
-        
+        dsv.getFileMetadatas().add(fmd);
         return fmd;
     }
     

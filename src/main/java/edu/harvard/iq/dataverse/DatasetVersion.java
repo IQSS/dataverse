@@ -706,8 +706,7 @@ public class DatasetVersion implements Serializable {
             */
             
             for (FileMetadata fm : this.getFileMetadatas()) {
-                FileMetadata newFm = fm.createCopy();
-                dsv.getFileMetadatas().add(newFm);
+                fm.createCopyInVersion(dsv);
             }
             
             if (this.getTermsOfUseAndAccess()!= null){

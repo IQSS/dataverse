@@ -61,13 +61,11 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
 
         registerExternalVocabValuesIfAny(ctxt, newVersion);
 
-        List<FileMetadata> newVersionMetadatum = new ArrayList<>(latest.getFileMetadatas().size());
-        for ( FileMetadata fmd : latest.getFileMetadatas() ) {
-            FileMetadata fmdCopy = fmd.createCopy();
-            fmdCopy.setDatasetVersion(newVersion);
-            newVersionMetadatum.add( fmdCopy );
+        List<FileMetadata> latestVersionMetadata = latest.getFileMetadatas();
+        newVersion.setFileMetadatas(new ArrayList<>(latest.getFileMetadatas().size()));
+        for ( FileMetadata fmd : latestVersionMetadata ) {
+            fmd.createCopyInVersion(newVersion);
         }
-        newVersion.setFileMetadatas(newVersionMetadatum);
         
         //moving prepare Dataset here
         //because it includes validation and we need the validation
