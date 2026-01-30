@@ -168,6 +168,7 @@ public class FileMetadata implements Serializable {
         fmd.setLabel( getLabel() );
         fmd.setRestricted( isRestricted() );
         fmd.setDirectoryLabel(getDirectoryLabel());
+        fmd.setProvFreeForm(getProvFreeForm());
         
         return fmd;
     }
@@ -245,38 +246,26 @@ public class FileMetadata implements Serializable {
     
     public List<DataFileCategory> getCategories() {
         if (fileCategories != null) {
-            /*
-             * fileCategories can sometimes be an
-             * org.eclipse.persistence.indirection.IndirectList When that happens, the
-             * comparator in the Collections.sort below is not called, possibly due to
-             * https://bugs.eclipse.org/bugs/show_bug.cgi?id=446236 which is Java 1.8+
-             * specific Converting to an ArrayList solves the problem, but the longer term
-             * solution may be in avoiding the IndirectList or moving to a new version of
-             * the jar it is in.
-             */
-            if (!(fileCategories instanceof ArrayList)) {
-                List<DataFileCategory> newDFCs = new ArrayList<DataFileCategory>();
-                for (DataFileCategory fdc : fileCategories) {
-                    newDFCs.add(fdc);
+            synchronized (this) {
+                if (!(fileCategories instanceof ArrayList)) {
+                    fileCategories = new ArrayList<>(fileCategories);
                 }
-                setCategories(newDFCs);
+                Collections.sort(fileCategories, FileMetadata.compareByNameWithSortCategories);
             }
-            Collections.sort(fileCategories, FileMetadata.compareByNameWithSortCategories);
         }
         return fileCategories;
     }
-    
-    public void setCategories(List<DataFileCategory> fileCategories) {
+
+    public synchronized void setCategories(List<DataFileCategory> fileCategories) {
         this.fileCategories = fileCategories; 
     }
-    
-    public void addCategory(DataFileCategory category) {
+
+    public synchronized void addCategory(DataFileCategory category) {
         if (fileCategories == null) {
             fileCategories = new ArrayList<>();
         }
         fileCategories.add(category);
     }
-
     /**
      * Retrieve categories 
      * @return 
