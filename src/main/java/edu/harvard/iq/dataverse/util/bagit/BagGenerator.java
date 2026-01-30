@@ -142,6 +142,13 @@ public class BagGenerator {
     private OREMap oremap;
 
     static PrintWriter pw = null;
+    
+    //Holey Bags
+    private long maxDataFileSize = Long.MAX_VALUE;
+    private long maxTotalDataSize = Long.MAX_VALUE;
+    private long currentBagDataSize = 0;
+    private StringBuilder fetchFileContent = new StringBuilder();
+    private boolean usingFetchFile = false;
 
     // Bag-info.txt field labels
     private static final String CONTACT_NAME = "Contact-Name: ";
@@ -222,6 +229,13 @@ public class BagGenerator {
             logger.warning("Failed to initialize HTTP client");
             e.printStackTrace();
         }
+        initializeHoleyBagLimits();
+    }
+
+    private void initializeHoleyBagLimits() {
+        this.maxDataFileSize = JvmSettings.BAGIT_HOLEY_MAX_FILE_SIZE.lookupOptional(Long.class).orElse(Long.MAX_VALUE);
+        this.maxTotalDataSize = JvmSettings.BAGIT_HOLEY_MAX_DATA_SIZE.lookupOptional(Long.class).orElse(Long.MAX_VALUE);
+        logger.fine("BagGenerator size limits - maxDataFileSize: " + maxDataFileSize + ", maxTotalDataSize: " + maxTotalDataSize);
     }
 
     public void setIgnoreHashes(boolean val) {
@@ -363,6 +377,8 @@ public class BagGenerator {
 
         logger.fine("Creating bag: " + bagName);
 
+        writeFetchFile();
+        
         ZipArchiveOutputStream zipArchiveOutputStream = new ZipArchiveOutputStream(outputStream);
 
         /*
@@ -570,7 +586,6 @@ public class BagGenerator {
             } else {
                 resourceUsed[index] = true;
                 // add item
-                // ToDo
                 String dataUrl = child.get(JsonLDTerm.schemaOrg("sameAs").getLabel()).getAsString();
                 logger.fine("File url: " + dataUrl);
                 String childTitle = child.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString();
@@ -584,6 +599,15 @@ public class BagGenerator {
                 JsonElement directoryLabel = child.get(JsonLDTerm.DVCore("directoryLabel").getLabel());
                 if (directoryLabel != null) {
                     childPath = currentPath + directoryLabel.getAsString() + "/" + childTitle;
+                }
+                // Get file size
+                Long fileSize = null;
+                if (child.has(JsonLDTerm.filesize.getLabel())) {
+                    fileSize = child.get(JsonLDTerm.filesize.getLabel()).getAsLong();
+                }
+                if(fileSize == null) {
+                    logger.severe("File size missing for " + childPath);
+                    throw new IOException("Unable to create bag due to missing file size");
                 }
 
                 String childHash = null;
@@ -614,7 +638,7 @@ public class BagGenerator {
                 }
                 try {
                     if ((childHash == null) | ignorehashes) {
-                        // Generate missing hashInputStream inputStream = null;
+                        // Generate missing hash
                         try (InputStream inputStream = getInputStreamSupplier(dataUrl).get()) {
 
                             if (hashtype != null) {
@@ -644,17 +668,30 @@ public class BagGenerator {
                             logger.warning("Unable to calculate a " + hashtype + " for " + dataUrl);
                         }
                     }
-                    logger.fine("Requesting: " + childPath + " from " + dataUrl);
-                    createFileFromURL(childPath, dataUrl);
+                    
+                    // Add file to bag or fetch file
+                    if (shouldAddToFetchFile(fileSize)) {
+                        // Add to fetch file instead of including in bag
+                        logger.fine("Adding to fetch file: " + childPath + " from " + dataUrl);
+                        addToFetchFile(dataUrl, fileSize, childPath);
+                        usingFetchFile = true;
+                    } else {
+                        // Add file to bag as before
+                        logger.fine("Requesting: " + childPath + " from " + dataUrl);
+                        createFileFromURL(childPath, dataUrl);
+                        if (fileSize != null) {
+                            currentBagDataSize += fileSize;
+                        }
+                    }
+                    
                     dataCount++;
                     if (dataCount % 1000 == 0) {
                         logger.info("Retrieval in progress: " + dataCount + " files retrieved");
                     }
-                    if (child.has(JsonLDTerm.filesize.getLabel())) {
-                        Long size = child.get(JsonLDTerm.filesize.getLabel()).getAsLong();
-                        totalDataSize += size;
-                        if (size > maxFileSize) {
-                            maxFileSize = size;
+                    if (fileSize != null) {
+                        totalDataSize += fileSize;
+                        if (fileSize > maxFileSize) {
+                            maxFileSize = fileSize;
                         }
                     }
                     if (child.has(JsonLDTerm.schemaOrg("fileFormat").getLabel())) {
@@ -671,6 +708,39 @@ public class BagGenerator {
                 pidMap.put(child.get("@id").getAsString(), childPath);
 
             }
+        }
+    }
+
+    // Helper method to determine if file should go to fetch file
+    private boolean shouldAddToFetchFile(long fileSize) {
+        
+        // Check individual file size limit
+        if (fileSize > maxDataFileSize) {
+            logger.fine("File size " + fileSize + " exceeds max data file size " + maxDataFileSize);
+            return true;
+        }
+        
+        // Check total bag size limit
+        if (currentBagDataSize + fileSize > maxTotalDataSize) {
+            logger.fine("Adding file would exceed max total data size. Current: " + currentBagDataSize + 
+                       ", File: " + fileSize + ", Max: " + maxTotalDataSize);
+            return true;
+        }
+        
+        return false;
+    }
+    
+ // Method to append to fetch file content
+    private void addToFetchFile(String url, long size, String filename) {
+        // Format: URL size filename
+        fetchFileContent.append(url).append(" ").append(Long.toString(size)).append(" ").append(filename).append("\n");
+    }
+
+    // Method to write fetch file to bag (call this before finalizing the bag)
+    private void writeFetchFile() throws IOException, ExecutionException, InterruptedException {
+        if (usingFetchFile && fetchFileContent.length() > 0) {
+            logger.info("Creating fetch.txt file for holey bag");
+            createFileFromString("fetch.txt", fetchFileContent.toString());
         }
     }
 
