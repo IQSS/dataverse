@@ -4031,6 +4031,12 @@ dataverse.feature.only-update-datacite-when-needed
 
 Only contact DataCite to update a DOI after checking to see if DataCite has outdated information (for efficiency, lighter load on DataCite, especially when using file DOIs).
 
+.. _dataverse.feature.legacy-format-in-head:
+
+dataverse.feature.legacy-format-in-head
++++++++++++++++++++++++++++++++++++++++
+
+Instead of Croissant, use the legacy format (Schema.org JSON-LD) in the head of dataset landing pages. See :ref:`croissant-head`.
 
 
 
