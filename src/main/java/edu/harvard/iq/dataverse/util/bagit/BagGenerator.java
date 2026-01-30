@@ -20,10 +20,11 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Map.Entry;
@@ -35,7 +36,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.archivers.zip.ParallelScatterZipCreator;
 import org.apache.commons.compress.archivers.zip.ScatterZipOutputStream;
@@ -77,7 +77,6 @@ import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.BagGeneratorThreads;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
-import java.util.Optional;
 
 public class BagGenerator {
 
@@ -254,7 +253,15 @@ public class BagGenerator {
             resourceUsed = new Boolean[aggregates.size() + 1];
             // Process current container (the aggregation itself) and its
             // children
-            processContainer(aggregation, currentPath);
+            // Recursively collect all files from the entire tree, start with an empty set of processedContainers
+            List<FileEntry> allFiles = new ArrayList<>();
+            collectAllFiles(aggregation, currentPath, allFiles);
+
+            // Sort files by size (smallest first)
+            Collections.sort(allFiles);
+
+            // Process all files in sorted order
+            processAllFiles(allFiles);
         }
         // Create manifest files
         // pid-mapping.txt - a DataOne recommendation to connect ids and
@@ -495,27 +502,29 @@ public class BagGenerator {
         return bagName.replaceAll("\\W", "-");
     }
 
-    private void processContainer(JsonObject item, String currentPath)
+    // Collect all files recursively and process containers to create dirs in the zip
+    private void collectAllFiles(JsonObject item, String currentPath, List<FileEntry> allFiles) 
             throws IOException, ExecutionException, InterruptedException {
         JsonArray children = getChildren(item);
-        HashSet<String> titles = new HashSet<String>();
         String title = null;
         if (item.has(JsonLDTerm.dcTerms("Title").getLabel())) {
             title = item.get("Title").getAsString();
         } else if (item.has(JsonLDTerm.schemaOrg("name").getLabel())) {
             title = item.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString();
         }
-        logger.fine("Adding " + title + "/ to path " + currentPath);
+        logger.fine("Collecting files from " + title + "/ at path " + currentPath);
         currentPath = currentPath + title + "/";
+
+        // Mark this container as processed
+        String containerId = item.get("@id").getAsString();
+
+        // Create directory and update tracking for this container
         int containerIndex = -1;
         try {
             createDir(currentPath);
-            // Add containers to pid map and mark as 'used', but no sha1 hash
-            // value
-            containerIndex = getUnusedIndexOf(item.get("@id").getAsString());
+            containerIndex = getUnusedIndexOf(containerId);
             resourceUsed[containerIndex] = true;
-            pidMap.put(item.get("@id").getAsString(), currentPath);
-
+            pidMap.put(containerId, currentPath);
         } catch (InterruptedException | IOException | ExecutionException e) {
             e.printStackTrace();
             logger.severe(e.getMessage());
@@ -523,159 +532,156 @@ public class BagGenerator {
                 resourceUsed[containerIndex] = false;
             }
             throw new IOException("Unable to create bag");
-
         }
+
         for (int i = 0; i < children.size(); i++) {
-
-            // Find the ith child in the overall array of aggregated
-            // resources
             String childId = children.get(i).getAsString();
-            logger.fine("Processing: " + childId);
+            logger.fine("Examining: " + childId);
             int index = getUnusedIndexOf(childId);
-            if (resourceUsed[index] != null) {
-                System.out.println("Warning: reusing resource " + index);
-            }
 
-            // Aggregation is at index 0, so need to shift by 1 for aggregates
-            // entries
             JsonObject child = aggregates.get(index - 1).getAsJsonObject();
             if (childIsContainer(child)) {
-                // create dir and process children
-                // processContainer will mark this item as used
-                processContainer(child, currentPath);
+                // Recursively collect files from this container
+                collectAllFiles(child, currentPath, allFiles);
             } else {
-                resourceUsed[index] = true;
-                // add item
-                String dataUrl = child.get(JsonLDTerm.schemaOrg("sameAs").getLabel()).getAsString();
-                logger.fine("File url: " + dataUrl);
-                String childTitle = child.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString();
-                if (titles.contains(childTitle)) {
-                    logger.warning("**** Multiple items with the same title in: " + currentPath);
-                    logger.warning("**** Will cause failure in hash and size validation in: " + bagID);
-                } else {
-                    titles.add(childTitle);
-                }
-                String childPath = currentPath + childTitle;
-                JsonElement directoryLabel = child.get(JsonLDTerm.DVCore("directoryLabel").getLabel());
-                if(directoryLabel!=null) {
-                    childPath=currentPath + directoryLabel.getAsString() + "/" + childTitle;
-                }
-                
                 // Get file size
                 Long fileSize = null;
                 if (child.has(JsonLDTerm.filesize.getLabel())) {
                     fileSize = child.get(JsonLDTerm.filesize.getLabel()).getAsLong();
                 }
-                if(fileSize == null) {
-                    logger.severe("File size missing for " + childPath);
+                if (fileSize == null) {
+                    logger.severe("File size missing for child: " + childId);
                     throw new IOException("Unable to create bag due to missing file size");
                 }
 
-                String childHash = null;
-                if (child.has(JsonLDTerm.checksum.getLabel())) {
-                    ChecksumType childHashType = ChecksumType.fromString(
-                            child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@type").getAsString());
-                    if (hashtype == null) {
-                        //If one wasn't set as a default, pick up what the first child with one uses
-                        hashtype = childHashType;
-                    }
-                    if (hashtype != null && !hashtype.equals(childHashType)) {
-                        logger.warning("Multiple hash values in use - will calculate " + hashtype.toString()
-                            + " hashes for " + childTitle);
-                    } else {
-                        childHash = child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@value").getAsString();
-                        if (checksumMap.containsValue(childHash)) {
-                            // Something else has this hash
-                            logger.warning("Duplicate/Collision: " + child.get("@id").getAsString() + " has SHA1 Hash: "
-                                + childHash + " in: " + bagID);
-                        }
-                        logger.fine("Adding " + childPath + " with hash " + childHash + " to checksumMap");
-                        checksumMap.put(childPath, childHash);
-                    }
-                }
-                if ((hashtype == null) | ignorehashes) {
-                    // Pick sha512 when ignoring hashes or none exist
-                    hashtype = DataFile.ChecksumType.SHA512;
-                }
-                try {
-                    if ((childHash == null) | ignorehashes) {
-                        // Generate missing hash
-                        InputStream inputStream = null;
-                        try {
-                            inputStream = getInputStreamSupplier(dataUrl).get();
-
-                            if (hashtype != null) {
-                                if (hashtype.equals(DataFile.ChecksumType.SHA1)) {
-                                    childHash = DigestUtils.sha1Hex(inputStream);
-                                } else if (hashtype.equals(DataFile.ChecksumType.SHA256)) {
-                                    childHash = DigestUtils.sha256Hex(inputStream);
-                                } else if (hashtype.equals(DataFile.ChecksumType.SHA512)) {
-                                    childHash = DigestUtils.sha512Hex(inputStream);
-                                } else if (hashtype.equals(DataFile.ChecksumType.MD5)) {
-                                    childHash = DigestUtils.md5Hex(inputStream);
-                                }
-                            }
-
-                        } catch (IOException e) {
-                            logger.severe("Failed to read " + childPath);
-                            throw e;
-                        } finally {
-                            IOUtils.closeQuietly(inputStream);
-                        }
-                        if (childHash != null) {
-                            JsonObject childHashObject = new JsonObject();
-                            childHashObject.addProperty("@type", hashtype.toString());
-                            childHashObject.addProperty("@value", childHash);
-                            child.add(JsonLDTerm.checksum.getLabel(), (JsonElement) childHashObject);
-
-                            checksumMap.put(childPath, childHash);
-                        } else {
-                            logger.warning("Unable to calculate a " + hashtype + " for " + dataUrl);
-                        }
-                    }
-                    
-                    // Add file to bag or fetch file
-                    if (shouldAddToFetchFile(fileSize)) {
-                        // Add to fetch file instead of including in bag
-                        logger.fine("Adding to fetch file: " + childPath + " from " + dataUrl);
-                        addToFetchFile(dataUrl, fileSize, childPath);
-                        usingFetchFile = true;
-                    } else {
-                        // Add file to bag as before
-                        logger.fine("Requesting: " + childPath + " from " + dataUrl);
-                        createFileFromURL(childPath, dataUrl);
-                        if (fileSize != null) {
-                            currentBagDataSize += fileSize;
-                        }
-                    }
-                    
-                    dataCount++;
-                    if (dataCount % 1000 == 0) {
-                        logger.info("Retrieval in progress: " + dataCount + " files retrieved");
-                    }
-                    if (fileSize != null) {
-                        totalDataSize += fileSize;
-                        if (fileSize > maxFileSize) {
-                            maxFileSize = fileSize;
-                        }
-                    }
-                    if (child.has(JsonLDTerm.schemaOrg("fileFormat").getLabel())) {
-                        mimetypes.add(child.get(JsonLDTerm.schemaOrg("fileFormat").getLabel()).getAsString());
-                    }
-
-                } catch (Exception e) {
-                    resourceUsed[index] = false;
-                    e.printStackTrace();
-                    throw new IOException("Unable to create bag");
-                }
-
-                // Check for nulls!
-                pidMap.put(child.get("@id").getAsString(), childPath);
-
+                // Store minimal info for sorting - JsonObject is just a reference
+                allFiles.add(new FileEntry(fileSize, child, currentPath, index));
             }
         }
     }
+    
 
+    // Process all files in sorted order
+    private void processAllFiles(List<FileEntry> sortedFiles) 
+            throws IOException, ExecutionException, InterruptedException {
+        
+        if ((hashtype == null) | ignorehashes) {
+            hashtype = DataFile.ChecksumType.SHA512;
+        }
+        
+        for (FileEntry entry : sortedFiles) {
+            // Extract all needed information from the JsonObject reference
+            JsonObject child = entry.jsonObject;
+            String dataUrl = child.get(JsonLDTerm.schemaOrg("sameAs").getLabel()).getAsString();
+            String childTitle = child.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString();
+            
+            // Build full path using stored currentPath
+            String childPath = entry.currentPath + childTitle;
+            JsonElement directoryLabel = child.get(JsonLDTerm.DVCore("directoryLabel").getLabel());
+            if (directoryLabel != null) {
+                childPath = entry.currentPath + directoryLabel.getAsString() + "/" + childTitle;
+            }
+            
+            // Get hash if exists
+            String childHash = null;
+            if (child.has(JsonLDTerm.checksum.getLabel())) {
+                ChecksumType childHashType = ChecksumType.fromString(
+                        child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@type").getAsString());
+                if (hashtype == null) {
+                    hashtype = childHashType;
+                }
+                if (hashtype != null && !hashtype.equals(childHashType)) {
+                    logger.warning("Multiple hash values in use - will calculate " + hashtype.toString()
+                            + " hashes for " + childTitle);
+                } else {
+                    childHash = child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@value").getAsString();
+                }
+            }
+            
+            resourceUsed[entry.resourceIndex] = true;
+            
+            try {
+                if ((childHash == null) | ignorehashes) {
+                    // Generate missing hash
+                    InputStream inputStream = null;
+                    try {
+                        inputStream = getInputStreamSupplier(dataUrl).get();
+
+                        if (hashtype != null) {
+                            if (hashtype.equals(DataFile.ChecksumType.SHA1)) {
+                                childHash = DigestUtils.sha1Hex(inputStream);
+                            } else if (hashtype.equals(DataFile.ChecksumType.SHA256)) {
+                                childHash = DigestUtils.sha256Hex(inputStream);
+                            } else if (hashtype.equals(DataFile.ChecksumType.SHA512)) {
+                                childHash = DigestUtils.sha512Hex(inputStream);
+                            } else if (hashtype.equals(DataFile.ChecksumType.MD5)) {
+                                childHash = DigestUtils.md5Hex(inputStream);
+                            }
+                        }
+
+                    } catch (IOException e) {
+                        logger.severe("Failed to read " + childPath);
+                        throw e;
+                    } finally {
+                        IOUtils.closeQuietly(inputStream);
+                    }
+                    if (childHash != null) {
+                        JsonObject childHashObject = new JsonObject();
+                        childHashObject.addProperty("@type", hashtype.toString());
+                        childHashObject.addProperty("@value", childHash);
+                        child.add(JsonLDTerm.checksum.getLabel(), (JsonElement) childHashObject);
+
+                        checksumMap.put(childPath, childHash);
+                    } else {
+                        logger.warning("Unable to calculate a " + hashtype + " for " + dataUrl);
+                    }
+                } else {
+                    // Hash already exists, add to checksumMap
+                    if (checksumMap.containsValue(childHash)) {
+                        logger.warning("Duplicate/Collision: " + child.get("@id").getAsString() + 
+                                     " has hash: " + childHash + " in: " + bagID);
+                    }
+                    logger.fine("Adding " + childPath + " with hash " + childHash + " to checksumMap");
+                    checksumMap.put(childPath, childHash);
+                }
+                
+                // Add file to bag or fetch file
+                if (shouldAddToFetchFile(entry.size)) {
+                    logger.fine("Adding to fetch file: " + childPath + " from " + dataUrl + 
+                               " (size: " + entry.size + " bytes)");
+                    addToFetchFile(dataUrl, entry.size, childPath);
+                    usingFetchFile = true;
+                } else {
+                    logger.fine("Requesting: " + childPath + " from " + dataUrl + 
+                               " (size: " + entry.size + " bytes)");
+                    createFileFromURL(childPath, dataUrl);
+                    currentBagDataSize += entry.size;
+                }
+                
+                dataCount++;
+                if (dataCount % 1000 == 0) {
+                    logger.info("Retrieval in progress: " + dataCount + " files retrieved");
+                }
+                
+                totalDataSize += entry.size;
+                if (entry.size > maxFileSize) {
+                    maxFileSize = entry.size;
+                }
+                
+                if (child.has(JsonLDTerm.schemaOrg("fileFormat").getLabel())) {
+                    mimetypes.add(child.get(JsonLDTerm.schemaOrg("fileFormat").getLabel()).getAsString());
+                }
+
+            } catch (Exception e) {
+                resourceUsed[entry.resourceIndex] = false;
+                e.printStackTrace();
+                throw new IOException("Unable to create bag");
+            }
+
+            pidMap.put(child.get("@id").getAsString(), childPath);
+        }
+    }
+    
     // Helper method to determine if file should go to fetch file
     private boolean shouldAddToFetchFile(long fileSize) {
         
@@ -1199,5 +1205,24 @@ public class BagGenerator {
         BagGenerator.numConnections = numConnections;
         logger.fine("All BagGenerators will use " + numConnections + " threads");
     }
-
+    
+ // Inner class to hold file information before processing
+    private static class FileEntry implements Comparable<FileEntry> {
+        final long size;
+        final JsonObject jsonObject;  // Direct reference, not a copy
+        final String currentPath;     // Parent directory path
+        final int resourceIndex;      // Still need this for resourceUsed tracking
+        
+        FileEntry(long size, JsonObject jsonObject, String currentPath, int resourceIndex) {
+            this.size = size;
+            this.jsonObject = jsonObject;
+            this.currentPath = currentPath;
+            this.resourceIndex = resourceIndex;
+        }
+        
+        @Override
+        public int compareTo(FileEntry other) {
+            return Long.compare(this.size, other.size);
+        }
+    }
 }
