@@ -506,11 +506,16 @@ public class OREMap {
                 for (String prefix : context.keySet()) {
                     localContext.putIfAbsent(prefix, context.getString(prefix));
                 }
-                JsonObjectBuilder job = Json.createObjectBuilder(datasetFieldService.getExternalVocabularyValue(val));
-                job.add("@id", val);
-                JsonObject extVal = job.build();
-                logger.fine("Adding: " + extVal);
-                vals.add(extVal);
+                JsonObject cachedValue = datasetFieldService.getExternalVocabularyValue(val);
+                if (cachedValue != null) {
+                    JsonObjectBuilder job = Json.createObjectBuilder(cachedValue);
+                    job.add("@id", val);
+                    JsonObject extVal = job.build();
+                    logger.fine("Adding: " + extVal);
+                    vals.add(extVal);
+                } else {
+                    vals.add(val);
+                }
             } else {
                 vals.add(val);
             }
