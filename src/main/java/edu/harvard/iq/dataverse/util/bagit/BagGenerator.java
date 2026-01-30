@@ -299,7 +299,7 @@ public class BagGenerator {
             // children
             // Recursively collect all files from the entire tree, start with an empty set of processedContainers
             List<FileEntry> allFiles = new ArrayList<>();
-            collectAllFiles(aggregation, currentPath, allFiles);
+            collectAllFiles(aggregation, currentPath, allFiles, false);
 
             // Sort files by size (smallest first)
             Collections.sort(allFiles);
@@ -555,20 +555,21 @@ public class BagGenerator {
 
     private void processContainer(JsonObject item, String currentPath) throws IOException {
     // Collect all files recursively and process containers to create dirs in the zip
-    private void collectAllFiles(JsonObject item, String currentPath, List<FileEntry> allFiles) 
+    private void collectAllFiles(JsonObject item, String currentPath, List<FileEntry> allFiles, boolean addTitle) 
             throws IOException {
         JsonArray children = getChildren(item);
         HashSet<String> titles = new HashSet<String>();
 
-        String title = null;
-        if (item.has(JsonLDTerm.dcTerms("Title").getLabel())) {
-            title = item.get("Title").getAsString();
-        } else if (item.has(JsonLDTerm.schemaOrg("name").getLabel())) {
-            title = item.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString();
+        if (addTitle) {
+            String title = null;
+            if (item.has(JsonLDTerm.dcTerms("Title").getLabel())) {
+                title = item.get("Title").getAsString();
+            } else if (item.has(JsonLDTerm.schemaOrg("name").getLabel())) {
+                title = item.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString();
+            }
+            logger.fine("Collecting files from " + title + "/ at path " + currentPath);
+            currentPath = currentPath + title + "/";
         }
-        logger.fine("Collecting files from " + title + "/ at path " + currentPath);
-        currentPath = currentPath + title + "/";
-
         // Mark this container as processed
         String containerId = item.get("@id").getAsString();
 
@@ -602,9 +603,10 @@ public class BagGenerator {
             // Aggregation is at index 0, so need to shift by 1 for aggregates
             // entries
             JsonObject child = aggregates.get(index - 1).getAsJsonObject();
+            // Dataverse does not currently use containers - this is for other variants/future use
             if (childIsContainer(child)) {
                 // Recursively collect files from this container
-                collectAllFiles(child, currentPath, allFiles);
+                collectAllFiles(child, currentPath, allFiles, true);
             } else {
                 // Get file size
                 Long fileSize = null;
@@ -1215,6 +1217,7 @@ public class BagGenerator {
 
     // Logic to decide if this is a container -
     // first check for children, then check for source-specific type indicators
+    // Dataverse does not currently use containers - this is for other variants/future use 
     private static boolean childIsContainer(JsonObject item) {
         if (getChildren(item).size() != 0) {
             return true;
