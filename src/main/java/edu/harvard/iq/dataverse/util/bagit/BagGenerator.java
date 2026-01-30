@@ -49,7 +49,6 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntryRequest;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.apache.commons.compress.archivers.zip.ZipFile.Builder;
 import org.apache.commons.compress.parallel.InputStreamSupplier;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.hc.client5.http.ClientProtocolException;
@@ -593,7 +592,7 @@ public class BagGenerator {
             // Find the ith child in the overall array of aggregated
             // resources
             String childId = children.get(i).getAsString();
-            logger.fine("Examining: " + childId);
+            logger.fine("Processing: " + childId);
             int index = getUnusedIndexOf(childId);
             if (resourceUsed[index] != null) {
                 System.out.println("Warning: reusing resource " + index);
@@ -659,8 +658,8 @@ public class BagGenerator {
             // Get hash if exists
             String childHash = null;
             if (child.has(JsonLDTerm.checksum.getLabel())) {
-                ChecksumType childHashType = ChecksumType.fromString(
-                        child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@type").getAsString());
+                ChecksumType childHashType = ChecksumType
+                        .fromUri(child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@type").getAsString());
                 if (hashtype == null) {
                     hashtype = childHashType;
                 }
