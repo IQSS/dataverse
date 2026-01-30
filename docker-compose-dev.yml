@@ -54,13 +54,13 @@ services:
         -Ddataverse.files.minio1.download-redirect=false
         -Ddataverse.files.minio1.access-key=4cc355_k3y
         -Ddataverse.files.minio1.secret-key=s3cr3t_4cc355_k3y
-        -Ddataverse.files.guestbook-at-request=true
         -Ddataverse.pid.providers=fake
         -Ddataverse.pid.default-provider=fake
         -Ddataverse.pid.fake.type=FAKE
         -Ddataverse.pid.fake.label=FakeDOIProvider
         -Ddataverse.pid.fake.authority=10.5072
         -Ddataverse.pid.fake.shoulder=FK2/
+        #-Ddataverse.files.guestbook-at-request=true
         #-Ddataverse.lang.directory=/dv/lang
     ports:
       - "8080:8080" # HTTP (Dataverse Application)

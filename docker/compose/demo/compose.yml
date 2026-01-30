@@ -20,7 +20,6 @@ services:
         -Ddataverse.files.file1.type=file
         -Ddataverse.files.file1.label=Filesystem
         -Ddataverse.files.file1.directory=${STORAGE_DIR}/store
-        -Ddataverse.files.guestbook-at-request=true
         -Ddataverse.pid.providers=perma1
         -Ddataverse.pid.default-provider=perma1
         -Ddataverse.pid.perma1.type=perma

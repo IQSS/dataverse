@@ -16,6 +16,7 @@ import io.restassured.response.Response;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -487,20 +488,15 @@ public class AccessIT {
 
         return fileStreams;
     }
-    
+
     @Test
-    public void testRequestAccess() throws InterruptedException, IOException, JsonParseException {
-    
+    public void testRequestAccess() throws InterruptedException {
+
         String pathToJsonFile = "scripts/api/data/dataset-create-new.json";
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetIdNew = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
-        String persistentIdNew = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
 
-        // Create a Guestbook
-        Guestbook guestbook = UtilIT.createRandomGuestbook(dataverseAlias, persistentId, apiToken);
-        String guestbookResponseJson = UtilIT.generateGuestbookResponse(guestbook);
-        
         basicFileName = "004.txt";
         String basicPathToFile = "scripts/search/data/replace_test/" + basicFileName;
         Response basicAddResponse = UtilIT.uploadFileViaNative(datasetIdNew.toString(), basicPathToFile, apiToken);
@@ -512,7 +508,98 @@ public class AccessIT {
         Integer tabFile3IdRestrictedNew = JsonPath.from(tab3AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
 
         assertTrue(UtilIT.sleepForLock(datasetIdNew.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + tab3PathToFile);
-        
+
+        Response restrictResponse = UtilIT.restrictFile(tabFile3IdRestrictedNew.toString(), true, apiToken);
+        restrictResponse.prettyPrint();
+        restrictResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        assertEquals(200, createUser.getStatusCode());
+        String apiTokenRando = UtilIT.getApiTokenFromResponse(createUser);
+        String apiIdentifierRando = UtilIT.getUsernameFromResponse(createUser);
+
+        Response randoDownload = UtilIT.downloadFile(tabFile3IdRestrictedNew, apiTokenRando);
+        assertEquals(403, randoDownload.getStatusCode());
+
+        Response requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
+        //Cannot request until we set the dataset to allow requests
+        assertEquals(400, requestFileAccessResponse.getStatusCode());
+        //Update Dataset to allow requests
+        Response allowAccessRequestsResponse = UtilIT.allowAccessRequests(datasetIdNew.toString(), true, apiToken);
+        assertEquals(200, allowAccessRequestsResponse.getStatusCode());
+        //Must republish to get it to work
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetIdNew, "major", apiToken);
+        assertEquals(200, publishDataset.getStatusCode());
+
+        requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
+        assertEquals(200, requestFileAccessResponse.getStatusCode());
+
+        Response listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken);
+        listAccessRequestResponse.prettyPrint();
+        assertEquals(200, listAccessRequestResponse.getStatusCode());
+        System.out.println("List Access Request: " + listAccessRequestResponse.prettyPrint());
+
+        listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiTokenRando);
+        listAccessRequestResponse.prettyPrint();
+        assertEquals(403, listAccessRequestResponse.getStatusCode());
+
+        Response rejectFileAccessResponse = UtilIT.rejectFileAccessRequest(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
+        assertEquals(200, rejectFileAccessResponse.getStatusCode());
+
+        requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
+        //grant file access
+        Response grantFileAccessResponse = UtilIT.grantFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
+        assertEquals(200, grantFileAccessResponse.getStatusCode());
+
+        //if you make a request while you have been granted access you should get a command exception
+        requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
+        assertEquals(400, requestFileAccessResponse.getStatusCode());
+
+        //if you make a request of a public file you should also get a command exception
+        requestFileAccessResponse = UtilIT.requestFileAccess(basicFileIdNew.toString(), apiTokenRando);
+        assertEquals(400, requestFileAccessResponse.getStatusCode());
+
+
+        //Now should be able to download
+        randoDownload = UtilIT.downloadFile(tabFile3IdRestrictedNew, apiTokenRando);
+        assertEquals(OK.getStatusCode(), randoDownload.getStatusCode());
+
+        //revokeFileAccess
+        Response revokeFileAccessResponse = UtilIT.revokeFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
+        assertEquals(200, revokeFileAccessResponse.getStatusCode());
+
+        listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken);
+        assertEquals(404, listAccessRequestResponse.getStatusCode());
+    }
+
+    @Test
+    @Disabled // Only run manually after setting JVM setting -Ddataverse.files.guestbook-at-request=true
+    public void testRequestAccessWithGuestbook() throws IOException, JsonParseException {
+
+        String pathToJsonFile = "scripts/api/data/dataset-create-new.json";
+        Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetIdNew = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String persistentIdNew = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+
+        // Create a Guestbook
+        Guestbook guestbook = UtilIT.createRandomGuestbook(dataverseAlias, persistentId, apiToken);
+        String guestbookResponseJson = UtilIT.generateGuestbookResponse(guestbook);
+
+        basicFileName = "004.txt";
+        String basicPathToFile = "scripts/search/data/replace_test/" + basicFileName;
+        Response basicAddResponse = UtilIT.uploadFileViaNative(datasetIdNew.toString(), basicPathToFile, apiToken);
+        Integer basicFileIdNew = JsonPath.from(basicAddResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        String tabFile3NameRestrictedNew = "stata13-auto-withstrls.dta";
+        String tab3PathToFile = "scripts/search/data/tabular/" + tabFile3NameRestrictedNew;
+        Response tab3AddResponse = UtilIT.uploadFileViaNative(datasetIdNew.toString(), tab3PathToFile, apiToken);
+        Integer tabFile3IdRestrictedNew = JsonPath.from(tab3AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        assertTrue(UtilIT.sleepForLock(datasetIdNew.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + tab3PathToFile);
+
         Response restrictResponse = UtilIT.restrictFile(tabFile3IdRestrictedNew.toString(), true, apiToken);
         restrictResponse.prettyPrint();
         restrictResponse.then().assertThat()
@@ -539,8 +626,9 @@ public class AccessIT {
 
         // Set the guestbook on the Dataset
         UtilIT.updateDatasetGuestbook(persistentIdNew, guestbook.getId(), apiToken).prettyPrint();
-        // Request file access WITHOUT the required Guestbook Response (getEffectiveGuestbookEntryAtRequest)
+        // Set the response required on the Access Request as apposed to being on Download
         UtilIT.setGuestbookEntryOnRequest(datasetId.toString(), apiToken, Boolean.TRUE).prettyPrint();
+        // Request file access WITHOUT the required Guestbook Response (getEffectiveGuestbookEntryAtRequest)
         requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
         requestFileAccessResponse.prettyPrint();
         assertEquals(400, requestFileAccessResponse.getStatusCode());
@@ -571,21 +659,20 @@ public class AccessIT {
         //grant file access
         Response grantFileAccessResponse = UtilIT.grantFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
         assertEquals(200, grantFileAccessResponse.getStatusCode());
-        
+
         //if you make a request while you have been granted access you should get a command exception
         requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
         assertEquals(400, requestFileAccessResponse.getStatusCode());
-        
+
         //if you make a request of a public file you should also get a command exception
         requestFileAccessResponse = UtilIT.requestFileAccess(basicFileIdNew.toString(), apiTokenRando);
         assertEquals(400, requestFileAccessResponse.getStatusCode());
-        
 
         //Now should be able to download
         randoDownload = UtilIT.downloadFile(tabFile3IdRestrictedNew, apiTokenRando);
         assertEquals(OK.getStatusCode(), randoDownload.getStatusCode());
 
-        //revokeFileAccess        
+        //revokeFileAccess
         Response revokeFileAccessResponse = UtilIT.revokeFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
         assertEquals(200, revokeFileAccessResponse.getStatusCode());
 
