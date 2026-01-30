@@ -50,7 +50,6 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntryRequest;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.parallel.InputStreamSupplier;
-import org.apache.commons.compress.utils.IOUtils;
 import org.apache.hc.client5.http.ClientProtocolException;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -551,14 +550,12 @@ public class BagGenerator {
         return bagName.replaceAll("\\W", "-");
     }
 
-    private void processContainer(JsonObject item, String currentPath) throws IOException {
     // Collect all files recursively and process containers to create dirs in the zip
     private void collectAllFiles(JsonObject item, String currentPath, List<FileEntry> allFiles, boolean addTitle) 
             throws IOException {
         JsonArray children = getChildren(item);
-        HashSet<String> titles = new HashSet<String>();
 
-        if (addTitle) {
+        if (addTitle) { //For any sub-collections (non-Dataverse)
             String title = null;
             if (item.has(JsonLDTerm.dcTerms("Title").getLabel())) {
                 title = item.get("Title").getAsString();
@@ -716,6 +713,7 @@ public class BagGenerator {
                 
                 // Add file to bag or fetch file
                 if (shouldAddToFetchFile(entry.size)) {
+                    dataUrl = suppressDownloadCounts(dataUrl);
                     logger.fine("Adding to fetch file: " + childPath + " from " + dataUrl + 
                                " (size: " + entry.size + " bytes)");
                     addToFetchFile(dataUrl, entry.size, childPath);
@@ -1291,7 +1289,7 @@ public class BagGenerator {
             public InputStream get() {
                 try {
                     // Adding gbrecs to suppress counting this access as a download (archiving is not a download indicating scientific use)
-                    String modifiedUriString = uriString + (uriString.contains("?") ? "&" : "?") + "gbrecs=true";
+                    String modifiedUriString = suppressDownloadCounts(uriString);
                     URI uri = new URI(modifiedUriString);
                     logger.finest("Final URI used (with gbrecs param): " + modifiedUriString);
                     int tries = 0;
@@ -1386,6 +1384,11 @@ public class BagGenerator {
         };
     }
 
+    private String suppressDownloadCounts(String uriString ) {
+        // Adding gbrecs to suppress counting this access as a download (archiving is not a download indicating scientific use)
+        return uriString + (uriString.contains("?") ? "&" : "?") + "gbrecs=true";
+    }
+    
     /**
      * Adapted from org/apache/commons/io/FileUtils.java change to SI - add 2 digits
      * of precision
