@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -133,7 +134,7 @@ public class BagGenerator {
     private long currentBagDataSize = 0;
     private StringBuilder fetchFileContent = new StringBuilder();
     private boolean usingFetchFile = false;
-
+    
     /**
      * This BagGenerator creates a BagIt version 1.0
      * (https://tools.ietf.org/html/draft-kunze-bagit-16) compliant bag that is also
@@ -563,6 +564,9 @@ public class BagGenerator {
     private void processAllFiles(List<FileEntry> sortedFiles) 
             throws IOException, ExecutionException, InterruptedException {
         
+        // Track titles to detect duplicates
+        Set<String> titles = new HashSet<>();
+        
         if ((hashtype == null) | ignorehashes) {
             hashtype = DataFile.ChecksumType.SHA512;
         }
@@ -572,6 +576,14 @@ public class BagGenerator {
             JsonObject child = entry.jsonObject;
             String dataUrl = child.get(JsonLDTerm.schemaOrg("sameAs").getLabel()).getAsString();
             String childTitle = child.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString();
+            
+            // Check for duplicate titles
+            if (titles.contains(childTitle)) {
+                logger.warning("**** Multiple items with the same title in: " + entry.currentPath);
+                logger.warning("**** Will cause failure in hash and size validation in: " + bagID);
+            } else {
+                titles.add(childTitle);
+            }
             
             // Build full path using stored currentPath
             String childPath = entry.currentPath + childTitle;
