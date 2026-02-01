@@ -144,12 +144,14 @@ public class BagGenerator {
 
     static PrintWriter pw = null;
     
-    //Holey Bags
+    // Size limits and holey Bags
     private long maxDataFileSize = Long.MAX_VALUE;
     private long maxTotalDataSize = Long.MAX_VALUE;
     private long currentBagDataSize = 0;
     private StringBuilder fetchFileContent = new StringBuilder();
     private boolean usingFetchFile = false;
+    private boolean createHoleyBag = false;
+    private List<FileEntry> oversizedFiles = new ArrayList<>();
     
     // Bag-info.txt field labels
     private static final String CONTACT_NAME = "Contact-Name: ";
@@ -234,9 +236,12 @@ public class BagGenerator {
     }
 
     private void initializeHoleyBagLimits() {
-        this.maxDataFileSize = JvmSettings.BAGIT_HOLEY_MAX_FILE_SIZE.lookupOptional(Long.class).orElse(Long.MAX_VALUE);
-        this.maxTotalDataSize = JvmSettings.BAGIT_HOLEY_MAX_DATA_SIZE.lookupOptional(Long.class).orElse(Long.MAX_VALUE);
-        logger.fine("BagGenerator size limits - maxDataFileSize: " + maxDataFileSize + ", maxTotalDataSize: " + maxTotalDataSize);
+        this.maxDataFileSize = JvmSettings.BAGIT_ZIP_MAX_FILE_SIZE.lookupOptional(Long.class).orElse(Long.MAX_VALUE);
+        this.maxTotalDataSize = JvmSettings.BAGIT_ZIP_MAX_DATA_SIZE.lookupOptional(Long.class).orElse(Long.MAX_VALUE);
+        this.createHoleyBag = JvmSettings.BAGIT_ZIP_HOLEY.lookupOptional(Boolean.class).orElse(false);
+        logger.fine("BagGenerator size limits - maxDataFileSize: " + maxDataFileSize + 
+                    ", maxTotalDataSize: " + maxTotalDataSize + 
+                    ", createHoleyBag: " + createHoleyBag);
     }
 
     public void setIgnoreHashes(boolean val) {
@@ -603,6 +608,7 @@ public class BagGenerator {
                 // Recursively collect files from this container
                 collectAllFiles(child, currentPath, allFiles, true);
             } else {
+                
                 // Get file size
                 Long fileSize = null;
                 if (child.has(JsonLDTerm.filesize.getLabel())) {
@@ -712,12 +718,18 @@ public class BagGenerator {
                 }
                 
                 // Add file to bag or fetch file
-                if (shouldAddToFetchFile(entry.size)) {
+                if (!addToZip(entry.size)) {
+                    if(createHoleyBag) {
                     dataUrl = suppressDownloadCounts(dataUrl);
                     logger.fine("Adding to fetch file: " + childPath + " from " + dataUrl + 
                                " (size: " + entry.size + " bytes)");
                     addToFetchFile(dataUrl, entry.size, childPath);
                     usingFetchFile = true;
+                    } else {
+                        // Add to list for archiver to retrieve
+                        oversizedFiles.add(entry);
+                        logger.fine("Adding " + childPath + " to oversized files list for archiver");
+                    }
                 } else {
                     logger.fine("Requesting: " + childPath + " from " + dataUrl + 
                                " (size: " + entry.size + " bytes)");
@@ -750,28 +762,28 @@ public class BagGenerator {
     }
     
     // Helper method to determine if file should go to fetch file
-    private boolean shouldAddToFetchFile(long fileSize) {
+    private boolean addToZip(long fileSize) {
         
         // Check individual file size limit
         if (fileSize > maxDataFileSize) {
             logger.fine("File size " + fileSize + " exceeds max data file size " + maxDataFileSize);
-            return true;
+            return false;
         }
         
         // Check total bag size limit
         if (currentBagDataSize + fileSize > maxTotalDataSize) {
             logger.fine("Adding file would exceed max total data size. Current: " + currentBagDataSize + 
                        ", File: " + fileSize + ", Max: " + maxTotalDataSize);
-            return true;
+            return false;
         }
         
-        return false;
+        return true;
     }
     
  // Method to append to fetch file content
     private void addToFetchFile(String url, long size, String filename) {
         // Format: URL size filename
-        fetchFileContent.append(url).append(" ").append(Long.toString(size)).append(" ").append(filename).append("\n");
+        fetchFileContent.append(url).append(" ").append(Long.toString(size)).append(" ").append(filename).append("\r\n");
     }
 
     // Method to write fetch file to bag (call this before finalizing the bag)
@@ -1389,6 +1401,10 @@ public class BagGenerator {
         return uriString + (uriString.contains("?") ? "&" : "?") + "gbrecs=true";
     }
     
+    public List<FileEntry> getOversizedFiles() {
+        return oversizedFiles;
+    }
+
     /**
      * Adapted from org/apache/commons/io/FileUtils.java change to SI - add 2 digits
      * of precision
