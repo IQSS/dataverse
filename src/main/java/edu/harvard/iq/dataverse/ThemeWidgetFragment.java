@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
@@ -238,9 +239,10 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             logger.finer("created tempDir");
         }
         final UploadedFile uFile = event.getFile();
-        if(!isImageFile(uFile)) {
+        if(!FileUtil.isUploadedFileAnImage(uFile, getMaxSize())) {
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Only image files are allowed.", "Only image files under " + getMaxSize() + " bytes are allowed.");
             FacesContext.getCurrentInstance().addMessage(null, msg);
+            return;
         }
         try {
             this.uploadedFileThumbnail = new File(tempDir, uFile.getFileName());
@@ -272,9 +274,10 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             logger.finer("created tempDir");
         }
         UploadedFile uFile = event.getFile();
-        if (!isImageFile(uFile)) {
+        if (!FileUtil.isUploadedFileAnImage(uFile, getMaxSize())) {
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Only image files are allowed.", "Only image files under " + getMaxSize() + " bytes are allowed.");
             FacesContext.getCurrentInstance().addMessage(null, msg);
+            return;
         }
 
         try {
@@ -302,9 +305,10 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             logger.finer("created tempDir");
         }
         UploadedFile uFile = event.getFile();
-        if (!isImageFile(uFile)) {
+        if (!FileUtil.isUploadedFileAnImage(uFile, getMaxSize())) {
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Only image files are allowed.", "Only image files under " + getMaxSize() + " bytes are allowed.");
             FacesContext.getCurrentInstance().addMessage(null, msg);
+            return;
         }
         try {
             uploadedFile = new File(tempDir, uFile.getFileName());
@@ -453,64 +457,6 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         return true;
     }
       
-
-    /**
-     * Verifies that an uploaded file is a valid image file. Performs both MIME type checking and content validation.
-     * 
-     * @param uploadedFile
-     *            the file to verify
-     * @throws ValidatorException
-     *             if the file is not a valid image
-     */
-    private boolean isImageFile(UploadedFile uploadedFile) {
-        if (uploadedFile == null) {
-           return false;
-        }
-
-        // Pre-filter: Check MIME type first (fast rejection)
-        String contentType = uploadedFile.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            return false;
-        }
-
-        // Check against allowed MIME types
-        Set<String> allowedMimeTypes = Set.of(
-                "image/jpeg",
-                "image/jpg",
-                "image/png",
-                "image/gif",
-                "image/tiff",
-                "image/tif");
-
-        if (!allowedMimeTypes.contains(contentType.toLowerCase())) {
-            return false;
-            }
-
-        // Validate actual image content (security check)
-        try (InputStream inputStream = uploadedFile.getInputStream()) {
-            BufferedImage image = ImageIO.read(inputStream);
-            if (image == null) {
-                return false;
-                }
-
-            // Optional: Check file size limit (similar to DataverseFeaturedItemServiceBean)
-
-            if (uploadedFile.getSize() > getMaxSize()) {
-                return false;
-            }
-
-            // Optional: Check image dimensions if needed
-            int width = image.getWidth();
-            int height = image.getHeight();
-            logger.fine("Uploaded image dimensions: " + width + "x" + height);
-
-        } catch (IOException e) {
-            logger.log(Level.WARNING, "Error reading uploaded image file", e);
-            return false;
-        }
-        return true;
-    }
-    
     // Initialize maxSize from systemConfig
     public long getMaxSize() {
         if (maxSize == 0) {
