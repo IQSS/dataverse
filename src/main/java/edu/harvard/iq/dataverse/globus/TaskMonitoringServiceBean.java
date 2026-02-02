@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
@@ -126,7 +127,9 @@ public class TaskMonitoringServiceBean {
             }
         });
         
-        tasks.forEach(t -> {
+        Long lastProcessedUploadDatasetId = null; 
+        
+        for (GlobusTaskInProgress t : tasks) {     
 
             GlobusTaskState retrieved = checkTaskState(t);
             String taskStatus = retrieved == null ? "N/A" : retrieved.getStatus();
@@ -147,6 +150,35 @@ public class TaskMonitoringServiceBean {
                     taskLogger.fine("Access rule " + t.getRuleId() + " is no longer in use by other tasks; will delete.");
                 }
 
+                // At HDV we have seen cases where the processing queue would get 
+                // stuck (for reasons that are still unknown). This is not a fatal 
+                // condition, since the state of every transfer is stored in the database, 
+                // and therefore all the tasks will still get properly processed 
+                // next time the application is restarted or redeployed. In particular,
+                // successfully completed Globus transfers will get finalized and the 
+                // corresponding DataFile objects etc. will be added to the datasets. 
+                // However, one potential issue has been encountered: you may end 
+                // up with several upload tasks on the same dataset waiting to be 
+                // finalized one immediately after another, with the resulting 
+                // addFiles calls encountering OptimisticLockExceptions. With this 
+                // in mind, we'll just sleep for 10 sec. between such calls on 
+                // the same dataset, to make sure all the indexing etc. tasks have
+                // been properly finalized. 
+                
+                if (GlobusTaskInProgress.TaskType.UPLOAD.equals(t.getTaskType()) &&
+                        GlobusUtil.isTaskSucceeded(retrieved)) {
+                    if (t.getDataset() != null) {
+                        if (lastProcessedUploadDatasetId != null && lastProcessedUploadDatasetId.equals(t.getDataset().getId())) {
+                            try {
+                                Thread.sleep(10000L);
+                            } catch (InterruptedException iex) {
+                                logger.warning("Failed to sleep for 10 sec. between finalizing globus uploads on the same dataset ("+lastProcessedUploadDatasetId+")");
+                            }
+                        }
+                        lastProcessedUploadDatasetId = t.getDataset().getId();
+                    }                    
+                }
+                
                 globusService.processCompletedTask(t, retrieved, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getCompletedTaskStatus(retrieved), deleteRule, taskLogger);
                 
                 // Whether it finished successfully or failed, the entry for the 
@@ -159,8 +191,7 @@ public class TaskMonitoringServiceBean {
             } else {
                 logger.fine("task "+t.getTaskId()+" is still running; " + ", status: " + taskStatus);
             }
-            
-        });
+        }
     }
     
     private GlobusTaskState checkTaskState(GlobusTaskInProgress task) {
