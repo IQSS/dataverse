@@ -1904,10 +1904,14 @@ public class FileUtil implements java.io.Serializable  {
     /**
      * Verifies that an uploaded file is a valid png or jpg image file. Performs both MIME type checking and content validation.
      * 
+     * Note: This is similar to the isFileOfImageType which is used for collection feature items. This method works with PrimeFaces UploadedFile vs File, limits to jpg and png (as the UI states), uses
+     * ImageIO to read the content, and checks size (as the caller of isFileOfImageType does). It avoids using Tika in the core (as we once tried to do) and is potentially slower but more thorough as it
+     * will confirm the image is not corrupt. Work could be done to merge the two use cases.
+     * 
      * @param uploadedFile
      *            the file to verify
      * @param maxSize
-     *             maximum allowed file size in bytes
+     *            maximum allowed file size in bytes
      */
     public static boolean isUploadedFileAnImage(UploadedFile uploadedFile, long maxSize) {
         if (uploadedFile == null) {
