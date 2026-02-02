@@ -2016,13 +2016,35 @@ public class Dataverses extends AbstractApiBean {
     public Response createTemplate(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String dvIdtf) {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            NewTemplateDTO newTemplateDTO;
+            TemplateDTO newTemplateDTO;
             try {
-                newTemplateDTO = NewTemplateDTO.fromRequestBody(body, jsonParser());
+                newTemplateDTO = TemplateDTO.fromRequestBody(body, jsonParser());
             } catch (JsonParseException ex) {
                 return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.createTemplate.error.jsonParseMetadataFields"), ex.getMessage()));
             }
             Template created = execCommand(new CreateTemplateCommand(newTemplateDTO.toTemplate(), createDataverseRequest(getRequestUser(crc)), dataverse, true));
+            
+            return created("/dataverses/template/" + created.getId(), jsonTemplate(created));
+        
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+    
+    @PUT
+    @AuthRequired
+    @Path("{templateId}/template")
+    public Response updateTemplate(@Context ContainerRequestContext crc, String body, @PathParam("templateId") Long templateId) {
+        try {
+            Template template = findTemplateOrDie(templateId);
+          //  Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            TemplateDTO templateDTO;
+            try {
+                templateDTO = TemplateDTO.fromRequestBody(body, jsonParser());
+            } catch (JsonParseException ex) {
+                return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.createTemplate.error.jsonParseMetadataFields"), ex.getMessage()));
+            }
+            Template created = execCommand(new CreateTemplateCommand(templateDTO.toTemplate(), createDataverseRequest(getRequestUser(crc)), dataverse, true));
             
             return created("/dataverses/template/" + created.getId(), jsonTemplate(created));
         
@@ -2041,7 +2063,7 @@ public class Dataverses extends AbstractApiBean {
         try {
 
             Dataverse dataverse = findDataverseOrDie(dvId);
-            Template template = findTemplateOrDie(templateId, dataverse);
+            Template template = findAllTemplatesOrDie(templateId, dataverse);
             DataverseRequest dvReq = createDataverseRequest(getRequestUser(crc));
             SetDefaultTemplateCommand command = new SetDefaultTemplateCommand(template, dvReq, dataverse);
             

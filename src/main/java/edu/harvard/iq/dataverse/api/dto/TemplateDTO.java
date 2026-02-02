@@ -9,7 +9,7 @@ import jakarta.json.*;
 import java.sql.Timestamp;
 import java.util.*;
 
-public class NewTemplateDTO {
+public class TemplateDTO {
 
     private String name;
     private List<DatasetField> datasetFields;
@@ -17,18 +17,18 @@ public class NewTemplateDTO {
     private boolean isDefault;
     private Map<String, String> termsOfUseAndAccess;
 
-    public static NewTemplateDTO fromRequestBody(String requestBody, JsonParser jsonParser) throws JsonParseException {
-        NewTemplateDTO newTemplateDTO = new NewTemplateDTO();
+    public static TemplateDTO fromRequestBody(String requestBody, JsonParser jsonParser) throws JsonParseException {
+        TemplateDTO templateDTO = new TemplateDTO();
 
         JsonObject jsonObject = JsonUtil.getJsonObject(requestBody);
 
-        newTemplateDTO.name = jsonObject.getString("name");
-        newTemplateDTO.datasetFields = jsonParser.parseMultipleFields(jsonObject);
-        newTemplateDTO.instructionsMap = parseRequestBodyInstructionsMap(jsonObject);
-        newTemplateDTO.isDefault = jsonObject.getBoolean("isDefault", false);
-        newTemplateDTO.termsOfUseAndAccess = parseRequestBodyTerms(jsonObject);
+        templateDTO.name = jsonObject.getString("name");
+        templateDTO.datasetFields = jsonParser.parseMultipleFields(jsonObject);
+        templateDTO.instructionsMap = parseRequestBodyInstructionsMap(jsonObject);
+        templateDTO.isDefault = jsonObject.getBoolean("isDefault", false);
+        templateDTO.termsOfUseAndAccess = parseRequestBodyTerms(jsonObject);
                
-        return newTemplateDTO;
+        return templateDTO;
     }
 
     public Template toTemplate() {
@@ -68,6 +68,10 @@ public class NewTemplateDTO {
             return null;
         }
         /*
+        
+        {
+  "name": "CC BY 4.0"
+}
                 License license = termsOfUseAndAccess.getLicense();
         return jsonObjectBuilder()
                 .add("id", termsOfUseAndAccess.getId())

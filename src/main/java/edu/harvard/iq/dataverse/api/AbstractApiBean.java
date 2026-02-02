@@ -242,6 +242,9 @@ public abstract class AbstractApiBean {
     
     @EJB 
     GuestbookResponseServiceBean gbRespSvc;
+    
+    @EJB 
+    TemplateServiceBean templateSvc;
 
     @Inject
     FailedPIDResolutionLoggingServiceBean fprLogService;
@@ -370,8 +373,18 @@ public abstract class AbstractApiBean {
         }
         return dv;
     }
+    
+    protected Template findTemplateOrDie(Long templateId) throws WrappedResponse {
+        
+        Template template = templateSvc.find(templateId);
+        if (template == null) {
+            throw new WrappedResponse(
+                    error(Response.Status.NOT_FOUND, "Can't find template with identifier='" + templateId + "'"));
+        }
+        return template;
+    }
 
-    protected Template findTemplateOrDie(Long templateId, Dataverse dataverse) throws WrappedResponse {
+    protected Template findAllTemplatesOrDie(Long templateId, Dataverse dataverse) throws WrappedResponse {
         
         List<Template> templates = new ArrayList<>();
         
