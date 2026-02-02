@@ -10,15 +10,23 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.imageio.ImageIO;
+
 import jakarta.annotation.PreDestroy;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
@@ -51,7 +59,8 @@ public class ThemeWidgetFragment implements java.io.Serializable {
 
     public static final String LOGOS_SUBDIR = "logos";
     public static final String LOGOS_TEMP_SUBDIR = LOGOS_SUBDIR + File.separator + "temp";
-
+    private long maxSize = 0;
+    
     private File tempDir;
     private File uploadedFile;
     private File uploadedFileThumbnail;
@@ -65,6 +74,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     EjbDataverseEngine commandEngine;
     @EJB
     DataverseServiceBean dataverseServiceBean;
+    @EJB SystemConfig systemConfig;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     
@@ -228,6 +238,10 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             logger.finer("created tempDir");
         }
         final UploadedFile uFile = event.getFile();
+        if(!isImageFile(uFile)) {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Only image files are allowed.", "Only image files under " + getMaxSize() + " bytes are allowed.");
+            FacesContext.getCurrentInstance().addMessage(null, msg);
+        }
         try {
             this.uploadedFileThumbnail = new File(tempDir, uFile.getFileName());
             if (!this.uploadedFileThumbnail.exists()) {
@@ -258,6 +272,11 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             logger.finer("created tempDir");
         }
         UploadedFile uFile = event.getFile();
+        if (!isImageFile(uFile)) {
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Only image files are allowed.", "Only image files under " + getMaxSize() + " bytes are allowed.");
+            FacesContext.getCurrentInstance().addMessage(null, msg);
+        }
+
         try {
             uploadedFileFooter = new File(tempDir, uFile.getFileName());
             if (!uploadedFileFooter.exists()) {
@@ -283,8 +302,12 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             logger.finer("created tempDir");
         }
         UploadedFile uFile = event.getFile();
-        try {         
-            uploadedFile = new File(tempDir, uFile.getFileName());     
+        if (!isImageFile(uFile)) {
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Only image files are allowed.", "Only image files under " + getMaxSize() + " bytes are allowed.");
+            FacesContext.getCurrentInstance().addMessage(null, msg);
+        }
+        try {
+            uploadedFile = new File(tempDir, uFile.getFileName());
             if (!uploadedFile.exists()) {
                 uploadedFile.createNewFile();
             }
@@ -430,6 +453,71 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         return true;
     }
       
+
+    /**
+     * Verifies that an uploaded file is a valid image file. Performs both MIME type checking and content validation.
+     * 
+     * @param uploadedFile
+     *            the file to verify
+     * @throws ValidatorException
+     *             if the file is not a valid image
+     */
+    private boolean isImageFile(UploadedFile uploadedFile) {
+        if (uploadedFile == null) {
+           return false;
+        }
+
+        // Pre-filter: Check MIME type first (fast rejection)
+        String contentType = uploadedFile.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            return false;
+        }
+
+        // Check against allowed MIME types
+        Set<String> allowedMimeTypes = Set.of(
+                "image/jpeg",
+                "image/jpg",
+                "image/png",
+                "image/gif",
+                "image/tiff",
+                "image/tif");
+
+        if (!allowedMimeTypes.contains(contentType.toLowerCase())) {
+            return false;
+            }
+
+        // Validate actual image content (security check)
+        try (InputStream inputStream = uploadedFile.getInputStream()) {
+            BufferedImage image = ImageIO.read(inputStream);
+            if (image == null) {
+                return false;
+                }
+
+            // Optional: Check file size limit (similar to DataverseFeaturedItemServiceBean)
+
+            if (uploadedFile.getSize() > getMaxSize()) {
+                return false;
+            }
+
+            // Optional: Check image dimensions if needed
+            int width = image.getWidth();
+            int height = image.getHeight();
+            logger.fine("Uploaded image dimensions: " + width + "x" + height);
+
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Error reading uploaded image file", e);
+            return false;
+        }
+        return true;
+    }
+    
+    // Initialize maxSize from systemConfig
+    public long getMaxSize() {
+        if (maxSize == 0) {
+            maxSize = systemConfig.getUploadLogoSizeLimit();
+        }
+        return maxSize;
+    }
  }
 
 
