@@ -2890,10 +2890,10 @@ public class DataversesIT {
         grantRoleResponse.prettyPrint();
         grantRoleResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        // Let the first user assign the same role to the same user again
+        // Let the first user assign the same role to the same user again -> 409 Conflict
         Response grantRoleTwiceResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, "@" + secondUsername, apiToken);
         grantRoleTwiceResponse.prettyPrint();
-        grantRoleTwiceResponse.then().assertThat().statusCode(OK.getStatusCode());
+        grantRoleTwiceResponse.then().assertThat().statusCode(CONFLICT.getStatusCode());
 
         // Clean up
         Response deleteDataverse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
