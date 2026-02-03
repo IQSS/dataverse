@@ -47,6 +47,12 @@ public class Info extends AbstractApiBean {
     }
 
     @GET
+    @Path("settings/:PublishDatasetDisclaimerText")
+    public Response getPublishDatasetDisclaimerText() {
+        return getSettingResponseByKey(SettingsServiceBean.Key.PublishDatasetDisclaimerText);
+    }
+
+    @GET
     @Path("settings/:MaxEmbargoDurationInMonths")
     public Response getMaxEmbargoDurationInMonths() {
         return getSettingResponseByKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
