@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceB
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -2033,20 +2034,62 @@ public class Dataverses extends AbstractApiBean {
     
     @PUT
     @AuthRequired
-    @Path("{templateId}/template")
-    public Response updateTemplate(@Context ContainerRequestContext crc, String body, @PathParam("templateId") Long templateId) {
+    @Path("{templateId}/editTemplateMetadata")
+    public Response updateTemplateMetadata(@Context ContainerRequestContext crc, String body, @PathParam("templateId") Long templateId, @QueryParam("replace") boolean replaceData) {
         try {
             Template template = findTemplateOrDie(templateId);
-          //  Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            Dataverse dataverse = template.getDataverse();
             TemplateDTO templateDTO;
             try {
                 templateDTO = TemplateDTO.fromRequestBody(body, jsonParser());
             } catch (JsonParseException ex) {
                 return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.createTemplate.error.jsonParseMetadataFields"), ex.getMessage()));
             }
-            Template created = execCommand(new CreateTemplateCommand(templateDTO.toTemplate(), createDataverseRequest(getRequestUser(crc)), dataverse, true));
             
-            return created("/dataverses/template/" + created.getId(), jsonTemplate(created));
+            JsonObject json = JsonUtil.getJsonObject(body);
+            List<DatasetField> updatedFields = new ArrayList<>();
+            if (json.getJsonArray("fields") == null) {
+                updatedFields.add(jsonParser().parseField(json, Boolean.FALSE, replaceData));
+            } else {
+                updatedFields = jsonParser().parseMultipleFields(json, replaceData);
+            }
+            
+            Template updated = execCommand(new UpdateTemplateFieldsCommand(templateDTO.toTemplate(), dataverse,  updatedFields,   true, createDataverseRequest(getRequestUser(crc))));
+            
+            return created("/dataverses/template/" + updated.getId(), jsonTemplate(updated));
+                } catch (JsonParseException ex) {
+            logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.editMetadata.error.parseUpdate", List.of(ex.getMessage())));
+    
+        
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+    
+    @PUT
+    @AuthRequired
+    @Path("{templateId}/editTemplateTerms")
+    public Response updateTemplateTerms(@Context ContainerRequestContext crc, LicenseUpdateRequest requestBody, @PathParam("templateId") Long templateId, @QueryParam("replace") boolean replaceData) {
+        try {
+            Template template = findTemplateOrDie(templateId);
+            Dataverse dataverse = template.getDataverse();
+            
+            if (requestBody.getName() != null && !requestBody.getName().isEmpty()) {
+                String licenseName = requestBody.getName();
+                License license = licenseSvc.getByNameOrUri(licenseName);
+                if (license == null) {
+                    return notFound(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNotFound", List.of(licenseName)));
+                }
+                execCommand(new UpdateTemplateLicenseCommand(createDataverseRequest(getRequestUser(crc)), template, dataverse, license));
+                return ok(BundleUtil.getStringFromBundle("dataverses.api.update.template.license.succes"));
+            } else if (requestBody.getCustomTerms() != null) {
+                CustomTermsDTO customTerms = requestBody.getCustomTerms();
+                execCommand(new UpdateTemplateLicenseCommand(createDataverseRequest(getRequestUser(crc)), template, dataverse, customTerms.toTermsOfUseAndAccess()));
+                return ok(BundleUtil.getStringFromBundle("dataverses.api.update.template.license.success"));
+            } else {
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNameIsEmpty"));
+            }
         
         } catch (WrappedResponse e) {
             return e.getResponse();
