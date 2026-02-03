@@ -3997,6 +3997,19 @@ Get Citation by Preview URL Token
 
   curl "$SERVER_URL/api/datasets/previewUrlDatasetVersion/$PREVIEW_URL_TOKEN/citation"
 
+Get Files Using Preview URL Token
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you want to access a dataset's contents shared by a preview URL (see :ref:`preview-url-to-review-unpublished-dataset`, :ref:`get-dataset-by-preview-url-token` and :ref:`create-a-preview-url-for-a-dataset`) using the API, you can use the token in the preview URL as API_TOKEN.
+
+.. code-block:: bash
+
+  SERVER_URL=https://demo.dataverse.org
+  PREVIEW_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
+  FILE_ID=1111111
+  FILENAME=example.txt
+  curl -H "X-Dataverse-key:$PREVIEW_URL_TOKEN" -o "$FILENAME" "$SERVER_URL/api/access/datafile/$FILE_ID"
+
 .. _get-dataset-summary-field-names:
 
 Get Summary Field Names
