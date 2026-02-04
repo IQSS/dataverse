@@ -519,27 +519,41 @@ public class SystemConfig {
         if (limitEntry != null) {
             // Case A: the setting is using JSON to support multiple formats
             if (limitEntry.trim().startsWith("{")) {
-                try {
-                    JsonObject limits = Json.createReader(new StringReader(limitEntry)).readObject();
+                try (JsonReader reader = Json.createReader(new StringReader(limitEntry))) {
+                    JsonObject limits = reader.readObject();
                     
                     Map<String, Long> limitsMap = new HashMap<>();
                     // We add the default in case the JSON does not contain the default (which is optional).
                     limitsMap.put(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, -1L);
                     
-                    for (String formatName : limits.keySet()) {
-                        // We deliberatly do not validate the formatNames here for backward compatibility.
-                        // But we transform to lowercase here, so the casing doesn't matter for lookups.
+                    for (Map.Entry<String, JsonValue> format : limits.entrySet()) {
+                        String formatName = format.getKey();
                         String lowercaseFormatName = formatName.toLowerCase();
                         
                         try {
-                            Long sizeOption = Long.valueOf(limits.getString(formatName));
+                            JsonValue value = format.getValue();
+                            long sizeOption;
+                            
+                            // We want to be able to use either numbers or string values, so detect which one it is.
+                            // This is necessary as we need to tell the JSON parser what to do, it doesn't automatically handle this for us.
+                            if (value.getValueType() == JsonValue.ValueType.STRING) {
+                                sizeOption = Long.parseLong(limits.getString(formatName));
+                            } else if (value.getValueType() == JsonValue.ValueType.NUMBER) {
+                                // Will throw if not a whole number!
+                                sizeOption = limits.getJsonNumber(formatName).longValueExact();
+                            } else {
+                                logger.warning(() -> "Invalid value type for format " + formatName + ": expected string or number");
+                                logger.warning("Disabling all tabular ingest completely until fixed!");
+                                return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
+                            }
+                            
                             limitsMap.put(lowercaseFormatName, sizeOption);
-                        } catch (ClassCastException cce) {
-                            logger.warning("Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long from JSON integer. You must provide the long number as string (use quotes) for format " + formatName);
+                        } catch (NumberFormatException nfe) {
+                            logger.warning(() -> "Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long for format " + formatName + " (not a valid number)");
                             logger.warning("Disabling all tabular ingest completely until fixed!");
                             return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
-                        } catch (NumberFormatException nfe) {
-                            logger.warning("Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long for format " + formatName + " (not a number)");
+                        } catch (ArithmeticException ae) {
+                            logger.warning(() -> "Number too large or has fractional part for format " + formatName);
                             logger.warning("Disabling all tabular ingest completely until fixed!");
                             return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
                         }
@@ -547,7 +561,7 @@ public class SystemConfig {
                     
                     return Collections.unmodifiableMap(limitsMap);
                 } catch (JsonParsingException e) {
-                    logger.warning("Invalid TabularIngestSizeLimit option found, cannot parse JSON: " + e.getMessage());
+                    logger.warning(() -> "Invalid TabularIngestSizeLimit option found, cannot parse JSON: " + e.getMessage());
                     logger.warning("Disabling all tabular ingest completely until fixed!");
                     return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
                 }
@@ -557,7 +571,7 @@ public class SystemConfig {
                     Long limit = Long.valueOf(limitEntry);
                     return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, limit);
                 } catch (NumberFormatException nfe) {
-                    logger.warning("Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long: " + nfe);
+                    logger.warning(() -> "Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long: " + nfe);
                     logger.warning("Disabling all tabular ingest completely until fixed!");
                     return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
                 }
@@ -1001,11 +1015,12 @@ public class SystemConfig {
             return false;
         }
         String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
-        if (uploadMethods==null){
+        if (uploadMethods == null) {
             return false;
-        } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
         }
+        String normalizedUploadMethods = uploadMethods.toLowerCase();
+        return ListSplitUtil.split(normalizedUploadMethods).size() == 1
+                && normalizedUploadMethods.equals(SystemConfig.FileUploadMethods.RSYNC.toString());
     }
 
     @Deprecated(forRemoval = true, since = "2024-07-07")
@@ -1035,18 +1050,16 @@ public class SystemConfig {
                 upload ? SettingsServiceBean.Key.UploadMethods : SettingsServiceBean.Key.DownloadMethods);
         if (methods == null) {
             return false;
-        } else {
-            return Arrays.asList(methods.toLowerCase().split("\\s*,\\s*")).contains(method);
         }
+        return ListSplitUtil.split(methods.toLowerCase()).contains(method);
     }
     
     public Integer getUploadMethodCount(){
         String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods); 
-        if (uploadMethods==null){
+        if (uploadMethods == null) {
             return 0;
-        } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
-        }       
+        }
+        return ListSplitUtil.split(uploadMethods.toLowerCase()).size();
     }
 
     public boolean isAllowCustomTerms() {

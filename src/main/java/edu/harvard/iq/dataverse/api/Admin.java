@@ -115,6 +115,7 @@ import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
@@ -2243,7 +2244,7 @@ public class Admin extends AbstractApiBean {
         boolean inheritAllRoles = false;
         String rolesString = settingsSvc.getValueForKey(SettingsServiceBean.Key.InheritParentRoleAssignments, "");
         if (rolesString.length() > 0) {
-            ArrayList<String> rolesToInherit = new ArrayList<String>(Arrays.asList(rolesString.split("\\s*,\\s*")));
+            ArrayList<String> rolesToInherit = new ArrayList<>(ListSplitUtil.split(rolesString));
             if (!rolesToInherit.isEmpty()) {
                 if (rolesToInherit.contains("*")) {
                     inheritAllRoles = true;
@@ -2274,9 +2275,9 @@ public class Admin extends AbstractApiBean {
         }
 
         if (getEffective != null && getEffective) {
-            return ok(JsonPrinter.jsonStorageDriver(dataverse.getEffectiveStorageDriverId(), null));
+            return ok(JsonPrinter.jsonStorageDriver(dataverse.getEffectiveStorageDriverId()));
         } else {
-            return ok(JsonPrinter.jsonStorageDriver(dataverse.getStorageDriverId(), null));
+            return ok(JsonPrinter.jsonStorageDriver(dataverse.getStorageDriverId()));
         }
     }
     
