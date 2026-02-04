@@ -174,6 +174,10 @@ The signed URL mechanism is more secure than exposing API tokens and therefore r
 - For tools invoked via a GET call, Dataverse will include a callback query parameter with a Base64 encoded value. The decoded value is a signed URL that can be called to retrieve a JSON response containing all of the queryParameters and allowedApiCalls specified in the manfiest.
 - For tools invoked via POST, Dataverse will send a JSON body including the requested queryParameters and allowedApiCalls. Dataverse expects the response to the POST to indicate a redirect which Dataverse will use to open the tool.
 
+.. note::
+
+   **For Dataverse site administrators:** When Dataverse is behind a proxy, signed URLs may not work correctly due to protocol mismatches (HTTP vs HTTPS). Please refer to the :ref:`signed-urls-forwarded-proto-header` section to ensure signed URLs work properly in proxy environments.
+
 API Token
 ^^^^^^^^^
 
