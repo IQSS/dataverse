@@ -640,8 +640,8 @@ public class BagGenerator {
         for (FileEntry entry : sortedFiles) {
             // Extract all needed information from the JsonObject reference
             JsonObject child = entry.jsonObject;
-            String dataUrl = child.get(JsonLDTerm.schemaOrg("sameAs").getLabel()).getAsString();
-            String childTitle = child.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString();
+
+            String childTitle = entry.getChildTitle();
             
             // Check for duplicate titles
             if (titles.contains(childTitle)) {
@@ -651,12 +651,7 @@ public class BagGenerator {
                 titles.add(childTitle);
             }
             
-            // Build full path using stored currentPath
-            String childPath = entry.currentPath + childTitle;
-            JsonElement directoryLabel = child.get(JsonLDTerm.DVCore("directoryLabel").getLabel());
-            if (directoryLabel != null) {
-                childPath = entry.currentPath + directoryLabel.getAsString() + "/" + childTitle;
-            }
+            String childPath= entry.getChildPath(childTitle);
             
             // Get hash if exists
             String childHash = null;
@@ -675,6 +670,7 @@ public class BagGenerator {
             }
             
             resourceUsed[entry.resourceIndex] = true;
+            String dataUrl = entry.getDataUrl();
             
             try {
                 if ((childHash == null) | ignorehashes) {
@@ -716,11 +712,9 @@ public class BagGenerator {
                     logger.fine("Adding " + childPath + " with hash " + childHash + " to checksumMap");
                     checksumMap.put(childPath, childHash);
                 }
-                
                 // Add file to bag or fetch file
                 if (!addToZip(entry.size)) {
                     if(createHoleyBag) {
-                    dataUrl = suppressDownloadCounts(dataUrl);
                     logger.fine("Adding to fetch file: " + childPath + " from " + dataUrl + 
                                " (size: " + entry.size + " bytes)");
                     addToFetchFile(dataUrl, entry.size, childPath);
@@ -1300,10 +1294,7 @@ public class BagGenerator {
         return new InputStreamSupplier() {
             public InputStream get() {
                 try {
-                    // Adding gbrecs to suppress counting this access as a download (archiving is not a download indicating scientific use)
-                    String modifiedUriString = suppressDownloadCounts(uriString);
-                    URI uri = new URI(modifiedUriString);
-                    logger.finest("Final URI used (with gbrecs param): " + modifiedUriString);
+                    URI uri = new URI(uriString);
                     int tries = 0;
                     while (tries < 5) {
 
@@ -1396,10 +1387,7 @@ public class BagGenerator {
         };
     }
 
-    private String suppressDownloadCounts(String uriString ) {
-        // Adding gbrecs to suppress counting this access as a download (archiving is not a download indicating scientific use)
-        return uriString + (uriString.contains("?") ? "&" : "?") + "gbrecs=true";
-    }
+
     
     public List<FileEntry> getOversizedFiles() {
         return oversizedFiles;
@@ -1456,7 +1444,7 @@ public class BagGenerator {
     }
     
  // Inner class to hold file information before processing
-    private static class FileEntry implements Comparable<FileEntry> {
+    public static class FileEntry implements Comparable<FileEntry> {
         final long size;
         final JsonObject jsonObject;  // Direct reference, not a copy
         final String currentPath;     // Parent directory path
@@ -1467,6 +1455,30 @@ public class BagGenerator {
             this.jsonObject = jsonObject;
             this.currentPath = currentPath;
             this.resourceIndex = resourceIndex;
+        }
+        
+        public String getDataUrl() {
+            return suppressDownloadCounts(jsonObject.get(JsonLDTerm.schemaOrg("sameAs").getLabel()).getAsString());
+        }
+ 
+        public String getChildTitle() {
+            return jsonObject.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString();
+        }
+        
+        public String getChildPath(String title) {
+            // Build full path using stored currentPath
+            String childPath = currentPath + title;
+            JsonElement directoryLabel = jsonObject.get(JsonLDTerm.DVCore("directoryLabel").getLabel());
+            if (directoryLabel != null) {
+                childPath = currentPath + directoryLabel.getAsString() + "/" + title;
+            }
+            return childPath;
+        }
+
+        private String suppressDownloadCounts(String uriString) {
+            // Adding gbrecs to suppress counting this access as a download (archiving is
+            // not a download indicating scientific use)
+            return uriString + (uriString.contains("?") ? "&" : "?") + "gbrecs=true";
         }
         
         @Override
