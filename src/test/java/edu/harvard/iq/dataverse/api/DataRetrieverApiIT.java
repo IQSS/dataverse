@@ -421,8 +421,10 @@ public class DataRetrieverApiIT {
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
-        createDatasetResponse.prettyPrint();
-
+        String datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse).toString();
+        
+        UtilIT.sleepForReindex(datasetId, apiToken, 5);
+        
         Response myDataWithAuthor = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&metadata_fields=citation:author");
         myDataWithAuthor.prettyPrint();
         myDataWithAuthor.then().assertThat()
