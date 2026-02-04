@@ -9,9 +9,6 @@ export DATAVERSE_URL
 echo "Running base setup-all.sh (INSECURE MODE)..."
 "${BOOTSTRAP_DIR}"/base/setup-all.sh --insecure -p=admin1 | tee /tmp/setup-all.sh.out
 
-echo "Setting system mail address..."
-curl -X PUT -d "dataverse@localhost" "${DATAVERSE_URL}/api/admin/settings/:SystemEmail"
-
 echo "Setting DOI provider to \"FAKE\"..."
 curl "${DATAVERSE_URL}/api/admin/settings/:DoiProvider" -X PUT -d FAKE
 

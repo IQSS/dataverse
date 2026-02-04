@@ -2,26 +2,24 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Address;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.groups.GroupUtil;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import java.util.HashSet;
-import java.util.List;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
@@ -33,14 +31,14 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.PendingWorkflowInvocation;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static java.util.stream.Collectors.toList;
 import jakarta.persistence.Query;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 /**
  * Your one-stop-shop for deciding which user can do what action on which
@@ -93,6 +91,93 @@ public class PermissionServiceBean {
 
     @Inject
     DataverseRequestServiceBean dvRequestService;
+
+    @Inject
+    DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
+
+    private static final String LIST_ALL_DATAVERSES_SUPERUSER_HAS_PERMISSION = """
+        SELECT id, name, alias FROM DATAVERSE dv
+    """;
+
+    private static final String LIST_ALL_DATAVERSES_USER_HAS_PERMISSION = """
+            WITH grouplist AS (
+                  SELECT explicitgroup_authenticateduser.explicitgroup_id as id FROM explicitgroup_authenticateduser
+                  WHERE explicitgroup_authenticateduser.containedauthenticatedusers_id = @USERID
+                )
+                        
+                SELECT * FROM DATAVERSE dv WHERE id IN (
+                  SELECT definitionpoint_id
+                  FROM roleassignment
+                  WHERE roleassignment.assigneeidentifier IN (
+                    SELECT CONCAT('&explicit/', explicitgroup.groupalias) as assignee
+                    FROM explicitgroup
+                    WHERE explicitgroup.id IN (
+                      (
+                      SELECT explicitgroup.id id
+                      FROM explicitgroup
+                      WHERE EXISTS (SELECT id FROM grouplist WHERE id = explicitgroup.id)
+                      ) UNION (
+                      SELECT explicitgroup_explicitgroup.containedexplicitgroups_id id
+                      FROM explicitgroup_explicitgroup
+                      WHERE EXISTS (SELECT id FROM grouplist WHERE id = explicitgroup_explicitgroup.explicitgroup_id)
+                      AND EXISTS (SELECT id FROM dataverserole
+                        WHERE dataverserole.id = roleassignment.role_id AND (dataverserole.permissionbits & @PERMISSIONBIT !=0))
+                      )
+                    )
+                  ) UNION (
+                    SELECT definitionpoint_id
+                    FROM roleassignment
+                    WHERE roleassignment.assigneeidentifier = (
+                      SELECT CONCAT('@', authenticateduser.useridentifier)
+                      FROM authenticateduser
+                      WHERE authenticateduser.id = @USERID)
+                        AND EXISTS (SELECT id FROM dataverserole
+                        WHERE dataverserole.id = roleassignment.role_id AND (dataverserole.permissionbits & @PERMISSIONBIT !=0))
+                  ) UNION (
+                     SELECT definitionpoint_id
+                     FROM roleassignment
+                     WHERE roleassignment.assigneeidentifier = ':authenticated-users'
+                       AND EXISTS (SELECT id FROM dataverserole
+                       WHERE dataverserole.id = roleassignment.role_id AND (dataverserole.permissionbits & @PERMISSIONBIT !=0))
+                  ) UNION (
+                     SELECT definitionpoint_id
+                     FROM roleassignment
+                     WHERE roleassignment.assigneeidentifier IN (
+                       SELECT CONCAT('&shib/', persistedglobalgroup.persistedgroupalias) as assignee
+                       FROM persistedglobalgroup
+                       WHERE dtype = 'ShibGroup'
+                       AND EXISTS (SELECT id FROM dataverserole WHERE dataverserole.id = roleassignment.role_id AND (dataverserole.permissionbits & @PERMISSIONBIT !=0))
+                     )
+                  ) UNION (
+                     SELECT definitionpoint_id
+                     FROM roleassignment
+                     WHERE roleassignment.assigneeidentifier IN (
+                       SELECT CONCAT('&ip/', persistedglobalgroup.persistedgroupalias) as assignee
+                       FROM persistedglobalgroup
+                       LEFT OUTER JOIN ipv4range ON persistedglobalgroup.id = ipv4range.owner_id
+                       LEFT OUTER JOIN ipv6range ON persistedglobalgroup.id = ipv6range.owner_id
+                       WHERE dtype = 'IpGroup'
+                       AND EXISTS (SELECT id FROM dataverserole WHERE dataverserole.id = roleassignment.role_id AND (dataverserole.permissionbits & @PERMISSIONBIT !=0))
+                       AND @IPRANGESQL
+                     )
+                  )
+                ) 
+            """;
+    
+        private static final String AND = """
+                                          and
+                                          """;
+        
+        private static final String WHERE = """
+                                          where
+                                          """;
+        
+        private static final String SEARCH_PARAMS  = """
+                                                             ((LOWER(dv.name) LIKE ? and ((SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE ?)
+                                                                         or (SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE ?))) 
+                                                                     or (LOWER(dv.name) NOT LIKE ? and ((LOWER(dv.name) LIKE ?)
+                                                                     or (LOWER(dv.name) LIKE ?))))
+                                                     """;
 
     /**
      * A request-level permission query (e.g includes IP ras).
@@ -439,22 +524,14 @@ public class PermissionServiceBean {
      * download permission for everybody:
      */
     private boolean isPublicallyDownloadable(DvObject dvo) {
-        if (dvo instanceof DataFile) {
+        if (dvo instanceof DataFile df) {
             // unrestricted files that are part of a release dataset 
             // automatically get download permission for everybody:
             //      -- L.A. 4.0 beta12
-
-            DataFile df = (DataFile) dvo;
-
             if (!df.isRestricted()) {
-                if (df.getOwner().getReleasedVersion() != null) {
-                    if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
-                        for (FileMetadata fm : df.getOwner().getReleasedVersion().getFileMetadatas()) {
-                            if (df.equals(fm.getDataFile())) {
-                                return true;
-                            }
-                        }
-                    }
+                DatasetVersion releasedVersion = df.getOwner().getReleasedVersion();
+                if (releasedVersion != null) {
+                    return datasetVersionFilesServiceBean.isDataFilePresentInDatasetVersion(releasedVersion, df);
                 }
             }
         }
@@ -553,36 +630,6 @@ public class PermissionServiceBean {
 
     public RequestPermissionQuery request(DataverseRequest req) {
         return new RequestPermissionQuery(null, req);
-    }
-
-    /**
-     * Go from (User, Permission) to a list of Dataverse objects that the user
- has the permission on.
-     *
-     * @param user
-     * @param permission
-     * @return The list of dataverses {@code user} has permission
- {@code permission} on.
-     */
-    public List<Dataverse> getDataversesUserHasPermissionOn(AuthenticatedUser user, Permission permission) {
-        Set<Group> groups = groupService.groupsFor(user);
-        String identifiers = GroupUtil.getAllIdentifiersForUser(user, groups);
-        /**
-         * @todo Are there any strings in identifiers that would break this SQL
-         * query?
-         */
-        String query = "SELECT id FROM dvobject WHERE dtype = 'Dataverse' and id in (select definitionpoint_id from roleassignment where assigneeidentifier in (" + identifiers + "));";
-        logger.log(Level.FINE, "query: {0}", query);
-        Query nativeQuery = em.createNativeQuery(query);
-        List<Integer> dataverseIdsToCheck = nativeQuery.getResultList();
-        List<Dataverse> dataversesUserHasPermissionOn = new LinkedList<>();
-        for (int dvIdAsInt : dataverseIdsToCheck) {
-            Dataverse dataverse = dataverseService.find(Long.valueOf(dvIdAsInt));
-            if (userOn(user, dataverse).has(permission)) {
-                dataversesUserHasPermissionOn.add(dataverse);
-            }
-        }
-        return dataversesUserHasPermissionOn;
     }
 
     public List<AuthenticatedUser> getUsersWithPermissionOn(Permission permission, DvObject dvo) {
@@ -837,4 +884,185 @@ public class PermissionServiceBean {
         return false;
     }
 
+    /**
+     * Checks if a DataverseRequest can download at least one file of the target DatasetVersion.
+     *
+     * @param dataverseRequest DataverseRequest to check
+     * @param datasetVersion DatasetVersion to check
+     * @return boolean indicating whether the user can download at least one file or not
+     */
+    public boolean canDownloadAtLeastOneFile(DataverseRequest dataverseRequest, DatasetVersion datasetVersion) {
+        if (hasUnrestrictedReleasedFiles(datasetVersion)) {
+            return true;
+        }
+        List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            DataFile dataFile = fileMetadata.getDataFile();
+            Set<RoleAssignee> roleAssignees = new HashSet<>(groupService.groupsFor(dataverseRequest, dataFile));
+            roleAssignees.add(dataverseRequest.getUser());
+            if (hasGroupPermissionsFor(roleAssignees, dataFile, EnumSet.of(Permission.DownloadFile))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if a DatasetVersion has unrestricted released files.
+     *
+     * This method is mostly based on {@link #isPublicallyDownloadable(DvObject)} although in this case, instead of basing
+     * the search on a particular file, it searches for the total number of files in the target version that are present
+     * in the released version.
+     *
+     * @param targetDatasetVersion DatasetVersion to check
+     * @return boolean indicating whether the dataset version has released files or not
+     */
+    private boolean hasUnrestrictedReleasedFiles(DatasetVersion targetDatasetVersion) {
+        Dataset targetDataset = targetDatasetVersion.getDataset();
+        if (!targetDataset.isReleased()) {
+            return false;
+        }
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+        Root<DatasetVersion> datasetVersionRoot = criteriaQuery.from(DatasetVersion.class);
+        Root<FileMetadata> fileMetadataRoot = criteriaQuery.from(FileMetadata.class);
+        criteriaQuery
+                .select(criteriaBuilder.count(fileMetadataRoot))
+                .where(criteriaBuilder.and(
+                        criteriaBuilder.equal(fileMetadataRoot.get("dataFile").get("restricted"), false),
+                        criteriaBuilder.equal(datasetVersionRoot.get("dataset"), targetDataset),
+                        criteriaBuilder.equal(datasetVersionRoot.get("versionState"), DatasetVersion.VersionState.RELEASED),
+                        fileMetadataRoot.in(targetDatasetVersion.getFileMetadatas()),
+                        fileMetadataRoot.in(datasetVersionRoot.get("fileMetadatas"))));
+        Long result = em.createQuery(criteriaQuery).getSingleResult();
+        return result > 0;
+    }
+    
+    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, Permission permission) {
+        return findPermittedCollections(request, user, 1 << permission.ordinal(), "");
+    }
+
+    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, Permission permission, String searchTerm) {
+        return findPermittedCollections(request, user, 1 << permission.ordinal(), searchTerm);
+    }
+    
+    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit) {
+        return findPermittedCollections(request, user, permissionBit, "");
+    }
+    
+    
+    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit, String searchTerm) {
+        if (user != null) {
+            var sqlCode = getBaseQueryForAllPermittedDataverses(request, user, permissionBit);
+            if (searchTerm == null || searchTerm.isEmpty()) {
+                return em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
+            } else if (user.isSuperuser()) {
+                Query query = em.createNativeQuery(sqlCode.concat(WHERE).concat(SEARCH_PARAMS), Dataverse.class);
+                setSearchParamValues(searchTerm, query);
+                return query.getResultList();
+            }
+            else {
+                Query query = em.createNativeQuery(sqlCode.concat(AND).concat(SEARCH_PARAMS), Dataverse.class);
+                setSearchParamValues(searchTerm, query);
+                return query.getResultList();
+            }
+        }
+        return null;
+    }
+
+    public boolean hasMultiplePermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit) {
+        if (user != null) {
+            var sqlCode = getBaseQueryForAllPermittedDataverses(request, user, permissionBit) + " LIMIT 2";
+            var resultList = em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
+            return resultList.size() > 1;
+        }
+        return false;
+    }
+
+    private String getBaseQueryForAllPermittedDataverses(DataverseRequest request, AuthenticatedUser user, int permissionBit) {
+        if (user.isSuperuser()) {
+            return LIST_ALL_DATAVERSES_SUPERUSER_HAS_PERMISSION;
+        } else {
+            return LIST_ALL_DATAVERSES_USER_HAS_PERMISSION
+                .replace("@USERID", String.valueOf(user.getId()))
+                .replace("@PERMISSIONBIT", String.valueOf(permissionBit))
+                .replace("@IPRANGESQL", getIpRange(request, user));
+        }
+    }
+
+    private String getIpRange(DataverseRequest request, AuthenticatedUser user) {
+        // IP Group - Only check IP if a User is calling for themself
+        String ipRangeSQL = "FALSE";
+        if (request != null
+            && request.getAuthenticatedUser() != null
+            && !request.getAuthenticatedUser().isSuperuser()
+            && request.getSourceAddress() != null
+            && request.getAuthenticatedUser().getUserIdentifier().equalsIgnoreCase(user.getUserIdentifier())) {
+            IpAddress ip = request.getSourceAddress();
+            if (ip instanceof IPv4Address) {
+                IPv4Address ipv4 = (IPv4Address) ip;
+                ipRangeSQL = ipv4.toBigInteger() + " BETWEEN ipv4range.bottomaslong AND ipv4range.topaslong";
+            } else if (ip instanceof IPv6Address) {
+                IPv6Address ipv6 = (IPv6Address) ip;
+                long[] vals = ipv6.toLongArray();
+                if (vals.length == 4) {
+                    ipRangeSQL = """
+                            (@0 BETWEEN ipv6range.bottoma AND ipv6range.topa
+                            AND @1 BETWEEN ipv6range.bottomb AND ipv6range.topb
+                            AND @2 BETWEEN ipv6range.bottomc AND ipv6range.topc
+                            AND @3 BETWEEN ipv6range.bottomd AND ipv6range.topd)
+                            """;
+                    for (int i = 0; i < vals.length; i++) {
+                        ipRangeSQL = ipRangeSQL.replace("@" + i, String.valueOf(vals[i]));
+                    }
+                }
+            }
+        }
+        return ipRangeSQL;
+    }
+
+    private void setSearchParamValues(String searchTerm, Query query) {
+        String pattern = searchTerm.toLowerCase();
+        String pattern1 = pattern + "%";
+        String pattern2 = "% " + pattern + "%";
+
+        // Adjust the queries for very short, 1
+        if (pattern.length() == 1) {
+            pattern1 = pattern;
+            pattern2 = pattern + " %";
+        }
+        query.setParameter(1, "%dataverse");
+        query.setParameter(2, pattern1);
+        query.setParameter(3, pattern2);
+        query.setParameter(4, "%dataverse");
+        query.setParameter(5, pattern1);
+        query.setParameter(6, pattern2);
+    }
+
+    /**
+     * Calculates the complete list of role assignments for a given user on a DvObject.
+     * This includes roles assigned directly to the user and roles inherited from any groups
+     * the user is a member of.
+     * <p>
+     * This method's logic is based on the private method {@code getRoleStringFromUser}
+     * in the {@code DataverseUserPage} class, which produces a concatenated string of
+     * effective user role names required for displaying role-related user notifications.
+     * The common logic from these two methods may be centralized in the future to
+     * avoid code duplication.
+     *
+     * @param user The authenticated user whose roles are being checked.
+     * @param dvObject The dataverse object to check for role assignments.
+     * @return A List containing all effective RoleAssignments for the user. Never null.
+     */
+    public List<RoleAssignment> getEffectiveRoleAssignments(AuthenticatedUser user, DvObject dvObject) {
+        Stream<RoleAssignment> directAssignments = assignmentsFor(user, dvObject).stream();
+
+        Stream<RoleAssignment> groupAssignments = groupService.groupsFor(user, dvObject)
+                .stream()
+                .flatMap(group -> assignmentsFor(group, dvObject).stream());
+
+        return Stream.concat(directAssignments, groupAssignments)
+                .collect(Collectors.toList());
+    }
 }
+

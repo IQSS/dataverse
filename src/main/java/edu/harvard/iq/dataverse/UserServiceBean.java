@@ -147,6 +147,8 @@ public class UserServiceBean {
         user.setMutedEmails(Type.tokenizeToSet((String) dbRowValues[15]));
         user.setMutedNotifications(Type.tokenizeToSet((String) dbRowValues[15]));
 
+        user.setRateLimitTier((int)dbRowValues[17]);
+
         user.setRoles(roles);
         return user;
     }
@@ -419,7 +421,7 @@ public class UserServiceBean {
         qstr += " u.createdtime, u.lastlogintime, u.lastapiusetime, ";
         qstr += " prov.id, prov.factoryalias, ";
         qstr += " u.deactivated, u.deactivatedtime, ";
-        qstr += " u.mutedEmails, u.mutedNotifications ";
+        qstr += " u.mutedEmails, u.mutedNotifications, u.rateLimitTier ";
         qstr += " FROM authenticateduser u,";
         qstr += " authenticateduserlookup prov_lookup,";
         qstr += " authenticationproviderrow prov";

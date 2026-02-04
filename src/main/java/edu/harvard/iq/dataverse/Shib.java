@@ -19,11 +19,13 @@ import edu.harvard.iq.dataverse.validation.EMailValidator;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
@@ -58,11 +60,13 @@ public class Shib implements java.io.Serializable {
     SettingsServiceBean settingsService;
 	@EJB
 	SystemConfig systemConfig;
+    @EJB
+    UserServiceBean userService;
 
     HttpServletRequest request;
 
     private String userPersistentId;
-    private String internalUserIdentifer;
+    private String internalUserIdentifier;
     AuthenticatedUserDisplayInfo displayInfo;
     /**
      * @todo Remove this boolean some day? Now the mockups show a popup. Should
@@ -71,21 +75,6 @@ public class Shib implements java.io.Serializable {
     private boolean visibleTermsOfUse;
     private final String loginpage = "/loginpage.xhtml";
     private final String identityProviderProblem = "Problem with Identity Provider";
-
-    /**
-     * We only have one field in which to store a unique
-     * useridentifier/persistentuserid so we have to jam the the "entityId" for
-     * a Shibboleth Identity Provider (IdP) and the unique persistent identifier
-     * per user into the same field and a separator between these two would be
-     * nice, in case we ever want to answer questions like "How many users
-     * logged in from Harvard's Identity Provider?".
-     *
-     * A pipe ("|") is used as a separator because it's considered "unwise" to
-     * use in a URL and the "entityId" for a Shibboleth Identity Provider (IdP)
-     * looks like a URL:
-     * http://stackoverflow.com/questions/1547899/which-characters-make-a-url-invalid
-     */
-    private String persistentUserIdSeparator = "|";
 
     /**
      * The Shibboleth Identity Provider (IdP), an "entityId" which often but not
@@ -210,8 +199,8 @@ public class Shib implements java.io.Serializable {
         }
 
         String usernameAssertion = getValueFromAssertion(ShibUtil.usernameAttribute);
-        internalUserIdentifer = ShibUtil.generateFriendlyLookingUserIdentifer(usernameAssertion, emailAddress);
-        logger.fine("friendly looking identifer (backend will enforce uniqueness):" + internalUserIdentifer);
+        internalUserIdentifier = ShibUtil.generateFriendlyLookingUserIdentifier(usernameAssertion, emailAddress);
+        logger.log(Level.FINE, "friendly looking identifier (backend will enforce uniqueness): {0}", internalUserIdentifier);
 
         String shibAffiliationAttribute = settingsService.getValueForKey(SettingsServiceBean.Key.ShibAffiliationAttribute);
         String affiliation = (StringUtils.isNotBlank(shibAffiliationAttribute))
@@ -244,7 +233,7 @@ public class Shib implements java.io.Serializable {
 //        emailAddress = "willFailBeanValidation"; // for testing createAuthenticatedUser exceptions
         displayInfo = new AuthenticatedUserDisplayInfo(firstName, lastName, emailAddress, affiliation, null);
 
-        userPersistentId = shibIdp + persistentUserIdSeparator + shibUserIdentifier;
+        userPersistentId = ShibUtil.createUserPersistentIdentifier(shibIdp, shibUserIdentifier);
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
         AuthenticatedUser au = authSvc.lookupUser(shibAuthProvider.getId(), userPersistentId);
         if (au != null) {
@@ -258,6 +247,7 @@ public class Shib implements java.io.Serializable {
             state = State.REGULAR_LOGIN_INTO_EXISTING_SHIB_ACCOUNT;
             logger.fine("Found user based on " + userPersistentId + ". Logging in.");
             logger.fine("Updating display info for " + au.getName());
+            userService.updateLastLogin(au);
             authSvc.updateAuthenticatedUser(au, displayInfo);
             logInUserAndSetShibAttributes(au);
             String prettyFacesHomePageString = getPrettyFacesHomePageString(false);
@@ -326,7 +316,7 @@ public class Shib implements java.io.Serializable {
         AuthenticatedUser au = null;
         try {
             au = authSvc.createAuthenticatedUser(
-                    new UserRecordIdentifier(shibAuthProvider.getId(), lookupStringPerAuthProvider), internalUserIdentifer, displayInfo, true);
+                    new UserRecordIdentifier(shibAuthProvider.getId(), lookupStringPerAuthProvider), internalUserIdentifier, displayInfo, true);
         } catch (EJBException ex) {
             /**
              * @todo Show the ConstraintViolationException, if any.
@@ -354,7 +344,7 @@ public class Shib implements java.io.Serializable {
         visibleTermsOfUse = false;
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
         String lookupStringPerAuthProvider = userPersistentId;
-        UserIdentifier userIdentifier = new UserIdentifier(lookupStringPerAuthProvider, internalUserIdentifer);
+        UserIdentifier userIdentifier = new UserIdentifier(lookupStringPerAuthProvider, internalUserIdentifier);
         logger.fine("builtin username: " + builtinUsername);
         AuthenticatedUser builtInUserToConvert = authSvc.canLogInAsBuiltinUser(builtinUsername, builtinPassword);
         if (builtInUserToConvert != null) {
@@ -416,6 +406,9 @@ public class Shib implements java.io.Serializable {
         Object attribute = request.getAttribute(key);
         if (attribute != null) {
             String attributeValue = attribute.toString();
+            if(systemConfig.isShibAttributeCharacterSetConversionEnabled()) {
+                attributeValue = new String(attributeValue.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+            }
             String trimmedValue = attributeValue.trim();
             if (!trimmedValue.isEmpty()) {
                 logger.fine("The SAML assertion for \"" + key + "\" (optional) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");
@@ -454,9 +447,9 @@ public class Shib implements java.io.Serializable {
         if (attributeValue.isEmpty()) {
             throw new Exception(key + " was empty");
         }
-		if(systemConfig.isShibAttributeCharacterSetConversionEnabled()) {
-			attributeValue= new String( attributeValue.getBytes("ISO-8859-1"), "UTF-8");
-		}
+        if (systemConfig.isShibAttributeCharacterSetConversionEnabled()) {
+            attributeValue= new String( attributeValue.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+        }
         String trimmedValue = attributeValue.trim();
         logger.fine("The SAML assertion for \"" + key + "\" (required) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");
         return trimmedValue;

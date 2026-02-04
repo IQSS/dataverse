@@ -1,0 +1,10 @@
+#metadataBlock 	name	dataverseAlias	displayName
+	 whitespaceDemo		Whitespace Demo
+#datasetField	name	title	description	watermark	fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
+	whitespaceDemoOne 	One	Trailing Space		text	0		TRUE	TRUE	TRUE	FALSE	TRUE	FALSE		whitespaceDemo
+	 whitespaceDemoTwo	Two	Leading Space		text	1		TRUE	TRUE	TRUE	FALSE	TRUE	FALSE		whitespaceDemo
+	whitespaceDemoThree	Three	CV with errors		text	2		TRUE	TRUE	TRUE	FALSE	TRUE	FALSE		whitespaceDemo
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder
+	whitespaceDemoThree	CV1 		0
+	whitespaceDemoThree	 CV2		1
+	whitespaceDemoThree	CV3		2

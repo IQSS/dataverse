@@ -23,6 +23,7 @@ import java.util.HashSet;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -39,6 +40,7 @@ public class HarvestingServerIT {
     private static String adminUserAPIKey;
     private static String singleSetDatasetIdentifier;
     private static String singleSetDatasetPersistentId;
+    private static Integer singleSetDatasetDatabaseId;
     private static List<String> extraDatasetsIdentifiers = new ArrayList<>();
 
     @BeforeAll
@@ -84,7 +86,7 @@ public class HarvestingServerIT {
         // create dataset: 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, adminUserAPIKey);
         createDatasetResponse.prettyPrint();
-        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        singleSetDatasetDatabaseId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
         // retrieve the global id: 
         singleSetDatasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
@@ -104,13 +106,13 @@ public class HarvestingServerIT {
         // So wait for all of this to finish.
         UtilIT.sleepForReexport(singleSetDatasetPersistentId, adminUserAPIKey, 10);
         
-        // ... And let's create 4 more datasets for a multi-dataset experiment:
+        // ... And let's create 5 more datasets for a multi-dataset experiment:
         
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 5; i++) {
             // create dataset: 
             createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, adminUserAPIKey);
             createDatasetResponse.prettyPrint();
-            datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+            Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
             // retrieve the global id: 
             String thisDatasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
@@ -288,7 +290,7 @@ public class HarvestingServerIT {
     }
     
     @Test
-    public void testSetEditAPIandOAIlistSets() {
+    public void testSetEditAPIandOAIlistSets() throws InterruptedException {
         // This test focuses on testing the Edit functionality of the Dataverse
         // OAI Set API and the ListSets method of the Dataverse OAI server.
         
@@ -299,7 +301,7 @@ public class HarvestingServerIT {
         // expected HTTP result codes. 
         
         String setName = UtilIT.getRandomString(6);
-        String setDef = "*";
+        String setDefinition = "title:Sample";
 
         // Make sure the set does not exist
         String setPath = String.format("/api/harvest/server/oaisets/%s", setName);
@@ -312,20 +314,21 @@ public class HarvestingServerIT {
         // Create the set as admin user
         Response createSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
-                .body(jsonForTestSpec(setName, setDef))
+                .body(jsonForTestSpec(setName, setDefinition))
                 .post(createPath);
         assertEquals(201, createSetResponse.getStatusCode());
 
         // I. Test the Modify/Edit (POST method) functionality of the 
         // Dataverse OAI Sets API
         
-        String newDefinition = "title:New";
+        String persistentId = extraDatasetsIdentifiers.get(0); 
+        String newDefinition = "dsPersistentId:"+persistentId;
         String newDescription = "updated";
         
         // API Test 1. Try to modify the set as normal user, should fail
         Response editSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, normalUserAPIKey)
-                .body(jsonForEditSpec(setName, setDef, ""))
+                .body(jsonForEditSpec(setName, newDefinition, ""))
                 .put(setPath);
         logger.info("non-admin user editSetResponse.getStatusCode(): " + editSetResponse.getStatusCode());
         assertEquals(400, editSetResponse.getStatusCode());
@@ -369,16 +372,35 @@ public class HarvestingServerIT {
         
         XmlPath responseXmlPath = validateOaiVerbResponse(listSetsResponse, "ListSets");
         
-        // 2. Validate the payload of the response, by confirming that the set 
+        // 2. The set hasn't been exported yet, so it shouldn't be listed in 
+        // ListSets (#3322). Let's confirm that: 
+        
+        List<Node> listSets = responseXmlPath.getList("OAI-PMH.ListSets.set.list().findAll{it.setName=='"+setName+"'}", Node.class);
+        // 2a. Confirm that our set is listed:
+        assertNotNull(listSets, "Unexpected response from ListSets");
+        assertEquals(0, listSets.size(), "An unexported OAI set is listed in ListSets");
+        
+        // export the set: 
+        
+        Response exportSetResponse = UtilIT.exportOaiSet(setName);
+        assertEquals(200, exportSetResponse.getStatusCode());
+        Thread.sleep(1000L); // sleep for a sec to be sure
+        
+        // ... try again: 
+        
+        listSetsResponse = UtilIT.getOaiListSets();
+        responseXmlPath = validateOaiVerbResponse(listSetsResponse, "ListSets");
+        
+        // 3. Validate the payload of the response, by confirming that the set 
         // we created and modified, above, is being listed by the OAI server 
         // and its xml record is properly formatted
         
-        List<Node> listSets = responseXmlPath.getList("OAI-PMH.ListSets.set.list().findAll{it.setName=='"+setName+"'}", Node.class);
+        listSets = responseXmlPath.getList("OAI-PMH.ListSets.set.list().findAll{it.setName=='"+setName+"'}", Node.class);
         
-        // 2a. Confirm that our set is listed:
+        // 3a. Confirm that our set is listed:
         assertNotNull(listSets, "Unexpected response from ListSets");
         assertEquals(1, listSets.size(), "Newly-created set isn't properly listed by the OAI server");
-        // 2b. Confirm that the set entry contains the updated description: 
+        // 3b. Confirm that the set entry contains the updated description: 
         assertEquals(newDescription, listSets.get(0).getPath("setDescription.metadata.element.field", String.class), "Incorrect description in the ListSets entry");
         
         // ok, the xml record looks good! 
@@ -395,6 +417,11 @@ public class HarvestingServerIT {
     // OAI set with a single dataset, and attempt to retrieve 
     // it and validate the OAI server responses of the corresponding 
     // ListIdentifiers, ListRecords and GetRecord methods. 
+    // Finally, we will make sure that the test reexport survives 
+    // a reexport when the control dataset is dropped from the search
+    // index temporarily (if, for example, the site admin cleared their 
+    // solr index in order to reindex everything from scratch - which 
+    // can take a while on a large database). This is per #3437
     @Test
     public void testSingleRecordOaiSet() throws InterruptedException {
         // Let's try and create an OAI set with the "single set dataset" that 
@@ -549,6 +576,83 @@ public class HarvestingServerIT {
         assertEquals("Medicine, Health and Life Sciences", responseXmlPath.getString("OAI-PMH.GetRecord.record.metadata.dc.subject"));
         
         // ok, looks legit!
+        
+        // Now, let's clear this dataset from Solr: 
+        Response solrClearResponse = UtilIT.indexClearDataset(singleSetDatasetDatabaseId);
+        assertEquals(200, solrClearResponse.getStatusCode());
+        solrClearResponse.prettyPrint();
+        
+        // Now, let's re-export the set. The search query that defines the set 
+        // will no longer find it (todo: confirm this first?). However, since 
+        // the dataset still exists in the database; and would in real life 
+        // be reindexed again, we don't want to mark the OAI record for the 
+        // dataset as "deleted" just yet. (this is a new feature, as of 6.2)
+        // So, let's re-export the set...
+        
+        exportSetResponse = UtilIT.exportOaiSet(setName);
+        assertEquals(200, exportSetResponse.getStatusCode());
+        Thread.sleep(1000L); // wait for just a second, to be safe 
+        
+        // OAI Test 5. Check ListIdentifiers again:
+        
+        Response listIdentifiersResponse = UtilIT.getOaiListIdentifiers(setName, "oai_dc");
+        assertEquals(OK.getStatusCode(), listIdentifiersResponse.getStatusCode());
+
+        // Validate the service section of the OAI response: 
+        responseXmlPath = validateOaiVerbResponse(listIdentifiersResponse, "ListIdentifiers");
+
+        // ... and confirm that the record for our dataset is still listed
+        // as active: 
+        List ret = responseXmlPath.getList("OAI-PMH.ListIdentifiers.header");
+
+        assertEquals(1, ret.size());
+        assertEquals(singleSetDatasetPersistentId, responseXmlPath
+                .getString("OAI-PMH.ListIdentifiers.header.identifier"));
+        assertEquals(setName, responseXmlPath
+                .getString("OAI-PMH.ListIdentifiers.header.setSpec"));
+        // ... and, most importantly, make sure the record does not have a 
+        // `status="deleted"` attribute:
+        assertNull(responseXmlPath.getString("OAI-PMH.ListIdentifiers.header.@status"));
+        
+        // TODO: (?) we could also destroy the dataset for real now, and make 
+        // sure the "deleted" attribute has been added to the OAI record. 
+        
+        // While we are at it, let's now destroy this dataset for real, and 
+        // make sure the "deleted" attribute is actually added once the set 
+        // is re-exported:
+        
+        Response destroyDatasetResponse = UtilIT.destroyDataset(singleSetDatasetPersistentId, adminUserAPIKey);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+        destroyDatasetResponse.prettyPrint();
+        
+        // Confirm that it no longer exists: 
+        Response datasetNotFoundResponse = UtilIT.nativeGet(singleSetDatasetDatabaseId, adminUserAPIKey);
+        assertEquals(404, datasetNotFoundResponse.getStatusCode());
+        
+        // Repeat the whole production with re-exporting set and checking 
+        // ListIdentifiers:
+        
+        exportSetResponse = UtilIT.exportOaiSet(setName);
+        assertEquals(200, exportSetResponse.getStatusCode());
+        Thread.sleep(1000L); // wait for just a second, to be safe 
+        System.out.println("re-exported the dataset again, with the control dataset destroyed");
+        
+        // OAI Test 6. Check ListIdentifiers again:
+        
+        listIdentifiersResponse = UtilIT.getOaiListIdentifiers(setName, "oai_dc");
+        assertEquals(OK.getStatusCode(), listIdentifiersResponse.getStatusCode());
+
+        // Validate the service section of the OAI response: 
+        responseXmlPath = validateOaiVerbResponse(listIdentifiersResponse, "ListIdentifiers");
+
+        // ... and confirm that the record for our dataset is still listed...
+        ret = responseXmlPath.getList("OAI-PMH.ListIdentifiers.header");
+        assertEquals(1, ret.size());
+        assertEquals(singleSetDatasetPersistentId, responseXmlPath
+                .getString("OAI-PMH.ListIdentifiers.header.identifier"));
+  
+        // ... BUT, it should be marked as "deleted" now:
+        assertEquals(responseXmlPath.getString("OAI-PMH.ListIdentifiers.header.@status"), "deleted");
 
     }
     
@@ -569,9 +673,13 @@ public class HarvestingServerIT {
         // in the class init: 
 
         String setName = UtilIT.getRandomString(6);
-        String setQuery = "(dsPersistentId:" + singleSetDatasetIdentifier;
+        String setQuery = "";
         for (String persistentId : extraDatasetsIdentifiers) {
-            setQuery = setQuery.concat(" OR dsPersistentId:" + persistentId);
+            if (setQuery.equals("")) {
+                setQuery = "(dsPersistentId:" + persistentId;
+            } else {
+                setQuery = setQuery.concat(" OR dsPersistentId:" + persistentId);
+            }
         }
         setQuery = setQuery.concat(")");
 
@@ -712,7 +820,6 @@ public class HarvestingServerIT {
         
         boolean allDatasetsListed = true; 
         
-        allDatasetsListed = persistentIdsInListIdentifiers.contains(singleSetDatasetIdentifier);
         for (String persistentId : extraDatasetsIdentifiers) {
             allDatasetsListed = allDatasetsListed && persistentIdsInListIdentifiers.contains(persistentId); 
         }
@@ -837,12 +944,11 @@ public class HarvestingServerIT {
         // Record the last identifier listed on this final page:
         persistentIdsInListRecords.add(ret.get(0).substring(ret.get(0).lastIndexOf('/') + 1));
         
-        // Finally, let's confirm that the expected 5 datasets have been listed
+        // Finally, let's confirm again that the expected 5 datasets have been listed
         // as part of this Set: 
         
         allDatasetsListed = true; 
         
-        allDatasetsListed = persistentIdsInListRecords.contains(singleSetDatasetIdentifier);
         for (String persistentId : extraDatasetsIdentifiers) {
             allDatasetsListed = allDatasetsListed && persistentIdsInListRecords.contains(persistentId); 
         }
@@ -860,11 +966,32 @@ public class HarvestingServerIT {
         logger.info("deleteResponse.getStatusCode(): " + deleteResponse.getStatusCode());
         assertEquals(200, deleteResponse.getStatusCode(), "Failed to delete the control multi-record set");
     }
-    
+
+    @Test
+    public void testInvalidQueryParams() {
+
+        // The query parameter "verb" must appear.
+        Response noVerbArg = given().get("/oai?foo=bar");
+        noVerbArg.prettyPrint();
+        noVerbArg.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("oai.error.@code", equalTo("badVerb"))
+                .body("oai.error", equalTo("No argument 'verb' found"));
+
+        // The query parameter "verb" cannot appear more than once.
+        Response repeated = given().get( "/oai?verb=foo&verb=bar");
+        repeated.prettyPrint();
+        repeated.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("oai.error.@code", equalTo("badVerb"))
+                .body("oai.error", equalTo("Verb must be singular, given: '[foo, bar]'"));
+
+    }
+
     // TODO: 
     // What else can we test? 
     // Some ideas: 
-    // - Test handling of deleted dataset records
+    // - Test handling of deleted dataset records - DONE! 
     // - Test "from" and "until" time parameters
     // - Validate full verb response records against XML schema
     //   (for each supported metadata format, possibly?)

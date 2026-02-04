@@ -122,5 +122,4 @@ convenient usage of it anywhere in the codebase. When adding a flag, please add 
 status, add some Javadocs about the flagged feature and add a ``@since`` tag to make it easier to identify when a flag
 has been introduced.
 
-We want to maintain a list of all :ref:`feature flags <feature-flags>` in the :ref:`configuration guide <feature-flags>`,
-please add yours to the list.
+Add the feature flag to the list at :ref:`feature flags <feature-flags>`.

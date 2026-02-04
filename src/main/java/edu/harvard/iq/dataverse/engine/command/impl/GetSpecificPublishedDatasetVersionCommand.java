@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -15,27 +16,45 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 /**
- *
  * @author Naomi
  */
 // No permission needed to view published dvObjects
 @RequiredPermissions({})
-public class GetSpecificPublishedDatasetVersionCommand extends AbstractCommand<DatasetVersion>{
+public class GetSpecificPublishedDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
     private final Dataset ds;
     private final long majorVersion;
     private final long minorVersion;
-    
+    private boolean includeDeaccessioned;
+    private boolean checkPerms;
+
     public GetSpecificPublishedDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset, long majorVersionNum, long minorVersionNum) {
+        this(aRequest, anAffectedDataset, majorVersionNum, minorVersionNum, false, false);
+    }
+
+   
+
+    public GetSpecificPublishedDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset, long majorVersionNum, long minorVersionNum, boolean includeDeaccessioned, boolean checkPerms) {
         super(aRequest, anAffectedDataset);
         ds = anAffectedDataset;
         majorVersion = majorVersionNum;
         minorVersion = minorVersionNum;
+        this.includeDeaccessioned = includeDeaccessioned;
+        this.checkPerms = checkPerms;
     }
+
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-        for (DatasetVersion dsv: ds.getVersions()) {
-            if (dsv.isReleased()) {
+        
+        for (DatasetVersion dsv : ds.getVersions()) {
+            if (dsv.isReleased() || (includeDeaccessioned && dsv.isDeaccessioned())) {
+                
+                if(dsv.isDeaccessioned() && checkPerms){
+                    if(!ctxt.permissions().requestOn(getRequest(), ds).has(Permission.EditDataset)){
+                        return null;
+                    }
+                }
+
                 if (dsv.getVersionNumber().equals(majorVersion) && dsv.getMinorVersionNumber().equals(minorVersion)) {
                     return dsv;
                 }
@@ -43,5 +62,5 @@ public class GetSpecificPublishedDatasetVersionCommand extends AbstractCommand<D
         }
         return null;
     }
-    
+
 }

@@ -3,7 +3,10 @@ package edu.harvard.iq.dataverse.api.auth;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 
@@ -13,6 +16,7 @@ import jakarta.ws.rs.core.UriInfo;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.util.UrlSignerUtil.SIGNED_URL_TOKEN;
 import static edu.harvard.iq.dataverse.util.UrlSignerUtil.SIGNED_URL_USER;
@@ -27,6 +31,10 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
 
     @Inject
     protected AuthenticationServiceBean authSvc;
+    @Inject
+    protected PrivateUrlServiceBean privateUrlSvc;
+    
+    private static final Logger logger = Logger.getLogger(SignedUrlAuthMechanism.class.getCanonicalName());
 
     @Override
     public User findUserFromRequest(ContainerRequestContext containerRequestContext) throws WrappedAuthErrorResponse {
@@ -34,19 +42,19 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
         if (signedUrlRequestParameter == null) {
             return null;
         }
-        AuthenticatedUser authUser = getAuthenticatedUserFromSignedUrl(containerRequestContext);
-        if (authUser != null) {
-            return authUser;
+        User user = getAuthenticatedUserFromSignedUrl(containerRequestContext);
+        if (user != null) {
+            return user;
         }
-        throw new WrappedAuthErrorResponse(RESPONSE_MESSAGE_BAD_SIGNED_URL);
+        throw new WrappedUnauthorizedAuthErrorResponse(RESPONSE_MESSAGE_BAD_SIGNED_URL);
     }
 
     private String getSignedUrlRequestParameter(ContainerRequestContext containerRequestContext) {
         return containerRequestContext.getUriInfo().getQueryParameters().getFirst(SIGNED_URL_TOKEN);
     }
 
-    private AuthenticatedUser getAuthenticatedUserFromSignedUrl(ContainerRequestContext containerRequestContext) {
-        AuthenticatedUser authUser = null;
+    private User getAuthenticatedUserFromSignedUrl(ContainerRequestContext containerRequestContext) {
+        User user = null;
         // The signedUrl contains a param telling which user this is supposed to be for.
         // We don't trust this. So we lookup that user, and get their API key, and use
         // that as a secret in validating the signedURL. If the signature can't be
@@ -54,17 +62,38 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
         // we reject the request.
         UriInfo uriInfo = containerRequestContext.getUriInfo();
         String userId = uriInfo.getQueryParameters().getFirst(SIGNED_URL_USER);
-        AuthenticatedUser targetUser = authSvc.getAuthenticatedUser(userId);
-        ApiToken userApiToken = authSvc.findApiTokenByUser(targetUser);
+        User targetUser = null; 
+        ApiToken userApiToken = null;
+        if (!userId.startsWith(PrivateUrlUser.PREFIX)) {
+            targetUser = authSvc.getAuthenticatedUser(userId);
+            userApiToken = authSvc.findApiTokenByUser((AuthenticatedUser) targetUser);
+        } else {
+            PrivateUrl privateUrl = privateUrlSvc.getPrivateUrlFromDatasetId(Long.parseLong(userId.substring(PrivateUrlUser.PREFIX.length())));
+            userApiToken = new ApiToken();
+            userApiToken.setTokenString(privateUrl.getToken());
+            targetUser = privateUrlSvc.getPrivateUrlUserFromToken(privateUrl.getToken());
+        }
         if (targetUser != null && userApiToken != null) {
             String signedUrl = URLDecoder.decode(uriInfo.getRequestUri().toString(), StandardCharsets.UTF_8);
+            
+            logger.fine("Original URL: " + containerRequestContext.getUriInfo().getRequestUri().toString());
+            String forwardedProto = containerRequestContext.getHeaderString("X-Forwarded-Proto");
+            logger.fine("X-Forwarded-Proto is: " + forwardedProto);
+            
+
+            if (forwardedProto != null && !forwardedProto.isEmpty()) {
+                if ("https".equalsIgnoreCase(forwardedProto) && signedUrl.toLowerCase().startsWith("http:")) {
+                    signedUrl = "https" + signedUrl.substring(4);
+                }
+            }
+
             String requestMethod = containerRequestContext.getMethod();
             String signedUrlSigningKey = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + userApiToken.getTokenString();
             boolean isSignedUrlValid = UrlSignerUtil.isValidUrl(signedUrl, userId, requestMethod, signedUrlSigningKey);
             if (isSignedUrlValid) {
-                authUser = targetUser;
+                user = targetUser;
             }
         }
-        return authUser;
+        return user;
     }
 }

@@ -1,46 +1,45 @@
 package edu.harvard.iq.dataverse.dataset;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
+
+import edu.harvard.iq.dataverse.dataaccess.InputStreamIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+
+import jakarta.enterprise.inject.spi.CDI;
 import org.apache.commons.io.IOUtils;
-import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.license.License;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.EnumUtils;
+import org.apache.logging.log4j.util.Strings;
 
 public class DatasetUtil {
 
@@ -116,13 +115,19 @@ public class DatasetUtil {
      *
      * @param dataset
      * @param datasetVersion
-     * @return
+     * @param size of the requested thumbnail
+     * @return DatasetThumbnail object, or null if not available
      */
     public static DatasetThumbnail getThumbnail(Dataset dataset, DatasetVersion datasetVersion, int size) {
         if (dataset == null) {
             return null;
         }
 
+        if (size == 0) {
+            // Size 0 will fail (and set the failure flag) and should never be sent
+            logger.warning("getThumbnail called with size 0");
+            return null;
+        }        
         StorageIO<Dataset> dataAccess = null;
                 
         try{
@@ -216,7 +221,8 @@ public class DatasetUtil {
             storageIO.deleteAuxObject(datasetLogoThumbnail + thumbExtension + ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
         } catch (IOException ex) {
-            logger.info("Failed to delete dataset logo: " + ex.getMessage());
+            logger.fine("Failed to delete dataset logo: " + ex.getMessage() + 
+                    " (this is most likely harmless; this method is often called without checking if the custom dataset logo was in fact present)");
             return false;
         }
         return true;
@@ -282,7 +288,7 @@ public class DatasetUtil {
         try {
             tmpFile = FileUtil.inputStreamToFile(inputStream);
         } catch (IOException ex) {
-        	logger.severe(ex.getMessage());
+        	logger.severe("FileUtil.inputStreamToFile failed for tmpFile: " + ex.getMessage());
         }
 
         StorageIO<Dataset> dataAccess = null;
@@ -291,7 +297,7 @@ public class DatasetUtil {
              dataAccess = DataAccess.getStorageIO(dataset);
         }
         catch(IOException ioex){
-            //TODO: Add a suitable waing message
+            //TODO: Add a suitable warning message
             logger.warning("Failed to save the file, storage id " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
         }
         
@@ -308,7 +314,7 @@ public class DatasetUtil {
             fullSizeImage = ImageIO.read(tmpFile);
         } catch (IOException ex) {
         	IOUtils.closeQuietly(inputStream);
-            logger.severe(ex.getMessage());
+            logger.severe("ImageIO.read failed for tmpFile: " + ex.getMessage());
             return null;
         }
         if (fullSizeImage == null) {
@@ -319,25 +325,14 @@ public class DatasetUtil {
         int width = fullSizeImage.getWidth();
         int height = fullSizeImage.getHeight();
         FileChannel src = null;
-        try {
-            src = new FileInputStream(tmpFile).getChannel();
-        } catch (FileNotFoundException ex) {
-        	IOUtils.closeQuietly(inputStream);
-            logger.severe(ex.getMessage());
-            return null;
-        }
         FileChannel dest = null;
-        try {
-            dest = new FileOutputStream(tmpFile).getChannel();
-        } catch (FileNotFoundException ex) {
-        	IOUtils.closeQuietly(inputStream);
-            logger.severe(ex.getMessage());
-            return null;
-        }
-        try {
+        try (FileInputStream fis = new FileInputStream(tmpFile); FileOutputStream fos = new FileOutputStream(tmpFile)) {
+            src = fis.getChannel();
+            dest = fos.getChannel();
             dest.transferFrom(src, 0, src.size());
         } catch (IOException ex) {
-            logger.severe(ex.getMessage());
+        	IOUtils.closeQuietly(inputStream);
+            logger.severe("Error occurred during transfer using FileChannels: " + ex.getMessage());
             return null;
         }
         File tmpFileForResize = null;
@@ -345,7 +340,7 @@ public class DatasetUtil {
         	//The stream was used around line 274 above, so this creates an empty file (OK since all it is used for is getting a path, but not reusing it here would make it easier to close it above.)
             tmpFileForResize = FileUtil.inputStreamToFile(inputStream);
         } catch (IOException ex) {
-            logger.severe(ex.getMessage());
+            logger.severe("FileUtil.inputStreamToFile failed for tmpFileForResize: " + ex.getMessage());
             return null;
         } finally {
         	IOUtils.closeQuietly(inputStream);
@@ -353,30 +348,44 @@ public class DatasetUtil {
         // We'll try to pre-generate the rescaled versions in both the 
         // DEFAULT_DATASET_LOGO (currently 140) and DEFAULT_CARDIMAGE_SIZE (48)
         String thumbFileLocation = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE, tmpFileForResize.toPath().toString());
-        logger.fine("thumbFileLocation = " + thumbFileLocation);
-        logger.fine("tmpFileLocation=" + tmpFileForResize.toPath().toString());
-        //now we must save the updated thumbnail 
-        try {
-            dataAccess.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail+thumbExtension+ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
-        } catch (IOException ex) {
-            logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
+        if (thumbFileLocation == null) {
+            logger.warning("Rescale Thumbnail Image to logo failed");
+            dataset.setPreviewImageAvailable(false);
+            dataset.setUseGenericThumbnail(true);
+        } else {
+            logger.fine("thumbFileLocation = " + thumbFileLocation);
+            logger.fine("tmpFileLocation=" + tmpFileForResize.toPath().toString());
+            //now we must save the updated thumbnail
+            try {
+                dataAccess.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail + thumbExtension + ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
+            } catch (IOException ex) {
+                logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
+            }
         }
         
         thumbFileLocation = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, tmpFileForResize.toPath().toString());
-        logger.fine("thumbFileLocation = " + thumbFileLocation);
-        logger.fine("tmpFileLocation=" + tmpFileForResize.toPath().toString());
-        //now we must save the updated thumbnail 
-        try {
-            dataAccess.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail+thumbExtension+ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-        } catch (IOException ex) {
-            logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
+        if (thumbFileLocation == null) {
+            logger.warning("Rescale Thumbnail Image to card failed");
+            dataset.setPreviewImageAvailable(false);
+            dataset.setUseGenericThumbnail(true);
+        } else {
+            logger.fine("thumbFileLocation = " + thumbFileLocation);
+            logger.fine("tmpFileLocation=" + tmpFileForResize.toPath().toString());
+            //now we must save the updated thumbnail
+            try {
+                dataAccess.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail + thumbExtension + ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+            } catch (IOException ex) {
+                logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
+            }
         }
         
         //This deletes the tempfiles created for rescaling and encoding
         boolean tmpFileWasDeleted = tmpFile.delete();
         boolean originalTempFileWasDeleted = tmpFileForResize.delete();
         try {
-            Files.delete(Paths.get(thumbFileLocation));
+            if (thumbFileLocation != null) {
+                Files.delete(Paths.get(thumbFileLocation));
+            }
         } catch (IOException ioex) {
             logger.fine("Failed to delete temporary thumbnail file");
         }
@@ -396,18 +405,86 @@ public class DatasetUtil {
             String base64Image = datasetThumbnail.getBase64image();
             String leadingStringToRemove = FileUtil.DATA_URI_SCHEME;
             String encodedImg = base64Image.substring(leadingStringToRemove.length());
-            byte[] decodedImg = null;
-            try {
-                decodedImg = Base64.getDecoder().decode(encodedImg.getBytes("UTF-8"));
-                logger.fine("returning this many bytes for  " + "dataset id: " + dataset.getId() + ", persistentId: " + dataset.getIdentifier() + " :" + decodedImg.length);
-            } catch (UnsupportedEncodingException ex) {
-                logger.info("dataset thumbnail could not be decoded for dataset id " + dataset.getId() + ": " + ex);
-                return null;
-            }
+            byte[] decodedImg = Base64.getDecoder().decode(encodedImg.getBytes(StandardCharsets.UTF_8));
+            logger.fine("returning this many bytes for  " + "dataset id: " + dataset.getId() + ", persistentId: " + dataset.getIdentifier() + " :" + decodedImg.length);
             ByteArrayInputStream nonDefaultDatasetThumbnail = new ByteArrayInputStream(decodedImg);
             logger.fine("For dataset id " + dataset.getId() + " a thumbnail was found and is being returned.");
             return nonDefaultDatasetThumbnail;
         }
+    }
+    
+    public static InputStream getLogoAsInputStream(Dataset dataset) {
+        if (dataset == null) {
+            return null;
+        }
+        StorageIO<Dataset> dataAccess = null;
+
+        try {
+            dataAccess = DataAccess.getStorageIO(dataset);
+        } catch (IOException ioex) {
+            logger.warning("getLogo(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier()
+                    + " (" + ioex.getMessage() + ")");
+        }
+
+        InputStream in = null;
+        try {
+            if (dataAccess == null) {
+                logger.warning(
+                        "getLogo(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier());
+            } else {
+                in = dataAccess.getAuxFileAsInputStream(datasetLogoFilenameFinal);
+            }
+        } catch (IOException ex) {
+            logger.fine(
+                    "Dataset-level thumbnail file does not exist, or failed to open; will try to find an image file that can be used as the thumbnail.");
+        }
+
+        if (in == null) {
+            DataFile thumbnailFile = dataset.getThumbnailFile();
+
+            if (thumbnailFile == null) {
+                if (dataset.isUseGenericThumbnail()) {
+                    logger.fine("Dataset (id :" + dataset.getId() + ") does not have a logo and is 'Use Generic'.");
+                    return null;
+                } else {
+                    thumbnailFile = attemptToAutomaticallySelectThumbnailFromDataFiles(dataset, null);
+                    if (thumbnailFile == null) {
+                        logger.fine("Dataset (id :" + dataset.getId()
+                                + ") does not have a logo available that could be selected automatically.");
+                        return null;
+                    } else {
+
+                    }
+                }
+            }
+            if (thumbnailFile.isRestricted()) {
+                logger.fine("Dataset (id :" + dataset.getId()
+                        + ") has a logo the user selected but the file must have later been restricted. Returning null.");
+                return null;
+            }
+
+            try {
+
+                boolean origImageFailed = thumbnailFile.isPreviewImageFail();
+                InputStreamIO isIO = ImageThumbConverter.getImageThumbnailAsInputStream(thumbnailFile.getStorageIO(),
+                        ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
+                if (!origImageFailed && thumbnailFile.isPreviewImageFail()) {
+                    // We found an older 0 length thumbnail. Newer image uploads will not have this issue.
+                    // Once cleaned up, this thumbnail will no longer have this issue
+                    // ImageThumbConverter fixed the DataFile
+                    // Now we need to update dataset since this is a bad logo
+                    DatasetServiceBean datasetService = CDI.current().select(DatasetServiceBean.class).get();
+                    datasetService.clearDatasetLevelThumbnail(dataset);
+                }
+                in = isIO != null ? isIO.getInputStream() : null;
+            } catch (IOException ioex) {
+                logger.warning("getLogo(): Failed to get logo from DataFile for " + dataset.getStorageIdentifier()
+                        + " (" + ioex.getMessage() + ")");
+                ioex.printStackTrace();
+            }
+
+        }
+        return in;
     }
 
     /**
@@ -455,7 +532,7 @@ public class DatasetUtil {
         } else {
             summaryFieldNames = customFieldNames;
         }
-        return summaryFieldNames.split(",");
+        return ListSplitUtil.split(summaryFieldNames).toArray(new String[0]);
     }
 
     public static boolean isRsyncAppropriateStorageDriver(Dataset dataset){
@@ -521,7 +598,7 @@ public class DatasetUtil {
         // for the filter to whitelist by these attributes. 
         
         try {
-            jsonMetadata = json(ds).add("datasetVersion", json(ds.getLatestVersion()))
+            jsonMetadata = json(ds).add("datasetVersion", json(ds.getLatestVersion(), true))
                     .add("sourceAddress", sourceAddressLabel)
                     .add("userIdentifier", userIdentifier)
                     .add("parentAlias", ds.getOwner().getAlias())
@@ -540,7 +617,7 @@ public class DatasetUtil {
         
         try {
             File tempFile = File.createTempFile("datasetMetadataCheck", ".tmp");
-            FileUtils.writeStringToFile(tempFile, jsonMetadata);
+            FileUtils.writeStringToFile(tempFile, jsonMetadata, StandardCharsets.UTF_8);
             
             // run the external executable: 
             String[] params = { executable, tempFile.getAbsolutePath() };
@@ -566,6 +643,15 @@ public class DatasetUtil {
     }
 
     public static String getLicenseName(DatasetVersion dsv) {
+
+        DatasetVersionServiceBean datasetVersionService = CDI.current().select(DatasetVersionServiceBean.class).get();
+        /*
+        Special case where there are default custom terms indicating that no actual choice has been made...
+         */
+        if (datasetVersionService.isVersionDefaultCustomTerms(dsv)) {
+            return BundleUtil.getStringFromBundle("license.none.chosen");
+        }
+
         License license = DatasetUtil.getLicense(dsv);
         return getLocalizedLicenseName(license);
     }
@@ -580,10 +666,10 @@ public class DatasetUtil {
         // Return the URI
         // For standard licenses, just return the stored URI
         return (license != null) ? license.getUri().toString()
-                // For custom terms, construct a URI with :draft or the version number in the URI
+                // For custom terms, construct a URI with draft version constant or the version number in the URI
                 : (dsv.getVersionState().name().equals("DRAFT")
                         ? dsv.getDataverseSiteUrl()
-                                + "/api/datasets/:persistentId/versions/:draft/customlicense?persistentId="
+                                + "/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "/customlicense?persistentId="
                                 + dsv.getDataset().getGlobalId().asString()
                         : dsv.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/" + dsv.getVersionNumber()
                                 + "." + dsv.getMinorVersionNumber() + "/customlicense?persistentId="
@@ -596,7 +682,16 @@ public class DatasetUtil {
     }
 
     public static String getLicenseDescription(DatasetVersion dsv) {
+        
+        DatasetVersionServiceBean datasetVersionService = CDI.current().select(DatasetVersionServiceBean.class).get();
+        /*
+        Special case where there are default custom terms indicating that no actual choice has been made...
+         */
+        if (datasetVersionService.isVersionDefaultCustomTerms(dsv)) {
+            return BundleUtil.getStringFromBundle("license.none.chosen.description");
+        }
         License license = DatasetUtil.getLicense(dsv);
+        
         return license != null ? getLocalizedLicenseDetails(license,"DESCRIPTION") : BundleUtil.getStringFromBundle("license.custom.description");
     }
 
@@ -623,17 +718,25 @@ public class DatasetUtil {
         return localizedLicenseValue;
     }
 
-    public static String getLocaleExternalStatus(String status) {
-        String localizedName =  "" ;
-        try {
-            localizedName = BundleUtil.getStringFromPropertyFile(status.toLowerCase().replace(" ", "_"), "CurationLabels");
+    public static String getLocaleCurationStatusLabel(CurationStatus status) {
+        String label = (status != null && Strings.isNotBlank(status.getLabel())) ? status.getLabel() : null;
+        return getLocaleCurationStatusLabelFromString(label);
+    }
+
+    public static String getLocaleCurationStatusLabelFromString(String label) {
+
+        if (label == null) {
+            return null;
         }
-        catch (Exception e) {
-            localizedName = status;
+        String localizedName = "";
+        try {
+            localizedName = BundleUtil.getStringFromPropertyFile(label.toLowerCase().replace(" ", "_"), "CurationLabels");
+        } catch (Exception e) {
+            localizedName = label;
         }
 
         if (localizedName == null) {
-            localizedName = status ;
+            localizedName = label;
         }
         return localizedName;
     }

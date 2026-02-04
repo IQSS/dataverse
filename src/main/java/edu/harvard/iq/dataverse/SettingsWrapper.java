@@ -6,12 +6,15 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.MailUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.UserNotification.Type;
@@ -24,6 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.Set;
 
@@ -62,6 +66,9 @@ public class SettingsWrapper implements java.io.Serializable {
     
     @EJB
     MetadataBlockServiceBean mdbService;
+    
+    @EJB
+    MailServiceBean mailServiceBean;
 
     private Map<String, String> settingsMap;
     
@@ -70,6 +77,9 @@ public class SettingsWrapper implements java.io.Serializable {
     
     private boolean embargoDateChecked = false;
     private LocalDate maxEmbargoDate = null;
+
+    private boolean retentionDateChecked = false;
+    private LocalDate minRetentionDate = null;
 
     private String siteUrl = null; 
     
@@ -88,6 +98,7 @@ public class SettingsWrapper implements java.io.Serializable {
     //External Vocabulary support
     private Map<Long, JsonObject> cachedCvocMap = null;
     private Map<Long, JsonObject> cachedCvocByTermFieldMap = null;
+    private Set<Long> cvocFieldSet;
     
     private Long zipDownloadLimit = null; 
     
@@ -113,7 +124,9 @@ public class SettingsWrapper implements java.io.Serializable {
     
     private Boolean webloaderUpload = null;
     
-    private String metricsUrl = null; 
+    private String metricsUrl = null;
+
+    private String publishDatasetDisclaimerText = null;
     
     private Boolean dataFilePIDSequentialDependent = null;
     
@@ -207,7 +220,7 @@ public class SettingsWrapper implements java.io.Serializable {
     private void initSettingsMap() {
         // initialize settings map
         settingsMap = new HashMap<>();
-        for (Setting setting : settingsService.listAll()) {
+        for (Setting setting : settingsService.listAllWithoutLocalizations()) {
             settingsMap.put(setting.getName(), setting.getContent());
         }
     }
@@ -295,14 +308,16 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return publicInstall; 
     }
-    
+
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isRsyncUpload() {
         if (rsyncUpload == null) {
             rsyncUpload = getUploadMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString());
         }
         return rsyncUpload; 
     }
-    
+
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isRsyncDownload() {
         if (rsyncDownload == null) {
             rsyncDownload = systemConfig.isRsyncDownload();
@@ -332,11 +347,28 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     public boolean isGlobusEnabledStorageDriver(String driverId) {
-        if (globusStoreList == null) {
-            globusStoreList = systemConfig.getGlobusStoresList();
-        }
-        return globusStoreList.contains(driverId);
+        return (GlobusAccessibleStore.acceptsGlobusTransfers(driverId) || GlobusAccessibleStore.allowsGlobusReferences(driverId));
     }
+    
+    public boolean isDownloadable(FileMetadata fmd) {
+        boolean downloadable=true;
+        if(isGlobusFileDownload()) {
+            String driverId = DataAccess.getStorageDriverFromIdentifier(fmd.getDataFile().getStorageIdentifier());
+            
+            downloadable = downloadable && StorageIO.isDataverseAccessible(driverId); 
+        }
+        return downloadable;
+    }
+    
+    public boolean isGlobusTransferable(FileMetadata fmd) {
+        boolean globusTransferable=true;
+        if(isGlobusFileDownload()) {
+            String driverId = DataAccess.getStorageDriverFromIdentifier(fmd.getDataFile().getStorageIdentifier());
+            globusTransferable = GlobusAccessibleStore.isGlobusAccessible(driverId);
+        }
+        return globusTransferable;
+    }
+    
     
     public String getGlobusAppUrl() {
         if (globusAppUrl == null) {
@@ -352,7 +384,8 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return webloaderUpload;
     }
-    
+
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isRsyncOnly() {
         if (rsyncOnly == null) {
             String downloadMethods = getValueForKey(SettingsServiceBean.Key.DownloadMethods);
@@ -362,16 +395,18 @@ public class SettingsWrapper implements java.io.Serializable {
                 rsyncOnly = false;
             } else {
                 String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods);
-                if (uploadMethods==null){
+                if (uploadMethods == null) {
                     rsyncOnly = false;
                 } else {
-                    rsyncOnly = Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+                    String normalizedUploadMethods = uploadMethods.toLowerCase();
+                    rsyncOnly = ListSplitUtil.split(normalizedUploadMethods).size() == 1
+                            && normalizedUploadMethods.equals(SystemConfig.FileUploadMethods.RSYNC.toString());
                 }
             }
         }
         return rsyncOnly;
     }
-    
+
     public boolean isHTTPUpload(){
         if (httpUpload == null) {
             httpUpload = getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());
@@ -379,32 +414,25 @@ public class SettingsWrapper implements java.io.Serializable {
         return httpUpload;      
     }
     
-    public boolean isDataFilePIDSequentialDependent(){
-        if (dataFilePIDSequentialDependent == null) {
-            dataFilePIDSequentialDependent = systemConfig.isDataFilePIDSequentialDependent();
-        }
-        return dataFilePIDSequentialDependent;
-    }
-    
     public String getSupportTeamName() {
-        String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
-        InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
+        // TODO: should this be replaced with mailServiceBean.getSupportAddress() to expose a configured support team?
+        InternetAddress systemAddress = mailServiceBean.getSystemAddress().orElse(null);
         return BrandingUtil.getSupportTeamName(systemAddress);
     }
     
     public String getSupportTeamEmail() {
-        String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
-        InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);        
+        // TODO: should this be replaced with mailServiceBean.getSupportAddress() to expose a configured support team?
+        InternetAddress systemAddress = mailServiceBean.getSystemAddress().orElse(null);
         return BrandingUtil.getSupportTeamEmailAddress(systemAddress) != null ? BrandingUtil.getSupportTeamEmailAddress(systemAddress) : BrandingUtil.getSupportTeamName(systemAddress);
     }
     
     public Integer getUploadMethodsCount() {
         if (uploadMethodsCount == null) {
-            String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods); 
-            if (uploadMethods==null){
+            String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods);
+            if (uploadMethods == null) {
                 uploadMethodsCount = 0;
             } else {
-                uploadMethodsCount = Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
+                uploadMethodsCount = ListSplitUtil.split(uploadMethods).size();
             } 
         }
         return uploadMethodsCount;
@@ -449,23 +477,6 @@ public class SettingsWrapper implements java.io.Serializable {
         return configuredLocales;
     }
     
-    public boolean isDoiInstallation() {
-        String protocol = getValueForKey(SettingsServiceBean.Key.Protocol);
-        if ("doi".equals(protocol)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean isDataCiteInstallation() {
-        String protocol = getValueForKey(SettingsServiceBean.Key.DoiProvider);
-        if ("DataCite".equals(protocol)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 
     public boolean isMakeDataCountDisplayEnabled() {
         boolean safeDefaultIfKeyNotFound = (getValueForKey(SettingsServiceBean.Key.MDCLogPath)!=null); //Backward compatible
@@ -495,7 +506,7 @@ public class SettingsWrapper implements java.io.Serializable {
         if (anonymizedFieldTypes == null) {
             anonymizedFieldTypes = new ArrayList<String>();
             String names = get(SettingsServiceBean.Key.AnonymizedFieldTypeNames.toString(), "");
-            anonymizedFieldTypes.addAll(Arrays.asList(names.split(",\\s")));
+            anonymizedFieldTypes.addAll(ListSplitUtil.split(names));
         }
         return anonymizedFieldTypes.contains(df.getDatasetFieldType().getName());
     }
@@ -582,6 +593,89 @@ public class SettingsWrapper implements java.io.Serializable {
         }
     }
 
+    public LocalDate getMinRetentionDate() {
+        if (!retentionDateChecked) {
+            String months = getValueForKey(Key.MinRetentionDurationInMonths);
+            Long minMonths = null;
+            if (months != null) {
+                try {
+                    minMonths = Long.parseLong(months);
+                } catch (NumberFormatException nfe) {
+                    logger.warning("Cant interpret :MinRetentionDurationInMonths as a long");
+                }
+            }
+
+            if (minMonths != null && minMonths != 0) {
+                if (minMonths == -1) {
+                    minMonths = 0l; // Absolute minimum is 0
+                }
+                minRetentionDate = LocalDate.now().plusMonths(minMonths);
+            }
+            retentionDateChecked = true;
+        }
+        return minRetentionDate;
+    }
+
+    public LocalDate getMaxRetentionDate() {
+        Long maxMonths = 12000l; // Arbitrary cutoff at 1000 years - needs to keep maxDate < year 999999999 and
+        // somehwere 1K> x >10K years the datepicker widget stops showing a popup
+        // calendar
+        return LocalDate.now().plusMonths(maxMonths);
+    }
+
+    public boolean isValidRetentionDate(Retention r) {
+
+        if (r.getDateUnavailable()==null ||
+            isRetentionAllowed() && r.getDateUnavailable().isAfter(getMinRetentionDate())) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean isRetentionAllowed() {
+        //Need a valid :MinRetentionDurationInMonths setting to allow retentions
+        return getMinRetentionDate()!=null;
+    }
+
+    public void validateRetentionDate(FacesContext context, UIComponent component, Object value)
+            throws ValidatorException {
+        if (isRetentionAllowed()) {
+            UIComponent cb = component.findComponent("retentionCheckbox");
+            UIInput endComponent = (UIInput) cb;
+            boolean removedState = false;
+            if (endComponent != null) {
+                try {
+                    removedState = (Boolean) endComponent.getSubmittedValue();
+                } catch (NullPointerException npe) {
+                    // Do nothing - checkbox is not being shown (and is therefore not checked)
+                }
+            }
+            if (!removedState && value == null) {
+                String msgString = BundleUtil.getStringFromBundle("retention.date.required");
+                FacesMessage msg = new FacesMessage(msgString);
+                msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+                throw new ValidatorException(msg);
+            }
+            Retention newR = new Retention(((LocalDate) value), null);
+            if (!isValidRetentionDate(newR)) {
+                String minDate = getMinRetentionDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                String maxDate = getMaxRetentionDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                String msgString = BundleUtil.getStringFromBundle("retention.date.invalid",
+                        Arrays.asList(minDate, maxDate));
+                // If we don't throw an exception here, the datePicker will use it's own
+                // vaidator and display a default message. The value for that can be set by
+                // adding validatorMessage="#{bundle['retention.date.invalid']}" (a version with
+                // no params) to the datepicker
+                // element in file-edit-popup-fragment.html, but it would be better to catch all
+                // problems here (so we can show a message with the min/max dates).
+                FacesMessage msg = new FacesMessage(msgString);
+                msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+                throw new ValidatorException(msg);
+            }
+        }
+    }
+
     Map<String,String> languageMap = null;
     
     public Map<String, String> getBaseMetadataLanguageMap(boolean refresh) {
@@ -594,7 +688,7 @@ public class SettingsWrapper implements java.io.Serializable {
     public Map<String, String> getMetadataLanguages(DvObjectContainer target) {
         Map<String,String> currentMap = new HashMap<String,String>();
         currentMap.putAll(getBaseMetadataLanguageMap(false));
-        currentMap.put(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE, getDefaultMetadataLanguageLabel(target));
+        currentMap.put(DvObjectContainer.UNDEFINED_CODE, getDefaultMetadataLanguageLabel(target));
         return currentMap;
     }
 
@@ -605,7 +699,7 @@ public class SettingsWrapper implements java.io.Serializable {
             String mlCode = target.getOwner().getEffectiveMetadataLanguage();
 
             // If it's undefined, no parent has a metadata language defined, and the global default should be used.
-            if (!mlCode.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+            if (!mlCode.equals(DvObjectContainer.UNDEFINED_CODE)) {
                 // Get the label for the language code found
                 mlLabel = getBaseMetadataLanguageMap(false).get(mlCode);
                 mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
@@ -623,12 +717,38 @@ public class SettingsWrapper implements java.io.Serializable {
             return (String) mdMap.keySet().toArray()[0];
             } else {
                 //More than one - :MetadataLanguages is set and the default is undefined (users must choose if the collection doesn't override the default)
-                return DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE;
+                return DvObjectContainer.UNDEFINED_CODE;
             }
         } else {
             // None - :MetadataLanguages is not set so return null to turn off the display (backward compatibility)
             return null;
         }
+    }
+    
+    public Map<String, String> getGuestbookEntryOptions(DvObjectContainer target) {
+        Map<String, String> currentMap = new HashMap<String, String>();
+        String atDownload = BundleUtil.getStringFromBundle("dataverse.guestbookentry.atdownload");
+        String atRequest = BundleUtil.getStringFromBundle("dataverse.guestbookentry.atrequest");
+        Optional<Boolean> gbDefault = JvmSettings.GUESTBOOK_AT_REQUEST.lookupOptional(Boolean.class);
+        if (gbDefault.isPresent()) {
+            // Three options - inherited/default option, at Download, at Request
+            String useDefault = null;
+            if (target.getOwner() == null) {
+                boolean defaultOption = gbDefault.get();
+                useDefault = (defaultOption ? atRequest : atDownload)
+                        + " " + BundleUtil.getStringFromBundle("dataverse.default");
+            } else {
+                boolean defaultOption = target.getOwner().getEffectiveGuestbookEntryAtRequest();
+                useDefault = (defaultOption ? atRequest : atDownload)
+                        + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
+            }
+            currentMap.put(DvObjectContainer.UNDEFINED_CODE, useDefault);
+            currentMap.put(Boolean.toString(true), atRequest);
+            currentMap.put(Boolean.toString(false), atDownload);
+        } else {
+            // Setting not defined - leave empty
+        }
+        return currentMap;
     }
     
     public Dataverse getRootDataverse() {
@@ -691,6 +811,17 @@ public class SettingsWrapper implements java.io.Serializable {
         }
     }
     
+    public boolean isCvocField(Long fieldId) {
+
+        if(cvocFieldSet == null) {
+            cvocFieldSet = fieldService.getCvocFieldSet();
+        }
+        if(cvocFieldSet == null) {
+         return false;
+        }
+        return cvocFieldSet.contains(fieldId);
+    }
+    
     public String getMetricsUrl() {
         if (metricsUrl == null) {
             metricsUrl = getValueForKey(SettingsServiceBean.Key.MetricsUrl);
@@ -699,17 +830,17 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     private Boolean getUploadMethodAvailable(String method){
-        String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods); 
-        if (uploadMethods==null){
+        String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods);
+        if (uploadMethods == null) {
             return false;
         } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
+            return ListSplitUtil.splitToLowerCaseSet(uploadMethods).contains(method);
         }
     }
 
     List<String> allowedExternalStatuses = null;
 
-    public List<String> getAllowedExternalStatuses(Dataset d) {
+    public List<String> getAllowedCurationStatuses(Dataset d) {
         String setName = d.getEffectiveCurationLabelSetName();
         if(setName.equals(SystemConfig.CURATIONLABELSDISABLED)) {
             return new ArrayList<String>();
@@ -742,5 +873,16 @@ public class SettingsWrapper implements java.io.Serializable {
         }
 
         return systemMetadataBlocks;
+    }
+
+    public String getPublishDatasetDisclaimerText() {
+        if (publishDatasetDisclaimerText == null) {
+            publishDatasetDisclaimerText = getValueForKey(Key.PublishDatasetDisclaimerText);
+        }
+        return publishDatasetDisclaimerText;
+    }
+
+    public Boolean isHasPublishDatasetDisclaimerText() {
+        return !StringUtil.isEmpty(getPublishDatasetDisclaimerText());
     }
 }

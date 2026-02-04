@@ -46,8 +46,8 @@ public class BatchServiceBean {
         
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
         
-        validationLog = new PrintWriter(new FileWriter( "../logs/validationLog"+  formatter.format(timestamp)+".txt"));
-        cleanupLog = new PrintWriter(new FileWriter( "../logs/cleanupLog"+  formatter.format(timestamp)+".txt"));
+        validationLog = new PrintWriter(new FileWriter( System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "validationLog"+  formatter.format(timestamp)+".txt"));
+        cleanupLog = new PrintWriter(new FileWriter( System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "cleanupLog"+  formatter.format(timestamp)+".txt"));
         File dir = new File(fileDir);
         if (dir.isDirectory()) {
             for (File file : dir.listFiles()) {

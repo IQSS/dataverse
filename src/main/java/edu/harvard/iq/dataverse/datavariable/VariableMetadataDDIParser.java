@@ -229,6 +229,10 @@ public class VariableMetadataDDIParser {
                         String _freq = parseText(xmlr);
                         if (_freq != null && !_freq.isEmpty()) {
                             cat.setFrequency(new Double(_freq));
+                        } else {
+                            //If frequency is declared it cannot be missing
+                            // throw exception
+                            throw new NullPointerException("Frequency is declared but missing");
                         }
         } else if (wgtd != null && type != null && CAT_STAT_TYPE_FREQUENCY.equalsIgnoreCase(type) &&
                             CAT_STAT_WGTD_FREQUENCY.equalsIgnoreCase(wgtd)) {
@@ -236,6 +240,10 @@ public class VariableMetadataDDIParser {
                         String wfreq = parseText(xmlr);
                         if (wfreq != null && !wfreq.isEmpty()) {
                             cm.setWfreq(new Double(wfreq));
+                        } else {
+                            //if weighted frequency is declared it cannot be empty
+                            //through exception
+                            throw new NullPointerException("Weighted Frequency is declared but missing");
                         }
         }
         return cm;

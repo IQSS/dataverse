@@ -102,28 +102,31 @@ function preliminary_setup()
   # password reset token timeout in minutes
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.auth.password-reset-timeout-in-minutes=60"
 
-  # DataCite DOI Settings
+  # Fake DOI Settings
   # (we can no longer offer EZID with their shared test account)
   # jvm-options use colons as separators, escape as literal
   DOI_BASEURL_ESC=`echo $DOI_BASEURL | sed -e 's/:/\\\:/'`
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.datacite.username=${DOI_USERNAME}"
-  ./asadmin $ASADMIN_OPTS create-jvm-options '\-Ddataverse.pid.datacite.password=${ALIAS=doi_password_alias}'
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.datacite.mds-api-url=$DOI_BASEURL_ESC"
-
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.providers=fake"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.fake.type=FAKE"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.fake.label=Fake DOI Provider"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.fake.authority=10.5072"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.fake.shoulder=FK2/"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.default-provider=fake"
   # jvm-options use colons as separators, escape as literal
-  DOI_DATACITERESTAPIURL_ESC=`echo $DOI_DATACITERESTAPIURL | sed -e 's/:/\\\:/'`
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.datacite.rest-api-url=$DOI_DATACITERESTAPIURL_ESC"
+  #DOI_DATACITERESTAPIURL_ESC=`echo $DOI_DATACITERESTAPIURL | sed -e 's/:/\\\:/'`
+  #./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.testDC.datacite.rest-api-url=$DOI_DATACITERESTAPIURL_ESC"
 
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
-
-  # Workaround for FISH-7722: Failed to deploy war with @Stateless https://github.com/payara/Payara/issues/6337
-  ./asadmin $ASADMIN_OPTS create-jvm-options --add-opens=java.base/java.io=ALL-UNNAMED
 
   # enable comet support
   ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled="true"
 
   # bump the http-listener timeout from 900 to 3600
   ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds="${GLASSFISH_REQUEST_TIMEOUT}"
+
+  # Set SameSite cookie value: https://docs.payara.fish/community/docs/6.2024.6/Technical%20Documentation/Payara%20Server%20Documentation/General%20Administration/Administering%20HTTP%20Connectivity.html
+  ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-value="Lax"
+  ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-enabled="true"
 
   # so we can front with apache httpd ( ProxyPass / ajp://localhost:8009/ )
   ./asadmin $ASADMIN_OPTS create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector
@@ -146,12 +149,10 @@ function final_setup(){
 	# delete any existing mail/notifyMailSession; configure port, if provided:
 
 	./asadmin delete-javamail-resource mail/notifyMailSession
-
-	if [ $SMTP_SERVER_PORT"x" != "x" ]
-	then
-            ./asadmin $ASADMIN_OPTS create-javamail-resource --mailhost "$SMTP_SERVER" --mailuser "dataversenotify" --fromaddress "do-not-reply@${HOST_ADDRESS}" --property mail.smtp.port="${SMTP_SERVER_PORT}" mail/notifyMailSession
-	else
-	    ./asadmin $ASADMIN_OPTS create-javamail-resource --mailhost "$SMTP_SERVER" --mailuser "dataversenotify" --fromaddress "do-not-reply@${HOST_ADDRESS}" mail/notifyMailSession
+	./asadmin $ASADMIN_OPTS create-system-properties "dataverse.mail.system-email='${ADMIN_EMAIL}'"
+  ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.mail.mta.host='${SMTP_SERVER}'"
+	if [ "x${SMTP_SERVER_PORT}" != "x" ]; then
+    ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.mail.mta.port='${SMTP_SERVER_PORT}'"
 	fi
 
 }
@@ -277,6 +278,12 @@ if [ ! -d "$DOMAIN_DIR" ]
   then
     echo Domain directory '$DOMAIN_DIR' does not exist
     exit 2
+fi
+
+if [ -z "$ADMIN_EMAIL" ]
+ then
+  echo "You must specify the system admin email address (ADMIN_EMAIL)."
+  exit 1
 fi
 
 echo "Setting up your app. server (Payara) to support Dataverse"

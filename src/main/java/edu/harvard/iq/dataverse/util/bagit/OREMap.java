@@ -1,19 +1,7 @@
 package edu.harvard.iq.dataverse.util.bagit;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DvObjectContainer;
-import edu.harvard.iq.dataverse.Embargo;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.export.OAI_OREExporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -23,6 +11,7 @@ import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +49,8 @@ public class OREMap {
     public static final String NAME = "OREMap";
     
     //NOTE: Update this value whenever the output of this class is changed
-    private static final String DATAVERSE_ORE_FORMAT_VERSION = "Dataverse OREMap Format v1.0.0";
+    private static final String DATAVERSE_ORE_FORMAT_VERSION = "Dataverse OREMap Format v1.0.1";
+    //v1.0.1 - added versionNote
     private static final String DATAVERSE_SOFTWARE_NAME = "Dataverse";
     private static final String DATAVERSE_SOFTWARE_URL = "https://github.com/iqss/dataverse";
     
@@ -80,7 +70,7 @@ public class OREMap {
     }
 
     public void writeOREMap(OutputStream outputStream) throws Exception {
-        outputStream.write(getOREMap().toString().getBytes("UTF8"));
+        outputStream.write(getOREMap().toString().getBytes(StandardCharsets.UTF_8));
         outputStream.flush();
     }
 
@@ -133,13 +123,15 @@ public class OREMap {
                 .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getTitle())
                 .add(JsonLDTerm.schemaOrg("dateModified").getLabel(), version.getLastUpdateTime().toString());
         addIfNotNull(aggBuilder, JsonLDTerm.schemaOrg("datePublished"), dataset.getPublicationDateFormattedYYYYMMDD());
+        addIfNotNull(aggBuilder, JsonLDTerm.DVCore("versionNote"), version.getVersionNote());
+        
         //Add version state info - DRAFT, RELEASED, DEACCESSIONED, ARCHIVED with extra info for DEACCESIONED
         VersionState vs = version.getVersionState();
         if(vs.equals(VersionState.DEACCESSIONED)) {
             JsonObjectBuilder deaccBuilder = Json.createObjectBuilder();
             deaccBuilder.add(JsonLDTerm.schemaOrg("name").getLabel(), vs.name());
-            deaccBuilder.add(JsonLDTerm.DVCore("reason").getLabel(), version.getVersionNote());
-            addIfNotNull(deaccBuilder, JsonLDTerm.DVCore("forwardUrl"), version.getArchiveNote());
+            deaccBuilder.add(JsonLDTerm.DVCore("reason").getLabel(), version.getDeaccessionNote());
+            addIfNotNull(deaccBuilder, JsonLDTerm.DVCore("forwardUrl"), version.getDeaccessionLink());
             aggBuilder.add(JsonLDTerm.schemaOrg("creativeWorkStatus").getLabel(), deaccBuilder);
             
         } else {
@@ -235,6 +227,17 @@ public class OREMap {
                         embargoObject.add(JsonLDTerm.DVCore("reason").getLabel(), reason);
                     }
                     aggRes.add(JsonLDTerm.DVCore("embargoed").getLabel(), embargoObject);
+                }
+                Retention retention = df.getRetention();
+                if(retention!=null) {
+                    String date = retention.getFormattedDateUnavailable();
+                    String reason= retention.getReason();
+                    JsonObjectBuilder retentionObject = Json.createObjectBuilder();
+                    retentionObject.add(JsonLDTerm.DVCore("dateUnavailable").getLabel(), date);
+                    if(reason!=null) {
+                        retentionObject.add(JsonLDTerm.DVCore("reason").getLabel(), reason);
+                    }
+                    aggRes.add(JsonLDTerm.DVCore("retained").getLabel(), retentionObject);
                 }
                 addIfNotNull(aggRes, JsonLDTerm.directoryLabel, fmd.getDirectoryLabel());
                 addIfNotNull(aggRes, JsonLDTerm.schemaOrg("version"), fmd.getVersion());
@@ -444,38 +447,44 @@ public class OREMap {
 
                 for (DatasetField dsf : dscv.getChildDatasetFields()) {
                     DatasetFieldType dsft = dsf.getDatasetFieldType();
-                    if (excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dsft.getFieldType())) {
-                        continue;
-                    }
-                    // which may have multiple values
-                    if (!dsf.isEmpty()) {
-                        // Add context entry
-                        // ToDo - also needs to recurse here?
-                        JsonLDTerm subFieldName = dsft.getJsonLDTerm();
-                        if (subFieldName.inNamespace()) {
-                            localContext.putIfAbsent(subFieldName.getNamespace().getPrefix(),
-                                    subFieldName.getNamespace().getUrl());
-                        } else {
-                            localContext.putIfAbsent(subFieldName.getLabel(), subFieldName.getUrl());
+                    JsonLDTerm subFieldName = dsft.getJsonLDTerm();
+
+                    if (dsft.isCompound()) {
+                        JsonValue compoundChildVals = getJsonLDForField(dsf, excludeEmail, cvocMap, localContext);
+                        child.add(subFieldName.getLabel(), compoundChildVals);
+                    } else {
+                        if (excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dsft.getFieldType())) {
+                            continue;
                         }
-
-                        List<String> values = dsf.getValues_nondisplay();
-
-                        JsonArrayBuilder childVals = Json.createArrayBuilder();
-
-                        for (String val : dsf.getValues_nondisplay()) {
-                            logger.fine("Child name: " + dsft.getName());
-                            if (cvocMap.containsKey(dsft.getId())) {
-                                logger.fine("Calling addcvocval for: " + dsft.getName());
-                                addCvocValue(val, childVals, cvocMap.get(dsft.getId()), localContext);
+                        // which may have multiple values
+                        if (!dsf.isEmpty()) {
+                            // Add context entry
+                            // ToDo - also needs to recurse here?
+                            if (subFieldName.inNamespace()) {
+                                localContext.putIfAbsent(subFieldName.getNamespace().getPrefix(),
+                                        subFieldName.getNamespace().getUrl());
                             } else {
-                                childVals.add(val);
+                                localContext.putIfAbsent(subFieldName.getLabel(), subFieldName.getUrl());
                             }
-                        }
-                        if (values.size() > 1) {
-                            child.add(subFieldName.getLabel(), childVals);
-                        } else {
-                            child.add(subFieldName.getLabel(), childVals.build().get(0));
+
+                            List<String> values = dsf.getValues_nondisplay();
+
+                            JsonArrayBuilder childVals = Json.createArrayBuilder();
+
+                            for (String val : dsf.getValues_nondisplay()) {
+                                logger.fine("Child name: " + dsft.getName());
+                                if (cvocMap.containsKey(dsft.getId())) {
+                                    logger.fine("Calling addcvocval for: " + dsft.getName());
+                                    addCvocValue(val, childVals, cvocMap.get(dsft.getId()), localContext);
+                                } else {
+                                    childVals.add(val);
+                                }
+                            }
+                            if (values.size() > 1) {
+                                child.add(subFieldName.getLabel(), childVals);
+                            } else {
+                                child.add(subFieldName.getLabel(), childVals.build().get(0));
+                            }
                         }
                     }
                 }

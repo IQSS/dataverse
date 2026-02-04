@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2Aut
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
+import jakarta.json.stream.JsonParsingException;
 import org.passay.CharacterRule;
 
 import jakarta.ejb.EJB;
@@ -27,6 +28,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Year;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -57,12 +59,6 @@ public class SystemConfig {
     AuthenticationServiceBean authenticationService;
     
    public static final String DATAVERSE_PATH = "/dataverse/";
-   
-    /**
-     * Some installations may not want download URLs to their files to be
-     * available in Schema.org JSON-LD output.
-     */
-    public static final String FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS = "dataverse.files.hide-schema-dot-org-download-urls";
 
     /**
      * A JVM option to override the number of minutes for which a password reset
@@ -78,6 +74,7 @@ public class SystemConfig {
     public static final long defaultZipDownloadLimit = 104857600L; // 100MB
     private static final int defaultMultipleUploadFilesLimit = 1000;
     private static final int defaultLoginSessionTimeout = 480; // = 8 hours
+    private static final int defaultGlobusBatchLookupSize = 50; 
     
     private String buildNumber = null;
     
@@ -87,8 +84,8 @@ public class SystemConfig {
     private static final long DEFAULT_THUMBNAIL_SIZE_LIMIT_IMAGE = 3000000L; // 3 MB
     private static final long DEFAULT_THUMBNAIL_SIZE_LIMIT_PDF = 1000000L; // 1 MB
     
-    public final static String DEFAULTCURATIONLABELSET = "DEFAULT";
-    public final static String CURATIONLABELSDISABLED = "DISABLED";
+    public static final String DEFAULTCURATIONLABELSET = "DEFAULT";
+    public static final String CURATIONLABELSDISABLED = "DISABLED";
     
     public String getVersion() {
         return getVersion(false);
@@ -293,9 +290,13 @@ public class SystemConfig {
     }
 
     public String getGuidesBaseUrl() {
+        return getGuidesBaseUrl(true);
+    }
+
+    public String getGuidesBaseUrl(boolean includeLang) {
         String saneDefault = "https://guides.dataverse.org";
         String guidesBaseUrl = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl, saneDefault);
-        return guidesBaseUrl + "/" + getGuidesLanguage();
+        return includeLang ? guidesBaseUrl + "/" + getGuidesLanguage() : guidesBaseUrl;
     }
 
     private String getGuidesLanguage() {
@@ -427,15 +428,24 @@ public class SystemConfig {
     }
     
     public String getApplicationTermsOfUse() {
-        String language = BundleUtil.getCurrentLocale().getLanguage();
+        return getApplicationTermsOfUse(null);
+    }
+
+    public String getApplicationTermsOfUse(String languageIn) {
+        String language = null;
+        if (languageIn != null) {
+            language = languageIn;
+        } else {
+            language = BundleUtil.getCurrentLocale().getLanguage();
+        }
         String saneDefaultForAppTermsOfUse = BundleUtil.getStringFromBundle("system.app.terms");
-        // Get the value for the defaultLocale. IT will either be used as the return
+        // Get the value for the defaultLocale. It will either be used as the return
         // value, or as a better default than the saneDefaultForAppTermsOfUse if there
         // is no language-specific value
         String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
-        //Now get the language-specific value if it exists
+        // Now get the language-specific value if it exists
         if (language != null && !language.equalsIgnoreCase(BundleUtil.getDefaultLocale().getLanguage())) {
-            appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, language,	appTermsOfUse);
+            appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, language, appTermsOfUse);
         }
         return appTermsOfUse;
     }
@@ -473,56 +483,131 @@ public class SystemConfig {
         String fragSize = settingsService.getValueForKey(SettingsServiceBean.Key.SearchHighlightFragmentSize);
         if (fragSize != null) {
             try {
-                return new Integer(fragSize);
+                return Integer.valueOf(fragSize);
             } catch (NumberFormatException nfe) {
                 logger.info("Could not convert " + SettingsServiceBean.Key.SearchHighlightFragmentSize + " to int: " + nfe);
             }
         }
         return null;
     }
-
-    public long getTabularIngestSizeLimit() {
-        // This method will return the blanket ingestable size limit, if 
-        // set on the system. I.e., the universal limit that applies to all 
-        // tabular ingests, regardless of fromat: 
-        
-        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit); 
-        
+    
+    /**
+     * The default key used to identify tabular ingest size limits.
+     * This value represents the standard or fallback configuration.
+     * For any other valid format strings, see implementations of {@code TabularDataFileReader.getFormatName()}.
+     */
+    public static final String TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY = "default";
+    
+    /**
+     * Retrieves the tabular ingest size limits based on the system configuration.
+     * The size limits can be defined as a JSON object with format-specific limits, a single numeric value
+     * applied to all formats, or might not exist, in which case the default limit is applied.
+     *
+     * Note that the format names in the configuration will be transformed to lowercase for user convenience
+     * of how people like to write their formats best.
+     *
+     * If the configuration contains invalid data (e.g., unparsable JSON or non-numeric values),
+     * all tabular ingest operations are disabled by setting size limits to 0.
+     *
+     * TODO: At some later point, if and when the DB lookups or JSON parsing takes a toll to heavy to bear,
+     *       we may introduce a caching singleton for these. (With TTL or using events to invalidate on update.)
+     *
+     * @return a map where the keys represent format names or a default key, and the values represent the maximum allowed size for each format.
+     */
+    public Map<String, Long> getTabularIngestSizeLimits() {
+        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit);
         if (limitEntry != null) {
-            try {
-                Long sizeOption = new Long(limitEntry);
-                return sizeOption;
-            } catch (NumberFormatException nfe) {
-                logger.warning("Invalid value for TabularIngestSizeLimit option? - " + limitEntry);
+            // Case A: the setting is using JSON to support multiple formats
+            if (limitEntry.trim().startsWith("{")) {
+                try (JsonReader reader = Json.createReader(new StringReader(limitEntry))) {
+                    JsonObject limits = reader.readObject();
+                    
+                    Map<String, Long> limitsMap = new HashMap<>();
+                    // We add the default in case the JSON does not contain the default (which is optional).
+                    limitsMap.put(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, -1L);
+                    
+                    for (Map.Entry<String, JsonValue> format : limits.entrySet()) {
+                        String formatName = format.getKey();
+                        String lowercaseFormatName = formatName.toLowerCase();
+                        
+                        try {
+                            JsonValue value = format.getValue();
+                            long sizeOption;
+                            
+                            // We want to be able to use either numbers or string values, so detect which one it is.
+                            // This is necessary as we need to tell the JSON parser what to do, it doesn't automatically handle this for us.
+                            if (value.getValueType() == JsonValue.ValueType.STRING) {
+                                sizeOption = Long.parseLong(limits.getString(formatName));
+                            } else if (value.getValueType() == JsonValue.ValueType.NUMBER) {
+                                // Will throw if not a whole number!
+                                sizeOption = limits.getJsonNumber(formatName).longValueExact();
+                            } else {
+                                logger.warning(() -> "Invalid value type for format " + formatName + ": expected string or number");
+                                logger.warning("Disabling all tabular ingest completely until fixed!");
+                                return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
+                            }
+                            
+                            limitsMap.put(lowercaseFormatName, sizeOption);
+                        } catch (NumberFormatException nfe) {
+                            logger.warning(() -> "Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long for format " + formatName + " (not a valid number)");
+                            logger.warning("Disabling all tabular ingest completely until fixed!");
+                            return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
+                        } catch (ArithmeticException ae) {
+                            logger.warning(() -> "Number too large or has fractional part for format " + formatName);
+                            logger.warning("Disabling all tabular ingest completely until fixed!");
+                            return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
+                        }
+                    }
+                    
+                    return Collections.unmodifiableMap(limitsMap);
+                } catch (JsonParsingException e) {
+                    logger.warning(() -> "Invalid TabularIngestSizeLimit option found, cannot parse JSON: " + e.getMessage());
+                    logger.warning("Disabling all tabular ingest completely until fixed!");
+                    return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
+                }
+            // Case B: It might be just a simple Long, providing a default for all formats.
+            } else {
+                try {
+                    Long limit = Long.valueOf(limitEntry);
+                    return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, limit);
+                } catch (NumberFormatException nfe) {
+                    logger.warning(() -> "Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long: " + nfe);
+                    logger.warning("Disabling all tabular ingest completely until fixed!");
+                    return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
+                }
             }
         }
-        // -1 means no limit is set; 
-        // 0 on the other hand would mean that ingest is fully disabled for 
-        // tabular data. 
-        return -1; 
+        
+        // Default is not to limit at all
+        return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, -1L);
     }
     
+    /**
+     * This method will return the blanket ingestable size limit, if set on the system.
+     * I.e., the universal limit that applies to all tabular ingests, regardless of fromat.
+     * @return -1 = unlimited if not set, 0 if disabled or invalid, some long number of bytes otherwise
+     */
+    public long getTabularIngestSizeLimit() {
+        return getTabularIngestSizeLimits().get(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY);
+    }
+    
+    /**
+     * Retrieves the size limit for tabular data ingestion based on the provided format name.
+     * The format name will be converted to lowercase, making sure the casing doesn't matter.
+     *
+     * @param formatName The name of the format for which the size limit is requested
+     *                   See also implementations of {@code TabularDataFileReader.getFormatName()} for examples.
+     * @return The size limit in bytes for tabular data ingestion associated with the specified format name,
+     *         or the default size limit if no format-specific limit is found or its name is invalid (null, blank, ...).
+     *         -1 = unlimited if not set, 0 if disabled or invalid, some long number of bytes otherwise
+     */
     public long getTabularIngestSizeLimit(String formatName) {
-        // This method returns the size limit set specifically for this format name,
-        // if available, otherwise - the blanket limit that applies to all tabular 
-        // ingests regardless of a format. 
-        
-        if (formatName == null || formatName.equals("")) {
-            return getTabularIngestSizeLimit(); 
+        if (formatName != null && !formatName.isBlank()) {
+            // We convert to lowercase so it doesn't matter which variant someone uses in the JSON config
+            String convertedFormatName = formatName.toLowerCase();
+            return getTabularIngestSizeLimits().getOrDefault(convertedFormatName, getTabularIngestSizeLimit());
         }
-        
-        String limitEntry = settingsService.get(SettingsServiceBean.Key.TabularIngestSizeLimit.toString() + ":" + formatName); 
-                
-        if (limitEntry != null) {
-            try {
-                Long sizeOption = new Long(limitEntry);
-                return sizeOption;
-            } catch (NumberFormatException nfe) {
-                logger.warning("Invalid value for TabularIngestSizeLimit:" + formatName + "? - " + limitEntry );
-            }
-        }
-        
-        return getTabularIngestSizeLimit();        
+        return getTabularIngestSizeLimit();
     }
 
     public boolean isOAIServerEnabled() {
@@ -545,7 +630,7 @@ public class SystemConfig {
         }
         return false;
     }
-
+    
     public String getFooterCopyrightAndYear() {
         return BundleUtil.getStringFromBundle("footer.copyright", Arrays.asList(Year.now().getValue() + ""));
     }
@@ -752,6 +837,7 @@ public class SystemConfig {
          * DCM stands for Data Capture Module. Right now it supports upload over
          * rsync+ssh but DCM may support additional methods in the future.
          */
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         RSYNC("dcm/rsync+ssh"),
         /**
          * Traditional Dataverse file handling, which tends to involve users
@@ -809,6 +895,7 @@ public class SystemConfig {
          * RSAL stands for Repository Storage Abstraction Layer. Downloads don't
          * go through Glassfish.
          */
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         RSYNC("rsal/rsync"),
         NATIVE("native/http"),
         GLOBUS("globus")
@@ -862,6 +949,7 @@ public class SystemConfig {
      */
     public enum TransferProtocols {
 
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         RSYNC("rsync"),
         /**
          * POSIX includes NFS. This is related to Key.LocalDataAccessPath in
@@ -893,12 +981,13 @@ public class SystemConfig {
         }
 
     }
-
+    
     public boolean isPublicInstall(){
         boolean saneDefault = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, saneDefault);
     }
-    
+
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isRsyncUpload(){
         return getMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString(), true);
     }
@@ -915,7 +1004,8 @@ public class SystemConfig {
     public boolean isHTTPUpload(){       
         return getMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString(), true);
     }
-    
+
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isRsyncOnly(){
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
         if(downloadMethods == null){
@@ -925,70 +1015,51 @@ public class SystemConfig {
             return false;
         }
         String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
-        if (uploadMethods==null){
+        if (uploadMethods == null) {
             return false;
-        } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
         }
+        String normalizedUploadMethods = uploadMethods.toLowerCase();
+        return ListSplitUtil.split(normalizedUploadMethods).size() == 1
+                && normalizedUploadMethods.equals(SystemConfig.FileUploadMethods.RSYNC.toString());
     }
-    
+
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isRsyncDownload() {
         return getMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString(), false);
     }
-    
+
     public boolean isHTTPDownload() {
         return getMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString(), false);
     }
 
     public boolean isGlobusDownload() {
-        return getMethodAvailable(FileUploadMethods.GLOBUS.toString(), false);
+        return getMethodAvailable(FileDownloadMethods.GLOBUS.toString(), false);
     }
     
     public boolean isGlobusFileDownload() {
         return (isGlobusDownload() && settingsService.isTrueForKey(SettingsServiceBean.Key.GlobusSingleFileTransfer, false));
     }
 
-    public List<String> getGlobusStoresList() {
-    String globusStores = settingsService.getValueForKey(SettingsServiceBean.Key.GlobusStores, "");
-    return Arrays.asList(globusStores.split("\\s*,\\s*"));
+    public int getGlobusBatchLookupSize() {
+        String batchSizeOption = settingsService.getValueForKey(SettingsServiceBean.Key.GlobusBatchLookupSize);
+        return getIntLimitFromStringOrDefault(batchSizeOption, defaultGlobusBatchLookupSize);
     }
-
+    
     private Boolean getMethodAvailable(String method, boolean upload) {
         String methods = settingsService.getValueForKey(
                 upload ? SettingsServiceBean.Key.UploadMethods : SettingsServiceBean.Key.DownloadMethods);
         if (methods == null) {
             return false;
-        } else {
-            return Arrays.asList(methods.toLowerCase().split("\\s*,\\s*")).contains(method);
         }
+        return ListSplitUtil.split(methods.toLowerCase()).contains(method);
     }
     
     public Integer getUploadMethodCount(){
         String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods); 
-        if (uploadMethods==null){
+        if (uploadMethods == null) {
             return 0;
-        } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
-        }       
-    }
-    public boolean isDataFilePIDSequentialDependent(){
-        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
-        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-        if (doiIdentifierType.equals("storedProcGenerated") && doiDataFileFormat.equals("DEPENDENT")){
-            return true;
         }
-        return false;
-    }
-    
-    public int getPIDAsynchRegFileCount() {
-        String fileCount = settingsService.getValueForKey(SettingsServiceBean.Key.PIDAsynchRegFileCount, "10");
-        int retVal = 10;
-        try {
-            retVal = Integer.parseInt(fileCount);
-        } catch (NumberFormatException e) {           
-            //if no number in the setting we'll return 10
-        }
-        return retVal;
+        return ListSplitUtil.split(uploadMethods.toLowerCase()).size();
     }
 
     public boolean isAllowCustomTerms() {
@@ -1004,7 +1075,7 @@ public class SystemConfig {
         Dataverse thisCollection = collection; 
         
         // If neither enabled nor disabled specifically for this collection,
-        // the parent collection setting is inhereted (recursively): 
+        // the parent collection setting is inherited (recursively): 
         while (thisCollection.getFilePIDsEnabled() == null) {
             if (thisCollection.getOwner() == null) {
                 // We've reached the root collection, and file PIDs registration
@@ -1019,17 +1090,6 @@ public class SystemConfig {
         // If present, the setting of the first direct ancestor collection 
         // takes precedent:
         return thisCollection.getFilePIDsEnabled();
-    }
-    
-    public boolean isIndependentHandleService() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.IndependentHandleService, safeDefaultIfKeyNotFound);
-    
-    }
-    
-    public String getHandleAuthHandle() {
-        String handleAuthHandle = settingsService.getValueForKey(SettingsServiceBean.Key.HandleAuthHandle, null);
-        return handleAuthHandle;
     }
 
     public String getMDCLogPath() {
@@ -1090,7 +1150,7 @@ public class SystemConfig {
 
         if (limitEntry != null) {
             try {
-                Long sizeOption = new Long(limitEntry);
+                Long sizeOption = Long.valueOf(limitEntry);
                 return sizeOption;
             } catch (NumberFormatException nfe) {
                 logger.warning("Invalid value for DatasetValidationSizeLimit option? - " + limitEntry);
@@ -1105,7 +1165,7 @@ public class SystemConfig {
 
         if (limitEntry != null) {
             try {
-                Long sizeOption = new Long(limitEntry);
+                Long sizeOption = Long.valueOf(limitEntry);
                 return sizeOption;
             } catch (NumberFormatException nfe) {
                 logger.warning("Invalid value for FileValidationSizeLimit option? - " + limitEntry);
@@ -1163,5 +1223,41 @@ public class SystemConfig {
         }
         
         return !ret; 
+    }
+    
+    public boolean isStorageQuotasEnforced() {
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.UseStorageQuotas, false);
+    }
+    
+    /**
+     * This method should only be used for testing of the new storage quota 
+     * mechanism, temporarily. (it uses the same value as the quota for 
+     * *everybody* regardless of the circumstances, defined as a database 
+     * setting)
+     */
+    public Long getTestStorageQuotaLimit() {
+        return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.StorageQuotaSizeInBytes);
+    }
+    /**
+     * Should we store tab-delimited files produced during ingest *with* the
+     * variable name header line included?
+     * @return boolean - defaults to false.
+     */
+    public boolean isStoringIngestedFilesWithHeaders() {
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.StoreIngestedTabularFilesWithVarHeaders, false);
+    }
+
+    /**
+     * RateLimitUtil will parse the json to create a List<RateLimitSetting>
+     */
+    public String getRateLimitsJson() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.RateLimitingCapacityByTierAndAction, "");
+    }
+    public String getRateLimitingDefaultCapacityTiers() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers, "");
+    }
+
+    public long getContactFeedbackMessageSizeLimit() {
+        return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.ContactFeedbackMessageSizeLimit, 0L);
     }
 }

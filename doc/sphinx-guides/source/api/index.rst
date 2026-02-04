@@ -9,6 +9,7 @@ API Guide
 **Contents:**
 
 .. toctree::
+   :maxdepth: 2
 
    intro
    getting-started
@@ -24,3 +25,4 @@ API Guide
    linkeddatanotification
    apps
    faq
+   changelog

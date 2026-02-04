@@ -7,6 +7,8 @@ package edu.harvard.iq.dataverse.export.dublincore;
 
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
@@ -22,11 +24,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.json.JsonObject;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -64,29 +69,40 @@ public class DublinCoreExportUtil {
     }
     
     private static void dto2dublincore(DatasetDTO datasetDto, OutputStream outputStream, String dcFlavor) throws XMLStreamException {
-        XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
-        if (DC_FLAVOR_DCTERMS.equals(dcFlavor)) {
-		xmlw.writeStartDocument();
-            xmlw.writeStartElement("metadata");
-            xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-            xmlw.writeAttribute("xmlns:dc", DC_XML_NAMESPACE);
-            xmlw.writeAttribute("xmlns:dcterms", DCTERMS_XML_NAMESPACE);
-            xmlw.writeDefaultNamespace(DCTERMS_DEFAULT_NAMESPACE);
-            //xmlw.writeAttribute("xsi:schemaLocation", DCTERMS_DEFAULT_NAMESPACE+" "+DCTERMS_XML_SCHEMALOCATION);
-            createDC(xmlw, datasetDto, dcFlavor);
-        } else if (DC_FLAVOR_OAI.equals(dcFlavor)) {      
-            xmlw.writeStartElement("oai_dc:dc");        
-            xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-            xmlw.writeAttribute("xmlns:oai_dc", OAI_DC_XML_NAMESPACE);
-            xmlw.writeAttribute("xmlns:dc", DC_XML_NAMESPACE);
-            xmlw.writeAttribute("xsi:schemaLocation", OAI_DC_XML_NAMESPACE+" "+OAI_DC_XML_SCHEMALOCATION);
-            //writeAttribute(xmlw, "version", DEFAULT_XML_VERSION);
-            createOAIDC(xmlw, datasetDto, dcFlavor);
+        XMLStreamWriter xmlw = null;
+        try {
+            xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
+            if (DC_FLAVOR_DCTERMS.equals(dcFlavor)) {
+                xmlw.writeStartDocument();
+                xmlw.writeStartElement("metadata");
+                xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                xmlw.writeAttribute("xmlns:dc", DC_XML_NAMESPACE);
+                xmlw.writeAttribute("xmlns:dcterms", DCTERMS_XML_NAMESPACE);
+                xmlw.writeDefaultNamespace(DCTERMS_DEFAULT_NAMESPACE);
+                // xmlw.writeAttribute("xsi:schemaLocation", DCTERMS_DEFAULT_NAMESPACE+" "+DCTERMS_XML_SCHEMALOCATION);
+                createDC(xmlw, datasetDto, dcFlavor);
+            } else if (DC_FLAVOR_OAI.equals(dcFlavor)) {
+                xmlw.writeStartElement("oai_dc:dc");
+                xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                xmlw.writeAttribute("xmlns:oai_dc", OAI_DC_XML_NAMESPACE);
+                xmlw.writeAttribute("xmlns:dc", DC_XML_NAMESPACE);
+                xmlw.writeAttribute("xsi:schemaLocation", OAI_DC_XML_NAMESPACE + " " + OAI_DC_XML_SCHEMALOCATION);
+                // writeAttribute(xmlw, "version", DEFAULT_XML_VERSION);
+                createOAIDC(xmlw, datasetDto, dcFlavor);
+            }
+
+            xmlw.writeEndElement(); // <metadata> or <oai_dc:dc>
+            xmlw.flush();
+        } finally {
+            if (xmlw != null) {
+                try {
+                    xmlw.close();
+                } catch (XMLStreamException e) {
+                    // Log this exception, but don't rethrow as it's in finally block
+                    logger.log(Level.WARNING, "Error closing XMLStreamWriter", e);
+                }
+            }
         }
-        
-        
-        xmlw.writeEndElement(); // <metadata> or <oai_dc:dc>
-        xmlw.flush();
     }
     
     //UPDATED by rmo-cdsp:
@@ -176,11 +192,24 @@ public class DublinCoreExportUtil {
         
         writeFullElementList(xmlw, dcFlavor+":"+"language", dto2PrimitiveList(version, DatasetFieldConstant.language));        
         
-        String date = dto2Primitive(version, DatasetFieldConstant.productionDate);
-        if (date == null) {
-            date = datasetDto.getPublicationDate();
+        /**
+         * dc:date. "I suggest changing the Dataverse / DC Element (oai_dc)
+         * mapping, so that dc:date is mapped with Publication Date. This is
+         * also in line with citation recommendations. The publication date is
+         * the preferred date when citing research data; see, e.g., page 12 in
+         * The Tromsø Recommendations for Citation of Research Data in
+         * Linguistics; https://doi.org/10.15497/rda00040 ." --
+         * https://github.com/IQSS/dataverse/issues/8129
+         *
+         * However, if the citation date field has been set, use that.
+         */
+        String date = datasetDto.getPublicationDate();
+        DatasetFieldType citationDataType = jakarta.enterprise.inject.spi.CDI.current().select(DatasetServiceBean.class).get().findByGlobalId(globalId.asString()).getCitationDateDatasetFieldType();
+        if (citationDataType != null) {
+            date = dto2Primitive(version, citationDataType.getName());
         }
-        writeFullElement(xmlw, dcFlavor+":"+"date", date);  
+
+        writeFullElement(xmlw, dcFlavor+":"+"date", date);
         
         writeFullElement(xmlw, dcFlavor+":"+"contributor", dto2Primitive(version, DatasetFieldConstant.depositor));  
         
@@ -188,10 +217,16 @@ public class DublinCoreExportUtil {
         
         writeFullElementList(xmlw, dcFlavor+":"+"relation", dto2PrimitiveList(version, DatasetFieldConstant.relatedDatasets));
         
-        writeFullElementList(xmlw, dcFlavor+":"+"type", dto2PrimitiveList(version, DatasetFieldConstant.kindOfData));
+        /**
+         * dc:type. "Dublin Core (see
+         * https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/type
+         * ) recommends “to use a controlled vocabulary such as the DCMI Type
+         * Vocabulary” for dc:type." So we hard-coded it to "Dataset". See
+         * https://github.com/IQSS/dataverse/issues/8129
+         */
+        writeFullElement(xmlw, dcFlavor+":"+"type", "Dataset");
         
         writeFullElementList(xmlw, dcFlavor+":"+"source", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
-        
 
     }
     
@@ -301,26 +336,35 @@ public class DublinCoreExportUtil {
                             String IDType = "";
                             String IDNo = "";
                             String url = "";
+                            String relationType = null;
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
-                                if (DatasetFieldConstant.publicationCitation.equals(next.getTypeName())) {
-                                    citation =  next.getSinglePrimitive();
+                                switch (next.getTypeName()) {
+                                    case DatasetFieldConstant.publicationCitation:
+                                        citation = next.getSinglePrimitive();
+                                        break;
+                                    case DatasetFieldConstant.publicationIDType:
+                                        IDType = next.getSinglePrimitive();
+                                        break;
+                                    case DatasetFieldConstant.publicationIDNumber:
+                                        IDNo = next.getSinglePrimitive();
+                                        break;
+                                    case DatasetFieldConstant.publicationURL:
+                                        url = next.getSinglePrimitive();
+                                        break;
+                                    case DatasetFieldConstant.publicationRelationType:
+                                        relationType = next.getSinglePrimitive();
+                                        break;
                                 }
-                                if (DatasetFieldConstant.publicationIDType.equals(next.getTypeName())) {
-                                    IDType =  next.getSinglePrimitive();
-                                }
-                                if (DatasetFieldConstant.publicationIDNumber.equals(next.getTypeName())) {
-                                    IDNo =   next.getSinglePrimitive();
-                                }
-                                if (DatasetFieldConstant.publicationURL.equals(next.getTypeName())) {
-                                    url =  next.getSinglePrimitive();
-                                }
+                            }
+                            if(StringUtils.isBlank(relationType)) {
+                                relationType = "isReferencedBy";
                             }
                             pubString = appendCommaSeparatedValue(citation, IDType);
                             pubString = appendCommaSeparatedValue(pubString, IDNo);
                             pubString = appendCommaSeparatedValue(pubString, url);
                             if (!pubString.isEmpty()){
-                                xmlw.writeStartElement(dcFlavor+":"+"isReferencedBy"); 
+                                xmlw.writeStartElement(dcFlavor+":" + relationType); 
                                 xmlw.writeCharacters(pubString);
                                 xmlw.writeEndElement(); //relPubl
                             }

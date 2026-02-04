@@ -16,7 +16,7 @@ public class DTAFileReaderTest {
 
     @Test
     public void testOs() throws IOException {
-        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("scripts/search/data/tabular/50by1000.dta"))), nullDataFile);
+        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("scripts/search/data/tabular/50by1000.dta"))), false, nullDataFile);
         assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
         assertEquals("rel_8_or_9", result.getDataTable().getOriginalFormatVersion());
         assertEquals(50, result.getDataTable().getDataVariables().size());

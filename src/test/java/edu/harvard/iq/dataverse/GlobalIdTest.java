@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -19,7 +21,7 @@ public class GlobalIdTest {
     @Test
     public void testValidDOI() {
         System.out.println("testValidDOI");
-        GlobalId instance = new GlobalId(DOIServiceBean.DOI_PROTOCOL,"10.5072","FK2/BYM3IW", "/", DOIServiceBean.DOI_RESOLVER_URL, null);
+        GlobalId instance = new GlobalId(AbstractDOIProvider.DOI_PROTOCOL,"10.5072","FK2/BYM3IW", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null);
 
         assertEquals("doi", instance.getProtocol());
         assertEquals("10.5072", instance.getAuthority());
@@ -30,7 +32,7 @@ public class GlobalIdTest {
     @Test
     public void testValidHandle() {
         System.out.println("testValidDOI");
-        GlobalId instance = new GlobalId(HandlenetServiceBean.HDL_PROTOCOL, "1902.1","111012", "/", HandlenetServiceBean.HDL_RESOLVER_URL, null);
+        GlobalId instance = new GlobalId(HandlePidProvider.HDL_PROTOCOL, "1902.1","111012", "/", HandlePidProvider.HDL_RESOLVER_URL, null);
 
         assertEquals("hdl", instance.getProtocol());
         assertEquals("1902.1", instance.getAuthority());
@@ -57,7 +59,7 @@ public class GlobalIdTest {
         System.out.println("testInject (weak test)");
 
         // String badProtocol = "hdl:'Select value from datasetfieldvalue';/ha";
-        GlobalId instance = PidUtil.parseAsGlobalID(HandlenetServiceBean.HDL_PROTOCOL, "'Select value from datasetfieldvalue';", "ha");
+        GlobalId instance = PidUtil.parseAsGlobalID(HandlePidProvider.HDL_PROTOCOL, "'Select value from datasetfieldvalue';", "ha");
         assertNull(instance); 
 
         //exception.expect(IllegalArgumentException.class);

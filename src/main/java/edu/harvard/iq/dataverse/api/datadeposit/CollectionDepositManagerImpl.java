@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -14,6 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.AbstractCreateDatasetCommand
 import edu.harvard.iq.dataverse.api.imports.ImportGenericServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import java.util.logging.Level;
@@ -43,6 +45,8 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    DvObjectServiceBean dvObjectService;
     @EJB
     PermissionServiceBean permissionService;
     @Inject
@@ -96,13 +100,10 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
                     Dataset dataset = new Dataset();
                     dataset.setOwner(dvThatWillOwnDataset);
-                    String nonNullDefaultIfKeyNotFound = "";
-                    String protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-                    String authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-
-                    dataset.setProtocol(protocol);
-                    dataset.setAuthority(authority);
-                    //Wait until the create command before actually getting an identifier                    
+                    PidProvider pidProvider = dvObjectService.getEffectivePidGenerator(dataset);
+                    dataset.setProtocol(pidProvider.getProtocol());
+                    dataset.setAuthority(pidProvider.getAuthority());
+                    //Wait until the create command before actually getting an identifier
                     logger.log(Level.FINE, "DS Deposit identifier: {0}", dataset.getIdentifier());
 
                     AbstractCreateDatasetCommand createDatasetCommand = new CreateNewDatasetCommand(dataset, dvReq);

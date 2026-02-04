@@ -121,7 +121,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
         Template newOne = templateIn.cloneNewTemplate(templateIn);
         String name = BundleUtil.getStringFromBundle("page.copy") +" " + templateIn.getName();
         newOne.setName(name);
-        newOne.setUsageCount(new Long(0));
+        newOne.setUsageCount(Long.valueOf(0));
         newOne.setCreateTime(new Timestamp(new Date().getTime()));
         newOne.setDataverse(dataverse);
 

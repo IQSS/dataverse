@@ -19,8 +19,12 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.FailedPIDResolutionLoggingServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
@@ -37,14 +41,16 @@ import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.LockModeType;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import jakarta.persistence.StoredProcedureQuery;
 import jakarta.persistence.TypedQuery;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -60,9 +66,6 @@ public class DatasetServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DatasetServiceBean.class.getCanonicalName());
     @EJB
     IndexServiceBean indexService;
-
-    @EJB
-    DOIEZIdServiceBean doiEZIdServiceBean;
 
     @EJB
     SettingsServiceBean settingsService;
@@ -90,6 +93,9 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     @EJB
     SystemConfig systemConfig;
+    
+    @Inject
+    FailedPIDResolutionLoggingServiceBean fprLogService;
 
     @EJB
     GlobusServiceBean globusServiceBean;
@@ -98,6 +104,8 @@ public class DatasetServiceBean implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+    
+    private static final boolean pidFailureLoggingEnabled = FeatureFlags.ENABLE_PID_FAILURE_LOG.enabled();
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
@@ -116,28 +124,34 @@ public class DatasetServiceBean implements java.io.Serializable {
      * @return a dataset with pre-fetched file objects
      */
     public Dataset findDeep(Object pk) {
-        return (Dataset) em.createNamedQuery("Dataset.findById")
-            .setParameter("id", pk)
-            // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files
-            .setHint("eclipselink.left-join-fetch", "o.files.ingestRequest")
-            .setHint("eclipselink.left-join-fetch", "o.files.thumbnailForDataset")
-            .setHint("eclipselink.left-join-fetch", "o.files.dataTables")
-            .setHint("eclipselink.left-join-fetch", "o.files.auxiliaryFiles")
-            .setHint("eclipselink.left-join-fetch", "o.files.ingestReports")
-            .setHint("eclipselink.left-join-fetch", "o.files.dataFileTags")
-            .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas")
-            .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.fileCategories")
-            //.setHint("eclipselink.left-join-fetch", "o.files.guestbookResponses")
-            .setHint("eclipselink.left-join-fetch", "o.files.embargo")
-            .setHint("eclipselink.left-join-fetch", "o.files.fileAccessRequests")
-            .setHint("eclipselink.left-join-fetch", "o.files.owner")
-            .setHint("eclipselink.left-join-fetch", "o.files.releaseUser")
-            .setHint("eclipselink.left-join-fetch", "o.files.creator")
-            .setHint("eclipselink.left-join-fetch", "o.files.alternativePersistentIndentifiers")
-            .setHint("eclipselink.left-join-fetch", "o.files.roleAssignments")
-            .getSingleResult();
+        try {
+            return (Dataset) em.createNamedQuery("Dataset.findById")
+                    .setParameter("id", pk)
+                    // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files
+                    .setHint("eclipselink.left-join-fetch", "o.files.ingestRequest")
+                    .setHint("eclipselink.left-join-fetch", "o.files.thumbnailForDataset")
+                    .setHint("eclipselink.left-join-fetch", "o.files.dataTables")
+                    .setHint("eclipselink.left-join-fetch", "o.files.auxiliaryFiles")
+                    .setHint("eclipselink.left-join-fetch", "o.files.ingestReports")
+                    .setHint("eclipselink.left-join-fetch", "o.files.dataFileTags")
+                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas")
+                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.fileCategories")
+                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.varGroups")
+                    //.setHint("eclipselink.left-join-fetch", "o.files.guestbookResponses
+                    .setHint("eclipselink.left-join-fetch", "o.files.embargo")
+                    .setHint("eclipselink.left-join-fetch", "o.files.retention")
+                    .setHint("eclipselink.left-join-fetch", "o.files.fileAccessRequests")
+                    .setHint("eclipselink.left-join-fetch", "o.files.owner")
+                    .setHint("eclipselink.left-join-fetch", "o.files.releaseUser")
+                    .setHint("eclipselink.left-join-fetch", "o.files.creator")
+                    .setHint("eclipselink.left-join-fetch", "o.files.alternativePersistentIndentifiers")
+                    .setHint("eclipselink.left-join-fetch", "o.files.roleAssignments")
+                    .getSingleResult();
+        } catch (NoResultException | NonUniqueResultException ex) {
+            return null;
+        }
     }
-
+    
     public List<Dataset> findByOwnerId(Long ownerId) {
         return findByOwnerId(ownerId, false);
     }
@@ -163,12 +177,12 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     public List<Long> findIdsByOwnerId(Long ownerId) {
-        return findIdsByOwnerId(ownerId, false);
+        return findIdsByOwnerId(ownerId, false, false);
     }
 
-    private List<Long> findIdsByOwnerId(Long ownerId, boolean onlyPublished) {
+    public List<Long> findIdsByOwnerId(Long ownerId, boolean onlyPublished, boolean includeHarvested) {
         List<Long> retList = new ArrayList<>();
-        if (!onlyPublished) {
+        if (!onlyPublished && includeHarvested) {
             return em.createNamedQuery("Dataset.findIdByOwnerId")
                     .setParameter("ownerId", ownerId)
                     .getResultList();
@@ -176,8 +190,18 @@ public class DatasetServiceBean implements java.io.Serializable {
             List<Dataset> results = em.createNamedQuery("Dataset.findByOwnerId")
                     .setParameter("ownerId", ownerId).getResultList();
             for (Dataset ds : results) {
-                if (ds.isReleased() && !ds.isDeaccessioned()) {
-                    retList.add(ds.getId());
+                // For harvested datasets, only add them if includeHarvested is true
+                if (ds.isHarvested()) {
+                    if (includeHarvested) {
+                        retList.add(ds.getId());
+                    }
+                // For non-harvested datasets, either
+                // - add them all (if onlyPublished is false) OR
+                // - only add them if they are released and not deaccessioned (if onlyPublished is true)
+                } else {
+                    if (!onlyPublished || (ds.isReleased() && !ds.isDeaccessioned())) {
+                        retList.add(ds.getId());
+                    }
                 }
             }
             return retList;
@@ -277,32 +301,9 @@ public class DatasetServiceBean implements java.io.Serializable {
         SEK - 11/09/2021
         */
 
-        String skipClause = skipIndexed ? "AND o.indexTime is null " : "";
-        Query query = em.createNativeQuery(" Select distinct(o.id), count(f.id) as numFiles FROM dvobject o " +
-            "left join dvobject f on f.owner_id = o.id  where o.dtype = 'Dataset' "
-                + skipClause
-                + " group by o.id "
-                + "ORDER BY count(f.id) asc, o.id");
-
-        List<Object[]> queryResults;
-        queryResults = query.getResultList();
-
-        List<Long> retVal = new ArrayList();
-        for (Object[] result : queryResults) {
-            Long dsId;
-            if (result[0] != null) {
-                try {
-                    dsId = Long.parseLong(result[0].toString()) ;
-                } catch (Exception ex) {
-                    dsId = null;
-                }
-                if (dsId == null) {
-                    continue;
-                }
-                retVal.add(dsId);
-            }
-        }
-        return retVal;
+        return em.createNamedQuery("Dataset.findAllOrSubsetOrderByFilesOwned", Long.class)
+                .setParameter(1, skipIndexed)
+                .getResultList();
     }
 
     /**
@@ -319,8 +320,19 @@ public class DatasetServiceBean implements java.io.Serializable {
         if (retVal != null){
             return retVal;
         } else {
-            //try to find with alternative PID
-            return (Dataset) dvObjectService.findByAltGlobalId(globalId, DvObject.DType.Dataset);
+            // try to find with alternative PID
+            retVal = (Dataset) dvObjectService.findByAltGlobalId(globalId, DvObject.DType.Dataset);
+            if (retVal == null  && pidFailureLoggingEnabled) {
+                try {
+
+                    HttpServletRequest httpRequest = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest());
+                    FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry entry = new FailedPIDResolutionEntry(globalId, httpRequest.getRequestURI(), httpRequest.getMethod(), new DataverseRequest(null, httpRequest).getSourceAddress());
+                    fprLogService.logEntry(entry);
+                } catch (NullPointerException npe) {
+                    // Do nothing - this is an API call with no FacesContext
+                }
+            }
+            return retVal;
         }
     }
 
@@ -410,12 +422,20 @@ public class DatasetServiceBean implements java.io.Serializable {
         List<DatasetLock> lock = lockCounter.getResultList();
         return lock.size()>0;
     }
-
+    
+    public List<DatasetLock> getLocksByDatasetId(Long datasetId) {
+        TypedQuery<DatasetLock> locksQuery = em.createNamedQuery("DatasetLock.getLocksByDatasetId", DatasetLock.class);
+        locksQuery.setParameter("datasetId", datasetId);
+        return locksQuery.getResultList();
+    }
+ 
     public List<DatasetLock> getDatasetLocksByUser( AuthenticatedUser user) {
 
         return listLocks(null, user);
     }
 
+    // @todo: we'll be better off getting rid of this method and using the other 
+    // version of addDatasetLock() (that uses datasetId instead of Dataset). 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public DatasetLock addDatasetLock(Dataset dataset, DatasetLock lock) {
         lock.setDataset(dataset);
@@ -465,6 +485,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * is {@code aReason}.
      * @param dataset the dataset whose locks (for {@code aReason}) will be removed.
      * @param aReason The reason of the locks that will be removed.
+     * @todo this should probably take dataset_id, not a dataset
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void removeDatasetLocks(Dataset dataset, DatasetLock.Reason aReason) {
@@ -700,7 +721,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         Integer countError = 0;
         String logTimestamp = logFormatter.format(new Date());
         Logger exportLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.DatasetServiceBean." + "ExportAll" + logTimestamp);
-        String logFileName = "../logs" + File.separator + "export_" + logTimestamp + ".log";
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "export_" + logTimestamp + ".log";
         FileHandler fileHandler;
         boolean fileHandlerSuceeded;
         try {
@@ -788,13 +809,13 @@ public class DatasetServiceBean implements java.io.Serializable {
                 }
             }
         }
-        
+
     }
 
     //get a string to add to save success message
     //depends on page (dataset/file) and user privleges
     public String getReminderString(Dataset dataset, boolean canPublishDataset, boolean filePage, boolean isValid) {
-       
+
         String reminderString;
 
         if (canPublishDataset) {
@@ -849,6 +870,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         dataset = DatasetUtil.persistDatasetLogoToStorageAndCreateThumbnails(dataset, inputStream);
         dataset.setThumbnailFile(null);
+        dataset.setUseGenericThumbnail(false);
         return merge(dataset);
     }
 
@@ -861,18 +883,33 @@ public class DatasetServiceBean implements java.io.Serializable {
             logger.fine("In setDatasetFileAsThumbnail but dataset is null! Returning null.");
             return null;
         }
+        // Just in case the previously designated thumbnail for the dataset was 
+        // a "custom" kind, i.e. an uploaded "dataset_logo" file, the following method 
+        // will try to delete it, and all the associated caches here (because there 
+        // are no other uses for the file). This method is apparently called in all 
+        // cases, without trying to check if the dataset was in fact using a custom 
+        // logo; probably under the assumption that it can't hurt.
         DatasetUtil.deleteDatasetLogo(dataset);
         dataset.setThumbnailFile(datasetFileThumbnailToSwitchTo);
         dataset.setUseGenericThumbnail(false);
         return merge(dataset);
     }
 
-    public Dataset removeDatasetThumbnail(Dataset dataset) {
+    public Dataset clearDatasetLevelThumbnail(Dataset dataset) {
         if (dataset == null) {
-            logger.fine("In removeDatasetThumbnail but dataset is null! Returning null.");
+            logger.fine("In clearDatasetLevelThumbnail but dataset is null! Returning null.");
             return null;
         }
+        
+        // Just in case the thumbnail that was designated for the dataset was 
+        // a "custom logo" kind, i.e. an uploaded "dataset_logo" file, the following method 
+        // will try to delete it, and all the associated caches here (because there 
+        // are no other uses for the file). This method is apparently called in all 
+        // cases, without trying to check if the dataset was in fact using a custom 
+        // logo; probably under the assumption that it can't hurt.
         DatasetUtil.deleteDatasetLogo(dataset);
+        
+        // Clear any designated thumbnails for the dataset:
         dataset.setThumbnailFile(null);
         dataset.setUseGenericThumbnail(true);
         return merge(dataset);
@@ -929,7 +966,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         try {
             Thread.sleep(1000);
         } catch (Exception ex) {
-            logger.warning("Failed to sleep for a second.");
+            logger.warning("Failed to sleep for one second.");
         }
         logger.fine("Running FinalizeDatasetPublicationCommand, asynchronously");
         Dataset theDataset = find(datasetId);
@@ -937,80 +974,6 @@ public class DatasetServiceBean implements java.io.Serializable {
             commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, request, isPidPrePublished));
         } catch (CommandException cex) {
             logger.warning("CommandException caught when executing the asynchronous portion of the Dataset Publication Command.");
-        }
-    }
-
-    /*
-     Experimental asynchronous method for requesting persistent identifiers for
-     datafiles. We decided not to run this method on upload/create (so files
-     will not have persistent ids while in draft; when the draft is published,
-     we will force obtaining persistent ids for all the files in the version.
-
-     If we go back to trying to register global ids on create, care will need to
-     be taken to make sure the asynchronous changes below are not conflicting with
-     the changes from file ingest (which may be happening in parallel, also
-     asynchronously). We would also need to lock the dataset (similarly to how
-     tabular ingest logs the dataset), to prevent the user from publishing the
-     version before all the identifiers get assigned - otherwise more conflicts
-     are likely. (It sounds like it would make sense to treat these two tasks -
-     persistent identifiers for files and ingest - as one post-upload job, so that
-     they can be run in sequence). -- L.A. Mar. 2018
-    */
-    @Asynchronous
-    public void obtainPersistentIdentifiersForDatafiles(Dataset dataset) {
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(dataset.getProtocol(), commandEngine.getContext());
-
-        //If the Id type is sequential and Dependent then write file idenitifiers outside the command
-        String datasetIdentifier = dataset.getIdentifier();
-        Long maxIdentifier = null;
-
-        if (systemConfig.isDataFilePIDSequentialDependent()) {
-            maxIdentifier = getMaximumExistingDatafileIdentifier(dataset);
-        }
-
-        for (DataFile datafile : dataset.getFiles()) {
-            logger.info("Obtaining persistent id for datafile id=" + datafile.getId());
-
-            if (datafile.getIdentifier() == null || datafile.getIdentifier().isEmpty()) {
-
-                logger.info("Obtaining persistent id for datafile id=" + datafile.getId());
-
-                if (maxIdentifier != null) {
-                    maxIdentifier++;
-                    datafile.setIdentifier(datasetIdentifier + "/" + maxIdentifier.toString());
-                } else {
-                    datafile.setIdentifier(idServiceBean.generateDataFileIdentifier(datafile));
-                }
-
-                if (datafile.getProtocol() == null) {
-                    datafile.setProtocol(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""));
-                }
-                if (datafile.getAuthority() == null) {
-                    datafile.setAuthority(settingsService.getValueForKey(SettingsServiceBean.Key.Authority, ""));
-                }
-
-                logger.info("identifier: " + datafile.getIdentifier());
-
-                String doiRetString;
-
-                try {
-                    logger.log(Level.FINE, "creating identifier");
-                    doiRetString = idServiceBean.createIdentifier(datafile);
-                } catch (Throwable e) {
-                    logger.log(Level.WARNING, "Exception while creating Identifier: " + e.getMessage(), e);
-                    doiRetString = "";
-                }
-
-                // Check return value to make sure registration succeeded
-                if (!idServiceBean.registerWhenPublished() && doiRetString.contains(datafile.getIdentifier())) {
-                    datafile.setIdentifierRegistered(true);
-                    datafile.setGlobalIdCreateTime(new Date());
-                }
-
-                DataFile merged = em.merge(datafile);
-                merged = null;
-            }
-
         }
     }
 
@@ -1126,5 +1089,55 @@ public class DatasetServiceBean implements java.io.Serializable {
             hdLogger.warning("Failed to destroy the dataset");
         }
     }
+    
+    public List<String> getVersionStates(long id) {
+        try {
+            Query query = em.createNativeQuery("SELECT dv.versionState FROM datasetversion dv WHERE dataset_id=? ORDER BY id");
+            query.setParameter(1, id);
+            return (List<String>) query.getResultList();
 
+        } catch (Exception ex) {
+            logger.log(Level.WARNING, "exception trying to get versionstates of dataset " + id + ": {0}", ex);
+            return null;
+        }
+    }
+
+    /**
+     * Returns the total number of Datasets.
+     * @return the number of datasets in the database
+     */
+    public long getDatasetCount() {
+        return em.createNamedQuery("Dataset.countAll", Long.class).getSingleResult();
+    }
+
+    /**
+     *
+     * @param id - owner id
+     * @return Total number of datafiles for this dataset/owner
+     */
+    public int getDataFileCountByOwner(long id) {
+        Long c = em.createNamedQuery("Dataset.countFilesByOwnerId", Long.class).setParameter("ownerId", id).getSingleResult();
+        return c.intValue(); // ignoring the truncation since the number should never be too large
+    }
+    
+    /**
+     * 
+     * @todo: consider moving the quota method, from here and the DataverseServiceBean,
+     * to DvObjectServiceBean. 
+     */
+    public void saveStorageQuota(Dataset target, Long allocation) {
+        StorageQuota storageQuota = target.getStorageQuota();
+        
+        if (storageQuota != null) {
+            storageQuota.setAllocation(allocation);
+            em.merge(storageQuota);
+        } else {
+            storageQuota = new StorageQuota(); 
+            storageQuota.setDefinitionPoint(target);
+            storageQuota.setAllocation(allocation);
+            target.setStorageQuota(storageQuota);
+            em.persist(storageQuota);
+        }
+        em.flush();
+    }
 }

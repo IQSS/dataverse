@@ -1,7 +1,7 @@
 Patterns
 ++++++++
 
-Patterns are what emerge when using the foundation elements together with basic objects like buttons and alerts, more complex Javascript components from `Bootstrap <http://getbootstrap.com/components/>`__ like tooltips and dropdowns, and AJAX components from `PrimeFaces <https://www.primefaces.org/showcase/>`__ like datatables and commandlinks.
+Patterns are what emerge when using the foundation elements together with basic objects like buttons and alerts, more complex Javascript components from `Bootstrap <https://getbootstrap.com/components/>`__ like tooltips and dropdowns, and AJAX components from `PrimeFaces <https://www.primefaces.org/showcase/>`__ like datatables and commandlinks.
 
 .. contents:: |toctitle|
   :local:
@@ -9,7 +9,7 @@ Patterns are what emerge when using the foundation elements together with basic 
 Navbar
 ======
 
-The `Navbar component <http://getbootstrap.com/components/#navbar>`__ from Bootstrap spans the top of the application and contains the logo/branding, aligned to the left, plus search form and links, aligned to the right.
+The `Navbar component <https://getbootstrap.com/components/#navbar>`__ from Bootstrap spans the top of the application and contains the logo/branding, aligned to the left, plus search form and links, aligned to the right.
 
 When logged in, the account name is a dropdown menu, linking the user to account-specific content and the log out link.
 
@@ -74,7 +74,7 @@ When logged in, the account name is a dropdown menu, linking the user to account
 Breadcrumbs
 ===========
 
-The breadcrumbs are displayed under the header, and provide a trail of links for users to navigate the hierarchy of containing objects, from file to dataset to Dataverse collection. It utilizes a JSF `repeat component <http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/ui/repeat.html>`_ to iterate through the breadcrumbs.
+The breadcrumbs are displayed under the header, and provide a trail of links for users to navigate the hierarchy of containing objects, from file to dataset to Dataverse collection. It utilizes a JSF `repeat component <https://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/ui/repeat.html>`_ to iterate through the breadcrumbs.
 
 .. raw:: html
 
@@ -108,7 +108,7 @@ The breadcrumbs are displayed under the header, and provide a trail of links for
 Tables
 ======
 
-Most tables use the `DataTable components <https://www.primefaces.org/showcase/ui/data/datatable/basic.xhtml>`__ from PrimeFaces and are styled using the `Tables component <http://getbootstrap.com/css/#tables>`__ from Bootstrap.
+Most tables use the `DataTable components <https://www.primefaces.org/showcase/ui/data/datatable/basic.xhtml>`__ from PrimeFaces and are styled using the `Tables component <https://getbootstrap.com/css/#tables>`__ from Bootstrap.
 
 .. raw:: html
 
@@ -187,7 +187,7 @@ Most tables use the `DataTable components <https://www.primefaces.org/showcase/u
 Forms
 =====
 
-Forms fulfill various functions across the site, but we try to style them consistently. We use the ``.form-horizontal`` layout, which uses ``.form-group`` to create a grid of rows for the labels and inputs. The consistent style of forms is maintained using the `Forms component <http://getbootstrap.com/css/#forms>`__ from Bootstrap. Form elements like the `InputText component <https://www.primefaces.org/showcase/ui/input/inputText.xhtml>`__ from PrimeFaces are kept looking clean and consistent across each page.
+Forms fulfill various functions across the site, but we try to style them consistently. We use the ``.form-horizontal`` layout, which uses ``.form-group`` to create a grid of rows for the labels and inputs. The consistent style of forms is maintained using the `Forms component <https://getbootstrap.com/css/#forms>`__ from Bootstrap. Form elements like the `InputText component <https://www.primefaces.org/showcase/ui/input/inputText.xhtml>`__ from PrimeFaces are kept looking clean and consistent across each page.
 
 .. raw:: html
 
@@ -289,7 +289,7 @@ Here are additional form elements that are common across many pages, including r
 Buttons
 =======
 
-There are various types of buttons for various actions, so we have many components to use, including the `CommandButton component <https://www.primefaces.org/showcase/ui/button/commandButton.xhtml>`__ and `CommandLink component <https://www.primefaces.org/showcase/ui/button/commandLink.xhtml>`__ from PrimeFaces, as well as the basic JSF `Link component <http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/h/link.html>`__ and `OutputLink component <http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/h/outputLink.html>`__. Those are styled using the `Buttons component <http://getbootstrap.com/css/#buttons>`__, `Button Groups component <http://getbootstrap.com/components/#btn-groups>`__ and `Buttons Dropdowns component <http://getbootstrap.com/components/#btn-dropdowns>`__ from Bootstrap.
+There are various types of buttons for various actions, so we have many components to use, including the `CommandButton component <https://www.primefaces.org/showcase/ui/button/commandButton.xhtml>`__ and `CommandLink component <https://www.primefaces.org/showcase/ui/button/commandLink.xhtml>`__ from PrimeFaces, as well as the basic JSF `Link component <https://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/h/link.html>`__ and `OutputLink component <https://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/h/outputLink.html>`__. Those are styled using the `Buttons component <https://getbootstrap.com/css/#buttons>`__, `Button Groups component <https://getbootstrap.com/components/#btn-groups>`__ and `Buttons Dropdowns component <https://getbootstrap.com/components/#btn-dropdowns>`__ from Bootstrap.
 
 Action Buttons
 --------------
@@ -668,7 +668,7 @@ Another variation of icon-only buttons uses the ``.btn-link`` style class from B
 Pagination
 ==========
 
-We use the `Pagination component <http://getbootstrap.com/components/#pagination>`__ from Bootstrap for paging through search results.
+We use the `Pagination component <https://getbootstrap.com/components/#pagination>`__ from Bootstrap for paging through search results.
 
 .. raw:: html
 
@@ -738,7 +738,7 @@ We use the `Pagination component <http://getbootstrap.com/components/#pagination
 Labels
 ======
 
-The `Labels component <http://getbootstrap.com/components/#labels>`__ from Bootstrap is used for publication status (DRAFT, In Review, Unpublished, Deaccessioned), and Dataset version, as well as Tabular Data Tags (Survey, Time Series, Panel, Event, Genomics, Network, Geospatial).
+The `Labels component <https://getbootstrap.com/components/#labels>`__ from Bootstrap is used for publication status (DRAFT, In Review, Unpublished, Deaccessioned), and Dataset version, as well as Tabular Data Tags (Survey, Time Series, Panel, Event, Genomics, Network, Geospatial).
 
 .. raw:: html
 
@@ -768,7 +768,7 @@ The `Labels component <http://getbootstrap.com/components/#labels>`__ from Boots
 Alerts
 ======
 
-For our help/information, success, warning, and error message blocks we use a custom built UI component based on the `Alerts component <http://getbootstrap.com/components/#alerts>`__ from Bootstrap.
+For our help/information, success, warning, and error message blocks we use a custom built UI component based on the `Alerts component <https://getbootstrap.com/components/#alerts>`__ from Bootstrap.
 
 .. raw:: html
 
@@ -859,9 +859,9 @@ Style classes can be added to ``p``, ``div``, ``span`` and other elements to add
 Images
 ======
 
-For images, we use the `GraphicImage  component <https://www.primefaces.org/showcase/ui/multimedia/graphicImage.xhtml>`__ from PrimeFaces, or the basic JSF `GraphicImage component <http://docs.oracle.com/javaee/6/javaserverfaces/2.1/docs/vdldocs/facelets/h/graphicImage.html>`__.
+For images, we use the `GraphicImage  component <https://www.primefaces.org/showcase/ui/multimedia/graphicImage.xhtml>`__ from PrimeFaces, or the basic JSF `GraphicImage component <https://docs.oracle.com/javaee/6/javaserverfaces/2.1/docs/vdldocs/facelets/h/graphicImage.html>`__.
 
-To display images in a responsive way, they are styled with ``.img-responsive``, an `Images CSS class <http://getbootstrap.com/css/#images>`__ from Bootstrap.
+To display images in a responsive way, they are styled with ``.img-responsive``, an `Images CSS class <https://getbootstrap.com/css/#images>`__ from Bootstrap.
 
 .. raw:: html
 
@@ -879,7 +879,7 @@ To display images in a responsive way, they are styled with ``.img-responsive``,
 Panels
 ======
 
-The most common of our containers, the `Panels component <http://getbootstrap.com/components/#panels>`__ from Bootstrap is used to add a border and padding around sections of content like metadata blocks. Displayed with a header and/or footer, it can also be used with the  `Collapse plugin <http://getbootstrap.com/javascript/#collapse>`__ from Bootstrap.
+The most common of our containers, the `Panels component <https://getbootstrap.com/components/#panels>`__ from Bootstrap is used to add a border and padding around sections of content like metadata blocks. Displayed with a header and/or footer, it can also be used with the  `Collapse plugin <https://getbootstrap.com/javascript/#collapse>`__ from Bootstrap.
 
 .. raw:: html
 
@@ -943,7 +943,7 @@ Tabs
 
 Tabs are used to provide content panes on a page that allow the user to view different sections of content without navigating to a different page.
 
-We use the `TabView component <https://www.primefaces.org/showcase/ui/panel/tabView.xhtml>`__ from PrimeFaces, which is styled using the `Tab component <http://getbootstrap.com/javascript/#tabs>`__ from Bootstrap.
+We use the `TabView component <https://www.primefaces.org/showcase/ui/panel/tabView.xhtml>`__ from PrimeFaces, which is styled using the `Tab component <https://getbootstrap.com/javascript/#tabs>`__ from Bootstrap.
 
 .. raw:: html
 
@@ -989,7 +989,7 @@ Modals are dialog prompts that act as popup overlays, but don't create a new bro
 
 Buttons usually provide the UI prompt. A user clicks the button, which then opens a `Dialog component <https://www.primefaces.org/showcase/ui/overlay/dialog/basic.xhtml>`__  or `Confirm Dialog component <https://www.primefaces.org/showcase/ui/overlay/confirmDialog.xhtml>`__  from PrimeFaces that displays the modal with the necessary information and actions to take.
 
-The modal is styled using the `Modal component <http://getbootstrap.com/javascript/#modals>`__ from Bootstrap, for a popup window that prompts a user for information, with overlay and a backdrop, then header, content, and buttons. We can use style classes from Bootstrap for large (``.bs-example-modal-lg``) and small (``.bs-example-modal-sm``) width options.
+The modal is styled using the `Modal component <https://getbootstrap.com/javascript/#modals>`__ from Bootstrap, for a popup window that prompts a user for information, with overlay and a backdrop, then header, content, and buttons. We can use style classes from Bootstrap for large (``.bs-example-modal-lg``) and small (``.bs-example-modal-sm``) width options.
 
 .. raw:: html
 

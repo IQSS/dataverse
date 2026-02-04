@@ -28,13 +28,23 @@ public class ShibAuthenticationProvider implements AuthenticationProvider {
         return false;
     }
 
-    @Override
-    public boolean isDisplayIdentifier() {
-        return false;
-    }
-
     // We don't override "isEmailVerified" because we're using timestamps
     // ("emailconfirmed" on the "authenticateduser" table) to know if
     // Shib users have confirmed/verified their email or not.
+    
+    /* 
+     * Specific to Shibboleth auth, the provider needs to know the entityId of 
+     * itself as a Shibboleth "service provider" - the registered identifier
+     * of shibd running on the same host. 
+     */
+    private String serviceProviderEntityId = null; 
+    
+    public String getServiceProviderEntityId() {
+        return serviceProviderEntityId; 
+    }
+    
+    public void setServiceProviderEntityId(String serviceProviderEntityId) {
+        this.serviceProviderEntityId = serviceProviderEntityId; 
+    }
 
 }

@@ -61,8 +61,8 @@ public class RTabFileParser implements java.io.Serializable {
     // should be used.
 
 
-  public int read(BufferedReader csvReader, DataTable dataTable, PrintWriter pwout) throws IOException {
-    dbgLog.warning("RTabFileParser: Inside R Tab file parser");
+    public int read(BufferedReader csvReader, DataTable dataTable, boolean saveWithVariableHeader, PrintWriter pwout) throws IOException {
+        dbgLog.fine("RTabFileParser: Inside R Tab file parser");
       
         int varQnty = 0;
 
@@ -94,14 +94,17 @@ public class RTabFileParser implements java.io.Serializable {
         boolean[] isTimeVariable = new boolean[varQnty];
         boolean[] isBooleanVariable = new boolean[varQnty];
         
+        String variableNameHeader = null;
+        
         if (dataTable.getDataVariables() != null) {
             for (int i = 0; i < varQnty; i++) {
                 DataVariable var = dataTable.getDataVariables().get(i);
                 if (var == null) {
-                    // throw exception!
+                    throw new IOException ("null dataVariable passed to the parser");
+                    
                 }
                 if (var.getType() == null) {
-                    // throw exception!
+                    throw new IOException ("null dataVariable type passed to the parser");
                 }
                 if (var.isTypeCharacter()) {
                     isCharacterVariable[i] = true; 
@@ -128,13 +131,24 @@ public class RTabFileParser implements java.io.Serializable {
                         }
                     }
                 } else {
-                    // throw excepion "unknown variable format type" - ?
+                     throw new IOException ("unknown dataVariable format passed to the parser");
                 }
                 
-                
+                if (saveWithVariableHeader) {
+                    variableNameHeader = variableNameHeader == null  
+                            ? var.getName() 
+                            : variableNameHeader.concat("\t" + var.getName());
+                }
             }
         } else {
-            // throw exception!
+            throw new IOException ("null dataVariables list passed to the parser");
+        }
+        
+        if (saveWithVariableHeader) {
+            if (variableNameHeader == null) {
+                throw new IOException ("failed to generate the Variable Names header");
+            }
+            pwout.println(variableNameHeader);
         }
         
         while ((line = csvReader.readLine()) != null) {

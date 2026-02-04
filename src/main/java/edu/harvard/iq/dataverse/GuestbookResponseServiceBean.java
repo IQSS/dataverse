@@ -63,15 +63,14 @@ public class GuestbookResponseServiceBean {
                 + " and r.dataset_id = o.id "
                 + " and r.guestbook_id = g.id ";*/
     
-    private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, o.id, r.responsetime, f.downloadtype,"
+    private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, o.id, r.responsetime, r.eventtype,"
                 + " m.label, r.dataFile_id, r.name, r.email, r.institution, r.position,"
                 + " o.protocol, o.authority, o.identifier, d.protocol, d.authority, d.identifier "
-                + "from guestbookresponse r, filedownload f, filemetadata m, dvobject o, guestbook g, dvobject d "
+                + "from guestbookresponse r, filemetadata m, dvobject o, guestbook g, dvobject d "
                 + "where "  
                 + "m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
                 + " and m.datafile_id = r.datafile_id "
                 + " and d.id = r.datafile_id "
-                + " and r.id = f.guestbookresponse_id "
                 + " and r.dataset_id = o.id "
                 + " and r.guestbook_id = g.id ";
     
@@ -79,14 +78,13 @@ public class GuestbookResponseServiceBean {
     // on the guestbook-results.xhtml page (the info we show on the page is 
     // less detailed than what we let the users download as CSV files, so this 
     // query has fewer fields than the one above). -- L.A.
-    private static final String BASE_QUERY_STRING_FOR_PAGE_DISPLAY = "select  r.id, v.value, r.responsetime, f.downloadtype,  m.label, r.name "
-                + "from guestbookresponse r, filedownload f, datasetfieldvalue v, filemetadata m , dvobject o "
+    private static final String BASE_QUERY_STRING_FOR_PAGE_DISPLAY = "select  r.id, v.value, r.responsetime, r.eventtype,  m.label, r.name "
+                + "from guestbookresponse r, datasetfieldvalue v, filemetadata m , dvobject o "
                 + "where "  
                 + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
                 + " and datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id )) "
                 + " and m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
                 + " and m.datafile_id = r.datafile_id "
-                + " and r.id = f.guestbookresponse_id "
                 + " and r.dataset_id = o.id ";
     
     // And a custom query for retrieving *all* the custom question responses, for 
@@ -434,7 +432,7 @@ public class GuestbookResponseServiceBean {
             Query query = em.createNativeQuery(queryString);
             return (Long) query.getSingleResult();
         } else  {
-            String queryString = "select count(o) from GuestbookResponse as o, Dataset d, DvObject obj where o.dataset_id = d.id and d.id = obj.id and obj.owner_id = " + dataverseId + "and o.guestbook_id = " + guestbookId;
+            String queryString = "select count(o) from GuestbookResponse as o, Dataset d, DvObject obj where o.dataset_id = d.id and d.id = obj.id and obj.owner_id = " + dataverseId + " and o.guestbook_id = " + guestbookId;
             Query query = em.createNativeQuery(queryString);
             return (Long) query.getSingleResult();            
         }
@@ -490,17 +488,25 @@ public class GuestbookResponseServiceBean {
         return (Long) query.getSingleResult();
     }
 
-    public Long findCountAll() {
-        return findCountAll(null);
-    }
-
     public Long findCountAll(Long dataverseId) {
-        String queryString;
-        if (dataverseId != null) {
-            queryString = "select count(o.id) from GuestbookResponse  o,  DvObject v where o.dataset_id = v.id and v.owner_id = " + dataverseId + " ";
-        } else {
-            queryString = "select count(o.id) from GuestbookResponse  o ";
+      
+        if (dataverseId == null) {
+            return null;
         }
+        
+        // Note that this method used to support NULL dataverseId, 
+        // in which case it counted ALL the guestbookresponse rows
+        // for the entire instance: 
+        // queryString = "select count(o.id) from GuestbookResponse  o ";
+        // I removed this code (it was not being used, thankfully) since
+        // the query can be insanely expensive on a large production table. 
+        // That's why we use a stored procedure to "estimate" its size, in 
+        // the dedicated getTotalDownloadCount() method further below, for 
+        // example, when we need to show the total number of downloads on 
+        // the homepage. (L.A.)
+        
+        String queryString = "select count(o.id) from GuestbookResponse  o, DvObject v, Dataset d where o.dataset_id = v.id and v.id = d.id and v.owner_id = " + dataverseId + " ";
+            
 
         Query query = em.createNativeQuery(queryString);
         return (Long) query.getSingleResult();
@@ -641,6 +647,9 @@ public class GuestbookResponseServiceBean {
        
         GuestbookResponse guestbookResponse = new GuestbookResponse();
         
+        //Not otherwise set for multi-file downloads
+        guestbookResponse.setDatasetVersion(workingVersion);
+        
         if(workingVersion.isDraft()){           
             guestbookResponse.setWriteResponse(false);
         } 
@@ -667,7 +676,7 @@ public class GuestbookResponseServiceBean {
         if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
             initCustomQuestions(guestbookResponse, dataset);
         }
-        guestbookResponse.setDownloadtype("Download");
+        guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
 
         guestbookResponse.setDataset(dataset);
         
@@ -721,9 +730,9 @@ public class GuestbookResponseServiceBean {
         if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
             initCustomQuestions(guestbookResponse, dataset);
         }
-        guestbookResponse.setDownloadtype("Download");
+        guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
         if(downloadFormat.toLowerCase().equals("subset")){
-            guestbookResponse.setDownloadtype("Subset");
+            guestbookResponse.setEventType(GuestbookResponse.SUBSET);
         }
         if(downloadFormat.toLowerCase().equals("explore")){
             /**
@@ -734,12 +743,12 @@ public class GuestbookResponseServiceBean {
              * "externalTool" for all external tools, including TwoRavens. When
              * clicking "Explore" and then the name of the tool, we want the
              * name of the exploration tool (i.e. "Data Explorer",
-             * etc.) to be persisted as the downloadType. We execute
-             * guestbookResponse.setDownloadtype(externalTool.getDisplayName())
+             * etc.) to be persisted as the eventType. We execute
+             * guestbookResponse.setEventType(externalTool.getDisplayName())
              * over in the "explore" method of FileDownloadServiceBean just
              * before the guestbookResponse is written.
              */
-            guestbookResponse.setDownloadtype("Explore");
+            guestbookResponse.setEventType(GuestbookResponse.EXPLORE);
         }
         guestbookResponse.setDataset(dataset);
         
@@ -761,49 +770,17 @@ public class GuestbookResponseServiceBean {
         }
     }
     
-    private void setUserDefaultResponses(GuestbookResponse guestbookResponse, DataverseSession session, User userIn) {
-        User user;
-        User sessionUser = session.getUser();
-        
-        if (userIn != null){
-            user = userIn;
-        } else{
-            user = sessionUser;
-        }
-         
-        if (user != null) {
-            guestbookResponse.setEmail(getUserEMail(user));
-            guestbookResponse.setName(getUserName(user));
-            guestbookResponse.setInstitution(getUserInstitution(user));
-            guestbookResponse.setPosition(getUserPosition(user));
-            guestbookResponse.setAuthenticatedUser(getAuthenticatedUser(user));
-        } else {
-            guestbookResponse.setEmail("");
-            guestbookResponse.setName("");
-            guestbookResponse.setInstitution("");
-            guestbookResponse.setPosition("");
-            guestbookResponse.setAuthenticatedUser(null);
-        }
-        guestbookResponse.setSessionId(session.toString());
+    private void setUserDefaultResponses(GuestbookResponse guestbookResponse, DataverseSession session, User user) {
+        guestbookResponse.setEmail(getUserEMail(user));
+        guestbookResponse.setName(getUserName(user));
+        guestbookResponse.setInstitution(getUserInstitution(user));
+        guestbookResponse.setPosition(getUserPosition(user));
+        guestbookResponse.setAuthenticatedUser(getAuthenticatedUser(user));
+        guestbookResponse.setSessionId(session != null ? session.toString() : "");
     }
     
     private void setUserDefaultResponses(GuestbookResponse guestbookResponse, DataverseSession session) {
-        User user = session.getUser();
-        
-        if (user != null) {
-            guestbookResponse.setEmail(getUserEMail(user));
-            guestbookResponse.setName(getUserName(user));
-            guestbookResponse.setInstitution(getUserInstitution(user));
-            guestbookResponse.setPosition(getUserPosition(user));
-            guestbookResponse.setAuthenticatedUser(getAuthenticatedUser(user));
-        } else {
-            guestbookResponse.setEmail("");
-            guestbookResponse.setName("");
-            guestbookResponse.setInstitution("");
-            guestbookResponse.setPosition("");
-            guestbookResponse.setAuthenticatedUser(null);
-        }
-        guestbookResponse.setSessionId(session.toString());
+        setUserDefaultResponses(guestbookResponse, session, session.getUser());
     }
 
     public GuestbookResponse initDefaultGuestbookResponse(Dataset dataset, DataFile dataFile, DataverseSession session) {
@@ -818,7 +795,7 @@ public class GuestbookResponseServiceBean {
         guestbookResponse.setDataset(dataset);
         guestbookResponse.setResponseTime(new Date());
         guestbookResponse.setSessionId(session.toString());
-        guestbookResponse.setDownloadtype("Download");
+        guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
         setUserDefaultResponses(guestbookResponse, session);
         return guestbookResponse;
     }
@@ -839,7 +816,7 @@ public class GuestbookResponseServiceBean {
         guestbookResponse.setDataset(dataset);
         guestbookResponse.setResponseTime(new Date());
         guestbookResponse.setSessionId(session.toString());
-        guestbookResponse.setDownloadtype("Download");
+        guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
         setUserDefaultResponses(guestbookResponse, session, user);
         return guestbookResponse;
     }
@@ -903,29 +880,36 @@ public class GuestbookResponseServiceBean {
         em.persist(guestbookResponse);
     }
     
+    
+    /*
+     * Metrics - download counts from GuestbookResponses: Any GuestbookResponse that
+     * is not of eventtype=='AccessRequest' is considered a download. This includes
+     * actual 'Download's, downloads of 'Subset's, and use by 'Explore' tools and
+     * previewers (where eventtype is the previewer name)
+     */
         
-    public Long getCountGuestbookResponsesByDataFileId(Long dataFileId) {
+    public Long getDownloadCountByDataFileId(Long dataFileId) {
         // datafile id is null, will return 0
-        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.datafile_id  = " + dataFileId);
+        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.datafile_id  = " + dataFileId + " and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
         return (Long) query.getSingleResult();
     }
     
-    public Long getCountGuestbookResponsesByDatasetId(Long datasetId) {
-        return getCountGuestbookResponsesByDatasetId(datasetId, null);
+    public Long getDownloadCountByDatasetId(Long datasetId) {
+        return getDownloadCountByDatasetId(datasetId, null);
     }
     
-    public Long getCountGuestbookResponsesByDatasetId(Long datasetId, LocalDate date) {
+    public Long getDownloadCountByDatasetId(Long datasetId, LocalDate date) {
         // dataset id is null, will return 0        
         Query query;
         if(date != null) {
-            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId + " and responsetime < '" + date.toString() + "'");
+            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId + " and responsetime < '" + date.toString() + "' and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
         }else {
-            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId);
+            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId+ " and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
         }
         return (Long) query.getSingleResult();
     }    
 
-    public Long getCountOfAllGuestbookResponses() {
+    public Long getTotalDownloadCount() {
         // dataset id is null, will return 0  
         
         // "SELECT COUNT(*)" is notoriously expensive in PostgresQL for large 
@@ -943,20 +927,18 @@ public class GuestbookResponseServiceBean {
         // somehow. -- L.A. 5.6
         
         
-        try {        
-            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("GuestbookResponse.estimateGuestBookResponseTableSize");
-            query.execute();
-            Long totalCount = (Long) query.getOutputParameterValue(1);
-        
-            if (totalCount != null) {
-                return totalCount;
-            }
-        } catch (IllegalArgumentException iae) {
-            // Don't do anything, we'll fall back to using "SELECT COUNT()"
+     // In GuestbookResponseServiceBean.java
+        try {
+            Query query = em.createNativeQuery("SELECT estimateGuestBookResponseTableSize()");
+            return ((Number) query.getSingleResult()).longValue();
+        } catch (Exception e) {
+            // Fall back to using "SELECT COUNT()"
         }
-        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o;");
+        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o where eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"';");
         return (Long) query.getSingleResult();
     }
+    
+    //End Metrics/download counts
     
     public List<GuestbookResponse> findByAuthenticatedUserId(AuthenticatedUser user) {
         Query query = em.createNamedQuery("GuestbookResponse.findByAuthenticatedUserId"); 

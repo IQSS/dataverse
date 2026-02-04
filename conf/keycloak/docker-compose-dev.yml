@@ -1,0 +1,318 @@
+# This file is designed for testing Keycloak authentication using the
+# Dataverse Builtin Users SPI.
+#
+# Keycloak is deployed using a custom-built image, defined by a Dockerfile
+# located in this directory. This allows for a controlled
+# and flexible development setup. Note that this image is currently
+# intended for development and testing purposes only and should be used
+# accordingly in non-production environments.
+
+version: "2.4"
+
+services:
+
+  dev_dataverse:
+    container_name: "dev_dataverse"
+    hostname: dataverse
+    image: ${APP_IMAGE}
+    restart: on-failure
+    user: payara
+    environment:
+      DATAVERSE_DB_HOST: postgres
+      DATAVERSE_DB_PASSWORD: secret
+      DATAVERSE_DB_USER: ${DATAVERSE_DB_USER}
+      ENABLE_JDWP: "1"
+      ENABLE_RELOAD: "1"
+      SKIP_DEPLOY: "${SKIP_DEPLOY}"
+      DATAVERSE_JSF_REFRESH_PERIOD: "1"
+      DATAVERSE_FEATURE_API_BEARER_AUTH: "1"
+      DATAVERSE_FEATURE_INDEX_HARVESTED_METADATA_SOURCE: "1"
+      DATAVERSE_FEATURE_API_BEARER_AUTH_PROVIDE_MISSING_CLAIMS: "1"
+      DATAVERSE_FEATURE_API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH: "1"
+      DATAVERSE_MAIL_SYSTEM_EMAIL: "dataverse@localhost"
+      DATAVERSE_MAIL_MTA_HOST: "smtp"
+      DATAVERSE_AUTH_OIDC_ENABLED: "1"
+      DATAVERSE_AUTH_OIDC_CLIENT_ID: test
+      DATAVERSE_AUTH_OIDC_CLIENT_SECRET: 94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8
+      DATAVERSE_AUTH_OIDC_AUTH_SERVER_URL: http://keycloak.mydomain.com:8090/realms/test
+      DATAVERSE_SPI_EXPORTERS_DIRECTORY: "/dv/exporters"
+      # These two oai settings are here to get HarvestingServerIT to pass
+      dataverse_oai_server_maxidentifiers: "2"
+      dataverse_oai_server_maxrecords: "2"
+      JVM_ARGS: -Ddataverse.files.storage-driver-id=file1
+        -Ddataverse.files.file1.type=file
+        -Ddataverse.files.file1.label=Filesystem
+        -Ddataverse.files.file1.directory=${STORAGE_DIR}/store
+        -Ddataverse.files.localstack1.type=s3
+        -Ddataverse.files.localstack1.label=LocalStack
+        -Ddataverse.files.localstack1.custom-endpoint-url=http://localstack:4566
+        -Ddataverse.files.localstack1.custom-endpoint-region=us-east-2
+        -Ddataverse.files.localstack1.bucket-name=mybucket
+        -Ddataverse.files.localstack1.path-style-access=true
+        -Ddataverse.files.localstack1.upload-redirect=true
+        -Ddataverse.files.localstack1.download-redirect=true
+        -Ddataverse.files.localstack1.access-key=default
+        -Ddataverse.files.localstack1.secret-key=default
+        -Ddataverse.files.minio1.type=s3
+        -Ddataverse.files.minio1.label=MinIO
+        -Ddataverse.files.minio1.custom-endpoint-url=http://minio:9000
+        -Ddataverse.files.minio1.custom-endpoint-region=us-east-1
+        -Ddataverse.files.minio1.bucket-name=mybucket
+        -Ddataverse.files.minio1.path-style-access=true
+        -Ddataverse.files.minio1.upload-redirect=false
+        -Ddataverse.files.minio1.download-redirect=false
+        -Ddataverse.files.minio1.access-key=4cc355_k3y
+        -Ddataverse.files.minio1.secret-key=s3cr3t_4cc355_k3y
+        -Ddataverse.pid.providers=fake
+        -Ddataverse.pid.default-provider=fake
+        -Ddataverse.pid.fake.type=FAKE
+        -Ddataverse.pid.fake.label=FakeDOIProvider
+        -Ddataverse.pid.fake.authority=10.5072
+        -Ddataverse.pid.fake.shoulder=FK2/
+        #-Ddataverse.lang.directory=/dv/lang
+    ports:
+      - "8080:8080" # HTTP (Dataverse Application)
+      - "4949:4848" # HTTPS (Payara Admin Console)
+      - "9009:9009" # JDWP
+      - "8686:8686" # JMX
+    networks:
+      - dataverse
+    depends_on:
+      - dev_postgres
+      - dev_solr
+      - dev_dv_initializer
+    volumes:
+      - ./docker-dev-volumes/app/data:/dv
+      - ./docker-dev-volumes/app/secrets:/secrets
+      - ../../target/dataverse:/opt/payara/deployments/dataverse:ro
+    tmpfs:
+      - /dumps:mode=770,size=2052M,uid=1000,gid=1000
+      - /tmp:mode=770,size=2052M,uid=1000,gid=1000
+    mem_limit: 2147483648 # 2 GiB
+    mem_reservation: 1024m
+    privileged: false
+
+  dev_bootstrap:
+    container_name: "dev_bootstrap"
+    image: gdcc/configbaker:unstable
+    restart: "no"
+    command:
+      - bootstrap.sh
+      - dev
+    networks:
+      - dataverse
+    volumes:
+      - ./docker-dev-volumes/solr/data:/var/solr
+
+  dev_dv_initializer:
+    container_name: "dev_dv_initializer"
+    image: gdcc/configbaker:unstable
+    restart: "no"
+    command:
+      - sh
+      - -c
+      - "fix-fs-perms.sh dv"
+    volumes:
+      - ./docker-dev-volumes/app/data:/dv
+
+  dev_postgres:
+    container_name: "dev_postgres"
+    hostname: postgres
+    image: postgres:${POSTGRES_VERSION}
+    restart: on-failure
+    environment:
+      - POSTGRES_USER=${DATAVERSE_DB_USER}
+      - POSTGRES_PASSWORD=secret
+    ports:
+      - "5432:5432"
+    networks:
+      - dataverse
+    volumes:
+      - ./docker-dev-volumes/postgresql/data:/var/lib/postgresql/data
+
+  dev_solr_initializer:
+    container_name: "dev_solr_initializer"
+    image: gdcc/configbaker:unstable
+    restart: "no"
+    command:
+      - sh
+      - -c
+      - "fix-fs-perms.sh solr && cp -a /template/* /solr-template"
+    volumes:
+      - ./docker-dev-volumes/solr/data:/var/solr
+      - ./docker-dev-volumes/solr/conf:/solr-template
+
+  dev_solr:
+    container_name: "dev_solr"
+    hostname: "solr"
+    image: solr:${SOLR_VERSION}
+    depends_on:
+      - dev_solr_initializer
+    restart: on-failure
+    ports:
+      - "8983:8983"
+    networks:
+      - dataverse
+    command:
+      - "solr-precreate"
+      - "collection1"
+      - "/template"
+    volumes:
+      - ./docker-dev-volumes/solr/data:/var/solr
+      - ./docker-dev-volumes/solr/conf:/template
+
+  dev_smtp:
+    container_name: "dev_smtp"
+    hostname: "smtp"
+    image: maildev/maildev:2.0.5
+    restart: on-failure
+    ports:
+      - "25:25" # smtp server
+      - "1080:1080" # web ui
+    environment:
+      - MAILDEV_SMTP_PORT=25
+      - MAILDEV_MAIL_DIRECTORY=/mail
+    networks:
+      - dataverse
+    #volumes:
+    #  - ./docker-dev-volumes/smtp/data:/mail
+    tmpfs:
+      - /mail:mode=770,size=128M,uid=1000,gid=1000
+
+  dev_keycloak:
+    container_name: "dev_keycloak"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gdcc/keycloak
+    hostname: keycloak
+    environment:
+      - KEYCLOAK_ADMIN=kcadmin
+      - KEYCLOAK_ADMIN_PASSWORD=kcpassword
+      - KEYCLOAK_LOGLEVEL=DEBUG
+      - KC_HOSTNAME_STRICT=false
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://postgres:5432/dataverse
+      - KC_DB_USERNAME=${DATAVERSE_DB_USER}
+      - KC_DB_PASSWORD=secret
+      - DATAVERSE_DB_HOST=postgres
+      - DATAVERSE_DB_PORT=5432
+      - DATAVERSE_DB_USER=${DATAVERSE_DB_USER}
+      - DATAVERSE_DB_PASSWORD=secret
+      - DATAVERSE_BASE_URL=http://dataverse:8080
+    networks:
+      dataverse:
+        aliases:
+          - keycloak.mydomain.com #create a DNS alias within the network (add the same alias to your /etc/hosts to get a working OIDC flow)
+    command: start-dev --verbose --import-realm --http-port=8090  # change port to 8090, so within the network and external the same port is used
+    expose:
+      - "9000"
+    ports:
+      - "8090:8090"
+
+  dev_keycloak_initializer:
+    image: alpine:latest
+    container_name: "dev_keycloak_initializer"
+    depends_on:
+      - dev_keycloak
+    environment:
+      - KEYCLOAK_ADMIN=kcadmin
+      - KEYCLOAK_ADMIN_PASSWORD=kcpassword
+    volumes:
+      - ./setup-spi.sh:/usr/local/bin/setup-spi.sh
+    command: [ "/bin/sh", "-c", "apk add --no-cache curl jq && /usr/local/bin/setup-spi.sh" ]
+    networks:
+      - dataverse
+
+  # This proxy configuration is only intended to be used for development purposes!
+  # DO NOT USE IN PRODUCTION! HIGH SECURITY RISK!
+  dev_proxy:
+    image: caddy:2-alpine
+    # The command below is enough to enable using the admin gui, but it will not rewrite location headers to HTTP.
+    # To achieve rewriting from https:// to http://, we need a simple configuration file
+    #command: ["caddy", "reverse-proxy", "-f", ":4848", "-t", "https://dataverse:4848", "--insecure"]
+    command: ["caddy", "run", "-c", "/Caddyfile"]
+    ports:
+      - "4848:4848" # Will expose Payara Admin Console (HTTPS) as HTTP
+    restart: always
+    volumes:
+      - ../proxy/Caddyfile:/Caddyfile:ro
+    depends_on:
+      - dev_dataverse
+    networks:
+      - dataverse
+
+  dev_localstack:
+    container_name: "dev_localstack"
+    hostname: "localstack"
+    image: localstack/localstack:2.3.2
+    restart: on-failure
+    ports:
+      - "127.0.0.1:4566:4566"
+    environment:
+      - DEBUG=${DEBUG-}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - HOSTNAME_EXTERNAL=localstack
+    networks:
+      - dataverse
+    volumes:
+      - ../localstack:/etc/localstack/init/ready.d
+    tmpfs:
+      - /localstack:mode=770,size=128M,uid=1000,gid=1000
+
+  dev_minio:
+    container_name: "dev_minio"
+    hostname: "minio"
+    image: minio/minio
+    restart: on-failure
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - dataverse
+    volumes:
+      - ./docker-dev-volumes/minio_storage:/data
+    environment:
+      MINIO_ROOT_USER: 4cc355_k3y
+      MINIO_ROOT_PASSWORD: s3cr3t_4cc355_k3y
+    command: server /data
+
+  previewers-provider:
+    container_name: previewers-provider
+    hostname: previewers-provider
+    image: trivadis/dataverse-previewers-provider:latest
+    ports:
+      - "9080:9080"
+    networks:
+      - dataverse
+    environment:
+      # have nginx match the port we run previewers on
+      - NGINX_HTTP_PORT=9080
+      - PREVIEWERS_PROVIDER_URL=http://localhost:9080
+      - VERSIONS="v1.4,betatest"
+    # https://docs.docker.com/reference/compose-file/services/#platform
+    # https://github.com/fabric8io/docker-maven-plugin/issues/1750
+    platform: linux/amd64
+
+  register-previewers:
+    container_name: register-previewers
+    hostname: register-previewers
+    image: trivadis/dataverse-deploy-previewers:latest
+    networks:
+      - dataverse
+    environment:
+      - DATAVERSE_URL=http://dataverse:8080
+      - TIMEOUT=10m
+      - PREVIEWERS_PROVIDER_URL=http://localhost:9080
+      # Uncomment to specify which previewers you want. Otherwise you get all of them.
+      #- INCLUDE_PREVIEWERS=text,html,pdf,csv,comma-separated-values,tsv,tab-separated-values,jpeg,png,gif,markdown,x-markdown
+      - EXCLUDE_PREVIEWERS=
+      - REMOVE_EXISTING=true
+    command:
+      - deploy
+    restart: "no"
+    platform: linux/amd64
+
+networks:
+  dataverse:
+    driver: bridge

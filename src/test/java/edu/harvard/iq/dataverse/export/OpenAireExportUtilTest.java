@@ -7,12 +7,13 @@ package edu.harvard.iq.dataverse.export;
 
 import com.google.gson.Gson;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.export.openaire.OpenAireExportUtil;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -56,7 +57,7 @@ public class OpenAireExportUtilTest {
         String persistentAgency = "doi";
         String persistentAuthority = "10.123";
         String persistentId = "123";
-        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId, null, DOIServiceBean.DOI_RESOLVER_URL, null);
+        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId, null, AbstractDOIProvider.DOI_RESOLVER_URL, null);
 
         // when
         OpenAireExportUtil.writeIdentifierElement(xmlWriter, globalId.asURL(), null);
@@ -76,7 +77,7 @@ public class OpenAireExportUtilTest {
         String persistentAgency = "hdl";
         String persistentAuthority = "1902.1";
         String persistentId = "111012";
-        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId, null, HandlenetServiceBean.HDL_RESOLVER_URL, null);
+        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId, null, HandlePidProvider.HDL_RESOLVER_URL, null);
 
         // when
         OpenAireExportUtil.writeIdentifierElement(xmlWriter, globalId.asURL(), null);
@@ -304,8 +305,10 @@ public class OpenAireExportUtilTest {
                 + "<subject>Engineering</subject>"
                 + "<subject>Law</subject>"
                 + "<subject schemeURI=\"http://KeywordVocabularyURL1.org\" "
+                + "valueURI=\"http://keywordTermURI1.org\" "
                 + "subjectScheme=\"KeywordVocabulary1\">KeywordTerm1</subject>"
                 + "<subject schemeURI=\"http://KeywordVocabularyURL2.org\" "
+                + "valueURI=\"http://keywordTermURI2.org\" "
                 + "subjectScheme=\"KeywordVocabulary2\">KeywordTerm2</subject>"
                 + "</subjects>",
                 stringWriter.toString());
@@ -614,7 +617,7 @@ public class OpenAireExportUtilTest {
 
         //then
         assertEquals("<relatedIdentifiers>"
-                + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"ARK\">"
+                + "<relatedIdentifier relationType=\"IsSupplementTo\" relatedIdentifierType=\"ARK\">"
                 + "RelatedPublicationIDNumber1</relatedIdentifier>"
                 + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"arXiv\">"
                 + "RelatedPublicationIDNumber2</relatedIdentifier>"
@@ -646,7 +649,7 @@ public class OpenAireExportUtilTest {
         xmlWriter.flush();
 
         //then
-        assertEquals("<root/>", stringWriter.toString());
+        assertEquals("<root></root>", stringWriter.toString());
     }
 
     /**
@@ -700,7 +703,7 @@ public class OpenAireExportUtilTest {
         xmlWriter.flush();
 
         //then
-        assertEquals("<root/>", stringWriter.toString());
+        assertEquals("<root></root>", stringWriter.toString());
     }
 
     /**
@@ -798,7 +801,7 @@ public class OpenAireExportUtilTest {
 
         //then
         assertEquals("<rightsList>"
-                + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"/>"
+                + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"></rights>"
                 + "<rights rightsURI=\"http://creativecommons.org/publicdomain/zero/1.0/\">"
                 + "CC0 1.0</rights></rightsList>",
                 stringWriter.toString());
@@ -827,8 +830,8 @@ public class OpenAireExportUtilTest {
 
         //then
         assertEquals("<rightsList>"
-                + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\"/>"
-                + "<rights/></rightsList>",
+                + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\"></rights>"
+                + "<rights></rights></rightsList>",
                 stringWriter.toString());
     }
 
@@ -855,8 +858,8 @@ public class OpenAireExportUtilTest {
 
         //then
         assertEquals("<rightsList>"
-                + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"/>"
-                + "<rights/></rightsList>",
+                + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"></rights>"
+                + "<rights></rights></rightsList>",
                 stringWriter.toString());
     }
 
@@ -910,6 +913,54 @@ public class OpenAireExportUtilTest {
      * @throws java.io.IOException
      */
     @Test
+    public void testWriteGeoLocationsElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults-multiple-geo.txt", DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+
+        // when
+        OpenAireExportUtil.writeGeoLocationsElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+        
+        //then
+        assertEquals("<geoLocations>"
+                + "<geoLocation>"
+                + "<geoLocationPlace>University of Stuttgart"
+                + "</geoLocationPlace>"
+                + "</geoLocation>"
+                + "<geoLocation>"
+                + "<geoLocationPlace>University of Vienna"
+                + "</geoLocationPlace>"
+                + "</geoLocation>"
+                + "<geoLocation>"
+                + "<geoLocationBox>"
+                + "<westBoundLongitude>10</westBoundLongitude>"
+                + "<eastBoundLongitude>20</eastBoundLongitude>"
+                + "<southBoundLatitude>40</southBoundLatitude>"
+                + "<northBoundLatitude>30</northBoundLatitude>"
+                + "</geoLocationBox>"
+                + "</geoLocation>"
+                + "<geoLocation>"
+                + "<geoLocationBox>"
+                + "<eastBoundLongitude>60</eastBoundLongitude>"
+                + "<southBoundLatitude>80</southBoundLatitude>"
+                + "<northBoundLatitude>70</northBoundLatitude>"
+                + "<westBoundLongitude>50</westBoundLongitude>"
+                + "</geoLocationBox>"
+                + "</geoLocation>"
+                + "</geoLocations>",
+                stringWriter.toString());
+    }
+    
+    /**
+     * Test: 18, GeoLocation (with point, box and polygon sub-properties) (R)
+     *
+     * description
+     *
+     * @throws javax.xml.stream.XMLStreamException
+     * @throws java.io.IOException
+     */
+    @Test
     public void testWriteGeoLocationElement() throws XMLStreamException, IOException {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
@@ -918,27 +969,30 @@ public class OpenAireExportUtilTest {
         // when
         OpenAireExportUtil.writeGeoLocationsElement(xmlWriter, dto, null);
         xmlWriter.flush();
-
+        
         //then
         assertEquals("<geoLocations>"
                 + "<geoLocation>"
-                + "<geoLocationPlace>ProductionPlace</geoLocationPlace></geoLocation>"
+                + "<geoLocationPlace>University of Stuttgart"
+                + "</geoLocationPlace>"
+                + "</geoLocation>"
                 + "<geoLocation>"
                 + "<geoLocationBox>"
                 + "<westBoundLongitude>10</westBoundLongitude>"
                 + "<eastBoundLongitude>20</eastBoundLongitude>"
-                + "<northBoundLatitude>30</northBoundLatitude>"
                 + "<southBoundLatitude>40</southBoundLatitude>"
+                + "<northBoundLatitude>30</northBoundLatitude>"
                 + "</geoLocationBox>"
                 + "</geoLocation>"
                 + "<geoLocation>"
                 + "<geoLocationBox>"
+                + "<eastBoundLongitude>60</eastBoundLongitude>"
                 + "<southBoundLatitude>80</southBoundLatitude>"
                 + "<northBoundLatitude>70</northBoundLatitude>"
-                + "<eastBoundLongitude>60</eastBoundLongitude>"
                 + "<westBoundLongitude>50</westBoundLongitude>"
                 + "</geoLocationBox>"
-                + "</geoLocation></geoLocations>",
+                + "</geoLocation>"
+                + "</geoLocations>",
                 stringWriter.toString());
     }
 
@@ -966,8 +1020,8 @@ public class OpenAireExportUtilTest {
                 + "<geoLocationBox>"
                 + "<eastBoundLongitude>23</eastBoundLongitude>"
                 + "<northBoundLatitude>786</northBoundLatitude>"
-                + "<westBoundLongitude>45</westBoundLongitude>"
                 + "<southBoundLatitude>34</southBoundLatitude>"
+                + "<westBoundLongitude>45</westBoundLongitude>"
                 + "</geoLocationBox>"
                 + "</geoLocation></geoLocations>",
                 stringWriter.toString());
@@ -1023,7 +1077,7 @@ public class OpenAireExportUtilTest {
         xmlWriter.flush();
 
         //then
-        assertEquals("<root/>", stringWriter.toString());
+        assertEquals("<root></root>", stringWriter.toString());
     }
 
     /**

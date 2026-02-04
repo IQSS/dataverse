@@ -3,6 +3,7 @@ SERVER=http://localhost:8080/api
 
 echo "Setting up Harvard-specific settings"
 # :Authority and :Shoulder are commented out so this script can be used on test servers
+# Should now use the new multipid JVM options instead of these settings
 #curl -X PUT -d 10.7910 "$SERVER/admin/settings/:Authority"
 #curl -X PUT -d "DVN/" "$SERVER/admin/settings/:Shoulder"
 echo "- Application Status header"

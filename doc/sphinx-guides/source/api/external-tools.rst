@@ -11,7 +11,10 @@ Introduction
 
 External tools are additional applications the user can access or open from your Dataverse installation to preview, explore, and manipulate data files and datasets. The term "external" is used to indicate that the tool is not part of the main Dataverse Software.
 
-Once you have created the external tool itself (which is most of the work!), you need to teach a Dataverse installation how to construct URLs that your tool needs to operate. For example, if you've deployed your tool to fabulousfiletool.com your tool might want the ID of a file and the siteUrl of the Dataverse installation like this: https://fabulousfiletool.com?fileId=42&siteUrl=http://demo.dataverse.org
+.. note::
+  Browser-based tools must have CORS explicitly enabled via :ref:`dataverse.cors.origin <dataverse.cors.origin>`. List every origin that will host your tool (or use ``*`` when a wildcard is acceptable). If an origin is not listed, the browser will block that tool's API requests even if the tool page itself loads.
+
+Once you have created the external tool itself (which is most of the work!), you need to teach a Dataverse installation how to construct URLs that your tool needs to operate. For example, if you've deployed your tool to fabulousfiletool.com your tool might want the ID of a file and the siteUrl of the Dataverse installation like this: https://fabulousfiletool.com?fileId=42&siteUrl=https://demo.dataverse.org
 
 In short, you will be creating a manifest in JSON format that describes not only how to construct URLs for your tool, but also what types of files your tool operates on, where it should appear in the Dataverse installation web interfaces, etc. 
 
@@ -40,7 +43,7 @@ How External Tools Are Presented to Users
 An external tool can appear in your Dataverse installation in a variety of ways:
 
 - as an explore, preview, query or configure option for a file
-- as an explore option for a dataset
+- as an explore or configure option for a dataset
 - as an embedded preview on the file landing page
 
 See also the :ref:`testing-external-tools` section of the Admin Guide for some perspective on how Dataverse installations will expect to test your tool before announcing it to their users.
@@ -88,11 +91,11 @@ Terminology
 
     displayName                  The **name** of the tool in the Dataverse installation web interface. For example, "Data Explorer".
 
-    description                  The **description** of the tool, which appears in a popup (for configure tools only) so the user who clicked the tool can learn about the tool before being redirected the tool in a new tab in their browser. HTML is supported.
+    description                  The **description** of the tool, which appears in a popup (for configure tools only) so the user who clicked the tool can learn about the tool before being redirected to the tool in a new tab in their browser. HTML is supported.
 
     scope                        Whether the external tool appears and operates at the **file** level or the **dataset** level. Note that a file level tool much also specify the type of file it operates on (see "contentType" below).
 
-    types                        Whether the external tool is an **explore** tool, a **preview** tool, a **query** tool, a **configure** tool or any combination of these (multiple types are supported for a single tool). Configure tools require an API token because they make changes to data files (files within datasets). Configure tools are currently not supported at the dataset level. The older "type" keyword that allows you to pass a single type as a string is deprecated but still supported.
+    types                        Whether the external tool is an **explore** tool, a **preview** tool, a **query** tool, a **configure** tool or any combination of these (multiple types are supported for a single tool). Configure tools require an API token because they make changes to data files (files within datasets). The older "type" keyword that allows you to pass a single type as a string is deprecated but still supported.
 
     toolUrl                      The **base URL** of the tool before query parameters are added.
     
@@ -102,7 +105,7 @@ Terminology
     
     httpMethod                   Either ``GET`` or ``POST``.
 
-    queryParameters              **Key/value combinations** that can be appended to the toolUrl. For example, once substitution takes place (described below) the user may be redirected to ``https://fabulousfiletool.com?fileId=42&siteUrl=http://demo.dataverse.org``.
+    queryParameters              **Key/value combinations** that can be appended to the toolUrl. For example, once substitution takes place (described below) the user may be redirected to ``https://fabulousfiletool.com?fileId=42&siteUrl=https://demo.dataverse.org``.
 
     query parameter keys         An **arbitrary string** to associate with a value that is populated with a reserved word (described below). As the author of the tool, you have control over what "key" you would like to be passed to your tool. For example, if you want to have your tool receive and operate on the query parameter "dataverseFileId=42" instead of just "fileId=42", that's fine.
 
@@ -160,17 +163,29 @@ Authorization Options
 
 When called for datasets or data files that are not public (i.e. in a draft dataset or for a restricted file), external tools are allowed access via the user's credentials. This is accomplished by one of two mechanisms:
 
-* Signed URLs (more secure, recommended)
+.. _signed-urls:
 
-  - Configured via the ``allowedApiCalls`` section of the manifest. The tool will be provided with signed URLs allowing the specified access to the given dataset or datafile for the specified amount of time. The tool will not be able to access any other datasets or files the user may have access to and will not be able to make calls other than those specified.
-  - For tools invoked via a GET call, Dataverse will include a callback query parameter with a Base64 encoded value. The decoded value is a signed URL that can be called to retrieve a JSON response containing all of the queryParameters and allowedApiCalls specified in the manfiest.
-  - For tools invoked via POST, Dataverse will send a JSON body including the requested queryParameters and allowedApiCalls. Dataverse expects the response to the POST to indicate a redirect which Dataverse will use to open the tool.
+Signed URLs
+^^^^^^^^^^^
 
-* API Token (deprecated, less secure, not recommended)
+The signed URL mechanism is more secure than exposing API tokens and therefore recommended.
 
-  - Configured via the ``queryParameters`` by including an ``{apiToken}`` value. When this is present Dataverse will send the user's apiToken to the tool. With the user's API token, the tool can perform any action via the Dataverse API that the user could. External tools configured via this method should be assessed for their trustworthiness.
-  - For tools invoked via GET, this will be done via a query parameter in the request URL which could be cached in the browser's history. Dataverse expects the response to the POST to indicate a redirect which Dataverse will use to open the tool.
-  - For tools invoked via POST, Dataverse will send a JSON body including the apiToken.
+- Configured via the ``allowedApiCalls`` section of the manifest. The tool will be provided with signed URLs allowing the specified access to the given dataset or datafile for the specified amount of time. The tool will not be able to access any other datasets or files the user may have access to and will not be able to make calls other than those specified.
+- For tools invoked via a GET call, Dataverse will include a callback query parameter with a Base64 encoded value. The decoded value is a signed URL that can be called to retrieve a JSON response containing all of the queryParameters and allowedApiCalls specified in the manfiest.
+- For tools invoked via POST, Dataverse will send a JSON body including the requested queryParameters and allowedApiCalls. Dataverse expects the response to the POST to indicate a redirect which Dataverse will use to open the tool.
+
+.. note::
+
+   **For Dataverse site administrators:** When Dataverse is behind a proxy, signed URLs may not work correctly due to protocol mismatches (HTTP vs HTTPS). Please refer to the :ref:`signed-urls-forwarded-proto-header` section to ensure signed URLs work properly in proxy environments.
+
+API Token
+^^^^^^^^^
+
+The API token mechanism is deprecated. Because it is less secure than signed URLs, it is not recommended for new external tools.
+
+- Configured via the ``queryParameters`` by including an ``{apiToken}`` value. When this is present Dataverse will send the user's apiToken to the tool. With the user's API token, the tool can perform any action via the Dataverse API that the user could. External tools configured via this method should be assessed for their trustworthiness.
+- For tools invoked via GET, this will be done via a query parameter in the request URL which could be cached in the browser's history. Dataverse expects the response to the POST to indicate a redirect which Dataverse will use to open the tool.
+- For tools invoked via POST, Dataverse will send a JSON body including the apiToken.
 
 Internationalization of Your External Tool
 ++++++++++++++++++++++++++++++++++++++++++
@@ -187,13 +202,14 @@ Using Example Manifests to Get Started
 ++++++++++++++++++++++++++++++++++++++
 
 Again, you can use :download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` or :download:`dynamicDatasetTool.json <../_static/installation/files/root/external-tools/dynamicDatasetTool.json>` as a starting point for your own manifest file.
+Additional working examples, including ones using :ref:`signed-urls`, are available at https://github.com/gdcc/dataverse-previewers .
 
 Testing Your External Tool
 --------------------------
 
 As the author of an external tool, you are not expected to learn how to install and operate a Dataverse installation. There's a very good chance your tool can be added to a server Dataverse Community developers use for testing if you reach out on any of the channels listed under :ref:`getting-help-developers` in the Developer Guide.
 
-By all means, if you'd like to install a Dataverse installation yourself, a number of developer-centric options are available. For example, there's a script to spin up a Dataverse installation on EC2 at https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible . The process for using curl to add your external tool to your Dataverse installation is documented under :ref:`managing-external-tools` in the Admin Guide.
+By all means, if you'd like to install a Dataverse installation yourself, a number of developer-centric options are available. For example, there's a script to spin up a Dataverse installation on EC2 at https://github.com/gdcc/dataverse-ansible . The process for using curl to add your external tool to your Dataverse installation is documented under :ref:`managing-external-tools` in the Admin Guide.
 
 Spreading the Word About Your External Tool
 -------------------------------------------
@@ -210,7 +226,7 @@ If you've thought to yourself that there ought to be an app store for Dataverse 
 Demoing Your External Tool
 ++++++++++++++++++++++++++
 
-https://demo.dataverse.org is the place to play around with the Dataverse Software and your tool can be included. Please email support@dataverse.org to start the conversation about adding your tool. Additionally, you are welcome to open an issue at https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible which already includes a number of the tools listed above.
+https://demo.dataverse.org is the place to play around with the Dataverse Software and your tool can be included. Please email support@dataverse.org to start the conversation about adding your tool. Additionally, you are welcome to open an issue at https://github.com/gdcc/dataverse-ansible which already includes a number of the tools listed above.
 
 Announcing Your External Tool
 +++++++++++++++++++++++++++++

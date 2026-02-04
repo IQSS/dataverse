@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.scribejava.core.builder.api.DefaultApi20;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
@@ -18,6 +20,8 @@ import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.id.State;
+import com.nimbusds.oauth2.sdk.pkce.CodeChallengeMethod;
+import com.nimbusds.oauth2.sdk.pkce.CodeVerifier;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import com.nimbusds.openid.connect.sdk.AuthenticationRequest;
 import com.nimbusds.openid.connect.sdk.Nonce;
@@ -29,15 +33,18 @@ import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderConfigurationRequest;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
-import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -55,27 +62,35 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
     protected String title = "Open ID Connect";
     protected List<String> scope = Arrays.asList("openid", "email", "profile");
     
-    Issuer issuer;
-    ClientAuthentication clientAuth;
-    OIDCProviderMetadata idpMetadata;
+    final Issuer issuer;
+    final ClientAuthentication clientAuth;
+    final OIDCProviderMetadata idpMetadata;
+    final boolean pkceEnabled;
+    final CodeChallengeMethod pkceMethod;
     
-    public OIDCAuthProvider(String aClientId, String aClientSecret, String issuerEndpointURL) throws AuthorizationSetupException {
+    /**
+     * Using PKCE, we create and send a special {@link CodeVerifier}. This contains a secret
+     * we need again when verifying the response by the provider, thus the cache.
+     * To be absolutely sure this may not be abused to DDoS us and not let unused verifiers rot,
+     * use an evicting cache implementation and not a standard map.
+     */
+    private final Cache<String,CodeVerifier> verifierCache = Caffeine.newBuilder()
+        .maximumSize(JvmSettings.OIDC_PKCE_CACHE_MAXSIZE.lookup(Integer.class))
+        .expireAfterWrite(Duration.of(JvmSettings.OIDC_PKCE_CACHE_MAXAGE.lookup(Integer.class), ChronoUnit.SECONDS))
+        .build();
+    
+    public OIDCAuthProvider(String aClientId, String aClientSecret, String issuerEndpointURL,
+                            boolean pkceEnabled, String pkceMethod) throws AuthorizationSetupException {
         this.clientSecret = aClientSecret; // nedded for state creation
         this.clientAuth = new ClientSecretBasic(new ClientID(aClientId), new Secret(aClientSecret));
         this.issuer = new Issuer(issuerEndpointURL);
-        getMetadata();
+        
+        this.idpMetadata = getMetadata();
+        
+        this.pkceEnabled = pkceEnabled;
+        this.pkceMethod = CodeChallengeMethod.parse(pkceMethod);
     }
     
-    /**
-     * Although this is defined in {@link edu.harvard.iq.dataverse.authorization.AuthenticationProvider},
-     * this needs to be present due to bugs in ELResolver (has been modified for Spring).
-     * TODO: for the future it might be interesting to make this configurable via the provider JSON (it's used for ORCID!)
-     * @see <a href="https://issues.jboss.org/browse/JBEE-159">JBoss Issue 159</a>
-     * @see <a href="https://github.com/eclipse-ee4j/el-ri/issues/43">Jakarta EE Bug 43</a>
-     * @return false
-     */
-    @Override
-    public boolean isDisplayIdentifier() { return false; }
     
     /**
      * Setup metadata from OIDC provider during creation of the provider representation
@@ -83,20 +98,20 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * @throws IOException when sth. goes wrong with the retrieval
      * @throws ParseException when the metadata is not parsable
      */
-    void getMetadata() throws AuthorizationSetupException {
+    OIDCProviderMetadata getMetadata() throws AuthorizationSetupException {
         try {
-            this.idpMetadata = getMetadata(this.issuer);
+            var metadata = getMetadata(this.issuer);
+            // Assert that the provider supports the code flow
+            if (metadata.getResponseTypes().stream().noneMatch(ResponseType::impliesCodeFlow)) {
+                throw new AuthorizationSetupException("OIDC provider at "+this.issuer.getValue()+" does not support code flow, disabling.");
+            }
+            return metadata;
         } catch (IOException ex) {
             logger.severe("OIDC provider metadata at \"+issuerEndpointURL+\" not retrievable: "+ex.getMessage());
             throw new AuthorizationSetupException("OIDC provider metadata at "+this.issuer.getValue()+" not retrievable.");
         } catch (ParseException ex) {
             logger.severe("OIDC provider metadata at \"+issuerEndpointURL+\" not parsable: "+ex.getMessage());
             throw new AuthorizationSetupException("OIDC provider metadata at "+this.issuer.getValue()+" not parsable.");
-        }
-    
-        // Assert that the provider supports the code flow
-        if (! this.idpMetadata.getResponseTypes().stream().filter(idp -> idp.impliesCodeFlow()).findAny().isPresent()) {
-            throw new AuthorizationSetupException("OIDC provider at "+this.issuer.getValue()+" does not support code flow, disabling.");
         }
     }
     
@@ -146,6 +161,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
         State stateObject = new State(state);
         URI callback = URI.create(callbackUrl);
         Nonce nonce = new Nonce();
+        CodeVerifier pkceVerifier = pkceEnabled ? new CodeVerifier() : null;
         
         AuthenticationRequest req = new AuthenticationRequest.Builder(new ResponseType("code"),
                                                                       Scope.parse(this.scope),
@@ -153,8 +169,16 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
                                                                       callback)
             .endpointURI(idpMetadata.getAuthorizationEndpointURI())
             .state(stateObject)
+            // Called method is nullsafe - will disable sending a PKCE challenge in case the verifier is not present
+            .codeChallenge(pkceVerifier, pkceMethod)
             .nonce(nonce)
             .build();
+        
+        // Cache the PKCE verifier, as we need the secret in it for verification later again, after the client sends us
+        // the auth code! We use the state to cache the verifier, as the state is unique per authentication event.
+        if (pkceVerifier != null) {
+            this.verifierCache.put(state, pkceVerifier);
+        }
         
         return req.toURI().toString();
     }
@@ -171,10 +195,14 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * @throws ExecutionException Thrown when the requests thread is failing
      */
     @Override
-    public OAuth2UserRecord getUserRecord(String code, String redirectUrl)
-        throws IOException, OAuth2Exception, InterruptedException, ExecutionException {
-        // Create grant object
-        AuthorizationGrant codeGrant = new AuthorizationCodeGrant(new AuthorizationCode(code), URI.create(redirectUrl));
+    public OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception {
+        // Retrieve the verifier from the cache and clear from the cache. If not found, will be null.
+        // Will be sent to token endpoint for verification, so if required but missing, will lead to exception.
+        CodeVerifier verifier = verifierCache.getIfPresent(state);
+        
+        // Create grant object - again, this is null-safe for the verifier
+        AuthorizationGrant codeGrant = new AuthorizationCodeGrant(
+            new AuthorizationCode(code), URI.create(redirectUrl), verifier);
     
         // Get Access Token first
         Optional<BearerAccessToken> accessToken = getAccessToken(codeGrant);
@@ -199,17 +227,42 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * @param userInfo
      * @return the usable user record for processing ing {@link edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2LoginBackingBean}
      */
-    OAuth2UserRecord getUserRecord(UserInfo userInfo) {
+    public OAuth2UserRecord getUserRecord(UserInfo userInfo) {
+        // Extract Shibboleth persistent identifier claim if present
+        Object shibUniqueIdObj = userInfo.getClaim(ShibUtil.uniquePersistentIdentifier);
+
+        // Extract idp claim if present
+        Object idpObj = userInfo.getClaim(OAuth2UserRecord.IDP_CLAIM_NAME);
+
+        // Extract OIDC user id claim if present
+        Object oidcUserIdObj = userInfo.getClaim(OAuth2UserRecord.OIDC_USER_ID_CLAIM_NAME);
+
+        String shibUniqueId = (shibUniqueIdObj != null) ? shibUniqueIdObj.toString() : null;
+        String idp = (idpObj != null) ? idpObj.toString() : null;
+        String oidcUserId = (oidcUserIdObj != null) ? oidcUserIdObj.toString() : null;
+
+        // Build display info from user attributes
+        AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
+                userInfo.getGivenName(),
+                userInfo.getFamilyName(),
+                userInfo.getEmailAddress(),
+                "",
+                ""
+        );
+
         return new OAuth2UserRecord(
-            this.getId(),
-            userInfo.getSubject().getValue(),
-            userInfo.getPreferredUsername(),
-            null,
-            new AuthenticatedUserDisplayInfo(userInfo.getGivenName(), userInfo.getFamilyName(), userInfo.getEmailAddress(), "", ""),
-            null
+                this.getId(),
+                userInfo.getSubject().getValue(),
+                userInfo.getPreferredUsername(),
+                shibUniqueId,
+                idp,
+                oidcUserId,
+                null,
+                displayInfo,
+                null
         );
     }
-    
+
     /**
      * Retrieve the Access Token from provider. Encapsulate for testing.
      * @param grant
@@ -248,7 +301,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * Retrieve User Info from provider. Encapsulate for testing.
      * @param accessToken The access token to enable reading data from userinfo endpoint
      */
-    Optional<UserInfo> getUserInfo(BearerAccessToken accessToken) throws IOException, OAuth2Exception {
+    public Optional<UserInfo> getUserInfo(BearerAccessToken accessToken) throws IOException, OAuth2Exception {
         // Retrieve data
         HTTPResponse response = new UserInfoRequest(this.idpMetadata.getUserInfoEndpointURI(), accessToken)
                                         .toHTTPRequest()
@@ -272,19 +325,5 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
         } catch (ParseException ex) {
             throw new OAuth2Exception(-1, ex.getMessage(), BundleUtil.getStringFromBundle("auth.providers.exception.userinfo", Arrays.asList(this.getTitle())));
         }
-    }
-
-    /**
-     * Returns the UserRecordIdentifier corresponding to the given accessToken if valid.
-     * UserRecordIdentifier (same used as in OAuth2UserRecord), i.e. can be used to find a local UserAccount.
-     * @param accessToken
-     * @return Returns the UserRecordIdentifier corresponding to the given accessToken if valid.
-     * @throws IOException
-     * @throws OAuth2Exception
-     */
-    public Optional<UserRecordIdentifier> getUserIdentifierForValidToken(BearerAccessToken accessToken) throws IOException, OAuth2Exception{
-        // Request the UserInfoEndpoint to obtain UserInfo, since this endpoint also validate the Token we can reuse the existing code path.
-        // As an alternative we could use the Introspect Endpoint or assume the Token as some encoded information (i.e. JWT).
-        return  Optional.of(new UserRecordIdentifier(  this.getId(), getUserInfo(accessToken).get().getSubject().getValue()));
     }
 }

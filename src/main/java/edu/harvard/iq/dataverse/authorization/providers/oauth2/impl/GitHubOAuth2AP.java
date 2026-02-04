@@ -18,9 +18,11 @@ import jakarta.json.JsonReader;
  * @author michael
  */
 public class GitHubOAuth2AP extends AbstractOAuth2AuthenticationProvider {
-    
+
+    public static final String PROVIDER_ID = "github";
+
     public GitHubOAuth2AP(String aClientId, String aClientSecret) {
-        id = "github";
+        id = PROVIDER_ID;
         title = BundleUtil.getStringFromBundle("auth.providers.title.github");
         clientId = aClientId;
         clientSecret = aClientSecret;
@@ -58,30 +60,4 @@ public class GitHubOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         }
         
     }
-
-    @Override
-    public boolean isDisplayIdentifier() {
-        return false;
-    }
-
-    @Override
-    public String getPersistentIdName() {
-        return BundleUtil.getStringFromBundle("auth.providers.persistentUserIdName.github");
-    }
-
-    @Override
-    public String getPersistentIdDescription() {
-        return BundleUtil.getStringFromBundle("auth.providers.persistentUserIdTooltip.github");
-    }
-
-    @Override
-    public String getPersistentIdUrlPrefix() {
-        return null;
-    }
-
-    @Override
-    public String getLogo() {
-        return null;
-    }
-    
 }

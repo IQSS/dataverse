@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import org.apache.commons.io.filefilter.NotFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 
@@ -43,7 +44,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -109,7 +109,7 @@ public class FileRecordReader extends AbstractItemReader {
         // We probably want package files to be able to use specific stores instead.
         // More importantly perhaps, the approach above does not take into account
         // if the dataset may have an AlternativePersistentIdentifier, that may be 
-        // designated isStorageLocationDesignator() - i.e., if a different identifer
+        // designated isStorageLocationDesignator() - i.e., if a different identifier
         // needs to be used to name the storage directory, instead of the main/current
         // persistent identifier above. 
         getJobLogger().log(Level.INFO, "Reading dataset directory: " + directory.getAbsolutePath() 
@@ -152,8 +152,13 @@ public class FileRecordReader extends AbstractItemReader {
      * @return list of files
      */
     private List<File> getFiles(final File directory) {
-        // create filter from job xml excludes property
-        FileFilter excludeFilter = new NotFileFilter(new WildcardFileFilter(Arrays.asList(excludes.split("\\s*,\\s*"))));
+        // create filter from job xml excludes property using builder to avoid deprecated constructors
+        final String[] excludedPatterns = ListSplitUtil.split(excludes).toArray(new String[0]);
+        FileFilter excludeFilter = new NotFileFilter(
+                WildcardFileFilter.builder()
+                        .setWildcards(excludedPatterns)
+                        .get()
+        );
         List<File> files = new ArrayList<>();
         File[] filesList = directory.listFiles(excludeFilter);
         if (filesList != null) {

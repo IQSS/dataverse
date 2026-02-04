@@ -7,6 +7,21 @@ API design is a large topic. We expect this page to grow over time.
 .. contents:: |toctitle|
 	:local:
 
+.. _openapi-dev:
+
+OpenAPI
+-------
+
+As you add API endpoints, please be conscious that we are exposing these endpoints as an OpenAPI document at ``/openapi`` (e.g. http://localhost:8080/openapi ). See :ref:`openapi` in the API Guide for the user-facing documentation.
+
+We've played around with validation tools such as https://quobix.com/vacuum/ and https://pb33f.io/doctor/ only to discover that our OpenAPI output is less than ideal, generating various warnings and errors.
+
+You can prevent additional problems in our OpenAPI document by observing the following practices:
+
+- When creating a method name within an API class, make it unique.
+
+If you are looking for a reference about the annotations used to generate the OpenAPI document, you can find it in the `MicroProfile OpenAPI Specification <https://download.eclipse.org/microprofile/microprofile-open-api-3.1/microprofile-openapi-spec-3.1.html#_detailed_usage_of_key_annotations>`_.
+
 Paths
 -----
 

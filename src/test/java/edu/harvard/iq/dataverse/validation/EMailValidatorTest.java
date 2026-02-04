@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.validation;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -14,7 +17,8 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class EMailValidatorTest {
+@LocalJvmSettings
+class EMailValidatorTest {
 
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     
@@ -81,5 +85,28 @@ public class EMailValidatorTest {
         assertEquals(expected ? 0 : 1, violations.size());
         violations.stream().findFirst().ifPresent( c -> {
             assertTrue(c.getMessage().contains(mail)); });
+    }
+    
+    public static Stream<Arguments> emailAsciiUtf8Examples() {
+        return Stream.of(
+            Arguments.of("false", "pete@mailinator.com"),
+            Arguments.of("false", "foobar@mail.science"),
+            Arguments.of("true", "lótus.gonçalves@éxample.com"),
+            Arguments.of("true", "begüm.vriezen@example.cologne")
+        );
+    }
+    
+    @ParameterizedTest
+    @MethodSource("emailAsciiUtf8Examples")
+    @JvmSetting(key = JvmSettings.MAIL_MTA_SUPPORT_UTF8, value = "false")
+    void validateWhenMTADoesNotSupportUTF8(boolean needsUTF8Support, String mail) {
+        assertEquals(!needsUTF8Support, EMailValidator.isEmailValid(mail));
+    }
+    
+    @ParameterizedTest
+    @MethodSource("emailAsciiUtf8Examples")
+    @JvmSetting(key = JvmSettings.MAIL_MTA_SUPPORT_UTF8, value = "true")
+    void validateWhenMTASupportsUTF8(boolean needsUTF8Support, String mail) {
+        assertTrue(EMailValidator.isEmailValid(mail));
     }
 }

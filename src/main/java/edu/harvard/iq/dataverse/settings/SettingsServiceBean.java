@@ -2,16 +2,21 @@ package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
-import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
+import edu.harvard.iq.dataverse.api.filter.ApiBlockingFilter;
 import edu.harvard.iq.dataverse.util.StringUtil;
-
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonException;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -20,17 +25,22 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Service bean accessing a persistent hash map, used as settings in the application.
@@ -48,6 +58,7 @@ public class SettingsServiceBean {
      * over your shoulder when typing strings in various places of a large app. 
      * So there.
      */
+    @SuppressWarnings("java:S115")
     public enum Key {
         AllowApiTokenLookupViaApi,
         /**
@@ -57,6 +68,10 @@ public class SettingsServiceBean {
         CustomDatasetSummaryFields,
         /**
          * Defines a public installation -- all datafiles are unrestricted
+         *
+         * This was added along with CloudEnvironmentName and ComputeBaseUrl.
+         * See https://github.com/IQSS/dataverse/issues/3776 and
+         * https://github.com/IQSS/dataverse/pull/3967
          */
         PublicInstall,
         /**
@@ -77,9 +92,12 @@ public class SettingsServiceBean {
         /**
          * For example, https://datacapture.example.org
          */
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         DataCaptureModuleUrl,
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         RepositoryStorageAbstractionLayerUrl,
         UploadMethods,
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         DownloadMethods,
         /**
          * If the data replicated around the world using RSAL (Repository
@@ -89,7 +107,17 @@ public class SettingsServiceBean {
          * TODO: Think about if it makes sense to make this a column in the
          * StorageSite database table.
          */
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         LocalDataAccessPath,
+        /**
+         * The algorithm used to generate PIDs, randomString (default) or
+         * storedProcedure
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         IdentifierGenerationStyle,
         OAuth2CallbackUrl,
         DefaultAuthProvider,
@@ -123,20 +151,52 @@ public class SettingsServiceBean {
 
         /**
          * API endpoints that are not accessible. Comma separated list.
+         * @see JvmSettings#API_BLOCKED_ENDPOINTS
          */
+        @Deprecated(forRemoval = true, since = "2025-04-29")
         BlockedApiEndpoints,
         
         /**
          * A key that, with the right {@link ApiBlockingFilter.BlockPolicy},
          * allows calling blocked APIs.
+         * @see JvmSettings#API_BLOCKED_KEY
          */
+        @Deprecated(forRemoval = true, since = "2025-04-29")
         BlockedApiKey,
         
         
         /**
          * How to treat blocked APIs. One of drop, localhost-only, unblock-key
+         * @see JvmSettings#API_BLOCKED_POLICY
          */
+        @Deprecated(forRemoval = true, since = "2025-04-29")
         BlockedApiPolicy,
+        
+        /**
+         * Semicolon separated allowlist of IP addresses allowed administrative access to workflows.
+         */
+        WorkflowsAdminIpWhitelist,
+        
+        /**
+         * Represents the workflow identifier for the "pre-publish dataset" operation.
+         * This identifier is used to manage and define the specific workflow
+         * triggered before a dataset is published within the application.
+         */
+        PrePublishDatasetWorkflowId,
+        /**
+         * Represents the configuration key for specifying the workflow identifier that
+         * will be executed after a dataset has been published.
+         */
+        PostPublishDatasetWorkflowId,
+        
+        /**
+         * A special secret that, if set, needs to be given when trying to manage internal users.
+         * This key was formerly known as "BuiltinUsers.KEY", which never was a setting name aligning with the others.
+         * At some future point this setting should be moved to JvmSettings (so we consume proper secrets)
+         * or plainly removed with the transition to the SPA frontend requiring an external IdP.
+         */
+        @Deprecated(forRemoval = true, since = "2025-08-01")
+        BuiltinUsersKey,
         
         /**
          * For development only (see dev guide for details). Backed by an enum
@@ -153,27 +213,6 @@ public class SettingsServiceBean {
          * to from the footer.
          */
         ApplicationPrivacyPolicyUrl,
-        /**
-         * A boolean defining if indexing and search should respect the concept
-         * of "permission root".
-         *
-         * <p>
-         *
-         * If we ignore permissionRoot at index time, we should blindly give
-         * search ("discoverability") access to people and group who have access
-         * defined in a parent dataverse, all the way back to the root.
-         *
-         * <p>
-         *
-         * If we respect permissionRoot, this means that the dataverse being
-         * indexed is an island of permissions all by itself. We should not look
-         * to its parent to see if more people and groups might be able to
-         * search the DvObjects within it. We would assume no implicit
-         * inheritance of permissions. In this mode, all permissions must be
-         * explicitly defined on DvObjects. No implied inheritance.
-         *
-         */
-        SearchRespectPermissionRoot,
         /**
          * Solr hostname and port, such as "localhost:8983".
          * @deprecated New installations should not use this database setting, but use {@link JvmSettings#SOLR_HOST}
@@ -192,24 +231,51 @@ public class SettingsServiceBean {
         SignUpUrl,
         /** Key for whether we allow users to sign up */
         AllowSignUp,
-        /** protocol for global id */
+        /**
+         * protocol for global id
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         Protocol,
-        /** authority for global id */
+        /**
+         * authority for global id
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         Authority,
-        /** DoiProvider for global id */
+        /**
+         * DoiProvider for global id
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         DoiProvider,
-        /** Shoulder for global id - used to create a common prefix on identifiers */
+        /**
+         * Shoulder for global id - used to create a common prefix on identifiers
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         Shoulder,
-        /* Removed for now - tried to add here but DOI Service Bean didn't like it at start-up
-        DoiUsername,
-        DoiPassword,
-        DoiBaseurlstring,
-        */
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
 
         CVocConf,
 
+        // Default calls per hour for each tier. csv format (30,60,...)
+        RateLimitingDefaultCapacityTiers,
+        // json defined list of capacities by tier and action list. See RateLimitSetting.java
+        RateLimitingCapacityByTierAndAction,
         /**
          * A link to an installation of https://github.com/IQSS/miniverse or
          * some other metrics app.
@@ -230,15 +296,21 @@ public class SettingsServiceBean {
         /* the number of files the GUI user is allowed to upload in one batch, 
             via drag-and-drop, or through the file select dialog */
         MultipleUploadFilesLimit,
-        /* return email address for system emails such as notifications */
+        /**
+         * Return email address for system emails such as notifications
+         * @deprecated Please replace usages with {@link edu.harvard.iq.dataverse.MailServiceBean#getSystemAddress},
+         *             which is backward compatible with this setting.
+         */
+        @Deprecated(since = "6.2", forRemoval = true)
         SystemEmail, 
-        /* size limit for Tabular data file ingests */
-        /* (can be set separately for specific ingestable formats; in which 
-        case the actual stored option will be TabularIngestSizeLimit:{FORMAT_NAME}
-        where {FORMAT_NAME} is the format identification tag returned by the 
-        getFormatName() method in the format-specific plugin; "sav" for the 
-        SPSS/sav format, "RData" for R, etc.
-        for example: :TabularIngestSizeLimit:RData */
+        
+        /**
+        <p>Size limit (in bytes) for tabular file ingest. Accepts either a single numeric value or JSON for per-format control.</p>
+        <p>Values: -1 (or absent) = no limit, 0 = disable ingest, >0 = byte threshold, or JSON object.</p>
+        <p>JSON object allows setting a "default" (same as single byte value) and override limits per-format for: CSV, DTA, POR, Rdata, SAV, XLSX.
+        Example: <code>{"default": "536870912", "CSV": "0", "Rdata": "1000000"}</code></p>
+        <p>Format names are case-insensitive. Invalid settings disable ingest until corrected.</p>
+        */
         TabularIngestSizeLimit,
         /* Validate physical files in the dataset when publishing, if the dataset size less than the threshold limit */
         DatasetChecksumValidationSizeLimit,
@@ -253,6 +325,10 @@ public class SettingsServiceBean {
         Whether to display the publish text for every published version
         */
         DatasetPublishPopupCustomTextOnAllVersions,
+        /*
+        Publish Disclaimer text. If this setting exists user must acknowledge before a Dataset can be published
+         */
+        PublishDatasetDisclaimerText,
         /*
         Whether Harvesting (OAI) service is enabled
         */
@@ -350,10 +426,16 @@ public class SettingsServiceBean {
          */
         PVCustomPasswordResetAlertMessage,
         /*
-        String to describe DOI format for data files. Default is DEPENDENT. 
-        'DEPENEDENT' means the DOI will be the Dataset DOI plus a file DOI with a slash in between.
-        'INDEPENDENT' means a new global id, completely independent from the dataset-level global id.
-        */
+         * String to describe DOI format for data files. Default is DEPENDENT.
+         * 'DEPENDENT' means the DOI will be the Dataset DOI plus a file DOI with a
+         * slash in between. 'INDEPENDENT' means a new global id, completely independent
+         * from the dataset-level global id.
+         *
+         * @deprecated New installations should not use this database setting, but use
+         * the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         DataFilePIDFormat, 
         /* Json array of supported languages
         */
@@ -361,7 +443,7 @@ public class SettingsServiceBean {
         /*
         Number for the minimum number of files to send PID registration to asynchronous workflow
         */
-        PIDAsynchRegFileCount,
+        //PIDAsynchRegFileCount,
         /**
          * 
          */
@@ -369,12 +451,22 @@ public class SettingsServiceBean {
 
         /**
          * Indicates if the Handle service is setup to work 'independently' (No communication with the Global Handle Registry)
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
          */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         IndependentHandleService,
 
         /**
         Handle to use for authentication if the default is not being used
-        */
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         HandleAuthHandle,
 
         /**
@@ -397,7 +489,46 @@ public class SettingsServiceBean {
          */
         
         ArchiverClassName,
+        /**
+         * Custom settings for each archiver. See list below.
+         */
         ArchiverSettings,
+        /**
+         * :ArchiverSettings used by DRSSubmitToArchiveCommand. DRS is a system
+         * specific to Harvard which is why we don't document it in the guides.
+         * See also https://github.com/IQSS/dataverse.harvard.edu/issues/177
+         */
+        DRSArchiverConfig,
+        /**
+         * :ArchiverSettings used by DuraCloudSubmitToArchiveCommand.
+         */
+        DuraCloudPort,
+        DuraCloudHost,
+        DuraCloudContext,
+        /**
+         * :ArchiverSettings used by GoogleCloudSubmitToArchiveCommand.
+         */
+        GoogleCloudBucket,
+        GoogleCloudProject,
+        /**
+         * :ArchiverSettings used by LocalSubmitToArchiveCommand.
+         */
+        BagItLocalPath,
+        /**
+         * :ArchiverSettings used by S3SubmitToArchiveCommand.
+         */
+        S3ArchiverConfig,
+        /**
+         * :ArchiverSettings used by multiple archive commands.
+         */
+        BagGeneratorThreads,
+        /**
+         * Various BagIt settings.
+         */
+        BagValidatorJobPoolSize,
+        BagValidatorMaxErrors,
+        BagValidatorJobWaitInterval,
+        BagItHandlerEnabled,
         /**
          * A comma-separated list of roles for which new dataverses should inherit the
          * corresponding role assignments from the parent dataverse. Also affects
@@ -414,7 +545,15 @@ public class SettingsServiceBean {
         /**
          * Allow CORS flag (true or false). It is true by default
          *
+         * The allowed origin for CORS requests.
+         * 
+         * @see JvmSettings#CORS_ORIGIN
+         * @see JvmSettings#CORS_METHODS
+         * @see JvmSettings#CORS_ALLOW_HEADERS
+         * @see JvmSettings#CORS_EXPOSE_HEADERS
          */
+        @Deprecated(forRemoval = true, since = "2025-04-29")
+        
         AllowCors, 
         
         /**
@@ -464,18 +603,6 @@ public class SettingsServiceBean {
          */
         ExportInstallationAsDistributorOnlyWhenNotSet,
 
-        /**
-         * Basic Globus Token for Globus Application
-         */
-        GlobusBasicToken,
-        /**
-         * GlobusEndpoint is Globus endpoint for Globus application
-         */
-        GlobusEndpoint,
-        /** 
-         * Comma separated list of Globus enabled stores
-         */
-        GlobusStores,
         /** Globus App URL
          * 
          */
@@ -488,6 +615,12 @@ public class SettingsServiceBean {
          *
          */
         GlobusSingleFileTransfer,
+        /** Lower limit of the number of files in a Globus upload task where 
+         * the batch mode should be utilized in looking up the file information 
+         * on the remote end node (file sizes, primarily), instead of individual
+         * lookups. 
+         */
+        GlobusBatchLookupSize,
         /**
          * Optional external executables to run on the metadata for dataverses 
          * and datasets being published; as an extra validation step, to 
@@ -524,6 +657,12 @@ public class SettingsServiceBean {
          */
         SendNotificationOnDatasetCreation,
         /**
+         * A boolean setting that, if true will send an email and notification to users
+         * when a Dataset is moved. Messages go to those who have the
+         * ability/permission necessary to publish the dataset
+         */
+        SendNotificationOnDatasetMove,
+        /**
          * A JSON Object containing named comma separated sets(s) of allowed labels (up
          * to 32 characters, spaces allowed) that can be set on draft datasets, via API
          * or UI by users with the permission to publish a dataset. (Set names are
@@ -543,6 +682,12 @@ public class SettingsServiceBean {
          * n: embargo enabled with n months the maximum allowed duration
          */
         MaxEmbargoDurationInMonths,
+        /** This setting enables Retention capabilities in Dataverse and sets the minimum Retention duration allowed.
+         * 0 or not set: new retentions disabled
+         * -1: retention enabled, no time limit
+         * n: retention enabled with n months the minimum allowed duration
+         */
+        MinRetentionDurationInMonths,
         /*
          * Include "Custom Terms" as an item in the license drop-down or not.
          */
@@ -562,11 +707,6 @@ public class SettingsServiceBean {
          * Nevermuted setting warning is logged.
          */
         NeverMuted,
-        /**
-         * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
-         */
-        LDNMessageHosts,
-
         /*
          * Allow a custom JavaScript to control values of specific fields.
          */
@@ -578,7 +718,16 @@ public class SettingsServiceBean {
         /**
          * The URL for the DvWebLoader tool (see github.com/gdcc/dvwebloader for details)
          */
-        WebloaderUrl,
+        WebloaderUrl, 
+        /**
+         * Enforce storage quotas:
+         */
+        UseStorageQuotas, 
+        /** 
+         * Placeholder storage quota (defines the same quota setting for every user; used to test the concept of a quota.
+         */
+        StorageQuotaSizeInBytes,
+
         /**
          * A comma-separated list of CategoryName in the desired order for files to be
          * sorted in the file table display. If not set, files will be sorted
@@ -599,17 +748,88 @@ public class SettingsServiceBean {
         /*
          * True/false(default) option deciding whether file PIDs can be enabled per collection - using the Dataverse/collection set attribute API call.
          */
-        AllowEnablingFilePIDsPerCollection
+        AllowEnablingFilePIDsPerCollection,
+        /**
+         * Allows an instance admin to disable Solr search facets on the collection
+         * and dataset pages instantly
+         */
+        DisableSolrFacets,
+        DisableSolrFacetsForGuestUsers,
+        DisableSolrFacetsWithoutJsession,
+        DisableUncheckedTypesFacet,
+        /**
+         * When ingesting tabular data files, store the generated tab-delimited 
+         * files *with* the variable names line up top. 
+         */
+        StoreIngestedTabularFilesWithVarHeaders,
+        FileCategories,
+        CreateDataFilesMaxErrorsToDisplay,
+
+        ContactFeedbackMessageSizeLimit,
+        //Experimental setting to allow connecting to a GET external search service expecting a GET request with query parameter mirroring the search API query parameters (without search_service) 
+        GetExternalSearchUrl,
+        //Experimental setting to provide a display name for the GET external search service
+        GetExternalSearchName,
+        //Experimental setting to allow connecting to a POST external search service expecting a POST request with a JSON payload mirroring the search API query parameters 
+        PostExternalSearchUrl,
+        //Experimental setting to provide a display name for the POST external search service
+        PostExternalSearchName,
+        //COAR Notify Relationship Anouncement Workflow Step settings
+        // Which field(s) to trigger on, e.g. 'publication'
+        COARNotifyRelationshipAnnouncementTriggerFields,
+        // JSON specification of the targets to send announcements to
+        COARNotifyRelationshipAnnouncementTargets,
         ;
 
         @Override
         public String toString() {
             return ":" + name();
         }
+        
+        /**
+         * Parses the input string to match a corresponding {@code SettingsServiceBean.Key}.
+         * The method expects the input string to start with a colon (:) followed by the key name.
+         * If the key name matches one of the existing {@code SettingsServiceBean.Key} enumerations,
+         * the corresponding key is returned. The check is case-sensitive.
+         *
+         * @param key the input string in the format ":KeyName", where "KeyName" corresponds
+         *        to the name of an enumeration in {@code SettingsServiceBean.Key}.
+         *        If {@code key} is null, blank, does not start with a colon (:), or does not
+         *        match any known key, the method returns {@code null}.
+         * @return the corresponding {@code SettingsServiceBean.Key} if the key matches one
+         *         of the predefined keys, or {@code null} if no match is found.
+         */
+        public static SettingsServiceBean.Key parse(String key) {
+            // Null safety and format check
+            if (key == null || key.isBlank() || key.charAt(0) != ':') return null;
+            
+            // Cut off the ":" we verified is present before
+            String normalizedKey = key.substring(1);
+            
+            // Iterate through all the known keys and return on match (case sensitive!)
+            // We are case sensitive here because Dataverse implicitely uses case sensitive keys everywhere!
+            for (SettingsServiceBean.Key k : SettingsServiceBean.Key.values()) {
+                if (k.name().equals(normalizedKey)) {
+                    return k;
+                }
+            }
+            
+            // Fall through on no match
+            return null;
+        }
     }
     
     @PersistenceContext
     EntityManager em;
+    
+    /**
+     * A reference to the current instance of the SettingsServiceBean.
+     * Used when self-invocation is required for internal method calls
+     * within the same bean to ensure that all EJB functionalities
+     * such as transactions and security are properly applied.
+     */
+    @EJB
+    private SettingsServiceBean self;
     
     @EJB
     ActionLogServiceBean actionLogSvc;
@@ -618,7 +838,11 @@ public class SettingsServiceBean {
      * Basic functionality - get the name, return the setting, or {@code null}.
      * @param name of the setting
      * @return the actual setting, or {@code null}.
+     *
+     * @deprecated This will be removed in a future version of Dataverse. Please refrain from using it and migrate
+     *             any code doing so to use a {@link Key} and the {@link #getValueForKey(Key)} variants instead.
      */
+    @Deprecated(since = "6.9", forRemoval = true)
     public String get( String name ) {
         List<Setting> tokens = em.createNamedQuery("Setting.findByName", Setting.class)
                 .setParameter("name", name )
@@ -665,6 +889,23 @@ public class SettingsServiceBean {
         }
         
     }
+
+    /**
+     * Attempt to convert the value to an integer
+     *  - Applicable for keys such as MaxFileUploadSizeInBytes
+     *
+     * On failure (key not found or string not convertible to a long), returns defaultValue
+     * @param key
+     * @param defaultValue
+     * @return
+     */
+    public Long getValueForKeyAsLong(Key key, Long defaultValue) {
+           Long val = getValueForKeyAsLong(key);
+           if (val == null) {
+               return defaultValue;
+           }
+           return val;
+    }
     
        /**
         * Attempt to convert a value in a compound key to a long
@@ -687,8 +928,8 @@ public class SettingsServiceBean {
     	   try {
     		   return Long.parseLong(val);
     	   } catch (NumberFormatException ex) {
-    		   try ( StringReader rdr = new StringReader(val) ) {
-    			   JsonObject settings = Json.createReader(rdr).readObject();
+    		   try {
+    			   JsonObject settings = JsonUtil.getJsonObject(val);
     			   if(settings.containsKey(param)) {
     				   return Long.parseLong(settings.getString(param));
     			   } else if(settings.containsKey("default")) {
@@ -721,8 +962,8 @@ public class SettingsServiceBean {
             return null;
         }
 
-        try (StringReader rdr = new StringReader(val)) {
-            JsonObject settings = Json.createReader(rdr).readObject();
+        try {
+            JsonObject settings = JsonUtil.getJsonObject(val);
             if (settings.containsKey(param)) {
                 return Boolean.parseBoolean(settings.getString(param));
             } else if (settings.containsKey("default")) {
@@ -745,13 +986,25 @@ public class SettingsServiceBean {
      * @param name Name of the setting.
      * @param defaultValue The value to return if no setting is found in the DB.
      * @return Either the stored value, or the default value.
+     *
+     * @deprecated This will be removed in a future version of Dataverse. Please refrain from using it and migrate
+     *             any code doing so to use a {@link Key} and the {@link #getValueForKey(Key)} variants instead.
      */
+    @Deprecated(since = "6.9", forRemoval = true)
     public String get( String name, String defaultValue ) {
         String val = get(name);
         return (val!=null) ? val : defaultValue;
     }
 
+    /**
+     * @deprecated This will be removed in a future version of Dataverse. Please refrain from using it and migrate
+     *             any code doing so to use a {@link Key} and the {@link #getValueForKey(Key)} variants instead.
+     */
+    @Deprecated(since = "6.9", forRemoval = true)
     public String get(String name, String lang, String defaultValue ) {
+        // Database safeguard, as the default is an empty string
+        if (lang == null) lang = "";
+        
         List<Setting> tokens = em.createNamedQuery("Setting.findByNameAndLang", Setting.class)
                 .setParameter("name", name )
                 .setParameter("lang", lang )
@@ -768,9 +1021,17 @@ public class SettingsServiceBean {
     }
 
     public String getValueForKey( Key key, String lang, String defaultValue ) {
+        // Database safeguard, as the default is an empty string
+        if (lang == null) lang = "";
+        
         return get( key.toString(), lang, defaultValue );
     }
-     
+    
+    /**
+     * @deprecated This will be removed in a future version of Dataverse. Please refrain from using it and migrate
+     *             any code doing so to use a {@link Key} and the {@link #setValueForKey(Key, String)} variants instead.
+     */
+    @Deprecated(since = "6.9", forRemoval = true)
     public Setting set( String name, String content ) {
         Setting s = null; 
         
@@ -793,8 +1054,16 @@ public class SettingsServiceBean {
                             .setInfo(name + ": " + content));
         return s;
     }
-
+    
+    /**
+     * @deprecated This will be removed in a future version of Dataverse. Please refrain from using it and migrate
+     *             any code doing so to use a {@link Key} and the {@link #setValueForKey(Key, String)} variants instead.
+     */
+    @Deprecated(since = "6.9", forRemoval = true)
     public Setting set( String name, String lang, String content ) {
+        // Database safeguard, as the default is an empty string
+        if (lang == null) lang = "";
+        
         Setting s = null; 
         
         List<Setting> tokens = em.createNamedQuery("Setting.findByNameAndLang", Setting.class)
@@ -828,7 +1097,11 @@ public class SettingsServiceBean {
      * @param name name of the setting.
      * @param defaultValue logical value of {@code null}.
      * @return boolean value of the setting.
+     *
+     * @deprecated This will be removed in a future version of Dataverse. Please refrain from using it and migrate
+     *             any code doing so to use a {@link Key} and {@link #isTrueForKey(Key, boolean)} instead.
      */
+    @Deprecated(since = "6.9", forRemoval = true)
     public boolean isTrue( String name, boolean defaultValue ) {
         String val = get(name);
         return ( val==null ) ? defaultValue : StringUtil.isTrue(val);
@@ -855,6 +1128,11 @@ public class SettingsServiceBean {
         delete( name.toString() );
     }
     
+    /**
+     * @deprecated This will be removed in a future version of Dataverse. Please refrain from using it and migrate
+     *             any code doing so to use a {@link Key} and {@link #deleteValueForKey(Key)} instead.
+     */
+    @Deprecated(since = "6.9", forRemoval = true)
     public void delete( String name ) {
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
                             .setInfo(name));
@@ -862,8 +1140,16 @@ public class SettingsServiceBean {
                 .setParameter("name", name)
                 .executeUpdate();
     }
-
+    
+    /**
+     * @deprecated This will be removed in a future version of Dataverse. Please refrain from using it and migrate
+     *             any code doing so to use a {@link Key} and {@link #deleteValueForKey(Key)} instead.
+     */
+    @Deprecated(since = "6.9", forRemoval = true)
     public void delete( String name, String lang ) {
+        // Database safeguard, as the default is an empty string
+        if (lang == null) lang = "";
+        
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
                 .setInfo(name));
         em.createNamedQuery("Setting.deleteByNameAndLang")
@@ -872,8 +1158,268 @@ public class SettingsServiceBean {
                 .executeUpdate();
     }
     
-    public Set<Setting> listAll() {
-        return new HashSet<>(em.createNamedQuery("Setting.findAll", Setting.class).getResultList());
+    /**
+     * Retrieves all settings that do not have any language localizations.
+     * This method uses a named query to fetch settings where the language field is null.
+     *
+     * @return a set of {@link Setting} objects that do not have language localizations.
+     */
+    public Set<Setting> listAllWithoutLocalizations() {
+        return new HashSet<>(em.createNamedQuery("Setting.findAllWithoutLang", Setting.class).getResultList());
+    }
+    
+    public static final String L10N_KEY_SEPARATOR = "/lang/";
+    
+    /**
+     * Retrieves all settings from the database and converts them into a JSON object.
+     * Each setting is represented as a key-value pair in the JSON object. The key
+     * is the setting name, optionally appended with the language if the setting is
+     * language-specific, while the value corresponds to the setting's content.
+     *
+     * @return A {@link JsonObject} containing all settings from the database, structured
+     *         with their names (and languages, if applicable) as keys and their
+     *         respective contents as values.
+     *         Shortened Example:
+     *         <code>
+     *             {
+     *                 ":FilePIDsEnabled": "false",
+     *                 ":ApplicationTermsOfUse": "Non-localized default / fallback terms.",
+     *                 ":ApplicationTermsOfUse/lang/fr": "Il s'agit de termes localisés en français.",
+     *                 ":MaxFileUploadSizeInBytes": {
+     *                      "default": "2147483648",
+     *                      "fileOne": "4000000000",
+     *                      "s3": "8000000000"
+     *                 }
+     *             }
+     *         </code>
+     *
+     * @implNote The reason to use a flattened approach for the localized settings is to stay backward compatible.
+     *           Per good practice, a bulk operation should be a composite of the single operation.
+     *           As you need to provide the language parameter to query or put them single, the localization is not
+     *           part of the content model, but of the {@link Setting} data model. Using a JSON sub-object or using
+     *           a separated approach is possible, but adds additional complexity. In case of the sub-object it even
+     *           violates that the value you retrieve from the bulk operation can be used for a single operation again.
+     *           As long as we do not update our content model, but store the language as part of the data model,
+     *           this flattening seems to be the most balanced compromise.
+     */
+    public JsonObject listAllAsJson() {
+        Set<Setting> settings = new HashSet<>(em.createNamedQuery("Setting.findAll", Setting.class).getResultList());
+        JsonObjectBuilder response = Json.createObjectBuilder();
+        
+        // Iterate over all the settings and add them to the response.
+        settings.forEach(setting -> {
+            String name = convertToJsonKey(setting);
+            
+            try {
+                // In case the setting is JSON, treat it as such in the output (so the API can return valid JSON)
+                response.add(name, JsonUtil.getJsonValue(setting.getContent()));
+            } catch (JsonException e) {
+                // This wasn't valid JSON, so we just add it as a string
+                response.add(name, setting.getContent());
+            }
+        });
+        
+        return response.build();
+    }
+    
+    /**
+     * Updates all current settings from the specified JSON object. Validates the input JSON,
+     * converts it to a set of settings and replaces all existing settings with the new ones
+     * in an atomic operation. If the settings object is null, contains invalid keys, or if the new
+     * set of settings is empty, the method throws an appropriate exception.
+     *
+     * @param settings the JSON object containing the new configuration settings to be applied; must not be null
+     * @return a JsonObjectBuilder representing the operational details of the applied updates
+     * @throws SettingsValidationException if the settings object is null, contains invalid keys or results in empty settings
+     */
+    public JsonObjectBuilder setAllFromJson(JsonObject settings) {
+        if (settings == null) {
+            throw new SettingsValidationException("Settings cannot be null");
+        }
+        
+        // Validate the input
+        List<String> invalidKeys = validateKeys(settings);
+        if (!invalidKeys.isEmpty()) {
+            throw new SettingsValidationException("Invalid key(s): " + String.join(", ", invalidKeys));
+        }
+        
+        // Convert JSON to Setting objects
+        Set<Setting> newSettings = convertJsonToSettings(settings);
+        
+        // Perform atomic update (replace all settings)
+        // We don't allow to completely wipe all settings coming from JSON here, so no acciddents happen.
+        // (It's completely unrealistic someone would try to remove all settings and leave it at that.)
+        if (newSettings != null && !newSettings.isEmpty()) {
+            // Execute the update (in one atomic operation using a transaction)
+            // Note: We need to call via self-reference so the EJB container can create a transaction as intended.
+            Map<Setting, Op> operationalDetails = self.replaceAllSettings(newSettings);
+            
+            return Op.convertToJson(operationalDetails);
+        }
+        throw new SettingsValidationException("Settings cannot be empty - you'd wipe the entire configuration.");
+    }
+    
+    /**
+     * Converts a JSON object representing settings into a list of Setting objects.
+     * Each entry in the JSON object is processed to create a Setting instance.
+     * If the key includes a language (indicated by a separator), the language
+     * information is extracted and included in the Setting object.
+     * Note: This method expects a pre-validated JsonObject and will happily create
+     *       nonsense settings for you otherwise. This is a reason for the package visibility.
+     *
+     * @param settings a (pre-validated) {@link JsonObject} containing key-value pairs where
+     *                 each key represents a setting name (and optionally a language code),
+     *                 and each value represents the associated content.
+     * @return a {@link List} of {@link Setting} objects parsed from the input JSON object.
+     */
+    static Set<Setting> convertJsonToSettings(JsonObject settings) {
+        Objects.requireNonNull(settings, "The settings object cannot be null.");
+        return settings.entrySet().stream()
+            .map(entry -> {
+                String key = entry.getKey();
+                
+                String value;
+                JsonValue jsonValue = entry.getValue();
+                if (jsonValue.getValueType() == JsonValue.ValueType.STRING) {
+                    // For string values, get the actual string content (unescaped)
+                    value = ((JsonString) jsonValue).getString();
+                } else {
+                    // For objects, arrays, numbers, booleans, null - use JSON representation
+                    value = jsonValue.toString();
+                }
+                
+                if (key.contains(L10N_KEY_SEPARATOR)) {
+                    // Handle localized settings
+                    String name = key.substring(0, key.indexOf(L10N_KEY_SEPARATOR));
+                    String lang = key.substring(key.indexOf(L10N_KEY_SEPARATOR) + L10N_KEY_SEPARATOR.length());
+                    return new Setting(name, lang, value);
+                } else {
+                    return new Setting(key, value);
+                }
+            })
+            .collect(Collectors.toSet());
+    }
+    
+    /**
+     * Enum representing the types of operations that are performed on a bulk operation with settings.
+     * @implNote Although this is only meant for internal use, we use it in a public method (which needs to stay public).
+     *           To avoid IDE warning about exposure, let's make it public, too.
+     */
+    public enum Op {
+        UPDATED,
+        CREATED,
+        DELETED,
+        UNCHANGED;
+        
+        static JsonObjectBuilder convertToJson(Map<Setting, Op> operationalDetails) {
+            // Create a nice represenation of what happened as Json
+            JsonObjectBuilder jbo = Json.createObjectBuilder();
+            JsonArrayBuilder created = Json.createArrayBuilder();
+            JsonArrayBuilder updated = Json.createArrayBuilder();
+            JsonArrayBuilder deleted = Json.createArrayBuilder();
+            JsonArrayBuilder unchanged = Json.createArrayBuilder();
+            
+            operationalDetails.forEach((setting, op) -> {
+                String name = convertToJsonKey(setting);
+                switch (op) {
+                    case CREATED -> created.add(name);
+                    case UPDATED -> updated.add(name);
+                    case DELETED -> deleted.add(name);
+                    case UNCHANGED -> unchanged.add(name);
+                }
+            });
+            
+            return jbo
+                .add("created", created)
+                .add("updated", updated)
+                .add("deleted", deleted)
+                .add("unchanged", unchanged);
+        }
+    }
+    
+    /**
+     * Replaces all existing settings in the database with the provided set of new settings.
+     * This method performs the following actions:
+     * - Deletes any existing settings that are not present in the provided new settings.
+     * - Updates the content of existing settings that match the keys in the provided new settings.
+     * - Creates new settings that are not present in the database.
+     *
+     * If calling this method from within this class, make sure to use an EJB injected self-reference to it.
+     * Otherwise, the EJB container will not be able to provide a transaction as intended by {@code @Transactional}.
+     *
+     * @param newSettings the set of new settings to replace the existing ones.
+     *                    Each setting is uniquely identified by its name and language.
+     *                    Must not be null (it may be empty).
+     * @return a map tracking the operations performed on each setting. The map's keys
+     *         are the settings involved, and the values are the types of operations
+     *         performed (CREATED, UPDATED, DELETED).
+     *
+     * @implNote Must be a public method to ensure proper transaction management.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public Map<Setting, Op> replaceAllSettings(Set<Setting> newSettings) {
+        Objects.requireNonNull(newSettings, "The list of new settings cannot be null (it may be empty).");
+        
+        // Get all existing settings as a map for O(1) lookup
+        List<Setting> existingSettings = em.createNamedQuery("Setting.findAll", Setting.class).getResultList();
+        Map<String, Setting> existingByKey = existingSettings.stream()
+            .collect(Collectors.toMap(
+                setting -> setting.getName() + "|" + setting.getLang(),
+                Function.identity()
+            ));
+        
+        // Create map of new settings for O(1) lookup
+        Map<String, Setting> newByKey = newSettings.stream()
+            .collect(Collectors.toMap(
+                setting -> setting.getName() + "|" + setting.getLang(),
+                Function.identity()
+            ));
+        
+        // Track operations for return value
+        Map<Setting, Op> opsTracking = new HashMap<>();
+        
+        // Process existing settings
+        for (Map.Entry<String, Setting> entry : existingByKey.entrySet()) {
+            String key = entry.getKey();
+            Setting existingSetting = entry.getValue();
+            
+            // Setting exists in DB but not in new set - delete it
+            if (!newByKey.containsKey(key)) {
+                em.remove(existingSetting);
+                opsTracking.put(existingSetting, Op.DELETED);
+                
+            // Setting exists in both - update with new values
+            } else {
+                Setting newSetting = newByKey.get(key);
+                if (existingSetting.getContent().equals(newSetting.getContent())) {
+                    opsTracking.put(existingSetting, Op.UNCHANGED);
+                } else {
+                    // We use the already managed entity and update it with the content of the new setting.
+                    // (This means we don't need to call em.merge(), the ORM will track and execute it for us.)
+                    existingSetting.setContent(newSetting.getContent());
+                    opsTracking.put(existingSetting, Op.UPDATED);
+                }
+            }
+        }
+        
+        // Process new settings - create those not in existing set
+        for (Map.Entry<String, Setting> entry : newByKey.entrySet()) {
+            String key = entry.getKey();
+            Setting newSetting = entry.getValue();
+            
+            if (!existingByKey.containsKey(key)) {
+                // Setting is new - persist it
+                em.persist(newSetting);
+                opsTracking.put(newSetting, Op.CREATED);
+            }
+            // If it exists, it was already handled in the previous loop
+        }
+        
+        // Flush changes to ensure consistency before transaction is committed (will also ensure merge() is called).
+        em.flush();
+        
+        return opsTracking;
+        
     }
     
     public Map<String, String> getBaseMetadataLanguageMap(Map<String,String> languageMap, boolean refresh) {
@@ -888,8 +1434,7 @@ public class SettingsServiceBean {
             if(mlString.isEmpty()) {
                 mlString="[]";
             }
-            JsonReader jsonReader = Json.createReader(new StringReader(mlString));
-            JsonArray languages = jsonReader.readArray();
+            JsonArray languages = JsonUtil.getJsonArray(mlString);
             for(JsonValue jv: languages) {
                 JsonObject lang = (JsonObject) jv;
                 languageMap.put(lang.getString("locale"), lang.getString("title"));
@@ -924,5 +1469,76 @@ public class SettingsServiceBean {
         langs.addAll(configuredLocales.keySet());
         return langs;
     }
-
+    
+    public static String convertToJsonKey(Setting setting) {
+        return setting.getName() + (setting.getLang().isEmpty() ? "" : L10N_KEY_SEPARATOR + setting.getLang());
+    }
+    
+    /**
+     * Validates the keys in the provided settings JSON object.
+     * This method checks if each key follows the required format and rules.
+     * If a key is invalid, it is added to the list of invalid keys.
+     *
+     * @param settings the JsonObject containing the keys to be validated
+     * @return a list of invalid keys as an unmodifiable list
+     */
+    public static List<String> validateKeys(JsonObject settings) {
+        Objects.requireNonNull(settings, "The settings object cannot be null.");
+        List<String> invalidKeys = new ArrayList<>();
+        for (String key : settings.keySet()) {
+            try {
+                // Case A: localized setting, validate setting and language
+                if (key.contains(L10N_KEY_SEPARATOR)) {
+                    String name = key.substring(0, key.indexOf(L10N_KEY_SEPARATOR));
+                    String lang = key.substring(key.indexOf(L10N_KEY_SEPARATOR) + L10N_KEY_SEPARATOR.length());
+                    validateSettingName(name);
+                    validateSettingLang(lang);
+                // Case B: Simple, non-localized setting name
+                } else {
+                    validateSettingName(key);
+                }
+            } catch (SettingsValidationException sev) {
+                invalidKeys.add(key);
+            }
+        }
+        return Collections.unmodifiableList(invalidKeys);
+    }
+    
+    /**
+     * Validates the provided setting name to ensure it meets the required format.
+     * Throws an {@code SettingsValidationException} if the name is invalid, including cases
+     * where it contains a colon-separated suffix that is no longer supported.
+     *
+     * @param name The name of the setting to be validated.
+     *             It must adhere to the allowable setting name format.
+     *             Names with more than one colon, which may indicate deprecated suffix formats, are not allowed.
+     * @throws SettingsValidationException if the setting name is invalid.
+     */
+    public static void validateSettingName(String name) {
+        if (SettingsServiceBean.Key.parse(name) == null) {
+            // If there is more than one colon, this may be someone trying to use the old suffix settings.
+            // Change the error message for that slightly.
+            if (name.replace(":","").length() < name.length() - 1) {
+                throw new SettingsValidationException("The name of the setting may not have a colon separated suffix since Dataverse 6.8. Please update your scripts.");
+            }
+            throw new SettingsValidationException("The name of the setting is invalid.");
+        }
+    }
+    
+    /**
+     * Validates the provided language code to ensure it adheres to the ISO 639-1 format.
+     * This method checks that the language code is not null, has a length of 2 characters,
+     * and exists within the list of valid ISO 639-1 language codes. If the validation
+     * fails, an {@code SettingsValidationException} is thrown.
+     *
+     * @param lang the language code to be validated. It must be a non-null,
+     *             2-character string representing a valid ISO 639-1 language code.
+     * @throws SettingsValidationException if the language code is invalid.
+     */
+    public static void validateSettingLang(String lang) {
+        if (lang == null || lang.length() != 2 || !Arrays.asList(Locale.getISOLanguages()).contains(lang)) {
+            throw new SettingsValidationException("The language '" + lang + "' is not a valid ISO 639-1 language code.");
+        }
+    }
+    
 }

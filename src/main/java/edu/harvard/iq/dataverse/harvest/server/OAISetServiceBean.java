@@ -25,6 +25,7 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
@@ -121,6 +122,25 @@ public class OAISetServiceBean implements java.io.Serializable {
         }
     }
     
+    /**
+     * "Active" sets are the ones that have been successfully exported, and contain
+     * a non-zero number of records. (Although a set that contains a number of 
+     * records that are all marked as "deleted" is still an active set!)
+     * @return list of OAISets
+     */
+    public List<OAISet> findAllActiveNamedSets() {
+        String jpaQueryString = "select object(o) "
+                + "from OAISet as o, OAIRecord as r "
+                + "where r.setName = o.spec "
+                + "and o.spec != '' "
+                + "group by o order by o.spec";
+        
+        Query query = em.createQuery(jpaQueryString);
+        List<OAISet> queryResults = query.getResultList();
+        
+        return queryResults;
+    }
+    
     @Asynchronous
     public void remove(Long setId) {
         OAISet oaiSet = find(setId);
@@ -151,6 +171,8 @@ public class OAISetServiceBean implements java.io.Serializable {
         String query = managedSet.getDefinition();
 
         List<Long> datasetIds;
+        boolean databaseLookup = false; // As opposed to a search engine lookup
+        
         try {
             if (!oaiSet.isDefaultSet()) {
                 datasetIds = expandSetQuery(query);
@@ -161,6 +183,7 @@ public class OAISetServiceBean implements java.io.Serializable {
                 // including the unpublished drafts and deaccessioned ones.
                 // Those will be filtered out further down the line. 
                 datasetIds = datasetService.findAllLocalDatasetIds();
+                databaseLookup = true; 
             }
         } catch (OaiSetException ose) {
             datasetIds = null;
@@ -171,7 +194,7 @@ public class OAISetServiceBean implements java.io.Serializable {
         // they will be properly marked as "deleted"! -- L.A. 4.5
         //if (datasetIds != null && !datasetIds.isEmpty()) {
         exportLogger.info("Calling OAI Record Service to re-export " + datasetIds.size() + " datasets.");
-        oaiRecordService.updateOaiRecords(managedSet.getSpec(), datasetIds, new Date(), true, exportLogger);
+        oaiRecordService.updateOaiRecords(managedSet.getSpec(), datasetIds, new Date(), true, databaseLookup, exportLogger);
         //}
         managedSet.setUpdateInProgress(false);
 
@@ -180,7 +203,7 @@ public class OAISetServiceBean implements java.io.Serializable {
     public void exportAllSets() {
         String logTimestamp = logFormatter.format(new Date());
         Logger exportLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.OAISetServiceBean." + "UpdateAllSets." + logTimestamp);
-        String logFileName = "../logs" + File.separator + "oaiSetsUpdate_" + logTimestamp + ".log";
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "oaiSetsUpdate_" + logTimestamp + ".log";
         FileHandler fileHandler = null;
         boolean fileHandlerSuceeded = false;
         try {

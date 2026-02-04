@@ -12,7 +12,10 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2Aut
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
@@ -49,13 +52,12 @@ import javax.xml.xpath.XPathExpression;
  */
 public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     
-    final static Logger logger = Logger.getLogger(OrcidOAuth2AP.class.getName());
+    static final Logger logger = Logger.getLogger(OrcidOAuth2AP.class.getName());
 
-    public static final String PROVIDER_ID_PRODUCTION = "orcid";
-    public static final String PROVIDER_ID_SANDBOX = "orcid-sandbox";
+    public static final String PROVIDER_ID = "orcid";
     
     public OrcidOAuth2AP(String clientId, String clientSecret, String userEndpoint) {
-    
+        this.id=PROVIDER_ID;
         if(userEndpoint != null && userEndpoint.startsWith("https://pub")) {
             this.scope = Arrays.asList("/authenticate");
         } else {
@@ -78,7 +80,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     
     @Override
     public DefaultApi20 getApiInstance() {
-        return OrcidApi.instance( ! baseUserEndpoint.contains("sandbox") );
+        return OrcidApi.instance( isProduction() );
     }
     
     @Override
@@ -111,52 +113,50 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     
     @Override
     protected ParsedUserResponse parseUserResponse(String responseBody) {
-        DocumentBuilderFactory dbFact = DocumentBuilderFactory.newInstance();
         try ( StringReader reader = new StringReader(responseBody)) {
-            DocumentBuilder db = dbFact.newDocumentBuilder();
-            Document doc = db.parse( new InputSource(reader) );
-            
-            String firstName = getNodes(doc, "person:person", "person:name", "personal-details:given-names" )
-                                .stream().findFirst().map( Node::getTextContent )
-                                    .map( String::trim ).orElse("");
-            String familyName = getNodes(doc, "person:person", "person:name", "personal-details:family-name")
-                                .stream().findFirst().map( Node::getTextContent )
-                                    .map( String::trim ).orElse("");
-            
-            // fallback - try to use the credit-name
-            if ( (firstName + familyName).equals("") ) {
-                firstName = getNodes(doc, "person:person", "person:name", "personal-details:credit-name" )
-                                .stream().findFirst().map( Node::getTextContent )
-                                    .map( String::trim ).orElse("");
+            DocumentBuilder db = XmlUtil.getSecureDocumentBuilder();
+            if (db != null) {
+                Document doc = db.parse(new InputSource(reader));
+
+                String firstName = getNodes(doc, "person:person", "person:name", "personal-details:given-names")
+                        .stream().findFirst().map(Node::getTextContent)
+                        .map(String::trim).orElse("");
+                String familyName = getNodes(doc, "person:person", "person:name", "personal-details:family-name")
+                        .stream().findFirst().map(Node::getTextContent)
+                        .map(String::trim).orElse("");
+
+                // fallback - try to use the credit-name
+                if ((firstName + familyName).equals("")) {
+                    firstName = getNodes(doc, "person:person", "person:name", "personal-details:credit-name")
+                            .stream().findFirst().map(Node::getTextContent)
+                            .map(String::trim).orElse("");
+                }
+
+                String primaryEmail = getPrimaryEmail(doc);
+                List<String> emails = getAllEmails(doc);
+
+                // make the username up
+                String username;
+                if (primaryEmail.length() > 0) {
+                    username = primaryEmail.split("@")[0];
+                } else {
+                    username = firstName.split(" ")[0] + "." + familyName;
+                }
+                username = username.replaceAll("[^a-zA-Z0-9.]", "");
+
+                // returning the parsed user. The user-id-in-provider will be added by the caller, since ORCiD passes it
+                // on the access token response.
+                // Affiliation added after a later call.
+                final ParsedUserResponse userResponse = new ParsedUserResponse(
+                        new AuthenticatedUserDisplayInfo(firstName, familyName, primaryEmail, "", ""), null, username);
+                userResponse.emails.addAll(emails);
+
+                return userResponse;
             }
-            
-            String primaryEmail = getPrimaryEmail(doc);
-            List<String> emails = getAllEmails(doc);
-            
-            // make the username up
-            String username;
-            if ( primaryEmail.length() > 0 ) {
-                username = primaryEmail.split("@")[0];
-            } else {
-                username = firstName.split(" ")[0] + "." + familyName;
-            }
-            username = username.replaceAll("[^a-zA-Z0-9.]","");
-            
-            // returning the parsed user. The user-id-in-provider will be added by the caller, since ORCiD passes it
-            // on the access token response.
-            // Affilifation added after a later call.
-            final ParsedUserResponse userResponse = new ParsedUserResponse(
-                    new AuthenticatedUserDisplayInfo(firstName, familyName, primaryEmail, "", ""), null, username);
-            userResponse.emails.addAll(emails);
-            
-            return userResponse;
-            
         } catch (SAXException ex) {
             logger.log(Level.SEVERE, "XML error parsing response body from ORCiD: " + ex.getMessage(), ex);
         } catch (IOException ex) {
             logger.log(Level.SEVERE, "I/O error parsing response body from ORCiD: " + ex.getMessage(), ex);
-        } catch (ParserConfigurationException ex) {
-            logger.log(Level.SEVERE, "While parsing the ORCiD response: Bad parse configuration. " + ex.getMessage(), ex);
         }
         
         return null;
@@ -233,34 +233,20 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
 
     @Override
     public AuthenticationProviderDisplayInfo getInfo() {
-        if (PROVIDER_ID_PRODUCTION.equals(getId())) {
+        if (isProduction()) {
             return new AuthenticationProviderDisplayInfo(getId(), BundleUtil.getStringFromBundle("auth.providers.title.orcid"), "ORCID user repository");
         }
         return new AuthenticationProviderDisplayInfo(getId(), "ORCID Sandbox", "ORCID dev sandbox ");
     }
 
-    @Override
-    public boolean isDisplayIdentifier() {
-        return true;
-    }
-
-    @Override
-    public String getPersistentIdName() {
-        return BundleUtil.getStringFromBundle("auth.providers.persistentUserIdName.orcid");
-    }
-
-    @Override
-    public String getPersistentIdDescription() {
-        return BundleUtil.getStringFromBundle("auth.providers.persistentUserIdTooltip.orcid");
-    }
-
-    @Override
     public String getPersistentIdUrlPrefix() {
-        return "https://orcid.org/";
+        if(isProduction()) {
+            return "https://orcid.org/";
+        }
+        return "https://sandbox.orcid.org/";
     }
 
-    @Override
-    public String getLogo() {
+    public final static String getLogo() {
         return "/resources/images/orcid_16x16.png";
     }
     
@@ -328,5 +314,13 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         }
         
         return null;   
+    }
+
+    public String getOrcidUrl(String id) {
+        return (id == null) ? null : getPersistentIdUrlPrefix() + id;
+    }
+    
+    private boolean isProduction() {
+        return !baseUserEndpoint.contains("sandbox");
     }
 }

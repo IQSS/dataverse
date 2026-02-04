@@ -39,6 +39,12 @@ import java.util.stream.Collectors;
  *  - Provenance related information
  * 
  * @author rmp553
+ * @todo (?) We may want to consider renaming this class to DataFileParams or
+ * DataFileInfo... it was originally created to encode some bits of info - 
+ * the file "tags" specifically, that didn't fit in elsewhere in the normal 
+ * workflow; but it's been expanded to cover pretty much everything else associated
+ * with DataFiles and it's not really "optional" anymore when, for example, used
+ * in the direct upload workflow. (?)
  */
 public class OptionalFileParams {
 
@@ -76,6 +82,8 @@ public class OptionalFileParams {
     public static final String MIME_TYPE_ATTR_NAME = "mimeType";
     private String checkSumValue;
     private ChecksumType checkSumType;
+    public static final String FILE_SIZE_ATTR_NAME = "fileSize";
+    private Long fileSize;
     public static final String LEGACY_CHECKSUM_ATTR_NAME = "md5Hash";
     public static final String CHECKSUM_OBJECT_NAME = "checksum";
     public static final String CHECKSUM_OBJECT_TYPE = "@type";
@@ -186,46 +194,28 @@ public class OptionalFileParams {
         return this.tabIngest;
     }
 
-    public boolean hasCategories(){
-        if ((categories == null)||(this.categories.isEmpty())){
-            return false;
-        }
-        return true;
+    public boolean hasCategories() {
+        return categories != null;
     }
  
-    public boolean hasFileDataTags(){
-        if ((dataFileTags == null)||(this.dataFileTags.isEmpty())){
-            return false;
-        }
-        return true;
+    public boolean hasFileDataTags() {
+        return dataFileTags != null;
     }
  
     public boolean hasDescription(){
-        if ((description == null)||(this.description.isEmpty())){
-            return false;
-        }
-        return true;
+        return description != null;
     }
 
-    public boolean hasDirectoryLabel(){
-        if ((directoryLabel == null)||(this.directoryLabel.isEmpty())){
-            return false;
-        }
-        return true;
+    public boolean hasDirectoryLabel() {
+        return directoryLabel != null;
     }
     
-    public boolean hasLabel(){
-        if ((label == null)||(this.label.isEmpty())){
-            return false;
-        }
-        return true;
+    public boolean hasLabel() {
+        return label != null;
     }
     
-    public boolean hasProvFreeform(){
-        if ((provFreeForm == null)||(this.provFreeForm.isEmpty())){
-            return false;
-        }
-        return true;
+    public boolean hasProvFreeform() {
+        return provFreeForm != null;
     }
 
 	public boolean hasStorageIdentifier() {
@@ -237,7 +227,7 @@ public class OptionalFileParams {
 	}
 
 	public boolean hasFileName() {
-		return ((fileName!=null)&&(!fileName.isEmpty()));
+		return fileName != null;
 	}
 
 	public String getFileName() {
@@ -245,7 +235,7 @@ public class OptionalFileParams {
 	}
 
 	public boolean hasMimetype() {
-		return ((mimeType!=null)&&(!mimeType.isEmpty()));
+		return mimeType != null;
 	}
 
 	public String getMimeType() {
@@ -258,7 +248,7 @@ public class OptionalFileParams {
 	}
 	
 	public boolean hasCheckSum() {
-		return ((checkSumValue!=null)&&(!checkSumValue.isEmpty()));
+		return checkSumValue != null;
 	}
 
 	public String getCheckSum() {
@@ -268,21 +258,28 @@ public class OptionalFileParams {
     public ChecksumType getCheckSumType() {
         return checkSumType;
     }
+    
+    public boolean hasFileSize() {
+        return fileSize != null;
+    }
+    
+    public Long getFileSize() {
+        return fileSize;
+    }
+    
+    public void setFileSize(long fileSize) {
+        this.fileSize = fileSize;
+    }
 
     /**
      *  Set tags
      *  @param tags
      */
     public void setCategories(List<String> newCategories) {
-
         if (newCategories != null) {
             newCategories = Util.removeDuplicatesNullsEmptyStrings(newCategories);
-            if (newCategories.isEmpty()) {
-                newCategories = null;
-            }
+            this.categories = newCategories;
         }
-
-        this.categories = newCategories;
     }
 
     /**
@@ -416,7 +413,13 @@ public class OptionalFileParams {
             this.checkSumType = ChecksumType.fromString(((JsonObject) jsonObj.get(CHECKSUM_OBJECT_NAME)).get(CHECKSUM_OBJECT_TYPE).getAsString());
 
         }
-        
+        // -------------------------------
+        // get file size as a Long, if supplied
+        // -------------------------------
+        if ((jsonObj.has(FILE_SIZE_ATTR_NAME)) && (!jsonObj.get(FILE_SIZE_ATTR_NAME).isJsonNull())){
+
+            this.fileSize = jsonObj.get(FILE_SIZE_ATTR_NAME).getAsLong();
+        }
         // -------------------------------
         // get tags 
         // -------------------------------
@@ -469,27 +472,20 @@ public class OptionalFileParams {
         }
 
         potentialTags = Util.removeDuplicatesNullsEmptyStrings(potentialTags);
-                
-        if (potentialTags.isEmpty()){
-            return;
-        }
-        
+
          // Make a new list
-        this.dataFileTags = new ArrayList<>();
+        List<String> newList = new ArrayList<>();
            
         // Add valid potential tags to the list
         for (String tagToCheck : potentialTags){
             if (DataFileTag.isDataFileTag(tagToCheck)){
-                this.dataFileTags.add(tagToCheck);
+                newList.add(tagToCheck);
             }else{                    
                 String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.invalid_datafile_tag");
                 throw new DataFileTagException(errMsg + " [" + tagToCheck + "]. Please use one of the following: " + DataFileTag.getListofLabelsAsString());
             }
         }
-         // Shouldn't happen....
-         if (dataFileTags.isEmpty()){
-            dataFileTags = null;
-        }
+        this.dataFileTags = newList;
     }
     
     private void msg(String s){

@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import static edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordJobListener.SEP;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
@@ -35,6 +36,10 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -48,22 +53,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DatasetVersionServiceBean.class.getCanonicalName());
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-
-    private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_LABEL = "SELECT fm FROM FileMetadata fm"
-            + " WHERE fm.datasetVersion.id=:datasetVersionId"
-            + " ORDER BY fm.label";
-    private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_DATE = "SELECT fm FROM FileMetadata fm, DvObject dvo"
-            + " WHERE fm.datasetVersion.id = :datasetVersionId"
-            + " AND fm.dataFile.id = dvo.id"
-            + " ORDER BY CASE WHEN dvo.publicationDate IS NOT NULL THEN dvo.publicationDate ELSE dvo.createDate END";
-    private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_SIZE = "SELECT fm FROM FileMetadata fm, DataFile df"
-            + " WHERE fm.datasetVersion.id = :datasetVersionId"
-            + " AND fm.dataFile.id = df.id"
-            + " ORDER BY df.filesize";
-    private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_TYPE = "SELECT fm FROM FileMetadata fm, DataFile df"
-            + " WHERE fm.datasetVersion.id = :datasetVersionId"
-            + " AND fm.dataFile.id = df.id"
-            + " ORDER BY df.contentType";
 
     @EJB
     DatasetServiceBean datasetService;
@@ -166,18 +155,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         }                
     } // end RetrieveDatasetVersionResponse
 
-    /**
-     *  Different criteria to sort the results of FileMetadata queries used in {@link DatasetVersionServiceBean#getFileMetadatas}
-     */
-    public enum FileMetadatasOrderCriteria {
-        NameAZ,
-        NameZA,
-        Newest,
-        Oldest,
-        Size,
-        Type
-    }
-
     public DatasetVersion find(Object pk) {
         return em.find(DatasetVersion.class, pk);
     }
@@ -191,10 +168,71 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataTables")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.fileCategories")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.embargo")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.retention")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.datasetVersion")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.releaseUser")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.creator")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataFileTags")
             .getSingleResult();
+    }
+
+    /**
+     * Performs the same database lookup as the one behind {@code Dataset.getVersions()}.
+     * <p>
+     * Additionally, supports:
+     * <ul>
+     *   <li>Pagination via {@code offset} and {@code length}</li>
+     *   <li>Filtering by visibility (all, released only, or released + deaccessioned)</li>
+     * </ul>
+     * <p>
+     * It is recommended that individual software components utilize
+     * {@link edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand},
+     * instead of calling this service method directly.
+     *
+     * @param datasetId the dataset identifier
+     * @param offset    pagination offset (nullable)
+     * @param length    pagination length (nullable)
+     * @param includeAllVersions if {@code true}, retrieves all versions (drafts, released, and deaccessioned)
+     * @param includeDeaccessioned if {@code true}, includes deaccessioned versions
+     *                             when {@code includeAll} is {@code false}
+     * @return a (possibly partial) list of dataset versions
+     */
+    public List<DatasetVersion> findVersions(Long datasetId,
+                                             Integer offset,
+                                             Integer length,
+                                             boolean includeAllVersions,
+                                             boolean includeDeaccessioned) {
+        TypedQuery<DatasetVersion> query;
+
+        if (includeAllVersions) {
+            query = em.createNamedQuery("DatasetVersion.findByDataset", DatasetVersion.class);
+        } else if (includeDeaccessioned) {
+            query = em.createNamedQuery("DatasetVersion.findByDesiredStatesAndDataset", DatasetVersion.class);
+            query.setParameter("states", List.of(
+                    VersionState.RELEASED,
+                    VersionState.DEACCESSIONED
+            ));
+        } else {
+            query = em.createNamedQuery("DatasetVersion.findReleasedByDataset", DatasetVersion.class);
+        }
+
+        query.setParameter("datasetId", datasetId);
+
+        if (offset != null) {
+            query.setFirstResult(offset);
+        }
+        if (length != null) {
+            query.setMaxResults(length);
+        }
+
+        return query.getResultList();
+    }
+
+    public List<DatasetVersion> findVersions(Long datasetId,
+                                             Integer offset,
+                                             Integer length,
+                                             boolean includeAllVersions) {
+        return findVersions(datasetId, offset, length, includeAllVersions, false);
     }
 
     public DatasetVersion findByFriendlyVersionNumber(Long datasetId, String friendlyVersionNumber) {
@@ -305,6 +343,23 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     
     private void msg(String s){
         //logger.fine(s);
+    }
+    
+    public boolean isVersionDefaultCustomTerms(DatasetVersion datasetVersion) {
+        //SEK - belt and suspenders here, but this is where the bug 10719 first manifested
+        if (datasetVersion != null && datasetVersion.getId() != null) {
+            try {
+                TermsOfUseAndAccess toua = (TermsOfUseAndAccess) em.createNamedQuery("TermsOfUseAndAccess.findByDatasetVersionIdAndDefaultTerms")
+                        .setParameter("id", datasetVersion.getId()).setParameter("defaultTerms", TermsOfUseAndAccess.DEFAULT_NOTERMS).getSingleResult();
+                if (toua != null && datasetVersion.getTermsOfUseAndAccess().getLicense() == null) {
+                    return true;
+                }
+
+            } catch (NoResultException e) {
+                return false;
+            }
+        }
+        return false;
     }
     
     /**
@@ -488,10 +543,24 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
          }
     } // end getDatasetVersionByQuery
     
-    
-    
-    
-    public DatasetVersion retrieveDatasetVersionByIdentiferClause(String identifierClause, String version){
+    /**
+     * @deprecated because of a typo; use {@link #retrieveDatasetVersionByIdentifierClause(String, String) retrieveDatasetVersionByIdentifierClause} instead
+     * @see #retrieveDatasetVersionByIdentifierClause(String, String)
+     * @param identifierClause
+     * @param version
+     * @return a DatasetVersion if found, or {@code null} otherwise
+     */
+    @Deprecated
+    public DatasetVersion retrieveDatasetVersionByIdentiferClause(String identifierClause, String version) {
+        return retrieveDatasetVersionByIdentifierClause(identifierClause, version);
+    }
+
+    /**
+     * @param identifierClause
+     * @param version
+     * @return a DatasetVersion if found, or {@code null} otherwise
+     */
+    public DatasetVersion retrieveDatasetVersionByIdentifierClause(String identifierClause, String version) {
         
         if (identifierClause == null){
             return null;
@@ -613,7 +682,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         identifierClause += " AND ds.identifier = '" + parsedId.getIdentifier() + "'"; 
         
 
-        DatasetVersion ds = retrieveDatasetVersionByIdentiferClause(identifierClause, version);
+        DatasetVersion ds = retrieveDatasetVersionByIdentifierClause(identifierClause, version);
         
         if (ds != null){
             msg("retrieved dataset: " + ds.getId() + " semantic: " + ds.getSemanticVersion());
@@ -711,7 +780,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         
         String identifierClause = this.getIdClause(datasetId);
 
-        DatasetVersion ds = retrieveDatasetVersionByIdentiferClause(identifierClause, version);
+        DatasetVersion ds = retrieveDatasetVersionByIdentifierClause(identifierClause, version);
         
         return ds;
 
@@ -768,35 +837,11 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             return null;
         }
 
-        Long thumbnailFileId;
+        if (!FeatureFlags.DISABLE_DATASET_THUMBNAIL_AUTOSELECT.enabled()) {
+            Long thumbnailFileId;
 
-        // First, let's see if there are thumbnails that have already been 
-        // generated:
-        try {
-            thumbnailFileId = (Long) em.createNativeQuery("SELECT df.id "
-                    + "FROM datafile df, filemetadata fm, datasetversion dv, dvobject o "
-                    + "WHERE dv.id = " + versionId + " "
-                    + "AND df.id = o.id "
-                    + "AND fm.datasetversion_id = dv.id "
-                    + "AND fm.datafile_id = df.id "
-                    + "AND df.restricted = false "
-                    + "AND df.embargo_id is null "
-                    + "AND o.previewImageAvailable = true "
-                    + "ORDER BY df.id LIMIT 1;").getSingleResult();
-        } catch (Exception ex) {
-            thumbnailFileId = null;
-        }
-
-        if (thumbnailFileId != null) {
-            logger.fine("DatasetVersionService,getThumbnailByVersionid(): found already generated thumbnail for version " + versionId + ": " + thumbnailFileId);
-            assignDatasetThumbnailByNativeQuery(versionId, thumbnailFileId);
-            return thumbnailFileId;
-        }
-
-        if (!systemConfig.isThumbnailGenerationDisabledForImages()) {
-            // OK, let's try and generate an image thumbnail!
-            long imageThumbnailSizeLimit = systemConfig.getThumbnailSizeLimitImage();
-
+            // First, let's see if there are thumbnails that have already been 
+            // generated:
             try {
                 thumbnailFileId = (Long) em.createNativeQuery("SELECT df.id "
                         + "FROM datafile df, filemetadata fm, datasetversion dv, dvobject o "
@@ -804,61 +849,89 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                         + "AND df.id = o.id "
                         + "AND fm.datasetversion_id = dv.id "
                         + "AND fm.datafile_id = df.id "
-                        // + "AND o.previewImageAvailable = false "
                         + "AND df.restricted = false "
                         + "AND df.embargo_id is null "
-                        + "AND df.contenttype LIKE 'image/%' "
-                        + "AND NOT df.contenttype = 'image/fits' "
-                        + "AND df.filesize < " + imageThumbnailSizeLimit + " "
-                        + "ORDER BY df.filesize ASC LIMIT 1;").getSingleResult();
+                        + "AND df.retention_id is null "
+                        + "AND o.previewImageAvailable = true "
+                        + "ORDER BY df.id LIMIT 1;").getSingleResult();
             } catch (Exception ex) {
                 thumbnailFileId = null;
             }
 
             if (thumbnailFileId != null) {
-                logger.fine("obtained file id: " + thumbnailFileId);
-                DataFile thumbnailFile = datafileService.find(thumbnailFileId);
-                if (thumbnailFile != null) {
-                    if (datafileService.isThumbnailAvailable(thumbnailFile)) {
-                        assignDatasetThumbnailByNativeQuery(versionId, thumbnailFileId);
-                        return thumbnailFileId;
+                logger.fine("DatasetVersionService,getThumbnailByVersionid(): found already generated thumbnail for version " + versionId + ": " + thumbnailFileId);
+                assignDatasetThumbnailByNativeQuery(versionId, thumbnailFileId);
+                return thumbnailFileId;
+            }
+
+            if (!systemConfig.isThumbnailGenerationDisabledForImages()) {
+                // OK, let's try and generate an image thumbnail!
+                long imageThumbnailSizeLimit = systemConfig.getThumbnailSizeLimitImage();
+
+                try {
+                    thumbnailFileId = (Long) em.createNativeQuery("SELECT df.id "
+                            + "FROM datafile df, filemetadata fm, datasetversion dv, dvobject o "
+                            + "WHERE dv.id = " + versionId + " "
+                            + "AND df.id = o.id "
+                            + "AND fm.datasetversion_id = dv.id "
+                            + "AND fm.datafile_id = df.id "
+                            + "AND o.previewimagefail = false "
+                            + "AND df.restricted = false "
+                            + "AND df.embargo_id is null "
+                            + "AND df.retention_id is null "
+                            + "AND df.contenttype LIKE 'image/%' "
+                            + "AND NOT df.contenttype = 'image/fits' "
+                            + "AND df.filesize < " + imageThumbnailSizeLimit + " "
+                            + "ORDER BY df.filesize ASC LIMIT 1;").getSingleResult();
+                } catch (Exception ex) {
+                    thumbnailFileId = null;
+                }
+
+                if (thumbnailFileId != null) {
+                    logger.fine("obtained file id: " + thumbnailFileId);
+                    DataFile thumbnailFile = datafileService.find(thumbnailFileId);
+                    if (thumbnailFile != null) {
+                        if (datafileService.isThumbnailAvailable(thumbnailFile)) {
+                            assignDatasetThumbnailByNativeQuery(versionId, thumbnailFileId);
+                            return thumbnailFileId;
+                        }
+                    }
+                }
+            }
+
+            // And if that didn't work, try the same thing for PDFs:
+            if (!systemConfig.isThumbnailGenerationDisabledForPDF()) {
+                // OK, let's try and generate an image thumbnail!
+                long imageThumbnailSizeLimit = systemConfig.getThumbnailSizeLimitPDF();
+                try {
+                    thumbnailFileId = (Long) em.createNativeQuery("SELECT df.id "
+                            + "FROM datafile df, filemetadata fm, datasetversion dv, dvobject o "
+                            + "WHERE dv.id = " + versionId + " "
+                            + "AND df.id = o.id "
+                            + "AND fm.datasetversion_id = dv.id "
+                            + "AND fm.datafile_id = df.id "
+                            + "AND o.previewimagefail = false "
+                            + "AND df.restricted = false "
+                            + "AND df.embargo_id is null "
+                            + "AND df.retention_id is null "
+                            + "AND df.contenttype = 'application/pdf' "
+                            + "AND df.filesize < " + imageThumbnailSizeLimit + " "
+                            + "ORDER BY df.filesize ASC LIMIT 1;").getSingleResult();
+                } catch (Exception ex) {
+                    thumbnailFileId = null;
+                }
+
+                if (thumbnailFileId != null) {
+                    DataFile thumbnailFile = datafileService.find(thumbnailFileId);
+                    if (thumbnailFile != null) {
+                        if (datafileService.isThumbnailAvailable(thumbnailFile)) {
+                            assignDatasetThumbnailByNativeQuery(versionId, thumbnailFileId);
+                            return thumbnailFileId;
+                        }
                     }
                 }
             }
         }
-
-        // And if that didn't work, try the same thing for PDFs:
-        if (!systemConfig.isThumbnailGenerationDisabledForPDF()) {
-            // OK, let's try and generate an image thumbnail!
-            long imageThumbnailSizeLimit = systemConfig.getThumbnailSizeLimitPDF();
-            try {
-                thumbnailFileId = (Long) em.createNativeQuery("SELECT df.id "
-                        + "FROM datafile df, filemetadata fm, datasetversion dv, dvobject o "
-                        + "WHERE dv.id = " + versionId + " "
-                        + "AND df.id = o.id "
-                        + "AND fm.datasetversion_id = dv.id "
-                        + "AND fm.datafile_id = df.id "
-                        // + "AND o.previewImageAvailable = false "
-                        + "AND df.restricted = false "
-                        + "AND df.embargo_id is null "
-                        + "AND df.contenttype = 'application/pdf' "
-                        + "AND df.filesize < " + imageThumbnailSizeLimit + " "
-                        + "ORDER BY df.filesize ASC LIMIT 1;").getSingleResult();
-            } catch (Exception ex) {
-                thumbnailFileId = null;
-            }
-
-            if (thumbnailFileId != null) {
-                DataFile thumbnailFile = datafileService.find(thumbnailFileId);
-                if (thumbnailFile != null) {
-                    if (datafileService.isThumbnailAvailable(thumbnailFile)) {
-                        assignDatasetThumbnailByNativeQuery(versionId, thumbnailFileId);
-                        return thumbnailFileId;
-                    }
-                }
-            }
-        }
-
         return null;
     }
     
@@ -1015,42 +1088,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         return !checksumList.isEmpty();
     }
         
-    
-    public List<HashMap<String, Object>> getBasicDatasetVersionInfo(Dataset dataset){
-        
-        if (dataset == null){
-            throw new NullPointerException("dataset cannot be null");
-        }
-        
-        String query = "SELECT id, dataset_id, releasetime, versionnumber,"
-                    + " minorversionnumber, versionstate, versionnote" 
-                    + " FROM datasetversion"
-                    + " WHERE dataset_id = " + dataset.getId()
-                    + " ORDER BY versionnumber DESC,"
-                    + " minorversionnumber DESC," 
-                    + " versionstate;";
-        msg("query: " + query);
-        Query nativeQuery = em.createNativeQuery(query);
-        List<Object[]> datasetVersionInfoList = nativeQuery.getResultList();
-
-        List<HashMap<String, Object>> hashList = new ArrayList<>();
-        
-        HashMap<String, Object> mMap = new HashMap<>();
-        for (Object[] dvInfo : datasetVersionInfoList) {
-            mMap = new HashMap<>();
-            mMap.put("datasetVersionId", dvInfo[0]);
-            mMap.put("datasetId", dvInfo[1]);
-            mMap.put("releaseTime", dvInfo[2]);
-            mMap.put("versionnumber", dvInfo[3]);
-            mMap.put("minorversionnumber", dvInfo[4]);
-            mMap.put("versionstate", dvInfo[5]);
-            mMap.put("versionnote", dvInfo[6]);
-            hashList.add(mMap);
-        }
-        return hashList;
-    } // end getBasicDatasetVersionInfo
-    
-    
     
     public HashMap getFileMetadataHistory(DataFile df){
         
@@ -1251,51 +1288,49 @@ w
             logger.log(Level.WARNING, "EJBException exception: {0}", e.getMessage());
             return null;
         }
-    } // end getUnarchivedDatasetVersions
+    }
 
     /**
-     * Returns a FileMetadata list of files in the specified DatasetVersion
+     * Calculates the total number of versions for a specified dataset.
+     * <p>
+     * This method provides a flexible way to count dataset versions. It can either
+     * return a total count of all versions or restrict the count to only those
+     * that are publicly visible (i.e., {@code RELEASED} or {@code DEACCESSIONED}).
+     * This is particularly useful for displaying different counts to users with
+     * different permission levels.
      *
-     * @param datasetVersion the DatasetVersion to access
-     * @param limit for pagination, can be null
-     * @param offset for pagination, can be null
-     * @param orderCriteria a FileMetadatasOrderCriteria to order the results
-     * @return a FileMetadata list of the specified DatasetVersion
+     * @param datasetId The unique identifier of the dataset for which to count versions.
+     * Must not be {@code null}.
+     * @param canViewUnpublishedVersions A boolean flag that controls the scope of the count:
+     * <ul>
+     * <li>{@code true} - All versions of the dataset are counted,
+     * regardless of their {@link VersionState}.</li>
+     * <li>{@code false} - Only versions with a state of
+     * {@link VersionState#RELEASED} or
+     * {@link VersionState#DEACCESSIONED} are counted.</li>
+     * </ul>
+     * @return A {@code Long} representing the total count of matching dataset versions.
+     * This will be {@code 0L} if the dataset has no versions or does not exist.
      */
-    public List<FileMetadata> getFileMetadatas(DatasetVersion datasetVersion, Integer limit, Integer offset, FileMetadatasOrderCriteria orderCriteria) {
-        TypedQuery<FileMetadata> query = em.createQuery(getQueryStringFromFileMetadatasOrderCriteria(orderCriteria), FileMetadata.class)
-                .setParameter("datasetVersionId", datasetVersion.getId());
-        if (limit != null) {
-            query.setMaxResults(limit);
-        }
-        if (offset != null) {
-            query.setFirstResult(offset);
-        }
-        return query.getResultList();
-    }
+    public Long getDatasetVersionCount(Long datasetId, boolean canViewUnpublishedVersions) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+        Root<DatasetVersion> versionRoot = cq.from(DatasetVersion.class);
 
-    private String getQueryStringFromFileMetadatasOrderCriteria(FileMetadatasOrderCriteria orderCriteria) {
-        String queryString;
-        switch (orderCriteria) {
-            case NameZA:
-                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_LABEL + " DESC";
-                break;
-            case Newest:
-                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_DATE + " DESC";
-                break;
-            case Oldest:
-                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_DATE;
-                break;
-            case Size:
-                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_SIZE;
-                break;
-            case Type:
-                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_TYPE;
-                break;
-            default:
-                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_LABEL;
-                break;
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Add the primary predicate to filter by the dataset's ID.
+        predicates.add(cb.equal(versionRoot.join("dataset").get("id"), datasetId));
+
+        // Conditionally add a predicate to filter for public versions only.
+        if (!canViewUnpublishedVersions) {
+            predicates.add(versionRoot.get("versionState").in(
+                    VersionState.RELEASED, VersionState.DEACCESSIONED));
         }
-        return queryString;
+
+        cq.select(cb.count(versionRoot))
+                .where(predicates.toArray(new Predicate[0]));
+
+        return em.createQuery(cq).getSingleResult();
     }
-} // end class
+}

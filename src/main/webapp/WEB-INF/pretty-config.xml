@@ -27,4 +27,9 @@
         <view-id value="/sitemap/sitemap.xml" />
     </url-mapping>
 
+    <url-mapping id="sitemapindex">
+        <pattern value="/sitemap_index.xml" />
+        <view-id value="/sitemap/sitemap_index.xml" />
+    </url-mapping>
+
 </pretty-config>

@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -14,19 +15,27 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.UrlSignerUtil;
+
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.event.ActionEvent;
@@ -71,6 +80,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     DataverseRequestServiceBean dvRequestService;
     @Inject
     PermissionsWrapper permissionsWrapper;
+    @EJB
+    FileAccessRequestServiceBean fileAccessRequestService;
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
@@ -84,6 +95,15 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
     public TreeMap<AuthenticatedUser, List<FileAccessRequest>> getFileAccessRequestMap() {
         return fileAccessRequestMap;
+    }
+    
+    public List<DataFile> getDataFilesForRequestor() {
+        List<FileAccessRequest> fars = fileAccessRequestMap.get(getFileRequester());
+        if (fars == null) {
+            return new ArrayList<>();
+        } else {
+            return fars.stream().map(FileAccessRequest::getDataFile).collect(Collectors.toList());
+        }
     }
 
     private final TreeMap<AuthenticatedUser,List<FileAccessRequest>> fileAccessRequestMap = new TreeMap<>();
@@ -138,6 +158,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
         initMaps();
+
         return "";
     }
 
@@ -146,6 +167,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         roleAssigneeMap.clear();
         fileMap.clear();
         fileAccessRequestMap.clear();
+        roleAssignmentHistory = null;
 
         for (DataFile file : dataset.getFiles()) {
 
@@ -177,14 +199,14 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                 fileMap.put(file, raList);
 
                 // populate the file access requests map
-                for (FileAccessRequest fileAccessRequest : file.getFileAccessRequests()) {
-                    List<FileAccessRequest> requestedFiles = fileAccessRequestMap.get(fileAccessRequest.getAuthenticatedUser());
-                    if (requestedFiles == null) {
-                        requestedFiles = new ArrayList<>();
-                        AuthenticatedUser withProvider = authenticationService.getAuthenticatedUserWithProvider(fileAccessRequest.getAuthenticatedUser().getUserIdentifier());
-                        fileAccessRequestMap.put(withProvider, requestedFiles);
+                for (FileAccessRequest fileAccessRequest : file.getFileAccessRequests(FileAccessRequest.RequestState.CREATED)) {
+                    List<FileAccessRequest> fileAccessRequestList = fileAccessRequestMap.get(fileAccessRequest.getRequester());
+                    if (fileAccessRequestList == null) {
+                        fileAccessRequestList = new ArrayList<>();
+                        AuthenticatedUser withProvider = authenticationService.getAuthenticatedUserWithProvider(fileAccessRequest.getRequester().getUserIdentifier());
+                        fileAccessRequestMap.put(withProvider, fileAccessRequestList);
                     }
-                    requestedFiles.add(fileAccessRequest);
+                    fileAccessRequestList.add(fileAccessRequest);
                 }
             }
         }
@@ -406,16 +428,22 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                     if (file.isReleased()) {
                         sendNotification = true;
                     }
-                    // remove request, if it exist
-                    if (file.removeFileAccessRequester(roleAssignee)) {
-                        datafileService.save(file);
+                    // set request(s) granted, if they exist
+                    for (AuthenticatedUser au : roleAssigneeService.getExplicitUsers(roleAssignee)) {
+                        FileAccessRequest far = file.getAccessRequestForAssignee(au);
+                        //There may not be a request, so do the null check
+                        if (far != null) {
+                            far.setStateGranted();
+                        }
                     }
+                    datafileService.save(file);
                 }
+
             }
 
             if (sendNotification) {
                 for (AuthenticatedUser au : roleAssigneeService.getExplicitUsers(roleAssignee)) {
-                    userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.GRANTFILEACCESS, dataset.getId());
+                    userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.GRANTFILEACCESS, dataset.getId());                
                 }
              }
         }
@@ -443,7 +471,9 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
         for (DataFile file : files) {
             if (assignRole(au, file, fileDownloaderRole)) {
-                if (file.removeFileAccessRequester(au)) {
+                FileAccessRequest far = file.getAccessRequestForAssignee(au);
+                if (far!=null) {
+                    far.setStateGranted();
                     datafileService.save(file);
                 }
                 actionPerformed = true;
@@ -475,9 +505,14 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     private void rejectAccessToRequests(AuthenticatedUser au, List<DataFile> files) {
         boolean actionPerformed = false;
         for (DataFile file : files) {
-            file.removeFileAccessRequester(au);
-            datafileService.save(file);
-            actionPerformed = true;
+            FileAccessRequest far = file.getAccessRequestForAssignee(au);
+            if(far!=null) {
+                far.setStateRejected();
+                fileAccessRequestService.save(far);
+                file.removeFileAccessRequest(far);
+                datafileService.save(file);
+                actionPerformed = true;
+            }
         }
 
         if (actionPerformed) {
@@ -511,6 +546,14 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         return true;
     }
 
+    private List<RoleAssignmentHistoryConsolidatedEntry> roleAssignmentHistory;
+
+    public List<RoleAssignmentHistoryConsolidatedEntry> getRoleAssignmentHistory() {
+        if (roleAssignmentHistory == null) {
+            roleAssignmentHistory = roleService.getFilesRoleAssignmentHistory(dataset.getId());
+        }
+        return roleAssignmentHistory;
+    }
 
     boolean renderUserGroupMessages = false;
     boolean renderFileMessages = false;
@@ -541,7 +584,46 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         this.renderFileMessages = renderFileMessages;
     }
 
+    public String getSignedUrlForRAHistoryCsv() {
+        //Including /v1 is required for the signature to validate
+        String apiPath = "/api/v1/datasets/" + dataset.getId() + "/files/assignments/history";
+        
+        try {
+            // Get the application URL from the system config
+            String baseUrl = SystemConfig.getDataverseSiteUrlStatic();
+            if (baseUrl.endsWith("/")) {
+                baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+            }
+            
+            // Construct the full URL
+            String fullApiPath = baseUrl + apiPath;
+            
+            // Generate a signed URL with the user's API token
+            User user = session.getUser();
+            String key = null;
+            String userId=null;
+            if (user instanceof AuthenticatedUser authUser) {
+                userId = authUser.getUserIdentifier();
+                ApiToken apiToken = authenticationService.findApiTokenByUser(authUser);
+                if (apiToken != null && !apiToken.isExpired() && !apiToken.isDisabled()) {
+                    key = apiToken.getTokenString();
+                }
+            }
+            key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
+            if(key.length() >= 36) {
+                return UrlSignerUtil.signUrl(fullApiPath, 10, userId, "GET", key);
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error generating signed URL for permissions history CSV: " + e.getMessage(), e);
+            return null;
+        }
+        return null;
+    } 
+    public String getPermissionsHistoryFilename() {
+        // For datasets, replace colons in the PID with underscores
+        return dataset.getGlobalId().asString().replace(":", "_") + "_files_permissions_history.csv";
 
+    }
 
 
     // inner class used fordisplay of role assignments

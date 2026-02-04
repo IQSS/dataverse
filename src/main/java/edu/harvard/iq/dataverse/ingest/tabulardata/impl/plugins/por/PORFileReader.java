@@ -31,7 +31,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.nio.ByteBuffer;
-
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -180,7 +180,7 @@ public class PORFileReader  extends TabularDataFileReader{
     }
     
     @Override
-    public TabularDataIngest read(BufferedInputStream stream, File additionalData) throws IOException{
+    public TabularDataIngest read(BufferedInputStream stream, boolean storeWithVariableHeader, File additionalData) throws IOException{
         dbgLog.fine("PORFileReader: read() start");
         
         if (additionalData != null) {
@@ -195,7 +195,7 @@ public class PORFileReader  extends TabularDataFileReader{
         BufferedReader bfReader = null;
         
         try {            
-            bfReader = new BufferedReader(new InputStreamReader(new FileInputStream(tempPORfile.getAbsolutePath()), "US-ASCII"));
+            bfReader = new BufferedReader(new InputStreamReader(new FileInputStream(tempPORfile.getAbsolutePath()), StandardCharsets.US_ASCII));
             if (bfReader == null){
                 dbgLog.fine("bfReader is null");
                 throw new IOException("bufferedReader is null");
@@ -226,7 +226,7 @@ public class PORFileReader  extends TabularDataFileReader{
                     headerId = "8S";
                 }
 
-                decode(headerId, bfReader);
+                decode(headerId, bfReader, storeWithVariableHeader);
 
                 
                 // for last iteration
@@ -382,7 +382,7 @@ public class PORFileReader  extends TabularDataFileReader{
         return ingesteddata;
     }
     
-    private void decode(String headerId, BufferedReader reader) throws IOException{
+    private void decode(String headerId, BufferedReader reader, boolean storeWithVariableHeader) throws IOException{
         if (headerId.equals("1")) decodeProductName(reader);
         else if (headerId.equals("2")) decodeLicensee(reader);
         else if (headerId.equals("3")) decodeFileLabel(reader);
@@ -398,7 +398,7 @@ public class PORFileReader  extends TabularDataFileReader{
         else if (headerId.equals("C")) decodeVariableLabel(reader);
         else if (headerId.equals("D")) decodeValueLabel(reader);
         else if (headerId.equals("E")) decodeDocument(reader);
-        else if (headerId.equals("F")) decodeData(reader);
+        else if (headerId.equals("F")) decodeData(reader, storeWithVariableHeader);
     }
     
 
@@ -567,7 +567,7 @@ public class PORFileReader  extends TabularDataFileReader{
         try {
             tempPORfile = File.createTempFile("tempPORfile.", ".por");
             fileOutPOR = new FileOutputStream(tempPORfile);
-            fileWriter = new BufferedWriter(new OutputStreamWriter(fileOutPOR, "utf8"));
+            fileWriter = new BufferedWriter(new OutputStreamWriter(fileOutPOR, StandardCharsets.UTF_8));
             porScanner = new Scanner(stream);
 
             // Because 64-bit and 32-bit machines decode POR's first 40-byte
@@ -1099,7 +1099,7 @@ public class PORFileReader  extends TabularDataFileReader{
     }
 
 
-    private void decodeData(BufferedReader reader) throws IOException {
+    private void decodeData(BufferedReader reader, boolean storeWithVariableHeader) throws IOException {
         dbgLog.fine("decodeData(): start");
         // TODO: get rid of this "variableTypeFinal"; -- L.A. 4.0 beta
         int[] variableTypeFinal= new int[varQnty];
@@ -1115,7 +1115,7 @@ public class PORFileReader  extends TabularDataFileReader{
 
         try {
             fileOutTab = new FileOutputStream(tabDelimitedDataFile);
-            pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, "utf8"), true);
+            pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, StandardCharsets.UTF_8), true);
 
             variableFormatTypeList = new String[varQnty];
             for (int i = 0; i < varQnty; i++) {
@@ -1126,6 +1126,9 @@ public class PORFileReader  extends TabularDataFileReader{
             // contents (variable) checker concering decimals
             Arrays.fill(variableTypeFinal, 0);
 
+            if (storeWithVariableHeader) {
+                pwout.println(StringUtils.join(variableNameList, "\t"));
+            } 
             // raw-case counter
             int j = 0; // case
 

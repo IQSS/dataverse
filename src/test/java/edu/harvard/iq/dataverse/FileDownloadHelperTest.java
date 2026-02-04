@@ -215,7 +215,51 @@ class FileDownloadHelperTest {
         
         assertTrue(fileDownloadHelper.canDownloadFile(fileMetadata));
     }
-        
+
+    @Test
+    void testCanNotDownloadFile_forExpiredRetentionFile() {
+        DataFile dataFile = new DataFile();
+        dataFile.setId(2L);
+
+        // With an expired retention end date, an unrestricted file should not be accessible
+
+        Retention ret = new Retention(LocalDate.now().minusDays(1), "Retention period expired");
+        dataFile.setRetention(ret);
+
+        DatasetVersion datasetVersion = new DatasetVersion();
+        datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
+
+        FileMetadata fileMetadata = new FileMetadata();
+        fileMetadata.setId(1L);
+        fileMetadata.setRestricted(false);
+        fileMetadata.setDataFile(dataFile);
+        fileMetadata.setDatasetVersion(datasetVersion);
+
+        assertFalse(fileDownloadHelper.canDownloadFile(fileMetadata));
+    }
+
+    @Test
+    void testCanDownloadFile_forUnrestrictedReleasedNotExpiredRetentionFile() {
+        DataFile dataFile = new DataFile();
+        dataFile.setId(2L);
+
+        // With a retention end date in the future, an unrestricted file should be accessible
+
+        Retention ret = new Retention(LocalDate.now(), "Retention period NOT expired");
+        dataFile.setRetention(ret);
+
+        DatasetVersion datasetVersion = new DatasetVersion();
+        datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
+
+        FileMetadata fileMetadata = new FileMetadata();
+        fileMetadata.setId(1L);
+        fileMetadata.setRestricted(false);
+        fileMetadata.setDataFile(dataFile);
+        fileMetadata.setDatasetVersion(datasetVersion);
+
+        assertTrue(fileDownloadHelper.canDownloadFile(fileMetadata));
+    }
+
     @ParameterizedTest
     @CsvSource({"false", "true"})
     void testCanDownloadFile_forRestrictedReleasedFile(boolean hasPermission) {

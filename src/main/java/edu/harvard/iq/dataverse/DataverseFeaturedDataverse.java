@@ -85,7 +85,7 @@ public class DataverseFeaturedDataverse implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof DatasetFieldType)) {
+        if (!(object instanceof DataverseFeaturedDataverse)) {
             return false;
         }
         DataverseFeaturedDataverse other = (DataverseFeaturedDataverse) object;

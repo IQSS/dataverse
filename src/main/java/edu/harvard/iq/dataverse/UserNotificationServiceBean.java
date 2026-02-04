@@ -18,7 +18,6 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
-import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -44,11 +43,63 @@ public class UserNotificationServiceBean {
     SettingsServiceBean settingsService;
     
     public List<UserNotification> findByUser(Long userId) {
-        TypedQuery<UserNotification> query = em.createQuery("select un from UserNotification un where un.user.id =:userId order by un.sendDate desc", UserNotification.class);
+        return findByUser(userId, false, null, null);
+    }
+
+    /**
+     * Finds notifications for a user, with options for pagination and filtering by read status.
+     *
+     * @param userId The ID of the user.
+     * @param onlyUnread If true, returns only unread notifications. If false, returns all.
+     * @param limit The maximum number of notifications to return (for pagination). Can be null.
+     * @param offset The starting position for the results (for pagination). Can be null.
+     * @return A list of UserNotification objects, ordered by send date descending.
+     */
+    public List<UserNotification> findByUser(Long userId, boolean onlyUnread, Integer limit, Integer offset) {
+        TypedQuery<UserNotification> query = em.createQuery(
+                "select un from UserNotification un " +
+                        "where un.user.id = :userId and (:onlyUnread = false or un.readNotification = false) " +
+                        "order by un.sendDate desc",
+                UserNotification.class
+        );
+
         query.setParameter("userId", userId);
+        query.setParameter("onlyUnread", onlyUnread);
+
+        if (offset != null) {
+            query.setFirstResult(offset);
+        }
+        if (limit != null) {
+            query.setMaxResults(limit);
+        }
+
         return query.getResultList();
     }
-    
+
+    /**
+     * Finds the total count of notifications for a user, with an option to count only unread notifications.
+     *
+     * @param userId The ID of the user.
+     * @param onlyUnread If true, counts only unread notifications. If false, counts all notifications.
+     * @return The total count as a Long.
+     */
+    public Long findTotalCountByUser(Long userId, boolean onlyUnread) {
+        if (userId == null) {
+            return 0L;
+        }
+
+        TypedQuery<Long> query = em.createQuery(
+                "select count(un) from UserNotification un " +
+                        "where un.user.id = :userId and (:onlyUnread = false or un.readNotification = false)",
+                Long.class
+        );
+
+        query.setParameter("userId", userId);
+        query.setParameter("onlyUnread", onlyUnread);
+
+        return query.getSingleResult();
+    }
+
     public List<UserNotification> findByRequestor(Long userId) {
         TypedQuery<UserNotification> query = em.createQuery("select un from UserNotification un where un.requestor.id =:userId order by un.sendDate desc", UserNotification.class);
         query.setParameter("userId", userId);
@@ -87,7 +138,12 @@ public class UserNotificationServiceBean {
     public UserNotification save(UserNotification userNotification) {
         return em.merge(userNotification);
     }
-    
+
+    public UserNotification markAsRead(UserNotification userNotification) {
+        userNotification.setReadNotification(true);
+        return em.merge(userNotification);
+    }
+
     public void delete(UserNotification userNotification) {
         em.remove(em.merge(userNotification));
     }
@@ -131,6 +187,7 @@ public class UserNotificationServiceBean {
             save(userNotification);
         }
     }
+    
 
     public boolean isEmailMuted(UserNotification userNotification) {
         final Type type = userNotification.getType();

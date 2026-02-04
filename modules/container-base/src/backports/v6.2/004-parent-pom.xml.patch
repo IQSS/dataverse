@@ -1,0 +1,11 @@
+--- a/modules/dataverse-parent/pom.xml
++++ b/modules/dataverse-parent/pom.xml
+@@ -457,7 +457,8 @@
+                 <!--
+                     With moving to Payara 6, we are aligned with containers and classic install again.
+                 -->
+                 <!-- <payara.version>5.2022.5</payara.version> -->
++                <base.image.version>${revision}</base.image.version>
+             </properties>
+     
+             <build>

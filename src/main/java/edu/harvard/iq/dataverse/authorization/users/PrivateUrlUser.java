@@ -12,7 +12,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
  */
 public class PrivateUrlUser implements User {
 
-    public static final String PREFIX = "#";
+    public static final String PREFIX = "!";
 
     /**
      * In the future, this could probably be dvObjectId rather than datasetId,

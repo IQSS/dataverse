@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.util;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -96,7 +96,7 @@ public class UrlSignerUtil {
         boolean valid = true;
         try {
             URL url = new URL(signedUrl);
-            List<NameValuePair> params = URLEncodedUtils.parse(url.getQuery(), Charset.forName("UTF-8"));
+            List<NameValuePair> params = URLEncodedUtils.parse(url.getQuery(), StandardCharsets.UTF_8);
             String hash = null;
             String dateString = null;
             String allowedMethod = null;
@@ -156,7 +156,7 @@ public class UrlSignerUtil {
     public static boolean hasToken(String urlString) {
         try {
             URL url = new URL(urlString);
-            List<NameValuePair> params = URLEncodedUtils.parse(url.getQuery(), Charset.forName("UTF-8"));
+            List<NameValuePair> params = URLEncodedUtils.parse(url.getQuery(), StandardCharsets.UTF_8);
             for (NameValuePair nvp : params) {
                 if (nvp.getName().equals(SIGNED_URL_TOKEN)) {
                     return true;

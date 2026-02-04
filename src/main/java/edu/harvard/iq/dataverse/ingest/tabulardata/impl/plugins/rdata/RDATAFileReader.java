@@ -22,11 +22,10 @@ package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata;
 
 import java.io.*;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.*;
 import java.util.logging.*;
 import java.util.*;
-
-import jakarta.inject.Inject;
 
 // Rosuda Wrappers and Methods for R-calls to Rserve
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -473,7 +472,7 @@ public class RDATAFileReader extends TabularDataFileReader {
    * @throws java.io.IOException if a reading error occurs.
    */
     @Override
-    public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
+    public TabularDataIngest read(BufferedInputStream stream, boolean saveWithVariableHeader, File dataFile) throws IOException {
 
         init();
 
@@ -504,12 +503,12 @@ public class RDATAFileReader extends TabularDataFileReader {
             // created!
             // - L.A. 
             RTabFileParser csvFileReader = new RTabFileParser('\t');
-            BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(localCsvFile), "UTF-8"));
+            BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(localCsvFile), StandardCharsets.UTF_8));
 
             File tabFileDestination = File.createTempFile("data-", ".tab");
-            PrintWriter tabFileWriter = new PrintWriter(tabFileDestination.getAbsolutePath(), "UTF-8");
+            PrintWriter tabFileWriter = new PrintWriter(tabFileDestination.getAbsolutePath(), StandardCharsets.UTF_8);
         
-            int lineCount = csvFileReader.read(localBufferedReader, dataTable, tabFileWriter);
+            int lineCount = csvFileReader.read(localBufferedReader, dataTable, saveWithVariableHeader, tabFileWriter);
 
             LOG.fine("RDATAFileReader: successfully read "+lineCount+" lines of tab-delimited data.");
         
@@ -685,7 +684,7 @@ public class RDATAFileReader extends TabularDataFileReader {
 
         // Try opening a buffered reader stream
         try {
-            BufferedReader rd = new BufferedReader(new InputStreamReader(resourceStream, "UTF-8"));
+            BufferedReader rd = new BufferedReader(new InputStreamReader(resourceStream, StandardCharsets.UTF_8));
 
             String line = null;
             while ((line = rd.readLine()) != null) {

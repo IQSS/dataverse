@@ -1,14 +1,13 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 import jakarta.persistence.*;
@@ -23,14 +22,12 @@ import jakarta.persistence.*;
             query = "SELECT o FROM DvObject o ORDER BY o.id"),
     @NamedQuery(name = "DvObject.findById",
             query = "SELECT o FROM DvObject o WHERE o.id=:id"),
-    @NamedQuery(name = "DvObject.checkExists", 
-            query = "SELECT count(o) from DvObject o WHERE o.id=:id"),
     @NamedQuery(name = "DvObject.ownedObjectsById",
 			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
     @NamedQuery(name = "DvObject.findByGlobalId",
-            query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
+            query = "SELECT o FROM DvObject o WHERE UPPER(o.identifier)=UPPER(:identifier) and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
     @NamedQuery(name = "DvObject.findIdByGlobalId",
-            query = "SELECT o.id FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
+            query = "SELECT o.id FROM DvObject o WHERE UPPER(o.identifier)=UPPER(:identifier) and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
 
     @NamedQuery(name = "DvObject.findByAlternativeGlobalId",
             query = "SELECT o FROM DvObject o, AlternativePersistentIdentifier a  WHERE o.id = a.dvObject.id and a.identifier=:identifier and a.authority=:authority and a.protocol=:protocol and o.dtype=:dtype"),
@@ -38,7 +35,7 @@ import jakarta.persistence.*;
             query = "SELECT o.id FROM DvObject o, AlternativePersistentIdentifier a  WHERE o.id = a.dvObject.id and a.identifier=:identifier and a.authority=:authority and a.protocol=:protocol and o.dtype=:dtype"),
 
     @NamedQuery(name = "DvObject.findByProtocolIdentifierAuthority",
-            query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol"),
+            query = "SELECT o FROM DvObject o WHERE UPPER(o.identifier)=UPPER(:identifier) and o.authority=:authority and o.protocol=:protocol"),
     @NamedQuery(name = "DvObject.findByOwnerId", 
                 query = "SELECT o FROM DvObject o WHERE o.owner.id=:ownerId  order by o.dtype desc, o.id"),
     @NamedQuery(name = "DvObject.findByAuthenticatedUserId", 
@@ -54,7 +51,8 @@ import jakarta.persistence.*;
 @Table(indexes = {@Index(columnList="dtype")
 		, @Index(columnList="owner_id")
 		, @Index(columnList="creator_id")
-		, @Index(columnList="releaseuser_id")},
+		, @Index(columnList="releaseuser_id")
+        , @Index(columnList="authority,protocol, UPPER(identifier)", name="INDEX_DVOBJECT_authority_protocol_upper_identifier")},
 		uniqueConstraints = {@UniqueConstraint(columnNames = {"authority,protocol,identifier"}),@UniqueConstraint(columnNames = {"owner_id,storageidentifier"})})
 public abstract class DvObject extends DataverseEntity implements java.io.Serializable {
     
@@ -141,13 +139,25 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     private String storageIdentifier;
     
     @Column(insertable = false, updatable = false) private String dtype;
-    
+
+    @OneToMany(mappedBy="dvobject",fetch = FetchType.LAZY,cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    private List<DataverseFeaturedItem> dataverseFeaturedItems;
+
+    public List<DataverseFeaturedItem> getDataverseFeaturedItems() {
+        return this.dataverseFeaturedItems;
+    }
+    public void setDataverseFeaturedItems(List<DataverseFeaturedItem> dataverseFeaturedItems) {
+        this.dataverseFeaturedItems = dataverseFeaturedItems;
+    }
+
     /*
-    * Add DOI related fields
+    * Add PID related fields
     */
    
     private String protocol;
     private String authority;
+
+    private String separator;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date globalIdCreateTime;
@@ -155,7 +165,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     private String identifier;
     
     private boolean identifierRegistered;
-    
+        
     private transient GlobalId globalId = null;
     
     @OneToMany(mappedBy = "dvObject", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -177,6 +187,9 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
      */
     private boolean previewImageAvailable;
     
+    @OneToOne(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
+    private StorageQuota storageQuota;
+    
     public boolean isPreviewImageAvailable() {
         return previewImageAvailable;
     }
@@ -184,7 +197,23 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     public void setPreviewImageAvailable(boolean status) {
         this.previewImageAvailable = status;
     }
+    
+    /**
+     * Indicates whether a previous attempt to generate a preview image has failed,
+     * regardless of size. This could be due to the file not being accessible, or a
+     * real failure in generating the thumbnail. In both cases, we won't want to try
+     * again every time the preview/thumbnail is requested for a view.
+     */
+    private boolean previewImageFail;
 
+    public boolean isPreviewImageFail() {
+        return previewImageFail;
+    }
+
+    public void setPreviewImageFail(boolean previewImageFail) {
+        this.previewImageFail = previewImageFail;
+    }
+    
     public Timestamp getModificationTime() {
         return modificationTime;
     }
@@ -304,6 +333,16 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         globalId=null;
     }
 
+    public String getSeparator() {
+        return separator;
+    }
+
+    public void setSeparator(String separator) {
+        this.separator = separator;
+        //Remove cached value
+        globalId=null;
+    }
+
     public Date getGlobalIdCreateTime() {
         return globalIdCreateTime;
     }
@@ -334,11 +373,13 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         if ( pid == null ) {
             setProtocol(null);
             setAuthority(null);
+            setSeparator(null);
             setIdentifier(null);
         } else {
             //These reset globalId=null
             setProtocol(pid.getProtocol());
             setAuthority(pid.getAuthority());
+            setSeparator(pid.getSeparator());
             setIdentifier(pid.getIdentifier());
         }
     }
@@ -458,13 +499,21 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         this.storageIdentifier = storageIdentifier;
     }
     
+    public StorageQuota getStorageQuota() {
+        return storageQuota;
+    }
+    
+    public void setStorageQuota(StorageQuota storageQuota) {
+        this.storageQuota = storageQuota;
+    }
     /**
      * 
      * @param other 
      * @return {@code true} iff {@code other} is {@code this} or below {@code this} in the containment hierarchy.
      */
     public abstract boolean isAncestorOf( DvObject other );
-    
+
     @OneToMany(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     List<RoleAssignment> roleAssignments;
+    
 }

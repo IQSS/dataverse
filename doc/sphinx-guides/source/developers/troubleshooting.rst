@@ -2,7 +2,7 @@
 Troubleshooting
 ===============
 
-Over in the :doc:`dev-environment` section we described the "happy path" of when everything goes right as you set up your Dataverse Software development environment. Here are some common problems and solutions for when things go wrong.
+Over in the :doc:`classic-dev-env` section we described the "happy path" of when everything goes right as you set up your Dataverse Software development environment. Here are some common problems and solutions for when things go wrong.
 
 .. contents:: |toctitle|
 	:local:
@@ -110,7 +110,3 @@ If you are seeing ``Response code: 400, [url] domain of URL is not allowed`` it'
 ``./asadmin delete-jvm-options '-Ddataverse.siteUrl=http\://localhost\:8080'``
 
 ``./asadmin create-jvm-options '-Ddataverse.siteUrl=http\://demo.dataverse.org'``
-
-----
-
-Previous: :doc:`tips` | Next: :doc:`version-control`

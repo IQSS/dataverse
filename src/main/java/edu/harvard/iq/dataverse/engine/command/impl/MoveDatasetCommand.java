@@ -5,12 +5,10 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.Guestbook;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -20,12 +18,12 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Level;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -34,8 +32,8 @@ import java.util.logging.Logger;
  * @author skraffmi
  */
 @RequiredPermissionsMap({
-    @RequiredPermissions(dataverseName = "moved", value = {Permission.PublishDataset})
-    ,	@RequiredPermissions(dataverseName = "destination", value = {Permission.AddDataset, Permission.PublishDataset})
+    @RequiredPermissions(dataverseName = "moved", value = {Permission.PublishDataset}),
+    @RequiredPermissions(dataverseName = "destination", value = {Permission.AddDataset, Permission.PublishDataset})
 })
 public class MoveDatasetCommand extends AbstractVoidCommand {
 
@@ -44,8 +42,13 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
     final Dataset moved;
     final Dataverse destination;
     final Boolean force;
+    final Boolean allowSelfNotification;
+    final Dataverse originalOwner;
 
     public MoveDatasetCommand(DataverseRequest aRequest, Dataset moved, Dataverse destination, Boolean force) {
+        this( aRequest, moved, destination, force, null);
+    }
+    public MoveDatasetCommand(DataverseRequest aRequest, Dataset moved, Dataverse destination, Boolean force, Boolean allowSelfNotification) {
         super(
                 aRequest,
                 dv("moved", moved),
@@ -54,6 +57,8 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         this.moved = moved;
         this.destination = destination;
         this.force= force;
+        this.allowSelfNotification = allowSelfNotification;
+        this.originalOwner = moved.getOwner();
     }
 
     @Override
@@ -70,15 +75,15 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
 
         // validate the move makes sense
         if (moved.getOwner().equals(destination)) {
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.targetDataverseSameAsOriginalDataverse"), this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dashboard.move.dataset.command.error.targetDataverseSameAsOriginalDataverse"), this);
         }
-        
+
         // if dataset is published make sure that its target is published
-        
+
         if (moved.isReleased() && !destination.isReleased()){
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.targetDataverseUnpublishedDatasetPublished", Arrays.asList(destination.getDisplayName())), this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dashboard.move.dataset.command.error.targetDataverseUnpublishedDatasetPublished", Arrays.asList(destination.getDisplayName())), this);
         }
-                
+
         //if the datasets guestbook is not contained in the new dataverse then remove it
         if (moved.getGuestbook() != null) {
             Guestbook gb = moved.getGuestbook();
@@ -97,15 +102,15 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
                 }
             }
         }
-        
+
         // generate list of all possible parent dataverses to check against
         List<Dataverse> ownersToCheck = new ArrayList<>();
         ownersToCheck.add(destination);
         if (destination.getOwners() != null) {
             ownersToCheck.addAll(destination.getOwners());
         }
-        
-        // if the dataset is linked to the new dataverse or any of 
+
+        // if the dataset is linked to the new dataverse or any of
         // its parent dataverses then remove the link
         List<DatasetLinkingDataverse> linkingDatasets = new ArrayList<>();
         if (moved.getDatasetLinkingDataverses() != null) {
@@ -124,18 +129,25 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
                 }
             }
         }
-        
+
         if (removeGuestbook || removeLinkDs) {
             StringBuilder errorString = new StringBuilder();
             if (removeGuestbook) {
-                errorString.append(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.unforced.datasetGuestbookNotInTargetDataverse"));
+                errorString.append(BundleUtil.getStringFromBundle("dashboard.move.dataset.command.error.unforced.datasetGuestbookNotInTargetDataverse"));
             }
             if (removeLinkDs) {
-                errorString.append(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.unforced.linkedToTargetDataverseOrOneOfItsParents"));
+                errorString.append(BundleUtil.getStringFromBundle("dashboard.move.dataset.command.error.unforced.linkedToTargetDataverseOrOneOfItsParents"));
             }
             throw new UnforcedCommandException(errorString.toString(), this);
         }
 
+        // 6575 if dataset is submitted for review and the default contributor
+        // role includes dataset publish then remove the lock
+
+        if (moved.isLockedFor(DatasetLock.Reason.InReview)
+                && destination.getDefaultContributorRole().permissions().contains(Permission.PublishDataset)) {
+            ctxt.datasets().removeDatasetLocks(moved, DatasetLock.Reason.InReview);
+        }
 
         // OK, move
         moved.setOwner(destination);
@@ -146,4 +158,56 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
 
     }
 
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        sendNotification(moved, originalOwner, ctxt);
+        return true;
+    }
+
+    /**
+     * Sends notifications to those able to publish the dataset upon the successful move of a dataset.
+     * <p>
+     * This method checks if dataset move notifications are enabled. If so, it
+     * notifies all users with {@code Permission.PublishDataset} on the original owning Dataverse.
+     * The user who initiated the action can be included or excluded from this
+     * notification based on the allowSelfNotification flag.
+     *
+     * @param dataset The moved {@code Dataset}.
+     * @param originalOwner The original owning {@code Dataverse}.
+     * @param ctxt    The {@code CommandContext} providing access to application services.
+     */
+    protected void sendNotification(Dataset dataset, Dataverse originalOwner, CommandContext ctxt) {
+        // 1. Exit early if the SendNotificationOnDatasetMove setting is disabled.
+        if (!ctxt.settings().isTrueForKey(SettingsServiceBean.Key.SendNotificationOnDatasetMove, false)) {
+            return;
+        }
+
+        // 2. Identify the user who initiated the action.
+        final User user = getUser();
+        final AuthenticatedUser requestor = user.isAuthenticated() ? (AuthenticatedUser) user : null;
+
+        // 3. Get all users with publish permission on the dataset's original owner (dataverse) and notify them.
+        Map<String, AuthenticatedUser> recipients = ctxt.permissions().getDistinctUsersWithPermissionOn(Permission.PublishDataset, originalOwner);
+        // make sure the requestor is in the recipient list in case they don't match the permission but only if allowSelfNotification is true
+        if (requestor != null) {
+            if (Boolean.TRUE.equals(allowSelfNotification)) {
+                recipients.put(requestor.getIdentifier(), requestor);
+            } else {
+                recipients.remove(requestor.getIdentifier());
+            }
+        }
+
+        recipients.values()
+                .stream()
+                .forEach(recipient -> ctxt.notifications().sendNotification(
+                        recipient,
+                        Timestamp.from(Instant.now()),
+                        UserNotification.Type.DATASETMOVED,
+                        dataset.getId(),
+                        null,
+                        requestor,
+                        true
+                ));
+    }
 }
+

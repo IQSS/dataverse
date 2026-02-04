@@ -23,6 +23,9 @@ package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx;
 import java.io.*;
 import java.io.FileReader;
 import java.util.logging.*;
+
+import javax.xml.parsers.ParserConfigurationException;
+
 import java.util.*;
 
 import edu.harvard.iq.dataverse.DataTable;
@@ -33,10 +36,11 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
+
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
-import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.apache.poi.xssf.model.SharedStrings;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.xml.sax.Attributes;
@@ -81,7 +85,9 @@ public class XLSXFileReader extends TabularDataFileReader {
      * @throws java.io.IOException if a reading error occurs.
      */
     @Override
-    public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
+    public TabularDataIngest read(BufferedInputStream stream, boolean storeWithVariableHeader, File dataFile) throws IOException {
+        // @todo: implement handling of "saveWithVariableHeader" option
+        
         init();
         
         TabularDataIngest ingesteddata = new TabularDataIngest();
@@ -118,6 +124,10 @@ public class XLSXFileReader extends TabularDataFileReader {
         String[] caseRow = new String[varQnty];
         String[] valueTokens;
 
+        // add the variable header here, if needed
+        if (storeWithVariableHeader) {
+            finalWriter.println(generateVariableHeader(dataTable.getDataVariables())); 
+        }
         
         while ((line = secondPassReader.readLine()) != null) {
             // chop the line:
@@ -241,7 +251,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         sheet1.close();
     }
     
-    public XMLReader fetchSheetParser(SharedStrings sst, DataTable dataTable, PrintWriter tempOut) throws SAXException {
+    public XMLReader fetchSheetParser(SharedStrings sst, DataTable dataTable, PrintWriter tempOut) throws ParserConfigurationException, SAXException {
         // An attempt to use org.apache.xerces.parsers.SAXParser resulted 
         // in some weird conflict in the app; the default XMLReader obtained 
         // from the XMLReaderFactory (from xml-apis.jar) appears to be working
@@ -255,7 +265,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         // unnecessary.
         // -- L.A. 4.0 alpha 1
  
-        XMLReader xReader = XMLReaderFactory.createXMLReader();
+        XMLReader xReader = XmlUtil.getSecureXMLReader();
         dbglog.fine("creating new SheetHandler;");
         ContentHandler handler = new SheetHandler(sst, dataTable, tempOut);
         xReader.setContentHandler(handler);
@@ -549,7 +559,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         
         BufferedInputStream xlsxInputStream = new BufferedInputStream(new FileInputStream(new File(args[0])));
         
-        TabularDataIngest dataIngest = testReader.read(xlsxInputStream, null);
+        TabularDataIngest dataIngest = testReader.read(xlsxInputStream, false, null);
         
         dataTable = dataIngest.getDataTable();
         

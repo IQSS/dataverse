@@ -11,10 +11,11 @@ import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.GoogleCloudBucket;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.GoogleCloudProject;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import org.apache.commons.codec.binary.Hex;
@@ -26,18 +27,18 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.Map;
 import java.util.logging.Logger;
 
 @RequiredPermissions(Permission.PublishDataset)
-public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand implements Command<DatasetVersion> {
+public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
 
     private static final Logger logger = Logger.getLogger(GoogleCloudSubmitToArchiveCommand.class.getName());
-    private static final String GOOGLECLOUD_BUCKET = ":GoogleCloudBucket";
-    private static final String GOOGLECLOUD_PROJECT = ":GoogleCloudProject";
+    private static final String GOOGLECLOUD_BUCKET = GoogleCloudBucket.toString();
+    private static final String GOOGLECLOUD_PROJECT = GoogleCloudProject.toString();
 
     public GoogleCloudSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         super(aRequest, version);
@@ -82,7 +83,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                             public void run() {
                                 try (PipedOutputStream dataciteOut = new PipedOutputStream(dataciteIn)) {
 
-                                    dataciteOut.write(dataciteXml.getBytes(Charset.forName("utf-8")));
+                                    dataciteOut.write(dataciteXml.getBytes(StandardCharsets.UTF_8));
                                     dataciteOut.close();
                                     success = true;
                                 } catch (Exception e) {

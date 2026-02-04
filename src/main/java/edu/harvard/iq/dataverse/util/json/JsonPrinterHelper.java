@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevelServiceBean;
+import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import jakarta.annotation.PostConstruct;
@@ -9,7 +12,7 @@ import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 
 /**
- * This is a small helper bean 
+ * This is a small helper bean
  * As it is a singleton and built at application start (=deployment), it will inject the (stateless)
  * settings service into the OREMap once it's ready.
  */
@@ -18,12 +21,31 @@ import jakarta.ejb.Startup;
 public class JsonPrinterHelper {
     @EJB
     SettingsServiceBean settingsSvc;
-    
+
     @EJB
     DatasetFieldServiceBean datasetFieldSvc;
-    
+
+    @EJB
+    DataverseFieldTypeInputLevelServiceBean datasetFieldInpuLevelSvc;
+
+    @EJB
+    DatasetServiceBean datasetSvc;
+
+    @EJB
+    MailServiceBean mailSvc;
+
+    @EJB
+    InAppNotificationsJsonPrinter inAppNotificationsJsonPrinter;
+
     @PostConstruct
     public void injectService() {
-        JsonPrinter.injectSettingsService(settingsSvc, datasetFieldSvc);
+        JsonPrinter.injectSettingsService(
+                settingsSvc,
+                datasetFieldSvc,
+                datasetFieldInpuLevelSvc,
+                datasetSvc,
+                mailSvc,
+                inAppNotificationsJsonPrinter
+        );
     }
 }

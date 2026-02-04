@@ -102,16 +102,16 @@ public class ShibUtilTest {
         }
 
         @Test
-        public void testGenerateFriendlyLookingUserIdentifer() {
+        public void testGenerateFriendlyLookingUserIdentifier() {
             int lengthOfUuid = UUID.randomUUID().toString().length();
-            assertEquals("uid1", ShibUtil.generateFriendlyLookingUserIdentifer("uid1", null));
-            assertEquals(" leadingWhiteSpace", ShibUtil.generateFriendlyLookingUserIdentifer(" leadingWhiteSpace", null));
-            assertEquals("uid1", ShibUtil.generateFriendlyLookingUserIdentifer("uid1", "email1@example.com"));
-            assertEquals("email1", ShibUtil.generateFriendlyLookingUserIdentifer(null, "email1@example.com"));
-            assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer(null, null).length());
-            assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer(null, "").length());
-            assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer("", null).length());
-            assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer(null, "junkEmailAddress").length());
+            assertEquals("uid1", ShibUtil.generateFriendlyLookingUserIdentifier("uid1", null));
+            assertEquals(" leadingWhiteSpace", ShibUtil.generateFriendlyLookingUserIdentifier(" leadingWhiteSpace", null));
+            assertEquals("uid1", ShibUtil.generateFriendlyLookingUserIdentifier("uid1", "email1@example.com"));
+            assertEquals("email1", ShibUtil.generateFriendlyLookingUserIdentifier(null, "email1@example.com"));
+            assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifier(null, null).length());
+            assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifier(null, "").length());
+            assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifier("", null).length());
+            assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifier(null, "junkEmailAddress").length());
         }
 
         @Test

@@ -37,8 +37,8 @@ tab-separated value (TSV). [1]_\ :sup:`,`\  [2]_ While it is technically
 possible to define more than one metadata block in a TSV file, it is
 good organizational practice to define only one in each file.
 
-The metadata block TSVs shipped with the Dataverse Software are in `/tree/develop/scripts/api/data/metadatablocks
-<https://github.com/IQSS/dataverse/tree/develop/scripts/api/data/metadatablocks>`__ and the corresponding ResourceBundle property files `/tree/develop/src/main/java <https://github.com/IQSS/dataverse/tree/develop/src/main/java>`__ of the Dataverse Software GitHub repo. Human-readable copies are available in `this Google Sheets
+The metadata block TSVs shipped with the Dataverse Software are in `/scripts/api/data/metadatablocks
+<https://github.com/IQSS/dataverse/tree/develop/scripts/api/data/metadatablocks>`__ with the corresponding ResourceBundle property files in `/src/main/java/propertyFiles <https://github.com/IQSS/dataverse/tree/develop/src/main/java/propertyFiles>`__ of the Dataverse Software GitHub repo. Human-readable copies are available in `this Google Sheets
 document <https://docs.google.com/spreadsheets/d/13HP-jI_cwLDHBetn9UKTREPJ_F4iHdAvhjmlvmYdSSw/edit#gid=0>`__ but they tend to get out of sync with the TSV files, which should be considered authoritative. The Dataverse Software installation process operates on the TSVs, not the Google spreadsheet.
 
 About the metadata block TSV
@@ -144,6 +144,7 @@ Each of the three main sections own sets of properties:
 |                           |                                                        |                                                          | \• email              |
 |                           |                                                        |                                                          | \• text               |
 |                           |                                                        |                                                          | \• textbox            |
+|                           |                                                        |                                                          | \• string             |
 |                           |                                                        |                                                          | \• url                |
 |                           |                                                        |                                                          | \• int                |
 |                           |                                                        |                                                          | \• float              |
@@ -244,6 +245,8 @@ Each of the three main sections own sets of properties:
 |                           | #metadataBlock)                                        |                                                          |                       |
 +---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
 
+.. _cvoc-props:
+
 #controlledVocabulary (enumerated) properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -259,10 +262,10 @@ Each of the three main sections own sets of properties:
 |              |                                            | an existing #datasetField from          |
 |              |                                            | another metadata block.)                |
 +--------------+--------------------------------------------+-----------------------------------------+
-| Value        | A short display string, representing       | Free text                               |
-|              | an enumerated value for this field. If     |                                         |
-|              | the identifier property is empty,          |                                         |
-|              | this value is used as the identifier.      |                                         |
+| Value        | A short display string, representing       | Free text. When defining a boolean, the |
+|              | an enumerated value for this field. If     | values "True" and "False" are           |
+|              | the identifier property is empty,          | recommended and "Unknown" can be added  |
+|              | this value is used as the identifier.      | if needed.                              |
 +--------------+--------------------------------------------+-----------------------------------------+
 | identifier   | A string used to encode the selected       | Free text                               |
 |              | enumerated value of a field. If this       |                                         |
@@ -270,7 +273,11 @@ Each of the three main sections own sets of properties:
 |              | “Value” field is used as the identifier.   |                                         |
 +--------------+--------------------------------------------+-----------------------------------------+
 | displayOrder | Control the order in which the enumerated  | Non-negative integer.                   |
-|              | values are displayed for selection.        |                                         |
+|              | values are displayed for selection. When   |                                         |
+|              | adding new values, you don't have to add   |                                         |
+|              | them at the end. You can renumber existing |                                         |
+|              | values to update the order in which they   |                                         |
+|              | appear.                                    |                                         |
 +--------------+--------------------------------------------+-----------------------------------------+
 
 FieldType definitions
@@ -293,6 +300,9 @@ FieldType definitions
 +---------------+------------------------------------+
 | text          | Any text other than newlines may   |
 |               | be entered into this field.        |
+|               | The text fieldtype may be used to  |
+|               | define a boolean (see "Value"      |
+|               | under :ref:`cvoc-props`).          |
 +---------------+------------------------------------+
 | textbox       | Any text may be entered. For       |
 |               | input, the Dataverse Software      |
@@ -302,9 +312,15 @@ FieldType definitions
 |               | permitted, only a subset of HTML   |
 |               | tags will be rendered in the UI.   |
 |               | See the                            |
-|               | :ref:`supported-html-fields`       |
+|               | :ref:`supported-html-tags`         |
 |               | section of the Dataset + File      |
 |               | Management page in the User Guide. |
++---------------+------------------------------------+
+| string        | Any text may be entered into this  |
+|               | field. The value is stored and     |
+|               | indexed exactly as provided,       |
+|               | without any text analysis or       |
+|               | transformations.                   |
 +---------------+------------------------------------+
 | url           | If not empty, field must contain   |
 |               | a valid URL.                       |
@@ -413,7 +429,7 @@ Setting Up a Dev Environment for Testing
 
 You have several options for setting up a dev environment for testing metadata block changes:
 
-- Docker: See :doc:`/container/index`.
+- Docker: See :doc:`/container/running/metadata-blocks` in the Container Guide.
 - AWS deployment: See the :doc:`/developers/deployment` section of the Developer Guide.
 - Full dev environment: See the :doc:`/developers/dev-environment` section of the Developer Guide.
 
@@ -513,7 +529,7 @@ the Solr schema configuration, including any enabled metadata schemas:
 
 ``curl "http://localhost:8080/api/admin/index/solr/schema"``
 
-You can use :download:`update-fields.sh <../../../../conf/solr/9.3.0/update-fields.sh>` to easily add these to the
+You can use :download:`update-fields.sh <../../../../conf/solr/update-fields.sh>` to easily add these to the
 Solr schema you installed for your Dataverse installation.
 
 The script needs a target XML file containing your Solr schema. (See the :doc:`/installation/prerequisites/` section of
@@ -537,9 +553,9 @@ from some place else than your Dataverse installation).
 Please note that reconfigurations of your Solr index might require a re-index. Usually release notes indicate
 a necessary re-index, but for your custom metadata you will need to keep track on your own.
 
-Please note also that if you are going to make a pull request updating ``conf/solr/9.3.0/schema.xml`` with fields you have
+Please note also that if you are going to make a pull request updating ``conf/solr/schema.xml`` with fields you have
 added, you should first load all the custom metadata blocks in ``scripts/api/data/metadatablocks`` (including ones you
-don't care about) to create a complete list of fields. (This might change in the future.)
+don't care about) to create a complete list of fields. (This might change in the future.) Please see :ref:`update-solr-schema-dev` in the Developer Guide.
 
 Reloading a Metadata Block
 --------------------------
@@ -552,13 +568,14 @@ Great care must be taken when reloading a metadata block. Matching is done on fi
 
 The ability to reload metadata blocks means that SQL update scripts don't need to be written for these changes. See also the :doc:`/developers/sql-upgrade-scripts` section of the Developer Guide.
 
+.. _using-external-vocabulary-services:
+
 Using External Vocabulary Services
 ----------------------------------
 
 The Dataverse software has a mechanism to associate specific fields defined in metadata blocks with a vocabulary(ies) managed by external services. The mechanism relies on trusted third-party Javascripts. The mapping from field type to external vocabulary(ies) is managed via the :ref:`:CVocConf <:CVocConf>` setting.
 
-*This functionality is considered 'experimental'. It may require significant effort to configure and is likely to evolve in subsequent Dataverse software releases.*
-
+*This functionality may require significant effort to configure and is likely to evolve in subsequent Dataverse software releases.*
 
 The effect of configuring this mechanism is similar to that of defining a field in a metadata block with 'allowControlledVocabulary=true':
 
@@ -577,11 +594,14 @@ In general, the external vocabulary support mechanism may be a better choice for
 The specifics of the user interface for entering/selecting a vocabulary term and how that term is then displayed are managed by third-party Javascripts. The initial Javascripts that have been created provide auto-completion, displaying a list of choices that match what the user has typed so far, but other interfaces, such as displaying a tree of options for a hierarchical vocabulary, are possible. 
 Similarly, existing scripts do relatively simple things for displaying a term - showing the term's name in the appropriate language and providing a link to an external URL with more information, but more sophisticated displays are possible.
 
-Scripts supporting use of vocabularies from services supporting the SKOMOS protocol (see https://skosmos.org) and retrieving ORCIDs (from https://orcid.org) are available https://github.com/gdcc/dataverse-external-vocab-support. (Custom scripts can also be used and community members are encouraged to share new scripts through the dataverse-external-vocab-support repository.)
+Scripts supporting use of vocabularies from services supporting the SKOSMOS protocol (see https://skosmos.org), retrieving ORCIDs (from https://orcid.org), services based on Ontoportal product (see https://ontoportal.org/), and using ROR (https://ror.org/) are available https://github.com/gdcc/dataverse-external-vocab-support. (Custom scripts can also be used and community members are encouraged to share new scripts through the dataverse-external-vocab-support repository.)
 
-Configuration involves specifying which fields are to be mapped, whether free-text entries are allowed, which vocabulary(ies) should be used, what languages those vocabulary(ies) are available in, and several service protocol and service instance specific parameters.
+Configuration involves specifying which fields are to be mapped, to which Solr field they should be indexed, whether free-text entries are allowed, which vocabulary(ies) should be used, what languages those vocabulary(ies) are available in, and several service protocol and service instance specific parameters, including the ability to send HTTP headers on calls to the service.
 These are all defined in the :ref:`:CVocConf <:CVocConf>` setting as a JSON array. Details about the required elements as well as example JSON arrays are available at https://github.com/gdcc/dataverse-external-vocab-support, along with an example metadata block that can be used for testing.
 The scripts required can be hosted locally or retrieved dynamically from https://gdcc.github.io/ (similar to how dataverse-previewers work).
+
+Since external vocabulary scripts can change how fields are indexed (storing an identifier and name and/or values in different languages),
+updating the Solr schema as described in :ref:`update-solr-schema` should be done after adding new scripts to your configuration.
 
 Please note that in addition to the :ref:`:CVocConf` described above, an alternative is the :ref:`:ControlledVocabularyCustomJavaScript` setting.
 
@@ -647,6 +667,28 @@ If there are tips that you feel are omitted from this document, please open an i
 Alternatively, you are welcome to request "edit" access to this "Tips for Dataverse Software metadata blocks from the community" Google doc: https://docs.google.com/document/d/1XpblRw0v0SvV-Bq6njlN96WyHJ7tqG0WWejqBdl7hE0/edit?usp=sharing
 
 The thinking is that the tips can become issues and the issues can eventually be worked on as features to improve the Dataverse Software metadata system.
+
+Development Tasks Specific to Changing Fields in Core Metadata Blocks
+---------------------------------------------------------------------
+
+When it comes to the fields from the core blocks that are distributed with Dataverse (such as Citation, Social Science and Geospatial blocks), code dependencies may exist in Dataverse, primarily in the Import and Export subsystems, on these fields being configured a certain way. So, if it becomes necessary to modify one of such core fields, code changes may be necessary to accompany the change in the block tsv, plus some sample and test files maintained in the Dataverse source tree will need to be adjusted accordingly. 
+
+Making a Field Multi-Valued
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As a recent real life example, a few fields from the Citation and Social Science block were changed to support multiple values, in order to accommodate specific needs of some community member institutions. A PR for one of these fields, ``alternativeTitle`` from the Citation block is linked below. Each time a number of code changes, plus some changes in the sample metadata files in the Dataverse code tree had to be made. The checklist below is to help another developer in the event that a similar change becomes necessary in the future. Note that some of the steps below may not apply 1:1 to a different metadata field, depending on how it is exported and imported in various formats by Dataverse. It may help to consult the PR `#9440 <https://github.com/IQSS/dataverse/pull/9440/files>`_ as a specific example of the changes that had to be made for the ``alternativeTitle`` field. 
+
+- Change the value from ``FALSE`` to ``TRUE`` in the ``allowmultiples`` column of the .tsv file for the block.
+- Change the value of the ``multiValued`` attribute for the search field in the Solr schema (``conf/solr/x.x.x/schema.xml``).
+- Modify the DDI import code (``ImportDDIServiceBean.java``) to support multiple values. (You may be able to use the change in the PR above as a model.)
+- Modify the DDI export utility (``DdiExportUtil.java``).
+- Modify the OpenAire export utility (``OpenAireExportUtil.java``).
+- Modify the following JSON source files in the Dataverse code tree to actually include multiple values for the field (two should be quite enough!): ``scripts/api/data/dataset-create-new-all-default-fields.json``, ``src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt``, ``src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.json`` and ``src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-create-new-all-ddi-fields.json``. (These are used as examples for populating datasets via the import API and by the automated import and export code tests).
+- Similarly modify the following XML files that are used by the DDI export code tests: ``src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml`` and ``src/test/java/edu/harvard/iq/dataverse/export/ddi/exportfull.xml``.
+- Make sure all the automated unit and integration tests are passing. See :doc:`/developers/testing` in the Developer Guide.
+- Write a short release note to announce the change in the upcoming release. See :ref:`writing-release-note-snippets` in the Developer Guide.
+- Make a pull request. 
+
 
 Footnotes
 ---------

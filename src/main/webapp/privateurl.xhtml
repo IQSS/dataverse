@@ -12,7 +12,7 @@
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{bundle['dataset.privateurl.header']}"/>
             <ui:param name="showDataverseHeader" value="false"/>
-            <ui:define name="body">
+            <ui:define name="metadata">
                 <f:metadata>
                     <f:viewParam name="token" value="#{PrivateUrlPage.token}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>

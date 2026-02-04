@@ -21,16 +21,16 @@ import java.util.zip.ZipEntry;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.hamcrest.collection.IsMapContaining;
 
 import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.MatcherAssert.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -45,7 +45,8 @@ public class AccessIT {
     public static String apiToken;
     public static String dataverseAlias;
     public static Integer datasetId;
-    
+    public static String persistentId; 
+
     public static Integer basicFileId;
     public static Integer tabFile1Id;
     public static Integer tabFile2Id;
@@ -80,7 +81,6 @@ public class AccessIT {
     private static String testFileFromZipUploadWithFoldersChecksum1 = "8f326944be21361ad8219bc3269bc9eb";
     private static String testFileFromZipUploadWithFoldersChecksum2 = "0fe4efd85229bad6e587fd3f1a6c8e05";
     private static String testFileFromZipUploadWithFoldersChecksum3 = "00433ccb20111f9d40f0e5ab6fa8396f";
-
     
     @BeforeAll
     public static void setUp() throws InterruptedException {
@@ -103,6 +103,7 @@ public class AccessIT {
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
         createDatasetResponse.prettyPrint();
         datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
 
         Response allowAccessRequests = UtilIT.allowAccessRequests(datasetId.toString(), true, apiToken);
         allowAccessRequests.prettyPrint();
@@ -200,6 +201,8 @@ public class AccessIT {
         //Not logged in non-restricted
         Response anonDownloadOriginal = UtilIT.downloadFileOriginal(tabFile1Id);
         Response anonDownloadConverted = UtilIT.downloadFile(tabFile1Id);
+        Response anonDownloadConvertedNullKey = UtilIT.downloadFile(tabFile1Id, null);
+
         // ... and download the same tabular data file, but without the variable name header added:
         Response anonDownloadTabularNoHeader = UtilIT.downloadTabularFileNoVarHeader(tabFile1Id);
         // ... and download the same tabular file, this time requesting the "format=tab" explicitly:
@@ -208,6 +211,8 @@ public class AccessIT {
         assertEquals(OK.getStatusCode(), anonDownloadConverted.getStatusCode());
         assertEquals(OK.getStatusCode(), anonDownloadTabularNoHeader.getStatusCode());
         assertEquals(OK.getStatusCode(), anonDownloadTabularWithFormatName.getStatusCode());
+        assertEquals(UNAUTHORIZED.getStatusCode(), anonDownloadConvertedNullKey.getStatusCode());
+        
         int origSizeAnon = anonDownloadOriginal.getBody().asByteArray().length;
         int convertSizeAnon = anonDownloadConverted.getBody().asByteArray().length;
         int tabularSizeNoVarHeader = anonDownloadTabularNoHeader.getBody().asByteArray().length;
@@ -283,7 +288,27 @@ public class AccessIT {
         assertThat(files2, IsMapContaining.hasKey(tabFile2NameConvert));
         
         System.out.println("origSize: " + origSizeAnon + " | convertSize: " + convertSizeAnon);
-        assertThat(origSizeAnon, is(not(convertSizeAnon)));  
+        assertThat(origSizeAnon, is(not(convertSizeAnon))); 
+        
+        // Finally, verify that the multi-file bundle produced by the API  
+        // is properly named (as of v6.7 this should be a pretty name based on 
+        // the persistent Id of the dataset). 
+        
+        String contentDispositionHeader = anonDownloadConverted.getHeader("Content-disposition");
+        System.out.println("Response header: "+contentDispositionHeader);
+        
+        Pattern regexPattern = Pattern.compile("attachment; filename=\"([a-z0-9\\.-]*\\.zip)\"");
+        Matcher regexMatcher = regexPattern.matcher(contentDispositionHeader);
+        boolean regexMatch = regexMatcher.find();
+        assertTrue(regexMatch);
+        
+        String expectedPrettyName = persistentId.replaceAll("[:/]", "-").toLowerCase() + ".zip";
+        System.out.println("expected \"pretty\" file name of the zipped multi-file bundle: " + expectedPrettyName);
+        
+        String fileBundleName = regexMatcher.group(1);
+        System.out.println("file name found in the header: "+fileBundleName);
+        
+        assertEquals(fileBundleName, expectedPrettyName);
     }
     
     @Test
@@ -425,10 +450,7 @@ public class AccessIT {
                 }
 
                 String name = entry.getName(); 
-//                String s = String.format("Entry: %s len %d added %TD",
-//                                entry.getName(), entry.getSize(),
-//                                new Date(entry.getTime()));
-//                System.out.println(s);
+
 
                 // Once we get the entry from the zStream, the zStream is
                 // positioned read to read the raw data, and we keep
@@ -468,7 +490,7 @@ public class AccessIT {
     
     @Test
     public void testRequestAccess() throws InterruptedException {
-
+    
         String pathToJsonFile = "scripts/api/data/dataset-create-new.json";
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
         createDatasetResponse.prettyPrint();
@@ -477,7 +499,7 @@ public class AccessIT {
         basicFileName = "004.txt";
         String basicPathToFile = "scripts/search/data/replace_test/" + basicFileName;
         Response basicAddResponse = UtilIT.uploadFileViaNative(datasetIdNew.toString(), basicPathToFile, apiToken);
-        basicFileId = JsonPath.from(basicAddResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        Integer basicFileIdNew = JsonPath.from(basicAddResponse.body().asString()).getInt("data.files[0].dataFile.id");
 
         String tabFile3NameRestrictedNew = "stata13-auto-withstrls.dta";
         String tab3PathToFile = "scripts/search/data/tabular/" + tabFile3NameRestrictedNew;
@@ -535,7 +557,7 @@ public class AccessIT {
         assertEquals(400, requestFileAccessResponse.getStatusCode());
         
         //if you make a request of a public file you should also get a command exception
-        requestFileAccessResponse = UtilIT.requestFileAccess(basicFileId.toString(), apiTokenRando);
+        requestFileAccessResponse = UtilIT.requestFileAccess(basicFileIdNew.toString(), apiTokenRando);
         assertEquals(400, requestFileAccessResponse.getStatusCode());
         
 
@@ -548,7 +570,7 @@ public class AccessIT {
         assertEquals(200, revokeFileAccessResponse.getStatusCode());
 
         listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken);
-        assertEquals(400, listAccessRequestResponse.getStatusCode());
+        assertEquals(404, listAccessRequestResponse.getStatusCode());
     }
 
     // This is a round trip test of uploading a zipped archive, with some folder
@@ -632,33 +654,44 @@ public class AccessIT {
     }
 
     @Test
+    public void testGetUserFileAccessRequested() {
+        // Create new user
+        Response createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String newUserApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        String dataFileId = Integer.toString(tabFile3IdRestricted);
+
+        // Call with new user and unrequested access file
+        Response getUserFileAccessRequestedResponse = UtilIT.getUserFileAccessRequested(dataFileId, newUserApiToken);
+        getUserFileAccessRequestedResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        boolean userFileAccessRequested = JsonPath.from(getUserFileAccessRequestedResponse.body().asString()).getBoolean("data");
+        assertFalse(userFileAccessRequested);
+
+        // Request file access for the new user
+        Response requestFileAccessResponse = UtilIT.requestFileAccess(dataFileId, newUserApiToken);
+        requestFileAccessResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Call with new user and requested access file
+        getUserFileAccessRequestedResponse = UtilIT.getUserFileAccessRequested(dataFileId, newUserApiToken);
+        getUserFileAccessRequestedResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        userFileAccessRequested = JsonPath.from(getUserFileAccessRequestedResponse.body().asString()).getBoolean("data");
+        assertTrue(userFileAccessRequested);
+    }
+
+    @Test
     public void testGetUserPermissionsOnFile() {
-        Response createUser = UtilIT.createRandomUser();
-        createUser.then().assertThat().statusCode(OK.getStatusCode());
-        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-
-        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
-        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
-        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-
-        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
-        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
-        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
-
-        // Upload test file
-        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
-        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
-        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
-
-        // Assert user permissions on file
-        int testFileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        Response getUserPermissionsOnFileResponse = UtilIT.getUserPermissionsOnFile(Integer.toString(testFileId), apiToken);
-
+        // Call with valid file id
+        Response getUserPermissionsOnFileResponse = UtilIT.getUserPermissionsOnFile(Integer.toString(basicFileId), apiToken);
         getUserPermissionsOnFileResponse.then().assertThat().statusCode(OK.getStatusCode());
         boolean canDownloadFile = JsonPath.from(getUserPermissionsOnFileResponse.body().asString()).getBoolean("data.canDownloadFile");
         assertTrue(canDownloadFile);
         boolean canEditOwnerDataset = JsonPath.from(getUserPermissionsOnFileResponse.body().asString()).getBoolean("data.canEditOwnerDataset");
         assertTrue(canEditOwnerDataset);
+        boolean canManageFilePermissions = JsonPath.from(getUserPermissionsOnFileResponse.body().asString()).getBoolean("data.canManageFilePermissions");
+        assertTrue(canManageFilePermissions);
 
         // Call with invalid file id
         Response getUserPermissionsOnFileInvalidIdResponse = UtilIT.getUserPermissionsOnFile("testInvalidId", apiToken);

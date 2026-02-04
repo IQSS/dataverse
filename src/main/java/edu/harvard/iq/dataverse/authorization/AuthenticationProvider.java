@@ -18,7 +18,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
  *                "authenticationProvider.name." + "ship" ->
  *            (c)  Bundle.properties entry: "authenticationProvider.name.shib=Shibboleth"
  *          
- * {@code AuthenticationPrvider}s are normally registered at startup in {@link AuthenticationServiceBean#startup()}.
+ * {@code AuthenticationProvider}s are normally registered at startup in {@link AuthenticationServiceBean#startup()}.
  * 
  * @author michael
  */
@@ -33,19 +33,13 @@ public interface AuthenticationProvider {
     default boolean isUserInfoUpdateAllowed() { return false; };
     default boolean isUserDeletionAllowed() { return false; };
     default boolean isOAuthProvider() { return false; };
-    /** @todo Consider moving some or all of these to AuthenticationProviderDisplayInfo.*/
-    /** The identifier is only displayed in the UI if it's meaningful, such as an ORCID iD.*/
-    default boolean isDisplayIdentifier() { return false; };
-    /** ORCID calls their persistent id an "ORCID iD".*/
-    default String getPersistentIdName() { return null; };
-    /** ORCID has special language to describe their ID: http://members.orcid.org/logos-web-graphics */
-    default String getPersistentIdDescription() { return null; };
-    /** An ORCID example would be the "http://orcid.org/" part of http://orcid.org/0000-0002-7874-374X*/
-    default String getPersistentIdUrlPrefix() { return null; };
-    default String getLogo() { return null; };
-    
-    
-    
+    default boolean isEnabled() {
+        return true;
+    };
+    default boolean isHidden() {
+        return false;
+    };
+
     /**
      * Some providers (e.g organizational ones) provide verified email addresses.
      * @return {@code true} if we can treat email addresses coming from this provider as verified, {@code false} otherwise.

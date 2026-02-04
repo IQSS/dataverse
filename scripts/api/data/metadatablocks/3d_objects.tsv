@@ -1,0 +1,45 @@
+#metadataBlock	name	dataverseAlias	displayName
+	3dobjects		3D Objects Metadata
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id	termURI
+	3d3DTechnique	3D Technique	The technique used for capturing the 3D data		text	0	#VALUE	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		3dobjects
+	3dEquipment	Equipment	The equipment used for capturing the 3D data		text	1	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		3dobjects
+	3dLightingSetup	Lighting Setup	The lighting used while capturing the 3D data		text	2	#VALUE	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		3dobjects
+	3dMasterFilePolygonCount	Master File Polygon Count	The high-resolution polygon count		text	3	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		3dobjects
+	3dExportedFilePolygonCount	Exported File Polygon Count	The exported mesh polygon count		text	4	#VALUE	TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		3dobjects
+	3dExportedFileFormat	Exported File Format	The format of the exported mesh		text	5	#VALUE	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		3dobjects
+	3dAltText	Alt-Text	A physical description of the object modeled		textbox	6	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		3dobjects
+	3dMaterialComposition	Material Composition	The material used to create the object, e.g. stone		text	7	#VALUE	TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		3dobjects
+	3dObjectDimensions	Object Dimensions	The general measurements of the physical object		none	8	;	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		3dobjects
+	3dLength	Length	The rough length of the object		text	9	Length: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	3dObjectDimensions	3dobjects
+	3dWidth	Width	The rough width of the object		text	10	Width: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	3dObjectDimensions	3dobjects
+	3dHeight	Height	The rough height of the object		text	11	Height: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	3dObjectDimensions	3dobjects
+	3dWeight	Weight	The rough weight of the object		text	12	Weight:#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	3dObjectDimensions	3dobjects
+	3dUnit	Unit	The unit of measurement used for the object dimensions		text	13	Unit: #VALUE	FALSE	TRUE	FALSE	TRUE	FALSE	FALSE	3dObjectDimensions	3dobjects
+	3dHandling	Instructions	Safety and special handling instructions for the object		textbox	14	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		3dobjects
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder												
+	3d3DTechnique	IR Scanner		0												
+	3d3DTechnique	Laser		1												
+	3d3DTechnique	Modelled		2												
+	3d3DTechnique	Photogrammetry		3												
+	3d3DTechnique	RTI		4												
+	3d3DTechnique	Structured Light		5												
+	3d3DTechnique	Tomographic		6												
+	3d3DTechnique	Other		7												
+	3dLightingSetup	Natural Light		8												
+	3dLightingSetup	Lightbox		9												
+	3dLightingSetup	LED		10												
+	3dLightingSetup	Fluorescent		11												
+	3dLightingSetup	Other		12												
+	3dUnit	cm		13												
+	3dUnit	m		14												
+	3dUnit	in		15												
+	3dUnit	ft		16												
+	3dUnit	lbs		17												
+	3dExportedFileFormat	.fbx		18												
+	3dExportedFileFormat	.glb		19												
+	3dExportedFileFormat	.gltf		20												
+	3dExportedFileFormat	.obj		21
+	3dExportedFileFormat	.stl		22												
+	3dExportedFileFormat	.usdz		23												
+	3dExportedFileFormat	.x3d		24												
+	3dExportedFileFormat	other		25												

@@ -34,7 +34,7 @@ For example:
 Upon recognition of the four required files, the Dataverse installation will group them as well as any other relevant files into a shapefile set. Files with these extensions will be included in the shapefile set:
 
 - Required: ``.shp``, ``.shx``, ``.dbf``, ``.prj``
-- Optional: ``.sbn``, ``.sbx``, ``.fbn``, ``.fbx``, ``.ain``, ``.aih``, ``.ixs``, ``.mxs``, ``.atx``, ``.cpg``, ``shp.xml``
+- Optional: ``.sbn``, ``.sbx``, ``.fbn``, ``.fbx``, ``.ain``, ``.aih``, ``.ixs``, ``.mxs``, ``.atx``, ``.cpg``, ``.qpj``, ``.qmd``, ``shp.xml``
 
 Then the Dataverse installation creates a new ``.zip`` with mimetype as a shapefile. The shapefile set will persist as this new ``.zip``.
 
@@ -81,7 +81,3 @@ For two "final" shapefile sets, ``bicycles.zip`` and ``subway_line.zip``, a new 
 
 - Mimetype: ``application/zipped-shapefile``
 - Mimetype Label: "Shapefile as ZIP Archive"
-
-----
-
-Previous: :doc:`unf/index` | Next: :doc:`remote-users`

@@ -37,7 +37,7 @@ Windows is gaining support through Docker as described in the :doc:`windows` sec
 Install Java
 ~~~~~~~~~~~~
 
-The Dataverse Software requires Java 11.
+The Dataverse Software requires Java 17.
 
 We suggest downloading OpenJDK from https://adoptopenjdk.net
 
@@ -46,7 +46,7 @@ On Linux, you are welcome to use the OpenJDK available from package managers.
 Install Netbeans or Maven
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-NetBeans IDE is recommended, and can be downloaded from http://netbeans.org . Developers may use any editor or IDE. We recommend NetBeans because it is free, works cross platform, has good support for Jakarta EE projects, and includes a required build tool, Maven.
+NetBeans IDE is recommended, and can be downloaded from https://netbeans.org . Developers may use any editor or IDE. We recommend NetBeans because it is free, works cross platform, has good support for Jakarta EE projects, and includes a required build tool, Maven.
 
 Below we describe how to build the Dataverse Software war file with Netbeans but if you prefer to use only Maven, you can find installation instructions in the :doc:`tools` section.
 
@@ -86,20 +86,22 @@ On Mac, run this command:
 
 ``brew install jq``
 
-On Linux, install ``jq`` from your package manager or download a binary from http://stedolan.github.io/jq/
+On Linux, install ``jq`` from your package manager or download a binary from https://stedolan.github.io/jq/
+
+.. _install-payara-dev:
 
 Install Payara
 ~~~~~~~~~~~~~~
 
-Payara 6.2023.8 or higher is required.
+Payara 6.2025.10 or higher is required.
 
 To install Payara, run the following commands:
 
 ``cd /usr/local``
 
-``sudo curl -O -L https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2023.8/payara-6.2023.8.zip``
+``sudo curl -O -L https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2025.10/payara-6.2025.10.zip``
 
-``sudo unzip payara-6.2023.8.zip``
+``sudo unzip payara-6.2025.10.zip``
 
 ``sudo chown -R $USER /usr/local/payara6``
 
@@ -111,64 +113,32 @@ Install Service Dependencies Directly on localhost
 Install PostgreSQL
 ^^^^^^^^^^^^^^^^^^
 
-The Dataverse Software has been tested with PostgreSQL versions up to 13. PostgreSQL version 10+ is required.
+The Dataverse Software has been tested with PostgreSQL versions up to 17. PostgreSQL version 10+ is required.
 
-On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EDB" option. Note that version 13.5 is used in the command line examples below, but the process should be similar for other versions. When prompted to set a password for the "database superuser (postgres)" just enter "password".
+On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EDB" option. Note that version 16 is used in the command line examples below, but the process should be similar for other versions. When prompted to set a password for the "database superuser (postgres)" just enter "password".
 
 After installation is complete, make a backup of the ``pg_hba.conf`` file like this:
 
-``sudo cp /Library/PostgreSQL/13/data/pg_hba.conf /Library/PostgreSQL/13/data/pg_hba.conf.orig``
+``sudo cp /Library/PostgreSQL/16/data/pg_hba.conf /Library/PostgreSQL/16/data/pg_hba.conf.orig``
 
 Then edit ``pg_hba.conf`` with an editor such as vi:
 
-``sudo vi /Library/PostgreSQL/13/data/pg_hba.conf``
+``sudo vi /Library/PostgreSQL/16/data/pg_hba.conf``
 
 In the "METHOD" column, change all instances of "scram-sha-256" (or whatever is in that column) to "trust". This will make it so PostgreSQL doesn't require a password.
 
-In the Finder, click "Applications" then "PostgreSQL 13" and launch the "Reload Configuration" app. Click "OK" after you see "server signaled".
+In the Finder, click "Applications" then "PostgreSQL 16" and launch the "Reload Configuration" app. Click "OK" after you see "server signaled".
 
-Next, to confirm the edit worked, launch the "pgAdmin" application from the same folder. Under "Browser", expand "Servers" and double click "PostgreSQL 13". When you are prompted for a password, leave it blank and click "OK". If you have successfully edited "pg_hba.conf", you can get in without a password.
+Next, to confirm the edit worked, launch the "pgAdmin" application from the same folder. Under "Browser", expand "Servers" and double click "PostgreSQL 16". When you are prompted for a password, leave it blank and click "OK". If you have successfully edited "pg_hba.conf", you can get in without a password.
 
 On Linux, you should just install PostgreSQL using your favorite package manager, such as ``yum``. (Consult the PostgreSQL section of :doc:`/installation/prerequisites` in the main Installation guide for more info and command line examples). Find ``pg_hba.conf`` and set the authentication method to "trust" and restart PostgreSQL.
 
 Install Solr
 ^^^^^^^^^^^^
 
-`Solr <http://lucene.apache.org/solr/>`_ 9.3.0 is required.
+`Solr <https://lucene.apache.org/solr/>`_ 9.8.0 is required.
 
-To install Solr, execute the following commands:
-
-``sudo mkdir /usr/local/solr``
-
-``sudo chown $USER /usr/local/solr``
-
-``cd /usr/local/solr``
-
-``curl -O http://archive.apache.org/dist/solr/solr/9.3.0/solr-9.3.0.tgz``
-
-``tar xvfz solr-9.3.0.tgz``
-
-``cd solr-9.3.0/server/solr``
-
-``cp -r configsets/_default collection1``
-
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/9.3.0/schema.xml``
-
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/9.3.0/schema_dv_mdb_fields.xml``
-
-``mv schema*.xml collection1/conf``
-
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/9.3.0/solrconfig.xml``
-
-``mv solrconfig.xml collection1/conf/solrconfig.xml``
-
-``cd /usr/local/solr/solr-9.3.0``
-
-(Please note that the extra jetty argument below is a security measure to limit connections to Solr to only your computer. For extra security, run a firewall.)
-
-``bin/solr start -j "-Djetty.host=127.0.0.1"``
-
-``bin/solr create_core -c collection1 -d server/solr/collection1/conf``
+Follow the instructions in the "Installing Solr" section of :doc:`/installation/prerequisites` in the main Installation guide.
 
 Install Service Dependencies Using Docker Compose
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -260,7 +230,3 @@ Next Steps
 If you can log in to the Dataverse installation, great! If not, please see the :doc:`troubleshooting` section. For further assistance, please see "Getting Help" in the :doc:`intro` section.
 
 You're almost ready to start hacking on code. Now that the installer script has you up and running, you need to continue on to the :doc:`tips` section to get set up to deploy code from your IDE or the command line.
-
-----
-
-Previous: :doc:`intro` | Next: :doc:`tips`

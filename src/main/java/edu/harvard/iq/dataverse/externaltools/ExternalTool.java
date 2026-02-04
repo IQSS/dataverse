@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -40,6 +41,7 @@ public class ExternalTool implements Serializable {
     public static final String TOOL_NAME = "toolName";
     public static final String ALLOWED_API_CALLS = "allowedApiCalls";
     public static final String REQUIREMENTS = "requirements";
+    public static final String AUX_FILES_EXIST = "auxFilesExist";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -308,13 +310,17 @@ public class ExternalTool implements Serializable {
         jab.add(TYPES, types);
         jab.add(SCOPE, getScope().text);
         jab.add(TOOL_URL, getToolUrl());
-        jab.add(TOOL_PARAMETERS, getToolParameters());
+        jab.add(TOOL_PARAMETERS, JsonUtil.getJsonObject(getToolParameters()));
         if (getContentType() != null) {
             jab.add(CONTENT_TYPE, getContentType());
         }
         if (getAllowedApiCalls()!= null) {
-            jab.add(ALLOWED_API_CALLS,getAllowedApiCalls());
+            jab.add(ALLOWED_API_CALLS,JsonUtil.getJsonArray(getAllowedApiCalls()));
         }
+        if(getRequirements()!= null) {
+            jab.add(REQUIREMENTS, JsonUtil.getJsonObject(getRequirements()));
+        }
+        
         return jab;
     }
 
@@ -360,6 +366,11 @@ public class ExternalTool implements Serializable {
 
     public void setRequirements(String requirements) {
         this.requirements = requirements;
+    }
+
+    public boolean accessesAuxFiles() {
+        String reqs = getRequirements(); 
+        return reqs!=null && reqs.contains(AUX_FILES_EXIST);
     }
 
 }

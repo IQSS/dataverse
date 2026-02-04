@@ -5,14 +5,24 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.api.dto.*;  
+import edu.harvard.iq.dataverse.api.dto.LicenseDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
+import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
+import edu.harvard.iq.dataverse.api.dto.FileMetadataDTO;
+import edu.harvard.iq.dataverse.api.dto.DataFileDTO;
+import edu.harvard.iq.dataverse.api.dto.DataTableDTO;
+
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import static edu.harvard.iq.dataverse.export.ddi.DdiExportUtil.NOTE_TYPE_CONTENTTYPE;
 import static edu.harvard.iq.dataverse.export.ddi.DdiExportUtil.NOTE_TYPE_TERMS_OF_ACCESS;
 
+import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -31,6 +41,9 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLInputFactory;
 
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -103,13 +116,14 @@ public class ImportDDIServiceBean {
     @EJB DatasetFieldServiceBean datasetFieldService;
     
     @EJB ImportGenericServiceBean importGenericService;
+
+    @EJB LicenseServiceBean licenseService;
     
     
     // TODO: stop passing the xml source as a string; (it could be huge!) -- L.A. 4.5
     // TODO: what L.A. Said.
     public DatasetDTO doImport(ImportType importType, String xmlToParse) throws XMLStreamException, ImportException {
-        xmlInputFactory = javax.xml.stream.XMLInputFactory.newInstance();
-        xmlInputFactory.setProperty("javax.xml.stream.isCoalescing", java.lang.Boolean.TRUE); DatasetDTO datasetDTO = this.initializeDataset();
+        DatasetDTO datasetDTO = this.initializeDataset();
 
         // Read docDescr and studyDesc into DTO objects.
         // TODO: the fileMap is likely not needed. 
@@ -134,11 +148,16 @@ public class ImportDDIServiceBean {
         Map<String, String> filesMap = new HashMap<>();
         StringReader reader = new StringReader(xmlToParse);
         XMLStreamReader xmlr = null;
-        XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
-        xmlFactory.setProperty("javax.xml.stream.isCoalescing", true); // allows the parsing of a CDATA segment into a single event
+        XMLInputFactory xmlFactory = XmlUtil.getSecureXMLInputFactory();
         xmlr = xmlFactory.createXMLStreamReader(reader);
         processDDI(importType, xmlr, datasetDTO, filesMap);
-
+        if (xmlr != null) {
+            try {
+                xmlr.close();
+            } catch (XMLStreamException e) {
+                logger.warning("XMLStreamException closing XMLStreamReader in mapDDI()");
+            }
+        }
         return filesMap;
     }
    
@@ -210,7 +229,7 @@ public class ImportDDIServiceBean {
                 // study description section. we'll use the one we found in 
                 // the codeBook entry:
                 FieldDTO otherIdValue = FieldDTO.createPrimitiveFieldDTO("otherIdValue", codeBookLevelId);
-                FieldDTO otherId = FieldDTO.createCompoundFieldDTO("otherId", otherIdValue);
+                FieldDTO otherId = FieldDTO.createMultipleCompoundFieldDTO("otherId", otherIdValue);
                 citationBlock.getFields().add(otherId);
                 
             }
@@ -828,9 +847,9 @@ public class ImportDDIServiceBean {
                 } else if (xmlr.getLocalName().equals("eastBL")) {
                      addToSet(set,"eastLongitude", parseText(xmlr));
                } else if (xmlr.getLocalName().equals("southBL")) {
-                     addToSet(set,"southLongitude", parseText(xmlr));
+                     addToSet(set,"southLatitude", parseText(xmlr));
                } else if (xmlr.getLocalName().equals("northBL")) {
-                      addToSet(set,"northLongitude", parseText(xmlr));
+                      addToSet(set,"northLatitude", parseText(xmlr));
               }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("geoBndBox")) break; 
@@ -1180,7 +1199,24 @@ public class ImportDDIServiceBean {
                     String noteType = xmlr.getAttributeValue(null, "type");
                     if (NOTE_TYPE_TERMS_OF_USE.equalsIgnoreCase(noteType) ) {
                         if ( LEVEL_DV.equalsIgnoreCase(xmlr.getAttributeValue(null, "level"))) {
-                            dvDTO.setTermsOfUse(parseText(xmlr, "notes"));
+                            String termsOfUseStr = parseText(xmlr, "notes").trim();
+                            Pattern pattern = Pattern.compile("<a href=\"(.*)\">(.*)</a>", Pattern.CASE_INSENSITIVE);
+                            Matcher matcher = pattern.matcher(termsOfUseStr);
+                            boolean matchFound = matcher.find();
+                            if (matchFound) {
+                                String uri = matcher.group(1);
+                                String license = matcher.group(2);
+                                License lic = licenseService.getByNameOrUri(license);
+                                if (lic != null) {
+                                    LicenseDTO licenseDTO = new LicenseDTO();
+                                    licenseDTO.setName(license);
+                                    licenseDTO.setUri(uri);
+                                    dvDTO.setLicense(licenseDTO);
+                                }
+
+                            } else {
+                                dvDTO.setTermsOfUse(termsOfUseStr);
+                            }
                         }
                     } else  if (NOTE_TYPE_TERMS_OF_ACCESS.equalsIgnoreCase(noteType) ) {
                         if (LEVEL_DV.equalsIgnoreCase(xmlr.getAttributeValue(null, "level"))) {

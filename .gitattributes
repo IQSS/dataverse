@@ -1,0 +1,4 @@
+# https://www.git-scm.com/docs/gitattributes
+
+# This set mandatory LF line endings for .sh files preventing from windows users to having to change the value of their git config --global core.autocrlf to 'false' or 'input'
+*.sh text eol=lf

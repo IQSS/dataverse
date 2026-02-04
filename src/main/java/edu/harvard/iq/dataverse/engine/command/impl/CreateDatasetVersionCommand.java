@@ -59,7 +59,8 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
         checkSystemMetadataKeyIfNeeded(newVersion, latest);
 
-                
+        registerExternalVocabValuesIfAny(ctxt, newVersion);
+
         List<FileMetadata> newVersionMetadatum = new ArrayList<>(latest.getFileMetadatas().size());
         for ( FileMetadata fmd : latest.getFileMetadatas() ) {
             FileMetadata fmdCopy = fmd.createCopy();

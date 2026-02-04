@@ -2,13 +2,12 @@ package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
-
-import static edu.harvard.iq.dataverse.util.SystemConfig.FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -35,6 +34,7 @@ import java.util.logging.Logger;
 import jakarta.json.JsonObject;
 
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -45,12 +45,14 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * For docs see {@link SchemaDotOrgExporter}.
  */
+@LocalJvmSettings
 public class SchemaDotOrgExporterTest {
 
     private static final Logger logger = Logger.getLogger(SchemaDotOrgExporterTest.class.getCanonicalName());
     private static final MockDatasetFieldSvc datasetFieldTypeSvc = new MockDatasetFieldSvc();
     private static final SettingsServiceBean settingsService = Mockito.mock(SettingsServiceBean.class);
     private static final LicenseServiceBean licenseService = Mockito.mock(LicenseServiceBean.class);
+    private static final DatasetTypeServiceBean datasetTypeService = Mockito.mock(DatasetTypeServiceBean.class);
     private static final SchemaDotOrgExporter schemaDotOrgExporter = new SchemaDotOrgExporter();
 
     @BeforeAll
@@ -167,11 +169,28 @@ public class SchemaDotOrgExporterTest {
 
     assertTrue(json2.getString("description").endsWith("at..."));
     }
+
+    @Test
+    @JvmSetting(key = JvmSettings.HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS, value = "true")
+    public void testExportWithoutDownloadUrl() throws IOException, JsonParseException, ParseException {
+        File datasetVersionJson = new File("src/test/resources/json/dataset-finch2.json");
+        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
+
+        JsonObject json = JsonUtil.getJsonObject(datasetVersionAsJson);
+        ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
+        Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(json);
+
+        JsonObject json2 = createExportFromJson(exportDataProviderStub);
+
+        assertEquals("DataDownload", json2.getJsonArray("distribution").getJsonObject(0).getString("@type"));
+        assertEquals("README.md", json2.getJsonArray("distribution").getJsonObject(0).getString("name"));
+        assertFalse(json2.getJsonArray("distribution").getJsonObject(0).containsKey("contentUrl"));
+    }
     
     private JsonObject createExportFromJson(ExportDataProvider provider) throws JsonParseException, ParseException {
         License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true, 1l);
         license.setDefault(true);
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService);
         DatasetVersion version = jsonParser.parseDatasetVersion(provider.getDatasetJson().getJsonObject("datasetVersion"));
         version.setVersionState(DatasetVersion.VersionState.RELEASED);
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
@@ -191,10 +210,6 @@ public class SchemaDotOrgExporterTest {
         Dataverse dataverse = new Dataverse();
         dataverse.setName("LibraScholar");
         dataset.setOwner(dataverse);
-        boolean hideFileUrls = false;
-        if (hideFileUrls) {
-            System.setProperty(FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS, "true");
-        }
 
         FileMetadata fmd = new FileMetadata();
         DataFile dataFile = new DataFile();
@@ -249,7 +264,7 @@ public class SchemaDotOrgExporterTest {
      */
     @Test
     public void testIsXMLFormat() {
-        assertEquals(false, schemaDotOrgExporter instanceof XMLExporter);
+        assertFalse(schemaDotOrgExporter instanceof XMLExporter);
     }
 
     /**
@@ -257,7 +272,7 @@ public class SchemaDotOrgExporterTest {
      */
     @Test
     public void testIsHarvestable() {
-        assertEquals(false, schemaDotOrgExporter.isHarvestable());
+        assertFalse(schemaDotOrgExporter.isHarvestable());
     }
 
     /**
@@ -265,7 +280,7 @@ public class SchemaDotOrgExporterTest {
      */
     @Test
     public void testIsAvailableToUsers() {
-        assertEquals(true, schemaDotOrgExporter.isAvailableToUsers());
+        assertTrue(schemaDotOrgExporter.isAvailableToUsers());
     }
 
     /**
@@ -320,6 +335,7 @@ public class SchemaDotOrgExporterTest {
         DatasetFieldType keywordType = datasetFieldTypeSvc.add(new DatasetFieldType("keyword", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> keywordChildTypes = new HashSet<>();
         keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordValue", DatasetFieldType.FieldType.TEXT, false)));
+        keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordTermURI", DatasetFieldType.FieldType.TEXT, false)));
         keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabulary", DatasetFieldType.FieldType.TEXT, false)));
         keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabularyURI", DatasetFieldType.FieldType.TEXT, false)));
         keywordType.setChildDatasetFieldTypes(keywordChildTypes);

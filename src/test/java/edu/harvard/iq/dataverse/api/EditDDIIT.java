@@ -8,6 +8,7 @@ import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataDDIParser;
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -93,7 +94,7 @@ public class EditDDIIT {
         Map<Long, VariableMetadata> mapVarToVarMet = new HashMap<Long, VariableMetadata>();
         Map<Long,VarGroup> varGroupMap = new HashMap<Long, VarGroup>();
         try {
-            XMLInputFactory factory = XMLInputFactory.newInstance();
+            XMLInputFactory factory = XmlUtil.getSecureXMLInputFactory();
             XMLStreamReader xmlr = factory.createXMLStreamReader(variableData);
             VariableMetadataDDIParser vmdp = new VariableMetadataDDIParser();
 
@@ -155,6 +156,18 @@ public class EditDDIIT {
         //not authorized
         Response editDDINotAuthResponse = UtilIT.editDDI(updatedContent, origFileId, null);
         assertEquals(401, editDDINotAuthResponse.getStatusCode());
+
+        //bad request
+        String updatedContentBadFreq = updatedContent.replace("<catStat type=\"freq\">0</catStat>",
+                "<catStat type=\"freq\"/>");
+        Response editDDIBadRequestFreq = UtilIT.editDDI(updatedContentBadFreq, origFileId, apiToken);
+        assertEquals(400, editDDIBadRequestFreq.getStatusCode());
+
+        //bad request
+        String updatedContentBadWFreq = updatedContent.replace("<catStat wgtd=\"wgtd\" type=\"freq\">0</catStat>",
+                "<catStat wgtd=\"wgtd\" type=\"freq\"></catStat>");
+        Response editDDIBadRequestWFreq = UtilIT.editDDI(updatedContentBadWFreq, origFileId, apiToken);
+        assertEquals(400, editDDIBadRequestWFreq.getStatusCode());
 
 
         //cleanup

@@ -1,8 +1,10 @@
 package edu.harvard.iq.dataverse.workflow;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
@@ -51,13 +53,15 @@ import jakarta.persistence.TypedQuery;
 public class WorkflowServiceBean {
 
     private static final Logger logger = Logger.getLogger(WorkflowServiceBean.class.getName());
-    private static final String WORKFLOW_ID_KEY = "WorkflowServiceBean.WorkflowId:";
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
     
     @EJB
     DatasetServiceBean datasets;
+    
+    @EJB
+    DvObjectServiceBean dvObjects;
 
     @EJB
     SettingsServiceBean settings;
@@ -387,16 +391,11 @@ public class WorkflowServiceBean {
                 //Now lock for FinalizePublication - this block mirrors that in PublishDatasetCommand
                 AuthenticatedUser user = ctxt.getRequest().getAuthenticatedUser();
                 DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
-                lock.setDataset(ctxt.getDataset());
-                String currentGlobalIdProtocol = settings.getValueForKey(SettingsServiceBean.Key.Protocol, "");
-                String currentGlobalAuthority= settings.getValueForKey(SettingsServiceBean.Key.Authority, "");
-                String dataFilePIDFormat = settings.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+                Dataset dataset = ctxt.getDataset();
+                lock.setDataset(dataset);
                 boolean registerGlobalIdsForFiles = 
-                        (currentGlobalIdProtocol.equals(ctxt.getDataset().getProtocol()) || dataFilePIDFormat.equals("INDEPENDENT")) 
-                        && systemConfig.isFilePIDsEnabledForCollection(ctxt.getDataset().getOwner());
-                if ( registerGlobalIdsForFiles ){
-                    registerGlobalIdsForFiles = currentGlobalAuthority.equals( ctxt.getDataset().getAuthority() );
-                }
+                        systemConfig.isFilePIDsEnabledForCollection(ctxt.getDataset().getOwner()) &&
+                                dvObjects.getEffectivePidGenerator(dataset).canCreatePidsLike(dataset.getGlobalId());
                 
                 boolean validatePhysicalFiles = systemConfig.isDatafileValidationOnPublishEnabled();
                 String info = "Publishing the dataset; "; 
@@ -452,7 +451,7 @@ public class WorkflowServiceBean {
         if (doomedOpt.isPresent()) {
             // validate that this is not the default workflow
             for ( WorkflowContext.TriggerType tp : WorkflowContext.TriggerType.values() ) {
-                String defaultWorkflowId = settings.get(workflowSettingKey(tp));
+                String defaultWorkflowId = settings.getValueForKey(tp.getKey());
                 if (defaultWorkflowId != null
                         && Long.parseLong(defaultWorkflowId) == doomedOpt.get().getId()) {
                     throw new IllegalArgumentException("Workflow " + workflowId + " cannot be deleted as it is the default workflow for trigger " + tp.name() );
@@ -476,7 +475,7 @@ public class WorkflowServiceBean {
     }
 
     public Optional<Workflow> getDefaultWorkflow( WorkflowContext.TriggerType type ) {
-        String defaultWorkflowId = settings.get(workflowSettingKey(type));
+        String defaultWorkflowId = settings.getValueForKey(type.getKey());
         if (defaultWorkflowId == null) {
             return Optional.empty();
         }
@@ -491,16 +490,11 @@ public class WorkflowServiceBean {
      * @param type type of the workflow.
      */
     public void setDefaultWorkflowId(WorkflowContext.TriggerType type, Long id) {
-        String workflowKey = workflowSettingKey(type);
         if (id == null) {
-            settings.delete(workflowKey);
+            settings.deleteValueForKey(type.getKey());
         } else {
-            settings.set(workflowKey, id.toString());
+            settings.setValueForKey(type.getKey(), id.toString());
         }
-    }
-
-    private String workflowSettingKey(WorkflowContext.TriggerType type) {
-        return WORKFLOW_ID_KEY+type.name();
     }
 
     private WorkflowStep createStep(WorkflowStepData wsd) {

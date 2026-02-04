@@ -8,18 +8,22 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
+import edu.harvard.iq.dataverse.dataset.DatasetFieldsValidator;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SearchServiceFactory;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.StorageUseServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.util.Stack;
@@ -71,7 +75,7 @@ public class TestCommandContext implements CommandContext {
     }
 
     @Override
-    public SearchServiceBean search() {
+    public SearchServiceFactory search() {
         return null;
     }
 
@@ -121,27 +125,7 @@ public class TestCommandContext implements CommandContext {
     }
 
     @Override
-    public DOIEZIdServiceBean doiEZId() {
-        return null;
-    }
-
-    @Override
-    public DOIDataCiteServiceBean doiDataCite() {
-        return null;
-    }
-
-    @Override
-    public FakePidProviderServiceBean fakePidProvider() {
-        return null;
-    }
-
-    @Override
-    public HandlenetServiceBean handleNet() {
-        return null;
-    }
-
-    @Override
-    public PermaLinkPidProviderServiceBean permaLinkProvider() {
+    public PidProviderFactoryBean pidProviderFactory() {
         return null;
     }
     
@@ -167,6 +151,11 @@ public class TestCommandContext implements CommandContext {
 
     @Override
     public DatasetLinkingServiceBean dsLinking() {
+        return null;
+    }
+
+    @Override
+    public DatasetFieldServiceBean dsField() {
         return null;
     }
 
@@ -242,6 +231,36 @@ public class TestCommandContext implements CommandContext {
     
     @Override
     public ActionLogServiceBean actionLog() {
+        return null;
+    }
+
+    @Override
+    public MetadataBlockServiceBean metadataBlocks() {
+        return null;
+    }
+
+    @Override
+    public DatasetTypeServiceBean datasetTypes() {
+        return null;
+    }
+
+    @Override
+    public StorageUseServiceBean storageUse() {
+        return null;
+    }
+
+    @Override
+    public DataverseFeaturedItemServiceBean dataverseFeaturedItems() {
+        return null;
+    }
+
+    @Override
+    public DatasetFieldsValidator datasetFieldsValidator() {
+        return null;
+    }
+
+    @Override
+    public LicenseServiceBean licenses() {
         return null;
     }
 

@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -178,26 +179,25 @@ public class MyDataFilterParams {
     }
     
     
-    
-    private void checkParams(){
-        
-        if ((this.userIdentifier == null)||(this.userIdentifier.isEmpty())){
-            this.addError("Sorry!  No user was found!");
+    private void checkParams() {
+        if ((this.userIdentifier == null) || (this.userIdentifier.isEmpty())) {
+            this.addError(BundleUtil.getStringFromBundle("myDataFilterParams.error.no.user"));
             return;
         }
 
-        if ((this.roleIds == null)||(this.roleIds.isEmpty())){
-            this.addError("No results. Please select at least one Role.");
+        if ((this.roleIds == null) || (this.roleIds.isEmpty())) {
+            this.addError(BundleUtil.getStringFromBundle("myDataFilterParams.error.result.no.role"));
             return;
         }
 
-        if ((this.dvObjectTypes == null)||(this.dvObjectTypes.isEmpty())){
-            this.addError("No results. Please select one of Dataverses, Datasets, Files.");
+        if ((this.dvObjectTypes == null) || (this.dvObjectTypes.isEmpty())) {
+            this.addError(BundleUtil.getStringFromBundle("myDataFilterParams.error.result.no.dvobject"));
             return;
         }
-        
-        if ((this.publicationStatuses == null)||(this.publicationStatuses.isEmpty())){
-            this.addError("No results. Please select one of " + StringUtils.join(MyDataFilterParams.defaultPublishedStates, ", ") + ".");
+
+        if ((this.publicationStatuses == null) || (this.publicationStatuses.isEmpty())) {
+            this.addError(BundleUtil.getStringFromBundle("dataretrieverAPI.user.not.found",
+                    Arrays.asList(StringUtils.join(MyDataFilterParams.defaultPublishedStates, ", "))));
             return;
         }
     }
@@ -292,7 +292,7 @@ public class MyDataFilterParams {
     }
 
     public String getSolrFragmentForDatasetValidity(){
-        if ((this.datasetValidities == null) || (this.datasetValidities.isEmpty())){
+        if ((this.datasetValidities == null) || (this.datasetValidities.isEmpty()) || (this.datasetValidities.size() > 1)){
             return "";
         }
     

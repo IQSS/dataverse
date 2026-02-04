@@ -3,7 +3,8 @@ package edu.harvard.iq.dataverse.makedatacount;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import java.io.StringReader;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,10 +15,8 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -125,9 +124,7 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
             List<DatasetMetrics> datasetMetricsDataset = new ArrayList<>();
             String globalId = null;
             Dataset ds = null;
-            StringReader rdr = new StringReader(reportDataset.toString());
-            JsonReader jrdr = Json.createReader(rdr);
-            JsonObject obj = jrdr.readObject();
+            JsonObject obj = JsonUtil.getJsonObject(reportDataset.toString());
             String jsonGlobalId = "";
             String globalIdType = "";
             if (obj.containsKey("dataset-id")) {

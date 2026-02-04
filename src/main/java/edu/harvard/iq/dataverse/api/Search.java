@@ -1,14 +1,14 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.SearchFields;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.search.SearchService;
+import edu.harvard.iq.dataverse.search.SearchServiceFactory;
 import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.FacetLabel;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
@@ -16,16 +16,15 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchUtil;
-import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
+import jakarta.inject.Inject;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
@@ -35,6 +34,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 
@@ -48,13 +48,11 @@ public class Search extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Search.class.getCanonicalName());
 
     @EJB
-    SearchServiceBean searchService;
+    SearchServiceFactory searchServiceFactory;
     @EJB
     DataverseServiceBean dataverseService;
-    @EJB
-    DvObjectServiceBean dvObjectService;
-    @EJB
-    SolrIndexServiceBean SolrIndexService;
+    @Inject
+    DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
 
     @GET
     @AuthRequired
@@ -72,11 +70,13 @@ public class Search extends AbstractApiBean {
             @QueryParam("fq") final List<String> filterQueries,
             @QueryParam("show_entity_ids") boolean showEntityIds,
             @QueryParam("show_api_urls") boolean showApiUrls,
-            @QueryParam("show_my_data") boolean showMyData,
-            @QueryParam("query_entities") boolean queryEntities,
+            @QueryParam("query_entities") @DefaultValue("true") boolean queryEntities,
             @QueryParam("metadata_fields") List<String> metadataFields,
             @QueryParam("geo_point") String geoPointRequested,
             @QueryParam("geo_radius") String geoRadiusRequested,
+            @QueryParam("show_type_counts") boolean showTypeCounts,
+            @QueryParam("show_collections") boolean showCollections,
+            @QueryParam("search_service") String searchServiceName,
             @Context HttpServletResponse response
     ) {
 
@@ -95,9 +95,62 @@ public class Search extends AbstractApiBean {
             String geoPoint;
             String geoRadius;
             List<Dataverse> dataverseSubtrees = new ArrayList<>();
+            DataverseRequest requestUser = createDataverseRequest(user);
+            String allTypes = ":(" + SearchConstants.DATAVERSES + " OR " + SearchConstants.DATASETS + " OR " + SearchConstants.FILES + ")";
+            Map<String, Long> objectTypeCountsMap = new HashMap<>(3);
+            objectTypeCountsMap.put(SearchConstants.UI_DATAVERSES, 0L);
+            objectTypeCountsMap.put(SearchConstants.UI_DATASETS, 0L);
+            objectTypeCountsMap.put(SearchConstants.UI_FILES, 0L);
 
+            // hard-coded to false since dataRelatedToMe is only used by MyData (DataRetrieverAPI)
+            boolean dataRelatedToMe = false;
+            SearchService searchService = null;
+            if (StringUtils.isNotBlank(searchServiceName)) {
+                try {
+                    searchService = searchServiceFactory.getSearchService(searchServiceName);
+                } catch (IllegalArgumentException e) {
+                    return badRequest("Invalid search engine.");
+                }
+            } else {
+                searchService = searchServiceFactory.getDefaultSearchService();
+            }
             try {
+                // we have to add "" (root) otherwise there is no permissions check
+                if (subtrees.isEmpty()) {
+                    dataverseSubtrees.add(getSubtree(""));
+                }
+                else {
+                    for (String subtree : subtrees) {
+                        dataverseSubtrees.add(getSubtree(subtree));
+                    }
+                }
+                filterQueries.add(getFilterQueryFromSubtrees(dataverseSubtrees));
+
                 if (!types.isEmpty()) {
+                    // Query to get the totals if needed.
+                    // Only needed if the list of types doesn't include all types since missing types will default to count of 0
+                    // for 11542 we are removing the test for page one only since the show_type_counts=false will bypass this completely
+                    // SEK 6/17/25
+                    if (showTypeCounts && types.size() < objectTypeCountsMap.size()) {
+                        List<String> totalFilterQueries = new ArrayList<>();
+                        totalFilterQueries.addAll(filterQueries);
+                        totalFilterQueries.add(SearchFields.TYPE + allTypes);
+
+                        try {
+
+                            SolrQueryResponse resp = searchService.search(requestUser, dataverseSubtrees, query, totalFilterQueries, null, null, 0,
+                                    dataRelatedToMe, 1, false, null, null, false, false, false);
+                            if (resp != null) {
+                                for (FacetCategory facetCategory : resp.getTypeFacetCategories()) {
+                                    for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                                        objectTypeCountsMap.put(facetLabel.getName(), facetLabel.getCount());
+                                    }
+                                }
+                            }
+                        } catch(Exception e) {
+                            logger.info("Search getting total counts: " + e.getMessage());
+                        }
+                    }
                     filterQueries.add(getFilterQueryFromTypes(types));
                 } else {
                     /**
@@ -106,21 +159,10 @@ public class Search extends AbstractApiBean {
                      * SearchServiceBean tries to get SearchFields.TYPE. The GUI
                      * always seems to add SearchFields.TYPE, even for superusers.
                      */
-                    filterQueries.add(SearchFields.TYPE + ":(" + SearchConstants.DATAVERSES + " OR " + SearchConstants.DATASETS + " OR " + SearchConstants.FILES + ")");
+                    filterQueries.add(SearchFields.TYPE + allTypes);
                 }
                 sortBy = SearchUtil.getSortBy(sortField, sortOrder);
                 numResultsPerPage = getNumberOfResultsPerPage(numResultsPerPageRequested);
-                
-                 // we have to add "" (root) otherwise there is no permissions check
-                if(subtrees.isEmpty()) {
-                    dataverseSubtrees.add(getSubtree(""));
-                }
-                else {
-                    for(String subtree : subtrees) {
-                        dataverseSubtrees.add(getSubtree(subtree));
-                    }
-                }
-                filterQueries.add(getFilterQueryFromSubtrees(dataverseSubtrees));
                 
                 if(filterQueries.isEmpty()) { //Extra sanity check just in case someone else touches this
                     throw new IOException("Filter is empty, which should never happen, as this allows unfettered searching of our index");
@@ -140,13 +182,10 @@ public class Search extends AbstractApiBean {
             } catch (Exception ex) {
                 return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
             }
-
-            // users can't change these (yet anyway)
-            boolean dataRelatedToMe = showMyData; //getDataRelatedToMe();
             
             SolrQueryResponse solrQueryResponse;
             try {
-                solrQueryResponse = searchService.search(createDataverseRequest(user),
+                solrQueryResponse = searchService.search(requestUser,
                         dataverseSubtrees,
                         query,
                         filterQueries,
@@ -155,9 +194,12 @@ public class Search extends AbstractApiBean {
                         paginationStart,
                         dataRelatedToMe,
                         numResultsPerPage,
-                        true, //SEK get query entities always for search API additional Dataset Information 6300  12/6/2019
+                        queryEntities,
                         geoPoint,
-                        geoRadius
+                        geoRadius,
+                        showFacets, // facets are expensive, no need to ask for them if not requested
+                        showRelevance, // no need for highlights unless requested either
+                        showCollections // same for collections
                 );
             } catch (SearchException ex) {
                 Throwable cause = ex;
@@ -177,7 +219,7 @@ public class Search extends AbstractApiBean {
             JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
             for (SolrSearchResult solrSearchResult : solrSearchResults) {
-                itemsArrayBuilder.add(solrSearchResult.toJsonObject(showRelevance, showEntityIds, showApiUrls, metadataFields));
+                itemsArrayBuilder.add(solrSearchResult.json(showRelevance, showEntityIds, showApiUrls, metadataFields));
             }
 
             JsonObjectBuilder spelling_alternatives = Json.createObjectBuilder();
@@ -185,32 +227,46 @@ public class Search extends AbstractApiBean {
                 spelling_alternatives.add(entry.getKey(), entry.getValue().toString());
             }
 
-            JsonArrayBuilder facets = Json.createArrayBuilder();
-            JsonObjectBuilder facetCategoryBuilder = Json.createObjectBuilder();
-            for (FacetCategory facetCategory : solrQueryResponse.getFacetCategoryList()) {
-                JsonObjectBuilder facetCategoryBuilderFriendlyPlusData = Json.createObjectBuilder();
-                JsonArrayBuilder facetLabelBuilderData = Json.createArrayBuilder();
-                for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
-                    JsonObjectBuilder countBuilder = Json.createObjectBuilder();
-                    countBuilder.add(facetLabel.getName(), facetLabel.getCount());
-                    facetLabelBuilderData.add(countBuilder);
-                }
-                facetCategoryBuilderFriendlyPlusData.add("friendly", facetCategory.getFriendlyName());
-                facetCategoryBuilderFriendlyPlusData.add("labels", facetLabelBuilderData);
-                facetCategoryBuilder.add(facetCategory.getName(), facetCategoryBuilderFriendlyPlusData);
-            }
-            facets.add(facetCategoryBuilder);
-
             JsonObjectBuilder value = Json.createObjectBuilder()
                     .add("q", query)
                     .add("total_count", solrQueryResponse.getNumResultsFound())
                     .add("start", solrQueryResponse.getResultsStart())
                     .add("spelling_alternatives", spelling_alternatives)
                     .add("items", itemsArrayBuilder.build());
+
             if (showFacets) {
+                JsonArrayBuilder facets = Json.createArrayBuilder();
+                JsonObjectBuilder facetCategoryBuilder = Json.createObjectBuilder();
+                for (FacetCategory facetCategory : solrQueryResponse.getFacetCategoryList()) {
+                    JsonObjectBuilder facetCategoryBuilderFriendlyPlusData = Json.createObjectBuilder();
+                    JsonArrayBuilder facetLabelBuilderData = Json.createArrayBuilder();
+                    for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                        JsonObjectBuilder countBuilder = Json.createObjectBuilder();
+                        countBuilder.add(facetLabel.getName(), facetLabel.getCount());
+                        facetLabelBuilderData.add(countBuilder);
+                    }
+                    facetCategoryBuilderFriendlyPlusData.add("friendly", facetCategory.getFriendlyName());
+                    facetCategoryBuilderFriendlyPlusData.add("labels", facetLabelBuilderData);
+                    facetCategoryBuilder.add(facetCategory.getName(), facetCategoryBuilderFriendlyPlusData);
+                }
+                facets.add(facetCategoryBuilder);
                 value.add("facets", facets);
             }
+
             value.add("count_in_response", solrSearchResults.size());
+
+            if (showTypeCounts) {
+                for (FacetCategory facetCategory : solrQueryResponse.getTypeFacetCategories()) {
+                    for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                        if (facetLabel.getCount() > 0) {
+                            objectTypeCountsMap.put(facetLabel.getName(), facetLabel.getCount());
+                        }
+                    }
+                }
+                JsonObjectBuilder objectTypeCounts = Json.createObjectBuilder();
+                objectTypeCountsMap.forEach((k,v) -> objectTypeCounts.add(k,v));
+                value.add("total_count_per_object_type", objectTypeCounts);
+            }
             /**
              * @todo Returning the fq might be useful as a troubleshooting aid
              * but we don't want to expose the raw dataverse database ids in
@@ -230,6 +286,28 @@ public class Search extends AbstractApiBean {
         }
     }
 
+
+    @GET
+    @Path("/services")
+    public Response getSearchEngines() {
+        Map<String, SearchService> availableEngines = searchServiceFactory.getAvailableServices();
+        String defaultServiceName = JvmSettings.DEFAULT_SEARCH_SERVICE.lookupOptional().orElse(SearchServiceFactory.INTERNAL_SOLR_SERVICE_NAME);
+
+        JsonArrayBuilder enginesArray = Json.createArrayBuilder();
+
+        for (String engine : availableEngines.keySet()) {
+            JsonObjectBuilder engineObject = Json.createObjectBuilder()
+                .add("name", engine)
+                .add("displayName", availableEngines.get(engine).getDisplayName());
+            enginesArray.add(engineObject);
+        }
+        JsonObjectBuilder response = Json.createObjectBuilder()
+                .add("services", enginesArray)
+                .add("defaultService", defaultServiceName);
+
+        return ok(response);
+    }
+
     private User getUser(ContainerRequestContext crc) throws WrappedResponse {
         User userToExecuteSearchAs = GuestUser.get();
         try {
@@ -245,20 +323,11 @@ public class Search extends AbstractApiBean {
         return userToExecuteSearchAs;
     }
 
-    public boolean tokenLessSearchAllowed() {
+    private boolean tokenLessSearchAllowed() {
         boolean outOfBoxBehavior = false;
         boolean tokenLessSearchAllowed = settingsSvc.isFalseForKey(SettingsServiceBean.Key.SearchApiRequiresToken, outOfBoxBehavior);
         logger.fine("tokenLessSearchAllowed: " + tokenLessSearchAllowed);
         return tokenLessSearchAllowed;
-    }
-
-    private boolean getDataRelatedToMe() {
-        /**
-         * @todo support Data Related To Me:
-         * https://github.com/IQSS/dataverse/issues/1299
-         */
-        boolean dataRelatedToMe = false;
-        return dataRelatedToMe;
     }
 
     private int getNumberOfResultsPerPage(int numResultsPerPage) {

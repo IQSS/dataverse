@@ -8,30 +8,33 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import edu.harvard.iq.dataverse.validation.ValidateEmail;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  *
  * @author skraffmiller
  */
-@NamedStoredProcedureQuery(
-        name = "GuestbookResponse.estimateGuestBookResponseTableSize",
-        procedureName = "estimateGuestBookResponseTableSize",
-        parameters = {
-            @StoredProcedureParameter(mode = ParameterMode.OUT, type = Long.class)
-        }
-)
 @Entity
 @Table(indexes = {
         @Index(columnList = "guestbook_id"),
         @Index(columnList = "datafile_id"),
-        @Index(columnList = "dataset_id")
+        @Index(columnList = "datasetversion_id"),
+        @Index(columnList = "authenticateduser_id"),
+        @Index(columnList = "dataset_id"),
+        @Index(columnList = "dataset_id, guestbook_id", name="INDEX_GUESTBOOKRESPONSE_dataset_id_guestbook_id"),
+        @Index(columnList = "dataset_id, eventtype", name="INDEX_GUESTBOOKRESPONSE_dataset_id_eventtype")
 })
 
 @NamedQueries(
@@ -65,8 +68,9 @@ public class GuestbookResponse implements Serializable {
     @JoinColumn(nullable=true)
     private AuthenticatedUser authenticatedUser;
 
-    @OneToOne(cascade=CascadeType.ALL,mappedBy="guestbookResponse",fetch = FetchType.LAZY, optional = false)
-    private FileDownload fileDownload;
+    @OneToMany(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},fetch = FetchType.LAZY)
+    //private FileAccessRequest fileAccessRequest;
+    private List<FileAccessRequest> fileAccessRequests;
      
     @OneToMany(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval=true)
     @OrderBy ("id")
@@ -75,8 +79,8 @@ public class GuestbookResponse implements Serializable {
     @Size(max = 255, message = "{guestbook.response.nameLength}")
     private String name;
 
-    // TODO: Consider using EMailValidator as well.
     @Size(max = 255, message = "{guestbook.response.nameLength}")
+    @ValidateEmail(message = "{user.invalidEmail}")
     private String email;
 
     @Size(max = 255, message = "{guestbook.response.nameLength}")
@@ -87,15 +91,36 @@ public class GuestbookResponse implements Serializable {
     
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date responseTime;
+
+    private String sessionId;
+    private String eventType;
+
+    /** Event Types - there are four pre-defined values in use.
+     * The type can also be the name of a previewer/explore tool
+     */
     
+    public static final String ACCESS_REQUEST = "AccessRequest";
+    public static final String DOWNLOAD = "Download";
+    static final String SUBSET = "Subset";
+    static final String EXPLORE = "Explore";
+
     /*
     Transient Values carry non-written information 
     that will assist in the download process
     - writeResponse is set to false when dataset version is draft.
+    - selected file ids is a comma delimited list that contains the file ids for multiple download
+    - fileFormat tells the download api which format a subsettable file should be downloaded as
+
     */
       
     @Transient 
     private boolean writeResponse = true;
+
+    @Transient
+    private String selectedFileIds;
+    
+    @Transient 
+    private String fileFormat;
 
     /**
      * This transient variable is a place to temporarily retrieve the
@@ -105,6 +130,7 @@ public class GuestbookResponse implements Serializable {
     @Transient
     private ExternalTool externalTool;
 
+    
     public boolean isWriteResponse() {
         return writeResponse;
     }
@@ -114,19 +140,19 @@ public class GuestbookResponse implements Serializable {
     }
 
     public String getSelectedFileIds(){
-        return this.fileDownload.getSelectedFileIds();
+        return this.selectedFileIds;
     }
     
     public void setSelectedFileIds(String selectedFileIds) {
-        this.fileDownload.setSelectedFileIds(selectedFileIds);
+        this.selectedFileIds = selectedFileIds;
     }
     
     public String getFileFormat() {
-        return this.fileDownload.getFileFormat();
+        return this.fileFormat;
     }
 
     public void setFileFormat(String downloadFormat) {
-        this.fileDownload.setFileFormat(downloadFormat);
+        this.fileFormat = downloadFormat;
     }
     
     public ExternalTool getExternalTool() {
@@ -138,10 +164,6 @@ public class GuestbookResponse implements Serializable {
     }
 
     public GuestbookResponse(){
-        if(this.getFileDownload() == null){
-            this.fileDownload = new FileDownload();
-            this.fileDownload.setGuestbookResponse(this);
-        }
     }
     
     public GuestbookResponse(GuestbookResponse source){
@@ -154,10 +176,10 @@ public class GuestbookResponse implements Serializable {
         this.setDataset(source.getDataset());
         this.setDatasetVersion(source.getDatasetVersion());
         this.setAuthenticatedUser(source.getAuthenticatedUser());
-   
+        this.setSessionId(source.getSessionId());
         List <CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
         if (!source.getCustomQuestionResponses().isEmpty()){
-            for (CustomQuestionResponse customQuestionResponse : source.getCustomQuestionResponses() ){
+            for (CustomQuestionResponse customQuestionResponse : source.getCustomQuestionResponsesSorted() ){
                 CustomQuestionResponse customQuestionResponseAdd = new CustomQuestionResponse();
                 customQuestionResponseAdd.setResponse(customQuestionResponse.getResponse());  
                 customQuestionResponseAdd.setCustomQuestion(customQuestionResponse.getCustomQuestion());
@@ -167,7 +189,6 @@ public class GuestbookResponse implements Serializable {
         }
         this.setCustomQuestionResponses(customQuestionResponses);
         this.setGuestbook(source.getGuestbook());
-        this.setFileDownload(source.getFileDownload());
     }
     
     
@@ -176,7 +197,8 @@ public class GuestbookResponse implements Serializable {
     }
 
     public void setEmail(String email) {
-        this.email = email;
+        // ValidateEmail requires NULL or valid email. Empty String will fail validation
+        this.email = (email == null || email.trim().isEmpty()) ? null : email;
     }
 
     public Guestbook getGuestbook() {
@@ -225,34 +247,39 @@ public class GuestbookResponse implements Serializable {
 
     public void setResponseTime(Date responseTime) {
         this.responseTime = responseTime;
-        this.getFileDownload().setDownloadTimestamp(responseTime);
     }
 
     public String getResponseDate() {
         return new SimpleDateFormat("MMMM d, yyyy").format(responseTime);
     }
-    
-    public String getResponseDateForDisplay(){
-        return null; //    SimpleDateFormat("yyyy").format(new Timestamp(new Date().getTime()));
-    }
-    
 
     public List<CustomQuestionResponse> getCustomQuestionResponses() {
         return customQuestionResponses;
+    }
+    
+    public List<CustomQuestionResponse> getCustomQuestionResponsesSorted(){
+        
+        Collections.sort(customQuestionResponses, (CustomQuestionResponse cqr1, CustomQuestionResponse cqr2) -> {
+            int a = cqr1.getCustomQuestion().getDisplayOrder();
+            int b = cqr2.getCustomQuestion().getDisplayOrder();
+            return Integer.valueOf(a).compareTo(b);
+        });
+       
+       
+       return customQuestionResponses;
     }
 
     public void setCustomQuestionResponses(List<CustomQuestionResponse> customQuestionResponses) {
         this.customQuestionResponses = customQuestionResponses;
     }
     
-    public FileDownload getFileDownload(){
-        return fileDownload;
+    public List<FileAccessRequest> getFileAccessRequests(){
+        return fileAccessRequests;
     }
-    
-    public void setFileDownload(FileDownload fDownload){
-        this.fileDownload = fDownload;
+
+    public void setFileAccessRequest(List<FileAccessRequest> fARs){
+        this.fileAccessRequests = fARs;
     }
-    
     
     public Dataset getDataset() {
         return dataset;
@@ -286,22 +313,67 @@ public class GuestbookResponse implements Serializable {
         this.authenticatedUser = authenticatedUser;
     }
     
-    public String getDownloadtype() {
-        return this.fileDownload.getDownloadtype();
+    public String getEventType() {
+        return this.eventType;
     }
 
-    public void setDownloadtype(String downloadtype) {
-        this.fileDownload.setDownloadtype(downloadtype);
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
         
     }
     
     public String getSessionId() {
-        return this.fileDownload.getSessionId();
+        return this.sessionId;
     }
 
     public void setSessionId(String sessionId) {
         
-        this.fileDownload.setSessionId(sessionId);
+        this.sessionId= sessionId;
+    }
+    
+    public String toHtmlFormattedResponse(){
+        return toHtmlFormattedResponse(null);
+    }
+    
+    public String toHtmlFormattedResponse(AuthenticatedUser requestor) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.id") + ": " + getId() + "<br>\n");
+        sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.date") + ": " + getResponseDate() + "<br>\n");
+        sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.respondent") + "<br><ul style=\"list-style-type:none;\">\n<li>"
+                + BundleUtil.getStringFromBundle("name") + ": " + getName() + "</li>\n<li>");
+        sb.append("  " + BundleUtil.getStringFromBundle("email") + ": " + getEmail() + "</li>\n<li>");
+        sb.append("  " + BundleUtil.getStringFromBundle("institution") + ": " + wrapNullAnswer(getInstitution()) + "</li>\n<li>");
+        sb.append("  " + BundleUtil.getStringFromBundle("position") + ": " + wrapNullAnswer(getPosition()) + "</li>");
+        
+        //Add requestor information to response to help dataset admin with request processing
+        if (requestor != null){
+            sb.append("\n<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.requestor.id") + ": " + requestor.getId()+ "</li>");
+            sb.append("\n<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.requestor.identifier") + ": " + requestor.getIdentifier()+ "</li></ul>\n");
+        } else {
+            sb.append("</ul>\n");
+        }
+
+        sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.additionalQuestions")
+                + ":<ul style=\"list-style-type:none;\">\n");
+
+        for (CustomQuestionResponse cqr : getCustomQuestionResponsesSorted()) {
+            sb.append("<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.question") + ": "
+                    + cqr.getCustomQuestion().getQuestionString() + "<br>"
+                    + BundleUtil.getStringFromBundle("dataset.guestbookResponse.answer") + ": "
+                    + wrapNullAnswer(cqr.getResponse()) + "</li>\n<br>");
+        }
+        sb.append("</ul>");
+        return sb.toString();
+    }
+    
+    private String wrapNullAnswer(String answer) {
+        //This assumes we don't have to distinguish null from when the user actually answers "(No Reponse)". The db still has the real value
+        if (answer == null) {
+            return BundleUtil.getStringFromBundle("dataset.guestbookResponse.noResponse");
+        }
+        return answer;
     }
     
     @Override

@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@LocalJvmSettings
 class FeatureFlagsTest {
 
     @Test

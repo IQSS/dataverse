@@ -15,8 +15,11 @@ Dataverse instances.
 As of v5.14, Dataverse provides a mechanism for third-party developers to create new metadata Exporters than implement
 new metadata formats or that replace existing formats. All the necessary dependencies are packaged in an interface JAR file
 available from Maven Central. Developers can distribute their new Exporters as JAR files which can be dynamically loaded
-into Dataverse instances - see :ref:`external-exporters`. Developers are encouraged to make their Exporter code available
-via https://github.com/gdcc/dataverse-exporters (or minimally, to list their existence in the README there). 
+into Dataverse instances - see :ref:`external-exporters`. Developers are encouraged to work with the core Dataverse team
+(see :ref:`getting-help-developers`) to distribute these JAR files via Maven Central. See the
+`Croissant <https://central.sonatype.com/artifact/io.gdcc.export/croissant>`_ and
+`Debug <https://central.sonatype.com/artifact/io.gdcc.export/debug>`_ artifacts as examples. You may find other examples
+under :ref:`inventory-of-external-exporters` in the Installation Guide.
 
 Exporter Basics
 ---------------
@@ -63,7 +66,7 @@ If an Exporter cannot create a requested metadata format for some reason, it sho
 Building an Exporter
 --------------------
 
-The example at https://github.com/gdcc/dataverse-exporters provides a Maven pom.xml file suitable for building an Exporter JAR file and that repository provides additional development guidance.
+The examples at https://github.com/gdcc/exporter-croissant and https://github.com/gdcc/exporter-debug provide a Maven pom.xml file suitable for building an Exporter JAR file and those repositories provide additional development guidance.
 
 There are four dependencies needed to build an Exporter:
 

@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.AuxiliaryFileServiceBean;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Type;
 import edu.harvard.iq.dataverse.util.URLTokenUtil.ReservedWord;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -141,9 +143,10 @@ public class ExternalToolServiceBean {
         List<ExternalTool> externalTools = new ArrayList<>();
         //Map tabular data to it's mimetype (the isTabularData() check assures that this code works the same as before, but it may need to change if tabular data is split into subtypes with differing mimetypes)
         final String contentType = file.isTabularData() ? DataFileServiceBean.MIME_TYPE_TSV_ALT : file.getContentType();
+        boolean isAccessible = StorageIO.isDataverseAccessible(DataAccess.getStorageDriverFromIdentifier(file.getStorageIdentifier()));
         allExternalTools.forEach((externalTool) -> {
             //Match tool and file type, then check requirements
-            if (contentType.equals(externalTool.getContentType()) && meetsRequirements(externalTool, file)) {
+            if (contentType.equals(externalTool.getContentType()) && meetsRequirements(externalTool, file) && (isAccessible || externalTool.accessesAuxFiles())) {
                 externalTools.add(externalTool);
             }
         });
@@ -159,7 +162,7 @@ public class ExternalToolServiceBean {
         }
         boolean meetsRequirements = true;
         JsonObject requirementsObj = JsonUtil.getJsonObject(requirements);
-        JsonArray auxFilesExist = requirementsObj.getJsonArray("auxFilesExist");
+        JsonArray auxFilesExist = requirementsObj.getJsonArray(ExternalTool.AUX_FILES_EXIST);
         for (JsonValue jsonValue : auxFilesExist) {
             String formatTag = jsonValue.asJsonObject().getString("formatTag");
             String formatVersion = jsonValue.asJsonObject().getString("formatVersion");

@@ -14,7 +14,6 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
@@ -25,7 +24,6 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
@@ -177,6 +175,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         
         ctxt.em().createNativeQuery("Delete from OAuth2TokenData where user_id ="+consumedAU.getId()).executeUpdate();
         
+        ctxt.em().createNativeQuery("DELETE FROM explicitgroup_authenticateduser consumed USING explicitgroup_authenticateduser ongoing WHERE consumed.containedauthenticatedusers_id="+ongoingAU.getId()+" AND ongoing.containedauthenticatedusers_id="+consumedAU.getId()).executeUpdate();
         ctxt.em().createNativeQuery("UPDATE explicitgroup_authenticateduser SET containedauthenticatedusers_id="+ongoingAU.getId()+" WHERE containedauthenticatedusers_id="+consumedAU.getId()).executeUpdate();
         
         ctxt.actionLog().changeUserIdentifierInHistory(consumedAU.getIdentifier(), ongoingAU.getIdentifier());

@@ -1,15 +1,19 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.CurationStatus;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.DatasetVersion;
+
 import static edu.harvard.iq.dataverse.DatasetVersion.VersionState.*;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -19,26 +23,29 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
+
+import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import java.util.ArrayList;
-import java.util.concurrent.Future;
-import org.apache.solr.client.solrj.SolrServerException;
 
-import jakarta.ejb.EJB;
-import jakarta.inject.Inject;
+import java.util.concurrent.Future;
+
+import org.apache.logging.log4j.util.Strings;
+import org.apache.solr.client.solrj.SolrServerException;
 
 
 /**
@@ -59,7 +66,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      */
     final boolean datasetExternallyReleased;
     
-    List<Dataverse> dataversesToIndex = new ArrayList<>();
+    Set<Dataverse> dataversesToIndex = new HashSet<>();
     
     public static final String FILE_VALIDATION_ERROR = "FILE VALIDATION ERROR";
     
@@ -101,13 +108,13 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             try {
                 // This can potentially throw a CommandException, so let's make 
                 // sure we exit cleanly:
-
-            	registerExternalIdentifier(theDataset, ctxt, false);
+                registerExternalIdentifier(theDataset, ctxt, false);
+                registerFilePidsIfNeeded(theDataset, ctxt, false);
             } catch (CommandException comEx) {
-                logger.warning("Failed to reserve the identifier "+theDataset.getGlobalId().asString()+"; notifying the user(s), unlocking the dataset");
-                // Send failure notification to the user: 
+                logger.warning("Failed to reserve the identifier " + theDataset.getGlobalId().asString() + "; notifying the user(s), unlocking the dataset");
+                // Send failure notification to the user:
                 notifyUsersDatasetPublishStatus(ctxt, theDataset, UserNotification.Type.PUBLISHFAILED_PIDREG);
-                // Remove the dataset lock: 
+                // Remove the dataset lock:
                 ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.finalizePublication);
                 // re-throw the exception:
                 throw comEx;
@@ -117,25 +124,57 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         // is this the first publication of the dataset?
         if (theDataset.getPublicationDate() == null) {
             theDataset.setReleaseUser((AuthenticatedUser) getUser());
-        }
-        if ( theDataset.getPublicationDate() == null ) {
+        
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
+            
+            // if there are any embargoed files in this version, we will save 
+            // the latest availability date as the "embargoCitationDate" for future 
+            // reference (if the files are not available yet, as of publishing of 
+            // the dataset, this date will be used as the "ciatation date" of the dataset, 
+            // instead of the publicatonDate, in compliance with the DataCite 
+            // best practices). 
+            // the code below replicates the logic that used to be in the method 
+            // Dataset.getCitationDate() that calculated this adjusted date in real time.
+            
+            Timestamp latestEmbargoDate = null; 
+            for (DataFile dataFile : theDataset.getFiles()) {
+                // this is the first version of the dataset that is being published. 
+                // therefore we can iterate through .getFiles() instead of obtaining
+                // the DataFiles by going through the FileMetadatas in the current version.
+                Embargo embargo = dataFile.getEmbargo();
+                if (embargo != null) {
+                    // "dataAvailable" is not nullable in the Embargo class, no need for a null check
+                    Timestamp embargoDate = Timestamp.valueOf(embargo.getDateAvailable().atStartOfDay());
+                    if (latestEmbargoDate == null || latestEmbargoDate.compareTo(embargoDate) < 0) {
+                        latestEmbargoDate = embargoDate;
+                    }
+                }
+            }
+            // the above loop could be easily replaced with a database query; 
+            // but we iterate through .getFiles() elsewhere in the command, when 
+            // updating and/or registering the files, so it should not result in 
+            // an extra performance hit. 
+            theDataset.setEmbargoCitationDate(latestEmbargoDate);
         } 
 
-        //Clear any external status
-        theDataset.getLatestVersion().setExternalStatusLabel(null);
+        DatasetVersion version = theDataset.getLatestVersion();
         
-        // update metadata
-        if (theDataset.getLatestVersion().getReleaseTime() == null) {
-            // Allow migrated versions to keep original release dates
-            theDataset.getLatestVersion().setReleaseTime(getTimestamp());
+        // Clear any external status
+        CurationStatus status = version.getCurrentCurationStatus();
+        if (status != null && Strings.isNotBlank(status.getLabel())) {
+            version.addCurationStatus(new CurationStatus(null, version, getRequest().getAuthenticatedUser()));
         }
-        theDataset.getLatestVersion().setLastUpdateTime(getTimestamp());
+        // update metadata
+        if (version.getReleaseTime() == null) {
+            // Allow migrated versions to keep original release dates
+            version.setReleaseTime(getTimestamp());
+        }
+        version.setLastUpdateTime(getTimestamp());
         theDataset.setModificationTime(getTimestamp());
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
         
         //Use dataset pub date (which may not be the current date for migrated datasets)
-        updateFiles(new Timestamp(theDataset.getLatestVersion().getReleaseTime().getTime()), ctxt);
+        updateFiles(new Timestamp(version.getReleaseTime().getTime()), ctxt);
         
         // 
         // TODO: Not sure if this .merge() is necessary here - ? 
@@ -169,6 +208,15 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
         }
 
+        // The owning dataverse plus all dataverses linking to this dataset must be re-indexed to update their
+        // datasetCount
+        dataversesToIndex.add(getDataset().getOwner());
+        dataversesToIndex.addAll(getDataset().getOwner().getOwners());
+        getDataset().getDatasetLinkingDataverses().forEach(dld -> {
+            dataversesToIndex.add(dld.getLinkingDataverse());
+            dataversesToIndex.addAll(dld.getLinkingDataverse().getOwners());
+        });
+
         List<Command> previouslyCalled = ctxt.getCommandsCalled();
         
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
@@ -182,7 +230,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
 	if (theDataset.getLatestVersion().getVersionState() != RELEASED) {
             // some imported datasets may already be released.
-
+	        theDataset.getLatestVersion().setVersionState(RELEASED);
             if (!datasetExternallyReleased) {
                 publicizeExternalIdentifier(theDataset, ctxt);
                 // Will throw a CommandException, unless successful.
@@ -191,7 +239,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 // a failure - it will remove any locks, and it will send a
                 // proper notification to the user(s). 
             }
-            theDataset.getLatestVersion().setVersionState(RELEASED);
         }
         
         final Dataset ds = ctxt.em().merge(theDataset);
@@ -218,6 +265,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         logger.info("Successfully published the dataset "+readyDataset.getGlobalId().asString());
         readyDataset = ctxt.em().merge(readyDataset);
+
+        // Delete any Featured Items that are invalidated by publishing this version
+        ctxt.dataverseFeaturedItems().deleteInvalidatedFeaturedItemsByDataset(readyDataset);
         
         return readyDataset;
     }
@@ -238,7 +288,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         } catch (Exception e) {
             logger.warning("Failure to send dataset published messages for : " + dataset.getId() + " : " + e.getMessage());
         }
-        ctxt.index().asyncIndexDataset(dataset, true);                   
         
         //re-indexing dataverses that have additional subjects
         if (!dataversesToIndex.isEmpty()){
@@ -268,7 +317,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             logger.log(Level.WARNING, "Finalization: exception caught while exporting: "+ex.getMessage(), ex);
             // ... but it is important to only update the export time stamp if the 
             // export was indeed successful.
-        }        
+        }
+        ctxt.index().asyncIndexDataset(dataset, true);
         
         return retVal;
     }
@@ -284,12 +334,16 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 while (dv != null) {
                     boolean newSubjectsAdded = false;
                     for (ControlledVocabularyValue cvv : dsf.getControlledVocabularyValues()) {                   
-                        if (!dv.getDataverseSubjects().contains(cvv)) {
-                            logger.fine("dv "+dv.getAlias()+" does not have subject "+cvv.getStrValue());
-                            newSubjectsAdded = true;
-                            dv.getDataverseSubjects().add(cvv);
+                        if (!cvv.getStrValue().equals(DatasetField.NA_VALUE)) {
+                            if (!dv.getDataverseSubjects().contains(cvv)) {
+                                logger.fine("dv "+dv.getAlias()+" does not have subject "+cvv.getStrValue());
+                                newSubjectsAdded = true;
+                                dv.getDataverseSubjects().add(cvv);
+                            } else {
+                                logger.fine("dv "+dv.getAlias()+" already has subject "+cvv.getStrValue());
+                            }
                         } else {
-                            logger.fine("dv "+dv.getAlias()+" already has subject "+cvv.getStrValue());
+                            logger.fine("Subject is not recognized : " + cvv.getStrValue());
                         }
                     }
                     if (newSubjectsAdded) {
@@ -321,7 +375,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                     // (the decision was made to validate all the files on every
                     // major release; we can revisit the decision if there's any
                     // indication that this makes publishing take significantly longer.
-                    if (maxFileSize == -1 || dataFile.getFilesize() < maxFileSize) {
+                    String driverId = FileUtil.getStorageDriver(dataFile);
+                    if(StorageIO.isDataverseAccessible(driverId) && (maxFileSize == -1 || dataFile.getFilesize() < maxFileSize)) {
                         FileUtil.validateDataFileChecksum(dataFile);
                     }
                     else {
@@ -356,56 +411,51 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     }
     
     private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
-        String protocol = getDataset().getProtocol();
-        String authority = getDataset().getAuthority();
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
- 
-        if (idServiceBean != null) {
-            
-            try {
-                String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
-                String currentGlobalAuthority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, "");
-                String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-                boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabledForCollection(getDataset().getOwner());
-                // We will skip trying to register the global identifiers for datafiles 
-                // if "dependent" file-level identifiers are requested, AND the naming 
-                // protocol, or the authority of the dataset global id is different from 
-                // what's currently configured for the Dataverse. In other words
-                // we can't get "dependent" DOIs assigned to files in a dataset  
-                // with the registered id that is a handle; or even a DOI, but in 
-                // an authority that's different from what's currently configured.
-                // Additionaly in 4.9.3 we have added a system variable to disable 
-                // registering file PIDs on the installation level.
-                if (((currentGlobalIdProtocol.equals(protocol) && currentGlobalAuthority.equals(authority))
-                        || dataFilePIDFormat.equals("INDEPENDENT"))
-                        && isFilePIDsEnabled
-                        && dataset.getLatestVersion().getMinorVersionNumber() != null
-                        && dataset.getLatestVersion().getMinorVersionNumber().equals((long) 0)) {
-                    //A false return value indicates a failure in calling the service
-                    for (DataFile df : dataset.getFiles()) {
-                        logger.log(Level.FINE, "registering global id for file {0}", df.getId());
-                        //A false return value indicates a failure in calling the service
-                        if (!idServiceBean.publicizeIdentifier(df)) {
-                            throw new Exception();
-                        }
-                        df.setGlobalIdCreateTime(getTimestamp());
-                        df.setIdentifierRegistered(true);
+        PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(dataset);
+        try {
+            // We will skip trying to register the global identifiers for datafiles
+            // if "dependent" file-level identifiers are requested, AND the naming
+            // protocol, or the authority of the dataset global id is different from
+            // what's currently configured for the Dataverse. In other words
+            // we can't get "dependent" DOIs assigned to files in a dataset
+            // with the registered id that is a handle; or even a DOI, but in
+            // an authority that's different from what's currently configured.
+            // File PIDs may be enabled/disabled per collection.
+            boolean registerGlobalIdsForFiles = ctxt.systemConfig().isFilePIDsEnabledForCollection(
+                    getDataset().getOwner()) 
+                    && pidProvider.canCreatePidsLike(dataset.getGlobalId());
+
+            if (registerGlobalIdsForFiles 
+                    && dataset.getLatestVersion().getMinorVersionNumber() != null
+                    && dataset.getLatestVersion().getMinorVersionNumber().equals((long) 0)) {
+                // A false return value indicates a failure in calling the service
+                for (DataFile df : dataset.getFiles()) {
+                    logger.log(Level.FINE, "registering global id for file {0}", df.getId());
+                    // A false return value indicates a failure in calling the service
+                    if (!pidProvider.publicizeIdentifier(df)) {
+                        throw new Exception();
                     }
+                    df.setGlobalIdCreateTime(getTimestamp());
+                    df.setIdentifierRegistered(true);
                 }
-                if (!idServiceBean.publicizeIdentifier(dataset)) {
-                    throw new Exception();
-                }
-                dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the idServiceBean.
-                dataset.setIdentifierRegistered(true);
-            } catch (Throwable e) {
-                logger.warning("Failed to register the identifier "+dataset.getGlobalId().asString()+", or to register a file in the dataset; notifying the user(s), unlocking the dataset");
-                
-                // Send failure notification to the user: 
-                notifyUsersDatasetPublishStatus(ctxt, dataset, UserNotification.Type.PUBLISHFAILED_PIDREG);
-                
-                ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.finalizePublication);
-                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()), this);
             }
+            if (!pidProvider.publicizeIdentifier(dataset)) {
+                throw new Exception();
+            }
+            dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the
+                                                       // pidProvider.
+            dataset.setIdentifierRegistered(true);
+        } catch (Throwable e) {
+            logger.warning("Failed to publicize the identifier " + dataset.getGlobalId().asString()
+                    + ", or to publicize a file in the dataset; notifying the user(s), unlocking the dataset");
+
+            // Send failure notification to the user:
+            notifyUsersDatasetPublishStatus(ctxt, dataset, UserNotification.Type.PUBLISHFAILED_PIDREG);
+
+            ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.finalizePublication);
+            throw new CommandException(
+                    BundleUtil.getStringFromBundle("dataset.publish.error", pidProvider.getProviderInformation()),
+                    this);
         }
     }
     
@@ -414,8 +464,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             if (dataFile.getPublicationDate() == null) {
                 // this is a new, previously unpublished file, so publish by setting date
                 dataFile.setPublicationDate(updateTime);
-                
-                // check if any prexisting roleassignments have file download and send notifications
+
+                // check if any pre-existing role assignments have file download and send
+                // notifications
                 notifyUsersFileDownload(ctxt, dataFile);
             }
             

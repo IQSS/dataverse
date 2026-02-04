@@ -88,8 +88,8 @@ public class Groups extends AbstractApiBean {
      *         that group from being created.
      */
     @PUT
-    @Path("ip/{groupName}")
-    public Response putIpGroups( @PathParam("groupName") String groupName, JsonObject dto ){
+    @Path("ip/{group}")
+    public Response putIpGroups( @PathParam("group") String groupName, JsonObject dto ){
         try {
             if ( groupName == null || groupName.trim().isEmpty() ) {
                 return badRequest("Group name cannot be empty");
@@ -118,8 +118,8 @@ public class Groups extends AbstractApiBean {
     }
 
     @GET
-    @Path("ip/{groupIdtf}")
-    public Response getIpGroup( @PathParam("groupIdtf") String groupIdtf ) {
+    @Path("ip/{group}")
+    public Response getIpGroup( @PathParam("group") String groupIdtf ) {
         IpGroup grp;
         if ( isNumeric(groupIdtf) ) {
             grp = ipGroupPrv.get( Long.parseLong(groupIdtf) );
@@ -131,8 +131,8 @@ public class Groups extends AbstractApiBean {
     }
 
     @DELETE
-    @Path("ip/{groupIdtf}")
-    public Response deleteIpGroup( @PathParam("groupIdtf") String groupIdtf ) {
+    @Path("ip/{group}")
+    public Response deleteIpGroup( @PathParam("group") String groupIdtf ) {
         IpGroup grp;
         if ( isNumeric(groupIdtf) ) {
             grp = ipGroupPrv.get( Long.parseLong(groupIdtf) );

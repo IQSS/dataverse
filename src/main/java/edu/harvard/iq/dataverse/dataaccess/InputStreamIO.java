@@ -165,4 +165,9 @@ public class InputStreamIO extends StorageIO<DataFile> {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: tthis method is not supported in this DataAccess driver.");
     }
 
+    @Override
+    public long retrieveSizeFromMedia() throws UnsupportedDataAccessOperationException {
+        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+    }
+
 }

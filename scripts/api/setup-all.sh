@@ -57,11 +57,7 @@ echo  "- Allow internal signup"
 curl -X PUT -d yes "${DATAVERSE_URL}/api/admin/settings/:AllowSignUp"
 curl -X PUT -d "/dataverseuser.xhtml?editMode=CREATE" "${DATAVERSE_URL}/api/admin/settings/:SignUpUrl"
 
-curl -X PUT -d doi "${DATAVERSE_URL}/api/admin/settings/:Protocol"
-curl -X PUT -d 10.5072 "${DATAVERSE_URL}/api/admin/settings/:Authority"
-curl -X PUT -d "FK2/" "${DATAVERSE_URL}/api/admin/settings/:Shoulder"
-curl -X PUT -d DataCite "${DATAVERSE_URL}/api/admin/settings/:DoiProvider"
-curl -X PUT -d burrito "${DATAVERSE_URL}/api/admin/settings/BuiltinUsers.KEY"
+curl -X PUT -d burrito "${DATAVERSE_URL}/api/admin/settings/:BuiltinUsersKey"
 curl -X PUT -d localhost-only "${DATAVERSE_URL}/api/admin/settings/:BlockedApiPolicy"
 curl -X PUT -d 'native/http' "${DATAVERSE_URL}/api/admin/settings/:UploadMethods"
 echo
@@ -69,7 +65,7 @@ echo
 echo "Setting up the admin user (and as superuser)"
 adminResp=$(curl -s -H "Content-type:application/json" -X POST -d @"$SCRIPT_PATH"/data/user-admin.json "${DATAVERSE_URL}/api/builtin-users?password=$DV_SU_PASSWORD&key=burrito")
 echo "$adminResp"
-curl -X POST "${DATAVERSE_URL}/api/admin/superuser/dataverseAdmin"
+curl -X PUT "${DATAVERSE_URL}/api/admin/superuser/dataverseAdmin" -d "true"
 echo
 
 echo "Setting up the root dataverse"
@@ -95,7 +91,7 @@ if [ $SECURESETUP = 1 ]
 then
     # Revoke the "burrito" super-key; 
     # Block sensitive API endpoints;
-    curl -X DELETE "${DATAVERSE_URL}/api/admin/settings/BuiltinUsers.KEY"
+    curl -X DELETE "${DATAVERSE_URL}/api/admin/settings/:BuiltinUsersKey"
     curl -X PUT -d 'admin,builtin-users' "${DATAVERSE_URL}/api/admin/settings/:BlockedApiEndpoints"
     echo "Access to the /api/admin and /api/test is now disabled, except for connections from localhost."
 else 

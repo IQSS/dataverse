@@ -1,6 +1,6 @@
 /*  
     Use to fix hidden section headers behind the navbar when using links with targets
-    See: http://stackoverflow.com/questions/10732690/offsetting-an-html-anchor-to-adjust-for-fixed-header    
+    See: https://stackoverflow.com/questions/10732690/offsetting-an-html-anchor-to-adjust-for-fixed-header    
 */
 $jqTheme(document).ready(function() {
   $jqTheme('a[href*="#"]:not([href="#"])').on('click', function() {

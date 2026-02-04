@@ -64,10 +64,14 @@ public class NullSafeJsonBuilder implements JsonObjectBuilder {
 		return this;
 	}
 
+	public NullSafeJsonBuilder add(String name, Integer value) {
+		return (value != null) ? add(name, value.intValue()) : this;
+	}
+
 	public NullSafeJsonBuilder add(String name, Long value) {
         return ( value != null ) ? add(name, value.longValue()) : this;
     }
-    
+
 	@Override
 	public NullSafeJsonBuilder add(String name, long value) {
 		delegate.add(name, value);
@@ -85,7 +89,10 @@ public class NullSafeJsonBuilder implements JsonObjectBuilder {
 		delegate.add(name, value);
 		return this;
 	}
-    
+	public NullSafeJsonBuilder add(String name, Boolean value) {
+		return (value != null) ? add(name, value.booleanValue()) : this;
+	}
+
 	@Override
 	public NullSafeJsonBuilder addNull(String name) {
 		delegate.addNull(name);

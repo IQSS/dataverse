@@ -16,6 +16,9 @@ import java.util.HashSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_LATEST_PUBLISHED;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.OK;
@@ -188,8 +191,7 @@ public class DownloadFilesIT {
         HashSet<String> expectedFiles6 = new HashSet<>(Arrays.asList("CODE_OF_CONDUCT.md", "LICENSE.md", "MANIFEST.TXT", "README.md", "CONTRIBUTING.md"));
         assertEquals(expectedFiles6, filenamesFound6);
 
-        String datasetVersionLatestPublished = ":latest-published";
-        Response downloadFiles9 = UtilIT.downloadFiles(datasetPid, datasetVersionLatestPublished, apiToken);
+        Response downloadFiles9 = UtilIT.downloadFiles(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken);
         downloadFiles9.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
@@ -200,8 +202,7 @@ public class DownloadFilesIT {
         assertEquals(expectedFiles7, filenamesFound7);
 
         // Guests cannot download draft versions.
-        String datasetVersionDraft = ":draft";
-        Response downloadFiles10 = UtilIT.downloadFiles(datasetPid, datasetVersionDraft, null);
+        Response downloadFiles10 = UtilIT.downloadFiles(datasetPid, DS_VERSION_DRAFT, null);
         downloadFiles10.prettyPrint();
         downloadFiles10.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode())

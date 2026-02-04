@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -499,7 +500,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
 
         OutputStream output = ec.getResponseOutputStream();
         
-        OutputStreamWriter osw = new OutputStreamWriter(output, "UTF-8");
+        OutputStreamWriter osw = new OutputStreamWriter(output, StandardCharsets.UTF_8);
         osw.write(provJsonState); //the button calling this will only be rendered if provJsonState exists (e.g. a file is uploaded)
         osw.close();
         fc.responseComplete();

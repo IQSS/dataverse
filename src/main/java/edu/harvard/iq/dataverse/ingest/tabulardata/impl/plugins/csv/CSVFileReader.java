@@ -110,7 +110,7 @@ public class CSVFileReader extends TabularDataFileReader {
      * @throws java.io.IOException if a reading error occurs.
      */
     @Override
-    public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
+    public TabularDataIngest read(BufferedInputStream stream, boolean saveWithVariableHeader, File dataFile) throws IOException {
         init();
 
         if (stream == null) {
@@ -124,7 +124,7 @@ public class CSVFileReader extends TabularDataFileReader {
         File tabFileDestination = File.createTempFile("data-", ".tab");
         PrintWriter tabFileWriter = new PrintWriter(tabFileDestination.getAbsolutePath());
 
-        int lineCount = readFile(localBufferedReader, dataTable, tabFileWriter);
+        int lineCount = readFile(localBufferedReader, dataTable, saveWithVariableHeader, tabFileWriter);
 
         logger.fine("Tab file produced: " + tabFileDestination.getAbsolutePath());
 
@@ -136,14 +136,17 @@ public class CSVFileReader extends TabularDataFileReader {
 
     }
 
-    public int readFile(BufferedReader csvReader, DataTable dataTable, PrintWriter finalOut) throws IOException {
+    public int readFile(BufferedReader csvReader, DataTable dataTable, boolean saveWithVariableHeader, PrintWriter finalOut) throws IOException {
 
         List<DataVariable> variableList = new ArrayList<>();
         CSVParser parser = new CSVParser(csvReader, inFormat.withHeader());
         Map<String, Integer> headers = parser.getHeaderMap();
 
         int i = 0;
+        String variableNameHeader = null;
+        
         for (String varName : headers.keySet()) {
+            // @todo: is .keySet() guaranteed to return the names in the right order?
             if (varName == null || varName.isEmpty()) {
                 // TODO:
                 // Add a sensible variable name validation algorithm.
@@ -158,6 +161,13 @@ public class CSVFileReader extends TabularDataFileReader {
 
             dv.setTypeCharacter();
             dv.setIntervalDiscrete();
+            
+            if (saveWithVariableHeader) {
+                    variableNameHeader = variableNameHeader == null
+                            ? varName 
+                            : variableNameHeader.concat("\t" + varName);
+                }
+            
             i++;
         }
 
@@ -342,6 +352,14 @@ public class CSVFileReader extends TabularDataFileReader {
         try (BufferedReader secondPassReader = new BufferedReader(new FileReader(firstPassTempFile))) {
             parser = new CSVParser(secondPassReader, inFormat.withHeader());
             String[] caseRow = new String[headers.size()];
+            
+            // Save the variable name header, if requested
+            if (saveWithVariableHeader) {
+                if (variableNameHeader == null) {
+                    throw new IOException("failed to generate the Variable Names header");
+                }
+                finalOut.println(variableNameHeader);
+            }
 
             for (CSVRecord record : parser) {
                 if (!record.isConsistent()) {

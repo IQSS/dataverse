@@ -2,7 +2,7 @@
 
 **Which issue(s) this PR closes**:
 
-Closes #
+- Closes #
 
 **Special notes for your reviewer**:
 

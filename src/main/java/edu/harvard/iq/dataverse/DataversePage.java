@@ -9,17 +9,20 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CheckRateLimitForCollectionPageCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateSavedSearchCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchIncludeFragment;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchFilterQuery;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
@@ -28,15 +31,20 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
+
+import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -80,8 +88,6 @@ public class DataversePage implements java.io.Serializable {
     @EJB
     EjbDataverseEngine commandEngine;
     @EJB
-    SearchServiceBean searchService;
-    @EJB
     DatasetFieldServiceBean datasetFieldService;
     @EJB
     DataverseFacetServiceBean dataverseFacetService;
@@ -109,7 +115,13 @@ public class DataversePage implements java.io.Serializable {
     @EJB
     DataverseLinkingServiceBean linkingService;
     @Inject PermissionsWrapper permissionsWrapper;
-    @Inject DataverseHeaderFragment dataverseHeaderFragment; 
+    @Inject 
+    NavigationWrapper navigationWrapper;
+    @Inject DataverseHeaderFragment dataverseHeaderFragment;
+    @EJB
+    PidProviderFactoryBean pidProviderFactoryBean;
+    @EJB
+    CacheFactoryBean cacheFactory;
 
     private Dataverse dataverse = new Dataverse();  
 
@@ -310,7 +322,10 @@ public class DataversePage implements java.io.Serializable {
     
     public String init() {
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
-
+        // Check for rate limit exceeded. Must be done before anything else to prevent unnecessary processing.
+        if (!cacheFactory.checkRate(session.getUser(), new CheckRateLimitForCollectionPageCommand(null,null))) {
+            return navigationWrapper.tooManyRequests();
+        }
         if (this.getAlias() != null || this.getId() != null || this.getOwnerId() == null) {// view mode for a dataverse
             if (this.getAlias() != null) {
                 dataverse = dataverseService.findByAlias(this.getAlias());
@@ -362,7 +377,7 @@ public class DataversePage implements java.io.Serializable {
         List<Dataverse> featuredSource = new ArrayList<>();
         List<Dataverse> featuredTarget = new ArrayList<>();
         featuredSource.addAll(dataverseService.findAllPublishedByOwnerId(dataverse.getId()));
-        featuredSource.addAll(linkingService.findLinkingDataverses(dataverse.getId()));
+        featuredSource.addAll(linkingService.findLinkedDataverses(dataverse.getId()));
         List<DataverseFeaturedDataverse> featuredList = featuredDataverseService.findByDataverseId(dataverse.getId());
         for (DataverseFeaturedDataverse dfd : featuredList) {
             Dataverse fd = dfd.getFeaturedDataverse();
@@ -609,43 +624,16 @@ public class DataversePage implements java.io.Serializable {
                 if (dataverse.isMetadataBlockRoot() && (mdb.isSelected() || mdb.isRequired())) {
                     selectedBlocks.add(mdb);
                     for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
-                        // currently we don't allow input levels for setting an optional field as conditionally required
-                        // so we skip looking at parents (which get set automatically with their children)
-                        if (!dsft.isHasChildren() && dsft.isRequiredDV()) {
-                            boolean addRequiredInputLevels = false;
-                            boolean parentAlreadyAdded = false;
+                        if (!dsft.isChild()) {
+                            // Save input level for parent field
+                            saveInputLevels(listDFTIL, dsft, dataverse);
                             
-                            if (!dsft.isHasParent() && dsft.isInclude()) {
-                                addRequiredInputLevels = !dsft.isRequired();
+                            // Handle child fields
+                            if (dsft.isHasChildren()) {
+                                for (DatasetFieldType child : dsft.getChildDatasetFieldTypes()) {
+                                    saveInputLevels(listDFTIL, child, dataverse);
+                                }
                             }
-                            if (dsft.isHasParent() && dsft.getParentDatasetFieldType().isInclude()) {
-                                addRequiredInputLevels = !dsft.isRequired() || !dsft.getParentDatasetFieldType().isRequired();
-                            }
-                            
-                            if (addRequiredInputLevels) {
-                                listDFTIL.add(new DataverseFieldTypeInputLevel(dsft, dataverse,true, true));
-                            
-                                //also add the parent as required (if it hasn't been added already)
-                                // todo: review needed .equals() methods, then change this to use a Set, in order to simplify code
-                                if (dsft.isHasParent()) {
-                                    DataverseFieldTypeInputLevel parentToAdd = new DataverseFieldTypeInputLevel(dsft.getParentDatasetFieldType(), dataverse, true, true);
-                                    for (DataverseFieldTypeInputLevel dataverseFieldTypeInputLevel : listDFTIL) {
-                                        if (dataverseFieldTypeInputLevel.getDatasetFieldType().getId() == parentToAdd.getDatasetFieldType().getId()) {
-                                            parentAlreadyAdded = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!parentAlreadyAdded) {
-                                        // Only add the parent once. There's a UNIQUE (dataverse_id, datasetfieldtype_id)
-                                        // constraint on the dataversefieldtypeinputlevel table we need to avoid.
-                                        listDFTIL.add(parentToAdd);
-                                    }
-                                }      
-                            }
-                        }
-                        if ((!dsft.isHasParent() && !dsft.isInclude())
-                                || (dsft.isHasParent() && !dsft.getParentDatasetFieldType().isInclude())) {
-                            listDFTIL.add(new DataverseFieldTypeInputLevel(dsft, dataverse,false, false));                        
                         }
                     }
                 }
@@ -1012,27 +1000,11 @@ public class DataversePage implements java.io.Serializable {
 
             for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
                 if (!dsft.isChild()) {
-                    DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(dataverseIdForInputLevel, dsft.getId());
-                    if (dsfIl != null) {
-                        dsft.setRequiredDV(dsfIl.isRequired());
-                        dsft.setInclude(dsfIl.isInclude());
-                    } else {
-                        dsft.setRequiredDV(dsft.isRequired());
-                        dsft.setInclude(true);
-                    }
+                    loadInputLevels(dsft, dataverseIdForInputLevel);
                     dsft.setOptionSelectItems(resetSelectItems(dsft));
                     if (dsft.isHasChildren()) {
                         for (DatasetFieldType child : dsft.getChildDatasetFieldTypes()) {
-                            DataverseFieldTypeInputLevel dsfIlChild = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(dataverseIdForInputLevel, child.getId());
-                            if (dsfIlChild != null) {
-                                child.setRequiredDV(dsfIlChild.isRequired());
-                                child.setInclude(dsfIlChild.isInclude());
-                            } else {
-                                // in the case of conditionally required (child = true, parent = false)
-                                // we set this to false; i.e this is the default "don't override" value
-                                child.setRequiredDV(child.isRequired() && dsft.isRequired());
-                                child.setInclude(true);
-                            }
+                            loadInputLevels(child, dataverseIdForInputLevel);
                             child.setOptionSelectItems(resetSelectItems(child));
                         }
                     }
@@ -1041,6 +1013,21 @@ public class DataversePage implements java.io.Serializable {
             retList.add(mdb);
         }
         setAllMetadataBlocks(retList);
+    }
+
+    private void loadInputLevels(DatasetFieldType dsft, Long dataverseIdForInputLevel) {
+        DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService
+            .findByDataverseIdDatasetFieldTypeId(dataverseIdForInputLevel, dsft.getId());
+        
+        if (dsfIl != null) {
+            dsft.setRequiredDV(dsfIl.isRequired());
+            dsft.setInclude(dsfIl.isInclude());
+            dsft.setLocalDisplayOnCreate(dsfIl.getDisplayOnCreate());
+        } else {
+            // If there is no input level, use the default values
+            dsft.setRequiredDV(dsft.isRequired());
+            dsft.setInclude(true);
+        }
     }
 
     public void validateAlias(FacesContext context, UIComponent toValidate, Object value) {
@@ -1251,7 +1238,7 @@ public class DataversePage implements java.io.Serializable {
                 setNames.put(BundleUtil.getStringFromBundle("dataverse.curationLabels.disabled"), SystemConfig.CURATIONLABELSDISABLED);
 
                 allowedSetNames.forEach(name -> {
-                    String localizedName = DatasetUtil.getLocaleExternalStatus(name) ;
+                    String localizedName = DatasetUtil.getLocaleCurationStatusLabelFromString(name) ;
                     setNames.put(localizedName,name);
                 });
             }
@@ -1286,4 +1273,90 @@ public class DataversePage implements java.io.Serializable {
         return setName;
     }
 
+    public Set<Entry<String, String>> getGuestbookEntryOptions() {
+        return settingsWrapper.getGuestbookEntryOptions(this.dataverse).entrySet();
+    }
+
+    public Set<Entry<String, String>> getPidProviderOptions() {
+        PidProvider defaultPidProvider = pidProviderFactoryBean.getDefaultPidGenerator();
+        Set<String> providerIds = PidUtil.getManagedProviderIds();
+        Set<Entry<String, String>> options = new HashSet<Entry<String, String>>();
+        if (providerIds.size() > 1) {
+
+            String label = null;
+            if (this.dataverse.getOwner() != null && this.dataverse.getOwner().getEffectivePidGenerator()!= null) {
+                PidProvider inheritedPidProvider = this.dataverse.getOwner().getEffectivePidGenerator();
+                label = inheritedPidProvider.getLabel() + " " + BundleUtil.getStringFromBundle("dataverse.inherited") + ": "
+                        + inheritedPidProvider.getProtocol() + ":" + inheritedPidProvider.getAuthority()
+                        + inheritedPidProvider.getSeparator() + inheritedPidProvider.getShoulder();
+            } else {
+                label = defaultPidProvider.getLabel() +  " " + BundleUtil.getStringFromBundle("dataverse.default") + ": "
+                        + defaultPidProvider.getProtocol() + ":" + defaultPidProvider.getAuthority()
+                        + defaultPidProvider.getSeparator() + defaultPidProvider.getShoulder();
+            }
+            Entry<String, String> option = new AbstractMap.SimpleEntry<String, String>("default", label);
+            options.add(option);
+        }
+        for (String providerId : providerIds) {
+            PidProvider pidProvider = PidUtil.getPidProvider(providerId);
+            String label = pidProvider.getLabel() + ": " + pidProvider.getProtocol() + ":" + pidProvider.getAuthority()
+                    + pidProvider.getSeparator() + pidProvider.getShoulder();
+            Entry<String, String> option = new AbstractMap.SimpleEntry<String, String>(providerId, label);
+            options.add(option);
+        }
+        return options;
+    }
+
+    public void updateDisplayOnCreate(Long mdbId, Long dsftId, boolean currentValue) {
+        for (MetadataBlock mdb : allMetadataBlocks) {
+            if (mdb.getId().equals(mdbId)) {
+                for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
+                    if (dsft.getId().equals(dsftId)) {
+                        // Update value in memory
+                        dsft.setLocalDisplayOnCreate(!currentValue);
+                        
+                        // Update or create input level
+                        DataverseFieldTypeInputLevel existingLevel = dataverseFieldTypeInputLevelService
+                            .findByDataverseIdDatasetFieldTypeId(dataverse.getId(), dsftId);
+                        
+                        if (existingLevel != null) {
+                            existingLevel.setDisplayOnCreate(!currentValue);
+                            dataverseFieldTypeInputLevelService.save(existingLevel);
+                        } else {
+                            DataverseFieldTypeInputLevel newLevel = new DataverseFieldTypeInputLevel(
+                                dsft, 
+                                dataverse, 
+                                dsft.isRequiredDV(),
+                                true,  // default include
+                                !currentValue  // new value of displayOnCreate
+                            );
+                            dataverseFieldTypeInputLevelService.save(newLevel);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void saveInputLevels(List<DataverseFieldTypeInputLevel> listDFTIL, DatasetFieldType dsft, Dataverse dataverse) {
+        // If the field already has an input level, update it
+        DataverseFieldTypeInputLevel existingLevel = dataverseFieldTypeInputLevelService
+            .findByDataverseIdDatasetFieldTypeId(dataverse.getId(), dsft.getId());
+        
+        if (existingLevel != null) {
+            existingLevel.setDisplayOnCreate(dsft.getLocalDisplayOnCreate());
+            existingLevel.setInclude(dsft.isInclude());
+            existingLevel.setRequired(dsft.isRequiredDV());
+            listDFTIL.add(existingLevel);
+        } else if (dsft.isInclude() || (dsft.getLocalDisplayOnCreate()!=null) || dsft.isRequiredDV()) {
+            // Only create new input level if there is any specific configuration
+            listDFTIL.add(new DataverseFieldTypeInputLevel(
+                dsft, 
+                dataverse, 
+                dsft.isRequiredDV(), 
+                dsft.isInclude(), 
+                dsft.getLocalDisplayOnCreate()
+            ));
+        }
+    }
 }

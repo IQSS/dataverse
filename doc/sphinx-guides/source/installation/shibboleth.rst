@@ -76,7 +76,7 @@ A ``jk-connector`` network listener should have already been set up when you ran
 
 You can verify this with ``./asadmin list-network-listeners``. 
 
-This enables the `AJP protocol <http://en.wikipedia.org/wiki/Apache_JServ_Protocol>`_ used in Apache configuration files below.
+This enables the `AJP protocol <https://en.wikipedia.org/wiki/Apache_JServ_Protocol>`_ used in Apache configuration files below.
 
 SSLEngine Warning Workaround
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -93,7 +93,7 @@ Configure Apache
 Enforce HTTPS
 ~~~~~~~~~~~~~
 
-To prevent attacks such as `FireSheep <http://en.wikipedia.org/wiki/Firesheep>`_, HTTPS should be enforced. https://wiki.apache.org/httpd/RewriteHTTPToHTTPS provides a good method. You **could** copy and paste that those "rewrite rule" lines into Apache's main config file at ``/etc/httpd/conf/httpd.conf`` but using Apache's "virtual hosts" feature is recommended so that you can leave the main configuration file alone and drop a host-specific file into place.
+To prevent attacks such as `FireSheep <https://en.wikipedia.org/wiki/Firesheep>`_, HTTPS should be enforced. https://wiki.apache.org/httpd/RewriteHTTPToHTTPS provides a good method. You **could** copy and paste that those "rewrite rule" lines into Apache's main config file at ``/etc/httpd/conf/httpd.conf`` but using Apache's "virtual hosts" feature is recommended so that you can leave the main configuration file alone and drop a host-specific file into place.
 
 Below is an example of how "rewrite rule" lines look within a ``VirtualHost`` block. Download a :download:`sample file <../_static/installation/files/etc/httpd/conf.d/dataverse.example.edu.conf>` , edit it to substitute your own hostname under ``ServerName``, and place it at ``/etc/httpd/conf.d/dataverse.example.edu.conf`` or a filename that matches your hostname. The file must be in ``/etc/httpd/conf.d`` and must end in ".conf" to be included in Apache's configuration.
 
@@ -141,6 +141,8 @@ shibboleth2.xml
 .. literalinclude:: ../_static/installation/files/etc/shibboleth/shibboleth2.xml
    :language: xml
 
+.. _specific-identity-providers:
+
 Specific Identity Provider(s)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -148,16 +150,28 @@ When configuring the ``MetadataProvider`` section of ``shibboleth2.xml`` you sho
 
 Most Dataverse installations will probably only want to authenticate users via Shibboleth using their home institution's Identity Provider (IdP).  The configuration above in ``shibboleth2.xml`` looks for the metadata for the Identity Providers (IdPs) in a file at ``/etc/shibboleth/dataverse-idp-metadata.xml``.  You can download a :download:`sample dataverse-idp-metadata.xml file <../_static/installation/files/etc/shibboleth/dataverse-idp-metadata.xml>` and that includes the SAMLtest IdP from https://samltest.id but you will want to edit this file to include the metadata from the Identity Provider you care about. The identity people at your institution will be able to provide you with this metadata and they will very likely ask for a list of attributes that the Dataverse Software requires, which are listed at :ref:`shibboleth-attributes`.
 
+.. _identity-federation:
+
 Identity Federation
 ^^^^^^^^^^^^^^^^^^^
 
-Rather than or in addition to specifying individual Identity Provider(s) you may wish to broaden the number of users who can log into your Dataverse installation by registering your Dataverse installation as a Service Provider (SP) within an identity federation. For example, in the United States, users from the `many institutions registered with the "InCommon" identity federation <https://incommon.org/community-organizations/>`_ that release the `"Research & Scholarship Attribute Bundle" <https://refeds.org/research-and-scholarship>`_  will be able to log into your Dataverse installation if you register it as an `InCommon Service Provider <https://spaces.at.internet2.edu/display/federation/federation-manager-add-sp>`_ that is part of the `Research & Scholarship (R&S) category <https://refeds.org/research-and-scholarship>`_.
+Rather than or in addition to specifying individual Identity Providers (see :ref:`specific-identity-providers` above) you may wish to broaden the number of users who can log into your Dataverse installation (to include collaborators, for example) by registering it as a Service Provider (SP) within an identity federation.
 
-The details of how to register with an identity federation are out of scope for this document, but a good starting point may be `this list of identity federations across the world <https://refeds.org/federations>`_.
+For example, in the United States, you would register your Dataverse installation with `InCommon <https://incommon.org>`_. For a list of federations around the world, see `REFEDS (the Research and Education FEDerations group) <https://refeds.org/federations>`_. The details of how to register with an identity federation are out of scope for this document.
 
-One of the benefits of using ``shibd`` is that it can be configured to periodically poll your identity federation for updates as new Identity Providers (IdPs) join the federation you've registered with. For the InCommon federation, `this page describes how to download and verify signed InCommon metadata every hour <https://spaces.at.internet2.edu/display/federation/Download+InCommon+metadata>`_. You can also see an example of this as ``maxRefreshDelay="3600"`` in the commented out section of the ``shibboleth2.xml`` file above.
+If you are planning to use InCommon, please note that ``shibd`` needs to be configured to use the new MDQ protocol and WayFinder `service <https://spaces.at.internet2.edu/display/federation/incommon-wayfinder-announcement>`_ `announced <https://lists.incommon.org/sympa/arc/inc-ops-notifications/2024-04/msg00000.html>`_ `by <https://incommon.org/news/incommon-federation-service-enhancements/>`_ InCommon. The sample ``shibboleth2.xml`` provided already contains commented-out sections pre-configured to work with this new InCommon framework. Please see https://spaces.at.internet2.edu/display/MDQ/how-to-configure-shib-sp-to-use-mdq and https://spaces.at.internet2.edu/display/federation/how-to-configure-service-to-use-wayfinder for more information. You will also need to set the :ref:`dataverse.feature.shibboleth-use-wayfinder` feature flag to true.
 
-Once you've joined a federation the list of IdPs in the dropdown can be quite long! If you're curious how many are in the list you could try something like this: ``curl https://dataverse.example.edu/Shibboleth.sso/DiscoFeed | jq '.[].entityID' | wc -l``
+For a successful login to Dataverse, certain :ref:`shibboleth-attributes` must be released by the Identity Provider (IdP). Otherwise, in the federation context, users will have the frustrating experience of selecting their IdP in the list but then getting an error like ``Problem with Identity Provider – The SAML assertion for "eppn" was null``. We definitely want to prevent this! There's even some guidance about this problem in the User Guide under the heading :ref:`fix-shib-login` that links back here.
+
+For InCommon, a decent strategy for ensuring that IdPs release the necessary attributes is to have both the SP (your Dataverse installation) and the IdP (there are many of these around the world) join the Research & Scholarship (R&S) category. The `R&S website <https://incommon.org/federation/research-and-scholarship/>`_ explains the R&S dream well:
+
+    "The Research and Scholarship (R&S) entity category defines a simple and scalable way to streamline federated research access. Identity providers (IdP) supporting R&S category agree to release basic, pre-defined person directory information to all service providers (SP) serving the Research and Scholarship community."
+
+In short, R&S IdPs trust R&S SPs and vice versa. R&S SPs (like Dataverse) agree to only require attributes that R&S IdPs agree to release (the `"Research & Scholarship Attribute Bundle" <https://refeds.org/research-and-scholarship>`_). Ideally, there is no need to make special arrangements with each IdP.
+
+For InCommon, follow their `instructions <https://spaces.at.internet2.edu/display/federation/Service+provider+-+apply+for+Research+and+Scholarship+category>`_ to make your Dataverse installation an R&S SP. For other federations, consult their documentation.
+
+Unfortunately, in practice, some R&S IdPs do not release the attributes they agreed to release to R&S SPs when joining R&S. In this case, you will have to contact the IdP, show them the list of :ref:`shibboleth-attributes` that Dataverse requires for a successful login, and try to convince them to release them.
 
 .. _shibboleth-attributes:
 
@@ -199,43 +213,21 @@ The first and easiest option is to set ``SELINUX=permisive`` in ``/etc/selinux/c
 Reconfigure SELinux to Accommodate Shibboleth
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The second (more involved) option is to use the ``checkmodule``, ``semodule_package``, and ``semodule`` tools to apply a local policy to make Shibboleth work with SELinux. Let's get started.
+Issue the following commands to allow Shibboleth to function when SELinux is enabled:
 
-Put Type Enforcement (TE) File in misc directory
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. code-block:: none
 
-Copy and paste or download the :download:`shibboleth.te <../_static/installation/files/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te>` Type Enforcement (TE) file below and put it at ``/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te``.
+    # Allow httpd to connect to network and read content
+    sudo /usr/sbin/setsebool -P httpd_can_network_connect 1
+    sudo /usr/sbin/setsebool -P httpd_read_user_content 1
 
-.. literalinclude:: ../_static/installation/files/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te
-   :language: text
+    # Allow httpd to connect to Shib socket
+    sudo grep httpd_t /var/log/audit/audit.log |/usr/bin/audit2allow -M allow_httpd_shibd_sock
+    sudo /usr/sbin/semodule -i allow_httpd_shibd_sock.pp
 
-(If you would like to know where the ``shibboleth.te`` came from and how to hack on it, please see the :doc:`/developers/selinux` section of the Developer Guide. Pull requests are welcome!)
-
-Navigate to misc directory
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-``cd /etc/selinux/targeted/src/policy/domains/misc``
-
-Run checkmodule
-^^^^^^^^^^^^^^^
-
-``checkmodule -M -m -o shibboleth.mod shibboleth.te``
-
-Run semodule_package
-^^^^^^^^^^^^^^^^^^^^
-
-``semodule_package -o shibboleth.pp -m shibboleth.mod``
-
-Silent is golden. No output is expected.
-
-Run semodule
-^^^^^^^^^^^^
-
-``semodule -i shibboleth.pp``
-
-Silent is golden. No output is expected. This will place a file in ``/etc/selinux/targeted/modules/active/modules/shibboleth.pp`` and include "shibboleth" in the output of ``semodule -l``. See the ``semodule`` man page if you ever want to remove or disable the module you just added.
-
-Congrats! You've made the creator of http://stopdisablingselinux.com proud. :)
+    # Allow httpd to read /var/cache/shibboleth
+    sudo /usr/sbin/semanage fcontext -a -t httpd_sys_content_t "/var/cache/shibboleth(/.*)?"
+    sudo /usr/sbin/restorecon -vR /var/cache/shibboleth
 
 Restart Apache and Shibboleth
 -----------------------------
@@ -269,13 +261,22 @@ On CentOS 6:
 
 ``chkconfig shibd on``
 
-Verify DiscoFeed and Metadata URLs
-----------------------------------
+Verify the Metadata URL
+-----------------------
 
-As a sanity check, visit the following URLs (substituting your hostname) to make sure you see JSON and XML:
+Substitute your hostname and verify that you are seeing your service provider metadata in XML format:
+
+- https://dataverse.example.edu/Shibboleth.sso/Metadata
+
+
+If Your Instance is Using Discofeed: Verify DiscoFeed URL
+---------------------------------------------------------
+
+As another sanity check, substitute your hostname and make sure you see well-formed JSON:
 
 - https://dataverse.example.edu/Shibboleth.sso/DiscoFeed
-- https://dataverse.example.edu/Shibboleth.sso/Metadata
+
+(Skip this step if you'll be using Shibboleth as a registered member of InCommon federation, since the DiscoFeed will not be part of the workflow.)
 
 The JSON in ``DiscoFeed`` comes from the list of IdPs you configured in the ``MetadataProvider`` section of ``shibboleth2.xml`` and will form a dropdown list on the Login Page.
 
@@ -407,6 +408,8 @@ Rather than looking up the user's id in the ``authenticateduser`` database table
 ``curl -H "X-Dataverse-key: $API_TOKEN" http://localhost:8080/api/admin/authenticatedUsers``
 
 Per above, you now need to tell the user to use the password reset feature to set a password for their local account.
+
+.. _shib-groups:
 
 Institution-Wide Shibboleth Groups
 ----------------------------------

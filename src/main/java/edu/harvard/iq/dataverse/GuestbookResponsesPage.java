@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
 import java.util.logging.Logger;
@@ -101,8 +102,9 @@ public class GuestbookResponsesPage implements java.io.Serializable {
     private String getFileName(){
        // The fix below replaces any spaces in the name of the dataverse with underscores;
        // without it, the filename was chopped off (by the browser??), and the user 
-       // was getting the file name "Foo", instead of "Foo and Bar in Social Sciences.csv". -- L.A. 
-       return  dataverse.getName().replace(' ', '_') + "_" + guestbook.getId() + "_GuestbookReponses.csv";
+       // was getting the file name "Foo", instead of "Foo and Bar in Social Sciences.csv". -- L.A.
+       // Also removing some chars that have been reported to cause issues with certain browsers
+       return  FileUtil.sanitizeFileName(dataverse.getName() + "_" + guestbook.getId() + "_GuestbookResponses.csv");
     }
 
     public void streamResponsesByDataverseAndGuestbook(){

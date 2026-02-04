@@ -444,7 +444,3 @@ The codebase is structured like this:
 
 .. [#f1] Modern IDEs import your Maven POM and offer import autocompletion for classes based on direct dependencies in the model. You might end up using legacy or repackaged classes because of a wrong scope.
 .. [#f2] This is going to bite back in modern IDEs when importing classes from transitive dependencies by "autocompletion accident".
-
-----
-
-Previous: :doc:`documentation` | Next: :doc:`debugging`

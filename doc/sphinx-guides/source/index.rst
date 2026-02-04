@@ -6,6 +6,8 @@
 Dataverse Documentation v. |version|
 ====================================
 
+Check out the new :doc:`/quickstart/index`!
+
 These documentation guides are for the |version| version of Dataverse. To find guides belonging to previous or future versions, :ref:`guides_versions` has a list of all available versions.
 
 .. toctree::
@@ -13,13 +15,17 @@ These documentation guides are for the |version| version of Dataverse. To find g
   :titlesonly:
   :maxdepth: 2
 
+  quickstart/index
   user/index
   admin/index
+  ai/index
   api/index
   installation/index
+  contributor/index
   developers/index
   container/index
   style/index
+  qa/index.md
 
 How the Guides Are Organized
 ----------------------------
@@ -45,7 +51,7 @@ Other Resources
 Additional information about the Dataverse Project itself
 including presentations, information about upcoming releases, data
 management and citation, and announcements can be found at
-`http://dataverse.org/ <http://dataverse.org/>`__
+`https://dataverse.org/ <https://dataverse.org/>`__
 
 **User Group**
 
@@ -68,7 +74,7 @@ The support email address is `support@dataverse.org <mailto:support@dataverse.or
 **Reporting Issues and Contributing**
 
 Report bugs and add feature requests in `GitHub Issues <https://github.com/IQSS/dataverse/issues>`__
-or use `GitHub pull requests <http://guides.dataverse.org/en/latest/developers/version-control.html#how-to-make-a-pull-request>`__,
+or use `GitHub pull requests <https://guides.dataverse.org/en/latest/developers/version-control.html#how-to-make-a-pull-request>`__,
 if you have some code, scripts or documentation that you'd like to share.
 If you have a **security issue** to report, please email `security@dataverse.org <mailto:security@dataverse.org>`__. See also :ref:`reporting-security-issues`.
 

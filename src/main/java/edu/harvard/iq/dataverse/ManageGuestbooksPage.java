@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteGuestbookCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestbookRootCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.LinkedList;
@@ -220,7 +221,8 @@ public class ManageGuestbooksPage implements java.io.Serializable {
        // The fix below replaces any spaces in the name of the dataverse with underscores;
        // without it, the filename was chopped off (by the browser??), and the user 
        // was getting the file name "Foo", instead of "Foo and Bar in Social Sciences.csv". -- L.A.
-       return  dataverse.getName().replace(' ', '_') + "_GuestbookReponses.csv";
+       // Also removing some chars that have been reported to cause issues with certain browsers
+       return  FileUtil.sanitizeFileName(dataverse.getName() + "_GuestbookResponses.csv");
     }
     
     public void deleteGuestbook() {

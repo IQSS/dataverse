@@ -5,10 +5,7 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -34,13 +31,25 @@ public class RestrictFileCommand extends AbstractVoidCommand {
 
     private final DataFile file;
     private final boolean restrict;
-    
+    private final Boolean fileAccessRequest;
+    private final String termsOfAccess;
+
+    public RestrictFileCommand(DataFile file, DataverseRequest aRequest, boolean restrict, Boolean fileAccessRequest, String termsOfAccess) {
+        super(aRequest, file.getOwner());
+        this.file = file;
+        this.restrict = restrict;
+        this.fileAccessRequest = fileAccessRequest;
+        this.termsOfAccess = termsOfAccess;
+    }
+
     public RestrictFileCommand(DataFile file, DataverseRequest aRequest, boolean restrict) {
         super(aRequest, file.getOwner());
         this.file = file;
         this.restrict = restrict;
-    }    
-       
+        this.fileAccessRequest = null;
+        this.termsOfAccess = null;
+    }
+
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         // check if public install & don't allow
@@ -64,6 +73,13 @@ public class RestrictFileCommand extends AbstractVoidCommand {
         else {
             Dataset dataset = file.getOwner();
             DatasetVersion workingVersion = dataset.getOrCreateEditVersion();
+            if (restrict && fileAccessRequest != null) {
+                if (workingVersion.getTermsOfUseAndAccess() == null) {
+                    workingVersion.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+                }
+                workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);
+                workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
+            }
             // We need the FileMetadata for the file in the draft dataset version and the
             // file we have may still reference the fmd from the prior released version
             FileMetadata draftFmd = file.getFileMetadata();
@@ -85,6 +101,10 @@ public class RestrictFileCommand extends AbstractVoidCommand {
                     file.setRestricted(restrict);
                 }
             }
+        }
+        if (restrict) {
+            // delete all FeaturedItems with links to this restricted file
+            ctxt.dataverseFeaturedItems().deleteAllByDvObjectId(file.getId());
         }
     }
 }

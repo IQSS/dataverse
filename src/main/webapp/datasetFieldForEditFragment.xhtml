@@ -15,6 +15,7 @@
                  styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
                  rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary
                              and (dsfv.datasetField.datasetFieldType.fieldType == 'TEXT'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'STRING'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'INT'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'FLOAT'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'URL'
@@ -32,6 +33,7 @@
                  styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
                  rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary
                              and (dsfv.datasetField.datasetFieldType.fieldType == 'TEXT'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'STRING'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'INT'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'FLOAT'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'URL'
@@ -42,6 +44,7 @@
             </c:if>
             <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvoc.getString('languages'))}"/>
             <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvoc.getString('cvoc-url','')}"/>
+            <f:passThroughAttribute name="data-cvoc-headers" value="#{cvoc.containsKey('headers') ? cvoc.get('headers').toString() : '{}'}"/>
             <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvoc.getString('protocol','')}"/>
             <f:passThroughAttribute name="data-cvoc-filter" value="#{cvoc.getString('term-parent-uri','')}"/>
             <f:passThroughAttribute name="data-cvoc-vocabs" value="#{cvoc.get('vocabs').toString()}"/>
@@ -55,6 +58,7 @@
                  styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
                  rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary
                              and (dsfv.datasetField.datasetFieldType.fieldType == 'TEXT'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'STRING'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'INT'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'FLOAT'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'URL'
@@ -73,7 +77,8 @@
         <c:if test="#{dsfvIndex!=0}">
             <f:passThroughAttribute name="aria-label" value="#{bundle['dataset.additionalEntry']}" />
         </c:if>
-        </p:inputTextarea>
+        <f:passThroughAttribute rendered="#{cvoc!=null and !cvoc.getString('term-uri-field').equals(dsfv.datasetField.datasetFieldType.name)}" name="data-cvoc-managed-field" value="#{dsfv.datasetField.datasetFieldType.name}"/>
+    </p:inputTextarea>
     <p:watermark for="description" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
 
     <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{dsfvIndex eq 0 and !empty dsfv.datasetField.validationMessage}">
