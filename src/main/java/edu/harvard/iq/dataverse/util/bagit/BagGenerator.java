@@ -1289,7 +1289,7 @@ public class BagGenerator {
      * 
      *  Caller must close the stream when done.
      */
-    InputStreamSupplier getInputStreamSupplier(final String uriString) {
+    public InputStreamSupplier getInputStreamSupplier(final String uriString) {
 
         return new InputStreamSupplier() {
             public InputStream get() {
@@ -1484,6 +1484,10 @@ public class BagGenerator {
         @Override
         public int compareTo(FileEntry other) {
             return Long.compare(this.size, other.size);
+        }
+
+        public long getSize() {
+           return size;
         }
     }
 }

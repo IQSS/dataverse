@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.BagItLocalPath;
 import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
+import edu.harvard.iq.dataverse.util.bagit.BagGenerator.FileEntry;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
@@ -23,6 +24,7 @@ import jakarta.json.JsonObjectBuilder;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 
 import org.apache.commons.io.FileUtils;
 
@@ -63,12 +65,22 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
                         new File(localPath + "/" + spaceName + "-datacite.v" + dv.getFriendlyVersionNumber() + ".xml"),
                         dataciteXml, StandardCharsets.UTF_8);
                 BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
-                bagger.setNumConnections(getNumberOfBagGeneratorThreads());
                 bagger.setAuthenticationKey(token.getTokenString());
                 zipName = localPath + "/" + spaceName + "v" + dv.getFriendlyVersionNumber() + ".zip";
                 //ToDo: generateBag(File f, true) seems to do the same thing (with a .tmp extension) - since we don't have to use a stream here, could probably just reuse the existing code? 
                 bagger.generateBag(new FileOutputStream(zipName + ".partial"));
 
+                // Now download any files that were too large for the bag
+                for (FileEntry entry : bagger.getOversizedFiles()) {
+                    String childPath = entry.getChildPath(entry.getChildTitle());
+                    File destFile = new File(localPath, localPath + "/" + spaceName + "v" + dv.getFriendlyVersionNumber() + "/" + childPath);
+                    logger.fine("Downloading oversized file to " + destFile.getAbsolutePath());
+                    destFile.getParentFile().mkdirs();
+                    try (InputStream is = bagger.getInputStreamSupplier(entry.getDataUrl()).get()) {
+                        FileUtils.copyInputStreamToFile(is, destFile);
+                    }
+                }
+                
                 File srcFile = new File(zipName + ".partial");
                 File destFile = new File(zipName);
 

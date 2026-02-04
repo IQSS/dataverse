@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.S3ArchiverConfig;
 import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
+import edu.harvard.iq.dataverse.util.bagit.BagGenerator.FileEntry;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
@@ -17,9 +18,15 @@ import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.annotation.Resource;
@@ -28,6 +35,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 
+import org.apache.commons.compress.parallel.InputStreamSupplier;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 
@@ -55,8 +63,11 @@ import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
 import software.amazon.awssdk.utils.StringUtils;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 import software.amazon.awssdk.transfer.s3.model.CompletedFileUpload;
+import software.amazon.awssdk.transfer.s3.model.CompletedUpload;
 import software.amazon.awssdk.transfer.s3.model.FileUpload;
+import software.amazon.awssdk.transfer.s3.model.Upload;
 import software.amazon.awssdk.transfer.s3.model.UploadFileRequest;
+import software.amazon.awssdk.transfer.s3.model.UploadRequest;
 
 @RequiredPermissions(Permission.PublishDataset)
 public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
@@ -98,7 +109,8 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
             JsonObjectBuilder statusObject = Json.createObjectBuilder();
             statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
             statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
-
+            ExecutorService executor = Executors.newCachedThreadPool();
+            
             try {
 
                 Dataset dataset = dv.getDataset();
@@ -150,7 +162,39 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
                         if (uploadResult.response().sdkHttpResponse().isSuccessful()) {
                             logger.fine("S3 Submission step: Content Transferred");
 
+                            List<FileEntry> bigFiles = bagger.getOversizedFiles();
+
+                            for (FileEntry entry : bigFiles) {
+                                String childPath = entry.getChildPath(entry.getChildTitle());
+                                String fileKey = spaceName + "/" + childPath;
+                                InputStreamSupplier supplier = bagger.getInputStreamSupplier(entry.getDataUrl());
+                               try (InputStream is = supplier.get()) {
+                                    
+                                    PutObjectRequest filePutRequest = PutObjectRequest.builder().bucket(bucketName)
+                                            .key(fileKey).build();
+                                    
+                                    UploadRequest uploadRequest = UploadRequest.builder()
+                                            .putObjectRequest(filePutRequest)
+                                            .requestBody(AsyncRequestBody.fromInputStream(is, entry.getSize(), executor))
+                                            .build();
+
+                                    Upload upload = tm.upload(uploadRequest);
+                                    CompletedUpload completedUpload = upload.completionFuture().join();
+
+                                    if (completedUpload.response().sdkHttpResponse().isSuccessful()) {
+                                        logger.fine("Successfully uploaded oversized file: " + fileKey);
+                                    } else {
+                                        logger.warning("Failed to upload oversized file: " + fileKey);
+                                        return new Failure("Error uploading oversized file to S3: " + fileKey);
+                                    }
+                                } catch (IOException e) {
+                                    logger.log(Level.WARNING,
+                                            "Failed to get input stream for oversized file: " + fileKey, e);
+                                    return new Failure("Error getting input stream for oversized file: " + fileKey);
+                                }
+                            }
                             statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
+
                             statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE,
                                     String.format("https://%s.s3.amazonaws.com/%s", bucketName, bagKey));
                         } else {
@@ -175,6 +219,7 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
                         e.getLocalizedMessage() + ": check log for details");
 
             } finally {
+                executor.shutdown();
                 if (tm != null) {
                     tm.close();
                 }
