@@ -258,9 +258,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                 dv.setArchivalCopyLocation(statusObject.build().toString());
             }
             return WorkflowStepResult.OK;
-        } else
-
-        {
+        } else {
             return new Failure(
                     "GoogleCloud Submission not configured - no \":GoogleCloudBucket\"  and/or \":GoogleCloudProject\".");
         }
