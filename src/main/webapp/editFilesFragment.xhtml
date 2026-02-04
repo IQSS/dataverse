@@ -103,11 +103,11 @@
                                         <f:param value="#{EditDatafilesPage.maxNumberOfFiles}"/>
                                     </h:outputFormat>
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipMaxNumFilesUploadsAvailable']}" escape="false"
-                                                    rendered="#{EditDatafilesPage.fileUploadsAvailable > -1}">
+                                                    rendered="#{EditDatafilesPage.fileUploadsAvailable > -1} style="color: red;">
                                         <f:param value="#{EditDatafilesPage.fileUploadsAvailable}"/>
                                     </h:outputFormat>
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false"
-                                                    rendered="#{!EditDatafilesPage.isUnlimitedUploadFileSize()}">
+                                                    rendered="#{!EditDatafilesPage.isUnlimitedUploadFileSize()} style="color: red;">
                                         <f:param value="#{EditDatafilesPage.getHumanMaxFileUploadSizeInBytes()}"/>
                                     </h:outputFormat>
                                     
