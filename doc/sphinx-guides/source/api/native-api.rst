@@ -2808,6 +2808,8 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/2347/assignments/6"
 
 
+.. _create-a-preview-url-for-a-dataset:
+
 Create a Preview URL for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3914,6 +3916,8 @@ Like :ref:`get-export-formats`, this API can be used to get URLs to dataset meta
 
   curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/linkset?persistentId=$PERSISTENT_IDENTIFIER"
 
+.. _get-dataset-by-preview-url-token:
+
 Get Dataset By Preview URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3997,10 +4001,13 @@ Get Citation by Preview URL Token
 
   curl "$SERVER_URL/api/datasets/previewUrlDatasetVersion/$PREVIEW_URL_TOKEN/citation"
 
+
+.. _get-files-using-preview-url-token:
+
 Get Files Using Preview URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you want to access a dataset's contents shared by a preview URL (see :ref:`preview-url-to-review-unpublished-dataset`, :ref:`get-dataset-by-preview-url-token` and :ref:`create-a-preview-url-for-a-dataset`) using the API, you can use the token in the preview URL as API_TOKEN.
+If you want to access a dataset's contents shared by a preview URL (see :ref:`previewUrl`, :ref:`get-dataset-by-preview-url-token` and :ref:`create-a-preview-url-for-a-dataset`) using the API, you can use the token in the preview URL as API_TOKEN.
 
 .. code-block:: bash
 
