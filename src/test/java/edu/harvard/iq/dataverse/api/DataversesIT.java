@@ -2874,6 +2874,50 @@ public class DataversesIT {
                               ]
                             }
                             """;
+        
+        String jsonStringForUpdate = """
+                            {
+                              "name": "Dataverse template - edited",
+                              "isDefault": true,
+                              "fields": [
+                                {
+                                  "typeName": "author",
+                                  "value": [
+                                    {
+                                      "authorName": {
+                                        "typeName": "authorName",
+                                        "value": "Belicheck, Bill"
+                                      },
+                                      "authorAffiliation": {
+                                        "typeName": "authorIdentifierScheme",
+                                        "value": "ORCID"
+                                      }
+                                    },
+                                    {
+                                        "authorName": {
+                                            "typeName": "authorName",
+                                            "value": "Brady, Tom"
+                                        },
+                                        "authorAffiliation": {
+                                            "typeName": "authorIdentifierScheme",
+                                            "value": "ORCID"
+                                        }
+                                    }
+                                  ]
+                                }
+                              ],
+                              "instructions": [
+                                {
+                                    "instructionField": "author",
+                                    "instructionText": "The author data, edited"
+                                },
+                                {
+                                    "instructionField": "subtitle",
+                                    "instructionText": "Info on subtitle"
+                                }
+                              ]
+                            }
+                            """;
 
         Response createTemplateResponse = UtilIT.createTemplate(
                 dataverseAlias,
@@ -2894,7 +2938,7 @@ public class DataversesIT {
         Long templateId = createTemplateResponse.body().jsonPath().getLong("data.id");
         
         
-        Response updateTemplateResponse = UtilIT.updateTemplate(templateId.toString(), jsonString, apiToken);
+        Response updateTemplateResponse = UtilIT.updateTemplate(templateId.toString(), jsonStringForUpdate, apiToken);
         
         updateTemplateResponse.prettyPrint();
 

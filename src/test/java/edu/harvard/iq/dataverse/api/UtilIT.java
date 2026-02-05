@@ -5162,7 +5162,7 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
-                .put("/api/dataverses/" + templateId + "/template");
+                .put("/api/dataverses/" + templateId + "/editTemplateMetadata");
     }
     
     public static Response deleteTemplate(String id,  String apiToken) {
