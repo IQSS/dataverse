@@ -2727,7 +2727,7 @@ public class DataversesIT {
                 .body("data[0].instructions[0].instructionField", equalTo("author"))
                 .body("data[0].instructions[0].instructionText", equalTo("The author data"))
                 .body("data[0].dataverseAlias", equalTo(dataverseAlias));
-            
+
             Response removeDefaultResp = UtilIT.removeDefaultTemplate(dataverseAlias, apiToken);
             removeDefaultResp.prettyPrint();
             removeDefaultResp.then().assertThat().statusCode(OK.getStatusCode());       
@@ -2738,7 +2738,7 @@ public class DataversesIT {
                             .body("data.size()", equalTo(1))
                             .body("data[0].isDefault", equalTo(false));
 
-
+        
             // Templates retrieval should fail if a secondary user lacks dataset creation
             // permissions
 
@@ -2923,6 +2923,8 @@ public class DataversesIT {
                 dataverseAlias,
                 jsonString,
                 apiToken);
+        
+        createTemplateResponse.prettyPrint();
 
         createTemplateResponse.then().assertThat().statusCode(CREATED.getStatusCode())
                 .body("data.name", equalTo("Dataverse template"))

@@ -2041,6 +2041,17 @@ public class Dataverses extends AbstractApiBean {
             Dataverse dataverse = template.getDataverse();
           
             JsonObject json = JsonUtil.getJsonObject(body);
+            
+            /*
+            You can also set a new name for your template in the json
+            */
+            
+            String templateName = json.getString("name");
+            if (!templateName.isEmpty() && !templateName.isBlank()){
+                 template.setName(templateName);                
+            }
+
+            
             List<DatasetField> updatedFields = new ArrayList<>();
             if (json.getJsonArray("fields") == null) {
                 updatedFields.add(jsonParser().parseField(json, Boolean.FALSE, replaceData));
