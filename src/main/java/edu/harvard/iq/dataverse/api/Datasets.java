@@ -5867,7 +5867,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         try {
             idToDelete = Long.parseLong(doomed);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("ID must be a number");
+            return error(BAD_REQUEST,"ID must be a number");
         }
 
         DatasetType datasetTypeToDelete = datasetTypeSvc.getById(idToDelete);

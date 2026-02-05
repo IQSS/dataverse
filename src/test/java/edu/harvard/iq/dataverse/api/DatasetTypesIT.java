@@ -299,15 +299,24 @@ public class DatasetTypesIT {
 
         typeAdded.then().assertThat().statusCode(OK.getStatusCode());
 
-        Long doomed = JsonPath.from(typeAdded.getBody().asString()).getLong("data.id");
+        Long doomedId = JsonPath.from(typeAdded.getBody().asString()).getLong("data.id");
+        // Deleting by name is not supported
+        String doomedName = JsonPath.from(typeAdded.getBody().asString()).getString("data.name");
 
-        System.out.println("doomed: " + doomed);
-        Response getTypeById = UtilIT.getDatasetType(doomed.toString());
+        System.out.println("doomed: " + doomedId);
+        Response getTypeById = UtilIT.getDatasetType(doomedId.toString());
         getTypeById.prettyPrint();
         getTypeById.then().assertThat().statusCode(OK.getStatusCode());
 
-        System.out.println("deleting type with id " + doomed);
-        Response typeDeleted = UtilIT.deleteDatasetTypes(doomed, apiToken);
+        System.out.println("try to delete type by name " + doomedName + " should fail");
+        Response deleteByNameFail = RestAssured.given().header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/datasetTypes/" + doomedName);
+        deleteByNameFail.prettyPrint();
+        deleteByNameFail.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        System.out.println("deleting type with id " + doomedId);
+        Response typeDeleted = UtilIT.deleteDatasetTypes(doomedId, apiToken);
         typeDeleted.prettyPrint();
         typeDeleted.then().assertThat().statusCode(OK.getStatusCode());
 
