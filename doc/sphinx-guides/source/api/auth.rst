@@ -66,8 +66,8 @@ You can reset your API Token from your account page in your Dataverse installati
 
 .. _bearer-tokens:
 
-Using Preview URL tokens as API Token
--------------------------------------
+Using Preview URL Tokens as API Token
+--------------------------------------
 
 If you want to access a dataset's contents shared by a preview URL (see :ref:`previewUrl`, :ref:`get-files-using-preview-url-token`, :ref:`get-dataset-by-preview-url-token` and :ref:`create-a-preview-url-for-a-dataset`) using the API, you can use the token in the preview URL as API_TOKEN.
 
