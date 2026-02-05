@@ -3936,6 +3936,8 @@ Usage example:
 
   curl "https://demo.dataverse.org/api/datasets/previewUrlDatasetVersion/a56444bc-7697-4711-8964-e0577f055fd2?returnOwners=true"
 
+For downloading files using a preview URL token, see the :ref:`Data Access API <get-file-using-preview-url-token>`.
+
 
 .. _get-citation:
 
@@ -4001,21 +4003,6 @@ Get Citation by Preview URL Token
 
   curl "$SERVER_URL/api/datasets/previewUrlDatasetVersion/$PREVIEW_URL_TOKEN/citation"
 
-
-.. _get-files-using-preview-url-token:
-
-Get Files Using a Preview URL Token
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If you want to access a dataset's contents shared by a preview URL (see :ref:`previewUrl`, :ref:`get-dataset-by-preview-url-token` and :ref:`create-a-preview-url-for-a-dataset`) using the API, you can use the token in the preview URL as API_TOKEN.
-
-.. code-block:: bash
-
-  SERVER_URL=https://demo.dataverse.org
-  PREVIEW_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
-  FILE_ID=1111111
-  FILENAME=example.txt
-  curl -H "X-Dataverse-key:$PREVIEW_URL_TOKEN" -o "$FILENAME" "$SERVER_URL/api/access/datafile/$FILE_ID"
 
 .. _get-dataset-summary-field-names:
 
