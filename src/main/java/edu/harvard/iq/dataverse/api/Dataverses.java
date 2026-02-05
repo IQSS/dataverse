@@ -2039,13 +2039,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             Template template = findTemplateOrDie(templateId);
             Dataverse dataverse = template.getDataverse();
-            TemplateDTO templateDTO;
-            try {
-                templateDTO = TemplateDTO.fromRequestBody(body, jsonParser());
-            } catch (JsonParseException ex) {
-                return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.createTemplate.error.jsonParseMetadataFields"), ex.getMessage()));
-            }
-            
+          
             JsonObject json = JsonUtil.getJsonObject(body);
             List<DatasetField> updatedFields = new ArrayList<>();
             if (json.getJsonArray("fields") == null) {
@@ -2053,8 +2047,10 @@ public class Dataverses extends AbstractApiBean {
             } else {
                 updatedFields = jsonParser().parseMultipleFields(json, replaceData);
             }
+                      
+            Map<String, String> instructionsMap = jsonParser().parseRequestBodyInstructionsMap(json);
             
-            Template updated = execCommand(new UpdateTemplateFieldsCommand(templateDTO.toTemplate(), dataverse,  updatedFields,   true, createDataverseRequest(getRequestUser(crc))));
+            Template updated = execCommand(new UpdateTemplateFieldsCommand(template, dataverse,  updatedFields, instructionsMap, replaceData, createDataverseRequest(getRequestUser(crc))));
             
             return created("/dataverses/template/" + updated.getId(), jsonTemplate(updated));
                 } catch (JsonParseException ex) {

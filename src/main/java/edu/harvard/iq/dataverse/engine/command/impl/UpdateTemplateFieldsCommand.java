@@ -15,7 +15,9 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -25,13 +27,15 @@ public class UpdateTemplateFieldsCommand extends AbstractCommand<Template> {
 
     private final Template template;   
     private final List<DatasetField> updatedFields;
+    private  final Map<String, String> instructions;
     private final boolean replaceData;
 
-    public UpdateTemplateFieldsCommand(Template template, Dataverse dataverse,  List<DatasetField> updatedFields, boolean replaceData, DataverseRequest request) {
+    public UpdateTemplateFieldsCommand(Template template, Dataverse dataverse,  List<DatasetField> updatedFields, Map<String, String> instructions, boolean replaceData, DataverseRequest request) {
         super(request, dataverse);
         this.template = template;
         this.updatedFields = updatedFields;
         this.replaceData = replaceData;
+        this.instructions = instructions;
     }
 
     @Override
@@ -43,6 +47,7 @@ public class UpdateTemplateFieldsCommand extends AbstractCommand<Template> {
                 
         Template savedTemplate;
         updateTemplateFields(template);
+        updateInstructions(template);
         savedTemplate = ctxt.templates().save(template);
 
         return savedTemplate;
@@ -156,6 +161,19 @@ public class UpdateTemplateFieldsCommand extends AbstractCommand<Template> {
         } else {
             datasetVersionField.setSingleControlledVocabularyValue(updatedField.getSingleControlledVocabularyValue());
         }
+    }
+    
+    private void updateInstructions(Template template){
+        if(replaceData){
+            template.setInstructionsMap(instructions);
+            template.updateInstructions();
+        } else {
+            Map <String, String> currentInstructionsMap = template.getInstructionsMap();            
+            Map<String, String> merged = new HashMap<>(currentInstructionsMap);
+            merged.putAll(instructions);
+            template.setInstructionsMap(merged);
+            template.updateInstructions();           
+        }       
     }
     
 }
