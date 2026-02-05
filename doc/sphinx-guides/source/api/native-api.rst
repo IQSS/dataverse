@@ -4004,8 +4004,8 @@ Get Citation by Preview URL Token
 
 .. _get-files-using-preview-url-token:
 
-Get Files Using Preview URL Token
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Get Files Using a Preview URL Token
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you want to access a dataset's contents shared by a preview URL (see :ref:`previewUrl`, :ref:`get-dataset-by-preview-url-token` and :ref:`create-a-preview-url-for-a-dataset`) using the API, you can use the token in the preview URL as API_TOKEN.
 
