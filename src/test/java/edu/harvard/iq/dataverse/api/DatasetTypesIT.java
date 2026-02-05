@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 public class DatasetTypesIT {
 
     final static String INSTRUMENT = "instrument";
+    private static String apiTokenSuperuser;
 
     @BeforeAll
     public static void setUpClass() {
@@ -37,13 +38,13 @@ public class DatasetTypesIT {
 
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
-        String username = UtilIT.getUsernameFromResponse(createUser);
-        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
+        String usernameSuperuser = UtilIT.getUsernameFromResponse(createUser);
+        apiTokenSuperuser = UtilIT.getApiTokenFromResponse(createUser);
+        UtilIT.setSuperuserStatus(usernameSuperuser, true).then().assertThat().statusCode(OK.getStatusCode());
 
-        ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_SOFTWARE, apiToken);
-        ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_REVIEW, apiToken);
-        ensureDatasetTypeIsPresent(INSTRUMENT, apiToken);
+        ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_SOFTWARE, apiTokenSuperuser);
+        ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_REVIEW, apiTokenSuperuser);
+        ensureDatasetTypeIsPresent(INSTRUMENT, apiTokenSuperuser);
     }
 
     @AfterAll
@@ -75,6 +76,15 @@ public class DatasetTypesIT {
         return stringIn.substring(0, 1).toUpperCase() + stringIn.substring(1);
     }
 
+    private void setAllowedDatasetTypes(String dataverseAlias, String allowedDatasetTypes) {
+        Response setAllowedDatasetTypes = UtilIT.setCollectionAttribute(dataverseAlias, "allowedDatasetTypes", allowedDatasetTypes,
+                apiTokenSuperuser);
+        setAllowedDatasetTypes.prettyPrint();
+        setAllowedDatasetTypes.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.allowedDatasetTypes", is(allowedDatasetTypes));
+    }
+
     @Test
     public void testCreateSoftwareDatasetNative() {
         Response createUser = UtilIT.createRandomUser();
@@ -86,6 +96,8 @@ public class DatasetTypesIT {
         createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
         Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverse);
+
+        setAllowedDatasetTypes(dataverseAlias, "dataset,software");
 
         String jsonIn = UtilIT.getDatasetJson("doc/sphinx-guides/source/_static/api/dataset-create-software.json");
 
@@ -157,6 +169,7 @@ public class DatasetTypesIT {
         createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
         Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverse);
+        setAllowedDatasetTypes(dataverseAlias, "software");
 
         String jsonIn = UtilIT.getDatasetJson("doc/sphinx-guides/source/_static/api/dataset-create-software.jsonld");
 
@@ -191,6 +204,7 @@ public class DatasetTypesIT {
         createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
         Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverse);
+        setAllowedDatasetTypes(dataverseAlias, "software");
 
         String jsonIn = UtilIT.getDatasetJson("doc/sphinx-guides/source/_static/api/dataset-create-software.json");
 
@@ -688,6 +702,8 @@ public class DatasetTypesIT {
         getTypes = UtilIT.getDatasetTypes();
         getTypes.prettyPrint();
 
+        setAllowedDatasetTypes(dataverseAlias, "testDatasetType");
+
         String pathToJsonFile = "scripts/api/data/dataset-create-new-with-type.json";
         
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
@@ -736,6 +752,47 @@ public class DatasetTypesIT {
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
 
+    }
+
+    @Test
+    public void testDatasetTypeNotAllowed() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverse);
+
+        String jsonIn = UtilIT.getDatasetJson("doc/sphinx-guides/source/_static/api/dataset-create-software.json");
+
+        Response createSoftware = UtilIT.createDataset(dataverseAlias, jsonIn, apiToken);
+        createSoftware.prettyPrint();
+
+        createSoftware.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void testUpdateCollectionWithInvalidDatasetType() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverse);
+
+        String nonExistentTypes = "foo,bar,baz";
+
+        Response setAllowedDatasetTypesFail = UtilIT.setCollectionAttribute(dataverseAlias, "allowedDatasetTypes",
+                nonExistentTypes, apiTokenSuperuser);
+        setAllowedDatasetTypesFail.prettyPrint();
+        setAllowedDatasetTypesFail.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
     }
 
     /**
@@ -888,6 +945,8 @@ public class DatasetTypesIT {
                                         )
                                 )
                         ));
+
+        setAllowedDatasetTypes(collectionOfReviewsAlias, "review");
 
         Response createReview = UtilIT.createDataset(collectionOfReviewsAlias, jsonForCreatingReview, apiTokenReviewer);
         createReview.prettyPrint();

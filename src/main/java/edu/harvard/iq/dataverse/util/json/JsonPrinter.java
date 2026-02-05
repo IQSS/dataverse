@@ -358,6 +358,10 @@ public class JsonPrinter {
         if (childCount != null) {
             bld.add("childCount", childCount);
         }
+        String allowedDatasetTypes = dv.getAllowedDatasetTypes();
+        if (allowedDatasetTypes != null) {
+            bld.add("allowedDatasetTypes", allowedDatasetTypes);
+        }
         addDatasetFileCountLimit(dv, bld);
         return bld;
     }

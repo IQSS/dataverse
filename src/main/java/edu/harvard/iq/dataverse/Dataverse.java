@@ -166,6 +166,12 @@ public class Dataverse extends DvObjectContainer {
     }
 
     private String affiliation;
+
+    /**
+     * If null, only the default dataset type (dataset) is allowed.
+     * See AbstractCreateDatasetCommand.
+     */
+    private String allowedDatasetTypes;
     
     ///private String storageDriver=null;
 
@@ -768,6 +774,14 @@ public class Dataverse extends DvObjectContainer {
 
     public void setAffiliation(String affiliation) {
         this.affiliation = affiliation;
+    }
+
+    public String getAllowedDatasetTypes() {
+        return allowedDatasetTypes;
+    }
+
+    public void setAllowedDatasetTypes(String allowedDatasetTypes) {
+        this.allowedDatasetTypes = allowedDatasetTypes;
     }
 
     public boolean isMetadataBlockRoot() {

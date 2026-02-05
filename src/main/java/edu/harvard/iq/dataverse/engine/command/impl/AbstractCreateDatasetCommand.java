@@ -11,9 +11,14 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.InvalidFieldsCommandException;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -124,8 +129,36 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         DatasetType existingDatasetType = theDataset.getDatasetType();
         logger.fine("existing dataset type: " + existingDatasetType);
         if (existingDatasetType != null) {
-            // A dataset type can be specified via API, for example.
-            theDataset.setDatasetType(existingDatasetType);
+            List<DatasetType> allowedDatasetTypes = new ArrayList<>();
+            String allowedDatasetTypesString = theDataset.getOwner().getAllowedDatasetTypes();
+            if (allowedDatasetTypesString == null) {
+                // If allowedDatasetTypes is unspecified, assume
+                // only the default type (dataset) is allowed
+                allowedDatasetTypes.add(defaultDatasetType);
+            } else {
+                // Turn comma-separated String into actual values
+                String[] allowedDatasetTypeNames = allowedDatasetTypesString.split(",");
+                for (String datasetTypeName : allowedDatasetTypeNames) {
+                    DatasetType datasetType = ctxt.datasetTypes().getByName(datasetTypeName.trim());
+                    if (datasetType != null) {
+                        allowedDatasetTypes.add(datasetType);
+                    } else {
+                        logger.warning("Could not find datasetType based on " + datasetTypeName);
+                    }
+                }
+            }
+            if (allowedDatasetTypes.contains(existingDatasetType)) {
+                theDataset.setDatasetType(existingDatasetType);
+            } else {
+                List<String> typeNames = allowedDatasetTypes.stream()
+                        .map(DatasetType::getName)
+                        .toList();
+                Map<String, String> fieldErrors = new HashMap<>();
+                fieldErrors.put("datasetType", "The parent collection does not allow the datasetType "
+                        + existingDatasetType.getName() + ". Allowed types: " + String.join(", ", typeNames));
+                throw new InvalidFieldsCommandException("The dataset could not be created due to the datasetType.",
+                        this, fieldErrors);
+            }
         } else {
             theDataset.setDatasetType(defaultDatasetType);
         }
