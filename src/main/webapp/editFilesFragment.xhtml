@@ -1,4 +1,4 @@
-g<ui:composition
+<ui:composition
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:f="http://java.sun.com/jsf/core"
@@ -103,12 +103,10 @@ g<ui:composition
                                         <f:param value="#{EditDatafilesPage.maxNumberOfFiles}"/>
                                     </h:outputFormat>
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipMaxNumFilesUploadsAvailable']}" escape="false"
-						    style="color: red;"
                                                     rendered="#{EditDatafilesPage.fileUploadsAvailable > -1}">
                                         <f:param value="#{EditDatafilesPage.fileUploadsAvailable}"/>
                                     </h:outputFormat>
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false"
-						    style="color: red;"
                                                     rendered="#{!EditDatafilesPage.isUnlimitedUploadFileSize()}">
                                         <f:param value="#{EditDatafilesPage.getHumanMaxFileUploadSizeInBytes()}"/>
                                     </h:outputFormat>
