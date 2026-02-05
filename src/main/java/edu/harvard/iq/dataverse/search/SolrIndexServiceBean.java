@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -52,6 +53,8 @@ public class SolrIndexServiceBean {
     DvObjectServiceBean dvObjectService;
     @EJB
     SearchPermissionsServiceBean searchPermissionsService;
+    @EJB
+    DataFileServiceBean dataFileService;
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
@@ -365,8 +368,30 @@ public class SolrIndexServiceBean {
             indexPermissionsForOneDvObject(definitionPoint);
             numObjects++;
 
-            // Process the dataset's files in a new transaction
-            self.indexDatasetFilesInNewTransaction(dataset.getId(), counter, fileQueryMin);
+            /**
+             * Prepare the data needed for the new transaction. For performance reasons, indexDatasetFilesInNewTransaction does not merge the dataset or versions into the new transaction (we only read info, there
+             * are no changes to write). However, there are two ways the code here is used. In one case, indexing content and permissions, the versions and fileMetadatas in them are already loaded. In the other
+             * case, indexing permissions only, the fileMetadatas are not yet loaded, and we may need them, but only if there are fewer than fileQueryMin. For each version that will get reindexed (at most two of
+             * them), the code below does a lightweight query to see how many fileMetadatas exist in it and, if it is equal to or below fileQueryMin, calls getFileMetadatas().size() to assure they are loaded
+             * (before we pass the version into a new transaction where it will be detached and fileMetadatas can't be loaded). Calling getFileMetadas.size() should be lightweight when the fileMetadatas are
+             * loaded (first case) and done only when needed for the second case.
+             * 
+             **/
+            Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(dataset);
+            List<DatasetVersion> versionsToIndex = new ArrayList<>();
+            for (DatasetVersion version : versionsToReIndexPermissionsFor(dataset)) {
+                if (desiredCards.get(version.getVersionState())) {
+                    int fileCount = dataFileService.findCountByDatasetVersionId(version.getId()).intValue();
+                    if (fileCount <= fileQueryMin) {
+                        // IMPORTANT: This triggers the loading of fileMetadatas within the current transaction
+                        version.getFileMetadatas().size();
+                    }
+                    versionsToIndex.add(version);
+                }
+            }
+
+            // Process the dataset's files in a new transaction, passing the pre-loaded data
+            self.indexDatasetFilesInNewTransaction(versionsToIndex, counter, fileQueryMin);
         } else {
             // For other types (like files), just index in a new transaction
             indexPermissionsForOneDvObject(definitionPoint);
@@ -399,15 +424,11 @@ public class SolrIndexServiceBean {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void indexDatasetFilesInNewTransaction(Long datasetId, final int[] fileCounter, int fileQueryMin) {
-        Dataset dataset = datasetService.find(datasetId);
-        if (dataset != null) {
-            Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(dataset);
-            for (DatasetVersion version : versionsToReIndexPermissionsFor(dataset)) {
-                if (desiredCards.get(version.getVersionState())) {
-                    processDatasetVersionFiles(version, fileCounter, fileQueryMin);
-                }
-            }
+    public void indexDatasetFilesInNewTransaction(List<DatasetVersion> versions, final int[] fileCounter, int fileQueryMin) {
+        for (DatasetVersion version : versions) {
+            // The version object is detached, but its fileMetadatas collection is already loaded.
+            // We only need its ID and state, which are available.
+            processDatasetVersionFiles(version, fileCounter, fileQueryMin);
         }
     }
 
@@ -421,22 +442,24 @@ public class SolrIndexServiceBean {
         // Process files in batches of 100
         int batchSize = 100;
 
-        if (version.getFileMetadatas().size() > fileQueryMin) {
+        if (dataFileService.findCountByDatasetVersionId(version.getId()).intValue() > fileQueryMin) {
             // For large datasets, use a more efficient SQL query
-            Stream<DataFileProxy> fileStream = getDataFileInfoForPermissionIndexing(version.getId());
+            try (Stream<DataFileProxy> fileStream = getDataFileInfoForPermissionIndexing(version.getId())) {
 
-            // Process files in batches to avoid memory issues
-            fileStream.forEach(fileInfo -> {
-                filesToReindexAsBatch.add(fileInfo);
-                fileCounter[0]++;
+                // Process files in batches to avoid memory issues
+                fileStream.forEach(fileInfo -> {
+                    filesToReindexAsBatch.add(fileInfo);
+                    fileCounter[0]++;
 
-                if (filesToReindexAsBatch.size() >= batchSize) {
-                    reindexFilesInBatches(filesToReindexAsBatch, cachedPerms, versionId, solrIdEnd);
-                    filesToReindexAsBatch.clear();
-                }
-            });
+                    if (filesToReindexAsBatch.size() >= batchSize) {
+                        reindexFilesInBatches(filesToReindexAsBatch, cachedPerms, versionId, solrIdEnd);
+                        filesToReindexAsBatch.clear();
+                    }
+                });
+            }
         } else {
             // For smaller datasets, process files directly
+            // We only call getFileMetadatas() in the case where we know they have already been loaded
             for (FileMetadata fmd : version.getFileMetadatas()) {
                 DataFileProxy fileProxy = new DataFileProxy(fmd);
                 filesToReindexAsBatch.add(fileProxy);
