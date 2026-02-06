@@ -144,8 +144,8 @@ public class DatasetTypesIT {
                 .body("data.total_count", CoreMatchers.is(2))
                 .body("data.count_in_response", CoreMatchers.is(2))
                 .body("data.facets[0].datasetType.friendly", CoreMatchers.is("Dataset Type"))
-                .body("data.facets[0].datasetType.labels[0].Dataset", CoreMatchers.is(1))
-                .body("data.facets[0].datasetType.labels[1].Software", CoreMatchers.is(1))
+                .body("data.facets[0].datasetType.labels[0].dataset", CoreMatchers.is(1))
+                .body("data.facets[0].datasetType.labels[1].software", CoreMatchers.is(1))
                 .statusCode(OK.getStatusCode());
 
 //        Response searchAsGuest = UtilIT.search(SearchFields.DATASET_TYPE + ":software", null);
