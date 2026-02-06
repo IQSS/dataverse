@@ -5157,12 +5157,12 @@ public class UtilIT {
                 .post("/api/dataverses/" + dataverseAlias + "/templates");
     }
     
-    public static Response updateTemplate(String templateId, String jsonString, String apiToken) {
+    public static Response updateTemplateMetadata(String templateId, String jsonString, String apiToken, Boolean replaceData) {
         return given()
                 .contentType(ContentType.JSON)
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
-                .put("/api/dataverses/" + templateId + "/editTemplateMetadata");
+                .put("/api/dataverses/" + templateId + "/editTemplateMetadata?replace=" + replaceData);
     }
     
     public static Response deleteTemplate(String id,  String apiToken) {

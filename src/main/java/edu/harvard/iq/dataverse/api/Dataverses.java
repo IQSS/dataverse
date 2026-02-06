@@ -2039,7 +2039,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             Template template = findTemplateOrDie(templateId);
             Dataverse dataverse = template.getDataverse();
-          
+      
             JsonObject json = JsonUtil.getJsonObject(body);
             
             /*

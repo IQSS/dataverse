@@ -2875,24 +2875,13 @@ public class DataversesIT {
                             }
                             """;
         
-        String jsonStringForUpdate = """
+        String jsonStringForUpdateNotReplace = """
                             {
                               "name": "Dataverse template - edited",
-                              "isDefault": true,
                               "fields": [
                                 {
                                   "typeName": "author",
                                   "value": [
-                                    {
-                                      "authorName": {
-                                        "typeName": "authorName",
-                                        "value": "Belicheck, Bill"
-                                      },
-                                      "authorAffiliation": {
-                                        "typeName": "authorIdentifierScheme",
-                                        "value": "ORCID"
-                                      }
-                                    },
                                     {
                                         "authorName": {
                                             "typeName": "authorName",
@@ -2914,6 +2903,36 @@ public class DataversesIT {
                                 {
                                     "instructionField": "subtitle",
                                     "instructionText": "Info on subtitle"
+                                }
+                              ]
+                            }
+                            """;
+        
+                
+        String jsonStringForUpdateReplaceData = """
+                            {
+                              "name": "Dataverse template - edited - again",
+                              "fields": [
+                                {
+                                  "typeName": "author",
+                                  "value": [
+                                    {
+                                        "authorName": {
+                                            "typeName": "authorName",
+                                            "value": "Vrabel, Mike"
+                                        },
+                                        "authorAffiliation": {
+                                            "typeName": "authorIdentifierScheme",
+                                            "value": "ORCID"
+                                        }
+                                    }
+                                  ]
+                                }
+                              ],
+                              "instructions": [
+                                {
+                                    "instructionField": "title",
+                                    "instructionText": "A title for, you know, your thing"
                                 }
                               ]
                             }
@@ -2940,10 +2959,30 @@ public class DataversesIT {
         Long templateId = createTemplateResponse.body().jsonPath().getLong("data.id");
         
         
-        Response updateTemplateResponse = UtilIT.updateTemplate(templateId.toString(), jsonStringForUpdate, apiToken);
+        Response updateTemplateResponse = UtilIT.updateTemplateMetadata(templateId.toString(), jsonStringForUpdateNotReplace, apiToken, false);
         
         updateTemplateResponse.prettyPrint();
 
+        updateTemplateResponse.then().assertThat().statusCode(CREATED.getStatusCode())
+                .body("data.name", equalTo("Dataverse template - edited"))
+                .body("data.usageCount", equalTo(0))
+                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.datasetFields.citation.fields.size()", equalTo(1))
+                .body("data.instructions.size()", equalTo(2))
+                .body("data.dataverseAlias", equalTo(dataverseAlias));
+        
+        Response updateTemplateReplaceResponse = UtilIT.updateTemplateMetadata(templateId.toString(), jsonStringForUpdateReplaceData, apiToken, true);
+        
+        updateTemplateReplaceResponse.prettyPrint();
+
+        updateTemplateReplaceResponse.then().assertThat().statusCode(CREATED.getStatusCode())
+                .body("data.name", equalTo("Dataverse template - edited - again"))
+                .body("data.usageCount", equalTo(0))
+                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.datasetFields.citation.fields.size()", equalTo(1))
+                .body("data.instructions.size()", equalTo(1))
+                .body("data.dataverseAlias", equalTo(dataverseAlias));
+        
         // back to super for cleanup
         
         UtilIT.setSuperuserStatus(username, true);
