@@ -1246,6 +1246,14 @@ public class UtilIT {
         return given()
                 .get("/api/access/datafile/" + fileId + "?format=original&key=" + apiToken);
     }
+    static Response getDownloadFileUrlWithGuestbookResponse(Integer fileId, String apiToken, String body) {
+        RequestSpecification requestSpecification = given();
+        requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        if (body != null) {
+            requestSpecification.body(body);
+        }
+        return requestSpecification.post("/api/access/datafile/" + fileId);
+    }
     
     static Response downloadFiles(Integer[] fileIds) {
         String getString = "/api/access/datafiles/";

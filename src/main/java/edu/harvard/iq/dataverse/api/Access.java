@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -27,16 +28,16 @@ import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.StringUtil;
-import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.*;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
-import jakarta.json.*;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.TypedQuery;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.*;
@@ -363,8 +364,70 @@ public class Access extends AbstractApiBean {
         }
         return Response.ok(downloadInstance).build();
     }
-    
-    
+
+    @POST
+    @AuthRequired
+    @Path("datafile/{fileId:.+}")
+    @Produces({"application/xml","*/*"})
+    public Response datafileWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs,
+                                                  @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, String jsonBody) {
+
+        // check first if there's a trailing slash, and chop it:
+        while (fileId.lastIndexOf('/') == fileId.length() - 1) {
+            fileId = fileId.substring(0, fileId.length() - 1);
+        }
+
+        if (fileId.indexOf('/') > -1) {
+            // This is for embedding folder names into the Access API URLs;
+            // something like /api/access/datafile/folder/subfolder/1234
+            // instead of the normal /api/access/datafile/1234 notation.
+            // this is supported only for recreating folders during recursive downloads -
+            // i.e. they are embedded into the URL for the remote client like wget,
+            // but can be safely ignored here.
+            fileId = fileId.substring(fileId.lastIndexOf('/') + 1);
+        }
+
+        DataFile df = findDataFileOrDieWrapper(fileId);
+        GuestbookResponse gbr = null;
+
+        if (df.isHarvested()) {
+            String errorMessage = "Datafile " + fileId + " is a harvested file that cannot be accessed in this Dataverse";
+            throw new NotFoundException(errorMessage);
+            // (nobody should ever be using this API on a harvested DataFile)!
+        }
+
+        // This will throw a ForbiddenException if access isn't authorized:
+        checkAuthorization(crc, df);
+
+        AuthenticatedUser user = (AuthenticatedUser) getRequestUser(crc);
+        try {
+            if (checkGuestbookRequiredResponse(crc, df)) {
+                gbr = getGuestbookResponseFromBody(df, GuestbookResponse.DOWNLOAD, jsonBody, user);
+                if (gbr != null) {
+                    engineSvc.submit(new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), gbr, gbr.getDataset()));
+                } else {
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing"));
+                }
+            } else if (gbrecs != true && df.isReleased()) {
+                // Write Guestbook record if not done previously and file is released
+                gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, user);
+            }
+        } catch (JsonParseException | CommandException ex) {
+            List<String> args = Arrays.asList(df.getDisplayName(), ex.getLocalizedMessage());
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbook.commandError", args));
+        }
+
+        String baseUrl = uriInfo.getAbsolutePath().toString() + "?gbrecs=true";
+        String key = "";
+        ApiToken apiToken = authSvc.findApiTokenByUser(user);
+        if (apiToken != null && !apiToken.isExpired() && !apiToken.isDisabled()) {
+            key = apiToken.getTokenString();
+        }
+        String signedUrl = UrlSignerUtil.signUrl(baseUrl, 10, user.getUserIdentifier(), "GET", key);
+
+        return ok(Json.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
+    }
+
     /* 
      * Variants of the Access API calls for retrieving datafile-level 
      * Metadata.
@@ -1295,7 +1358,7 @@ public class Access extends AbstractApiBean {
         } catch (FileNotFoundException e) {
             throw new NotFoundException();
         } catch(IOException io) {
-            throw new ServerErrorException("IO Exception trying remove auxiliary file", Response.Status.INTERNAL_SERVER_ERROR, io);
+            throw new ServerErrorException("IO Exception trying remove auxiliary file", INTERNAL_SERVER_ERROR, io);
         }
 
         return ok("Auxiliary file deleted.");
@@ -1363,7 +1426,6 @@ public class Access extends AbstractApiBean {
 
         DataverseRequest dataverseRequest;
         DataFile dataFile;
-        
         try {
             dataFile = findDataFileOrDie(fileToRequestAccessId);
         } catch (WrappedResponse ex) {
@@ -1397,33 +1459,22 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.requestExists"));
         }
 
-        // Is Guestbook response required?
-        // The response will be true (guestbook displays when making a request), false (guestbook displays at download), or will indicate that the dataset inherits one of these settings.
-        GuestbookResponse guestbookResponse = null;
-        if (dataFile.getOwner().getEffectiveGuestbookEntryAtRequest()) {
+        try {
+            // Is Guestbook response required?
+            // getEffectiveGuestbookEntryAtRequest response will be true (guestbook displays when making a request), false (guestbook displays at download), or will indicate that the dataset inherits one of these settings.
+            // Even if it is not required we will take it if it's included. Dataset must have a guestbook that is enabled
             Dataset ds = dataFile.getOwner();
+            GuestbookResponse guestbookResponse = getGuestbookResponseFromBody(dataFile, GuestbookResponse.ACCESS_REQUEST, jsonBody, getRequestUser(crc));
             if (ds.getGuestbook() != null && ds.getGuestbook().isEnabled()) {
-                // response is required
-                try {
-                    if (jsonBody == null || jsonBody.isBlank()) {
-                        return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookresponseMissing"));
-                    }
-                    JsonObject jsonObj = JsonUtil.getJsonObject(jsonBody).getJsonObject("guestbookResponse");
-                    guestbookResponse = guestbookResponseService.initAPIGuestbookResponse(ds, dataFile, null, requestor);
-                    guestbookResponse.setEventType(GuestbookResponse.ACCESS_REQUEST);
-                    // Parse custom question answers
-                    jsonParser().parseGuestbookResponse(jsonObj, guestbookResponse);
+                if (ds.getEffectiveGuestbookEntryAtRequest() && guestbookResponse == null) {
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookAccessRequestResponseMissing"));
+                } else if (guestbookResponse != null) {
                     engineSvc.submit(new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, guestbookResponse.getDataset()));
-                } catch (JsonException | JsonParseException | CommandException ex) {
-                    List<String> args = Arrays.asList(dataFile.getDisplayName(), ex.getLocalizedMessage());
-                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.commandError", args));
                 }
             }
-        }
 
-        try {
             engineSvc.submit(new RequestAccessCommand(dataverseRequest, dataFile, guestbookResponse, true));
-        } catch (CommandException ex) {
+        } catch (CommandException | JsonParseException ex) {
             List<String> args = Arrays.asList(dataFile.getDisplayName(), ex.getLocalizedMessage());
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.commandError", args));
         }
@@ -1472,7 +1523,7 @@ public class Access extends AbstractApiBean {
 
         if (requests == null || requests.isEmpty()) {
             List<String> args = Arrays.asList(dataFile.getDisplayName());
-            return error(Response.Status.NOT_FOUND, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound", args));
+            return error(NOT_FOUND, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound", args));
         }
 
         JsonArrayBuilder userArray = Json.createArrayBuilder();
@@ -1711,6 +1762,41 @@ public class Access extends AbstractApiBean {
         jsonObjectBuilder.add("canManageFilePermissions", permissionService.userOn(requestUser, dataFile).has(Permission.ManageFilePermissions));
         jsonObjectBuilder.add("canEditOwnerDataset", permissionService.userOn(requestUser, dataFile.getOwner()).has(Permission.EditDataset));
         return ok(jsonObjectBuilder);
+    }
+
+    private boolean checkGuestbookRequiredResponse(ContainerRequestContext crc, DataFile df) throws WebApplicationException {
+        // Check if guestbook response is required
+        if (df.isRestricted() && df.getOwner().hasEnabledGuestbook() && getRequestUser(crc) instanceof AuthenticatedUser) {
+            AuthenticatedUser user = (AuthenticatedUser)getRequestUser(crc);
+            List<GuestbookResponse> gbrList = guestbookResponseService.findByAuthenticatedUserId(user);
+            boolean responseFound = false;
+            if (gbrList != null) {
+                // find a matching response
+                for (GuestbookResponse r : gbrList) {
+                    if (r.getDataFile().getId() == df.getId()) {
+                        responseFound = true;
+                        break;
+                    }
+                }
+            }
+            return !responseFound; // if we find a response then it is not required to add another one
+        }
+        return false;
+    }
+
+    private GuestbookResponse getGuestbookResponseFromBody(DataFile dataFile, String type, String jsonBody, User requestor) throws JsonParseException {
+        Dataset ds = dataFile.getOwner();
+        GuestbookResponse guestbookResponse = null;
+
+        if (jsonBody != null && !jsonBody.isBlank()) {
+            JsonObject guestbookResponseObj = JsonUtil.getJsonObject(jsonBody).getJsonObject("guestbookResponse");
+            guestbookResponse = guestbookResponseService.initAPIGuestbookResponse(ds, dataFile, null, requestor);
+            guestbookResponse.setEventType(type);
+            // Parse custom question answers
+            jsonParser().parseGuestbookResponse(guestbookResponseObj, guestbookResponse);
+        }
+
+        return guestbookResponse;
     }
 
     // checkAuthorization is a convenience method; it calls the boolean method

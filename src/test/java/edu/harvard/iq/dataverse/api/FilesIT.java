@@ -1,60 +1,59 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.Guestbook;
+import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
-import edu.harvard.iq.dataverse.util.json.JsonParseException;
-import edu.harvard.iq.dataverse.util.json.JsonParser;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
-
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.logging.Logger;
-
-import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
-import jakarta.json.JsonObject;
-import jakarta.ws.rs.core.Response.Status;
-import org.assertj.core.util.Lists;
-import org.hamcrest.Matcher;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeAll;
-import io.restassured.path.json.JsonPath;
-
-import static edu.harvard.iq.dataverse.api.ApiConstants.*;
-import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
-import static io.restassured.path.json.JsonPath.with;
-import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.File;
-import java.io.IOException;
-
-import static java.lang.Thread.sleep;
-
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.MessageFormat;
-
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.path.xml.XmlPath;
+import io.restassured.response.Response;
 import jakarta.json.Json;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-
-import static jakarta.ws.rs.core.Response.Status.*;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.Year;
+import jakarta.ws.rs.core.Response.Status;
+import org.assertj.core.util.Lists;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.MessageFormat;
+import java.time.Year;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.api.ApiConstants.*;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+import static io.restassured.RestAssured.get;
+import static io.restassured.path.json.JsonPath.with;
+import static jakarta.ws.rs.core.Response.Status.*;
+import static java.lang.Thread.sleep;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -3869,5 +3868,98 @@ public class FilesIT {
                 .body("status", equalTo(ApiConstants.STATUS_ERROR))
                 .body("message", equalTo(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date",Collections.singletonList("bad-date"))))
                 .statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void testDownloadFileWithGuestbookResponse() throws IOException, JsonParseException {
+        msgt("testDownloadFileWithGuestbookResponse");
+        // Create super user
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String superusername = UtilIT.getUsernameFromResponse(createUserResponse);
+        UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create user with no permission
+        createUserResponse = UtilIT.createRandomUser();
+        assertEquals(200, createUserResponse.getStatusCode());
+        String apiTokenRando = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String username = UtilIT.getUsernameFromResponse(createUserResponse);
+
+        // Create Dataset
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        Response getDatasetMetadata = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetMetadata.prettyPrint();
+        getDatasetMetadata.then().assertThat().statusCode(200);
+
+        // Create a Guestbook
+        Guestbook guestbook = UtilIT.createRandomGuestbook(dataverseAlias, persistentId, apiToken);
+
+        // Upload file
+        String pathToFile1 = "src/main/webapp/resources/images/dataverseproject.png";
+        JsonObjectBuilder json1 = Json.createObjectBuilder()
+                .add("description", "my description1")
+                .add("directoryLabel", "data/subdir1")
+                .add("categories", Json.createArrayBuilder().add("Data"));
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, json1.build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        // Restrict file
+        Response restrictResponse = UtilIT.restrictFile(fileId.toString(), true, apiToken);
+        restrictResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // Update Dataset to allow requests
+        Response allowAccessRequestsResponse = UtilIT.allowAccessRequests(datasetId.toString(), true, apiToken);
+        assertEquals(200, allowAccessRequestsResponse.getStatusCode());
+        // Publish dataverse and dataset
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        assertEquals(200, publishDataset.getStatusCode());
+
+        // Request access
+        Response requestFileAccessResponse = UtilIT.requestFileAccess(fileId.toString(), apiTokenRando, null);
+        requestFileAccessResponse.prettyPrint();
+        assertEquals(200, requestFileAccessResponse.getStatusCode());
+
+        // Grant file access
+        Response grantFileAccessResponse = UtilIT.grantFileAccess(fileId.toString(), "@" + username, apiToken);
+        grantFileAccessResponse.prettyPrint();
+        assertEquals(200, grantFileAccessResponse.getStatusCode());
+
+        String guestbookResponse = UtilIT.generateGuestbookResponse(guestbook);
+
+        // Get Download Url attempt - Guestbook Response is required but not found
+        Response downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId, apiTokenRando, null);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat()
+                .body("status", equalTo(ApiConstants.STATUS_ERROR))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing")))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Get Download Url with guestbook response
+        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId, apiTokenRando, guestbookResponse);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+
+        // Download the file using the signed url
+        Response signedUrlResponse = get(signedUrl);
+        signedUrlResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+
+        // Download again with guestbook response already given
+        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId, apiTokenRando, null);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        signedUrlResponse = get(signedUrl);
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
     }
 }
