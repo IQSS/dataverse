@@ -851,7 +851,7 @@ Out of the box, all datasets have a dataset type of "dataset". Superusers can ad
 
 Once more than one type appears in search results, a facet called "Dataset Type" will appear allowing you to filter down to a certain type.
 
-If your installation is configured to use DataCite as a persistent ID (PID) provider, the appropriate type ("Dataset", "Software", "Workflow", "Review") will be sent to DataCite when the dataset is published for those types.
+If your installation is configured to use DataCite as a persistent ID (PID) provider, the dataset type will be sent to DataCite as ``resourceTypeGeneral``. See the table under :ref:`api-add-dataset-type` in the API Guide for details.
 
 Currently, specifying a type for a dataset can only be done via API and only when the dataset is created. The type can't currently be changed afterward. For details, see the following sections of the API guide:
 
