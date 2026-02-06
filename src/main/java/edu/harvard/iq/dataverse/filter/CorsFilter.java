@@ -28,11 +28,22 @@ import jakarta.servlet.http.HttpServletResponse;
  * 1. Reads CORS configuration from JVM settings (dataverse.cors.*). See the Dataverse Configuration Guide for more details.
  * 2. Determines whether CORS should be allowed based on these settings.
  * 3. If CORS is allowed, it adds the appropriate CORS headers to all HTTP responses. The JVMSettings allow customization of the header contents if desired.
- * 
+ *
+ * The broader dispatcher set is intentional:
+ *  - REQUEST applies CORS to direct client requests.
+ *  - FORWARD covers internal forwards, including API paths rewritten by
+ *    {@link edu.harvard.iq.dataverse.api.ApiRouter} from {@code /api/...} to {@code /api/v1/...}.
+ *  - ERROR ensures error responses also carry CORS headers, so browser clients can read error details.
+ *  - ASYNC keeps behavior consistent for asynchronous servlet/JAX-RS processing.
+ *
  * The filter is applied to all paths ("/*") in the application.
  */
-
-@WebFilter(value = "/*", dispatcherTypes = { DispatcherType.REQUEST, DispatcherType.FORWARD})
+@WebFilter(value = "/*", dispatcherTypes = {
+        DispatcherType.REQUEST,
+        DispatcherType.FORWARD,
+        DispatcherType.ERROR,
+        DispatcherType.ASYNC
+})
 public class CorsFilter implements Filter {
 
     private boolean allowCors;
