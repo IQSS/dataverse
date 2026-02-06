@@ -7,9 +7,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Stream;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,16 +29,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class CorsIT
 {
     private static final String ORIGIN_NULL = "null";
+    private static final List<String> PRE_FLIGHT_ENDPOINTS = List.of(
+            "/api/dataverses/root/datasets",
+            "/api/v1/dataverses/root/datasets",
+            "/page_doesnt_exist",
+            "/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/root"
+    );
 
     @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
-    @Test
-    public void testPreflightOptionsCorsHeaders() {
-        assertPreflightCorsHeaders("/api/dataverses/root/datasets");
-        assertPreflightCorsHeaders("/api/v1/dataverses/root/datasets");
+    @ParameterizedTest(name = "CORS preflight headers on {0}")
+    @MethodSource("preflightEndpoints")
+    public void testPreflightOptionsCorsHeaders(String path) {
+        assertPreflightCorsHeaders(path);
+    }
+
+    private static Stream<String> preflightEndpoints() {
+        return PRE_FLIGHT_ENDPOINTS.stream();
     }
 
     private void assertPreflightCorsHeaders(String path) {
