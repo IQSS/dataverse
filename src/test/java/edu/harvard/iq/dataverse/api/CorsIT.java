@@ -7,13 +7,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.stream.Stream;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.blankOrNullString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -28,12 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class CorsIT {
     private static final String ORIGIN_NULL = "null";
-    private static final List<String> PRE_FLIGHT_ENDPOINTS = List.of(
-            "/api/dataverses/root/datasets",
-            "/api/v1/dataverses/root/datasets",
-            "/page_doesnt_exist",
-            "/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/root"
-    );
 
     @BeforeAll
     public static void setUp() {
@@ -41,13 +38,14 @@ public class CorsIT {
     }
 
     @ParameterizedTest(name = "CORS preflight headers on {0}")
-    @MethodSource("preflightEndpoints")
+    @ValueSource(strings = {
+            "/api/dataverses/root/datasets",
+            "/api/v1/dataverses/root/datasets",
+            "/page_doesnt_exist",
+            "/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/root"
+    })
     public void testPreflightOptionsCorsHeaders(String path) {
         assertPreflightCorsHeaders(path);
-    }
-
-    private static Stream<String> preflightEndpoints() {
-        return PRE_FLIGHT_ENDPOINTS.stream();
     }
 
     private void assertPreflightCorsHeaders(String path) {
@@ -58,10 +56,16 @@ public class CorsIT {
             .header("Access-Control-Request-Method", "POST")
             .header("Origin", ORIGIN_NULL)
             .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36")
-            .options(path);
-
-        int statusCode = response.getStatusCode();
-        assertTrue(statusCode == 200 || statusCode == 204, "Expected 200 or 204 but got " + statusCode);
+            .when()
+            .options(path)
+            .then()
+            .log().ifValidationFails()
+            .statusCode(anyOf(is(200), is(204)))
+            .header("Access-Control-Allow-Methods", not(blankOrNullString()))
+            .header("Access-Control-Allow-Headers", not(blankOrNullString()))
+            .header("Access-Control-Expose-Headers", not(blankOrNullString()))
+            .extract()
+            .response();
 
         assertHeaderSetEquals("Access-Control-Allow-Methods", getExpectedCorsMethods(), response);
         assertHeaderSetEquals("Access-Control-Allow-Headers", getExpectedCorsAllowHeaders(), response);
