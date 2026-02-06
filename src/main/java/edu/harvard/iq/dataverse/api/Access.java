@@ -368,7 +368,7 @@ public class Access extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("datafile/{fileId:.+}")
-    @Produces({"application/xml","*/*"})
+    @Produces({"application/json"})
     public Response datafileWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs,
                                                   @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, String jsonBody) {
 

@@ -7,17 +7,18 @@ package edu.harvard.iq.dataverse.api.errorhandlers;
 
 import edu.harvard.iq.dataverse.api.util.JsonResponseBuilder;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Catches all types of web application exceptions like NotFoundException, etc etc and handles them properly.
