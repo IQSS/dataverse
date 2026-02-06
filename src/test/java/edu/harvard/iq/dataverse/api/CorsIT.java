@@ -26,8 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *       DATAVERSE_CORS_ORIGIN: "*"
  * env to `dev_dataverse`.
  */
-public class CorsIT
-{
+public class CorsIT {
     private static final String ORIGIN_NULL = "null";
     private static final List<String> PRE_FLIGHT_ENDPOINTS = List.of(
             "/api/dataverses/root/datasets",
