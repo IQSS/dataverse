@@ -148,6 +148,12 @@ public class DatasetTypesIT {
                 .body("data.facets[0].datasetType.labels[1].software", CoreMatchers.is(1))
                 .statusCode(OK.getStatusCode());
 
+        Response getCitationCsl = UtilIT.getDatasetVersionCitationFormat(datasetId, DS_VERSION_LATEST_PUBLISHED, false, "CSL", apiToken);
+        getCitationCsl.prettyPrint();
+        getCitationCsl.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("type", equalTo("software"));
+
 //        Response searchAsGuest = UtilIT.search(SearchFields.DATASET_TYPE + ":software", null);
 //        searchAsGuest.prettyPrint();
 //        searchAsGuest.then().assertThat()
@@ -853,6 +859,12 @@ public class DatasetTypesIT {
         String datasetCitationHtml = JsonPath.from(getCitation.getBody().asString()).getString("data.message");
         String datasetCitationText = StringUtil.html2text(datasetCitationHtml);
 
+        Response getCitationCsl = UtilIT.getDatasetVersionCitationFormat(datasetId, DS_VERSION_LATEST_PUBLISHED, false, "CSL", apiTokenReviewer);
+        getCitationCsl.prettyPrint();
+        getCitationCsl.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("type", equalTo("dataset"));
+
         /**
          * We are added the HTML version of a Related Dataset. We like the HTML
          * version because both JSF and the SPA render the DOI link as a
@@ -971,6 +983,12 @@ public class DatasetTypesIT {
 
         UtilIT.publishDataverseViaNativeApi(collectionOfReviewsAlias, apiTokenReviewer).then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.publishDatasetViaNativeApi(reviewPid, "major", apiTokenReviewer).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getCitationCslReview = UtilIT.getDatasetVersionCitationFormat(reviewId, DS_VERSION_LATEST_PUBLISHED, false, "CSL", apiTokenReviewer);
+        getCitationCslReview.prettyPrint();
+        getCitationCslReview.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("type", equalTo("review"));
     }
 
     @Test

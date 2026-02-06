@@ -4258,6 +4258,15 @@ public class UtilIT {
         return response;
     }
 
+    static Response getDatasetVersionCitationFormat(Integer datasetId, String version, boolean includeDeaccessioned, String format, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .queryParam("includeDeaccessioned", includeDeaccessioned)
+                .get("/api/datasets/" + datasetId + "/versions/" + version + "/citation/" + format);
+        return response;
+    }
+
     static Response setDatasetCitationDateField(String datasetIdOrPersistentId, String dateField, String apiToken) {
         String idInPath = datasetIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.

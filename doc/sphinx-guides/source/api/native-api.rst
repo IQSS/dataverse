@@ -3961,8 +3961,8 @@ Usage example:
 Get Citation In Other Formats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dataverse can also generate dataset citations in "EndNote", "RIS", "BibTeX", and "CSLJson" formats.
-Unlike the call above, which wraps the result in JSON, this API call sends the raw format with the appropriate content-type (EndNote is XML, RIS and BibTeX are plain text, and CSLJson is JSON). ("Internal" is also a valid value, returning the same content as the above call as HTML).
+Dataverse can also generate dataset citations in "EndNote", "RIS", "BibTeX", and "CSL" formats.
+Unlike the call above, which wraps the result in JSON, this API call sends the raw format with the appropriate content-type (EndNote is XML, RIS and BibTeX are plain text, and CSL is JSON). ("Internal" is also a valid value, returning the same content as the above call as HTML).
 This API call adds a format parameter in the API call which can be any of the values listed above.
 
 Usage example:
