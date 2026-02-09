@@ -55,10 +55,7 @@ public class Guestbooks extends AbstractApiBean {
     public Response getGuestbooks(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) {
         return response( req -> {
             Dataverse dataverse = findDataverseOrDie(identifier);
-            if (permissionSvc.request(req)
-                    .on(dataverse)
-                    .has(Permission.EditDataverse)) {
-            } else {
+            if (!permissionSvc.request(req).on(dataverse).has(Permission.EditDataverse)) {
                 return error(Response.Status.FORBIDDEN, "Not authorized");
             }
             List<Guestbook> guestbooks = guestbookService.findGuestbooksForGivenDataverse(dataverse);
@@ -77,10 +74,7 @@ public class Guestbooks extends AbstractApiBean {
     public Response createGuestbook(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, String jsonBody) {
             return response(req -> {
                 Dataverse dataverse = findDataverseOrDie(identifier);
-                if (permissionSvc.request(req)
-                        .on(dataverse)
-                        .has(Permission.EditDataverse)) {
-                } else {
+                if (!permissionSvc.request(req).on(dataverse).has(Permission.EditDataverse)) {
                     return error(Response.Status.FORBIDDEN, "Not authorized");
                 }
 
@@ -116,10 +110,7 @@ public class Guestbooks extends AbstractApiBean {
         boolean enabled = Util.isTrue(body);
         return response( req -> {
             Dataverse dataverse = findDataverseOrDie(identifier);
-            if (permissionSvc.request(req)
-                    .on(dataverse)
-                    .has(Permission.EditDataverse)) {
-            } else {
+            if (!permissionSvc.request(req).on(dataverse).has(Permission.EditDataverse)) {
                 return error(Response.Status.FORBIDDEN, "Not authorized");
             }
             List<Guestbook> guestbooks = dataverse.getGuestbooks();

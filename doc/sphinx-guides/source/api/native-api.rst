@@ -1170,8 +1170,11 @@ The fully expanded example above (without environment variables) looks like this
 
 .. _guestbook-api:
 
+Guestbooks
+~~~~~~~~~~
+
 Create a Guestbook for a Dataverse Collection
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 
@@ -1194,12 +1197,14 @@ The fully expanded example above (without environment variables) looks like this
   curl -POST -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/root" -d '{"name": "my test guestbook","enabled": true,"emailRequired": true,"nameRequired": true,"institutionRequired": false,"positionRequired": false}'
 
 Get a list of Guestbooks for a Dataverse Collection
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 
 Get a list of Guestbooks for a Dataverse Collection
 You must have "EditDataverse" permission on the Dataverse collection.
+
+.. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
@@ -1214,11 +1219,13 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/root/list"
 
 Get a Guestbook for a Dataverse Collection
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 
 Get a Guestbook by it's id
+
+.. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
@@ -1233,7 +1240,7 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/1234"
 
 Enable or Disable a Guestbook for a Dataverse Collection
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 

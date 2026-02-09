@@ -91,6 +91,11 @@ Basic access URI:
 
     GET http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB
 
+.. note:: Restricted files that require a Guestbook response will require an additional step to supply the response. A POST to the same endpoint with the Guestbook Response in the body will return a signed url that can be used to download the file.
+
+  Example ::
+
+    POST http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB -d '{"guestbookResponse": {"answers": [{"id": 123,"value": "Good"},{"id": 124,"value": ["Multi","Line"]},{"id": 125,"value": "Yellow"}]}}'
 
 Parameters:
 ~~~~~~~~~~~
@@ -361,7 +366,9 @@ This method requests access to the datafile whose id is passed on the behalf of 
 A curl example using an ``id``::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X PUT http://$SERVER/api/access/datafile/{id}/requestAccess
-    
+
+.. note:: Some installations of Dataverse may require you to provide a Guestbook response when requesting access to certain restricted files. The response can be passed in the body of this call. See "Get a Guestbook for a Dataverse Collection" in the :doc:`native-api`.
+
 Grant File Access:
 ~~~~~~~~~~~~~~~~~~ 
 
