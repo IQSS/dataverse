@@ -1185,6 +1185,7 @@ The following attributes are supported:
 * ``affiliation`` Affiliation
 * ``filePIDsEnabled`` ("true" or "false") Restricted to use by superusers and only when the :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>` setting is true. Enables or disables registration of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
 * ``requireFilesToPublishDataset`` ("true" or "false") Restricted to use by superusers. Defines if Dataset needs files in order to be published.  If not set the determination will be made through inheritance by checking the owners of this collection. Publishing by a superusers will not be blocked.
+* ``allowedDatasetTypes`` Restricted to use by superusers. By default "dataset" is implied. Pass a comma-separated list of dataset types (e.g. "dataset,software"). See also :ref:`dataset-types`.
 
 See also :ref:`update-dataverse-api`.
 
@@ -3958,6 +3959,8 @@ Usage example:
 
   curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/citation?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
 
+.. _get-citation-in-other-formats:
+
 Get Citation In Other Formats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3986,6 +3989,7 @@ Usage example:
 
   curl "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/citation/$FORMAT?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
 
+The type under CSL can vary based on the dataset type, with "dataset", "software", and "review" as supported values. See also :ref:`dataset-types`.
 
 Get Citation by Preview URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -4239,25 +4243,9 @@ Add Dataset Type
 
 Note: Before you add any types of your own, there should be a single type called "dataset".
 
-Adding certain dataset types will result in a value other than "Dataset" being sent to DataCite (if you use DataCite) as shown in the table below.
+Adding certain dataset types will result in a value other than "Dataset" being sent to DataCite (if you use DataCite), see :ref:`dataset-types-datacite` for details.
 
-.. list-table:: Values sent to DataCite for resourceTypeGeneral by Dataset Type
-   :header-rows: 1
-   :stub-columns: 1
-   :align: left
-
-   * - Dataset Type
-     - Value sent to DataCite
-   * - dataset
-     - Dataset
-   * - software
-     - Software
-   * - workflow
-     - Workflow
-   * - review
-     - Other
-
-Other than sending a different resourceTypeGeneral to DataCite, the only functionality you gain currently from adding types is an entry in the "Dataset Type" facet but be advised that if you add a type other than "software", "workflow", or "review", you will need to add your new type to your Bundle.properties file for it to appear in Title Case rather than lower case in the "Dataset Type" facet.
+Be advised that if you add a type other than "software", "workflow", or "review", you will need to add your new type to your Bundle.properties file for it to appear in Title Case rather than lower case in the "Dataset Type" facet.
 
 With all that said, we'll add a "software" type in the example below. This API endpoint is superuser only. The "name" of a type cannot be only digits. Note that this endpoint also allows you to add metadata blocks and available licenses for your new dataset type by adding "linkedMetadataBlocks" and/or "availableLicenses" arrays to your JSON.
 
