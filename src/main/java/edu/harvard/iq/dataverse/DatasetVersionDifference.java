@@ -224,7 +224,13 @@ public final class DatasetVersionDifference {
             logger.warning("New version does not have TermsOfUseAndAccess");
             newTerms = new TermsOfUseAndAccess();
         }
-        
+
+        //get license name or bundle val for none to test for differences
+        String originalLicenseName = originalTerms.getLicense() != null ? originalTerms.getLicense().getName() : BundleUtil.getStringFromBundle("license.none.chosen");
+        String newLicenseName = newTerms.getLicense() != null ? newTerms.getLicense().getName() : BundleUtil.getStringFromBundle("license.none.chosen");
+
+        checkAndAddToChangeList(originalLicenseName, newLicenseName,
+                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.license"));        
         checkAndAddToChangeList(originalTerms.getTermsOfUse(), newTerms.getTermsOfUse(),
                 BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.header"));
         checkAndAddToChangeList(originalTerms.getConfidentialityDeclaration(), newTerms.getConfidentialityDeclaration(),
