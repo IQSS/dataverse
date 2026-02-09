@@ -2940,32 +2940,18 @@ public class DataversesIT {
                             """;
         
                 String jsonStringForUpdateTerms = """
-                            {
-                              "name": "Dataverse template - edited - again",
-                              "fields": [
-                                {
-                                  "typeName": "author",
-                                  "value": [
-                                    {
-                                        "authorName": {
-                                            "typeName": "authorName",
-                                            "value": "Vrabel, Mike"
-                                        },
-                                        "authorAffiliation": {
-                                            "typeName": "authorIdentifierScheme",
-                                            "value": "ORCID"
-                                        }
-                                    }
-                                  ]
-                                }
-                              ],
-                              "instructions": [
-                                {
-                                    "instructionField": "title",
-                                    "instructionText": "A title for, you know, your thing"
-                                }
-                              ]
-                            }
+            {
+                   "customTerms": {
+                     "termsOfUse": "testTermsOfUse",
+                     "confidentialityDeclaration": "testConfidentialityDeclaration",
+                     "specialPermissions": "testSpecialPermissions",
+                     "restrictions": "testRestrictions",
+                     "citationRequirements": "testCitationRequirements",
+                     "depositorRequirements": "testDepositorRequirements",
+                     "conditions": "testConditions",
+                     "disclaimer": "testDisclaimer"
+                   }
+                 }
                             """;
 
 
@@ -3027,8 +3013,22 @@ public class DataversesIT {
         getTemplate.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.termsOfUseAndAccess.license.name", equalTo("CC BY 4.0"));
+        
+        Response updateTermsResponse = UtilIT.updateTemplateLicenseTerms(templateId.toString(), jsonStringForUpdateTerms, apiToken);
+        updateTermsResponse.prettyPrint();
 
         
+
+        updateTermsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(BundleUtil.getStringFromBundle("dataverses.api.update.template.license.success")));
+
+        getTemplate  = UtilIT.getTemplate(templateId.toString(),  apiToken);
+        getTemplate.prettyPrint();
+                getTemplate.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.termsOfUseAndAccess.termsOfUse", equalTo("testTermsOfUse"));
+
         // back to super for cleanup
         
         UtilIT.setSuperuserStatus(username, true);
