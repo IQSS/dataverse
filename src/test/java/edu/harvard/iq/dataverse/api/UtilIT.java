@@ -5165,6 +5165,14 @@ public class UtilIT {
                 .put("/api/dataverses/" + templateId + "/editTemplateMetadata?replace=" + replaceData);
     }
     
+    public static Response updateTemplateLicenseTerms(String templateId, String jsonString, String apiToken) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .put("/api/dataverses/" + templateId + "/editTemplateTerms");
+    }
+    
     public static Response deleteTemplate(String id,  String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)

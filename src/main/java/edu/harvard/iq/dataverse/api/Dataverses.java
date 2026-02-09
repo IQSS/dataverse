@@ -2088,8 +2088,9 @@ public class Dataverses extends AbstractApiBean {
                 if (license == null) {
                     return notFound(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNotFound", List.of(licenseName)));
                 }
+                
                 execCommand(new UpdateTemplateLicenseCommand(createDataverseRequest(getRequestUser(crc)), template, dataverse, license));
-                return ok(BundleUtil.getStringFromBundle("dataverses.api.update.template.license.succes"));
+                return ok(BundleUtil.getStringFromBundle("dataverses.api.update.template.license.success"));
             } else if (requestBody.getCustomTerms() != null) {
                 CustomTermsDTO customTerms = requestBody.getCustomTerms();
                 execCommand(new UpdateTemplateLicenseCommand(createDataverseRequest(getRequestUser(crc)), template, dataverse, customTerms.toTermsOfUseAndAccess()));

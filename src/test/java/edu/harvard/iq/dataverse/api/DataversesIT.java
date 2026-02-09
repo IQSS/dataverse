@@ -12,6 +12,7 @@ import static io.restassured.path.json.JsonPath.with;
 
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
@@ -2937,6 +2938,36 @@ public class DataversesIT {
                               ]
                             }
                             """;
+        
+                String jsonStringForUpdateTerms = """
+                            {
+                              "name": "Dataverse template - edited - again",
+                              "fields": [
+                                {
+                                  "typeName": "author",
+                                  "value": [
+                                    {
+                                        "authorName": {
+                                            "typeName": "authorName",
+                                            "value": "Vrabel, Mike"
+                                        },
+                                        "authorAffiliation": {
+                                            "typeName": "authorIdentifierScheme",
+                                            "value": "ORCID"
+                                        }
+                                    }
+                                  ]
+                                }
+                              ],
+                              "instructions": [
+                                {
+                                    "instructionField": "title",
+                                    "instructionText": "A title for, you know, your thing"
+                                }
+                              ]
+                            }
+                            """;
+
 
         Response createTemplateResponse = UtilIT.createTemplate(
                 dataverseAlias,
@@ -2982,6 +3013,21 @@ public class DataversesIT {
                 .body("data.datasetFields.citation.fields.size()", equalTo(1))
                 .body("data.instructions.size()", equalTo(1))
                 .body("data.dataverseAlias", equalTo(dataverseAlias));
+        
+        
+        //Update Template License
+                // Test case 1: Update to a valid, predefined license (CC BY 4.0).
+        Response updateLicenseResponse = UtilIT.updateTemplateLicenseTerms(templateId.toString(), "{ \"name\": \"CC BY 4.0\" }", apiToken);
+        updateLicenseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(BundleUtil.getStringFromBundle("dataverses.api.update.template.license.success")));
+
+        Response getTemplate  = UtilIT.getTemplate(templateId.toString(),  apiToken);
+        getTemplate.prettyPrint();
+        getTemplate.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.termsOfUseAndAccess.license.name", equalTo("CC BY 4.0"));
+
         
         // back to super for cleanup
         
