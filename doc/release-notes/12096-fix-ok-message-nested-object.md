@@ -12,4 +12,10 @@ This has been fixed. The following endpoints now return the `message` field as a
 - `PUT /api/harvest/clients/{nickName}`
 - `PUT /api/harvest/server/oaisets/{specname}`
 
-**Note:** If you implemented a workaround to handle the nested `message` object, you may need to update your code to expect a plain string instead.
+**Note:** If you have integrations that implemented workarounds for the nested `message` object, you may need to update your code to expect a plain string instead. If you need time to update your integrations, you can temporarily revert to the legacy behavior by setting the feature flag:
+
+```
+dataverse.feature.api-message-field-legacy=true
+```
+
+This flag will be removed in a future version.

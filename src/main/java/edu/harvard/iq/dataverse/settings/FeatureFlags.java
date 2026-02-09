@@ -250,6 +250,33 @@ public enum FeatureFlags {
      */ 
     ONLY_UPDATE_DATACITE_WHEN_NEEDED("only-update-datacite-when-needed"),
 
+    /**
+     * Reverts to the legacy (buggy) API response format for the {@code ok(String msg, JsonObjectBuilder bld)}
+     * method in AbstractApiBean. When enabled, the {@code message} field is returned as a nested object
+     * ({@code {"message":{"message":"..."}}}) instead of the corrected plain string format 
+     * ({@code {"message":"..."}}).
+     * 
+     * <p>This flag is provided as a temporary workaround for integrations that may have implemented
+     * workarounds for the buggy behavior. The following endpoints are affected:</p>
+     * <ul>
+     *   <li>POST /api/datasets/{id}/add (duplicate file warning)</li>
+     *   <li>PUT /api/admin/settings</li>
+     *   <li>PUT /api/dataverses/{id}</li>
+     *   <li>PUT /api/dataverses/{id}/inputLevels</li>
+     *   <li>POST /api/admin/savedsearches</li>
+     *   <li>PUT /api/harvest/clients/{nickName}</li>
+     *   <li>PUT /api/harvest/server/oaisets/{specname}</li>
+     * </ul>
+     * 
+     * <p>This flag will be removed in a future version. Please update your integrations to expect
+     * the corrected message format.</p>
+     * 
+     * @apiNote Raise flag by setting "dataverse.feature.api-message-field-legacy"
+     * @since Dataverse 6.10
+     * @see <a href="https://github.com/IQSS/dataverse/issues/12096">Issue #12096</a>
+     */
+    API_MESSAGE_FIELD_LEGACY("api-message-field-legacy"),
+
     ;
     
     final String flag;
