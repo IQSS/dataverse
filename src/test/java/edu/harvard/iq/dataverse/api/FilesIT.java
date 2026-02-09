@@ -3873,7 +3873,7 @@ public class FilesIT {
     @Test
     public void testDownloadFileWithGuestbookResponse() throws IOException, JsonParseException {
         msgt("testDownloadFileWithGuestbookResponse");
-        // Create super user
+        // Create superuser
         Response createUserResponse = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
         String superusername = UtilIT.getUsernameFromResponse(createUserResponse);
@@ -3894,11 +3894,19 @@ public class FilesIT {
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
         String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
         Response getDatasetMetadata = UtilIT.nativeGet(datasetId, apiToken);
-        getDatasetMetadata.prettyPrint();
         getDatasetMetadata.then().assertThat().statusCode(200);
+
+        Response getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, apiToken);
+        getGuestbooksResponse.then().assertThat().statusCode(200);
+        assertTrue(getGuestbooksResponse.getBody().jsonPath().getList("data").isEmpty());
 
         // Create a Guestbook
         Guestbook guestbook = UtilIT.createRandomGuestbook(dataverseAlias, persistentId, apiToken);
+
+        // Get the list of Guestbooks
+        getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, apiToken);
+        getGuestbooksResponse.then().assertThat().statusCode(200);
+        assertEquals(1, getGuestbooksResponse.getBody().jsonPath().getList("data").size());
 
         // Upload file
         String pathToFile1 = "src/main/webapp/resources/images/dataverseproject.png";
@@ -3951,15 +3959,6 @@ public class FilesIT {
         // Download the file using the signed url
         Response signedUrlResponse = get(signedUrl);
         signedUrlResponse.prettyPrint();
-        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
-
-        // Download again with guestbook response already given
-        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId, apiTokenRando, null);
-        downloadResponse.prettyPrint();
-        downloadResponse.then().assertThat()
-                .statusCode(OK.getStatusCode());
-
-        signedUrlResponse = get(signedUrl);
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
     }
 }

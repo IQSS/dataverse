@@ -609,6 +609,12 @@ public class UtilIT {
         return requestSpec.get("/api/guestbooks/" + guestbookId );
     }
 
+    static Response getGuestbooks(String dataverseAlias, String apiToken) {
+        RequestSpecification requestSpec = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+        return requestSpec.get("/api/guestbooks/" + dataverseAlias + "/list" );
+    }
+
     static Response enableGuestbook(String dataverseAlias, Long guestbookId, String apiToken, String enable) {
         Response createGuestbookResponse = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)

@@ -4,15 +4,15 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateGuestbookCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
-import jakarta.json.JsonException;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
+import jakarta.json.*;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
@@ -49,12 +49,41 @@ public class Guestbooks extends AbstractApiBean {
         }, getRequestUser(crc));
     }
 
+    @GET
+    @AuthRequired
+    @Path("{identifier}/list")
+    public Response getGuestbooks(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) {
+        return response( req -> {
+            Dataverse dataverse = findDataverseOrDie(identifier);
+            if (permissionSvc.request(req)
+                    .on(dataverse)
+                    .has(Permission.EditDataverse)) {
+            } else {
+                return error(Response.Status.FORBIDDEN, "Not authorized");
+            }
+            List<Guestbook> guestbooks = guestbookService.findGuestbooksForGivenDataverse(dataverse);
+            JsonArrayBuilder guestbookArray = Json.createArrayBuilder();
+            JsonPrinter jsonPrinter = new JsonPrinter();
+            for (Guestbook gb : guestbooks) {
+                guestbookArray.add(jsonPrinter.json(gb));
+            }
+            return ok(guestbookArray);
+        }, getRequestUser(crc));
+    }
+
     @POST
     @AuthRequired
     @Path("{identifier}")
     public Response createGuestbook(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, String jsonBody) {
             return response(req -> {
                 Dataverse dataverse = findDataverseOrDie(identifier);
+                if (permissionSvc.request(req)
+                        .on(dataverse)
+                        .has(Permission.EditDataverse)) {
+                } else {
+                    return error(Response.Status.FORBIDDEN, "Not authorized");
+                }
+
                 Guestbook guestbook = new Guestbook();
                 guestbook.setDataverse(dataverse);
                 try {
@@ -87,6 +116,12 @@ public class Guestbooks extends AbstractApiBean {
         boolean enabled = Util.isTrue(body);
         return response( req -> {
             Dataverse dataverse = findDataverseOrDie(identifier);
+            if (permissionSvc.request(req)
+                    .on(dataverse)
+                    .has(Permission.EditDataverse)) {
+            } else {
+                return error(Response.Status.FORBIDDEN, "Not authorized");
+            }
             List<Guestbook> guestbooks = dataverse.getGuestbooks();
             if (guestbooks != null) {
                 for (Guestbook guestbook : guestbooks) {

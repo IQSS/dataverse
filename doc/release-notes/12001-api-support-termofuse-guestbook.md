@@ -5,7 +5,8 @@ A post to this endpoint with the body containing a JSON Guestbook Response will 
 
 ## New CRUD Endpoints for Guestbook:
 Create a Guestbook: POST `/api/guestbooks/{dataverseIdentifier}`
-Get a Guestbook: POST `/api/guestbooks/{dataverseIdentifier}`
+Get a Guestbook: GET `/api/guestbooks/{id}`
+Get a list of Guestbooks linked to a Dataverse Collection: GET `/api/guestbooks/{dataverseIdentifier}/list`
 Enable/Disable a Guestbook: PUT `/api/guestbooks/{dataverseIdentifier}/{id}/enabled` Body: `true` or `false`
 Note: There is no Update or Delete at this time. You can disable a Guestbook and create a new one.
 
