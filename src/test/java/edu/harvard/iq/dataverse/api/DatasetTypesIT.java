@@ -989,6 +989,12 @@ public class DatasetTypesIT {
         getCitationCslReview.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("type", equalTo("review"));
+
+        Response exportDatacite = UtilIT.exportDataset(reviewPid, "Datacite", false, "1.0", apiTokenReviewer);
+        exportDatacite.prettyPrint();
+        exportDatacite.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("resource.resourceType.@resourceTypeGeneral", CoreMatchers.equalTo("Other"));
     }
 
     @Test
