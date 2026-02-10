@@ -994,6 +994,7 @@ public class DatasetTypesIT {
         exportDatacite.prettyPrint();
         exportDatacite.then().assertThat()
                 .statusCode(OK.getStatusCode())
+                .body("resource.resourceType", CoreMatchers.equalTo("Review"))
                 .body("resource.resourceType.@resourceTypeGeneral", CoreMatchers.equalTo("Other"));
     }
 

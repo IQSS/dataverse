@@ -945,13 +945,15 @@ Adding certain dataset types will result in a value other than "Dataset" being s
    * - Dataset Type
      - Value sent to DataCite
    * - dataset
-     - Dataset
+     - <resourceType resourceTypeGeneral="Dataset"/>
    * - software
-     - Software
+     - <resourceType resourceTypeGeneral="Software"/>
    * - workflow
-     - Workflow
+     - <resourceType resourceTypeGeneral="Workflow"/>
    * - review
-     - Other
+     - <resourceType resourceTypeGeneral="Other">Review</resourceType>
+
+Note that the value for resourceType (which is either empty or "Review", as shown above) can be overridden by values in the "Data Type" (``kindOfData``) metadata field.
 
 .. |image1| image:: ./img/DatasetDiagram.png
    :class: img-responsive
