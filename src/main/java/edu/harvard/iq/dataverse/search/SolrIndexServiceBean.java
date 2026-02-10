@@ -36,6 +36,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
@@ -410,8 +411,28 @@ public class SolrIndexServiceBean {
                 indexPermissionsForOneDvObject(dataset);
 
                 // Process files for this dataset
-                for (DatasetVersion version : datasetVersionsToBuildCardsFor(dataset)) {
-                        processDatasetVersionFiles(version, fileCounter, fileQueryMin);
+                Set<DatasetVersion> versions = datasetVersionsToBuildCardsFor(dataset);
+                final List<Long> changedFileIds = new ArrayList<>();
+                if(versions.size()>1) {
+                    Long releasedVersionId = null;
+                    Long draftVersionId = null;
+                    
+                    for (DatasetVersion version : versions) {
+                        if (version.isReleased()) {
+                            releasedVersionId = version.getId();
+                        } else if (version.isDraft()) {
+                            draftVersionId = version.getId();
+                        }
+                    }
+                    
+                    populateChangedFileIds(
+                            releasedVersionId, 
+                            draftVersionId, 
+                            changedFileIds
+                        );
+                }
+                for (DatasetVersion version : versions) {
+                    processDatasetVersionFiles(version, fileCounter, fileQueryMin, (versions.size()>1 && version.isDraft()) ? changedFileIds : null);
                     }
                 }
             }
@@ -419,35 +440,96 @@ public class SolrIndexServiceBean {
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void indexDatasetFilesInNewTransaction(List<DatasetVersion> versions, final int[] fileCounter, int fileQueryMin) {
+        final List<Long> changedFileIds = new ArrayList<>();
+        if(versions.size()>1) {
+            Long releasedVersionId = versions.get(versions.get(0).isReleased() ? 0 : 1).getId();
+            Long draftVersionId = versions.get(versions.get(0).isReleased() ? 1 : 0).getId();
+            
+            populateChangedFileIds(
+                    releasedVersionId, 
+                    draftVersionId, 
+                    changedFileIds
+                );
+        }
         for (DatasetVersion version : versions) {
             // The version object is detached, but its fileMetadatas collection is already loaded.
             // We only need its ID and state, which are available.
-            processDatasetVersionFiles(version, fileCounter, fileQueryMin);
+            processDatasetVersionFiles(version, fileCounter, fileQueryMin, (versions.size()>1 && version.isDraft()) ? changedFileIds : null);
         }
     }
 
+    /**
+     * Retrieves the IDs of file metadatas that have changed between the released version
+     * and the draft version of a dataset.
+     * 
+     * @param releasedVersionId the ID of the released dataset version
+     * @param draftVersionId the ID of the draft dataset version
+     * @param changedFileMetadataIds the list to populate with changed file metadata IDs
+     */
+    public void populateChangedFileIds(Long releasedVersionId, Long draftVersionId, List<Long> changedFileIds) {
+        Query query = em.createNamedQuery("FileMetadata.getDatafilesWithChangedMetadata", Long.class);
+        query.setParameter(1, releasedVersionId);
+        query.setParameter(2, draftVersionId);
+
+        /*
+         * When the query was configured to return Long, it was returning Integer. 
+         * The query has been changed to return Integer now. The code here is robust 
+         * if that changes in the future.
+         */
+        List<Object> queryResults = query.getResultList();
+        for (Object result : queryResults) {
+            if (result != null) {
+                // Ensure we're adding Long objects to the list
+                if (result instanceof Integer intResult) {
+                    logger.finest("Converted Integer result to Long: " + result);
+                    changedFileIds.add(Long.valueOf(intResult));
+                } else if (result instanceof Long longResult) {
+                    // Already a Long, add directly
+                    logger.finest("Added existing Long to list: " + result);
+                    changedFileIds.add(longResult);
+                } else {
+                    // If it's not a Long, convert it to one via String
+                    try {
+                        changedFileIds.add(Long.valueOf(result.toString()));
+                        logger.finest("Converted non-Long result to Long: " + result + " of type " + result.getClass().getName());
+                    } catch (NumberFormatException e) {
+                        logger.warning("Could not convert query result to Long: " + result);
+                    }
+                }
+            }
+        }
+        logger.fine("Found " + changedFileIds.size() + " datafiles whose metadata has changed between versions " + releasedVersionId + " and " + draftVersionId);
+    }
+    
     private void processDatasetVersionFiles(DatasetVersion version,
-            final int[] fileCounter, int fileQueryMin) {
+            final int[] fileCounter, int fileQueryMin, List<Long> changedFileIds) {
         List<String> cachedPerms = searchPermissionsService.findDatasetVersionPerms(version);
         String solrIdEnd = getDatasetOrDataFileSolrEnding(version.getVersionState());
         Long versionId = version.getId();
         List<DataFileProxy> filesToReindexAsBatch = new ArrayList<>();
 
+        // If the version is draft and there is a released version, 
+        // we only need perm docs for the files with filemetadata changes == those in changedFileMetadataIds
+        
         // Process files in batches of 100
         int batchSize = 100;
 
         if (dataFileService.findCountByDatasetVersionId(version.getId()).intValue() > fileQueryMin) {
             // For large datasets, use a more efficient SQL query
+            // ToDo - only get the ones in finalFileIdsToReindex
             try (Stream<DataFileProxy> fileStream = getDataFileInfoForPermissionIndexing(version.getId())) {
 
                 // Process files in batches to avoid memory issues
                 fileStream.forEach(fileInfo -> {
-                    filesToReindexAsBatch.add(fileInfo);
-                    fileCounter[0]++;
+                    // Only add files that need reindexing
+                if (changedFileIds == null || changedFileIds.contains(fileInfo.getFileId())) {
+                        filesToReindexAsBatch.add(fileInfo);
+                        fileCounter[0]++;
 
-                    if (filesToReindexAsBatch.size() >= batchSize) {
-                        reindexFilesInBatches(filesToReindexAsBatch, cachedPerms, versionId, solrIdEnd);
-                        filesToReindexAsBatch.clear();
+                        if (filesToReindexAsBatch.size() >= batchSize) {
+                            reindexFilesInBatches(filesToReindexAsBatch, cachedPerms, versionId, solrIdEnd);
+                            filesToReindexAsBatch.clear();
+                        }
                     }
                 });
             }
@@ -455,13 +537,16 @@ public class SolrIndexServiceBean {
             // For smaller datasets, process files directly
             // We only call getFileMetadatas() in the case where we know they have already been loaded
             for (FileMetadata fmd : version.getFileMetadatas()) {
+                // Only add files that need reindexing
                 DataFileProxy fileProxy = new DataFileProxy(fmd);
-                filesToReindexAsBatch.add(fileProxy);
-                fileCounter[0]++;
+                if (changedFileIds == null || changedFileIds.contains(fileProxy.getFileId())) {
+                    filesToReindexAsBatch.add(fileProxy);
+                    fileCounter[0]++;
 
-                if (filesToReindexAsBatch.size() >= batchSize) {
-                    reindexFilesInBatches(filesToReindexAsBatch, cachedPerms, versionId, solrIdEnd);
-                    filesToReindexAsBatch.clear();
+                    if (filesToReindexAsBatch.size() >= batchSize) {
+                        reindexFilesInBatches(filesToReindexAsBatch, cachedPerms, versionId, solrIdEnd);
+                        filesToReindexAsBatch.clear();
+                    }
                 }
             }
         }
