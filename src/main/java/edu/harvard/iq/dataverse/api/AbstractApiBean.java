@@ -32,6 +32,7 @@ import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DateUtil;
@@ -976,8 +977,9 @@ public abstract class AbstractApiBean {
 
     protected Response ok(String msg) {
         // An instance may opt back into using the old {data:{message:"$msg"}} way.
+        // This is a highly used response builder!
         // TODO: This will be removed in a future version.
-        if (FeatureFlags.API_MESSAGE_FIELD_LEGACY.enabled()) {
+        if (JvmSettings.LEGACY_API_RESPONSE_MESSAGE_STYLE.lookupOptional(Boolean.class).orElse(false)) {
             return ok(Json.createObjectBuilder()
                         .add("message", msg)
                         .build(),
@@ -991,7 +993,7 @@ public abstract class AbstractApiBean {
         // Legacy mode returns message as nested object for backward compatibility
         // with integrations that worked around the bug.
         // TODO: This will be removed in a future version.
-        if (FeatureFlags.API_MESSAGE_FIELD_LEGACY.enabled()) {
+        if (JvmSettings.LEGACY_API_RESPONSE_MESSAGE_STYLE.lookupOptional(Boolean.class).orElse(false)) {
             return ok(bld.build(), Json.createObjectBuilder().add(ApiConstants.MESSAGE_FIELD, msg).build(), null);
         } else {
             return ok(bld.build(), Json.createValue(msg), null);

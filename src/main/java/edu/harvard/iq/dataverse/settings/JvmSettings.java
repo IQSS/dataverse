@@ -109,6 +109,10 @@ public enum JvmSettings {
     // Avoids adding flag entries twice.
     FEATURE_FLAG(SCOPE_FLAGS),
     
+    // LEGACY BEHAVIOUR SETTINGS
+    SCOPE_LEGACY(PREFIX, "legacy"),
+    LEGACY_API_RESPONSE_MESSAGE_STYLE(SCOPE_LEGACY, "api-response-message-style"),
+    
     // METADATA SETTINGS
     SCOPE_METADATA(PREFIX, "metadata"),
     MDB_SYSTEM_METADATA_KEYS(SCOPE_METADATA, "block-system-metadata-keys"),
