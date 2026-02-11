@@ -10,7 +10,15 @@ This API changelog is experimental and we would love feedback on its usefulness.
 v6.10
 -----
 
-- Several API endpoints that return both a ``message`` and ``data`` field were incorrectly returning the message as a nested object (``{"message":{"message":"..."}}``). This has been fixed so that the message is now a plain string (``{"message":"..."}``). If you have integrations that depend on the old behavior, you can temporarily revert by setting ``dataverse.feature.api-message-field-legacy=true``. This flag will be removed in a future version. Affected endpoints: ``POST /api/datasets/{id}/add`` (duplicate file warning), ``PUT /api/admin/settings``, ``PUT /api/dataverses/{id}``, ``PUT /api/dataverses/{id}/inputLevels``, ``POST /api/admin/savedsearches``, ``PUT /api/harvest/clients/{nickName}``, ``PUT /api/harvest/server/oaisets/{specname}``. See `#12096 <https://github.com/IQSS/dataverse/issues/12096>`_.
+- Several API endpoints that return both a ``message`` and ``data`` field were incorrectly returning the message as a nested object (``{"message":{"message":"..."}}``).
+  This has been fixed so that the message is now a plain string (``{"message":"..."}``).
+  If you have integrations that depend on the old behavior, you can temporarily revert by setting ``dataverse.feature.api-message-field-legacy=true``.
+  This flag will be removed in a future version.
+  Affected endpoints: ``POST /api/datasets/{id}/add`` (duplicate file warning), ``PUT /api/admin/settings``, ``PUT /api/dataverses/{id}``, ``PUT /api/dataverses/{id}/inputLevels``, ``POST /api/admin/savedsearches``, ``PUT /api/harvest/clients/{nickName}``, ``PUT /api/harvest/server/oaisets/{specname}``.
+  See `#12096 <https://github.com/IQSS/dataverse/issues/12096>`_.
+- Most API endpoints that return a success notification but no actual data have it embedded into ``data``:  ``{"data":{"message":"..."}}``.
+  For now, this style will remain the supported default. In a future version of Dataverse the ``message`` will always be a separate top field: ``{"data":{},"message":"..."}``.
+  Integrators and client vendors are welcome to opt-in to the new style and test thoroughly by enabling :ref:`dataverse.feature.unify-api-response-message-style`.
 
 v6.9
 ----
