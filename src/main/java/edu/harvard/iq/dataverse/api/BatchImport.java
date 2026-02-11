@@ -89,7 +89,7 @@ public class BatchImport extends AbstractApiBean {
             JsonObjectBuilder status = importService.doImport(dataverseRequest, owner, body, filename, ImportType.NEW, cleanupLog);
             return this.ok(status);
         } catch (ImportException | IOException e) {
-            return this.error(Response.Status.BAD_REQUEST, e.getMessage());
+            return error(Response.Status.BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -134,7 +134,7 @@ public class BatchImport extends AbstractApiBean {
             batchService.processFilePath(fileDir, parentIdtf, dataverseRequest, owner, importType, createDV);
 
         } catch (ImportException e) {
-            return this.error(Response.Status.BAD_REQUEST, "Import Exception, " + e.getMessage());
+            return error(Response.Status.BAD_REQUEST, "Import Exception, " + e.getMessage());
         }
         return this.accepted();
     }
