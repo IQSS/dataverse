@@ -105,7 +105,7 @@
                 </div>
                 <!-- TABULAR VARIABLES, OBSERVATIONS + UNF -->
                 <div class="unf-block" jsf:rendered="#{isTabularData}">
-                    <h:outputText value="#{bundle['file.type.tabularData']: }"/>
+                    <h:outputText value="#{bundle['file.type.tabularData']}: "/>
                     <h:outputText id="fileNumVars" value="#{dataFile.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, "/>
                     <h:outputText id="fileNumObs" value="#{dataFile.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} "/>
                     <span jsf:id="fileUNF" class="#{!editDatafilesPage ? 'checksum-truncate checksum-tooltip' : ''}" style="margin-right:3px;"
