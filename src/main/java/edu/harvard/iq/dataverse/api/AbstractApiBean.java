@@ -987,21 +987,15 @@ public abstract class AbstractApiBean {
         }
     }
     
-    protected Response ok( String msg, JsonObjectBuilder bld  ) {
-        JsonObjectBuilder response = Json.createObjectBuilder()
-            .add("status", ApiConstants.STATUS_OK);
-        
+    protected Response ok(String msg, JsonObjectBuilder bld) {
         // Legacy mode returns message as nested object for backward compatibility
-        // with integrations that worked around the bug. This will be removed in a future version.
+        // with integrations that worked around the bug.
+        // TODO: This will be removed in a future version.
         if (FeatureFlags.API_MESSAGE_FIELD_LEGACY.enabled()) {
-            response.add("message", Json.createObjectBuilder().add("message", msg));
+            return ok(bld.build(), Json.createObjectBuilder().add(ApiConstants.MESSAGE_FIELD, msg).build(), null);
         } else {
-            response.add("message", msg);
+            return ok(bld.build(), Json.createValue(msg), null);
         }
-        
-        return Response.ok().entity(response.add("data", bld).build())
-            .type(MediaType.APPLICATION_JSON)
-            .build();
     }
 
     protected Response ok( boolean value ) {
