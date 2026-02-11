@@ -2599,7 +2599,7 @@ public class DatasetsIT {
         getRsyncScriptPermErrorGuest.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode())
                 .contentType(ContentType.JSON)
-                .body("message", equalTo(AbstractApiBean.RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED));
+                .body("message", equalTo(ApiConstants.RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED));
 
         Response createNoPermsUser = UtilIT.createRandomUser();
         String noPermsUsername = UtilIT.getUsernameFromResponse(createNoPermsUser);

@@ -76,12 +76,6 @@ import static org.apache.commons.lang3.StringUtils.isNumeric;
 public abstract class AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(AbstractApiBean.class.getName());
-    private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
-    private static final String PERSISTENT_ID_KEY=":persistentId";
-    private static final String ALIAS_KEY=":alias";
-    public static final String STATUS_WF_IN_PROGRESS = "WORKFLOW_IN_PROGRESS";
-    public static final String DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME = "X-Dataverse-invocationID";
-    public static final String RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED = "Only authenticated users can perform the requested operation";
 
     /**
      * Utility class to convey a proper error response using Java's exceptions.
@@ -307,7 +301,7 @@ public abstract class AbstractApiBean {
     }
 
     protected String getRequestApiKey() {
-        String headerParamApiKey = httpRequest.getHeader(DATAVERSE_KEY_HEADER_NAME);
+        String headerParamApiKey = httpRequest.getHeader(ApiConstants.DATAVERSE_KEY_HEADER_NAME);
         String queryParamApiKey = httpRequest.getParameter("key");
                 
         return headerParamApiKey!=null ? headerParamApiKey : queryParamApiKey;
@@ -422,11 +416,11 @@ public abstract class AbstractApiBean {
             }
         } else {
             String persistentId = id;
-            if (id.equals(PERSISTENT_ID_KEY)) {
-                persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
+            if (id.equals(ApiConstants.PERSISTENT_ID_KEY)) {
+                persistentId = getRequestParameter(ApiConstants.PERSISTENT_ID_KEY.substring(1));
                 if (persistentId == null) {
                     throw new WrappedResponse(
-                            badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+                            badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(ApiConstants.PERSISTENT_ID_KEY.substring(1)))));
                 }
             }
             GlobalId globalId;
@@ -447,7 +441,7 @@ public abstract class AbstractApiBean {
                     fprLogService.logEntry(entry);
                 }
                 throw new WrappedResponse(
-                        notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+                        notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(ApiConstants.PERSISTENT_ID_KEY.substring(1)))));
             }
         }
         if (deep) {
@@ -509,11 +503,11 @@ public abstract class AbstractApiBean {
 
     protected DataFile findDataFileOrDie(String id) throws WrappedResponse {
         DataFile datafile;
-        if (id.equals(PERSISTENT_ID_KEY)) {
-            String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
+        if (id.equals(ApiConstants.PERSISTENT_ID_KEY)) {
+            String persistentId = getRequestParameter(ApiConstants.PERSISTENT_ID_KEY.substring(1));
             if (persistentId == null) {
                 throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(ApiConstants.PERSISTENT_ID_KEY.substring(1)))));
             }
             datafile = fileService.findByGlobalId(persistentId);
             if (datafile == null) {
@@ -541,8 +535,8 @@ public abstract class AbstractApiBean {
        
     protected DataverseRole findRoleOrDie(String id) throws WrappedResponse {
         DataverseRole role;
-        if (id.equals(ALIAS_KEY)) {
-            String alias = getRequestParameter(ALIAS_KEY.substring(1));
+        if (id.equals(ApiConstants.ALIAS_KEY)) {
+            String alias = getRequestParameter(ApiConstants.ALIAS_KEY.substring(1));
             try {
                 return em.createNamedQuery("DataverseRole.findDataverseRoleByAlias", DataverseRole.class)
                         .setParameter("alias", alias)
@@ -574,11 +568,11 @@ public abstract class AbstractApiBean {
         DatasetLinkingDataverse dsld;
         Dataverse linkingDataverse = findDataverseOrDie(linkingDataverseId);
 
-        if (datasetId.equals(PERSISTENT_ID_KEY)) {
-            String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
+        if (datasetId.equals(ApiConstants.PERSISTENT_ID_KEY)) {
+            String persistentId = getRequestParameter(ApiConstants.PERSISTENT_ID_KEY.substring(1));
             if (persistentId == null) {
                 throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(ApiConstants.PERSISTENT_ID_KEY.substring(1)))));
             }
             
             Dataset dataset = datasetSvc.findByGlobalId(persistentId);
@@ -1045,8 +1039,8 @@ public abstract class AbstractApiBean {
     protected Response created( String uri, JsonObjectBuilder bld ) {
         return Response.created( URI.create(uri) )
                 .entity( Json.createObjectBuilder()
-                .add("status", "OK")
-                .add("data", bld).build())
+                .add(ApiConstants.STATUS_FIELD, ApiConstants.STATUS_OK)
+                .add(ApiConstants.DATA_FIELD, bld).build())
                 .type(MediaType.APPLICATION_JSON)
                 .build();
     }
@@ -1054,15 +1048,15 @@ public abstract class AbstractApiBean {
     protected Response accepted(JsonObjectBuilder bld) {
         return Response.accepted()
                 .entity(Json.createObjectBuilder()
-                        .add("status", STATUS_WF_IN_PROGRESS)
-                        .add("data",bld).build()
+                        .add(ApiConstants.STATUS_FIELD, ApiConstants.STATUS_WF_IN_PROGRESS)
+                        .add(ApiConstants.DATA_FIELD, bld).build()
                 ).build();
     }
     
     protected Response accepted() {
         return Response.accepted()
                 .entity(Json.createObjectBuilder()
-                        .add("status", STATUS_WF_IN_PROGRESS).build()
+                        .add(ApiConstants.STATUS_FIELD, ApiConstants.STATUS_WF_IN_PROGRESS).build()
                 ).build();
     }
 
@@ -1077,8 +1071,8 @@ public abstract class AbstractApiBean {
     protected Response badRequest(String msg, Map<String, String> fieldErrors) {
         return Response.status(Status.BAD_REQUEST)
                 .entity(NullSafeJsonBuilder.jsonObjectBuilder()
-                        .add("status", ApiConstants.STATUS_ERROR)
-                        .add("message", msg)
+                        .add(ApiConstants.STATUS_FIELD, ApiConstants.STATUS_ERROR)
+                        .add(ApiConstants.MESSAGE_FIELD, msg)
                         .add("fieldErrors", Json.createObjectBuilder(fieldErrors).build())
                         .build()
                 )
@@ -1111,7 +1105,7 @@ public abstract class AbstractApiBean {
     }
 
     protected Response authenticatedUserRequired() {
-        return error(Status.UNAUTHORIZED, RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED);
+        return error(Status.UNAUTHORIZED, ApiConstants.RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED);
     }
 
     protected Response permissionError( PermissionException pe ) {
@@ -1136,9 +1130,9 @@ public abstract class AbstractApiBean {
 
     protected static Response error( Status sts, String msg ) {
         return Response.status(sts)
-                .entity( NullSafeJsonBuilder.jsonObjectBuilder()
-                        .add("status", ApiConstants.STATUS_ERROR)
-                        .add( "message", msg ).build()
+                .entity(NullSafeJsonBuilder.jsonObjectBuilder()
+                        .add(ApiConstants.STATUS_FIELD, ApiConstants.STATUS_ERROR)
+                        .add(ApiConstants.MESSAGE_FIELD, msg ).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
 }

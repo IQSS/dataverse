@@ -163,7 +163,7 @@ public class SearchIT {
         Response dataverse47behaviorOfTokensBeingRequired = UtilIT.search("id:dataset_" + datasetId, nullToken);
         dataverse47behaviorOfTokensBeingRequired.prettyPrint();
         dataverse47behaviorOfTokensBeingRequired.then().assertThat()
-                .body("message", CoreMatchers.equalTo(AbstractApiBean.RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED))
+                .body("message", CoreMatchers.equalTo(ApiConstants.RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED))
                 .statusCode(UNAUTHORIZED.getStatusCode());
 
         Response reEnableTokenlessSearch = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiRequiresToken);
