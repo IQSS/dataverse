@@ -14,7 +14,7 @@ public final class ApiConstants {
     
     public static final String DATA_FIELD = "data";
     public static final String TOTAL_COUNT_FIELD = "totalCount";
-    public static final String MESSAGE_FIELD = "message ";
+    public static final String MESSAGE_FIELD = "message";
 
     // Authentication
     public static final String CONTAINER_REQUEST_CONTEXT_USER = "user";
