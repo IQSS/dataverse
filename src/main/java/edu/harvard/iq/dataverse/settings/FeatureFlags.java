@@ -248,7 +248,23 @@ public enum FeatureFlags {
      *          "dataverse.feature.only-update-datacite-when-needed"
      * @since Dataverse 6.9
      */ 
-    ONLY_UPDATE_DATACITE_WHEN_NEEDED("only-update-datacite-when-needed");
+    ONLY_UPDATE_DATACITE_WHEN_NEEDED("only-update-datacite-when-needed"),
+    
+    /**
+     * Historically, success messages have returned success messages as {data:{message:...}}.
+     * Error messages have been return as either {message:...} or {message:{message:...}}.
+     * While the alignment of error messages is opt-out (see {@link JvmSettings#LEGACY_API_RESPONSE_MESSAGE_STYLE},
+     * changing the response format of ~230 success responses may cause a lot of friction.
+     * This feature flag makes sure any early adopters can change to the unified response layout,
+     * and it will graduate to the new default later.
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.unify-api-response-message-style"
+     * @since Dataverse 6.10
+     */
+    UNIFY_API_RESPONSE_MESSAGE_STYLE("unify-api-response-message-style")
+    
+    ;
+    
     
     final String flag;
     final boolean defaultStatus;

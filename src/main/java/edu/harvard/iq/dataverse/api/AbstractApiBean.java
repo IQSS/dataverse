@@ -976,22 +976,19 @@ public abstract class AbstractApiBean {
     }
 
     protected Response ok(String msg) {
-        // An instance may opt back into using the old {data:{message:"$msg"}} way.
-        // This is a highly used response builder!
+        // An instance may opt out of using the old {data:{message:"$msg"}} way.
+        // This is a highly used response builder, which is why this is an experimental opt-in change!
         // TODO: This will be removed in a future version.
-        if (JvmSettings.LEGACY_API_RESPONSE_MESSAGE_STYLE.lookupOptional(Boolean.class).orElse(false)) {
-            return ok(Json.createObjectBuilder()
-                        .add("message", msg)
-                        .build(),
-                null, null);
-        } else {
+        if (FeatureFlags.UNIFY_API_RESPONSE_MESSAGE_STYLE.enabled()) {
             return ok(null, Json.createValue(msg), null);
+        } else {
+            return ok(Json.createObjectBuilder().add("message", msg).build(), null, null);
         }
     }
     
     protected Response ok(String msg, JsonObjectBuilder bld) {
-        // Legacy mode returns message as nested object for backward compatibility
-        // with integrations that worked around the bug.
+        // Legacy mode returns message as nested object for backward compatibility with integrations that worked around the bug.
+        // This is a scarcely used way to build a response, mostly relevant to admins, which is why we make it opt-out.
         // TODO: This will be removed in a future version.
         if (JvmSettings.LEGACY_API_RESPONSE_MESSAGE_STYLE.lookupOptional(Boolean.class).orElse(false)) {
             return ok(bld.build(), Json.createObjectBuilder().add(ApiConstants.MESSAGE_FIELD, msg).build(), null);
