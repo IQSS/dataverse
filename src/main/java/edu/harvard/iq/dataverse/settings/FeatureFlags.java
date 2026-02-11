@@ -299,5 +299,16 @@ public enum FeatureFlags {
     public boolean enabled() {
         return JvmSettings.FEATURE_FLAG.lookupOptional(Boolean.class, flag).orElse(defaultStatus);
     }
+    
+    /**
+     * Returns the scoped configuration key for this feature flag.
+     * The key is constructed by inserting the flag name into the {@link JvmSettings#FEATURE_FLAG} pattern,
+     * resulting in a string of the form "dataverse.feature.{flag}".
+     *
+     * @return the scoped configuration key as a String
+     */
+    public String getScopedKey() {
+        return JvmSettings.FEATURE_FLAG.insert(flag);
+    }
 
 }
