@@ -942,42 +942,36 @@ public abstract class AbstractApiBean {
      *  HTTP Response methods *
     \* ====================== */
 
-    protected Response ok( JsonArrayBuilder bld ) {
-        return Response.ok(Json.createObjectBuilder()
-            .add("status", ApiConstants.STATUS_OK)
-            .add("data", bld).build())
-            .type(MediaType.APPLICATION_JSON).build();
-    }
-
-    protected Response ok( JsonArrayBuilder bld , long totalCount) {
-        return Response.ok(Json.createObjectBuilder()
-                        .add("status", ApiConstants.STATUS_OK)
-                        .add("totalCount", totalCount)
-                        .add("data", bld).build())
-                .type(MediaType.APPLICATION_JSON).build();
-    }
-
-    protected Response ok( JsonArray ja ) {
-        return Response.ok(Json.createObjectBuilder()
-            .add("status", ApiConstants.STATUS_OK)
-            .add("data", ja).build())
-            .type(MediaType.APPLICATION_JSON).build();
-    }
-
-    protected Response ok( JsonObjectBuilder bld ) {
-        return Response.ok( Json.createObjectBuilder()
-            .add("status", ApiConstants.STATUS_OK)
-            .add("data", bld).build() )
+    protected Response ok(JsonValue value, JsonValue message, Long totalCount) {
+        return Response.status(Response.Status.OK)
+            .entity(NullSafeJsonBuilder.jsonObjectBuilder()
+                .add(ApiConstants.STATUS_FIELD, ApiConstants.STATUS_OK)
+                .add(ApiConstants.MESSAGE_FIELD, message)
+                .add(ApiConstants.TOTAL_COUNT_FIELD, totalCount)
+                .add(ApiConstants.DATA_FIELD, value))
             .type(MediaType.APPLICATION_JSON)
             .build();
+    
     }
     
-    protected Response ok( JsonObject jo ) {
-        return Response.ok( Json.createObjectBuilder()
-                .add("status", ApiConstants.STATUS_OK)
-                .add("data", jo).build() )
-                .type(MediaType.APPLICATION_JSON)
-                .build();    
+    protected Response ok(JsonArrayBuilder bld) {
+        return ok(bld.build(), null, null);
+    }
+
+    protected Response ok(JsonArrayBuilder bld, long totalCount) {
+        return ok(bld.build(), null, totalCount);
+    }
+
+    protected Response ok(JsonArray ja) {
+        return ok(ja, null, null);
+    }
+
+    protected Response ok(JsonObjectBuilder bld) {
+        return ok(bld.build(), null, null);
+    }
+    
+    protected Response ok(JsonObject jo) {
+        return ok(jo, null, null);
     }
 
     protected Response ok( String msg ) {
@@ -1006,15 +1000,11 @@ public abstract class AbstractApiBean {
     }
 
     protected Response ok( boolean value ) {
-        return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", ApiConstants.STATUS_OK)
-            .add("data", value).build() ).build();
+        return ok(value ? JsonValue.TRUE : JsonValue.FALSE, null, null);
     }
 
     protected Response ok(long value) {
-        return Response.ok().entity(Json.createObjectBuilder()
-                .add("status", ApiConstants.STATUS_OK)
-                .add("data", value).build()).build();
+        return ok(Json.createValue(value), null, null);
     }
 
     /**
