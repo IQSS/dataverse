@@ -949,7 +949,8 @@ public abstract class AbstractApiBean {
                 .add(ApiConstants.STATUS_FIELD, ApiConstants.STATUS_OK)
                 .add(ApiConstants.MESSAGE_FIELD, message)
                 .add(ApiConstants.TOTAL_COUNT_FIELD, totalCount)
-                .add(ApiConstants.DATA_FIELD, value))
+                .add(ApiConstants.DATA_FIELD, value)
+                .build())
             .type(MediaType.APPLICATION_JSON)
             .build();
     
