@@ -12,10 +12,16 @@ This has been fixed. The following endpoints now return the `message` field as a
 - `PUT /api/harvest/clients/{nickName}`
 - `PUT /api/harvest/server/oaisets/{specname}`
 
-**Note:** If you have integrations that implemented workarounds for the nested `message` object, you may need to update your code to expect a plain string instead. If you need time to update your integrations, you can temporarily revert to the legacy behavior by setting the feature flag:
+**Note:** If you have integrations that implemented workarounds for the nested `message` object, you may need to update your code to expect a plain string instead.
+If you need time to update your integrations, you can temporarily revert to the legacy behavior by setting this JVM option:
 
 ```
-dataverse.feature.api-message-field-legacy=true
+dataverse.legacy.api-response-message-style=true
 ```
 
 This flag will be removed in a future version.
+
+**Note:** As of this version, there is also an experimental opt-in feature that will align API responses on about 230 more occassions.
+In these responses, the message is embedded into the "data" field as a nested object.
+If you want to test your integrations and clients, please enable the `dataverse.feature.unify-api-response-message-style` feature flag.
+In a future version of Dataverse, this now experimental style is going to become the supported default.
