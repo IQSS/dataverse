@@ -974,12 +974,17 @@ public abstract class AbstractApiBean {
         return ok(jo, null, null);
     }
 
-    protected Response ok( String msg ) {
-        return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", ApiConstants.STATUS_OK)
-            .add("data", Json.createObjectBuilder().add("message",msg)).build() )
-            .type(MediaType.APPLICATION_JSON)
-            .build();
+    protected Response ok(String msg) {
+        // An instance may opt back into using the old {data:{message:"$msg"}} way.
+        // TODO: This will be removed in a future version.
+        if (FeatureFlags.API_MESSAGE_FIELD_LEGACY.enabled()) {
+            return ok(Json.createObjectBuilder()
+                        .add("message", msg)
+                        .build(),
+                null, null);
+        } else {
+            return ok(null, Json.createValue(msg), null);
+        }
     }
     
     protected Response ok( String msg, JsonObjectBuilder bld  ) {
