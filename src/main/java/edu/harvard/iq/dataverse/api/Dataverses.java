@@ -2034,7 +2034,7 @@ public class Dataverses extends AbstractApiBean {
     
     @PUT
     @AuthRequired
-    @Path("{templateId}/editTemplateMetadata")
+    @Path("{templateId}/templateMetadata")
     public Response updateTemplateMetadata(@Context ContainerRequestContext crc, String body, @PathParam("templateId") Long templateId, @QueryParam("replace") boolean replaceData) {
         try {
             Template template = findTemplateOrDie(templateId);
@@ -2076,7 +2076,7 @@ public class Dataverses extends AbstractApiBean {
     
     @PUT
     @AuthRequired
-    @Path("{templateId}/editTemplateTerms")
+    @Path("{templateId}/templateTerms")
     public Response updateTemplateTerms(@Context ContainerRequestContext crc, LicenseUpdateRequest requestBody, @PathParam("templateId") Long templateId, @QueryParam("replace") boolean replaceData) {
         try {
             Template template = findTemplateOrDie(templateId);

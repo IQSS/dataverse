@@ -5162,7 +5162,7 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
-                .put("/api/dataverses/" + templateId + "/editTemplateMetadata?replace=" + replaceData);
+                .put("/api/dataverses/" + templateId + "/templateMetadata?replace=" + replaceData);
     }
     
     public static Response updateTemplateLicenseTerms(String templateId, String jsonString, String apiToken) {
@@ -5170,7 +5170,7 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
-                .put("/api/dataverses/" + templateId + "/editTemplateTerms");
+                .put("/api/dataverses/" + templateId + "/templateTerms");
     }
     
     public static Response deleteTemplate(String id,  String apiToken) {

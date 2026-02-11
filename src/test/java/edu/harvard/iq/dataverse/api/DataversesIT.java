@@ -2813,11 +2813,6 @@ public class DataversesIT {
         String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
         String username = UtilIT.getUsernameFromResponse(createUserResponse);
 
-        Response createSecondUserResponse = UtilIT.createRandomUser();
-        String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
-        String secondUsername = UtilIT.getUsernameFromResponse(createSecondUserResponse);
-
-        
         /*
         We need to make this a non-inherited metadatablocks so the get template will only get templates from current dv
          */
