@@ -1485,6 +1485,10 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
 
+    public boolean isUseLegacyFormatInHead() {
+        return JvmSettings.SCHEMAORG_IN_HTML_HEAD.lookupOptional(Boolean.class).orElse(false);
+    }
+
     /*
      * 4.2.1 optimization.
      * HOWEVER, this doesn't appear to be saving us anything!

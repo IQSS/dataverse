@@ -95,8 +95,7 @@
                 
             <ui:define name="jsonld_header">
                 <ui:fragment rendered="#{!anonymizedAccess}">
-                    <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
-                    <ui:param name="legacyFormatInHead" value="#{FeatureFlags.LEGACY_FORMAT_IN_HEAD.enabled()}"/>
+                    <ui:param name="legacyFormatInHead" value="#{useLegacyFormatInHead}"/>
                     <script type="application/ld+json">
                         <ui:fragment rendered="#{!legacyFormatInHead}">
                             <h:outputText value="#{croissant}"/>

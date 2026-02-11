@@ -45,7 +45,7 @@ This is the same Croissant file you can download from a dataset landing page by 
 
 We include Croissant in the ``<head>`` because it's `recommended <https://github.com/mlcommons/croissant/issues/530#issuecomment-1964227662>`_ by Google for `Google Dataset Search <https://datasetsearch.research.google.com>`_, where they offer a filter to narrow results to only datasets with support for Croissant.
 
-Before Croissant was invented, Google recommended a different format that Dataverse refers to as "Schema.org JSON-LD" in the user interface (and ``schema.org`` in the API). If you prefer to put that older format in the ``<head>``, which was the behavior in older versions of Dataverse, see :ref:`dataverse.feature.legacy-format-in-head`.
+Before Croissant was invented, Google recommended a different format that Dataverse refers to as "Schema.org JSON-LD" in the user interface (and ``schema.org`` in the API). If you prefer to put that older format in the ``<head>``, which was the behavior in older versions of Dataverse, see :ref:`dataverse.legacy.schemaorg-in-html-head`.
 
 .. _discovery-sign-posting:
 

@@ -250,12 +250,6 @@ public enum FeatureFlags {
      */ 
     ONLY_UPDATE_DATACITE_WHEN_NEEDED("only-update-datacite-when-needed"),
 
-    /**
-     * Instead of Croissant, use the legacy format (Schema.org JSON-LD) in the head
-     * of dataset landing pages. By default this is false.
-     */
-    LEGACY_FORMAT_IN_HEAD("legacy-format-in-head"),
-
     ;
     
     final String flag;
