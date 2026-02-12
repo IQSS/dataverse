@@ -3056,19 +3056,15 @@ public class DataversesIT {
         // back to super for cleanup
         
         UtilIT.setSuperuserStatus(username, true);
-        /*
+        
         Response deleteDataverse1Response = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteDataverse1Response.prettyPrint();
         assertEquals(200, deleteDataverse1Response.getStatusCode());
         
-        Response deleteUserResponse = UtilIT.deleteUser(secondUsername);
-        deleteUserResponse.prettyPrint();
-        assertEquals(200, deleteUserResponse.getStatusCode());
-        
-        deleteUserResponse = UtilIT.deleteUser(username);
+        Response deleteUserResponse = UtilIT.deleteUser(username);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode()); 
-*/
+
 
     }
 
