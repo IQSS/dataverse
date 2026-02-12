@@ -182,7 +182,7 @@ public class DatasetType implements Serializable {
             logger.fine("Looking up " + name + ".displayName in " + propertiesFile);
             return BundleUtil.getStringFromPropertyFile(name + ".displayName", "datasetTypes", locale);
         } catch (MissingResourceException e) {
-            logger.warning(name + ".displayName missing from " + propertiesFile + " (or file does not exist). Returning English version.");
+            logger.fine(name + ".displayName missing from " + propertiesFile + " (or file does not exist). Returning English version.");
             return displayName;
         }
     }
@@ -208,7 +208,7 @@ public class DatasetType implements Serializable {
             logger.fine("Looking up " + name + ".description in " + propertiesFile);
             return BundleUtil.getStringFromPropertyFile(name + ".description", "datasetTypes", locale);
         } catch (MissingResourceException e) {
-            logger.warning(name + ".description missing from " + propertiesFile + " (or file does not exist). Returning English version.");
+            logger.fine(name + ".description missing from " + propertiesFile + " (or file does not exist). Returning English version.");
             return description;
         }
     }

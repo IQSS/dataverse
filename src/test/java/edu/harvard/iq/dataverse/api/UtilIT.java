@@ -4757,7 +4757,7 @@ public class UtilIT {
     public static Response getDatasetTypes(String acceptLanguage) {
         RequestSpecification requestSpecification = given();
         if (acceptLanguage != null) {
-            https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Accept-Language
+            // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Accept-Language
             requestSpecification.header(ACCEPT_LANGUAGE, acceptLanguage);
         }
         return requestSpecification.get("/api/datasets/datasetTypes");
