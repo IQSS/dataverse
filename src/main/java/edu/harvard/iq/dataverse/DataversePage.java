@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -47,9 +48,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.component.UIInput;
 import org.primefaces.model.DualListModel;
@@ -122,6 +126,8 @@ public class DataversePage implements java.io.Serializable {
     PidProviderFactoryBean pidProviderFactoryBean;
     @EJB
     CacheFactoryBean cacheFactory;
+    @EJB
+    RoleAssigneeServiceBean roleAssigneeService;
 
     private Dataverse dataverse = new Dataverse();  
 
@@ -1341,6 +1347,14 @@ public class DataversePage implements java.io.Serializable {
                 }
             }
         }
+    }
+    
+    public List<RoleAssignee> completeRoleAssignee( String query ) {
+        List<RoleAssignee> existingAssignees = dataverse.getLocallyFAIRRoleAssigneeIdentifiers().stream()
+                .map(id -> roleAssigneeService.getRoleAssignee(id))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        return roleAssigneeService.filterRoleAssignees(query, dataverse, existingAssignees);
     }
 
     private void saveInputLevels(List<DataverseFieldTypeInputLevel> listDFTIL, DatasetFieldType dsft, Dataverse dataverse) {

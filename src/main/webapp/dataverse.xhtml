@@ -7,7 +7,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:o="http://omnifaces.org/ui"
       xmlns:of="http://omnifaces.org/functions"
-      xmlns:jsf="http://xmlns.jcp.org/jsf">
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:dataverse="http://xmlns.jcp.org/jsf/composite/dataverse">
     <h:head>
     </h:head>
     <h:body>
@@ -296,6 +297,30 @@
                                                 <f:selectItems value="#{DataversePage.getPidProviderOptions()}" var="option" itemLabel="#{option.getValue()}" itemValue="#{option.getKey()}"/>
                                             </h:selectOneMenu>
                                             <p:message for="dsPidProviderOption" display="text"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-12 form-group">
+                                        <h:outputLabel for="locallyFAIRRoleAssignees" styleClass="control-label">
+                                            Locally FAIR: Published Content Available to
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="Select users and groups who can discover and reuse published content, even when the Dataverse is not published."></span>
+                                        </h:outputLabel>
+                                        <div class="form-col-container">
+                                            <p:autoComplete id="locallyFAIRRoleAssignees" multiple="true"
+                                                            value="#{DataversePage.dataverse.locallyFAIRRoleAssignees}"
+                                                            completeMethod="#{DataversePage.completeRoleAssignee}"
+                                                            var="ra" itemLabel="#{ra.displayInfo.title}" itemValue="#{ra}"
+                                                            converter="roleAssigneeConverter"
+                                                            forceSelection="true"
+                                                            minQueryLength="3" queryDelay="1000"
+                                                            emptyMessage="#{bundle['dataverse.permissions.userGroup.select.emptyMessage']}">
+                                                <p:column>
+                                                    <h:outputFormat value="{0} ({1})">
+                                                        <f:param value="#{ra.displayInfo.title}"/>
+                                                        <f:param value="#{ra.displayInfo.description}"/>
+                                                    </h:outputFormat>
+                                                </p:column>
+                                            </p:autoComplete>
                                         </div>
                                     </div>
                                 </div>
