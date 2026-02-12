@@ -17,7 +17,6 @@ The parameters and JSON response are partly inspired by the `GitHub Search API <
 
 Please note that in Dataverse Software 4.3 and older the "citation" field wrapped the persistent ID URL in an ``<a>`` tag but this has been changed to plaintext. If you want the old value with HTML in it, a new field called "citationHtml" can be used.
 
-
 Parameters
 ----------
 
@@ -27,7 +26,7 @@ Name             Type     Description
 q                string   The search term or terms. Using "title:data" will search only the "title" field. "*" can be used as a wildcard either alone or adjacent to a term (i.e. "bird*"). For example, https://demo.dataverse.org/api/search?q=title:data . For a list of fields to search, please see https://github.com/IQSS/dataverse/issues/2558 (for now).
 type             string   Can be either "dataverse", "dataset", or "file". Multiple "type" parameters can be used to include multiple types (i.e. ``type=dataset&type=file``). If omitted, all types will be returned.  For example, https://demo.dataverse.org/api/search?q=*&type=dataset
 subtree          string   The identifier of the Dataverse collection to which the search should be narrowed. The subtree of this Dataverse collection and all its children will be searched.  Multiple "subtree" parameters can be used to include multiple Dataverse collections. For example, https://demo.dataverse.org/api/search?q=data&subtree=birds&subtree=cats .
-sort             string   The sort field. Supported values include "name", "date" and "relevance". See example under "order".
+sort             string   The sort field. Supported values include "name", "date", and "score". Sorting by "score" orders by **Relevance** (highest to lowest) and is the default if this parameter is omitted.
 order            string   The order in which to sort. Can either be "asc" or "desc".  For example, https://demo.dataverse.org/api/search?q=data&sort=name&order=asc
 per_page         int      The number of results to return per request. The default is 10. The max is 1000. See :ref:`iteration example <iteration-example>`.
 start            int      A cursor for paging through search results. See :ref:`iteration example <iteration-example>`.
@@ -44,6 +43,9 @@ show_type_counts boolean  Whether or not to include total_count_per_object_type 
 show_collections boolean  Whether or not to include a list of parent and linked collections for each dataset search result.
 search_service   string   The name of the search service to use for this query. If omitted, the default search service will be used. For available search services, see :ref:`discovering-available-search-services`.
 ================ =======  ===========
+
+.. note:: **Relevance Scoring**
+   Every search result includes a ``score`` field (float). This value is calculated by the search engine (Solr) and represents how relevant the item is to the search query. Higher scores indicate a closer match. When ``sort`` is set to "score" (the default), results are returned in descending order of this value.
 
 Basic Search Example
 --------------------
