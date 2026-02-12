@@ -2948,6 +2948,22 @@ public class DataversesIT {
                    }
                  }
                             """;
+                
+                String jsonStringForUpdateAccess = """
+            {
+                   "customTermsOfAccess": {
+                     "fileAccessRequest": false,                              
+                     "termsOfAccess": "termsOfAccess",
+                     "dataAccessPlace": "dataAccessPlace",
+                     "originalArchive": "originalArchive",
+                     "availabilityStatus": "availabilityStatus",
+                     "contactForAccess": "contactForAccess",
+                     "sizeOfCollection": "sizeOfCollection",
+                     "studyCompletion": "studyCompletion",
+                     "confidentialityDeclaration": "confidentialityDeclaration"
+                   }
+                 }
+                            """;
 
 
         Response createTemplateResponse = UtilIT.createTemplate(
@@ -3023,7 +3039,10 @@ public class DataversesIT {
                 getTemplate.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.termsOfUseAndAccess.termsOfUse", equalTo("testTermsOfUse"));
+                
+        Response updateAccessResponse = UtilIT.updateTemplateAccessTerms(templateId.toString(), jsonStringForUpdateAccess, apiToken);
 
+        updateAccessResponse.prettyPrint();
         // back to super for cleanup
         
         UtilIT.setSuperuserStatus(username, true);

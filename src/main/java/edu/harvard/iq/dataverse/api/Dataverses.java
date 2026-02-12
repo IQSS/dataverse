@@ -73,6 +73,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import jakarta.ws.rs.core.StreamingOutput;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -2101,6 +2102,37 @@ public class Dataverses extends AbstractApiBean {
         
         } catch (WrappedResponse e) {
             return e.getResponse();
+        }
+    }
+    
+    @PUT
+    @AuthRequired
+    @Path("{templateId}/access")
+    public Response editTemplateTermsOfAccess(@Context ContainerRequestContext crc, String jsonBody, @PathParam("templateId") Long templateId) {
+        try {
+
+            boolean publicInstall = settingsSvc.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false);
+
+            Template template = findTemplateOrDie(templateId);
+
+            JsonObject json = JsonUtil.getJsonObject(jsonBody);
+
+            TermsOfUseAndAccess toua = jsonParser().parseTermsOfAccess(json);
+
+            if (publicInstall && (toua.isFileAccessRequest() || !toua.getTermsOfAccess().isEmpty())){
+                return error(BAD_REQUEST, "Setting File Access Request or Terms of Access is not permitted on a public installation.");
+            }
+
+            execCommand(new UpdateTemplateTermsOfAccessCommand(createDataverseRequest(getRequestUser(crc)), template, template.getDataverse(), toua ));
+
+            return ok(BundleUtil.getStringFromBundle("dataverses.api.update.template.access.success"));
+
+        } catch (JsonParseException ex) {
+            logger.log(Level.SEVERE, "Semantic error parsing template terms update Json: " + ex.getMessage(), ex);
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.editMetadata.error.parseUpdate", List.of(ex.getMessage())));
+        } catch (WrappedResponse ex) {
+            logger.log(Level.SEVERE, "Update terms of access error: " + ex.getMessage(), ex);
+            return ex.getResponse();
         }
     }
 
