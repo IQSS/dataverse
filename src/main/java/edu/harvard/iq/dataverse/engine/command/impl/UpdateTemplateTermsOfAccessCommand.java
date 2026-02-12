@@ -50,14 +50,15 @@ public class UpdateTemplateTermsOfAccessCommand extends AbstractCommand<Template
     }
     
     private void applyCustomTerms(TermsOfUseAndAccess target, TermsOfUseAndAccess source) {
-        target.setTermsOfUse(source.getTermsOfUse());
-        target.setConfidentialityDeclaration(source.getConfidentialityDeclaration());
-        target.setSpecialPermissions(source.getSpecialPermissions());
-        target.setRestrictions(source.getRestrictions());
-        target.setCitationRequirements(source.getCitationRequirements());
-        target.setDepositorRequirements(source.getDepositorRequirements());
-        target.setConditions(source.getConditions());
-        target.setDisclaimer(source.getDisclaimer());
+        
+        target.setFileAccessRequest(source.isFileAccessRequest());
+        target.setTermsOfAccess(source.getTermsOfAccess());
+        target.setDataAccessPlace(source.getDataAccessPlace());
+        target.setOriginalArchive(source.getOriginalArchive());
+        target.setAvailabilityStatus(source.getAvailabilityStatus());
+        target.setContactForAccess(source.getContactForAccess());
+        target.setSizeOfCollection(source.getSizeOfCollection());
+        target.setStudyCompletion(source.getStudyCompletion());
     }
     
 }

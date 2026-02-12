@@ -2953,7 +2953,7 @@ public class DataversesIT {
             {
                    "customTermsOfAccess": {
                      "fileAccessRequest": false,                              
-                     "termsOfAccess": "termsOfAccess",
+                     "termsOfAccess": "Here are the terms...",
                      "dataAccessPlace": "dataAccessPlace",
                      "originalArchive": "originalArchive",
                      "availabilityStatus": "availabilityStatus",
@@ -3043,6 +3043,16 @@ public class DataversesIT {
         Response updateAccessResponse = UtilIT.updateTemplateAccessTerms(templateId.toString(), jsonStringForUpdateAccess, apiToken);
 
         updateAccessResponse.prettyPrint();
+                updateAccessResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(BundleUtil.getStringFromBundle("dataverses.api.update.template.access.success")));
+
+                
+        getTemplate  = UtilIT.getTemplate(templateId.toString(),  apiToken);
+        getTemplate.prettyPrint();
+                getTemplate.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.termsOfUseAndAccess.termsOfAccess", equalTo("Here are the terms..."));        
         // back to super for cleanup
         
         UtilIT.setSuperuserStatus(username, true);
