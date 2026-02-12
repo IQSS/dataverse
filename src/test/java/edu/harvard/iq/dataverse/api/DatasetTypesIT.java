@@ -66,6 +66,8 @@ public class DatasetTypesIT {
         String jsonIn = Json.createObjectBuilder()
                         .add("name", datasetType)
                         .add("displayName", displayName)
+                        // Obviously, a better description should be passed in real life.
+                        .add("description", "The " + displayName + " dataset type.")
                         .build().toString();
         Response typeAdded = UtilIT.addDatasetType(jsonIn, apiToken);
         typeAdded.prettyPrint();
@@ -76,13 +78,19 @@ public class DatasetTypesIT {
         return stringIn.substring(0, 1).toUpperCase() + stringIn.substring(1);
     }
 
+    /**
+     * @param allowedDatasetTypes comma separated (e.g. "dataset,software")
+     */
     private void setAllowedDatasetTypes(String dataverseAlias, String allowedDatasetTypes) {
+        String[] allowedDatasetTypeNames = allowedDatasetTypes.split(",");
         Response setAllowedDatasetTypes = UtilIT.setCollectionAttribute(dataverseAlias, "allowedDatasetTypes", allowedDatasetTypes,
                 apiTokenSuperuser);
         setAllowedDatasetTypes.prettyPrint();
         setAllowedDatasetTypes.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.allowedDatasetTypes", is(allowedDatasetTypes));
+                // Just test the first name. (We only have the name to test with,
+                // as an argument to this menthod.) They should be in order.
+                .body("data.allowedDatasetTypes[0].name", is(allowedDatasetTypeNames[0]));
     }
 
     @Test
@@ -746,7 +754,12 @@ public class DatasetTypesIT {
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
-        
+
+        // We are about to delete the dataset type "testDatasetType" but first we need to
+        // disassociate it from the collection. We do this by associating a dataset type
+        // that we aren't deleting ("dataset", the default dataset type).
+        setAllowedDatasetTypes(dataverseAlias, "dataset");
+
         Long doomed = JsonPath.from(typeAdded.getBody().asString()).getLong("data.id");
 
         System.out.println("doomed: " + doomed);
@@ -967,7 +980,19 @@ public class DatasetTypesIT {
                                 )
                         ));
 
-        setAllowedDatasetTypes(collectionOfReviewsAlias, "review");
+        /**
+         * We could just call `setAllowedDatasetTypes(collectionOfReviewsAlias,
+         * "review")` like other places in the code, but here we are making assertions
+         * on the first (and only) object under "allowedDatasetTypes".
+         */
+        Response setAllowedDatasetTypes = UtilIT.setCollectionAttribute(collectionOfReviewsAlias, "allowedDatasetTypes",
+                "review", apiTokenSuperuser);
+        setAllowedDatasetTypes.prettyPrint();
+        setAllowedDatasetTypes.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.allowedDatasetTypes[0].name", is("review"))
+                .body("data.allowedDatasetTypes[0].displayName", is("Review"))
+                .body("data.allowedDatasetTypes[0].description", is("The Review dataset type."));
 
         Response createReview = UtilIT.createDataset(collectionOfReviewsAlias, jsonForCreatingReview, apiTokenReviewer);
         createReview.prettyPrint();

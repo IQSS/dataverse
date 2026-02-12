@@ -137,6 +137,7 @@ public class UpdateDataverseAttributeCommand extends AbstractCommand<Dataverse> 
                     this);
         }
 
+        List<DatasetType> allowedDatasetTypes = new ArrayList<>();
         List<String> invalidDatasetTypes = new ArrayList<>();
 
         String[] allowedDatasetTypeNames = stringValue.split(",");
@@ -144,6 +145,8 @@ public class UpdateDataverseAttributeCommand extends AbstractCommand<Dataverse> 
             DatasetType datasetType = ctxt.datasetTypes().getByName(datasetTypeName.trim());
             if (datasetType == null) {
                 invalidDatasetTypes.add(datasetTypeName);
+            } else {
+                allowedDatasetTypes.add(datasetType);
             }
         }
 
@@ -155,7 +158,7 @@ public class UpdateDataverseAttributeCommand extends AbstractCommand<Dataverse> 
                     + ATTRIBUTE_ALLOWED_DATASET_TYPES + " is invalid.", this, fieldErrors);
         }
 
-        dataverse.setAllowedDatasetTypes(stringValue);
+        dataverse.setAllowedDatasetTypes(allowedDatasetTypes);
     }
 
 }

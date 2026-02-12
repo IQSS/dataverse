@@ -126,31 +126,25 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         }
         
         DatasetType defaultDatasetType = ctxt.datasetTypes().getByName(DatasetType.DEFAULT_DATASET_TYPE);
+        // Why is this called existingDatasetType? Would incomingDatasetType make more sense?
         DatasetType existingDatasetType = theDataset.getDatasetType();
         logger.fine("existing dataset type: " + existingDatasetType);
         if (existingDatasetType != null) {
-            List<DatasetType> allowedDatasetTypes = new ArrayList<>();
-            String allowedDatasetTypesString = theDataset.getOwner().getAllowedDatasetTypes();
-            if (allowedDatasetTypesString == null) {
+            List<DatasetType> allowedByCollection = theDataset.getOwner().getAllowedDatasetTypes();
+            // Final because we apply some logic first
+            List<DatasetType> allowedDatasetTypesFinal = new ArrayList<>();
+            if (allowedByCollection.isEmpty()) {
                 // If allowedDatasetTypes is unspecified, assume
                 // only the default type (dataset) is allowed
-                allowedDatasetTypes.add(defaultDatasetType);
+                allowedDatasetTypesFinal.add(defaultDatasetType);
             } else {
-                // Turn comma-separated String into actual values
-                String[] allowedDatasetTypeNames = allowedDatasetTypesString.split(",");
-                for (String datasetTypeName : allowedDatasetTypeNames) {
-                    DatasetType datasetType = ctxt.datasetTypes().getByName(datasetTypeName.trim());
-                    if (datasetType != null) {
-                        allowedDatasetTypes.add(datasetType);
-                    } else {
-                        logger.warning("Could not find datasetType based on " + datasetTypeName);
-                    }
-                }
+                allowedDatasetTypesFinal.addAll(allowedByCollection);
             }
-            if (allowedDatasetTypes.contains(existingDatasetType)) {
+            // Set type if allowed. Otherwise, return error.
+            if (allowedDatasetTypesFinal.contains(existingDatasetType)) {
                 theDataset.setDatasetType(existingDatasetType);
             } else {
-                List<String> typeNames = allowedDatasetTypes.stream()
+                List<String> typeNames = allowedDatasetTypesFinal.stream()
                         .map(DatasetType::getName)
                         .toList();
                 Map<String, String> fieldErrors = new HashMap<>();
