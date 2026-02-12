@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.api;
 import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_LATEST_PUBLISHED;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import static io.restassured.path.json.JsonPath.with;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
@@ -13,6 +15,8 @@ import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.OK;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -42,9 +46,16 @@ public class DatasetTypesIT {
         apiTokenSuperuser = UtilIT.getApiTokenFromResponse(createUser);
         UtilIT.setSuperuserStatus(usernameSuperuser, true).then().assertThat().statusCode(OK.getStatusCode());
 
-        ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_SOFTWARE, apiTokenSuperuser);
-        ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_REVIEW, apiTokenSuperuser);
-        ensureDatasetTypeIsPresent(INSTRUMENT, apiTokenSuperuser);
+        // This description for software is shortened from https://datacite-metadata-schema.readthedocs.io/en/4.5/appendices/appendix-1/resourceTypeGeneral/#software
+        ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_SOFTWARE, "A computer program in either source code (text) or compiled form.", apiTokenSuperuser);
+        String reviewDescription = null;
+        try {
+            reviewDescription = JsonUtil.getJsonObjectFromFile("scripts/api/data/datasetTypes/review.json").getString("description");
+        } catch (IOException e) {
+        }
+        ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_REVIEW, reviewDescription, apiTokenSuperuser);
+        // This description for instrument is from https://datacite-metadata-schema.readthedocs.io/en/4.5/appendices/appendix-1/resourceTypeGeneral/#instrument
+        ensureDatasetTypeIsPresent(INSTRUMENT, "A device, tool or apparatus used to obtain, measure and/or analyze data.", apiTokenSuperuser);
     }
 
     @AfterAll
@@ -53,7 +64,7 @@ public class DatasetTypesIT {
         UtilIT.setDisplayOnCreate("astroInstrument", false);
     }
 
-    private static void ensureDatasetTypeIsPresent(String datasetType, String apiToken) {
+    private static void ensureDatasetTypeIsPresent(String datasetType, String description, String apiToken) {
         Response getDatasetType = UtilIT.getDatasetType(datasetType);
         getDatasetType.prettyPrint();
         String typeFound = JsonPath.from(getDatasetType.getBody().asString()).getString("data.name");
@@ -66,8 +77,7 @@ public class DatasetTypesIT {
         String jsonIn = Json.createObjectBuilder()
                         .add("name", datasetType)
                         .add("displayName", displayName)
-                        // Obviously, a better description should be passed in real life.
-                        .add("description", "The " + displayName + " dataset type.")
+                        .add("description", description)
                         .build().toString();
         Response typeAdded = UtilIT.addDatasetType(jsonIn, apiToken);
         typeAdded.prettyPrint();
@@ -992,7 +1002,7 @@ public class DatasetTypesIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.allowedDatasetTypes[0].name", is("review"))
                 .body("data.allowedDatasetTypes[0].displayName", is("Review"))
-                .body("data.allowedDatasetTypes[0].description", is("The Review dataset type."));
+                .body("data.allowedDatasetTypes[0].description", is("A review of a dataset compiled by community experts."));
 
         Response createReview = UtilIT.createDataset(collectionOfReviewsAlias, jsonForCreatingReview, apiTokenReviewer);
         createReview.prettyPrint();

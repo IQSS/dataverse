@@ -162,11 +162,12 @@ After loading the block, don't forget to update the Solr schema!
 Create a Review Dataset Type
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Review datasets are built on the :ref:`dataset-types` feature. Dataset types can only be created via API so follow the steps under :ref:`api-add-dataset-type`. The JSON you send will look something like this:
+Review datasets are built on the :ref:`dataset-types` feature. Dataset types can only be created via API so follow the steps under :ref:`api-add-dataset-type`. Copy and paste from below or download :download:`review.json <../../../../scripts/api/data/datasetTypes/review.json>` and pass it to the API.
 
-``{"name":"review","displayName":"Review"}``
+.. literalinclude:: ../../../../scripts/api/data/datasetTypes/review.json
+   :language: json
 
-Do not send "linkedMetadataBlocks" or "availableLicenses" in the JSON when creating the dataset type.
+We suggest using neither "linkedMetadataBlocks" nor "availableLicenses" in the JSON when creating the dataset type. Again, the JSON above is suggested.
 
 Allow the Review Dataset Type for the Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
