@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.i18n;
 import java.util.List;
 import java.util.Locale;
 
-public class i18nUtil {
+public class I18nUtil {
 
     /**
      * A comment from poikilotherm from

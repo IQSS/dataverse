@@ -35,7 +35,7 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.globus.GlobusUtil;
-import edu.harvard.iq.dataverse.i18n.i18nUtil;
+import edu.harvard.iq.dataverse.i18n.I18nUtil;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.makedatacount.*;
@@ -5720,7 +5720,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @GET
     @Path("datasetTypes")
     public Response getDatasetTypes(@HeaderParam(ACCEPT_LANGUAGE) String acceptLanguage) {
-        Locale locale = i18nUtil.parseAcceptLanguageHeader(acceptLanguage);
+        Locale locale = I18nUtil.parseAcceptLanguageHeader(acceptLanguage);
         JsonArrayBuilder jab = Json.createArrayBuilder();
         for (DatasetType datasetType : datasetTypeSvc.listAll()) {
             jab.add(datasetType.toJson(locale));
@@ -5731,7 +5731,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @GET
     @Path("datasetTypes/{idOrName}")
     public Response getDatasetTypes(@PathParam("idOrName") String idOrName, @HeaderParam(ACCEPT_LANGUAGE) String acceptLanguage) {
-        Locale locale = i18nUtil.parseAcceptLanguageHeader(acceptLanguage);
+        Locale locale = I18nUtil.parseAcceptLanguageHeader(acceptLanguage);
         DatasetType datasetType = null;
         if (StringUtils.isNumeric(idOrName)) {
             try {
