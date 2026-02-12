@@ -3875,82 +3875,98 @@ public class FilesIT {
         msgt("testDownloadFileWithGuestbookResponse");
         // Create superuser
         Response createUserResponse = UtilIT.createRandomUser();
-        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String ownerApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
         String superusername = UtilIT.getUsernameFromResponse(createUserResponse);
         UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
 
         // Create Dataverse
-        String dataverseAlias = createDataverseGetAlias(apiToken);
+        String dataverseAlias = createDataverseGetAlias(ownerApiToken);
 
         // Create user with no permission
         createUserResponse = UtilIT.createRandomUser();
         assertEquals(200, createUserResponse.getStatusCode());
-        String apiTokenRando = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
         String username = UtilIT.getUsernameFromResponse(createUserResponse);
 
         // Create Dataset
-        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, ownerApiToken);
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
         String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
-        Response getDatasetMetadata = UtilIT.nativeGet(datasetId, apiToken);
+        Response getDatasetMetadata = UtilIT.nativeGet(datasetId, ownerApiToken);
         getDatasetMetadata.then().assertThat().statusCode(200);
 
-        Response getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, apiToken);
+        Response getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken);
         getGuestbooksResponse.then().assertThat().statusCode(200);
         assertTrue(getGuestbooksResponse.getBody().jsonPath().getList("data").isEmpty());
 
         // Create a Guestbook
-        Guestbook guestbook = UtilIT.createRandomGuestbook(dataverseAlias, persistentId, apiToken);
+        Guestbook guestbook = UtilIT.createRandomGuestbook(dataverseAlias, persistentId, ownerApiToken);
 
         // Get the list of Guestbooks
-        getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, apiToken);
+        getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken);
         getGuestbooksResponse.then().assertThat().statusCode(200);
         assertEquals(1, getGuestbooksResponse.getBody().jsonPath().getList("data").size());
 
-        // Upload file
-        String pathToFile1 = "src/main/webapp/resources/images/dataverseproject.png";
-        JsonObjectBuilder json1 = Json.createObjectBuilder()
-                .add("description", "my description1")
-                .add("directoryLabel", "data/subdir1")
-                .add("categories", Json.createArrayBuilder().add("Data"));
-        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, json1.build(), apiToken);
+        // Upload files
+        JsonObjectBuilder json1 = Json.createObjectBuilder().add("description", "my description1").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/dataverseproject.png", json1.build(), ownerApiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
-        Integer fileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        // Restrict file
-        Response restrictResponse = UtilIT.restrictFile(fileId.toString(), true, apiToken);
+        Integer fileId1 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        JsonObjectBuilder json2 = Json.createObjectBuilder().add("description", "my description2").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
+        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/orcid_16x16.png", json1.build(), ownerApiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId2 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        JsonObjectBuilder json3 = Json.createObjectBuilder().add("description", "my description3").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
+        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/cc0.png", json1.build(), ownerApiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId3 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        // Restrict files
+        Response restrictResponse = UtilIT.restrictFile(fileId1.toString(), true, ownerApiToken);
         restrictResponse.then().assertThat().statusCode(OK.getStatusCode());
+        restrictResponse = UtilIT.restrictFile(fileId2.toString(), true, ownerApiToken);
+        restrictResponse.then().assertThat().statusCode(OK.getStatusCode());
+        restrictResponse = UtilIT.restrictFile(fileId3.toString(), true, ownerApiToken);
+        restrictResponse.then().assertThat().statusCode(OK.getStatusCode());
+
         // Update Dataset to allow requests
-        Response allowAccessRequestsResponse = UtilIT.allowAccessRequests(datasetId.toString(), true, apiToken);
+        Response allowAccessRequestsResponse = UtilIT.allowAccessRequests(datasetId.toString(), true, ownerApiToken);
         assertEquals(200, allowAccessRequestsResponse.getStatusCode());
         // Publish dataverse and dataset
-        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, ownerApiToken);
         assertEquals(200, publishDataverse.getStatusCode());
-        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", ownerApiToken);
         assertEquals(200, publishDataset.getStatusCode());
 
         // Request access
-        Response requestFileAccessResponse = UtilIT.requestFileAccess(fileId.toString(), apiTokenRando, null);
-        requestFileAccessResponse.prettyPrint();
+        Response requestFileAccessResponse = UtilIT.requestFileAccess(fileId1.toString(), apiToken, null);
+        assertEquals(200, requestFileAccessResponse.getStatusCode());
+        requestFileAccessResponse = UtilIT.requestFileAccess(fileId2.toString(), apiToken, null);
+        assertEquals(200, requestFileAccessResponse.getStatusCode());
+        requestFileAccessResponse = UtilIT.requestFileAccess(fileId3.toString(), apiToken, null);
         assertEquals(200, requestFileAccessResponse.getStatusCode());
 
         // Grant file access
-        Response grantFileAccessResponse = UtilIT.grantFileAccess(fileId.toString(), "@" + username, apiToken);
-        grantFileAccessResponse.prettyPrint();
+        Response grantFileAccessResponse = UtilIT.grantFileAccess(fileId1.toString(), "@" + username, ownerApiToken);
+        assertEquals(200, grantFileAccessResponse.getStatusCode());
+        grantFileAccessResponse = UtilIT.grantFileAccess(fileId2.toString(), "@" + username, ownerApiToken);
+        assertEquals(200, grantFileAccessResponse.getStatusCode());
+        grantFileAccessResponse = UtilIT.grantFileAccess(fileId3.toString(), "@" + username, ownerApiToken);
         assertEquals(200, grantFileAccessResponse.getStatusCode());
 
         String guestbookResponse = UtilIT.generateGuestbookResponse(guestbook);
 
         // Get Download Url attempt - Guestbook Response is required but not found
-        Response downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId, apiTokenRando, null);
+        Response downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken, null, false);
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat()
                 .body("status", equalTo(ApiConstants.STATUS_ERROR))
                 .body("message", equalTo(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing")))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
-        // Get Download Url with guestbook response
-        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId, apiTokenRando, guestbookResponse);
+        // Get Signed Download Url with guestbook response
+        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken, guestbookResponse, true);
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -3958,6 +3974,27 @@ public class FilesIT {
 
         // Download the file using the signed url
         Response signedUrlResponse = get(signedUrl);
+        signedUrlResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+
+        // Download multiple files - Guestbook Response is required but not found for file2 and file3
+        downloadResponse = UtilIT.postDownloadDatafiles(fileId1 + "," + fileId2+ "," + fileId3, apiToken);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat()
+                .body("status", equalTo(ApiConstants.STATUS_ERROR))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing")))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Download multiple files with guestbook response and fileIds in json
+        String jsonBody = "{\"fileIds\":[" + fileId1 + "," + fileId2+ "," + fileId3 +"], " + guestbookResponse.substring(1);
+        downloadResponse = UtilIT.postDownloadDatafiles(jsonBody, apiToken);
+        downloadResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), downloadResponse.getStatusCode());
+
+        downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(new Integer[]{fileId1, fileId2, fileId3}, apiToken, guestbookResponse, true);
+        downloadResponse.prettyPrint();
+        signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+        signedUrlResponse = get(signedUrl);
         signedUrlResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
     }

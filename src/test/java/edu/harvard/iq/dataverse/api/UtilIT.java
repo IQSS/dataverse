@@ -1252,15 +1252,41 @@ public class UtilIT {
         return given()
                 .get("/api/access/datafile/" + fileId + "?format=original&key=" + apiToken);
     }
-    static Response getDownloadFileUrlWithGuestbookResponse(Integer fileId, String apiToken, String body) {
+
+    static Response getDownloadFileUrlWithGuestbookResponse(Integer fileId, String apiToken, String body, boolean signed) {
         RequestSpecification requestSpecification = given();
         requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        String signedParam = signed ? "?signed=true" : "";
         if (body != null) {
             requestSpecification.body(body);
         }
-        return requestSpecification.post("/api/access/datafile/" + fileId);
+        return requestSpecification.post("/api/access/datafile/" + fileId + signedParam);
     }
-    
+
+    static Response downloadFilesUrlWithGuestbookResponse(Integer[] fileIds, String apiToken, String body, boolean signed) {
+        RequestSpecification requestSpecification = given();
+        requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        String signedParam = signed ? "?signed=true" : "";
+        if (body != null) {
+            requestSpecification.body(body);
+        }
+        String getString = "/api/access/datafiles/";
+        for (Integer fileId : fileIds) {
+            getString += fileId + ",";
+        }
+        return requestSpecification.post(getString + signedParam);
+    }
+
+    static Response postDownloadDatafiles(String body, String apiToken) {
+        String getString = "/api/access/datafiles";
+        RequestSpecification requestSpecification = given();
+        requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        if (body != null) { // body contains list of data file ids
+            requestSpecification.body(body);
+        }
+        return requestSpecification.post(getString);
+    }
+
     static Response downloadFiles(Integer[] fileIds) {
         String getString = "/api/access/datafiles/";
         for(Integer fileId : fileIds) {

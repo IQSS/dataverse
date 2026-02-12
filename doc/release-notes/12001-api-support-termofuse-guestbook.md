@@ -1,7 +1,19 @@
 ## Feature Request: API to support Download Terms of Use and Guestbook
 
-## New Endpoint to download a file that required a Guestbook response: POST `/api/access/datafile/{id}`
-A post to this endpoint with the body containing a JSON Guestbook Response will save the response and return a signed URL to download the file
+## New Endpoints to download a file or files that required a Guestbook response: POST
+A post to these endpoints with the body containing a JSON Guestbook Response will save the response and 
+`?signed=true`:  return a signed URL to download the file(s) or
+`?signed=false` or missing: Write the guestbook responses and download the file(s)
+
+`/api/access/datafile/{fileId:.+}`
+`/api/access/datafiles/{fileIds}`
+`/api/access/dataset/{id}`
+`/api/access/dataset/{id}/versions/{versionId}`
+
+A post to these endpoints with the body containing a JSON Guestbook Response will save the response before continuing the download.
+No signed URL option exists.
+`/api/access/datafiles`
+`/api/access/datafile/bundle/{fileId}` POST returns BundleDownloadInstance after processing guestbook responses from body.
 
 ## New CRUD Endpoints for Guestbook:
 Create a Guestbook: POST `/api/guestbooks/{dataverseIdentifier}`
