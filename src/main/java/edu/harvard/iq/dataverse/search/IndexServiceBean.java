@@ -595,10 +595,24 @@ public class IndexServiceBean {
                 writeDebugInfo(debug, dataset);
             }
             if (doNormalSolrDocCleanUp) {
+                List<String> solrIdsOfPermissionDocsToDelete = new ArrayList<>();
                 try {
                     solrIdsOfDocsToDelete = findFilesOfParentDataset(dataset.getId());
                     logger.fine("Existing file docs: " + String.join(", ", solrIdsOfDocsToDelete));
                     if (!solrIdsOfDocsToDelete.isEmpty()) {
+                        if (!latestVersion.isDraft()) {
+                            // After publication, we need to delete old draft perm docs
+                            // For the first draft, a perm doc will exist for each file
+                            // For subsequent drafts, perm docs should only exist for new files/those with changed metadata
+                            // This code adds the ids of draft perm docs for all files - if the docs don't exist, Solr will just ignore them
+                            for (String fileDocId : solrIdsOfDocsToDelete) {
+                                if (!fileDocId.endsWith(draftSuffix)) {
+                                    solrIdsOfPermissionDocsToDelete.add(fileDocId + draftSuffix + discoverabilityPermissionSuffix);
+                                }
+                            }
+
+                            logger.fine("Existing permission docs: " + String.join(", ", solrIdsOfPermissionDocsToDelete));
+                        }
                         // We keep the latest version's docs unless it is deaccessioned and there is no
                         // published/released version
                         // So skip the loop removing those docs from the delete list except in that case
@@ -642,7 +656,7 @@ public class IndexServiceBean {
                 logger.fine("Solr docs to delete: " + String.join(", ", solrIdsOfDocsToDelete));
 
                 if (!solrIdsOfDocsToDelete.isEmpty()) {
-                    List<String> solrIdsOfPermissionDocsToDelete = new ArrayList<>();
+
                     for (String file : solrIdsOfDocsToDelete) {
                         // Also remove associated permission docs
                         solrIdsOfPermissionDocsToDelete.add(file + discoverabilityPermissionSuffix);
@@ -1409,7 +1423,7 @@ public class IndexServiceBean {
         long maxSize = maxFTIndexingSize != null ? maxFTIndexingSize.longValue() : Long.MAX_VALUE;
 
         List<String> filesIndexed = new ArrayList<>();
-        final List<Long> changedFileMetadataIds = new ArrayList<>();
+        final List<Long> changedFileIds = new ArrayList<>();
         if (datasetVersion != null) {
             List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
             List<FileMetadata> rfm = new ArrayList<>();
@@ -1420,42 +1434,17 @@ public class IndexServiceBean {
                     fileMap.put(released.getDataFile().getId(), released);
                 }
 
-                Query query = em.createNamedQuery("FileMetadata.compareFileMetadata", Long.class);
-                query.setParameter(1, dataset.getReleasedVersion().getId());
-                query.setParameter(2, datasetVersion.getId());
-
-                /*
-                 * When the query was configured to return Long, it was returning Integer. The query has been changed to return Integer now. The code here is robust if that changes in the future.
-                 */
-                List<Object> queryResults = query.getResultList();
-                for (Object result : queryResults) {
-                    if (result != null) {
-                        // Ensure we're adding Long objects to the list
-                        if (result instanceof Integer intResult) {
-                            logger.finest("Converted Integer result to Long: " + result);
-                            changedFileMetadataIds.add(Long.valueOf(intResult));
-                        } else if (result instanceof Long longResult) {
-                            // Already a Long, add directly
-                            logger.finest("Added existing Long to list: " + result);
-                            changedFileMetadataIds.add(longResult);
-                        } else {
-                            // If it's not a Long, convert it to one via String
-                            try {
-                                changedFileMetadataIds.add(Long.valueOf(result.toString()));
-                                logger.finest("Converted non-Long result to Long: " + result + " of type " + result.getClass().getName());
-                            } catch (NumberFormatException e) {
-                                logger.warning("Could not convert query result to Long: " + result);
-                            }
-                        }
-                    }
-                }
+                solrIndexService.populateChangedFileIds(
+                        dataset.getReleasedVersion().getId(),
+                        datasetVersion.getId(),
+                        changedFileIds);
                 logger.fine(
                         "We are indexing a draft version of a dataset that has a released version. We'll be checking file metadatas if they are exact clones of the released versions.");
             } else if (datasetVersion.isDraft()) {
                 // Add all file metadata ids to changedFileMetadataIds
-                changedFileMetadataIds.addAll(
+                changedFileIds.addAll(
                     fileMetadatas.stream()
-                        .map(FileMetadata::getId)
+                        .map(fm -> fm.getDataFile().getId())
                         .collect(Collectors.toList())
                 );
             }
@@ -1519,7 +1508,7 @@ public class IndexServiceBean {
                 }
                 boolean indexThisFile = false;
 
-                if (indexThisMetadata && (isReleasedVersion || changedFileMetadataIds.contains(fileMetadata.getId()))) {
+                if (indexThisMetadata && (isReleasedVersion || changedFileIds.contains(datafile.getId()))) {
                     indexThisFile = true;
                 } else if (indexThisMetadata) {
                     // Draft version, file is not new or all file metadata matches the released version

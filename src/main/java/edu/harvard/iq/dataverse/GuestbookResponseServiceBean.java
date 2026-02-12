@@ -488,17 +488,25 @@ public class GuestbookResponseServiceBean {
         return (Long) query.getSingleResult();
     }
 
-    public Long findCountAll() {
-        return findCountAll(null);
-    }
-
     public Long findCountAll(Long dataverseId) {
-        String queryString;
-        if (dataverseId != null) {
-            queryString = "select count(o.id) from GuestbookResponse  o,  DvObject v where o.dataset_id = v.id and v.owner_id = " + dataverseId + " ";
-        } else {
-            queryString = "select count(o.id) from GuestbookResponse  o ";
+      
+        if (dataverseId == null) {
+            return null;
         }
+        
+        // Note that this method used to support NULL dataverseId, 
+        // in which case it counted ALL the guestbookresponse rows
+        // for the entire instance: 
+        // queryString = "select count(o.id) from GuestbookResponse  o ";
+        // I removed this code (it was not being used, thankfully) since
+        // the query can be insanely expensive on a large production table. 
+        // That's why we use a stored procedure to "estimate" its size, in 
+        // the dedicated getTotalDownloadCount() method further below, for 
+        // example, when we need to show the total number of downloads on 
+        // the homepage. (L.A.)
+        
+        String queryString = "select count(o.id) from GuestbookResponse  o, DvObject v, Dataset d where o.dataset_id = v.id and v.id = d.id and v.owner_id = " + dataverseId + " ";
+            
 
         Query query = em.createNativeQuery(queryString);
         return (Long) query.getSingleResult();
@@ -762,49 +770,17 @@ public class GuestbookResponseServiceBean {
         }
     }
     
-    private void setUserDefaultResponses(GuestbookResponse guestbookResponse, DataverseSession session, User userIn) {
-        User user;
-        User sessionUser = session.getUser();
-        
-        if (userIn != null){
-            user = userIn;
-        } else{
-            user = sessionUser;
-        }
-         
-        if (user != null) {
-            guestbookResponse.setEmail(getUserEMail(user));
-            guestbookResponse.setName(getUserName(user));
-            guestbookResponse.setInstitution(getUserInstitution(user));
-            guestbookResponse.setPosition(getUserPosition(user));
-            guestbookResponse.setAuthenticatedUser(getAuthenticatedUser(user));
-        } else {
-            guestbookResponse.setEmail("");
-            guestbookResponse.setName("");
-            guestbookResponse.setInstitution("");
-            guestbookResponse.setPosition("");
-            guestbookResponse.setAuthenticatedUser(null);
-        }
-        guestbookResponse.setSessionId(session.toString());
+    private void setUserDefaultResponses(GuestbookResponse guestbookResponse, DataverseSession session, User user) {
+        guestbookResponse.setEmail(getUserEMail(user));
+        guestbookResponse.setName(getUserName(user));
+        guestbookResponse.setInstitution(getUserInstitution(user));
+        guestbookResponse.setPosition(getUserPosition(user));
+        guestbookResponse.setAuthenticatedUser(getAuthenticatedUser(user));
+        guestbookResponse.setSessionId(session != null ? session.toString() : "");
     }
     
     private void setUserDefaultResponses(GuestbookResponse guestbookResponse, DataverseSession session) {
-        User user = session.getUser();
-        
-        if (user != null) {
-            guestbookResponse.setEmail(getUserEMail(user));
-            guestbookResponse.setName(getUserName(user));
-            guestbookResponse.setInstitution(getUserInstitution(user));
-            guestbookResponse.setPosition(getUserPosition(user));
-            guestbookResponse.setAuthenticatedUser(getAuthenticatedUser(user));
-        } else {
-            guestbookResponse.setEmail("");
-            guestbookResponse.setName("");
-            guestbookResponse.setInstitution("");
-            guestbookResponse.setPosition("");
-            guestbookResponse.setAuthenticatedUser(null);
-        }
-        guestbookResponse.setSessionId(session.toString());
+        setUserDefaultResponses(guestbookResponse, session, session.getUser());
     }
 
     public GuestbookResponse initDefaultGuestbookResponse(Dataset dataset, DataFile dataFile, DataverseSession session) {

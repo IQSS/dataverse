@@ -326,6 +326,10 @@ public class SettingsServiceBean {
         */
         DatasetPublishPopupCustomTextOnAllVersions,
         /*
+        Publish Disclaimer text. If this setting exists user must acknowledge before a Dataset can be published
+         */
+        PublishDatasetDisclaimerText,
+        /*
         Whether Harvesting (OAI) service is enabled
         */
         OAIServerEnabled,
@@ -652,6 +656,12 @@ public class SettingsServiceBean {
          * ability/permission necessary to publish the dataset
          */
         SendNotificationOnDatasetCreation,
+        /**
+         * A boolean setting that, if true will send an email and notification to users
+         * when a Dataset is moved. Messages go to those who have the
+         * ability/permission necessary to publish the dataset
+         */
+        SendNotificationOnDatasetMove,
         /**
          * A JSON Object containing named comma separated sets(s) of allowed labels (up
          * to 32 characters, spaces allowed) that can be set on draft datasets, via API

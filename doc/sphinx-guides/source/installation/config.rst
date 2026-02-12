@@ -94,6 +94,16 @@ First of all, confirm that access is denied! If you are in fact able to access t
 
 Still feel like activating this option in your configuration? - Have fun and be safe!
 
+.. _signed-urls-forwarded-proto-header:
+
+Using X-Forwarded-Proto for Signed URLs
++++++++++++++++++++++++++++++++++++++++
+
+If you use a proxy such as Apache or Nginx, or have a firewall such as Anubis, and they are configured to forward traffic to Dataverse over HTTP
+(i.e. your proxy receives user calls over HTTPS but forwards locally to Dataverse over HTTP), signed URLs, used by external tools and 
+upload apps (such as DVWebloader), are likely to fail unless you configure your proxy to send an X-Forwarded-Proto HTTP Header.
+This allows Dataverse to recognize that the communication from the user was over HTTPS and that validation of signed URLs should assume 
+they started with https:// (rather than http:// as received from the proxy).
 
 .. _PrivacyConsiderations:
 
@@ -830,7 +840,7 @@ Bearer tokens are defined in `RFC 6750`_ and can be used as an alternative to AP
 
 .. _RFC 6750: https://tools.ietf.org/html/rfc6750
 
-To enable bearer tokens, you must install and configure Keycloak (for now, see :ref:`oidc-dev` in the Developer Guide) and enable ``api-bearer-auth`` under :ref:`feature-flags`.
+To enable bearer tokens, you must install and configure Keycloak (for now, see :ref:`oidc-dev` in the Developer Guide) and enable the :ref:`dataverse.feature.api-bearer-auth` feature flag.
 
 You can test that bearer tokens are working by following the example under :ref:`bearer-tokens` in the API Guide.
 
@@ -3710,7 +3720,7 @@ Can also be set via *MicroProfile Config API* sources, e.g. the environment vari
 dataverse.files.globus-monitoring-server
 ++++++++++++++++++++++++++++++++++++++++
 
-This setting is required in conjunction with the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`). Setting it to true designates the Dataverse instance to serve as the dedicated polling server. It is needed so that the new framework can be used in a multi-node installation. 
+This setting is required in conjunction with the :ref:`dataverse.feature.globus-use-experimental-async-framework` feature flag. Setting it to true designates the Dataverse instance to serve as the dedicated polling server. It is needed so that the new framework can be used in a multi-node installation. 
 
 .. _dataverse.csl.common-styles:
 
@@ -3867,82 +3877,162 @@ Certain features might be deactivated because they are experimental and/or opt-i
 please find all known feature flags below. Any of these flags can be activated using a boolean value
 (case-insensitive, one of "true", "1", "YES", "Y", "ON") for the setting.
 
-.. list-table::
-    :widths: 35 50 15
-    :header-rows: 1
-    :align: left
-
-    * - Flag Name
-      - Description
-      - Default status
-    * - api-session-auth
-      - Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and for the feature to be removed in the future.
-      - ``Off``
-    * - api-bearer-auth
-      - Enables API authentication via Bearer Token.
-      - ``Off``
-    * - api-bearer-auth-provide-missing-claims
-      - Enables sending missing user claims in the request JSON provided during OIDC user registration, when these claims are not returned by the identity provider and are required for registration. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this feature flag exposes the installation to potential user impersonation issues.**
-      - ``Off``
-    * - api-bearer-auth-handle-tos-acceptance-in-idp
-      - Specifies that Terms of Service acceptance is handled by the IdP, eliminating the need to include ToS acceptance boolean parameter (termsAccepted) in the OIDC user registration request body. This feature only works when the feature flag ``api-bearer-auth`` is also enabled.
-      - ``Off``
-    * - api-bearer-auth-use-builtin-user-on-id-match
-      - Allows the use of a built-in user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing built-in user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
-      - ``Off``
-    * - api-bearer-auth-use-shib-user-on-id-match
-      - Allows the use of a Shibboleth user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing Shibboleth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
-      - ``Off``
-    * - api-bearer-auth-use-oauth-user-on-id-match
-      - Allows the use of an OAuth user account (GitHub, Google, or ORCID) when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing OAuth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
-      - ``Off``
-    * - avoid-expensive-solr-join
-      - Changes the way Solr queries are constructed for public content (published Collections, Datasets and Files). It removes a very expensive Solr join on all such documents, improving overall performance, especially for large instances under heavy load. Before this feature flag is enabled, the corresponding indexing feature (see next feature flag) must be turned on and a full reindex performed (otherwise public objects are not going to be shown in search results). See :doc:`/admin/solr-search-index`. 
-      - ``Off``
-    * - add-publicobject-solr-field
-      - Adds an extra boolean field `PublicObject_b:true` for public content (published Collections, Datasets and Files). Once reindexed with these fields, we can rely on it to remove a very expensive Solr join on all such documents in Solr queries, significantly improving overall performance (by enabling the feature flag above, `avoid-expensive-solr-join`). These two flags are separate so that an instance can reindex their holdings before enabling the optimization in searches, thus avoiding having their public objects temporarily disappear from search results while the reindexing is in progress. 
-      - ``Off``
-    * - reduce-solr-deletes
-      - Avoids deleting and recreating solr documents for dataset files when reindexing. 
-      - ``Off``
-    * - disable-return-to-author-reason
-      - Removes the reason field in the `Publish/Return To Author` dialog that was added as a required field in v6.2 and makes the reason an optional parameter in the :ref:`return-a-dataset` API call. 
-      - ``Off``
-    * - disable-dataset-thumbnail-autoselect
-      - Turns off automatic selection of a dataset thumbnail from image files in that dataset. When set to ``On``, a user can still manually pick a thumbnail image or upload a dedicated thumbnail image.
-      - ``Off``
-    * - globus-use-experimental-async-framework
-      - Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4; extended in v6.6 to cover download transfers, in addition to uploads. Affects :ref:`:GlobusPollingInterval`. Note that the JVM option :ref:`dataverse.files.globus-monitoring-server` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance. 
-      - ``Off``
-    * - index-harvested-metadata-source
-      - Index the nickname or the source name (See the optional ``sourceName`` field in :ref:`create-a-harvesting-client`) of the harvesting client as the "metadata source" of harvested datasets and files. If enabled, the Metadata Source facet will show separate groupings of the content harvested from different sources (by harvesting client nickname or source name) instead of the default behavior where there is one "Harvested" grouping for all harvested content.
-      - ``Off``
-    * - enable-version-note
-      - Turns on the ability to add/view/edit/delete per-dataset-version notes intended to provide :ref:`provenance` information about why the dataset/version was created.  
-      - ``Off``
-    * - shibboleth-use-wayfinder
-      - This flag allows an instance to use Shibboleth with InCommon federation services. Our original Shibboleth implementation that relies on DiscoFeed can no longer be used since InCommon discontinued their old-style metadata feed. An alternative mechanism had to be implemented in order to use WayFinder service, their recommended replacements, instead.
-      - ``Off``
-    * - shibboleth-use-localhost
-      - A Shibboleth-using Dataverse instance needs to make network calls to the locally-running ``shibd`` service. The default behavior is to use the address configured via the ``siteUrl`` setting. There are however situations (firewalls, etc.) where localhost would be preferable.
-      - ``Off``
-    * - add-local-contexts-permission-check
-      - Adds a permission check to ensure that the user calling the /api/localcontexts/datasets/{id} API can edit the dataset with that id. This is currently the only use case - see https://github.com/gdcc/dataverse-external-vocab-support/tree/main/packages/local_contexts. The flag adds additional security to stop other uses, but would currently have to be used in conjunction with the api-session-auth feature flag (the security implications of which have not been fully investigated) to still allow adding Local Contexts metadata to a dataset.
-      - ``Off``
-    * - enable-pid-failure-log
-      - Turns on creation of a monthly log file (logs/PIDFailures_<yyyy-MM>.log) showing failed requests for dataset/file PIDs. Can be used directly or with scripts at https://github.com/gdcc/dataverse-recipes/python/pid_reports to alert admins.
-      - ``Off``
-    * - role-assignment-history
-      - Turns on tracking/display of role assignments and revocations for collections, datasets, and files
-      - ``Off``
-    * - only-update-datacite-when-needed
-      - Only contact DataCite to update a DOI after checking to see if DataCite has outdated information (for efficiency, lighter load on DataCite, especially when using file DOIs).
-      - ``Off``
+The default status, as long there is not any other information,  is Off.
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_FEATURE_XXX`` (e.g. ``DATAVERSE_FEATURE_API_SESSION_AUTH=1``). These environment variables can be set in your shell before starting Payara. If you are using :doc:`Docker for development </container/dev-usage>`, you can set them in the `docker compose <https://docs.docker.com/compose/environment-variables/set-environment-variables/>`_ file.
 
 To check the status of feature flags via API, see :ref:`list-all-feature-flags` in the API Guide.
+
+.. _dataverse.feature.api-session-auth:
+
+dataverse.feature.api-session-auth
+++++++++++++++++++++++++++++++++++
+
+Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and for the feature to be removed in the future.
+
+.. _dataverse.feature.api-bearer-auth:
+
+dataverse.feature.api-bearer-auth
++++++++++++++++++++++++++++++++++
+
+Enables API authentication via Bearer Token.
+
+.. _dataverse.feature.api-bearer-auth-provide-missing-claims:
+
+dataverse.feature.api-bearer-auth-provide-missing-claims
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Enables sending missing user claims in the request JSON provided during OIDC user registration, when these claims are not returned by the identity provider and are required for registration. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this feature flag exposes the installation to potential user impersonation issues.**
+
+.. _dataverse.feature.api-bearer-auth-handle-tos-acceptance-in-idp:
+
+dataverse.feature.api-bearer-auth-handle-tos-acceptance-in-idp
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Specifies that Terms of Service acceptance is handled by the IdP, eliminating the need to include ToS acceptance boolean parameter (termsAccepted) in the OIDC user registration request body. This feature only works when the feature flag ``api-bearer-auth`` is also enabled.
+
+.. _dataverse.feature.api-bearer-auth-use-builtin-user-on-id-match:
+
+dataverse.feature.api-bearer-auth-use-builtin-user-on-id-match
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Allows the use of a built-in user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing built-in user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
+
+.. _dataverse.feature.api-bearer-auth-use-shib-user-on-id-match:
+
+dataverse.feature.api-bearer-auth-use-shib-user-on-id-match
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Allows the use of a Shibboleth user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing Shibboleth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
+
+.. _dataverse.feature.api-bearer-auth-use-oauth-user-on-id-match:
+
+dataverse.feature.api-bearer-auth-use-oauth-user-on-id-match
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Allows the use of an OAuth user account (GitHub, Google, or ORCID) when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing OAuth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
+
+.. _dataverse.feature.avoid-expensive-solr-join:
+
+dataverse.feature.avoid-expensive-solr-join
++++++++++++++++++++++++++++++++++++++++++++
+
+Changes the way Solr queries are constructed for public content (published Collections, Datasets and Files). It removes a very expensive Solr join on all such documents, improving overall performance, especially for large instances under heavy load. Before this feature flag is enabled, the corresponding indexing feature (see next feature flag) must be turned on and a full reindex performed (otherwise public objects are not going to be shown in search results). See :doc:`/admin/solr-search-index`.
+
+.. _dataverse.feature.add-publicobject-solr-field:
+
+dataverse.feature.add-publicobject-solr-field
++++++++++++++++++++++++++++++++++++++++++++++
+
+Adds an extra boolean field `PublicObject_b:true` for public content (published Collections, Datasets and Files). Once reindexed with these fields, we can rely on it to remove a very expensive Solr join on all such documents in Solr queries, significantly improving overall performance (by enabling the feature flag above, `avoid-expensive-solr-join`). These two flags are separate so that an instance can reindex their holdings before enabling the optimization in searches, thus avoiding having their public objects temporarily disappear from search results while the reindexing is in progress.
+
+.. _dataverse.feature.reduce-solr-deletes:
+
+dataverse.feature.reduce-solr-deletes
++++++++++++++++++++++++++++++++++++++
+
+Avoids deleting and recreating solr documents for dataset files when reindexing.
+
+.. _dataverse.feature.disable-return-to-author-reason:
+
+dataverse.feature.disable-return-to-author-reason
++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Removes the reason field in the `Publish/Return To Author` dialog that was added as a required field in v6.2 and makes the reason an optional parameter in the :ref:`return-a-dataset` API call.
+
+.. _dataverse.feature.disable-dataset-thumbnail-autoselect:
+
+dataverse.feature.disable-dataset-thumbnail-autoselect
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Turns off automatic selection of a dataset thumbnail from image files in that dataset. When set to ``On``, a user can still manually pick a thumbnail image or upload a dedicated thumbnail image.
+
+.. _dataverse.feature.globus-use-experimental-async-framework:
+
+dataverse.feature.globus-use-experimental-async-framework
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4; extended in v6.6 to cover download transfers, in addition to uploads. Affects :ref:`:GlobusPollingInterval`. Note that the JVM option :ref:`dataverse.files.globus-monitoring-server` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance.
+
+.. _dataverse.feature.index-harvested-metadata-source:
+
+dataverse.feature.index-harvested-metadata-source
++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Index the nickname or the source name (See the optional ``sourceName`` field in :ref:`create-a-harvesting-client`) of the harvesting client as the "metadata source" of harvested datasets and files. If enabled, the Metadata Source facet will show separate groupings of the content harvested from different sources (by harvesting client nickname or source name) instead of the default behavior where there is one "Harvested" grouping for all harvested content.
+
+.. _dataverse.feature.enable-version-note:
+
+dataverse.feature.enable-version-note
++++++++++++++++++++++++++++++++++++++
+
+Turns on the ability to add/view/edit/delete per-dataset-version notes intended to provide :ref:`provenance` information about why the dataset/version was created.
+
+.. _dataverse.feature.shibboleth-use-wayfinder:
+
+dataverse.feature.shibboleth-use-wayfinder
+++++++++++++++++++++++++++++++++++++++++++
+
+This flag allows an instance to use Shibboleth with InCommon federation services. Our original Shibboleth implementation that relies on DiscoFeed can no longer be used since InCommon discontinued their old-style metadata feed. An alternative mechanism had to be implemented in order to use WayFinder service, their recommended replacements, instead.
+
+.. _dataverse.feature.shibboleth-use-localhost:
+
+dataverse.feature.shibboleth-use-localhost
+++++++++++++++++++++++++++++++++++++++++++
+
+A Shibboleth-using Dataverse instance needs to make network calls to the locally-running ``shibd`` service. The default behavior is to use the address configured via the ``siteUrl`` setting. There are however situations (firewalls, etc.) where localhost would be preferable.
+
+.. _dataverse.feature.add-local-contexts-permission-check:
+
+dataverse.feature.add-local-contexts-permission-check
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Adds a permission check to ensure that the user calling the /api/localcontexts/datasets/{id} API can edit the dataset with that id. This is currently the only use case - see https://github.com/gdcc/dataverse-external-vocab-support/tree/main/packages/local_contexts. The flag adds additional security to stop other uses, but would currently have to be used in conjunction with the api-session-auth feature flag (the security implications of which have not been fully investigated) to still allow adding Local Contexts metadata to a dataset.
+
+.. _dataverse.feature.enable-pid-failure-log:
+
+dataverse.feature.enable-pid-failure-log
+++++++++++++++++++++++++++++++++++++++++
+
+Turns on creation of a monthly log file (logs/PIDFailures_<yyyy-MM>.log) showing failed requests for dataset/file PIDs. Can be used directly or with scripts at https://github.com/gdcc/dataverse-recipes/python/pid_reports to alert admins.
+
+.. _dataverse.feature.role-assignment-history:
+
+dataverse.feature.role-assignment-history
++++++++++++++++++++++++++++++++++++++++++
+
+Turns on tracking/display of role assignments and revocations for collections, datasets, and files
+
+.. _dataverse.feature.only-update-datacite-when-needed:
+
+dataverse.feature.only-update-datacite-when-needed
+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Only contact DataCite to update a DOI after checking to see if DataCite has outdated information (for efficiency, lighter load on DataCite, especially when using file DOIs).
+
+
+
 
 .. _:ApplicationServerSettings:
 
@@ -5198,6 +5288,15 @@ This post-publish workflow is useful for actions such as sending notifications a
 ``curl -X PUT -d '2' http://localhost:8080/api/admin/settings/:PostPublishDatasetWorkflowId``
 
 See :ref:`Workflow Admin section <workflow_admin>` for more details and context.
+
+.. _:PublishDatasetDisclaimerText:
+
+:PublishDatasetDisclaimerText
++++++++++++++++++++++++++++++
+
+The text displayed to the user that must be acknowledged prior to publishing a Dataset. When not set the acknowledgment is not required nor displayed.
+
+``curl -X PUT -d "By publishing this dataset, I fully accept all legal responsibility for ensuring that the deposited content is: anonymized, free of copyright violations, and contains data that is computationally reusable. I understand and agree that any violation of these conditions may result in the immediate removal of the dataset by the repository without prior notice." http://localhost:8080/api/admin/settings/:PublishDatasetDisclaimerText``
 
 .. _:BagItHandlerEnabled:
 
