@@ -1,0 +1,23 @@
+## New Endpoint: PUT `/dataverses/{templateId}/metadata`
+
+A new endpoint has been implemented to edit the metadata and field instructions for a given template.
+
+### Functionality
+- Updates the metadata and field instructions for a template based on a json file provided.
+- You must have edit dataverse permission in the collection in order to use this endpoint.
+
+## New Endpoint: PUT `/dataverses/{templateId}/licenseTerms`
+
+A new endpoint has been implemented to edit the license or custom terms of use for a given template.
+
+### Functionality
+- Updates the license or custom terms of use for a template based on a json file provided.
+- You must have edit dataverse permission in the collection in order to use this endpoint.
+
+## New Endpoint: PUT `/dataverses/{templateId}/access`
+
+A new endpoint has been implemented to edit terms of access for a given template.
+
+### Functionality
+- Updates the terms of access for a template based on a json file provided.
+- You must have edit dataverse permission in the collection in order to use this endpoint.

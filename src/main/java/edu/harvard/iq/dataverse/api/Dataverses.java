@@ -2035,7 +2035,7 @@ public class Dataverses extends AbstractApiBean {
     
     @PUT
     @AuthRequired
-    @Path("{templateId}/templateMetadata")
+    @Path("{templateId}/metadata")
     public Response updateTemplateMetadata(@Context ContainerRequestContext crc, String body, @PathParam("templateId") Long templateId, @QueryParam("replace") boolean replaceData) {
         try {
             Template template = findTemplateOrDie(templateId);
@@ -2077,8 +2077,8 @@ public class Dataverses extends AbstractApiBean {
     
     @PUT
     @AuthRequired
-    @Path("{templateId}/templateTerms")
-    public Response updateTemplateTerms(@Context ContainerRequestContext crc, LicenseUpdateRequest requestBody, @PathParam("templateId") Long templateId, @QueryParam("replace") boolean replaceData) {
+    @Path("{templateId}/licenseTerms")
+    public Response updateTemplateLicenseTerms(@Context ContainerRequestContext crc, LicenseUpdateRequest requestBody, @PathParam("templateId") Long templateId, @QueryParam("replace") boolean replaceData) {
         try {
             Template template = findTemplateOrDie(templateId);
             Dataverse dataverse = template.getDataverse();
@@ -2108,7 +2108,7 @@ public class Dataverses extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{templateId}/access")
-    public Response editTemplateTermsOfAccess(@Context ContainerRequestContext crc, String jsonBody, @PathParam("templateId") Long templateId) {
+    public Response updateTemplateTermsOfAccess(@Context ContainerRequestContext crc, String jsonBody, @PathParam("templateId") Long templateId) {
         try {
 
             boolean publicInstall = settingsSvc.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false);
