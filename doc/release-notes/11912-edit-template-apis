@@ -16,7 +16,7 @@ A new endpoint has been implemented to edit the license or custom terms of use f
 
 ## New Endpoint: PUT `/dataverses/{templateId}/access`
 
-A new endpoint has been implemented to edit terms of access for a given template.
+A new endpoint has been implemented to edit the terms of access for a given template.
 
 ### Functionality
 - Updates the terms of access for a template based on a json file provided.
