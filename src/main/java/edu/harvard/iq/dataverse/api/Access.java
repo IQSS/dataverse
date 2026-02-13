@@ -1110,16 +1110,16 @@ public class Access extends AbstractApiBean {
                     } else {
                         boolean embargoed = FileUtil.isActivelyEmbargoed(file);
                         boolean retentionExpired = FileUtil.isRetentionExpired(file);
-                        if (file.isRestricted() || embargoed || retentionExpired) {
-                            if (zipper == null) {
-                                fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS "
-                                        + (embargoed ? "EMBARGOED" : retentionExpired ? "RETENTIONEXPIRED" : "RESTRICTED")
-                                        + " AND CANNOT BE DOWNLOADED\r\n";
-                            } else {
-                                zipper.addToManifest(file.getFileMetadata().getLabel() + " IS "
-                                        + (embargoed ? "EMBARGOED" : retentionExpired ? "RETENTIONEXPIRED" : "RESTRICTED")
-                                        + " AND CANNOT BE DOWNLOADED\r\n");
-                            }
+                        String manifestEntry = file.getFileMetadata().getLabel() + " IS " + (
+                                embargoed ? "EMBARGOED" :
+                                retentionExpired ? "RETENTIONEXPIRED" :
+                                file.isRestricted() ? "RESTRICTED" :
+                                "NOTAUTHORIZED")
+                                + " AND CANNOT BE DOWNLOADED\r\n";
+                        if (zipper == null) {
+                            fileManifest = fileManifest + manifestEntry;
+                        } else {
+                            zipper.addToManifest(manifestEntry);
                         }
                     }
                 }
