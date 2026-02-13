@@ -3075,11 +3075,18 @@ public class DatasetsIT {
                 .statusCode(200);
         
         // Check again: 
-        // This should return an empty list, as the dataset should have no locks just yet:
+        // This should no longer return an empty list, as the dataset now has a lock:
         checkDatasetLocks = UtilIT.checkDatasetLocks(datasetId.longValue(), "Ingest", apiToken);
         checkDatasetLocks.prettyPrint();
         checkDatasetLocks.then().assertThat()
                 .body("data[0].lockType", equalTo("Ingest"))
+                .statusCode(200);
+
+        // Confirm that when getting the dataset, the lock is also listed
+        Response getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat()
+                .body("data.locks[0]", equalTo("Ingest"))
                 .statusCode(200);
         
         // Try to lock the dataset with the same type lock, AGAIN 
@@ -3194,6 +3201,13 @@ public class DatasetsIT {
         checkDatasetLocks.prettyPrint();
         checkDatasetLocks.then().assertThat()
                 .body("data", equalTo(emptyArray))
+                .statusCode(200);
+
+        // Confirm that when getting the dataset, the lock is also no longer listed
+        getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat()
+                .body("data.locks", equalTo(emptyArray))
                 .statusCode(200);
     }
     
