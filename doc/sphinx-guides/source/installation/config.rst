@@ -217,6 +217,36 @@ Dataverse installations are explicity set to "Lax" out of the box by the install
 
 To inspect cookie attributes like SameSite, you can use ``curl -s -I http://localhost:8080 | grep JSESSIONID``, for example, looking for the "Set-Cookie" header.
 
+
+.. _dataverse.cors:
+
+Cross-Origin Resource Sharing (CORS)
+++++++++++++++++++++++++++++++++++++
+
+For any Dataverse installation using or planning to use advanced features like big data support or previewers, dealing with CORS is imminent.
+
+To understand what CORS is all about and how it works, the following are recommended reads:
+
+- https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS
+- https://corsfix.com/cors-headers
+- https://www.caduh.com/blog/understanding-cors
+- https://medium.com/@roelljr/demystifying-cors-its-just-http-headers-i-promise-4a02caf460fa
+
+To learn how to configure the Dataverse application to send CORS headers to browsers, these JVM options are relevant:
+
+- :ref:`dataverse.cors.origin`
+- :ref:`dataverse.cors.methods`
+- :ref:`dataverse.cors.headers.allow`
+- :ref:`dataverse.cors.headers.expose`
+
+Dataverse will only emit the necessary ``Access-Control-*`` headers to browsers when CORS has been explicitly enabled via the JVM option :ref:`dataverse.cors.origin <dataverse.cors.origin>`.
+
+For any resources to be integrated with Dataverse, find documentation how to set up CORS rules on their end at:
+
+- :ref:`Big Data: CORS for S3 buckets <cors-s3-bucket>`
+- `GDCC/dataverse-previewers <https://github.com/gdcc/dataverse-previewers/wiki/Using-Previewers-with-download-redirects-from-S3>`_
+
+
 .. _ongoing-security:
 
 Ongoing Security of Your Installation
@@ -3785,13 +3815,6 @@ dataverse.search.default-service
 ++++++++++++++++++++++++++++++++
 
 Experimental. See :doc:`/developers/search-services`.
-
-.. _dataverse.cors:
-
-CORS Settings
-+++++++++++++
-
-The following settings control Cross-Origin Resource Sharing (CORS) for your Dataverse installation.
 
 .. _dataverse.cors.origin:
 
