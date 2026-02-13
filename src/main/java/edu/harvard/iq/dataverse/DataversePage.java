@@ -44,6 +44,7 @@ import jakarta.inject.Named;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -147,6 +148,7 @@ public class DataversePage implements java.io.Serializable {
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
     private List<ControlledVocabularyValue> selectedSubjects;
+    private List<RoleAssignee> locallyFAIRRoleAssigneesList;
 
     public List<ControlledVocabularyValue> getSelectedSubjects() {
         return selectedSubjects;
@@ -1377,5 +1379,23 @@ public class DataversePage implements java.io.Serializable {
                 dsft.getLocalDisplayOnCreate()
             ));
         }
+    }
+    
+    /* Get/set methods to keep the local locallyFARIRoleAssigneesList in sync with the Dataverse's locallyFAIRRoleAssigneeIdentifiers set.
+     */
+    public List<RoleAssignee> getLocallyFAIRRoleAssigneesList() {
+        if (locallyFAIRRoleAssigneesList == null) {
+            locallyFAIRRoleAssigneesList = dataverse.getLocallyFAIRRoleAssigneeIdentifiers().stream()
+                    .map(roleAssigneeService::getRoleAssignee)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        }
+        return locallyFAIRRoleAssigneesList;
+    }
+
+    public void setLocallyFAIRRoleAssigneesList(List<RoleAssignee> assignees) {
+        locallyFAIRRoleAssigneesList = (assignees == null) ? Collections.emptyList() : assignees;
+        dataverse.setLocallyFAIRRoleAssigneeIdentifiers(
+                locallyFAIRRoleAssigneesList.stream().map(RoleAssignee::getIdentifier).collect(Collectors.toSet()));
     }
 }
