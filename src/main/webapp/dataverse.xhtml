@@ -299,17 +299,19 @@
                                             <p:message for="dsPidProviderOption" display="text"/>
                                         </div>
                                     </div>
-                                    <div class="col-xs-12 form-group">
+                                    <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
+                                    <ui:param name="allowLocallyFAIR" value="#{FeatureFlags.ALLOW_LOCALLY_FAIR_DATA.enabled()}"/>
+                                    <div class="col-xs-12 form-group" jsf:rendered="#{dataverseSession.user.superuser and (allowLocallyFAIR or not empty DataversePage.locallyFAIRRoleAssigneesList)}">
                                         <h:outputLabel for="locallyFAIRRoleAssignees" styleClass="control-label">
-                                            Locally FAIR: Published Content Available to
+                                            #{bundle['dataverse.locallyfair.label']}
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="Select users and groups who can discover and reuse published content, even when the Dataverse is not published."></span>
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.locallyfair.title']}"></span>
                                         </h:outputLabel>
                                         <div class="form-col-container">
                                             <dataverse:userGroupSelect id="userGroupNameAssign"
                                                    value="#{DataversePage.locallyFAIRRoleAssigneesList}"
                                                    completeMethod="#{DataversePage.completeRoleAssignee}"
-                                                   required="#{param['DO_ASSIGN_VALIDATION']}"
+                                                   disabled="#{!allowLocallyFAIR}"
                                                    requiredMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.requiredMsg']}"/>
                                         </div>
                                     </div>
