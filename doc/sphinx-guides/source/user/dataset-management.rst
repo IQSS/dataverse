@@ -763,6 +763,8 @@ Once a dataset with embargoed files has been published, no further action is nee
 
 As the primary use case of embargoes is to make the existence of data known now, with a promise (to a journal, project team, etc.) that the data itself will become available at a given future date, users cannot change an embargo once a dataset version is published. Dataverse instance administrators do have the ability to correct mistakes and make changes if/when circumstances warrant.
 
+.. _retention-periods:
+
 Retention Periods
 =================
 

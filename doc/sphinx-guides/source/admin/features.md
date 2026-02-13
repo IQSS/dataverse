@@ -1,12 +1,19 @@
 # Features
 
-An overview of Dataverse features can be found at {ref}`core-capabilities` and <https://dataverse.org/software-features>. This is a more comprehensive list.
+An overview of Dataverse features can be found at <https://dataverse.org/software-features>. This is a more comprehensive list.
 
 ```{contents} Contents:
 :local:
 :depth: 3
 ```
 
+
+## AI
+
+### Model Context Protocol (MCP)
+
+
+{ref}`More information.<mcp>`
 
 ## Access and download
 
@@ -57,6 +64,9 @@ Facets are data driven and customizable per collection.
 
 ## Administration
 
+### Quotas
+
+For number of files, etc.
 ### Usage statistics and metrics
 
 Download counters, support for Make Data Count.
@@ -106,16 +116,26 @@ Your installation can be branded with a custom homepage, header, footer, CSS, et
 
 ## FAIR data publication
 
+### TK Labels
+
+Integrate with the Local Contexts platform, enabling the use of Traditional Knowledge and Biocultural Labels, and Notices.
+{doc}`More information.</installation/localcontexts>`
+
 ### Support for FAIR Data Principles
 
 Findable, Accessible, Interoperable, Reusable.
 [More information.](https://scholar.harvard.edu/mercecrosas/presentations/fair-guiding-principles-implementation-dataverse)
-### Publishing workflow support
+### Prepublication Review Support
 
 Datasets start as drafts and can be submitted for review before publication.
 {ref}`More information.<dataverse-permissions>`
 
 ## File management
+
+### Retention Periods
+
+Make files inaccessible once the retention period set has passed.
+{ref}`More information.<retention-periods>`
 
 ### Restricted files
 
@@ -124,7 +144,7 @@ Control who can download files and choose whether or not to enable a "Request Ac
 
 ### Embargo
 
-Make content inaccessible until an embargo end date.
+Make files inaccessible until an embargo end date.
 {ref}`More information.<embargoes>`
 
 ### File hierarchy
@@ -157,7 +177,46 @@ Dataset metadata prepopulated from FITS file metadata.
 Each data file can have any number of auxiliary files for documentation or other purposes (experimental).
 {doc}`More information.</developers/aux-file-support>`
 
+## Geospatial
+
+### Metadata Extraction from Geospatial Files
+
+Populate the bounding box from NetCDF and HDF5 files.
+{ref}`More information.<netcdf-and-hdf5>`
+
+### Geospatial Search API
+
+Pass `geo_point` and `geo_radius` to find datasets based on their bounding box.
+{doc}`More information.</api/search>`
+
+### Geospatial File Preview
+
+GeoJSON, GeoTIFF, and Shapefiles can be previewed as a map.
+{ref}`More information.<geojson>`
+
+### Geospatial Metadata Fields
+
+There is a dedicated geospatial metadata block.
+{ref}`More information.<metadata-references>`
+
 ## Integrations
+
+### Galaxy Integration
+
+
+{ref}`More information.<galaxy2>`
+
+### Handles
+
+
+### Globus
+
+Upload from and download to Dataverse using Globus endpoints.
+### iRODS
+
+Pull data from an iRODS instance to a Dataverse dataset.
+### DMPTool Integration Via RSpace
+
 
 ### DataCite integration
 
@@ -181,10 +240,30 @@ A GitHub Action is available to upload files from GitHub to a dataset.
 
 ### Integration with Jupyter notebooks
 
-Datasets can be opened in Binder to run code in Jupyter notebooks, RStudio, and other computation environments.
+Datasets can be opened in Binder to run code in Jupyter notebooks, RStudio, and other computation environments. They can also be previewed in Dataverse itself.
 {ref}`More information.<binder>`
 
 ## Interoperability
+
+### Signposting
+
+Enable easier machine access to datasets by adding linkset in a Dataverse header.
+{ref}`More information.<discovery-sign-posting>`
+
+### Harvest from DataCite
+
+Harvest metadata directly from DataCite to Dataverse using OAI-PMH.
+{ref}`More information.<harvesting-from-datacite>`
+
+### Croissant
+
+Export metadata as linked data following the Croissant ontology.
+{ref}`More information.<schema.org-head>`
+
+### RO-Crate
+
+Export dataset metadata as an ro-crate.json.
+{ref}`More information.<inventory-of-external-exporters>`
 
 ### OAI-PMH (Harvesting)
 
@@ -220,10 +299,10 @@ For preservation, bags can be sent to the local filesystem, Duraclound, and Goog
 
 ### Data citation for datasets and files
 
-EndNote XML, RIS, or BibTeX format at the dataset or file level.
+EndNote XML, RIS, BibTeX, or 1000+ CSL formats at the dataset or file level.
 {doc}`More information.</user/find-use-data>`
 
-### Custom licenses
+### Multiple licenses
 
 CC0 by default but add as many standard licenses as you like or create your own.
 {ref}`More information.<license-config>`
@@ -242,4 +321,9 @@ Allow publication of a dataset to kick off external processes and integrations.
 
 Upload standard W3C provenance files or enter free text instead.
 {ref}`More information.<provenance>`
+
+https://guides.dataverse.org/en/latest/admin/collectionquotas.html
+https://guides.dataverse.org/en/latest/installation/config.html#persistent-identifiers-and-publishing-datasets
+https://guides.dataverse.org/en/latest/admin/integrations.html#globus
+https://guides.dataverse.org/en/latest/admin/integrations.html#irods
 

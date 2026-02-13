@@ -152,6 +152,13 @@ Open OnDemand
 
 `Open OnDemand <https://openondemand.org>`_ is a web frontend to High Performance Computing (HPC) resources. Through a system called `OnDemand Loop <https://github.com/IQSS/ondemand-loop>`_, developed at IQSS, researchers can create datasets in Dataverse and upload files to them from their Open OnDemand installation. They can also :ref:`download <ood-download>` files from Dataverse.
 
+.. _galaxy2:
+
+Galaxy
+++++++
+
+Import files directly from Dataverse into `Galaxy <https://galaxyproject.org>`_ as well as publish datasets containing artifacts (Histories, datasets, etc.) from Galaxy to Dataverse. For details, see https://github.com/galaxyproject/galaxy/pull/19367
+
 Embedding Data on Websites
 --------------------------
 
