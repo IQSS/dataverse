@@ -278,7 +278,7 @@ Export metadata as linked data following the Croissant ontology.
 ### RO-Crate
 
 Export dataset metadata as an ro-crate.json.
-{ref}`More information.<inventory-of-external-exporters>`
+{ref}`More information.<metadata-export-formats>`
 
 ### OAI-PMH (Harvesting)
 

@@ -40,7 +40,7 @@ Once a dataset has been published, its metadata can be exported in a variety of 
 Additional formats can be enabled. See :ref:`inventory-of-external-exporters` in the Installation Guide. To highlight a few:
 
 - Croissant
-- RO-Crate
+- RO-Crate: See also https://www.researchobject.org/ro-crate/dataverse
 
 Each of these metadata exports contains the metadata of the most recently published version of the dataset.
 
