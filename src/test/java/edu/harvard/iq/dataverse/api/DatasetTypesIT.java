@@ -1002,7 +1002,7 @@ public class DatasetTypesIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.allowedDatasetTypes[0].name", is("review"))
                 .body("data.allowedDatasetTypes[0].displayName", is("Review"))
-                .body("data.allowedDatasetTypes[0].description", is("A review of a dataset compiled by community experts."));
+                .body("data.allowedDatasetTypes[0].description", is("A review of a dataset compiled by the expert community."));
 
         Response createReview = UtilIT.createDataset(collectionOfReviewsAlias, jsonForCreatingReview, apiTokenReviewer);
         createReview.prettyPrint();
