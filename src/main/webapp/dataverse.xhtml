@@ -306,21 +306,11 @@
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="Select users and groups who can discover and reuse published content, even when the Dataverse is not published."></span>
                                         </h:outputLabel>
                                         <div class="form-col-container">
-                                            <p:autoComplete id="locallyFAIRRoleAssignees" multiple="true"
-                                                            value="#{DataversePage.dataverse.locallyFAIRRoleAssignees}"
-                                                            completeMethod="#{DataversePage.completeRoleAssignee}"
-                                                            var="ra" itemLabel="#{ra.displayInfo.title}" itemValue="#{ra}"
-                                                            converter="roleAssigneeConverter"
-                                                            forceSelection="true"
-                                                            minQueryLength="3" queryDelay="1000"
-                                                            emptyMessage="#{bundle['dataverse.permissions.userGroup.select.emptyMessage']}">
-                                                <p:column>
-                                                    <h:outputFormat value="{0} ({1})">
-                                                        <f:param value="#{ra.displayInfo.title}"/>
-                                                        <f:param value="#{ra.displayInfo.description}"/>
-                                                    </h:outputFormat>
-                                                </p:column>
-                                            </p:autoComplete>
+                                            <dataverse:userGroupSelect id="userGroupNameAssign"
+                                                   value="#{DataversePage.locallyFAIRRoleAssigneesList}"
+                                                   completeMethod="#{DataversePage.completeRoleAssignee}"
+                                                   required="#{param['DO_ASSIGN_VALIDATION']}"
+                                                   requiredMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.requiredMsg']}"/>
                                         </div>
                                     </div>
                                 </div>
