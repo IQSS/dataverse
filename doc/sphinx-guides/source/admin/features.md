@@ -10,9 +10,14 @@ An overview of Dataverse features can be found at <https://dataverse.org/softwar
 
 ## AI
 
+### AI Tools
+
+A number of AI tools integrate with Dataverse.
+{doc}`More information.</ai/index>`
+
 ### Model Context Protocol (MCP)
 
-
+Model Context Protocol (MCP) is a standard for AI Agents to communicate with tools and services.
 {ref}`More information.<mcp>`
 
 ## Access and download
@@ -67,6 +72,8 @@ Facets are data driven and customizable per collection.
 ### Quotas
 
 For number of files, etc.
+{doc}`More information.</admin/collectionquotas>`
+
 ### Usage statistics and metrics
 
 Download counters, support for Make Data Count.
@@ -124,7 +131,7 @@ Integrate with the Local Contexts platform, enabling the use of Traditional Know
 ### Support for FAIR Data Principles
 
 Findable, Accessible, Interoperable, Reusable.
-[More information.](https://scholar.harvard.edu/mercecrosas/presentations/fair-guiding-principles-implementation-dataverse)
+[More information.](https://web.archive.org/web/20191206043258/https://scholar.harvard.edu/mercecrosas/presentations/fair-guiding-principles-implementation-dataverse)
 ### Prepublication Review Support
 
 Datasets start as drafts and can be submitted for review before publication.
@@ -203,20 +210,28 @@ There is a dedicated geospatial metadata block.
 
 ### Galaxy Integration
 
-
-{ref}`More information.<galaxy2>`
+Import files directly from Dataverse into Galaxy as well as publish datasets containing artifacts (Histories, datasets, etc.) from Galaxy to Dataverse.
+{ref}`More information.<galaxy-integration>`
 
 ### Handles
 
+Handles are a Persistent ID (PID) that are an alternative to DOIs.
+{ref}`More information.<pids-configuration>`
 
 ### Globus
 
 Upload from and download to Dataverse using Globus endpoints.
+{ref}`More information.<globus-support>`
+
 ### iRODS
 
 Pull data from an iRODS instance to a Dataverse dataset.
+{ref}`More information.<irods>`
+
 ### DMPTool Integration Via RSpace
 
+A Data Management Plan (DMP) can be uploaded to RSpace and updated with the DOI of a Dataverse dataset.
+{ref}`More information.<rspace>`
 
 ### DataCite integration
 
@@ -321,9 +336,4 @@ Allow publication of a dataset to kick off external processes and integrations.
 
 Upload standard W3C provenance files or enter free text instead.
 {ref}`More information.<provenance>`
-
-https://guides.dataverse.org/en/latest/admin/collectionquotas.html
-https://guides.dataverse.org/en/latest/installation/config.html#persistent-identifiers-and-publishing-datasets
-https://guides.dataverse.org/en/latest/admin/integrations.html#globus
-https://guides.dataverse.org/en/latest/admin/integrations.html#irods
 

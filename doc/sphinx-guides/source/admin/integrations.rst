@@ -38,12 +38,16 @@ Researcher can configure OSF itself to deposit to your Dataverse installation by
 
 In addition to the method mentioned above, the :ref:`integrations-dashboard` also enables a pull of data from OSF to a dataset.
 
+.. _rspace:
+
 RSpace
 ++++++
 
 RSpace is an affordable and secure enterprise grade electronic lab notebook (ELN) for researchers to capture and organize data.
 
 For instructions on depositing data from RSpace to your Dataverse installation, your researchers can visit https://www.researchspace.com/help-and-support-resources/dataverse-integration/
+
+As shown in a `video <https://www.researchspace.com/blog/dmptool-rspace-eln-dataverse-integration>`_, a Data Management Plan (DPM) can be added into RSpace and the research records and associated data can then be sent to Dataverse. Dataverse generates a Persistent Identifier (PID, often a DOI) for the dataset, and RSpace automatically puts the PID link under "Research Outputs" in the DPM.
 
 Open Journal Systems (OJS) and OPS
 ++++++++++++++++++++++++++++++++++
@@ -85,6 +89,8 @@ GitLab
 GitLab is an open source Git repository and platform that provides free open and private repositories, issue-following capabilities, and wikis for collaborative software development.
 
 The :ref:`integrations-dashboard` enables a pull of data from GitLab to a dataset in Dataverse.
+
+.. _irods:
 
 iRODS
 +++++
@@ -152,7 +158,7 @@ Open OnDemand
 
 `Open OnDemand <https://openondemand.org>`_ is a web frontend to High Performance Computing (HPC) resources. Through a system called `OnDemand Loop <https://github.com/IQSS/ondemand-loop>`_, developed at IQSS, researchers can create datasets in Dataverse and upload files to them from their Open OnDemand installation. They can also :ref:`download <ood-download>` files from Dataverse.
 
-.. _galaxy2:
+.. _galaxy-integration:
 
 Galaxy
 ++++++
