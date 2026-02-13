@@ -159,6 +159,7 @@ public class AccessIT {
         tabFile4NameUnpublishedConvert = tabFile4NameUnpublished.substring(0, tabFile4NameUnpublished.indexOf(".dta")) + ".tab";
         String tab4PathToFile = "scripts/search/data/tabular/" + tabFile4NameUnpublished;
         Response tab4AddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), tab4PathToFile, apiToken);
+        tab4AddResponse.prettyPrint();
         tabFile4IdUnpublished = JsonPath.from(tab4AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
         assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + tabFile2Name);
                         
@@ -412,18 +413,23 @@ public class AccessIT {
         HashMap<String,ByteArrayOutputStream> files2 = readZipResponse(authDownloadConvertedUnpublished.getBody().asInputStream());
         assertEquals(4, files2.size()); //size +1 for manifest, we have access to unpublished
 
+        // Guest User can not access tabFile4IdUnpublished so only the first 2 files will be downloaded
         Response anonDownloadOriginalUnpublished = UtilIT.downloadFilesOriginal(new Integer[]{basicFileId,tabFile1Id,tabFile4IdUnpublished});
-        assertEquals(404, anonDownloadOriginalUnpublished.getStatusCode());
+        assertEquals(200, anonDownloadOriginalUnpublished.getStatusCode());
         int origAnonSize = anonDownloadOriginalUnpublished.getBody().asByteArray().length;
         HashMap<String,ByteArrayOutputStream> files3 = readZipResponse(anonDownloadOriginalUnpublished.getBody().asInputStream());
-        assertEquals(0, files3.size()); //A size of 0 indicates the zip creation was interrupted.
+        // expect the zip to have 3 files: 2 downloaded files plus the manifest
+        assertEquals(3, files3.size());
+        assertTrue(files3.containsKey("120745.dta"));
         assertTrue(origAnonSize < origAuthSize + margin);
         
         Response anonDownloadConvertedUnpublished = UtilIT.downloadFiles(new Integer[]{basicFileId,tabFile1Id,tabFile4IdUnpublished});
-        assertEquals(404, anonDownloadConvertedUnpublished.getStatusCode());
+        assertEquals(200, anonDownloadConvertedUnpublished.getStatusCode());
         int convertAnonSize = anonDownloadConvertedUnpublished.getBody().asByteArray().length;
         HashMap<String,ByteArrayOutputStream> files4 = readZipResponse(anonDownloadConvertedUnpublished.getBody().asInputStream());
-        assertEquals(0, files4.size()); //A size of 0 indicates the zip creation was interrupted.
+        // expect the zip to have 3 files: 2 downloaded files plus the manifest
+        assertEquals(3, files4.size());
+        assertTrue(files4.containsKey("120745.tab"));
         assertTrue(convertAnonSize < convertAuthSize + margin);
     }
     

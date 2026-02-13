@@ -905,7 +905,7 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafiles/{fileIds}")
     @Produces({"application/zip"})
-    public Response datafiles(@Context ContainerRequestContext crc, @PathParam("fileIds") String fileIds, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("signed") boolean signed, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+    public Response datafiles(@Context ContainerRequestContext crc, @PathParam("fileIds") String fileIds, @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
         return downloadDatafiles(crc, fileIds, gbrecs, uriInfo, headers, response, null);
     }
 
@@ -978,18 +978,22 @@ public class Access extends AbstractApiBean {
         }
 
         Map<Long, DataFile> datafilesMap = new HashMap<>();
+        List<Long> authorizedDatafileIds = new ArrayList<>();
 
-        // Get DataFiles, check for multiple Datasets, and check for required guestbook response
+        // Get DataFiles, check authorized access, check for multiple Datasets, and check for required guestbook response
         Set<Long> datasetIds = new HashSet<>();
         for (int i = 0; i < fileIdParams.length; i++) {
             if (!fileIdParams[i].isBlank()) {
                 DataFile df = findDataFileOrDieWrapper(fileIdParams[i]);
                 datafilesMap.put(df.getId(), df);
                 datasetIds.add(df.getOwner() != null ? df.getOwner().getId() : 0L);
+                if (isAccessAuthorized(user, df)) {
+                    authorizedDatafileIds.add(df.getId());
+                }
                 if (datasetIds.size() > 1) {
                     // All files must be from the same Dataset
                     return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.multipleDatasets"));
-                } else if (checkGuestbookRequiredResponse(user, df)) {
+                } else if (authorizedDatafileIds.contains(df.getId()) && checkGuestbookRequiredResponse(user, df)) {
                     try {
                         GuestbookResponse gbr = getGuestbookResponseFromBody(df, GuestbookResponse.DOWNLOAD, body, user);
                         if (gbr != null) {
@@ -1041,7 +1045,7 @@ public class Access extends AbstractApiBean {
                 long sizeTotal = 0L;
 
                 for (DataFile file : datafilesMap.values()) {
-                    if (isAccessAuthorized(user, file)) {
+                    if (authorizedDatafileIds.contains(file.getId())) {
                         logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
                         //downloadInstance.addDataFile(file);
                         if (skipGBResponse != true && file.isReleased()) {
