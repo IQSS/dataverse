@@ -3801,9 +3801,33 @@ Experimental. See :doc:`/developers/search-services`.
 dataverse.cors.origin
 +++++++++++++++++++++
 
-Allowed origins for CORS requests. If this setting is not defined, CORS headers are not added. Set to ``*`` to allow all origins (note that browsers will not allow credentialed requests with ``*``) or provide a comma-separated list of explicit origins.
+Allowed origins for CORS requests.
 
-Multiple origins can be specified as a comma-separated list (whitespace is ignored):
+Default: ``*`` (allow all)
+
+.. warning:: | If this setting is not explicitly configured, no CORS headers at all are added to responses.
+          | The default policy (see all CORS related settings) is still being enforced!
+
+.. list-table::
+    :align: left
+    :widths: 10 10 80
+    :header-rows: 1
+    :stub-columns: 1
+
+    * - Type
+      - Value/Example
+      - Description
+    * - Wildcard
+      - ``*``
+      - - Allow access from all origins.
+        - Response header echoes ``Access-Control-Allow-Origin: *``
+        - Browsers will not allow credentialed requests with this setting.
+    * - List of Origins
+      - ``https://example.org, https://example.com``
+      - - Comma separated, white space ignored.
+        - Single matching request ``Origin`` header echoed as response header ``Access-Control-Allow-Origin``.
+        - ``Vary: Origin`` header added to support correct proxy/CDN caching.
+        - Use ``${dataverse.siteurl}`` to dynamically add the installation's URL to the list.
 
 Example:
 
@@ -3811,18 +3835,14 @@ Example:
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_CORS_ORIGIN``.
 
-Behavior:
-
-* When a list of origins is configured, Dataverse echoes the single matching request ``Origin`` value in ``Access-Control-Allow-Origin`` and adds ``Vary: Origin`` to support correct proxy/CDN caching.
-* When ``*`` is configured, ``Access-Control-Allow-Origin: *`` is sent and ``Vary`` is not modified.
-
 .. _dataverse.cors.methods:
 
 dataverse.cors.methods
 ++++++++++++++++++++++
 
-Allowed HTTP methods for CORS requests. The default when this setting is missing is "GET,POST,OPTIONS,PUT,DELETE".
-Multiple methods can be specified as a comma-separated list.
+Allowed HTTP methods for CORS requests as a comma separated list. Whitespace is ignored.
+
+Default: ``GET,POST,OPTIONS,PUT,DELETE``
 
 Example:
 
@@ -3835,8 +3855,9 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 dataverse.cors.headers.allow
 ++++++++++++++++++++++++++++
 
-Allowed headers for CORS requests. The default when this setting is missing is "Accept,Content-Type,X-Dataverse-key,Range".
-Multiple headers can be specified as a comma-separated list.
+Allowed headers for CORS requests as a comma separated list. Whitespace is ignored.
+
+Default: ``Accept, Content-Type, X-Dataverse-key, Range``
 
 Example:
 
@@ -3849,8 +3870,9 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 dataverse.cors.headers.expose
 +++++++++++++++++++++++++++++
 
-Headers to expose in CORS responses. The default when this setting is missing is "Accept-Ranges,Content-Range,Content-Encoding".
-Multiple headers can be specified as a comma-separated list.
+Headers to expose in CORS responses as a comma separated list. Whitespace is ignored.
+
+Default: ``Accept-Ranges, Content-Range, Content-Encoding``
 
 Example:
 
