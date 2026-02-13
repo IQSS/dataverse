@@ -1514,7 +1514,7 @@ In addition to having the type "remote" and requiring a label, Trusted Remote St
 These and other available options are described in the table below.
 
 Trusted remote stores can range from being a static trusted website to a sophisticated service managing access requests and logging activity
-and/or managing access to a secure enclave.  See :doc:`/admin/big-data-administration` (specifically :ref:`remote-stores`) and :doc:`/developers/big-data-support` for additional information on how to use a trusted remote store. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
+and/or managing access to a secure enclave.  See :doc:`/admin/big-data-administration` (specifically :ref:`remote-stores`) and :doc:`/installation/big-data-support` for additional information on how to use a trusted remote store. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
 
 Note that in the current implementation, activities where Dataverse needs access to data bytes, e.g. to create thumbnails or validate hash values at publication will fail if a remote store does not allow Dataverse access. Implementers of such trusted remote stores should consider using Dataverse's settings to disable ingest, validation of files at publication, etc. as needed.
 
@@ -1548,7 +1548,7 @@ Globus Storage
 ++++++++++++++
 
 Globus stores allow Dataverse to manage files stored in Globus endpoints or to reference files in remote Globus endpoints, with users leveraging Globus to transfer files to/from Dataverse (rather than using HTTP/HTTPS).
-See :doc:`/developers/big-data-support` for additional information on how to use a globus store. Consult the `Globus documentation <https://docs.globus.org/>`_ for information about using Globus and configuring Globus endpoints.
+See :doc:`/installation/big-data-support` for additional information on how to use a globus store. Consult the `Globus documentation <https://docs.globus.org/>`_ for information about using Globus and configuring Globus endpoints.
 
 In addition to having the type "globus" and requiring a label, Globus Stores share many options with Trusted Remote Stores and options to specify and access a Globus endpoint(s). As with Remote Stores, Globus Stores also use a baseStore - a file, s3, or swift store that can be used to store additional ancillary dataset files (e.g. metadata exports, thumbnails, auxiliary files, etc.).
 These and other available options are described in the table below.
@@ -2670,7 +2670,7 @@ to avoid filled up disks, aid in performance, etc. This directory is used for a 
    to final storage location and/or ingest.
 3. ``<dataverse.files.directory>/googlecloudkey.json`` used with :ref:`Google Cloud Configuration` for BagIt exports.
    This location is deprecated and might be refactored into a distinct setting in the future.
-4. The experimental DCM feature for :doc:`../developers/big-data-support` is able to trigger imports for externally
+4. The experimental DCM feature for :doc:`/installation/big-data-support` is able to trigger imports for externally
    uploaded files in a directory tree at ``<dataverse.files.directory>/<PID Authority>/<PID Identifier>``
    under certain conditions. This directory may also be used by file stores for :ref:`permanent file storage <storage-files-dir>`,
    but this is controlled by other, store-specific settings.
