@@ -1,9 +1,9 @@
 ## Feature Request: API to support Download Terms of Use and Guestbook
 
-## New Endpoints to download a file or files that required a Guestbook response: POST
+## New Endpoints to download a file or files that required a Guestbook Response: POST
 A post to these endpoints with the body containing a JSON Guestbook Response will save the response and 
 `?signed=true`:  return a signed URL to download the file(s) or
-`?signed=false` or missing: Write the guestbook responses and download the file(s)
+`?signed=false` or missing: Write the Guestbook Responses and download the file(s)
 
 `/api/access/datafile/{fileId:.+}`
 `/api/access/datafiles/{fileIds}`
@@ -13,7 +13,7 @@ A post to these endpoints with the body containing a JSON Guestbook Response wil
 A post to these endpoints with the body containing a JSON Guestbook Response will save the response before continuing the download.
 No signed URL option exists.
 `/api/access/datafiles`
-`/api/access/datafile/bundle/{fileId}` POST returns BundleDownloadInstance after processing guestbook responses from body.
+`/api/access/datafile/bundle/{fileId}` POST returns BundleDownloadInstance after processing Guestbook Responses from body.
 
 ## New CRUD Endpoints for Guestbook:
 Create a Guestbook: POST `/api/guestbooks/{dataverseIdentifier}`
@@ -23,5 +23,5 @@ Enable/Disable a Guestbook: PUT `/api/guestbooks/{dataverseIdentifier}/{id}/enab
 Note: There is no Update or Delete at this time. You can disable a Guestbook and create a new one.
 
 ## For Guestbook At Request:
-When JVM setting -Ddataverse.files.guestbook-at-request=true is used a request for access may require a Guestbook response.
-PUT `/api/access/datafile/{id}/requestAccess` will now take a JSON Guestbook response in the body.
+When JVM setting -Ddataverse.files.guestbook-at-request=true is used a request for access may require a Guestbook Response.
+PUT `/api/access/datafile/{id}/requestAccess` will now take a JSON Guestbook Response in the body.

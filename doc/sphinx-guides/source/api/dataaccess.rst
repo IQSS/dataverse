@@ -32,6 +32,8 @@ Basic Download By Dataset
 
 The basic form downloads files from the latest accessible version of the dataset. If you are not using an API token, this means the most recently published version. If you are using an API token with full access to the dataset, this means the draft version or the most recently published version if no draft exists.
 
+.. note:: Restricted files that require a Guestbook Response will require an additional step to supply the Guestbook Response. A POST to the same endpoint with the Guestbook Response in the body can return a signed url (with query parameter ``&signed=true``) that can be used to download the file(s) via a browser or download manager. Without the ``signed`` parameter the download will start immediately. For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
+
 A curl example using a DOI (no version):
 
 .. code-block:: bash
@@ -58,6 +60,8 @@ The second form of the "download by dataset" API allows you to specify which ver
 * ``:latest-published`` the latest published version
 * ``x.y`` a specific version, where ``x`` is the major version number and ``y`` is the minor version number.
 * ``x`` same as ``x.0``
+
+.. note:: Restricted files that require a Guestbook Response will require an additional step to supply the Guestbook Response. A POST to the same endpoint with the Guestbook Response in the body can return a signed url (with query parameter ``&signed=true``) that can be used to download the file(s) via a browser or download manager. Without the ``signed`` parameter the download will start immediately. For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 
 A curl example using a DOI (with version):
 
@@ -91,11 +95,11 @@ Basic access URI:
 
     GET http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB
 
-.. note:: Restricted files that require a Guestbook response will require an additional step to supply the response. A POST to the same endpoint with the Guestbook Response in the body will return a signed url that can be used to download the file.
+.. note:: Restricted files that require a Guestbook Response will require an additional step to supply the Guestbook Response. A POST to the same endpoint with the Guestbook Response in the body can return a signed url (with query parameter ``&signed=true``) that can be used to download the file(s) via a browser or download manager. Without the ``signed`` parameter the download will start immediately. For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 
   Example ::
 
-    POST http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB -d '{"guestbookResponse": {"answers": [{"id": 123,"value": "Good"},{"id": 124,"value": ["Multi","Line"]},{"id": 125,"value": "Yellow"}]}}'
+    POST http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB&signed=true -d '{"guestbookResponse": {"answers": [{"id": 123,"value": "Good"},{"id": 124,"value": ["Multi","Line"]},{"id": 125,"value": "Yellow"}]}}'
 
 Parameters:
 ~~~~~~~~~~~
@@ -185,6 +189,8 @@ Returns the files listed, zipped. As of v6.7 the name of the zipped bundle will 
 .. note:: If the request can only be completed partially - if only *some* of the requested files can be served (because of the permissions and/or size restrictions), the file MANIFEST.TXT included in the zipped bundle will have entries specifying the reasons the missing files could not be downloaded. IN THE FUTURE the API will return a 207 status code to indicate that the result was a partial success. (As of writing this - v.4.11 - this hasn't been implemented yet)
 
 .. note:: If any of the datafiles have the ``DirectoryLabel`` attributes in the corresponding ``FileMetadata`` entries, these will be added as folders to the Zip archive, and the files will be placed in them accordingly. 
+
+.. note:: If Guestbook Responses are required they can be included in the body along with the file ids as JSON: ``{"fileIds" :[1,2,3], {"guestbookResponse": {"answers": []}}}``. For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 
 Parameters: 
 ~~~~~~~~~~~
@@ -367,7 +373,7 @@ A curl example using an ``id``::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X PUT http://$SERVER/api/access/datafile/{id}/requestAccess
 
-.. note:: Some installations of Dataverse may require you to provide a Guestbook response when requesting access to certain restricted files. The response can be passed in the body of this call. See "Get a Guestbook for a Dataverse Collection" in the :doc:`native-api`.
+.. note:: Some installations of Dataverse may require you to provide a Guestbook Response when requesting access to certain restricted files. The response can be passed in the body of this call. See "Get a Guestbook for a Dataverse Collection" in the :doc:`native-api`.
 
 Grant File Access:
 ~~~~~~~~~~~~~~~~~~ 
