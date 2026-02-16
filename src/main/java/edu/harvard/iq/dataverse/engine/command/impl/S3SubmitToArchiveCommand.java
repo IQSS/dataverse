@@ -89,8 +89,7 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
     }
 
     @Override
-    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token,
-            Map<String, String> requestedSettings) {
+    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token) {
         logger.fine("In S3SubmitToArchiveCommand...");
         JsonObject configObject = null;
 

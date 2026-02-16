@@ -38,8 +38,7 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
     }
 
     @Override
-    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token,
-            Map<String, String> requestedSettings) {
+    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token) {
         logger.fine("In LocalCloudSubmitToArchive...");
         String localPath = requestedSettings.get(BagItLocalPath.toString());
         String zipName = null;

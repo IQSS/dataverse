@@ -49,7 +49,7 @@ public class ArchivalSubmissionWorkflowStep implements WorkflowStep {
         String className = requestedSettings.get(SettingsServiceBean.Key.ArchiverClassName.toString());
         AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, dvr, context.getDataset().getReleasedVersion());
         if (archiveCommand != null) {
-            return (archiveCommand.performArchiveSubmission(context.getDataset().getReleasedVersion(), context.getApiToken(), requestedSettings));
+            return (archiveCommand.runArchivingProcess(context.getDataset().getReleasedVersion(), context.getApiToken(), requestedSettings));
         } else {
             logger.severe("No Archiver instance could be created for name: " + className);
             return new Failure("No Archiver", "Could not create instance of class: " + className);

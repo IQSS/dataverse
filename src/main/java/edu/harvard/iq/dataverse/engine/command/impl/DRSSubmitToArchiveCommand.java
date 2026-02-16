@@ -82,8 +82,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
     }
 
     @Override
-    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token,
-            Map<String, String> requestedSettings) {
+    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token) {
         logger.fine("In DRSSubmitToArchiveCommand...");
         JsonObject drsConfigObject = null;
 
@@ -113,7 +112,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
 
                 JsonObject collectionConfig = adminMetadata.getJsonObject(COLLECTIONS).getJsonObject(alias);
 
-                WorkflowStepResult s3Result = super.performArchiveSubmission(dv, token, requestedSettings);
+                WorkflowStepResult s3Result = super.performArchiveSubmission(dv, token);
 
                 JsonObjectBuilder statusObject = Json.createObjectBuilder();
                 statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);

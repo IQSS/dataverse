@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
@@ -15,15 +14,24 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DOIDataCiteRegisterService;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
+import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
+
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.security.DigestInputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -31,7 +39,7 @@ import java.util.logging.Logger;
 public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<DatasetVersion> {
 
     private final DatasetVersion version;
-    private final Map<String, String> requestedSettings = new HashMap<String, String>();
+    protected final Map<String, String> requestedSettings = new HashMap<String, String>();
     protected boolean success=false;
     private static final Logger logger = Logger.getLogger(AbstractSubmitToArchiveCommand.class.getName());
     private static final int MAX_ZIP_WAIT = 20000;
@@ -43,16 +51,17 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-
+        
         String settings = ctxt.settings().getValueForKey(SettingsServiceBean.Key.ArchiverSettings);
-        String[] settingsArray = settings.split(",");
-        for (String setting : settingsArray) {
-            setting = setting.trim();
-            if (!setting.startsWith(":")) {
-                logger.warning("Invalid Archiver Setting: " + setting);
+        List<String> settingsList = ListSplitUtil.split(settings);
+        for (String settingName : settingsList) {
+            Key setting = Key.parse(settingName);
+            if (setting == null) {
+                logger.warning("Invalid Archiver Setting: " + settingName);
             } else {
-                requestedSettings.put(setting, ctxt.settings().get(setting));
+                requestedSettings.put(settingName, ctxt.settings().getValueForKey(setting));
             }
         }
         
@@ -62,9 +71,63 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
             //No un-expired token
             token = ctxt.authentication().generateApiTokenForUser(user);
         }
-        performArchiveSubmission(version, token, requestedSettings);
+        runArchivingProcess(version, token, requestedSettings);
         return ctxt.em().merge(version);
     }
+
+    /**
+     * Note that this method may be called from the execute method above OR from a
+     * workflow in which execute() is never called and therefore in which all
+     * variables must be sent as method parameters. (Nominally version is set in the
+     * constructor and could be dropped from the parameter list.)
+     * @param ctxt 
+     * 
+     * @param version - the DatasetVersion to archive
+     * @param token - an API Token for the user performing this action
+     * @param requestedSettings - a map of the names/values for settings required by this archiver (sent because this class is not part of the EJB context (by design) and has no direct access to service beans).
+     */
+    public WorkflowStepResult runArchivingProcess(DatasetVersion version, ApiToken token, Map<String, String> requestedSettings) {
+        // this.requestedSettings won't be set yet in the workflow case, so set it now (used in getNumberOfBagGeneratorThreads)
+        this.requestedSettings.putAll(requestedSettings);
+        // Check if earlier versions must be archived first
+        String requireEarlierArchivedValue = requestedSettings.get(SettingsServiceBean.Key.ArchiveOnlyIfEarlierVersionsAreArchived.toString());
+        boolean requireEarlierArchived = Boolean.parseBoolean(requireEarlierArchivedValue);
+        if (requireEarlierArchived) {
+        
+            Dataset dataset = version.getDataset();
+            List<DatasetVersion> versions = dataset.getVersions();
+
+            boolean foundCurrent = false;
+
+            // versions are ordered, all versions after the current one have lower
+            // major/minor version numbers
+            for (DatasetVersion versionInLoop : versions) {
+                if (foundCurrent) {
+                    // Once foundCurrent is true, we are looking at prior versions
+                    // Check if this earlier version has been successfully archived
+                    String archivalStatus = versionInLoop.getArchivalCopyLocationStatus();
+                    if (archivalStatus == null || !archivalStatus.equals(DatasetVersion.ARCHIVAL_STATUS_SUCCESS)
+//                                || !archivalStatus.equals(DatasetVersion.ARCHIVAL_STATUS_OBSOLETE)
+                    ) {
+                        JsonObjectBuilder statusObjectBuilder = Json.createObjectBuilder();
+                        statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
+                        statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE,
+                                "Successful archiving of earlier versions is required.");
+                        version.setArchivalCopyLocation(statusObjectBuilder.build().toString());
+                        return new Failure("Earlier versions must be successfully archived first",
+                                "Archival prerequisites not met");
+                    }
+                }
+                if (versionInLoop.equals(version)) {
+                    foundCurrent = true;
+                }
+
+            }
+        }
+        // Delegate to the archiver-specific implementation
+        return performArchiveSubmission(version, token);
+    }
+
 
     /**
      * This method is the only one that should be overwritten by other classes. Note
@@ -72,12 +135,12 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
      * workflow in which execute() is never called and therefore in which all
      * variables must be sent as method parameters. (Nominally version is set in the
      * constructor and could be dropped from the parameter list.)
+     * @param ctxt 
      * 
      * @param version - the DatasetVersion to archive
      * @param token - an API Token for the user performing this action
-     * @param requestedSettings - a map of the names/values for settings required by this archiver (sent because this class is not part of the EJB context (by design) and has no direct access to service beans).
      */
-    abstract public WorkflowStepResult performArchiveSubmission(DatasetVersion version, ApiToken token, Map<String, String> requestedSetttings);
+   protected abstract WorkflowStepResult performArchiveSubmission(DatasetVersion version, ApiToken token);
 
     protected int getNumberOfBagGeneratorThreads() {
         if (requestedSettings.get(BagGenerator.BAG_GENERATOR_THREADS) != null) {
@@ -110,8 +173,8 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
             public void run() {
                 try (PipedOutputStream out = new PipedOutputStream(in)) {
                     // Generate bag
+                    BagGenerator.setNumConnections(getNumberOfBagGeneratorThreads());
                     BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
-                    bagger.setNumConnections(getNumberOfBagGeneratorThreads());
                     bagger.setAuthenticationKey(token.getTokenString());
                     bagger.generateBag(out);
                     success = true;
@@ -182,5 +245,17 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
    //Check if the chosen archiver imposes single-version-only archiving - in the API
    public static boolean isSingleVersion(SettingsServiceBean settingsService) {
        return false;
+  }
+
+  /** Whether the archiver can delete existing archival files (and thus can retry when the existing files are incomplete/obsolete)
+   * A static version supports calls via reflection while the instance method supports inheritance for use on actual command instances (see DatasetPage for both use cases).
+   * @return
+   */
+  public static boolean supportsDelete() {
+      return false;
+  }
+
+  public boolean canDelete() {
+      return supportsDelete();
   }
 }

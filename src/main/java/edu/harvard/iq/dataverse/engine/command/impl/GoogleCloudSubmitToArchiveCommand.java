@@ -74,8 +74,10 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
 
             try (FileInputStream cloudKeyStream = new FileInputStream(cloudKeyFile)) {
                 storage = StorageOptions.newBuilder()
-                        .setCredentials(ServiceAccountCredentials.fromStream(cloudKeyStream)).setProjectId(projectName)
-                        .build().getService();
+                        .setCredentials(ServiceAccountCredentials.fromStream(cloudKeyStream))
+                        .setProjectId(projectName)
+                        .build()
+                        .getService();
                 Bucket bucket = storage.get(bucketName);
 
                 Dataset dataset = dv.getDataset();
