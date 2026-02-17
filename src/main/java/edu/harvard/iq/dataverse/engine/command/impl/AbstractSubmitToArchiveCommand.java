@@ -99,7 +99,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
     }
 
     // While we have a transaction context, get the terms needed to create the baginfo file
-    public Map<String, JsonLDTerm> getJsonLDTerms(OREMap oreMap) {
+    public static Map<String, JsonLDTerm> getJsonLDTerms(OREMap oreMap) {
         Map<String, JsonLDTerm> terms = new HashMap<String, JsonLDTerm>();
         terms.put(DatasetFieldConstant.datasetContact, oreMap.getContactTerm());
         terms.put(DatasetFieldConstant.datasetContactName, oreMap.getContactNameTerm());

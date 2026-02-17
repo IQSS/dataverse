@@ -1,6 +1,7 @@
 
 package edu.harvard.iq.dataverse.util.bagit;
 
+import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +53,7 @@ public class BagGeneratorInfoFileTest {
         when(mockOreMap.getOREMap()).thenReturn(oremapObject);
         
         // Initialize BagGenerator with test data
-        bagGenerator = new BagGenerator(mockOreMap, "");
+        bagGenerator = new BagGenerator(oremapObject, "", AbstractSubmitToArchiveCommand.getJsonLDTerms(mockOreMap));
         setPrivateField(bagGenerator, "aggregation", (com.google.gson.JsonObject) JsonParser
                 .parseString(oremapObject.getJsonObject(JsonLDTerm.ore("describes").getLabel()).toString()));
         setPrivateField(bagGenerator, "totalDataSize", 1024000L);
