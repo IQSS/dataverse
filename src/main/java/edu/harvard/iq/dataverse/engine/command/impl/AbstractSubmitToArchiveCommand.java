@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -19,10 +21,11 @@ import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
+import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
-
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
+import jakarta.json.JsonObject;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 
@@ -38,7 +41,7 @@ import java.util.logging.Logger;
 @RequiredPermissions(Permission.PublishDataset)
 public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<DatasetVersion> {
 
-    private final DatasetVersion version;
+    protected final DatasetVersion version;
     protected final Map<String, String> requestedSettings = new HashMap<String, String>();
     protected boolean success=false;
     private static final Logger logger = Logger.getLogger(AbstractSubmitToArchiveCommand.class.getName());
@@ -51,8 +54,15 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
+        
+     // Check for locks while we're still in a transaction
+        Dataset dataset = version.getDataset();
+        if (dataset.getLockFor(Reason.finalizePublication) != null
+                || dataset.getLockFor(Reason.FileValidationFailed) != null) {
+            throw new CommandException("Dataset is locked and cannot be archived", this);
+        }
         
         String settings = ctxt.settings().getValueForKey(SettingsServiceBean.Key.ArchiverSettings);
         List<String> settingsList = ListSplitUtil.split(settings);
@@ -73,6 +83,18 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
         }
         runArchivingProcess(version, token, requestedSettings);
         return ctxt.em().merge(version);
+    }
+
+    // While we have a transaction context, get the terms needed to create the baginfo file
+    private Map<String, JsonLDTerm> getJsonLDTerms(OREMap oreMap) {
+        Map<String, JsonLDTerm> terms = new HashMap<String, JsonLDTerm>();
+        terms.put(DatasetFieldConstant.datasetContact, oreMap.getContactTerm());
+        terms.put(DatasetFieldConstant.datasetContactName, oreMap.getContactNameTerm());
+        terms.put(DatasetFieldConstant.datasetContactEmail, oreMap.getContactEmailTerm());
+        terms.put(DatasetFieldConstant.description, oreMap.getDescriptionTerm());
+        terms.put(DatasetFieldConstant.descriptionText, oreMap.getDescriptionTextTerm());
+        
+        return terms;
     }
 
     /**
@@ -124,23 +146,44 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
 
             }
         }
-        // Delegate to the archiver-specific implementation
-        return performArchiveSubmission(version, token);
+        String dataCiteXml = getDataCiteXml(version);
+        OREMap oreMap = new OREMap(version, false);
+        JsonObject ore = oreMap.getOREMap();
+        Map<String, JsonLDTerm> terms = getJsonLDTerms(oreMap);
+        return performArchivingAndPersist(ctxt, version, dataCiteXml, ore, terms, token, requestedSettings);
     }
 
-
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public WorkflowStepResult performArchivingAndPersist(CommandContext ctxt, DatasetVersion version, String dataCiteXml, JsonObject ore, Map<String, JsonLDTerm> terms, ApiToken token, Map<String, String> requestedSetttings) {
+        // This runs OUTSIDE any transaction
+        BagGenerator.setNumConnections(getNumberOfBagGeneratorThreads());
+        WorkflowStepResult wfsr = performArchiveSubmission(version, dataCiteXml, ore, terms, token, requestedSettings);
+        persistResult(ctxt, version);
+        return wfsr;
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    private void persistResult(CommandContext ctxt, DatasetVersion versionWithStatus) {
+        // New transaction just for this quick operation
+        ctxt.datasetVersion().persistArchivalCopyLocation(versionWithStatus);
+    }
+    
     /**
      * This method is the only one that should be overwritten by other classes. Note
      * that this method may be called from the execute method above OR from a
      * workflow in which execute() is never called and therefore in which all
      * variables must be sent as method parameters. (Nominally version is set in the
      * constructor and could be dropped from the parameter list.)
-     * @param ctxt 
      * 
      * @param version - the DatasetVersion to archive
+     * @param ore 
+     * @param dataCiteXml 
+     * @param terms 
      * @param token - an API Token for the user performing this action
+     * @param requestedSettings - a map of the names/values for settings required by this archiver (sent because this class is not part of the EJB context (by design) and has no direct access to service beans).
      */
-   protected abstract WorkflowStepResult performArchiveSubmission(DatasetVersion version, ApiToken token);
+    abstract public WorkflowStepResult performArchiveSubmission(DatasetVersion version, String dataCiteXml, JsonObject ore, Map<String, JsonLDTerm> terms, ApiToken token, Map<String, String> requestedSetttings);
+
 
     protected int getNumberOfBagGeneratorThreads() {
         if (requestedSettings.get(BagGenerator.BAG_GENERATOR_THREADS) != null) {
@@ -168,13 +211,13 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
     }
 
     public Thread startBagThread(DatasetVersion dv, PipedInputStream in, DigestInputStream digestInputStream2,
-            String dataciteXml, ApiToken token) throws IOException, InterruptedException {
+            String dataciteXml, JsonObject ore, Map<String, JsonLDTerm> terms, ApiToken token) throws IOException, InterruptedException {
         Thread bagThread = new Thread(new Runnable() {
             public void run() {
                 try (PipedOutputStream out = new PipedOutputStream(in)) {
                     // Generate bag
                     BagGenerator.setNumConnections(getNumberOfBagGeneratorThreads());
-                    BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
+                    BagGenerator bagger = new BagGenerator(ore, dataciteXml, terms);
                     bagger.setAuthenticationKey(token.getTokenString());
                     bagger.generateBag(out);
                     success = true;

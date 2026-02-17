@@ -31,6 +31,9 @@ import edu.harvard.iq.dataverse.search.SearchServiceFactory;
 
 import java.util.Map;
 import java.util.Set;
+
+import jakarta.ejb.AsyncResult;
+import jakarta.ejb.Asynchronous;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
@@ -45,6 +48,7 @@ import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Stack;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.annotation.Resource;
@@ -346,6 +350,28 @@ public class EjbDataverseEngine {
             }
             logRec.setEndTime(new java.util.Date());
             logSvc.log(logRec);
+        }
+    }
+
+    /**
+     * Submits a command for asynchronous execution.
+     * The command will be executed in a separate thread and won't block the caller.
+     * 
+     * @param <R> The return type of the command
+     * @param aCommand The command to execute
+     * @param user The user executing the command
+     * @return A Future representing the pending result
+     * @throws CommandException if the command cannot be submitted
+     */
+    @Asynchronous
+    public <R> Future<R> submitAsync(Command<R> aCommand) throws CommandException {
+        try {
+            logger.log(Level.INFO, "Submitting async command: {0}", aCommand.getClass().getSimpleName());
+            R result = submit(aCommand);
+            return new AsyncResult<>(result);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Async command execution failed: " + aCommand.getClass().getSimpleName(), e);
+            throw e;
         }
     }
     

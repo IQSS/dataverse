@@ -2991,27 +2991,38 @@ public class DatasetPage implements java.io.Serializable {
                 String className = settingsService.get(SettingsServiceBean.Key.ArchiverClassName.toString());
                 AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), updateVersion);
                 if (archiveCommand != null) {
-                    // Delete the record of any existing copy since it is now out of date/incorrect
-                    updateVersion.setArchivalCopyLocation(null);
-                    /*
-                     * Then try to generate and submit an archival copy. Note that running this
-                     * command within the CuratePublishedDatasetVersionCommand was causing an error:
-                     * "The attribute [id] of class
-                     * [edu.harvard.iq.dataverse.DatasetFieldCompoundValue] is mapped to a primary
-                     * key column in the database. Updates are not allowed." To avoid that, and to
-                     * simplify reporting back to the GUI whether this optional step succeeded, I've
-                     * pulled this out as a separate submit().
-                     */
-                    try {
-                        updateVersion = commandEngine.submit(archiveCommand);
-                        if (!updateVersion.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
-                            successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
-                        } else {
-                            errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
+                    //There is an archiver configured, so now decide what to do:
+                    // If a successful copy exists, don't automatically update, just note the old copy is obsolete (and enable the superadmin button in the display to allow a ~manual update if desired)
+                    // If pending or an obsolete copy exists, do nothing (nominally if a pending run succeeds and we're updating the current version here, it should be marked as obsolete - ignoring for now since updates within the time an archiving run is pending should be rare
+                    // If a failure or null, rerun archiving now. If a failure is due to an exiting copy in the repo, we'll fail again
+                    String status = updateVersion.getArchivalCopyLocationStatus();
+                    if((status==null) || status.equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE) || (FeatureFlags.ARCHIVE_ON_VERSION_UPDATE.enabled() && archiveCommand.canDelete())){
+                        // Delete the record of any existing copy since it is now out of date/incorrect
+                        JsonObjectBuilder job = Json.createObjectBuilder();
+                        job.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_PENDING);
+                        updateVersion.setArchivalCopyLocation(JsonUtil.prettyPrint(job.build()));
+                        //Persist to db now
+                        datasetVersionService.persistArchivalCopyLocation(updateVersion);
+                        /*
+                         * Then try to generate and submit an archival copy. Note that running this
+                         * command within the CuratePublishedDatasetVersionCommand was causing an error:
+                         * "The attribute [id] of class
+                         * [edu.harvard.iq.dataverse.DatasetFieldCompoundValue] is mapped to a primary
+                         * key column in the database. Updates are not allowed." To avoid that, and to
+                         * simplify reporting back to the GUI whether this optional step succeeded, I've
+                         * pulled this out as a separate submit().
+                         */
+                        try {
+                            commandEngine.submitAsync(archiveCommand);
+                            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetversion.archive.inprogress"));
+                        } catch (CommandException ex) {
+                            errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure") + " - " + ex.toString();
+                            logger.severe(ex.getMessage());
                         }
-                    } catch (CommandException ex) {
-                        errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure") + " - " + ex.toString();
-                        logger.severe(ex.getMessage());
+                    } else if(status.equals(DatasetVersion.ARCHIVAL_STATUS_SUCCESS)) {
+                        //Not automatically replacing the old archival copy as creating it is expensive
+                        updateVersion.setArchivalStatusOnly(DatasetVersion.ARCHIVAL_STATUS_OBSOLETE);
+                        datasetVersionService.persistArchivalCopyLocation(updateVersion);
                     }
                 }
             }
@@ -6086,33 +6097,33 @@ public class DatasetPage implements java.io.Serializable {
 
     /**
      * This method can be called from *.xhtml files to allow archiving of a dataset
-     * version from the user interface. It is not currently (11/18) used in the IQSS/develop
-     * branch, but is used by QDR and is kept here in anticipation of including a
-     * GUI option to archive (already published) versions after other dataset page
-     * changes have been completed.
+     * version from the user interface.
      *
      * @param id - the id of the datasetversion to archive.
      */
-    public void archiveVersion(Long id) {
+    public void archiveVersion(Long id, boolean force) {
         if (session.getUser() instanceof AuthenticatedUser) {
             DatasetVersion dv = datasetVersionService.retrieveDatasetVersionByVersionId(id).getDatasetVersion();
             String className = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ArchiverClassName, null);
             AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
             if (cmd != null) {
                 try {
-                    DatasetVersion version = commandEngine.submit(cmd);
-                    if (!version.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
+                    String status = dv.getArchivalCopyLocationStatus();
+                    if (status == null || (force && cmd.canDelete())) {
+
+                        // Set initial pending status
+                        JsonObjectBuilder job = Json.createObjectBuilder();
+                        job.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_PENDING);
+                        dv.setArchivalCopyLocation(JsonUtil.prettyPrint(job.build()));
+                        //Persist now
+                        datasetVersionService.persistArchivalCopyLocation(dv);
+                        commandEngine.submitAsync(cmd);
+
                         logger.info(
-                                "DatasetVersion id=" + version.getId() + " submitted to Archive, status: " + dv.getArchivalCopyLocationStatus());
-                    } else {
-                        logger.severe("Error submitting version " + version.getId() + " due to conflict/error at Archive");
-                    }
-                    if (version.getArchivalCopyLocation() != null) {
+                                "DatasetVersion id=" + dv.getId() + " submitted to Archive, status: " + dv.getArchivalCopyLocationStatus());
                         setVersionTabList(resetVersionTabList());
                         this.setVersionTabListForPostLoad(getVersionTabList());
-                        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetversion.archive.success"));
-                    } else {
-                        JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
+                        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetversion.archive.inprogress"));
                     }
                 } catch (CommandException ex) {
                     logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
