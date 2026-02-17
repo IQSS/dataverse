@@ -177,11 +177,12 @@
               </ui:fragment>
               <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.pending']}" rendered="#{'pending' eq versionTab.archivalCopyLocationStatus}" title="#{DatasetPage.isSuperUser() ? versionTab.archivalCopyLocationMessage : ''}"/>
               <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.failure']}" rendered="#{'failure' eq versionTab.archivalCopyLocationStatus}" title="#{DatasetPage.isSuperUser() ? versionTab.archivalCopyLocationMessage : ''}"/>
-              <p:commandLink rendered="#{DatasetPage.isSuperUser() and DatasetPage.isVersionArchivable(versionTab.id)}" update="#{p:resolveClientId('datasetForm:tabView:versionsTable', view)},:messagePanel" 
+              <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.notarchived']}" rendered="#{ empty(versionTab.archivalCopyLocation) and ((not DatasetPage.isSuperUser() and DatasetPage.someVersionArchived) or DatasetPage.isSuperUser())}"/>
+              <p:commandLink styleClass="archive-submit-link" rendered="#{DatasetPage.isSuperUser() and DatasetPage.isVersionArchivable(versionTab.id)}" update="#{p:resolveClientId('datasetForm:tabView:versionsTable', view)},:messagePanel" 
                                                    action="#{DatasetPage.archiveVersion(versionTab.id)}">
                   <h:outputText value="#{bundle['file.dataFilesTab.versions.headers.archived.submit']}"/>
               </p:commandLink>
-              <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.notarchived']}" rendered="#{ empty(versionTab.archivalCopyLocation) and ((not DatasetPage.isSuperUser() and DatasetPage.someVersionArchived) or (DatasetPage.isSuperUser() and not DatasetPage.isVersionArchivable(versionTab.id)))}"/>
+              
               
             </ui:fragment>
         </p:column><!-- end: archivalCopy column -->
