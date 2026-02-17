@@ -6,6 +6,7 @@ import io.restassured.path.xml.XmlPath;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObjectBuilder;
 
 import static edu.harvard.iq.dataverse.UserNotification.Type.*;
@@ -119,6 +120,13 @@ public class InReviewWorkflowIT {
         submitForReviewAlreadySubmitted.then().assertThat()
                 .body("message", equalTo("You cannot submit this dataset for review because it is already in review."))
                 .statusCode(FORBIDDEN.getStatusCode());
+
+        // Confirm that when getting the dataset, the "InReview" lock is listed
+        Response getDatasetJson = UtilIT.nativeGet(datasetId, authorApiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat()
+                .body("data.locks[0]", equalTo("InReview"))
+                .statusCode(200);
 
         Response authorsChecksForCommentsPrematurely = UtilIT.getNotifications(authorApiToken);
         authorsChecksForCommentsPrematurely.prettyPrint();
@@ -428,6 +436,14 @@ public class InReviewWorkflowIT {
                 .body("data[3].type", equalTo(CREATEACC.toString()))
                 //   .body("data[3].reasonsForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
+
+        // Confirm that when getting the dataset, the "InReview" lock is no longer listed
+        JsonArray emptyArray = Json.createArrayBuilder().build();
+        getDatasetJson = UtilIT.nativeGet(datasetId, authorApiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat()
+                .body("data.locks", equalTo(emptyArray))
+                .statusCode(200);
 
         // These println's are here in case you want to log into the GUI to see what notifications look like.
         System.out.println("Curator username/password: " + curatorUsername);
