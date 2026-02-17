@@ -738,11 +738,11 @@ public class DatasetServiceBean implements java.io.Serializable {
         try {
             fileHandler = new FileHandler(logFileName);
             exportLogger.setUseParentHandlers(false);
+            exportLogger.addHandler(fileHandler);
         } catch (IOException | SecurityException ex) {
             Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
-
         exportLogger.info("Starting an export all job");
 
         for (Long datasetId : findAllLocalDatasetIds()) {
