@@ -1430,8 +1430,7 @@ public class Datasets extends AbstractApiBean {
             }
             //Command requires Super user - it will be tested by the command
             execCommand(new MoveDatasetCommand(
-                    createDataverseRequest(u), ds, target, force
-            ));
+                    createDataverseRequest(u), ds, target, force, true));
             return ok(BundleUtil.getStringFromBundle("datasets.api.moveDataset.success"));
         } catch (WrappedResponse ex) {
             if (ex.getCause() instanceof UnforcedCommandException) {
@@ -5031,7 +5030,7 @@ public class Datasets extends AbstractApiBean {
             }
             DataverseRequest req = createDataverseRequest(au);
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId), uriInfo,
-                    headers);
+                    headers, true);
 
             if (dsv.getArchivalCopyLocation() == null) {
                 return error(Status.NOT_FOUND, "This dataset version has not been archived");
@@ -5073,7 +5072,7 @@ public class Datasets extends AbstractApiBean {
 
                     DataverseRequest req = createDataverseRequest(au);
                     DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId),
-                            uriInfo, headers);
+                            uriInfo, headers, true);
 
                     if (dsv == null) {
                         return error(Status.NOT_FOUND, "Dataset version not found");
@@ -5120,7 +5119,7 @@ public class Datasets extends AbstractApiBean {
 
             DataverseRequest req = createDataverseRequest(au);
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId), uriInfo,
-                    headers);
+                    headers, true);
             if (dsv == null) {
                 return error(Status.NOT_FOUND, "Dataset version not found");
             }
