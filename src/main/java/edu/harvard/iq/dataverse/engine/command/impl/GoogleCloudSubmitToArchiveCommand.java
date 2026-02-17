@@ -169,7 +169,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                 tempBagFile = Files.createTempFile("dataverse-bag-", ".zip");
                 logger.fine("Creating bag in temporary file: " + tempBagFile.toString());
 
-                BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
+                BagGenerator bagger = new BagGenerator(ore, dataciteXml, terms);
                 bagger.setAuthenticationKey(token.getTokenString());
                 // Generate bag to temporary file using the provided ore JsonObject
                 try (FileOutputStream fos = new FileOutputStream(tempBagFile.toFile())) {

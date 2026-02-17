@@ -10,6 +10,7 @@ import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DuraClou
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DuraCloudHost;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DuraCloudPort;
 
+import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;

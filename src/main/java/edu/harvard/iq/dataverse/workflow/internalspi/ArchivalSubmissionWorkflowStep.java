@@ -7,6 +7,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
+import edu.harvard.iq.dataverse.util.bagit.OREMap;
+import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
@@ -17,6 +19,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import jakarta.json.JsonObject;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
@@ -57,6 +60,24 @@ public class ArchivalSubmissionWorkflowStep implements WorkflowStep {
         String className = requestedSettings.get(SettingsServiceBean.Key.ArchiverClassName.toString());
         AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, dvr, context.getDataset().getReleasedVersion());
         if (archiveCommand != null) {
+            // Generate the required components for archiving
+            DatasetVersion version = context.getDataset().getReleasedVersion();
+            if (!archiveCommand.preconditionsMet(version, context.getApiToken(), requestedSettings)) {
+                return new Failure("Earlier versions must be successfully archived first",
+                        "Archival prerequisites not met");
+            }
+            
+            // Generate DataCite XML
+            String dataCiteXml = archiveCommand.getDataCiteXml(version);
+            
+            // Generate OREMap
+            OREMap oreMap = new OREMap(version, false);
+            JsonObject ore = oreMap.getOREMap();
+            
+            // Get JSON-LD terms
+            Map<String, JsonLDTerm> terms = archiveCommand.getJsonLDTerms(oreMap);
+            
+            // Call the updated method with all required parameters
             /*
              * Note: because this must complete before the workflow can complete and update the version status
              * in the db a long-running archive submission via workflow could hit a transaction timeout and fail.
@@ -68,7 +89,15 @@ public class ArchivalSubmissionWorkflowStep implements WorkflowStep {
              * pending as is done when running archiving from the UI/API. Instead, there is a generic workflow
              * lock on the dataset. 
              */
-            return (archiveCommand.runArchivingProcess(context.getDataset().getReleasedVersion(), context.getApiToken(), requestedSettings));
+            return archiveCommand.performArchiveSubmission(
+                version, 
+                dataCiteXml, 
+                ore, 
+                terms, 
+                context.getApiToken(), 
+                requestedSettings
+            );
+
         } else {
             logger.severe("No Archiver instance could be created for name: " + className);
             return new Failure("No Archiver", "Could not create instance of class: " + className);

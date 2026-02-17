@@ -15,6 +15,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.bagit.OREMap;
+import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
@@ -139,7 +141,20 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
             //No un-expired token
             token = ctxt.authentication().generateApiTokenForUser(user);
         }
-        runArchivingProcess(version, token, requestedSettings);
+        if (!preconditionsMet(version, token, requestedSettings)) {
+            JsonObjectBuilder statusObjectBuilder = Json.createObjectBuilder();
+            statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
+            statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE,
+                    "Successful archiving of earlier versions is required.");
+            version.setArchivalCopyLocation(statusObjectBuilder.build().toString());
+        } else {
+
+            String dataCiteXml = getDataCiteXml(version);
+            OREMap oreMap = new OREMap(version, false);
+            JsonObject ore = oreMap.getOREMap();
+            Map<String, JsonLDTerm> terms = getJsonLDTerms(oreMap);
+            performArchivingAndPersist(ctxt, version, dataCiteXml, ore, terms, token, requestedSettings);
+        }
         return ctxt.em().merge(version);
     }
     

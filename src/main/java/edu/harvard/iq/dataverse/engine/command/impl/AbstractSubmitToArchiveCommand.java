@@ -81,12 +81,25 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
             //No un-expired token
             token = ctxt.authentication().generateApiTokenForUser(user);
         }
-        runArchivingProcess(version, token, requestedSettings);
+        if (!preconditionsMet(version, token, requestedSettings)) {
+            JsonObjectBuilder statusObjectBuilder = Json.createObjectBuilder();
+            statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
+            statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE,
+                    "Successful archiving of earlier versions is required.");
+            version.setArchivalCopyLocation(statusObjectBuilder.build().toString());
+        } else {
+
+            String dataCiteXml = getDataCiteXml(version);
+            OREMap oreMap = new OREMap(version, false);
+            JsonObject ore = oreMap.getOREMap();
+            Map<String, JsonLDTerm> terms = getJsonLDTerms(oreMap);
+            performArchivingAndPersist(ctxt, version, dataCiteXml, ore, terms, token, requestedSettings);
+        }
         return ctxt.em().merge(version);
     }
 
     // While we have a transaction context, get the terms needed to create the baginfo file
-    private Map<String, JsonLDTerm> getJsonLDTerms(OREMap oreMap) {
+    public Map<String, JsonLDTerm> getJsonLDTerms(OREMap oreMap) {
         Map<String, JsonLDTerm> terms = new HashMap<String, JsonLDTerm>();
         terms.put(DatasetFieldConstant.datasetContact, oreMap.getContactTerm());
         terms.put(DatasetFieldConstant.datasetContactName, oreMap.getContactNameTerm());
@@ -108,9 +121,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
      * @param token - an API Token for the user performing this action
      * @param requestedSettings - a map of the names/values for settings required by this archiver (sent because this class is not part of the EJB context (by design) and has no direct access to service beans).
      */
-    public WorkflowStepResult runArchivingProcess(DatasetVersion version, ApiToken token, Map<String, String> requestedSettings) {
-        // this.requestedSettings won't be set yet in the workflow case, so set it now (used in getNumberOfBagGeneratorThreads)
-        this.requestedSettings.putAll(requestedSettings);
+    public boolean preconditionsMet(DatasetVersion version, ApiToken token, Map<String, String> requestedSettings) {
         // Check if earlier versions must be archived first
         String requireEarlierArchivedValue = requestedSettings.get(SettingsServiceBean.Key.ArchiveOnlyIfEarlierVersionsAreArchived.toString());
         boolean requireEarlierArchived = Boolean.parseBoolean(requireEarlierArchivedValue);
@@ -131,13 +142,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
                     if (archivalStatus == null || !archivalStatus.equals(DatasetVersion.ARCHIVAL_STATUS_SUCCESS)
 //                                || !archivalStatus.equals(DatasetVersion.ARCHIVAL_STATUS_OBSOLETE)
                     ) {
-                        JsonObjectBuilder statusObjectBuilder = Json.createObjectBuilder();
-                        statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
-                        statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE,
-                                "Successful archiving of earlier versions is required.");
-                        version.setArchivalCopyLocation(statusObjectBuilder.build().toString());
-                        return new Failure("Earlier versions must be successfully archived first",
-                                "Archival prerequisites not met");
+                        return false;
                     }
                 }
                 if (versionInLoop.equals(version)) {
@@ -146,11 +151,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
 
             }
         }
-        String dataCiteXml = getDataCiteXml(version);
-        OREMap oreMap = new OREMap(version, false);
-        JsonObject ore = oreMap.getOREMap();
-        Map<String, JsonLDTerm> terms = getJsonLDTerms(oreMap);
-        return performArchivingAndPersist(ctxt, version, dataCiteXml, ore, terms, token, requestedSettings);
+        return true;
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
@@ -203,7 +204,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
                 + version.getFriendlyVersionNumber()+")]";
     }
     
-    String getDataCiteXml(DatasetVersion dv) {
+    public String getDataCiteXml(DatasetVersion dv) {
         DataCitation dc = new DataCitation(dv);
         Map<String, String> metadata = dc.getDataCiteMetadata();
         return DOIDataCiteRegisterService.getMetadataFromDvObject(dv.getDataset().getGlobalId().asString(), metadata,
