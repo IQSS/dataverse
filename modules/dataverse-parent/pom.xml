@@ -132,7 +132,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>6.8</revision>
+        <revision>6.9</revision>
     
         <target.java.version>17</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -149,9 +149,10 @@
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
     
         <!-- Major system components and dependencies -->
-        <payara.version>6.2025.3</payara.version>
+        <payara.version>6.2025.10</payara.version>
         <postgresql.version>42.7.7</postgresql.version>
         <solr.version>9.8.0</solr.version>
+        <postgresql.server.version>16</postgresql.server.version>
         <aws.version>2.33.0</aws.version>
         <google.library.version>26.30.0</google.library.version>
     
@@ -168,7 +169,7 @@
         <gdcc.xoai.version>5.3.0</gdcc.xoai.version>
     
         <!-- Testing dependencies -->
-        <testcontainers.version>1.19.7</testcontainers.version>
+        <testcontainers.version>2.0.2</testcontainers.version>
         <smallrye-mpconfig.version>3.7.1</smallrye-mpconfig.version>
         <junit.jupiter.version>5.10.2</junit.jupiter.version>
         <mockito.version>5.11.0</mockito.version>
@@ -199,7 +200,7 @@
         <pomchecker-maven-plugin.version>1.7.0</pomchecker-maven-plugin.version>
         
         <!-- Container related -->
-        <fabric8-dmp.version>0.46.0</fabric8-dmp.version>
+        <fabric8-dmp.version>0.48.0</fabric8-dmp.version>
     </properties>
     
     <pluginRepositories>

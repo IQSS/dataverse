@@ -56,17 +56,19 @@ To direct new files (uploaded when datasets are created or edited) for all datas
 
 (Note that for ``dataverse.files.store1.label=MyLabel``, you should pass ``MyLabel``.)
     
-The current driver can be seen using::
+A store assigned directly to a collection can be seen using::
 
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
 
-Or to recurse the chain of parents to find the effective storageDriver::
+This may be null. To get the effective storageDriver for a collection, which may be inherited from a parent collection or be the installation default, you can use:: 
 
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver?getEffective=true
+    
+This will never be null.
 
-(Note that for ``dataverse.files.store1.label=MyLabel``, ``store1`` will be returned.)
+(Note that for ``dataverse.files.store1.label=MyLabel``, the JSON response will include "name":"store1" and "label":"MyLabel".)
 
-and can be reset to the default store with::
+To delete a store assigned directly to a collection (so that the colllection's effective store is inherted from it's parent or is the global default), use::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
     
@@ -261,15 +263,17 @@ To identify invalid data values in specific datasets (if, for example, an attemp
 Configure a Dataset to Store All New Files in a Specific File Store
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Configure a dataset to use a specific file store (this API can only be used by a superuser) ::
+Configure an individual dataset to use a specific file store (this API can only be used by a superuser) ::
  
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $storageDriverLabel http://$SERVER/api/datasets/$dataset-id/storageDriver
     
-The current driver can be seen using::
+The effective store can be seen using::
 
     curl http://$SERVER/api/datasets/$dataset-id/storageDriver
 
-It can be reset to the default store as follows (only a superuser can do this) ::
+The output of the API will include the id, label, type (for example, "file" or "s3") as well as the support for direct download and upload.
+
+To remove an assigned store, and allow the dataset to inherit the store from it's parent collection, use the following (only a superuser can do this) ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$dataset-id/storageDriver
     

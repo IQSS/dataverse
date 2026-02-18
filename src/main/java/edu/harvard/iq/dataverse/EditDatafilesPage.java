@@ -35,16 +35,9 @@ import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
-import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.JsfHelper;
-import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.WebloaderUtil;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.EjbUtil;
-import edu.harvard.iq.dataverse.util.FileMetadataUtil;
+import edu.harvard.iq.dataverse.util.*;
 
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.File;
@@ -187,6 +180,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     private String persistentId;
 
     private String versionString = "";
+
+    private String storageSizeStr;
 
     private boolean saveEnabled = false;
 
@@ -565,6 +560,17 @@ public class EditDatafilesPage implements java.io.Serializable {
     public boolean isFileUploadCountExceeded() {
         boolean ignoreLimit = this.session.getUser().isSuperuser();
         return !ignoreLimit && !isFileReplaceOperation() && fileUploadsAvailable != null && fileUploadsAvailable == 0;
+    }
+
+    /**
+     *
+     * @return cached formatted storage size. '1,234 bytes'; '1.23 GB'; '1.00 TB'
+     */
+    public String getCurrentContainerStorageUse() {
+        if (storageSizeStr == null) {
+            storageSizeStr = FileSizeChecker.bytesToHumanReadable(datafileService.currentStorageSizeInBytes(dataset.getOwner()));
+        }
+        return storageSizeStr;
     }
 
     public String init() {
@@ -1059,6 +1065,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public String save() {
 
+        storageSizeStr = null; // Let this re-calculate after the calling save()
         Collection<String> duplicates = IngestUtil.findDuplicateFilenames(workingVersion, newFiles);
         if (!duplicates.isEmpty()) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.filesFailure"), BundleUtil.getStringFromBundle("dataset.message.editMetadata.duplicateFilenames", new ArrayList<>(duplicates)));

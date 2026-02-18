@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -29,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
-
 import static io.restassured.RestAssured.given;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
@@ -43,6 +41,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import io.restassured.http.ContentType;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AdminIT {
@@ -50,6 +49,8 @@ public class AdminIT {
     private static final Logger logger = Logger.getLogger(AdminIT.class.getCanonicalName());
 
     private final String testNonSuperuserApiToken = createTestNonSuperuserApiToken();
+    static final String clientId = "test";
+    static final String clientSecret = "94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8";
 
     @BeforeAll
     public static void setUp() {
@@ -681,6 +682,19 @@ public class AdminIT {
         assertEquals(200, deleteUserToConvert.getStatusCode());
     }
     
+    
+    @Test
+    void testCreateUserViaAPI_WithInvalidJson() {
+        Response response = given()
+            .body("{invalid}")
+            .contentType(ContentType.JSON)
+            .post("/api/admin/authenticatedUsers");
+        
+        response.then()
+            .assertThat()
+            .statusCode(BAD_REQUEST.getStatusCode())
+            .body("message", containsString("Unexpected char"));
+    }
 
 
     @Test
@@ -1104,5 +1118,49 @@ public class AdminIT {
         Response toggleSuperuser = UtilIT.setSuperuserStatus(username, status);
         toggleSuperuser.then().assertThat()
                 .statusCode(OK.getStatusCode());
+    }
+
+    // Testing creating an OIDC Provider not intended for use in JSF UI
+    @Test
+    public void testAddAuthProviders() {
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response getAuthProviders = UtilIT.getAuthProviders(superuserApiToken);
+        getAuthProviders.prettyPrint();
+
+        String factoryData = String.format("type: oidc | issuer: http://keycloak.mydomain.com:8090/realms/test | clientId: %s | clientSecret: %s", clientId, clientSecret);
+        JsonObject jsonObject = Json.createObjectBuilder()
+                .add("id", "oidc1")
+                .add("factoryAlias", "oidc")
+                .add("title", "Open ID Connect SPA")
+                .add("subtitle", "SPA OIDC Provider")
+                .add("factoryData", factoryData)
+                .add("enabled", false)
+                .build();
+        Response addAuthProviders = UtilIT.addAuthProviders(superuserApiToken, jsonObject);
+        addAuthProviders.prettyPrint();
+        addAuthProviders.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        getAuthProviders = UtilIT.getAuthProviders(superuserApiToken);
+        getAuthProviders.prettyPrint();
+        getAuthProviders.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        boolean found = false;
+        List<Map<String, Object>> providers = getAuthProviders.body().jsonPath().getList("data");
+        for (Map<String, Object> provider : providers) {
+            if ("oidc1".equalsIgnoreCase((String) provider.get("id"))) {
+                found = true;
+                assertTrue(provider.get("title") != null && provider.get("title").equals("Open ID Connect SPA"));
+                assertTrue(provider.get("enabled") != null && !(Boolean) provider.get("enabled"));
+            }
+        }
+        assertTrue(found);
     }
 }

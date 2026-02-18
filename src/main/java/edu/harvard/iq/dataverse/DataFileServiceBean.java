@@ -40,6 +40,7 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.*;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -281,60 +282,21 @@ public class DataFileServiceBean implements java.io.Serializable {
                     .setMaxResults(maxResults)
                     .getResultList();
     }
-    
-    public List<FileMetadata> findFileMetadataByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
-        FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
 
-        String sortField = sortFieldAndOrder.getSortField();
-        String sortOrder = sortFieldAndOrder.getSortOrder();
-        String searchClause = "";
-        if(searchTerm != null && !searchTerm.isEmpty()){
-            searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
-        }
-        
-        String queryString = "select o from FileMetadata o where o.datasetVersion.id = :datasetVersionId"
-                + searchClause
-                + " order by o." + sortField + " " + sortOrder;
-        return em.createQuery(queryString, FileMetadata.class) 
-            .setParameter("datasetVersionId", datasetVersionId)
-            .getResultList();
-    }
-    
-    public List<Integer> findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
+    public List<Long> findDataFileIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String userSuppliedSearchTerm, String userSuppliedSortField, String userSuppliedSortOrder) {
         FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
-        
-        searchTerm=searchTerm.trim();
-        String sortField = sortFieldAndOrder.getSortField();
-        String sortOrder = sortFieldAndOrder.getSortOrder();
-        String searchClause = "";
-        if(searchTerm != null && !searchTerm.isEmpty()){
-            searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
+        String searchTerm = !StringUtils.isBlank(userSuppliedSearchTerm) ? "%"+userSuppliedSearchTerm.trim().toLowerCase()+"%" : null;
+
+        String selectClause = "select o.datafile_id from FileMetadata o where o.datasetversion_id = " + datasetVersionId;
+        String searchClause = searchTerm != null ? " and (lower(o.label) like ? or lower(o.description) like ?)" : "";
+        String orderByClause = " order by o." + sortFieldAndOrder.getSortField() + " " + sortFieldAndOrder.getSortOrder();
+
+        Query query = em.createNativeQuery(selectClause + searchClause + orderByClause);
+        if (searchTerm != null) {
+            query.setParameter(1, searchTerm);
+            query.setParameter(2, searchTerm);
         }
-        
-        //the createNativeQuary takes persistant entities, which Integer.class is not,
-        //which is causing the exception. Hence, this query does not need an Integer.class
-        //as the second parameter. 
-        return em.createNativeQuery("select o.id from FileMetadata o where o.datasetVersion_id = "  + datasetVersionId
-                + searchClause
-                + " order by o." + sortField + " " + sortOrder)
-                .getResultList();
-    }
-    
-    public List<Long> findDataFileIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
-        FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
-        
-        searchTerm=searchTerm.trim();
-        String sortField = sortFieldAndOrder.getSortField();
-        String sortOrder = sortFieldAndOrder.getSortOrder();
-        String searchClause = "";
-        if(searchTerm != null && !searchTerm.isEmpty()){
-            searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
-        }
-        
-        return em.createNativeQuery("select o.datafile_id from FileMetadata o where o.datasetVersion_id = "  + datasetVersionId
-                + searchClause
-                + " order by o." + sortField + " " + sortOrder)
-                .getResultList();
+        return query.getResultList();
     }
     
     public List<FileMetadata> findFileMetadataByDatasetVersionIdLazy(Long datasetVersionId, int maxResults, String userSuppliedSortField, String userSuppliedSortOrder, int firstResult) {
@@ -1528,9 +1490,13 @@ public class DataFileServiceBean implements java.io.Serializable {
         // Note that we are checking the recorded storage use not on the 
         // immediate parent necessarily, but on the specific ancestor 
         // DvObjectContainer on which the storage quota is defined:
-        Long currentSize = storageUseService.findStorageSizeByDvContainerId(testDvContainer.getId()); 
+        Long currentSize = currentStorageSizeInBytes(testDvContainer);
         
         return new UploadSessionQuotaLimit(quota.getAllocation(), currentSize);
+    }
+
+    public Long currentStorageSizeInBytes(DvObjectContainer dvObjectContainer) {
+        return storageUseService.findStorageSizeByDvContainerId(dvObjectContainer.getId());
     }
 
     public boolean isInReleasedVersion(Long id) {

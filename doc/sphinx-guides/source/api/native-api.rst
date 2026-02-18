@@ -1250,16 +1250,22 @@ Collection Storage Quotas
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota"
 
-Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for the specific collection. The user identified by the API token must have the ``Manage`` permission on the collection. 
+Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for the collection. If this is an unpublished collection, the user must have the ``ViewUnpublishedDataverse`` permission. 
+With an optional query parameter ``showInherited=true`` it will show the applicable quota potentially defined on the nearest parent when the collection does not have a quota configured directly.
 
+.. code-block:: 
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/use"
+
+Will output the dynamically cached total storage size (in bytes) used by the collection. The user identified by the API token must have the ``Edit`` permission on the collection. 
 
 To set or change the storage allocation quota for a collection:
 
 .. code-block:: 
 
-  curl -X POST -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota/$SIZE_IN_BYTES"
+  curl -X PUT -H "X-Dataverse-key:$API_TOKEN" -d $SIZE_IN_BYTES "$SERVER_URL/api/dataverses/$ID/storage/quota"
 
-This is API is superuser-only.
+This API is superuser-only.
   
 
 To delete a storage quota configured for a collection:
@@ -1268,9 +1274,70 @@ To delete a storage quota configured for a collection:
 
   curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota"
 
-This is API is superuser-only.
+This API is superuser-only.
 
-Use the ``/settings`` API to enable or disable the enforcement of storage quotas that are defined across the instance via the following setting. For example,
+Storage Quotas on Individual Datasets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: 
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/$ID/storage/quota"
+
+Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for this dataset. If this is an unpublished dataset, the user must have the ``ViewUnpublishedDataset`` permission.  
+With an optional query parameter ``showInherited=true`` it will show the applicable quota potentially defined on the nearest parent collection when the dataset does not have a quota configured directly.
+
+.. code-block:: 
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/$ID/storage/use"
+
+Will output the dynamically cached total storage size (in bytes) used by the dataset. The user identified by the API token must have the ``Edit`` permission on the dataset.
+
+To set or change the storage allocation quota for a dataset:
+
+.. code-block:: 
+
+  curl -X PUT -H "X-Dataverse-key:$API_TOKEN" -d $SIZE_IN_BYTES "$SERVER_URL/api/datasets/$ID/storage/quota"
+
+This API is superuser-only.
+  
+
+To delete a storage quota configured for a dataset:
+
+.. code-block:: 
+
+  curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/$ID/storage/quota"
+
+This API is superuser-only.
+
+The following convenience API shows the dynamic values of the *remaining* storage size and/or file number quotas on the dataset, if present. For example:
+
+.. code-block::
+
+   curl  -H "X-Dataverse-key: $API_TOKEN" "http://localhost:8080/api/datasets/$dataset-id/uploadlimits" 
+   {
+     "status": "OK",
+     "data": {
+       "uploadLimits": {
+         "numberOfFilesRemaining": 20,
+         "storageQuotaRemaining": 1048576
+       }
+     } 
+   }
+
+Or, when neither limit is present: 
+
+.. code-block::
+
+   {
+     "status": "OK",
+     "data": {
+       "uploadLimits": {}
+     }
+   }
+
+This API requires the Edit permission on the dataset. 
+
+Use the ``/settings`` API to enable or disable the enforcement of storage quotas that are defined across the instance via the following setting:
 
 .. code-block:: 
 
@@ -1509,6 +1576,48 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/dataverses/1/templates"
 
+List Single Template by its Identifier
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Gets the json representation of a template by its ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/dataverses/{ID}/template"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/dataverses/1/template"
+
+You must have Create Dataset permission within the given dataverse collection to invoke this api.
+
+Delete a Template by its Identifier
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Deletes a template by its ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/dataverses/{ID}/template"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverses/1/template"
+
+You must have Edit Dataverse permission within the given dataverse collection to invoke this api.
+
 Create a Template for a Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1529,6 +1638,50 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/1/templates" --upload-file dataverse-template.json
+
+Set a Default Template for a Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sets a template as the default template for a collection:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+  export TEMPLATEID=2
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/dataverses/$ID/template/default/$TEMPLATEID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/1/template/default/2"
+
+You must have Edit Dataverse permission within the given dataverse collection to invoke this api.
+
+Remove a Default Template for a Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Remove a template as the default template for a collection(Note: the template is not deleted; it will still be available for use in the collection):
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/dataverses/$ID/template/default"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverses/1/template/default"
+
+You must have Edit Dataverse permission within the given dataverse collection to invoke this api.
 
 
 Dataverse Role Assignment History
@@ -1600,7 +1753,7 @@ The fully expanded example above (without environment variables) looks like this
 
 The CSV response has column headers mirroring the JSON entries. They are internationalized (when internationalization is configured).
 
-Note: This feature requires the "role-assignment-history" feature flag to be enabled (see :ref:`feature-flags`).
+Note: This feature requires the :ref:`dataverse.feature.role-assignment-history` feature flag to be enabled.
 
 Datasets
 --------
@@ -1625,6 +1778,8 @@ Get JSON Representation of a Dataset
 
 .. note:: Datasets can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the dataset is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
 
+If a user with EditDataset permissions wants to ignore the setting ``ExcludeEmailFromExport`` in order to see the contact email, they must include the ``ignoreSettingExcludeEmailFromExport`` query parameter  (Required by SPA).
+
 Example: Getting the dataset whose DOI is *10.5072/FK2/J8SJZB*:
 
 .. code-block:: bash
@@ -1632,13 +1787,13 @@ Example: Getting the dataset whose DOI is *10.5072/FK2/J8SJZB*:
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
 
-  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/?persistentId=$PERSISTENT_IDENTIFIER"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/?persistentId=$PERSISTENT_IDENTIFIER&ignoreSettingExcludeEmailFromExport"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:$API_TOKEN" "https://demo.dataverse.org/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB"
+  curl -H "X-Dataverse-key:$API_TOKEN" "https://demo.dataverse.org/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB&ignoreSettingExcludeEmailFromExport"
 
 Getting its draft version:
 
@@ -2653,6 +2808,8 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/2347/assignments/6"
 
 
+.. _create-a-preview-url-for-a-dataset:
+
 Create a Preview URL for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3194,7 +3351,7 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/:persistentId/returnToAuthor?persistentId=doi:10.5072/FK2/J8SJZB" -H "Content-type: application/json" -d @reason-for-return.json
 
 The review process can sometimes resemble a tennis match, with the authors submitting and resubmitting the dataset over and over until the curators are satisfied. Each time the curators send a "reason for return" via API, that reason is sent by email and is persisted into the database, stored at the dataset version level.
-Note the reason is required, unless the `disable-return-to-author-reason` feature flag has been set (see :ref:`feature-flags`). Reason is a free text field and could be as simple as "The author would like to modify his dataset", "Files are missing", "Nothing to report" or "A curation report with comments and suggestions/instructions will follow in another email" that suits your situation.
+Note the reason is required, unless the :ref:`dataverse.feature.disable-return-to-author-reason` feature flag has been set. Reason is a free text field and could be as simple as "The author would like to modify his dataset", "Files are missing", "Nothing to report" or "A curation report with comments and suggestions/instructions will follow in another email" that suits your situation.
 
 The :ref:`send-feedback-admin` Admin only API call may be useful as a way to move the conversation to email. However, note that these emails go to contacts (versus authors) and there is no database record of the email contents. (:ref:`dataverse.mail.cc-support-on-contact-email` will send a copy of these emails to the support email address which would provide a record.)
 The :ref:`send-feedback` API call may be useful as a way to move the conversation to email. However, note that these emails go to contacts (versus authors) and there is no database record of the email contents. (:ref:`dataverse.mail.cc-support-on-contact-email` will send a copy of these emails to the support email address which would provide a record.)
@@ -3759,6 +3916,8 @@ Like :ref:`get-export-formats`, this API can be used to get URLs to dataset meta
 
   curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/linkset?persistentId=$PERSISTENT_IDENTIFIER"
 
+.. _get-dataset-by-preview-url-token:
+
 Get Dataset By Preview URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3776,6 +3935,8 @@ Usage example:
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/datasets/previewUrlDatasetVersion/a56444bc-7697-4711-8964-e0577f055fd2?returnOwners=true"
+
+For downloading files using a preview URL token, see the :ref:`Data Access API <get-file-using-preview-url-token>`.
 
 
 .. _get-citation:
@@ -3841,6 +4002,7 @@ Get Citation by Preview URL Token
   export PREVIEW_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
 
   curl "$SERVER_URL/api/datasets/previewUrlDatasetVersion/$PREVIEW_URL_TOKEN/citation"
+
 
 .. _get-dataset-summary-field-names:
 
@@ -4343,7 +4505,7 @@ The fully expanded example above (without environment variables) looks like this
 
 The CSV response has column headers mirroring the JSON entries. They are internationalized (when internationalization is configured).
 
-Note: This feature requires the "role-assignment-history" feature flag to be enabled (see :ref:`feature-flags`).
+Note: This feature requires the :ref:`dataverse.feature.role-assignment-history` feature flag to be enabled.
 
 Dataset Files Role Assignment History
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -4400,7 +4562,7 @@ The fully expanded example above (without environment variables) looks like this
 
 The CSV response for this call is the same as for the /api/datasets/{id}/assignments/history call above with the exception that definedOn will be a comma separated list of one or more file ids.
 
-Note: This feature requires the "role-assignment-history" feature flag to be enabled (see :ref:`feature-flags`).
+Note: This feature requires the :ref:`dataverse.feature.role-assignment-history` feature flag to be enabled.
 
 Update Dataset License
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -6211,11 +6373,14 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/info/server"
 
+.. _show-custom-popup-for-publishing-datasets:
+
 Show Custom Popup Text for Publishing Datasets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For now, only the value for the :ref:`:DatasetPublishPopupCustomText` setting from the Configuration section of the Installation Guide is exposed:
 
+.. note:: See :ref:`show-disclaimer-for-publishing-datasets` if you want the user to acknowledge before publishing.
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
 .. code-block:: bash
@@ -6229,6 +6394,28 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/info/settings/:DatasetPublishPopupCustomText"
+
+.. _show-disclaimer-for-publishing-datasets:
+
+Show Disclaimer for Publishing Datasets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The setting "PublishDatasetDisclaimerText", when set, will prevent a draft dataset from being published through the UI without the user acknowledging the disclaimer.
+
+.. note:: See :ref:`show-custom-popup-for-publishing-datasets` if the user acknowledgment is not required but you want the message to be displayed in the UI.
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/info/settings/:PublishDatasetDisclaimerText"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/info/settings/:PublishDatasetDisclaimerText"
 
 .. _api-get-app-tou:
 
@@ -6898,7 +7085,7 @@ To create a harvesting client you must supply a JSON file that describes the con
 
 The following optional fields are supported:
 
-- ``sourceName``: When ``index-harvested-metadata-source`` is enabled (see :ref:`feature-flags`), sourceName will override the nickname in the Metadata Source facet. It can be used to group the content from many harvesting clients under the same name.
+- ``sourceName``: When the :ref:`dataverse.feature.index-harvested-metadata-source` feature flag is enabled, sourceName will override the nickname in the Metadata Source facet. It can be used to group the content from many harvesting clients under the same name.
 - ``archiveDescription``: What the name suggests. If not supplied, will default to "This Dataset is harvested from our partners. Clicking the link will take you directly to the archival source of the data."
 - ``set``: The OAI set on the remote server. If not supplied, will default to none, i.e., "harvest everything". (Note: see the note below on using sets when harvesting from DataCite; this is new as of v6.6).
 - ``style``: Defaults to "default" - a generic OAI archive. (Make sure to use "dataverse" when configuring harvesting from another Dataverse installation).
@@ -7498,6 +7685,8 @@ Add Authentication Provider
 Add new authentication provider. The POST data is in JSON format, similar to the JSON retrieved from this command's ``GET`` counterpart. ::
 
   POST http://$SERVER/api/admin/authenticationProviders
+
+.. note:: This endpoint will create providers for both JSF and SPA. Use :ref:`jvm-options` / *MicroProfile Config* if you need to create SPA only providers.
 
 Show Authentication Provider
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -8578,6 +8767,16 @@ Parameters:
 ``published_states`` State of the object, several possible values among:``Published`` , ``Unpublished`` , ``Draft`` , ``Deaccessioned`` & ``In+Review`` .
 
 ``per_page`` Number of results returned per page.
+
+``metadata_fields`` Includes the requested fields for each dataset in the response. Multiple "metadata_fields" parameters can be used to include several fields. See :doc:`search` for further information on this parameter.
+
+``show_collections`` Whether or not to include a list of parent and linked collections for each dataset search result.
+
+``sort`` The sort field. Supported values include "name", "date" and "relevance".
+
+``order`` The order in which to sort. Can either be "asc" or "desc".
+
+``fq`` A filter query to filter the list returned. Multiple "fq" parameters can be used.
 
 MyData Collection List
 ~~~~~~~~~~~~~~~~~~~~~~
