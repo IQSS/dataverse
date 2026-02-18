@@ -2808,6 +2808,8 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/2347/assignments/6"
 
 
+.. _create-a-preview-url-for-a-dataset:
+
 Create a Preview URL for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3914,6 +3916,8 @@ Like :ref:`get-export-formats`, this API can be used to get URLs to dataset meta
 
   curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/linkset?persistentId=$PERSISTENT_IDENTIFIER"
 
+.. _get-dataset-by-preview-url-token:
+
 Get Dataset By Preview URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3931,6 +3935,8 @@ Usage example:
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/datasets/previewUrlDatasetVersion/a56444bc-7697-4711-8964-e0577f055fd2?returnOwners=true"
+
+For downloading files using a preview URL token, see the :ref:`Data Access API <get-file-using-preview-url-token>`.
 
 
 .. _get-citation:
@@ -3996,6 +4002,7 @@ Get Citation by Preview URL Token
   export PREVIEW_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
 
   curl "$SERVER_URL/api/datasets/previewUrlDatasetVersion/$PREVIEW_URL_TOKEN/citation"
+
 
 .. _get-dataset-summary-field-names:
 
@@ -6366,11 +6373,14 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/info/server"
 
+.. _show-custom-popup-for-publishing-datasets:
+
 Show Custom Popup Text for Publishing Datasets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For now, only the value for the :ref:`:DatasetPublishPopupCustomText` setting from the Configuration section of the Installation Guide is exposed:
 
+.. note:: See :ref:`show-disclaimer-for-publishing-datasets` if you want the user to acknowledge before publishing.
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
 .. code-block:: bash
@@ -6384,6 +6394,28 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/info/settings/:DatasetPublishPopupCustomText"
+
+.. _show-disclaimer-for-publishing-datasets:
+
+Show Disclaimer for Publishing Datasets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The setting "PublishDatasetDisclaimerText", when set, will prevent a draft dataset from being published through the UI without the user acknowledging the disclaimer.
+
+.. note:: See :ref:`show-custom-popup-for-publishing-datasets` if the user acknowledgment is not required but you want the message to be displayed in the UI.
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/info/settings/:PublishDatasetDisclaimerText"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/info/settings/:PublishDatasetDisclaimerText"
 
 .. _api-get-app-tou:
 
@@ -7653,6 +7685,8 @@ Add Authentication Provider
 Add new authentication provider. The POST data is in JSON format, similar to the JSON retrieved from this command's ``GET`` counterpart. ::
 
   POST http://$SERVER/api/admin/authenticationProviders
+
+.. note:: This endpoint will create providers for both JSF and SPA. Use :ref:`jvm-options` / *MicroProfile Config* if you need to create SPA only providers.
 
 Show Authentication Provider
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
