@@ -167,7 +167,9 @@ public class BagGenerator {
     private static final String BAG_SIZE = "Bag-Size: ";
     private static final String PAYLOAD_OXUM = "Payload-Oxum: ";
     private static final String INTERNAL_SENDER_IDENTIFIER = "Internal-Sender-Identifier: ";
-    private static final String DATAVERSE_BAG_VERSION = "Dataverse-Bag-Version: ";
+    
+    /** THIS NUMBER SHOULD CHANGE ANY TIME THE BAG CONTENTS ARE CHANGED */
+    private static final String DATAVERSE_BAG_VERSION = "Dataverse-Bag-Version: 1.0";
 
  // Implement exponential backoff with jitter
     static final long baseWaitTimeMs = 1000; // Start with 1 second
@@ -1025,7 +1027,7 @@ public class BagGenerator {
 
         // Add a version number for our bag type - should be updated with any change to
         // the bag content/structure
-        info.append(DATAVERSE_BAG_VERSION + "1.0");
+        info.append(DATAVERSE_BAG_VERSION);
         info.append(CRLF);
         return info.toString();
 
