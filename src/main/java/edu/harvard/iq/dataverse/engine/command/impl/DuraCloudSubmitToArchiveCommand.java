@@ -191,7 +191,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                     // view it as an admin)
                     StringBuffer sb = new StringBuffer("https://");
                     sb.append(host);
-                    if (!port.equals("443")) {
+                    if (!port.equals(DEFAULT_PORT)) {
                         sb.append(":" + port);
                     }
                     sb.append("/duradmin/spaces/sm/");
