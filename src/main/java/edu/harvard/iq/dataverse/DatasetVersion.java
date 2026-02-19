@@ -402,8 +402,8 @@ public class DatasetVersion implements Serializable {
         if(archivalCopyLocationJson ==null || force) {
             if(archivalCopyLocation!=null) {
                 try {
-            archivalCopyLocationJson = JsonUtil.getJsonObject(archivalCopyLocation);
-                } catch(Exception e) {
+                    archivalCopyLocationJson = JsonUtil.getJsonObject(archivalCopyLocation);
+                } catch (Exception e) {
                     logger.warning("DatasetVersion id: " + id + "has a non-JsonObject value, parsing error: " + e.getMessage());
                     logger.fine(archivalCopyLocation);
                 }
