@@ -280,7 +280,7 @@ public enum JvmSettings {
     BAGIT_ZIP_MAX_FILE_SIZE(SCOPE_BAGIT_ZIP, "max-file-size"),
     BAGIT_ZIP_MAX_DATA_SIZE(SCOPE_BAGIT_ZIP, "max-data-size"),
     BAGIT_ZIP_HOLEY(SCOPE_BAGIT_ZIP, "holey"),
-    
+    BAGIT_ARCHIVE_ON_VERSION_UPDATE(SCOPE_BAGIT, "archive-on-version-update"),
 
     // STORAGE USE SETTINGS
     SCOPE_STORAGEUSE(PREFIX, "storageuse"),

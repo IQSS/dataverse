@@ -2273,7 +2273,7 @@ Two settings that can be used with all current Archivers are:
 These must be included in the \:ArchiverSettings for the Archiver to work
  
 Archival Bags are created per dataset version. By default, if a version is republished (via the superuser-only 'Update Current Version' publication option in the UI/API), a new archival bag is not created for the version.
-If the archiver used is capable of deleting existing bags (Google, S3, and File Archivers) superusers can trigger a manual update of the archival bag, and, if the :ref:`dataverse.feature.archive-on-version-update` flag is set to true, this will be done automatically when 'Update Current Version' is used.
+If the archiver used is capable of deleting existing bags (Google, S3, and File Archivers) superusers can trigger a manual update of the archival bag, and, if the :ref:`dataverse.bagit.archive-on-version-update` flag is set to true, this will be done automatically when 'Update Current Version' is used.
 
 .. _Duracloud Configuration:
 
@@ -3727,6 +3727,14 @@ The email for your institution that you'd like to appear in bag-info.txt. See :r
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_BAGIT_SOURCEORG_EMAIL``.
 
+.. _dataverse.bagit.archive-on-version-update:
+
+dataverse.bagit.archive-on-version-update
++++++++++++++++++++++++++++++++++++++++++
+
+Indicates whether archival bag creation should be triggered (if configured) when a version is updated and was already successfully archived,
+i.e via the Update-Current-Version publication option. Setting the flag true only works if the archiver being used supports deleting existing archival bags.
+
 .. _dataverse.files.globus-monitoring-server:
 
 dataverse.files.globus-monitoring-server
@@ -4057,16 +4065,6 @@ dataverse.feature.only-update-datacite-when-needed
 ++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Only contact DataCite to update a DOI after checking to see if DataCite has outdated information (for efficiency, lighter load on DataCite, especially when using file DOIs).
-
-.. _dataverse.feature.archive-on-version-update:
-
-dataverse.feature.archive-on-version-update
-+++++++++++++++++++++++++++++++++++++++++++
-
-Indicates whether archival bag creation should be triggered (if configured) when a version is updated and was already successfully archived,
-i.e via the Update-Current-Version publication option. Setting the flag true only works if the archiver being used supports deleting existing archival bags.
-
-
 
 .. _:ApplicationServerSettings:
 
