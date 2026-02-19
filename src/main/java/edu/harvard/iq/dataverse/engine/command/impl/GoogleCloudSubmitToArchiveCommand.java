@@ -90,7 +90,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                 String spaceName = getSpaceName(dataset);
 
                 // Check for and delete existing files for this version
-                String dataciteFileName = getDataCiteFileName(spaceName, dv) + ".xml";
+                String dataciteFileName = spaceName + "/" + getDataCiteFileName(spaceName, dv) + ".xml";
                 String bagFileName = spaceName + "/" + getFileName(spaceName,dv) + ".zip";
 
                 logger.fine("Checking for existing files in archive...");
