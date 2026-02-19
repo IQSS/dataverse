@@ -48,3 +48,7 @@ The following JVM options (MicroProfile Config Settings) control bag size and ho
 
 - `dataverse.bagit.archive-on-version-update` (Default: `false`)
   Indicates whether archival bag creation should be triggered (if configured) when a version is updated and was already successfully archived, i.e., via the Update-Current-Version publication option. Setting the flag to `true` only works if the archiver being used supports deleting existing archival bags.
+
+  ###Backward Incompatibility
+  
+  The name of archival zipped bag produced by the LocalSubmitToArchiveCommand archiver now has a '.' character before the version number mirror the name used by other archivers, e.g. the name will be like doi-10-5072-fk2-fosg5q.v1.0.zip rather than doi-10-5072-fk2-fosg5qv1.0.zip
