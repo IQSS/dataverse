@@ -141,7 +141,9 @@ public class BagGenerator {
      * and zipping are done in parallel, using a connection pool. The required space
      * on disk is ~ n+1/n of the final bag size, e.g. 125% of the bag size for a
      * 4-way parallel zip operation.
-     * @param terms 
+     * @param oremapObject - OAI-ORE Map file as a JSON object
+     * @param dataciteXml - DataCite XML file as a string
+     * @param terms - Map of schema.org/terms to their corresponding JsonLDTerm objects
      * @throws Exception 
      * @throws JsonSyntaxException 
      */
