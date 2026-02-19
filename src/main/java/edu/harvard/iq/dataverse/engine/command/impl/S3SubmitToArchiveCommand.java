@@ -2,14 +2,12 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.S3ArchiverConfig;
 import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
-import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
@@ -66,7 +64,7 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
     private static final Config config = ConfigProvider.getConfig();
     protected S3AsyncClient s3 = null;
     private S3TransferManager tm = null;
-    private String spaceName = null;
+    
     protected String bucketName = null;
 
     public S3SubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
@@ -244,22 +242,6 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
             return new Failure(
                 "S3 Submission not configured - no \":S3ArchivalProfile\"  and/or \":S3ArchivalConfig\" or no bucket-name defined in config.");
         }
-    }
-
-    protected String getDataCiteFileName(String spaceName, DatasetVersion dv) {
-        return spaceName + "_datacite.v" + dv.getFriendlyVersionNumber();
-    }
-
-    protected String getFileName(String spaceName, DatasetVersion dv) {
-        return spaceName + ".v" + dv.getFriendlyVersionNumber();
-    }
-
-    protected String getSpaceName(Dataset dataset) {
-        if (spaceName == null) {
-            spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-').replace('.', '-')
-                    .toLowerCase();
-        }
-        return spaceName;
     }
 
     private S3AsyncClient createClient(JsonObject configObject) {

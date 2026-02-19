@@ -80,12 +80,11 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
 
                 Dataset dataset = dv.getDataset();
 
-                String spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
-                        .replace('.', '-').toLowerCase();
+                String spaceName = getSpaceName(dataset);
 
                 // Check for and delete existing files for this version
-                String dataciteFileName = spaceName + "/datacite.v" + dv.getFriendlyVersionNumber() + ".xml";
-                String bagFileName = spaceName + "/" + spaceName + ".v" + dv.getFriendlyVersionNumber() + ".zip";
+                String dataciteFileName = getDataCiteFileName(spaceName, dv) + ".xml";
+                String bagFileName = spaceName + "/" + getFileName(spaceName,dv) + ".zip";
 
                 logger.fine("Checking for existing files in archive...");
 

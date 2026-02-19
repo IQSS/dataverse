@@ -58,12 +58,11 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
         try {
             Dataset dataset = dv.getDataset();
 
-            String spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
-                    .replace('.', '-').toLowerCase();
+            String spaceName = getSpaceName(dataset);
 
             // Define file paths
-            String dataciteFileName = localPath + "/" + spaceName + "-datacite.v" + dv.getFriendlyVersionNumber() + ".xml";
-            zipName = localPath + "/" + spaceName + "v" + dv.getFriendlyVersionNumber() + ".zip";
+            String dataciteFileName = localPath + "/" + getDataCiteFileName(spaceName, dv) + ".xml";
+            zipName = localPath + "/" + getFileName(spaceName, dv) + ".zip";
 
             // Check for and delete existing files for this version
             logger.fine("Checking for existing files in archive...");
