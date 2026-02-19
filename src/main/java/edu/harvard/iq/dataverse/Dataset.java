@@ -28,13 +28,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
-import jakarta.persistence.NamedStoredProcedureQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderBy;
-import jakarta.persistence.ParameterMode;
 import jakarta.persistence.SqlResultSetMapping;
-import jakarta.persistence.StoredProcedureParameter;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -94,25 +91,6 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
     }
 )
 
-/*
-    Below is the database stored procedure for getting a string dataset id.
-    Used when the Dataverse is (optionally) configured to use
-    procedurally generated values for dataset ids, instead of the default
-    random strings. 
-
-    The use of a stored procedure to create an identifier is explained in the
-    installation documentation (where an example script is supplied).
-    The stored procedure can be implemented using other SQL flavors -
-    without having to modify the application code. 
-            -- L.A. 4.6.2 (modified by C.S. for version 5.4.1+)
-*/ 
-@NamedStoredProcedureQuery(
-        name = "Dataset.generateIdentifierFromStoredProcedure",
-        procedureName = "generateIdentifierFromStoredProcedure",
-        parameters = {
-            @StoredProcedureParameter(mode = ParameterMode.OUT, type = String.class)
-        }
-)
 @Entity
 @Table(indexes = {
     @Index(columnList = "guestbook_id"),
