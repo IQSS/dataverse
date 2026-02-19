@@ -177,8 +177,8 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
      * constructor and could be dropped from the parameter list.)
      * 
      * @param version - the DatasetVersion to archive
-     * @param ore 
-     * @param dataCiteXml 
+     * @param dataCiteXml
+     * @param ore  
      * @param terms 
      * @param token - an API Token for the user performing this action
      * @param requestedSettings - a map of the names/values for settings required by this archiver (sent because this class is not part of the EJB context (by design) and has no direct access to service beans).
