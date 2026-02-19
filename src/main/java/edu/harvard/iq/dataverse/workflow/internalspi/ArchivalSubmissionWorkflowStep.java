@@ -75,7 +75,7 @@ public class ArchivalSubmissionWorkflowStep implements WorkflowStep {
             JsonObject ore = oreMap.getOREMap();
             
             // Get JSON-LD terms
-            Map<String, JsonLDTerm> terms = archiveCommand.getJsonLDTerms(oreMap);
+            Map<String, JsonLDTerm> terms = AbstractSubmitToArchiveCommand.getJsonLDTerms(oreMap);
             
             // Call the updated method with all required parameters
             /*
