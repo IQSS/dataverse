@@ -92,8 +92,8 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
              * the same space.
              */
             String spaceName = dataset.getOwner().getAlias().toLowerCase().replaceAll("[^a-z0-9-]", ".dcsafe");
-            String baseFileName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-').replace('.', '-')
-                    .toLowerCase() + "_v" + dv.getFriendlyVersionNumber();
+            //This archiver doesn't use the standard spaceName, but does use it to generate the file name
+            String baseFileName = getFileName(getSpaceName(dataset), dv);
 
             ContentStore store;
             // Set a failure status that will be updated if we succeed
