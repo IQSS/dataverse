@@ -359,7 +359,6 @@ public class EjbDataverseEngine {
      * 
      * @param <R> The return type of the command
      * @param aCommand The command to execute
-     * @param user The user executing the command
      * @return A Future representing the pending result
      * @throws CommandException if the command cannot be submitted
      */
