@@ -38,16 +38,13 @@ This release includes multiple updates to the OAI-ORE metadata export and the pr
 
 This release introduces several new settings to control archival and bagging behavior.
 
-- **`dataverse.archive.archive-only-if-earlier-versions-are-archived`** (Default: `false`)
+- `:ArchiveOnlyIfEarlierVersionsAreArchived` (Default: `false`)
   When set to `true`, dataset versions must be archived in order. That is, all prior versions of a dataset must be archived before the latest version can be archived.
 
-- **`dataverse.feature.archive-on-version-update`** (Default: `false`)
-  Indicates whether archival bag creation should be triggered (if configured) when a version is updated and was already successfully archived, i.e., via the Update-Current-Version publication option. Setting the flag to `true` only works if the archiver being used supports deleting existing archival bags.
-
-
-### Bag Size Control And Holey Bag Support
-
-The following JVM options (MicroProfile Config Settings) control this feature:
+The following JVM options (MicroProfile Config Settings) control bag size and holey bag support:
 - `dataverse.bagit.zip.holey`
 - `dataverse.bagit.zip.max-data-size`
 - `dataverse.bagit.zip.max-file-size`
+
+- `dataverse.bagit.archive-on-version-update` (Default: `false`)
+  Indicates whether archival bag creation should be triggered (if configured) when a version is updated and was already successfully archived, i.e., via the Update-Current-Version publication option. Setting the flag to `true` only works if the archiver being used supports deleting existing archival bags.
