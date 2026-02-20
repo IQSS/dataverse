@@ -173,7 +173,9 @@ public class CacheFactoryBeanTest {
             }
         }
         long endTime = System.currentTimeMillis();
-        long durationMinutes = (endTime - startTime) / 60000L;
+        System.out.println("Test loop took " + (endTime - startTime) + " ms");
+        //Add a few seconds to account for time outside loop
+        long durationMinutes = (6000 + endTime - startTime) / 60000L;
         // 120 calls/hr = 2 calls/min. Add any tokens that may have been added during the test run
         long expectedMax = 120 + (durationMinutes * 2);
 
