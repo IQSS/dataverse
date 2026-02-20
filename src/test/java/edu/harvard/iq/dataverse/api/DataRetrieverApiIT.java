@@ -7,17 +7,20 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import io.restassured.path.json.JsonPath;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
-import static jakarta.ws.rs.core.Response.Status.OK;
-import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DataRetrieverApiIT {
 
@@ -85,6 +88,8 @@ public class DataRetrieverApiIT {
         UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR.toString(),
                 "@" + normalUserUsername, superUserApiToken);
         Response oneDataverseResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(5L)));
+        oneDataverseResponse.prettyPrint();
+
         assertEquals(OK.getStatusCode(), oneDataverseResponse.getStatusCode());
         JsonPath jsonPathOneDataverse = oneDataverseResponse.getBody().jsonPath();
         assertEquals(1, jsonPathOneDataverse.getInt("data.total_count"));
@@ -100,6 +105,132 @@ public class DataRetrieverApiIT {
         assertEquals(200, deleteDataverseResponse.getStatusCode());
 
         Response deleteUserResponse = UtilIT.deleteUser(normalUserUsername);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+    }
+
+    // Test getting a list of collections that the user can add datasets to
+    @Test
+    public void testRetrieveMyDataCollections() throws InterruptedException {
+        int rootCount = 1; // everyone has access to this dataverse
+        List<Map<String, String>> items;
+        Response createDataverseResponse;
+        Response retrieveMyCollectionListResponse;
+        // Create Superuser
+        Response createUserResponse = UtilIT.createRandomUser();
+        Response makeSuperUserResponse = UtilIT.makeSuperUser(UtilIT.getUsernameFromResponse(createUserResponse));
+        assertEquals(OK.getStatusCode(), makeSuperUserResponse.getStatusCode());
+        String superUserUsername = UtilIT.getUsernameFromResponse(createUserResponse);
+        String superUserApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        // Create User1
+        createUserResponse = UtilIT.createRandomUser();
+        assertEquals(OK.getStatusCode(), makeSuperUserResponse.getStatusCode());
+        String User1Username = UtilIT.getUsernameFromResponse(createUserResponse);
+        String User1ApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        // Create User2
+        createUserResponse = UtilIT.createRandomUser();
+        String User2Username = UtilIT.getUsernameFromResponse(createUserResponse);
+        String User2ApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        // Create User3
+        createUserResponse = UtilIT.createRandomUser();
+        String User3Username = UtilIT.getUsernameFromResponse(createUserResponse);
+        String User3ApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        // User1 creates 15 Dataverses and adds a role to each allowing User2 access
+        List<String> dataverses = new ArrayList<>();
+        int user1DataverseCount = 15;
+        for (int i = 0; i < user1DataverseCount; i++) {
+            createDataverseResponse = UtilIT.createRandomDataverse(User1ApiToken);
+            String alias = UtilIT.getAliasFromResponse(createDataverseResponse);
+            dataverses.add(alias);
+            UtilIT.grantRoleOnDataverse(alias, DataverseRole.CURATOR.toString(),
+                    "@" + User2Username, User1ApiToken);
+        }
+        // User2 adds their own Dataverse
+        int user2DataverseCount = 1;
+        createDataverseResponse = UtilIT.createRandomDataverse(User2ApiToken);
+        String alias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        dataverses.add(alias);
+
+        // Sleep for indexing
+        Thread.sleep(4000);
+
+        // User1 gets the list of Dataverses/Collections it has access to
+        retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(User1ApiToken, null);
+        retrieveMyCollectionListResponse.prettyPrint();
+        // The count should show the list size to be User1's + Root Dataverse count
+        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("data.items");
+        assertEquals(rootCount + user1DataverseCount, items.size());
+
+        // User2 gets the list of Dataverses/Collections it has access to
+        retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(User2ApiToken, null);
+        retrieveMyCollectionListResponse.prettyPrint();
+        // The count should show the list size to be User1's + User2's + Root Dataverse count
+        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("data.items");
+        assertEquals(rootCount + user1DataverseCount + user2DataverseCount, items.size());
+
+        // User3 gets the list of Dataverses/Collections it has access to
+        retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(User3ApiToken, null);
+        retrieveMyCollectionListResponse.prettyPrint();
+        // The count should show the list size to be only Root Dataverse count
+        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("data.items");
+        assertEquals(rootCount, items.size());
+        // Verify the name and alias of the Root Dataverse. We don't know the id so just make sure it's in the response
+        assertNotNull(items.get(0).get("id"));
+        assertEquals("Root", items.get(0).get("name"));
+        assertEquals("root", items.get(0).get("alias"));
+
+        // Superuser gets the list of Dataverses/Collections it has access to
+        retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(superUserApiToken, null);
+        retrieveMyCollectionListResponse.prettyPrint();
+        // The count should show the list size of all Dataverses (including any Dataverses created by other tests)
+        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("data.items");
+        assertTrue(items.size() >= rootCount + user1DataverseCount + user2DataverseCount);
+
+        // Superuser gets the list of Dataverses/Collections User1 has access to
+        retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(superUserApiToken, User1Username);
+        retrieveMyCollectionListResponse.prettyPrint();
+        // The count should show the list size to be User1's + Root Dataverse count
+        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("data.items");
+        assertEquals(rootCount + user1DataverseCount, items.size());
+
+        // Superuser gets the list of Dataverses/Collections User2 has access to
+        retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(superUserApiToken, User2Username);
+        retrieveMyCollectionListResponse.prettyPrint();
+        // The count should show the list size to be User1's + User2's + Root Dataverse count
+        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("data.items");
+        assertEquals(rootCount + user1DataverseCount + user2DataverseCount, items.size());
+
+        // Superuser gets the list of Dataverses/Collections for bad username
+        retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(superUserApiToken, "badUserName");
+        retrieveMyCollectionListResponse.prettyPrint();
+        retrieveMyCollectionListResponse.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", startsWith("No user found for:"))
+                .statusCode(NOT_FOUND.getStatusCode());
+
+        // Unknown user gets the list of Dataverses/Collections it has access to
+        retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList("badtoken", null);
+        retrieveMyCollectionListResponse.prettyPrint();
+        retrieveMyCollectionListResponse.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo(ApiKeyAuthMechanism.RESPONSE_MESSAGE_BAD_API_KEY))
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Clean up
+        dataverses.forEach(dv -> {
+            Response deleteDataverseResponse = UtilIT.deleteDataverse(dv, superUserApiToken);
+            assertEquals(200, deleteDataverseResponse.getStatusCode());
+        });
+        Response deleteUserResponse = UtilIT.deleteUser(User1Username);
+        deleteUserResponse.prettyPrint();
+        deleteUserResponse = UtilIT.deleteUser(User2Username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+        deleteUserResponse = UtilIT.deleteUser(User3Username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+        deleteUserResponse = UtilIT.deleteUser(superUserUsername);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
     }
@@ -276,6 +407,110 @@ public class DataRetrieverApiIT {
         Response deleteSuperUserResponse = UtilIT.deleteUser(superUserIdentifier);
         deleteSuperUserResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), deleteSuperUserResponse.getStatusCode());
+    }
+
+    @Test
+    public void testRetrieveMyDataWithMetadataFields() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        String datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse).toString();
+        
+        UtilIT.sleepForReindex(datasetId, apiToken, 5);
+        
+        Response myDataWithAuthor = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&metadata_fields=citation:author");
+        myDataWithAuthor.prettyPrint();
+        myDataWithAuthor.then().assertThat()
+                .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
+                .body("data.items[0].metadataBlocks.citation.fields[0].typeName", CoreMatchers.equalTo("author"))
+                .body("data.items[0].metadataBlocks.citation.fields[0].value[0].authorName.value", CoreMatchers.equalTo("Finch, Fiona"))
+                .body("data.items[0].metadataBlocks.citation.fields[0].value[0].authorAffiliation.value", CoreMatchers.equalTo("Birds Inc."))
+                .statusCode(OK.getStatusCode());
+
+        Response subFieldsNotSupported = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&metadata_fields=citation:authorAffiliation");
+        subFieldsNotSupported.prettyPrint();
+        subFieldsNotSupported.then().assertThat()
+                .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
+                // No fields returned. authorAffiliation is a subfield of author and not supported.
+                .body("data.items[0].metadataBlocks.citation.fields", Matchers.empty())
+                .statusCode(OK.getStatusCode());
+
+        Response myDataWithAllFieldsFromCitation = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&metadata_fields=citation:*");
+        // Many more fields printed
+        myDataWithAllFieldsFromCitation.prettyPrint();
+        myDataWithAllFieldsFromCitation.then().assertThat()
+                .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
+                // Many fields returned, all of the citation block that has been filled in.
+                .body("data.items[0].metadataBlocks.citation.fields", Matchers.hasSize(5))
+                .statusCode(OK.getStatusCode());
+
+    }
+
+    @Test
+    public void testRetrieveMyDataWithCollections() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        JsonPath createdDataverse = JsonPath.from(createDataverseResponse.body().asString());
+        String dataverseName = createdDataverse.getString("data.name");
+        String dataverseAlias = createdDataverse.getString("data.alias");
+        Integer dataverseId = createdDataverse.getInt("data.id");
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        JsonPath createdDataset = JsonPath.from(createDatasetResponse.body().asString());
+        int datasetId = createdDataset.getInt("data.id");
+        String datasetPid = createdDataset.getString("data.persistentId");
+
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        // Test that the Dataverse collection that the dataset was created in is returned
+        Response myDataResponse = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&show_collections=true");
+        myDataResponse.prettyPrint();
+        myDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].collections.size()", CoreMatchers.is(1))
+                .body("data.items[0].collections[0].id", CoreMatchers.is(dataverseId))
+                .body("data.items[0].collections[0].name", CoreMatchers.is(dataverseName))
+                .body("data.items[0].collections[0].alias", CoreMatchers.is(dataverseAlias));
+
+        Response createDataverse2Response = UtilIT.createRandomDataverse(apiToken);
+        createDataverse2Response.prettyPrint();
+        createDataverse2Response.then().assertThat().statusCode(CREATED.getStatusCode());
+        JsonPath createDataverse2 = JsonPath.from(createDataverse2Response.body().asString());
+        String dataverse2Name = createDataverse2.getString("data.name");
+        String dataverse2Alias = createDataverse2.getString("data.alias");
+        Integer dataverse2Id = createDataverse2.getInt("data.id");
+
+        UtilIT.publishDataverseViaNativeApi(dataverse2Alias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.linkDataset(datasetPid, dataverse2Alias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
+
+        // Test that the Dataverse collection that the dataset was linked to is also returned
+        myDataResponse = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&show_collections=true");
+        myDataResponse.prettyPrint();
+        myDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].collections.size()", CoreMatchers.is(2))
+                .body("data.items[0].collections", CoreMatchers.hasItems(
+                        Map.of("id", dataverseId, "name", dataverseName, "alias", dataverseAlias),
+                        Map.of("id", dataverse2Id, "name", dataverse2Name, "alias", dataverse2Alias)
+                ));
+
     }
 
     private static String prettyPrintError(String resourceBundleKey, List<String> params) {

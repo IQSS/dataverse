@@ -20,7 +20,11 @@
     <properties>
         <skipUnitTests>false</skipUnitTests>
         <skipIntegrationTests>false</skipIntegrationTests>
-        <it.groups>integration</it.groups>
+        <it.groups>integration,migration</it.groups>
+        <!-- Provide a fallback value that won't break things if JaCoCo prepare-agent steps don't set it. -->
+        <!-- Note: you must use @{} style late variable binding in argLine, otherwise JaCoCo cannot inject the right settings! -->
+        <surefire.jacoco.args>-Ddummy.jacoco.property=true</surefire.jacoco.args>
+        <failsafe.jacoco.args>-Ddummy.jacoco.property=true</failsafe.jacoco.args>
         
         <!-- By default, this module will produce a WAR file. -->
         <!-- This will be switched within the container profile! -->
@@ -28,10 +32,11 @@
         
         <reload4j.version>1.2.18.4</reload4j.version>
         <flyway.version>10.19.0</flyway.version>
+        <auto-service.version>1.1.1</auto-service.version>
         <jhove.version>1.20.1</jhove.version>
         <poi.version>5.4.0</poi.version>
-        <tika.version>2.9.2</tika.version>
-        <netcdf.version>5.5.3</netcdf.version>
+        <tika.version>3.2.2</tika.version>
+        <netcdf.version>5.9.1</netcdf.version>
         
         <openapi.infoTitle>Dataverse API</openapi.infoTitle>
         <openapi.infoVersion>${project.version}</openapi.infoVersion>
@@ -60,6 +65,10 @@
                     <groupId>org.apache.james</groupId>
                     <artifactId>apache-mime4j-core</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -76,6 +85,18 @@
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-javamail_1.4_spec</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>geronimo-stax-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.woodstox</groupId>
+                        <artifactId>wstx-asl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.woodstox</groupId>
+                        <artifactId>woodstox-core-asl</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <!-- Dependency for Apache Abdera and Apache Tika. Tika needs newer version. -->
@@ -88,6 +109,11 @@
                 <groupId>org.apache.james</groupId>
                 <artifactId>apache-mime4j-dom</artifactId>
                 <version>0.8.7</version>
+            </dependency>
+            <dependency>
+                <groupId>xerces</groupId>
+                <artifactId>xercesImpl</artifactId>
+                <version>2.12.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -125,9 +151,9 @@
              java.net.HttpUrlConnection is used, sometimes Apache, sometimes Unirest and what not.
              A big pile of historically grown mess. Some poor dev should take a Kleenex and call for "payback time". -->
         <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-            <version>3.1</version>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>5.2.1</version>
         </dependency>
     
         <!-- BEGIN Data Deposit API v1 (SWORD v2) -->
@@ -166,10 +192,24 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
         <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-s3</artifactId>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <!-- no version here as managed by BOM above! -->
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3-transfer-manager</artifactId>
+            <!-- no version here as managed by BOM above! -->
+        </dependency>
+        <!--dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>apache-client</artifactId-->
+            <!-- no version here as managed by BOM above! -->
+        <!--/dependency-->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>netty-nio-client</artifactId>
             <!-- no version here as managed by BOM above! -->
         </dependency>
         <dependency>
@@ -180,7 +220,6 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.9.1</version>
             <scope>compile</scope>
         </dependency>
         <!-- Should be refactored and moved to transitive section above once on Java EE 8 (makes WAR smaller) -->
@@ -198,7 +237,7 @@
         <dependency>
             <groupId>com.github.erosb</groupId>
             <artifactId>everit-json-schema</artifactId>
-            <version>1.14.1</version>
+            <version>1.14.6</version>
         </dependency>
         <dependency>
             <groupId>org.mindrot</groupId>
@@ -480,7 +519,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
-            <version>1.2</version>
+            <version>1.14.0</version>
         </dependency>
         <!-- OAuth2 authentication. -->
         <dependency>
@@ -526,7 +565,7 @@
         <dependency>
             <groupId>com.google.auto.service</groupId>
             <artifactId>auto-service</artifactId>
-            <version>1.1.1</version>
+            <version>${auto-service.version}</version>
             <optional>true</optional>
             <type>jar</type>
         </dependency>
@@ -682,7 +721,7 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.20.2</version>
+            <version>3.27.7</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -710,35 +749,35 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.dbunit</groupId>
+            <artifactId>dbunit</artifactId>
+            <version>3.0.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>postgresql</artifactId>
+            <artifactId>testcontainers-postgresql</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.github.dasniko</groupId>
             <artifactId>testcontainers-keycloak</artifactId>
-            <version>3.6.0</version>
+            <version>4.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>localstack</artifactId>
+            <artifactId>testcontainers-localstack</artifactId>
             <scope>test</scope>
         </dependency>
         <!--
@@ -799,6 +838,10 @@
                 <includes>
                     <include>*.properties</include>
                     <include>**/*.properties</include>
+                    <!-- As of https://github.com/payara/Payara/issues/7741, Payara uses the jakarta.mime.types file. 
+                         The original mime.types file (with the same content) is retained to support the FileUtilTest.testGZipFile.
+                     -->
+                    <include>**/jakarta.mime.types</include>
                     <include>**/mime.types</include>
                     <include>**/*.R</include>
                 </includes>
@@ -831,6 +874,14 @@
                     <release>${target.java.version}</release>
                     <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
                     <compilerArgument>${compilerArgument}</compilerArgument>
+                    <!-- Ensure the annotation processor for @AutoService is picked up. Especially important as of JDK 23 -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.google.auto.service</groupId>
+                            <artifactId>auto-service</artifactId>
+                            <version>${auto-service.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>
@@ -858,6 +909,13 @@
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                     </archive>
+                    <!-- Keep these excludes in sync with the ones in src/main/docker/assembly.xml. -->
+                    <packagingExcludes>
+                        WEB-INF/classes/edu/harvard/iq/dataverse/search/GetExternalSearchServiceBean.class,
+                        WEB-INF/classes/edu/harvard/iq/dataverse/search/PostExternalSearchServiceBean.class,
+                        WEB-INF/classes/edu/harvard/iq/dataverse/search/GoldenOldiesSearchServiceBean.class,
+                        WEB-INF/classes/edu/harvard/iq/dataverse/search/OddlyEnoughSearchServiceBean.class
+                    </packagingExcludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -986,7 +1044,13 @@
                     <!-- testsToExclude come from the profile-->
                     <excludedGroups>${testsToExclude}</excludedGroups>
                     <skip>${skipUnitTests}</skip>
-                    <argLine>${surefire.jacoco.args} ${argLine}</argLine>
+                    <!--
+                        Note: The @{} syntax here is used for late variable binding.
+                              Otherwise we would not be able to override the defaults in <properties> with prepare-agent above.
+                              See also https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html
+                              It's ignored by IntelliJ argLine parsing.
+                    -->
+                    <argLine>@{surefire.jacoco.args} ${argLine}</argLine>
                     <excludes>
                         <exclude>**/builtin-users-spi/**</exclude>
                     </excludes>
@@ -998,8 +1062,17 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <groups>${it.groups}</groups>
-                    <argLine>${failsafe.jacoco.args} ${argLine}</argLine>
+                    <!--
+                        Note: The @{} syntax here is used for late variable binding.
+                              Otherwise we would not be able to override the defaults in <properties> with prepare-agent above.
+                              See also https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html
+                              It's ignored by IntelliJ argLine parsing.
+                    -->
+                    <argLine>@{failsafe.jacoco.args} ${argLine}</argLine>
                     <skip>${skipIntegrationTests}</skip>
+                    <systemPropertyVariables>
+                        <postgresql.server.version>${postgresql.server.version}</postgresql.server.version>
+                    </systemPropertyVariables>
                 </configuration>
                 <executions>
                     <execution>
@@ -1072,15 +1145,35 @@
                 <postgresql.server.version>17</postgresql.server.version>
             
                 <app.image>gdcc/dataverse:${app.image.tag}</app.image>
+                <!--
+                    Note: We are still using the unstable tag here, as we need it most for development purposes.
+                          It will be overridden by the maintenance CI for released app versions.
+                    Note: During maintenance we will use the app.image.version setting from the DV parent POM.
+                 -->
                 <app.image.tag>unstable</app.image.tag>
+                <!-- Additional tags. Ignored by default (empty), used by maintenance action. -->
+                <app.image.tag.1></app.image.tag.1>
+                <app.image.tag.2></app.image.tag.2>
+                <app.skipBuild>false</app.skipBuild>
                 <app.skipDeploy>false</app.skipDeploy>
+                
                 <base.image>gdcc/base:${base.image.tag}</base.image>
                 <!-- Flavor is a release from a Linux distro, such as Ubuntu -->
                 <base.image.flavor>noble</base.image.flavor>
                 <!-- base.image.version is coming from parent module via build-helper plugin -->
-                <base.image.tag>${base.image.version}-${base.image.flavor}-p${payara.version}-j${target.java.version}</base.image.tag>
+                <base.image.tag>${base.image.version}-${base.image.flavor}${base.image.tag.suffix}</base.image.tag>
+                <!-- Suffix is defaulting to use the image with a specific Payara and Java version for development purpose -->
+                <base.image.tag.suffix>-p${payara.version}-j${target.java.version}</base.image.tag.suffix>
+                
                 <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
+                <!-- By default, we use the same tag as the app image for development purposes. Same rules as for app.image.tag apply! -->
                 <conf.image.tag>${app.image.tag}</conf.image.tag>
+                <!-- Additional tags. Ignored by default (empty), used by maintenance action. -->
+                <conf.image.tag.1></conf.image.tag.1>
+                <conf.image.tag.2></conf.image.tag.2>
+                <conf.image.flavor>noble</conf.image.flavor>
+                <conf.image.base>ubuntu:${conf.image.flavor}</conf.image.base>
+                <conf.skipBuild>false</conf.skipBuild>
     
                 <docker.platforms></docker.platforms>
             
@@ -1122,6 +1215,9 @@
                                     <alias>dev_dataverse</alias>
                                     <name>${app.image}</name>
                                     <build>
+                                        <skip>${app.skipBuild}</skip>
+                                        <skipPush>${app.skipBuild}</skipPush>
+                                        <skipTag>${app.skipBuild}</skipTag>
                                         <buildx>
                                             <platforms>
                                                 <platform>${docker.platforms}</platform>
@@ -1130,7 +1226,13 @@
                                         <dockerFile>Dockerfile</dockerFile>
                                         <args>
                                             <BASE_IMAGE>${base.image}</BASE_IMAGE>
+                                            <!-- Workaround for fabric8io/docker-maven-plugin#1865 -->
+                                            <APP_IMAGE_VERSION>${app.image.version}</APP_IMAGE_VERSION>
                                         </args>
+                                        <tags>
+                                            <tag>${app.image.tag.1}</tag>
+                                            <tag>${app.image.tag.2}</tag>
+                                        </tags>
                                         <filter>@</filter>
                                         <assembly>
                                             <descriptor>assembly.xml</descriptor>
@@ -1151,6 +1253,9 @@
                                     <alias>dev_bootstrap</alias>
                                     <name>${conf.image}</name>
                                     <build>
+                                        <skip>${conf.skipBuild}</skip>
+                                        <skipPush>${conf.skipBuild}</skipPush>
+                                        <skipTag>${conf.skipBuild}</skipTag>
                                         <buildx>
                                             <platforms>
                                                 <platform>${docker.platforms}</platform>
@@ -1158,8 +1263,15 @@
                                         </buildx>
                                         <dockerFile>${project.basedir}/modules/container-configbaker/Dockerfile</dockerFile>
                                         <args>
+                                            <BASE_IMAGE>${conf.image.base}</BASE_IMAGE>
                                             <SOLR_VERSION>${SOLR_VERSION}</SOLR_VERSION>
+                                            <!-- Workaround for fabric8io/docker-maven-plugin#1865 -->
+                                            <APP_IMAGE_VERSION>${app.image.version}</APP_IMAGE_VERSION>
                                         </args>
+                                        <tags>
+                                            <tag>${conf.image.tag.1}</tag>
+                                            <tag>${conf.image.tag.2}</tag>
+                                        </tags>
                                         <filter>@</filter>
                                         <assembly>
                                             <descriptor>${project.basedir}/modules/container-configbaker/assembly.xml</descriptor>
@@ -1177,6 +1289,7 @@
                                 </image>
                             </images>
                             <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
+                            <containerNamePattern>%a</containerNamePattern>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -1202,5 +1315,78 @@
                 </plugins>
             </build>
         </profile>
-    </profiles>
+        <profile>
+            <id>external-search-get</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>external-search-get-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>src/assembly/external-search-get.xml</descriptor>
+                                    </descriptors>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>external-search-post</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>external-search-post-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>src/assembly/external-search-post.xml</descriptor>
+                                    </descriptors>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>trivial-search-examples</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>trivial-search-examples-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>src/assembly/trivial-search-examples.xml</descriptor>
+                                    </descriptors>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+  </profiles>
 </project>

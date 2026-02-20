@@ -107,7 +107,7 @@ public class ReturnDatasetToAuthorCommandTest {
                     }
 
                     @Override
-                    public RoleAssignment save(RoleAssignment assignment) {
+                    public RoleAssignment save(RoleAssignment assignment, DataverseRequest req) {
                         // no-op
                         return assignment;
                     }

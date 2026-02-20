@@ -1217,7 +1217,8 @@ public class AddReplaceFileHelper{
             if (systemConfig.isStorageQuotasEnforced()) {
                 quota = fileService.getUploadSessionQuotaLimit(dataset);
             }
-            Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequest, workingVersion, newFileInputStream, newFileName, newFileContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType, suppliedFileSize);
+            Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequest, workingVersion, newFileInputStream, newFileName, newFileContentType, newStorageIdentifier,
+                    quota, newCheckSum, newCheckSumType, suppliedFileSize, isFileReplaceOperation());
             CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
             initialFileList = createDataFilesResult.getDataFiles();
 
@@ -1593,7 +1594,8 @@ public class AddReplaceFileHelper{
         }
         
         int nFiles = finalFileList.size();
-        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace, tabIngest);
+        boolean ignoreUploadFileLimits = dvRequest.getAuthenticatedUser() != null ? dvRequest.getAuthenticatedUser().isSuperuser() : false;
+        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace, tabIngest, ignoreUploadFileLimits);
 
         if (nFiles != finalFileList.size()) {
             if (nFiles == 1) {
@@ -2062,6 +2064,19 @@ public class AddReplaceFileHelper{
                 totalNumberofFiles = filesJson.getValuesAs(JsonObject.class).size();
                 workingVersion = dataset.getOrCreateEditVersion();
                 clone = workingVersion.cloneDatasetVersion();
+
+                if (!authUser.isSuperuser()) {
+                    Integer effectiveDatasetFileCountLimit = dataset.getEffectiveDatasetFileCountLimit();
+                    boolean hasFileCountLimit = dataset.isDatasetFileCountLimitSet(effectiveDatasetFileCountLimit);
+                    if (hasFileCountLimit) {
+                        int uploadedFileCount = datasetService.getDataFileCountByOwner(dataset.getId());
+                        if (uploadedFileCount + totalNumberofFiles >= effectiveDatasetFileCountLimit) {
+                            return error(Response.Status.BAD_REQUEST,
+                                    BundleUtil.getStringFromBundle("file.add.count_exceeds_limit", Arrays.asList(String.valueOf(effectiveDatasetFileCountLimit))));
+                        }
+                    }
+                }
+
                 for (JsonObject fileJson : filesJson.getValuesAs(JsonObject.class)) {
 
                     OptionalFileParams optionalFileParams = null;

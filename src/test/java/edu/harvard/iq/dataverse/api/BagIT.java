@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.engine.command.impl.LocalSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.BagGeneratorThreads;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.BagItLocalPath;
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
 import io.restassured.response.Response;
@@ -36,11 +38,13 @@ public class BagIT {
         setArchiverClassName.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response setArchiverSettings = UtilIT.setSetting(SettingsServiceBean.Key.ArchiverSettings, ":BagItLocalPath, :BagGeneratorThreads");
+        // BagGeneratorThreads isn't used. Consider setting it or removing it.
+        Response setArchiverSettings = UtilIT.setSetting(SettingsServiceBean.Key.ArchiverSettings,
+                String.join(", ", BagItLocalPath.toString(), BagGeneratorThreads.toString()));
         setArchiverSettings.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response setBagItLocalPath = UtilIT.setSetting(":BagItLocalPath", bagitExportDir);
+        Response setBagItLocalPath = UtilIT.setSetting(BagItLocalPath.toString(), bagitExportDir);
         setBagItLocalPath.then().assertThat()
                 .statusCode(OK.getStatusCode());
 

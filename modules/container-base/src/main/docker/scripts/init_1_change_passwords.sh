@@ -8,7 +8,7 @@ set -euo pipefail
 # Someone set the env var for passwords - get the new password in. Otherwise print warning.
 # https://docs.openshift.com/container-platform/4.14/openshift_images/create-images.html#avoid-default-passwords
 if [ "$LINUX_PASSWORD" != "payara" ]; then
-  echo -e "$LINUX_USER\n$LINUX_PASSWORD\n$LINUX_PASSWORD" | passwd
+  echo -e "$LINUX_USER\n$LINUX_PASSWORD\n$LINUX_PASSWORD" | passwd || { echo "Linux password unchanged!"; }
 else
   echo "IMPORTANT: THIS CONTAINER USES THE DEFAULT PASSWORD FOR USER \"${LINUX_USER}\"! ('payara')"
   echo "           To change the password, set the LINUX_PASSWORD env var."
@@ -19,7 +19,7 @@ if [ "$PAYARA_ADMIN_PASSWORD" != "admin" ]; then
   PASSWORD_FILE=$(mktemp)
   echo "AS_ADMIN_PASSWORD=admin" > "$PASSWORD_FILE"
   echo "AS_ADMIN_NEWPASSWORD=${PAYARA_ADMIN_PASSWORD}" >> "$PASSWORD_FILE"
-  asadmin --user="${PAYARA_ADMIN_USER}" --passwordfile="$PASSWORD_FILE" change-admin-password --domain_name="${DOMAIN_NAME}"
+  asadmin --user="${PAYARA_ADMIN_USER}" --passwordfile="$PASSWORD_FILE" change-admin-password --domain_name="${DOMAIN_NAME}" || { echo "Payara password unchanged!"; }
   rm "$PASSWORD_FILE"
 else
   echo "IMPORTANT: THIS CONTAINER USES THE DEFAULT PASSWORD FOR PAYARA ADMIN \"${PAYARA_ADMIN_USER}\"! ('admin')"
@@ -35,7 +35,7 @@ if [ "$DOMAIN_PASSWORD" != "changeit" ]; then
   PASSWORD_FILE=$(mktemp)
   echo "AS_ADMIN_MASTERPASSWORD=changeit" >> "$PASSWORD_FILE"
   echo "AS_ADMIN_NEWMASTERPASSWORD=${DOMAIN_PASSWORD}" >> "$PASSWORD_FILE"
-  asadmin --user="${PAYARA_ADMIN_USER}" --passwordfile="$PASSWORD_FILE" change-master-password --savemasterpassword false "${DOMAIN_NAME}"
+  asadmin --user="${PAYARA_ADMIN_USER}" --passwordfile="$PASSWORD_FILE" change-master-password --savemasterpassword false "${DOMAIN_NAME}" || { echo "Domain password unchanged!"; }
   rm "$PASSWORD_FILE"
 else
   echo "IMPORTANT: THIS CONTAINER USES THE DEFAULT DOMAIN \"MASTER\" PASSWORD! ('changeit')"

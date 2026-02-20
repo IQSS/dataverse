@@ -66,17 +66,18 @@ class OIDCAuthenticationProviderFactoryIT {
     
     // The realm JSON resides in conf/keycloak/test-realm.json and gets avail here using <testResources> in pom.xml
     @Container
-    static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:26.1.4")
+    static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:26.3.2")
         .withRealmImportFile("keycloak/test-realm.json")
         .withAdminUsername(adminUser)
         .withAdminPassword(adminPassword);
     
     // simple method to retrieve the issuer URL, referenced to by @JvmSetting annotations (do no delete)
+    @SuppressWarnings("unused")
     private static String getAuthUrl() {
         return keycloakContainer.getAuthServerUrl() + "/realms/" + realm;
     }
     
-    OIDCAuthProvider getProvider() throws Exception {
+    private OIDCAuthProvider getProvider() throws Exception {
         OIDCAuthProvider oidcAuthProvider = (OIDCAuthProvider) OIDCAuthenticationProviderFactory.buildFromSettings();
         
         assumeTrue(oidcAuthProvider.getMetadata().getTokenEndpointURI().toString()
@@ -86,8 +87,9 @@ class OIDCAuthenticationProviderFactoryIT {
     }
     
     // NOTE: This requires the "direct access grants" for the client to be enabled!
-    String getBearerTokenViaKeycloakAdminClient() throws Exception {
-        try (Keycloak keycloak = KeycloakBuilder.builder()
+    private String getBearerTokenViaKeycloakAdminClient() {
+        // NOTE: While Keycloak implements AutoClosable, don't use a try-with-resources with it to avoid logging out.
+        Keycloak keycloak = KeycloakBuilder.builder()
             .serverUrl(keycloakContainer.getAuthServerUrl())
             .grantType(OAuth2Constants.PASSWORD)
             .realm(realm)
@@ -96,9 +98,8 @@ class OIDCAuthenticationProviderFactoryIT {
             .username(realmAdminUser)
             .password(realmAdminPassword)
             .scope("openid")
-            .build()) {
-            return keycloak.tokenManager().getAccessTokenString();
-        }
+            .build();
+        return keycloak.tokenManager().getAccessTokenString();
     }
     
     /**

@@ -11,10 +11,11 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -27,19 +28,23 @@ import java.util.List;
 @RequiredPermissions(Permission.AddDataverse)
 public class CreateDataverseCommand extends AbstractWriteDataverseCommand {
 
+    private final boolean sendNotificationOnSuccess;
+
     public CreateDataverseCommand(Dataverse created,
                                   DataverseRequest request,
                                   List<DatasetFieldType> facets,
                                   List<DataverseFieldTypeInputLevel> inputLevels) {
-        this(created, request, facets, inputLevels, null);
+        this(created, request, facets, inputLevels, null, false);
     }
 
     public CreateDataverseCommand(Dataverse created,
                                   DataverseRequest request,
                                   List<DatasetFieldType> facets,
                                   List<DataverseFieldTypeInputLevel> inputLevels,
-                                  List<MetadataBlock> metadataBlocks) {
+                                  List<MetadataBlock> metadataBlocks,
+                                  boolean sendNotificationOnSuccess) {
         super(created, created.getOwner(), request, facets, inputLevels, metadataBlocks);
+        this.sendNotificationOnSuccess = sendNotificationOnSuccess;
     }
 
     @Override
@@ -49,6 +54,9 @@ public class CreateDataverseCommand extends AbstractWriteDataverseCommand {
             if (ctxt.dataverses().isRootDataverseExists()) {
                 throw new IllegalCommandException("Root Dataverse already exists. Cannot create another one", this);
             }
+        }
+        if (!getUser().isSuperuser() && dataverse.isDatasetFileCountLimitSet(dataverse.getDatasetFileCountLimit())) {
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("file.dataset.error.set.file.count.limit"), this);
         }
 
         if (metadataBlocks != null && !metadataBlocks.isEmpty()) {
@@ -95,11 +103,11 @@ public class CreateDataverseCommand extends AbstractWriteDataverseCommand {
         DataverseRole adminRole = ctxt.roles().findBuiltinRoleByAlias(DataverseRole.ADMIN);
         String privateUrlToken = null;
 
-        ctxt.roles().save(new RoleAssignment(adminRole, getRequest().getUser(), managedDv, privateUrlToken), false);
+        ctxt.roles().save(new RoleAssignment(adminRole, getRequest().getUser(), managedDv, privateUrlToken), false, getRequest());
         // Add additional role assignments if inheritance is set
         boolean inheritAllRoles = false;
         String rolesString = ctxt.settings().getValueForKey(SettingsServiceBean.Key.InheritParentRoleAssignments, "");
-        ArrayList<String> rolesToInherit = new ArrayList<String>(Arrays.asList(rolesString.split("\\s*,\\s*")));
+        ArrayList<String> rolesToInherit = new ArrayList<>(ListSplitUtil.split(rolesString));
         if (rolesString.length() > 0) {
             if (!rolesToInherit.isEmpty()) {
                 if (rolesToInherit.contains("*")) {
@@ -120,13 +128,13 @@ public class CreateDataverseCommand extends AbstractWriteDataverseCommand {
                             if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
                                 identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
                                 ctxt.roles().save(new RoleAssignment(role.getRole(),
-                                        ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken), false);
+                                        ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken), false, getRequest());
                             } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
                                 identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
                                 Group roleGroup = ctxt.groups().getGroup(identifier);
                                 if (roleGroup != null) {
                                     ctxt.roles().save(new RoleAssignment(role.getRole(),
-                                            roleGroup, managedDv, privateUrlToken), false);
+                                            roleGroup, managedDv, privateUrlToken), false, getRequest());
                                 }
                             }
                         }
@@ -139,8 +147,30 @@ public class CreateDataverseCommand extends AbstractWriteDataverseCommand {
         return managedDv;
     }
 
+    /**
+     * Handles the successful creation of the dataverse by sending a notification
+     * and triggering indexing.
+     * <p>
+     * The {@code sendNotificationOnSuccess} flag is used because this command is
+     * consumed from two different places: the JSF front-end and the API.
+     * <ul>
+     * <li><b>From JSF:</b> The flag is {@code false}, as the user notification is
+     * sent separately by the UI logic.</li>
+     * <li><b>From the API:</b> The flag is {@code true} to ensure users receive a
+     * notification when creating a dataverse through the API.</li>
+     * </ul>
+     *
+     * @param ctxt The command context.
+     * @param r    The created Dataverse object, returned from the command execution.
+     * @return {@code true} if the dataverse was indexed successfully.
+     */
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
+        if (sendNotificationOnSuccess) {
+            AuthenticatedUser authenticatedUser = (AuthenticatedUser) getUser();
+            ctxt.notifications().sendNotification(authenticatedUser, dataverse.getCreateDate(), UserNotification.Type.CREATEDV, dataverse.getId());
+        }
+
         return ctxt.dataverses().index((Dataverse) r);
     }
 }

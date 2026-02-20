@@ -43,7 +43,7 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
             throw new IllegalCommandException("Cannot delete the root dataverse", this);
         }
         
-        // make sure the dataverse is emptyw
+        // make sure the dataverse is empty
         if (ctxt.dvObjects().hasData(doomed)) {
             throw new IllegalCommandException("Cannot delete non-empty dataverses", this);
         }
@@ -78,10 +78,11 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
             DataverseFieldTypeInputLevel merged = ctxt.em().merge(inputLevel);
             ctxt.em().remove(merged);
         }
+
         doomed.setDataverseFieldTypeInputLevels(new ArrayList<>());
 
         // Featured Items
-        for (DataverseFeaturedItem featuredItem : doomed.getDataverseFeaturedItems()) {
+        for (DataverseFeaturedItem featuredItem : ctxt.dataverseFeaturedItems().findAllByDataverseOrdered(doomed) ) {
             DataverseFeaturedItem merged = ctxt.em().merge(featuredItem);
             ctxt.em().remove(merged);
         }

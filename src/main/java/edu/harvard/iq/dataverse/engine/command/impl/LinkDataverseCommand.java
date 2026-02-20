@@ -31,7 +31,7 @@ import org.apache.solr.client.solrj.SolrServerException;
  *
  * @author skraffmiller
  */
-@RequiredPermissions(Permission.PublishDataverse)
+@RequiredPermissions(Permission.LinkDataverse)
 public class LinkDataverseCommand extends AbstractCommand<DataverseLinkingDataverse> {
     
     private final Dataverse linkedDataverse;
@@ -47,7 +47,7 @@ public class LinkDataverseCommand extends AbstractCommand<DataverseLinkingDatave
     public DataverseLinkingDataverse execute(CommandContext ctxt) throws CommandException {
         if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
             throw new PermissionException("Link Dataverse can only be called by superusers.",
-                    this, Collections.singleton(Permission.PublishDataverse), linkingDataverse);
+                    this, Collections.singleton(Permission.LinkDataverse), linkingDataverse);
         }
         if (linkedDataverse.equals(linkingDataverse)) {
             throw new IllegalCommandException("Can't link a dataverse to itself", this);

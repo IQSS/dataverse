@@ -55,6 +55,8 @@ public enum JvmSettings {
     SCOPE_FEATURED_ITEMS(SCOPE_FILES, "featured-items"),
     FEATURED_ITEMS_IMAGE_MAXSIZE(SCOPE_FEATURED_ITEMS, "image-maxsize"),
     FEATURED_ITEMS_IMAGE_UPLOADS_DIRECTORY(SCOPE_FEATURED_ITEMS, "image-uploads"),
+    HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS(SCOPE_FILES, "hide-schema-dot-org-download-urls"),
+    DEFAULT_DATASET_FILE_COUNT_LIMIT(SCOPE_FILES, "default-dataset-file-count-limit"),
 
     //STORAGE DRIVER SETTINGS
     SCOPE_DRIVER(SCOPE_FILES),
@@ -67,6 +69,8 @@ public enum JvmSettings {
     SOLR_PROT(SCOPE_SOLR, "protocol"),
     SOLR_CORE(SCOPE_SOLR, "core"),
     SOLR_PATH(SCOPE_SOLR, "path"),
+    MIN_FILES_TO_USE_PROXY(SCOPE_SOLR, "min-files-to-use-proxy"),
+
 
     // INDEX CONCURENCY
     SCOPE_SOLR_CONCURENCY(SCOPE_SOLR, "concurrency"),
@@ -84,6 +88,15 @@ public enum JvmSettings {
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
     API_ALLOW_INCOMPLETE_METADATA(SCOPE_API, "allow-incomplete-metadata"),
+    // API: BLOCKED_API SETTINGS
+    SCOPE_API_BLOCKED(SCOPE_API, "blocked"),
+    API_BLOCKED_ENDPOINTS(SCOPE_API_BLOCKED, "endpoints"),
+    API_BLOCKED_POLICY(SCOPE_API_BLOCKED, "policy"),
+    API_BLOCKED_KEY(SCOPE_API_BLOCKED, "key"),
+    // API: MDC Citation updates
+    SCOPE_API_MDC(SCOPE_API, "mdc"),
+    API_MDC_UPDATE_MIN_DELAY_MS(SCOPE_API_MDC, "min-delay-ms"),
+    
 
     // SIGNPOSTING SETTINGS
     SCOPE_SIGNPOSTING(PREFIX, "signposting"),
@@ -208,6 +221,12 @@ public enum JvmSettings {
     SCOPE_PIDPROVIDERS(SCOPE_SPI, "pidproviders"),
     PIDPROVIDERS_DIRECTORY(SCOPE_PIDPROVIDERS, "directory"),
     
+    // SEARCH SERVICES SETTINGS
+    SCOPE_SEARCH(PREFIX, "search"),
+    SCOPE_SEARCHSERVICES(SCOPE_SEARCH, "services"),
+    SEARCHSERVICES_DIRECTORY(SCOPE_SEARCHSERVICES, "directory"),
+    DEFAULT_SEARCH_SERVICE(SCOPE_SEARCH, "default-service"),
+    
     // MAIL SETTINGS
     SCOPE_MAIL(PREFIX, "mail"),
     SYSTEM_EMAIL(SCOPE_MAIL, "system-email"),
@@ -228,6 +247,7 @@ public enum JvmSettings {
     // AUTH: OIDC SETTINGS
     SCOPE_OIDC(SCOPE_AUTH, "oidc"),
     OIDC_ENABLED(SCOPE_OIDC, "enabled"),
+    OIDC_HIDDEN_JSF(SCOPE_OIDC, "hidden-jsf"), // Special case when this provider needs to be hidden in JSF UI
     OIDC_TITLE(SCOPE_OIDC, "title"),
     OIDC_SUBTITLE(SCOPE_OIDC, "subtitle"),
     OIDC_AUTH_SERVER_URL(SCOPE_OIDC, "auth-server-url"),
@@ -244,6 +264,7 @@ public enum JvmSettings {
     UI_ALLOW_REVIEW_INCOMPLETE(SCOPE_UI, "allow-review-for-incomplete"),
     UI_SHOW_VALIDITY_FILTER(SCOPE_UI, "show-validity-filter"),
     UI_SHOW_VALIDITY_LABEL_WHEN_PUBLISHED(SCOPE_UI, "show-validity-label-when-published"),
+    UI_SHOW_CURATION_STATUS_TO_ALL(SCOPE_UI, "show-curation-status-to-all"),
 
     // NetCDF SETTINGS
     SCOPE_NETCDF(PREFIX, "netcdf"),
@@ -263,6 +284,31 @@ public enum JvmSettings {
     //CSL CITATION SETTINGS
     SCOPE_CSL(PREFIX, "csl"),
     CSL_COMMON_STYLES(SCOPE_CSL, "common-styles"),
+
+    // PersonOrOrgUtil SETTINGS
+    SCOPE_PERSONORORG(PREFIX, "person-or-org"),
+    ASSUME_COMMA_IN_PERSON_NAME(SCOPE_PERSONORORG, "assume-comma-in-person-name", "dataverse.personOrOrg.assumeCommaInPersonName"),
+    ORG_PHRASE_ARRAY(SCOPE_PERSONORORG, "org-phrase-array"),
+
+    // CORS SETTINGS
+    SCOPE_CORS(PREFIX, "cors"),
+    CORS_ORIGIN(SCOPE_CORS, "origin"),
+    CORS_METHODS(SCOPE_CORS, "methods"),
+    SCOPE_CORS_HEADERS(SCOPE_CORS, "headers"),
+    CORS_ALLOW_HEADERS(SCOPE_CORS_HEADERS, "allow"),
+    CORS_EXPOSE_HEADERS(SCOPE_CORS_HEADERS, "expose"),
+    
+    // LOCALCONTEXTS
+    SCOPE_LOCALCONTEXTS(PREFIX, "localcontexts"),
+    LOCALCONTEXTS_URL(SCOPE_LOCALCONTEXTS, "url"),
+    LOCALCONTEXTS_API_KEY(SCOPE_LOCALCONTEXTS, "api-key"),
+    
+    // LinkedDataNotification
+    SCOPE_LINKEDDATANOTIFICATION(PREFIX, "ldn"),
+    LINKEDDATANOTIFICATION_ALLOWED_HOSTS(SCOPE_LINKEDDATANOTIFICATION, "allowed-hosts"),
+    SCOPE_COARNOTIFY(SCOPE_LINKEDDATANOTIFICATION, "coar-notify"),
+    SCOPE_COARNOTIFY_RELATIONSHIP_ANNOUNCEMENT(SCOPE_COARNOTIFY, "relationship-announcement"),
+    COARNOTIFY_RELATIONSHIP_ANNOUNCEMENT_NOTIFY_SUPERUSERS_ONLY(SCOPE_COARNOTIFY_RELATIONSHIP_ANNOUNCEMENT, "notify-superusers-only"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";
@@ -271,6 +317,7 @@ public enum JvmSettings {
     
     private final String key;
     private final String scopedKey;
+    @SuppressWarnings("unused")
     private final JvmSettings parent;
     private final List<String> oldNames;
     private final int placeholders;
@@ -570,4 +617,73 @@ public enum JvmSettings {
         return String.format(this.getScopedKey(), (Object[]) arguments);
     }
     
+    /**
+     * Lookup an optional comma-separated value and return the tokens as an immutable list.
+     * MicroProfile Config removes zero-length segments when it converts to {@code String[]}, but
+     * it leaves any leading or trailing whitespace on the surviving tokens (including tokens that
+     * contain only spaces). This convenience overload trims each token; after trimming, any token
+     * that becomes empty (because it consisted solely of whitespace) is discarded so callers still
+     * receive a list that is free of empty strings. Use the boolean overload with {@code false} if
+     * you need the exact whitespace that MicroProfile provided.
+     *
+     * @return an {@link Optional} containing the list of tokens when the setting is present;
+     *         an empty {@link Optional} if the setting is not configured
+     */
+    public Optional<List<String>> lookupSplittedListOptional() {
+        return lookupSplittedListOptional(true);
+    }
+
+    /**
+    * Lookup an optional comma-separated value and return the tokens as an immutable list.
+    *
+    * @param trimSpaces when {@code true}, individual elements are trimmed; tokens that become empty after
+    *                   trimming (because they were all whitespace) are removed to preserve MicroProfile's
+    *                   "no empty entries" guarantee; when {@code false}, the tokens are returned exactly as
+    *                   produced by MicroProfile Config
+     * @return an {@link Optional} containing the list of tokens when the setting is present;
+     *         an empty {@link Optional} if the setting is not configured
+     */
+    public Optional<List<String>> lookupSplittedListOptional(boolean trimSpaces) {
+        return lookupOptional(String[].class)
+            .map(values -> Arrays.stream(values)
+                .map(s -> trimSpaces ? s.trim() : s)
+                .filter(s -> trimSpaces ? !s.isEmpty() : true)
+                .toList());
+    }
+
+    /**
+     * Lookup a required comma-separated value and return the tokens as an immutable list.
+     * MicroProfile Config removes zero-length segments when it converts to {@code String[]}, but it
+     * leaves any leading or trailing whitespace on the surviving tokens (including tokens that contain
+     * only spaces). This convenience overload trims each token; after trimming, any token that becomes
+     * empty (because it consisted solely of whitespace) is discarded so callers still receive a list that
+     * is free of empty strings. Use the boolean overload with {@code false} if you need the exact whitespace
+     * that MicroProfile provided.
+     *
+     * @return the list of tokens for the configured setting
+     * @throws java.util.NoSuchElementException if the setting is missing or blank
+     * @throws IllegalArgumentException if conversion to {@code String[]} fails
+     */
+    public List<String> lookupSplittedList() {
+        return lookupSplittedList(true);
+    }
+
+    /**
+    * Lookup a required comma-separated value and return the tokens as an immutable list.
+    *
+    * @param trimSpaces when {@code true}, individual elements are trimmed; tokens that become empty after
+    *                   trimming (because they were all whitespace) are removed to preserve MicroProfile's
+    *                   "no empty entries" guarantee; when {@code false}, the tokens are returned exactly as
+    *                   produced by MicroProfile Config
+     * @return the list of tokens for the configured setting
+     * @throws java.util.NoSuchElementException if the setting is missing or blank
+     * @throws IllegalArgumentException if conversion to {@code String[]} fails
+     */
+    public List<String> lookupSplittedList(boolean trimSpaces) {
+        return Arrays.stream(lookup(String[].class))
+            .map(s -> trimSpaces ? s.trim() : s)
+            .filter(s -> trimSpaces ? !s.isEmpty() : true)
+            .toList();
+    }
+
 }
