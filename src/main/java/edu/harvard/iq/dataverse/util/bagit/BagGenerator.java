@@ -98,7 +98,11 @@ import jakarta.enterprise.inject.spi.CDI;
 public class BagGenerator {
 
     private static final Logger logger = Logger.getLogger(BagGenerator.class.getCanonicalName());
-
+    
+    static final String CRLF = "\r\n";
+    
+    protected static final int MAX_RETRIES = 5;
+    
     private ParallelScatterZipCreator scatterZipCreator = null;
     private ScatterZipOutputStream dirs = null;
 
@@ -319,7 +323,7 @@ public class BagGenerator {
         boolean first = true;
         for (Entry<String, String> pidEntry : pidMap.entrySet()) {
             if (!first) {
-                pidStringBuffer.append("\r\n");
+                pidStringBuffer.append(CRLF);
             } else {
                 first = false;
             }
@@ -334,7 +338,7 @@ public class BagGenerator {
         first = true;
         for (Entry<String, String> sha1Entry : checksumMap.entrySet()) {
             if (!first) {
-                sha1StringBuffer.append("\r\n");
+                sha1StringBuffer.append(CRLF);
             } else {
                 first = false;
             }
@@ -777,7 +781,7 @@ public class BagGenerator {
  // Method to append to fetch file content
     private void addToFetchFile(String url, long size, String filename) {
         // Format: URL size filename
-        fetchFileContent.append(url).append(" ").append(Long.toString(size)).append(" ").append(filename).append("\r\n");
+        fetchFileContent.append(url).append(" ").append(Long.toString(size)).append(" ").append(filename).append(CRLF);
     }
 
     // Method to write fetch file to bag (call this before finalizing the bag)
@@ -902,8 +906,6 @@ public class BagGenerator {
         scatterZipCreator.writeTo(zipArchiveOutputStream);
         logger.fine("Files written");
     }
-
-    static final String CRLF = "\r\n";
 
     private String generateInfoFile() {
         logger.fine("Generating info file");
@@ -1296,7 +1298,7 @@ public class BagGenerator {
                 try {
                     URI uri = new URI(uriString);
                     int tries = 0;
-                    while (tries < 5) {
+                    while (tries < MAX_RETRIES) {
 
                         logger.finest("Get # " + tries + " for " + uriString);
                         HttpGet getFile = createNewGetRequest(uri, null);
@@ -1350,29 +1352,29 @@ public class BagGenerator {
                                 } catch (InterruptedException ie) {
                                     logger.log(Level.SEVERE, "InterruptedException during retry delay for file: " + uriString, ie);
                                     Thread.currentThread().interrupt(); // Restore interrupt status
-                                    tries += 5; // Skip remaining attempts
+                                    tries += MAX_RETRIES; // Skip remaining attempts
                                 }
                             }
                         } catch (ClientProtocolException e) {
-                            tries += 5;
+                            tries += MAX_RETRIES;
                             logger.log(Level.SEVERE, "ClientProtocolException when retrieving file: " + uriString + " (attempt " + tries + ")", e);
                         } catch (SocketTimeoutException e) {
                             // Specific handling for timeout exceptions
                             tries++;
-                            logger.log(Level.SEVERE, "SocketTimeoutException when retrieving file: " + uriString + " (attempt " + tries + " of 5) - Request exceeded timeout", e);
-                            if (tries == 5) {
+                            logger.log(Level.SEVERE, "SocketTimeoutException when retrieving file: " + uriString + " (attempt " + tries + " of " + MAX_RETRIES + ") - Request exceeded timeout", e);
+                            if (tries == MAX_RETRIES) {
                                 logger.log(Level.SEVERE, "FINAL FAILURE: File could not be retrieved after all retries due to timeouts: " + uriString, e);
                             }
                         } catch (InterruptedIOException e) {
                             // Catches interruptions during I/O operations
-                            tries += 5;
+                            tries += MAX_RETRIES;
                             logger.log(Level.SEVERE, "InterruptedIOException when retrieving file: " + uriString + " - Operation was interrupted", e);
                             Thread.currentThread().interrupt(); // Restore interrupt status
                         } catch (IOException e) {
                             // Retry if this is a potentially temporary error such as a timeout
                             tries++;
-                            logger.log(Level.WARNING, "IOException when retrieving file: " + uriString + " (attempt " + tries + " of 5)", e);
-                            if (tries == 5) {
+                            logger.log(Level.WARNING, "IOException when retrieving file: " + uriString + " (attempt " + tries + " of " + MAX_RETRIES+ ")", e);
+                            if (tries == MAX_RETRIES) {
                                 logger.log(Level.SEVERE, "FINAL FAILURE: File could not be retrieved after all retries: " + uriString, e);
                             }
                         }
