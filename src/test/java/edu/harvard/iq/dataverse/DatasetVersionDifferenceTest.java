@@ -76,7 +76,8 @@ public class DatasetVersionDifferenceTest {
         datasetVersion2.setVersionState(DatasetVersion.VersionState.DRAFT);
         datasetVersion2.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
         datasetVersion2.getTermsOfUseAndAccess().setLicense(license);
-
+        datasetVersion.setFileMetadatas(new ArrayList<>());
+        
         // Published version's two files
         DataFile dataFile = new DataFile();
         dataFile.setId(1L);
@@ -88,18 +89,16 @@ public class DatasetVersionDifferenceTest {
 
         FileMetadata fileMetadata2 = createFileMetadata(20L, datasetVersion, dataFile2, "file2.txt");
 
-        // Draft version - same two files with one label change
-        FileMetadata fileMetadata3 = fileMetadata1.createCopy();
-        fileMetadata3.setId(30L);
-
-        FileMetadata fileMetadata4 = fileMetadata2.createCopy();
-        fileMetadata4.setLabel("file3.txt");
-        fileMetadata4.setId(40L);
-
         List<FileMetadata> fileMetadatas = new ArrayList<>(Arrays.asList(fileMetadata1, fileMetadata2));
         datasetVersion.setFileMetadatas(fileMetadatas);
-        List<FileMetadata> fileMetadatas2 = new ArrayList<>(Arrays.asList(fileMetadata3, fileMetadata4));
-        datasetVersion2.setFileMetadatas(fileMetadatas2);
+        
+        // Draft version - same two files with one label change
+        FileMetadata fileMetadata3 = fileMetadata1.createCopyInVersion(datasetVersion2);
+        fileMetadata3.setId(30L);
+
+        FileMetadata fileMetadata4 = fileMetadata2.createCopyInVersion(datasetVersion2);
+        fileMetadata4.setLabel("file3.txt");
+        fileMetadata4.setId(40L);
 
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
         Date publicationDate;
