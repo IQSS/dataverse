@@ -1447,6 +1447,8 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/files/actions/:set-embargo")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response createFileEmbargo(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
 
         // user is authenticated
@@ -1489,7 +1491,7 @@ public class Datasets extends AbstractApiBean {
         // check if embargoes are allowed(:MaxEmbargoDurationInMonths), gets the :MaxEmbargoDurationInMonths setting variable, if 0 or not set(null) return 400
         long maxEmbargoDurationInMonths = 0;
         try {
-            maxEmbargoDurationInMonths  = Long.parseLong(settingsService.get(SettingsServiceBean.Key.MaxEmbargoDurationInMonths.toString()));
+            maxEmbargoDurationInMonths  = Long.parseLong(settingsService.getValueForKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths));
         } catch (NumberFormatException nfe){
             if (nfe.getMessage().contains("null")) {
                 return error(Status.BAD_REQUEST, "No Embargoes allowed");
@@ -1499,13 +1501,19 @@ public class Datasets extends AbstractApiBean {
             return error(Status.BAD_REQUEST, "No Embargoes allowed");
         }
 
+        //Any parsing error should be handled via the JsonExceptionsHandler
         JsonObject json = JsonUtil.getJsonObject(jsonBody);
 
         Embargo embargo = new Embargo();
 
 
         LocalDate currentDateTime = LocalDate.now();
-        LocalDate dateAvailable = LocalDate.parse(json.getString("dateAvailable"));
+        LocalDate dateAvailable = null;
+        try {
+            dateAvailable = LocalDate.parse(json.getString("dateAvailable"));
+        } catch (DateTimeParseException e) {
+            return error(Status.BAD_REQUEST, "Unable to parse dateAvailable");
+        }
 
         // check :MaxEmbargoDurationInMonths if -1
         LocalDate maxEmbargoDateTime = maxEmbargoDurationInMonths != -1 ? LocalDate.now().plusMonths(maxEmbargoDurationInMonths) : null;
@@ -1522,8 +1530,16 @@ public class Datasets extends AbstractApiBean {
                 return error(Status.BAD_REQUEST, "Date available can not exceed MaxEmbargoDurationInMonths: "+maxEmbargoDurationInMonths);
             }
         }
-
-        embargo.setReason(json.getString("reason"));
+        String reason = null;
+        if(json.containsKey("reason")) {
+            reason = json.getString("reason");
+        }
+        if(reason == null && FeatureFlags.REQUIRE_EMBARGO_REASON.enabled()) {
+            return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("embargo.reason.required"));
+        } else if(reason != null && reason.isBlank()) {
+            return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("embargo.reason.blank"));
+        }
+        embargo.setReason(reason);
 
         List<DataFile> datasetFiles = dataset.getFiles();
         List<DataFile> filesToEmbargo = new LinkedList<>();
@@ -1603,6 +1619,8 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/files/actions/:unset-embargo")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response removeFileEmbargo(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
 
         // user is authenticated
