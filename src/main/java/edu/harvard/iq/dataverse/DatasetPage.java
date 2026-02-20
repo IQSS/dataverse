@@ -157,6 +157,7 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
@@ -6887,4 +6888,7 @@ public class DatasetPage implements java.io.Serializable {
         this.requestedCSL = requestedCSL;
     }
 
+    public void validateEmbargoReason(FacesContext context, UIComponent component, Object value) {
+        FileUtil.validateEmbargoReason(context, component, value, removeEmbargo);
+    }
 }
