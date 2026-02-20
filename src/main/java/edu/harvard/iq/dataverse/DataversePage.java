@@ -1357,7 +1357,7 @@ public class DataversePage implements java.io.Serializable {
             existingLevel.setInclude(dsft.isInclude());
             existingLevel.setRequired(dsft.isRequiredDV());
             listDFTIL.add(existingLevel);
-        } else if (dsft.isInclude() || (dsft.getLocalDisplayOnCreate()!=null) || dsft.isRequiredDV()) {
+        } else if (!dsft.isInclude() || (dsft.getLocalDisplayOnCreate()!=null) || dsft.isRequiredDV()) {
             // Only create new input level if there is any specific configuration
             listDFTIL.add(new DataverseFieldTypeInputLevel(
                 dsft, 
