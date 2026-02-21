@@ -148,7 +148,8 @@ public class OaiHandler implements Serializable {
             context.withBaseUrl(baseOaiUrl);
             context.withGranularity(Granularity.Second);
             
-            JdkHttpOaiClient.Builder xoaiClientBuilder = JdkHttpOaiClient.newBuilder().withBaseUrl(getBaseOaiUrl());
+            //JdkHttpOaiClient.Builder xoaiClientBuilder = JdkHttpOaiClient.newBuilder().withBaseUrl(getBaseOaiUrl());
+            JdkHttpOaiClient.Builder xoaiClientBuilder = (new JdkHttpOaiClient.JdkHttpBuilder(HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1))).withBaseUrl(getBaseOaiUrl());
             if (getCustomHeaders() != null) {
                 for (String headerName : getCustomHeaders().keySet()) {
                     logger.fine("adding custom header; name: "+headerName+", value: "+getCustomHeaders().get(headerName));
