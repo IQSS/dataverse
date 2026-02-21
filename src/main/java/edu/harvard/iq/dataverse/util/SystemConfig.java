@@ -625,12 +625,12 @@ public class SystemConfig {
                     // We add the default in case the JSON does not contain the default (which is optional).
                     limitsMap.put(DEFAULT_KEY, null);
                     
-                    for (Map.Entry<String, JsonValue> client : delays.entrySet()) {
-                        String clientName = client.getKey();
+                    for (Map.Entry<String, JsonValue> clientEntry : delays.entrySet()) {
+                        String clientName = clientEntry.getKey();
                         String lowercaseClientName = clientName.toLowerCase();
-                        
+                                                
                         try {
-                            JsonValue value = client.getValue();
+                            JsonValue value = clientEntry.getValue();
                             float delayInterval;
                             
                             // We want to be able to use either numbers or string values, so detect which one it is.
@@ -639,20 +639,20 @@ public class SystemConfig {
                                 delayInterval = Float.parseFloat(delays.getString(clientName));
                             } else if (value.getValueType() == JsonValue.ValueType.NUMBER) {
                                 // Will throw if not a valid float number!
-                                delayInterval = delays.getJsonNumber(clientName).longValueExact();
+                                delayInterval = delays.getJsonNumber(clientName).numberValue().floatValue(); //.doubleValue();
                             } else {
-                                logger.warning(() -> "Invalid value type for format " + clientName + ": expected string or number");
+                                logger.warning(() -> "Invalid value type for client " + clientName + ": expected string or number");
                                 logger.warning("Disabling all harvesting client delay intervals completely until fixed!");
                                 return Map.of(DEFAULT_KEY, null);
                             }
                             
                             limitsMap.put(lowercaseClientName, delayInterval);
                         } catch (NumberFormatException nfe) {
-                            logger.warning(() -> "Could not convert " + SettingsServiceBean.Key.HarvestingClientCallRateLimit + " to float for client " + clientName + " (not a valid number)");
+                            logger.warning(() -> "Could not convert " + SettingsServiceBean.Key.HarvestingClientCallRateLimit + " entry to float for client " + clientName + " (not a valid number)");
                             logger.warning("Disabling all harvesting client delay intervals completely until fixed!");
                             return Map.of(DEFAULT_KEY, null);
                         } catch (ArithmeticException ae) {
-                            logger.warning(() -> "Number too large or has fractional part for format " + clientName);
+                            logger.warning(() -> "Number too large, or otherwise invalid for client " + clientName);
                             logger.warning("Disabling all harvesting client delay intervals completely until fixed!");
                             return Map.of(DEFAULT_KEY, null);
                         }
@@ -680,18 +680,13 @@ public class SystemConfig {
         // Default is not to limit at all
         return Map.of(DEFAULT_KEY, null);
     }
-    
-    /*public Float getHarvestingClientRequestInterval() {
-        return getHarvestingClientRequestIntervals().get(DEFAULT_KEY);
-    }*/
 
     public Float getHarvestingClientRequestInterval(String clientName) {
         if (clientName != null && !clientName.isBlank()) {
             // We convert to lowercase so it doesn't matter which variant someone uses in the JSON config
             String convertedClientName = clientName.toLowerCase();
-            return getHarvestingClientRequestIntervals().getOrDefault(convertedClientName, getHarvestingClientRequestIntervals().get(DEFAULT_KEY)); //getHarvestingClientRequestInterval());
+            return getHarvestingClientRequestIntervals().getOrDefault(convertedClientName, getHarvestingClientRequestIntervals().get(DEFAULT_KEY));
         }
-        //return getHarvestingClientRequestInterval();
         return getHarvestingClientRequestIntervals().get(DEFAULT_KEY);
     }
     

@@ -274,7 +274,8 @@ public class HarvesterServiceBean {
     
     private void harvestOAIviaListIdentifiers(OaiHandler oaiHandler, DataverseRequest dataverseRequest, HarvestingClient harvestingClient, HttpClient httpClient, List<String> failedIdentifiers, List<String> deletedIdentifiers, List<Long> harvestedDatasetIds, Logger harvesterLogger, PrintWriter importCleanupLog) throws OaiHandlerException, StopHarvestException {
         int sleepBetweenCalls = 0;
-        Float clientRequestInterval = systemConfig.getHarvestingClientRequestInterval();
+        Float clientRequestInterval = systemConfig.getHarvestingClientRequestInterval(harvestingClient.getName());
+        
         if (clientRequestInterval != null)  {
             sleepBetweenCalls = (int)(clientRequestInterval * 1000);
         }
@@ -303,6 +304,7 @@ public class HarvesterServiceBean {
             MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
 
             if (sleepBetweenCalls > 0) {
+                logger.fine("Sleeping for "+sleepBetweenCalls + " milliseconds...");
                 try {
                     Thread.sleep(sleepBetweenCalls);
                 } catch (InterruptedException iex) {
@@ -325,6 +327,15 @@ public class HarvesterServiceBean {
     }
     
     private void harvestOAIviaListRecords(OaiHandler oaiHandler, DataverseRequest dataverseRequest, HarvestingClient harvestingClient, HttpClient httpClient, List<String> failedIdentifiers, List<String> deletedIdentifiers, List<Long> harvestedDatasetIds, Logger harvesterLogger, PrintWriter importCleanupLog) throws OaiHandlerException, StopHarvestException {
+        int sleepBetweenCalls = 0;
+        Float clientRequestInterval = systemConfig.getHarvestingClientRequestInterval(harvestingClient.getName());
+        
+        if (clientRequestInterval != null)  {
+            sleepBetweenCalls = (int)(clientRequestInterval * 1000);
+        }
+        
+        logger.info("Sleep interval in milliseconds: "+sleepBetweenCalls);
+        
         for (Iterator<Record> idIter = oaiHandler.runListRecords(); idIter.hasNext();) {
             // Before each iteration, check if this harvesting job needs to be aborted:
             if (checkIfStoppingJob(harvestingClient)) {
@@ -393,6 +404,15 @@ public class HarvesterServiceBean {
                 //can be uncommented out for testing failure handling:
                 //throw new IOException("Exception occured, stopping harvest");
             }
+            
+            if (sleepBetweenCalls > 0) {
+                logger.fine("Sleeping for "+sleepBetweenCalls + " milliseconds...");
+                try {
+                    Thread.sleep(sleepBetweenCalls);
+                } catch (InterruptedException iex) {
+                    logger.warning("InterruptedException trying to sleep for " + sleepBetweenCalls + " milliseconds");
+                }
+            }   
         }
     }
     
