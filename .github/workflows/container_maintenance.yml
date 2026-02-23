@@ -173,7 +173,7 @@ jobs:
         with:
           platforms: ${{ env.PLATFORMS }}
       - name: Setup Trivy binary for vulnerability scanning
-        uses: aquasecurity/setup-trivy@v0.2.4
+        uses: aquasecurity/setup-trivy@v0.2.5
         with:
           version: v0.63.0
 

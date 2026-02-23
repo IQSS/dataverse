@@ -28,6 +28,7 @@ Supported Metadata Export Formats
 
 Once a dataset has been published, its metadata can be exported in a variety of other metadata standards and formats, which help make datasets more :doc:`discoverable </admin/discoverability>` and usable in other systems, such as other data repositories. On each dataset page's metadata tab, the following exports are available:
 
+- Croissant
 - Dublin Core
 - DDI (Data Documentation Initiative Codebook 2.5)
 - DDI HTML Codebook (A more human-readable, HTML version of the DDI Codebook 2.5 metadata export)
@@ -37,9 +38,8 @@ Once a dataset has been published, its metadata can be exported in a variety of 
 - OpenAIRE
 - Schema.org JSON-LD
 
-Additional formats can be enabled. See :ref:`inventory-of-external-exporters` in the Installation Guide. To highlight a few:
+Additional formats can be enabled. See :ref:`inventory-of-external-exporters` in the Installation Guide. For example:
 
-- Croissant
 - RO-Crate
 
 Each of these metadata exports contains the metadata of the most recently published version of the dataset.
@@ -750,7 +750,7 @@ Note that only one Preview URL (normal or with anonymized access) can be configu
 Embargoes
 =========
 
-A Dataverse instance may be configured to support file-level embargoes. Embargoes make file content inaccessible after a dataset version is published  - until the embargo end date.
+A Dataverse instance may be configured to support file-level embargoes. Embargoes make file content inaccessible after a dataset version is published  - until the embargo end date. A reason for the embargo may be supplied when creating the embargo. A reason may be required in some Dataverse instances.
 This means that file previews and the ability to download files will be blocked. The effect is similar to when a file is restricted except that the embargo will end at the specified date without further action and during the embargo, requests for file access cannot be made. 
 Embargoes of files in a version 1.0 dataset may also affect the date shown in the dataset and file citations. The recommended practice is for the citation to reflect the date on which all embargoes on files in version 1.0 end. (Since Dataverse creates one persistent identifier per dataset and doesn't create new ones for each version, the publication of later versions, with or without embargoed files, does not affect the citation date.)
 

@@ -1,0 +1,163 @@
+{
+  "dcterms:modified": "2025-05-21",
+  "dcterms:creator": "Root",
+  "@type": "ore:ResourceMap",
+  "schema:additionalType": "Dataverse OREMap Format v1.0.1",
+  "dvcore:generatedBy": {
+    "@type": "schema:SoftwareApplication",
+    "schema:name": "Dataverse",
+    "schema:version": "6.6 build develop-c4379a0",
+    "schema:url": "https://github.com/iqss/dataverse"
+  },
+  "@id": "https://beta.dataverse.org/api/datasets/export?exporter=OAI_ORE&persistentId=https://doi.org/10.5072/FK2/VQTYHD",
+  "ore:describes": {
+    "author": [
+      {
+        "citation:authorName": "Durbin, Philip",
+        "citation:authorAffiliation": "Harvard University",
+        "authorIdentifierScheme": "ORCID",
+        "authorIdentifier": "0000-0002-9528-9470"
+      },
+      {
+        "citation:authorName": "IQSS",
+        "citation:authorAffiliation": "Harvard University"
+      }
+    ],
+    "citation:keyword": [
+      {
+        "citation:keywordValue": "foo"
+      },
+      {
+        "citation:keywordValue": "bar"
+      }
+    ],
+    "timePeriodCovered": {
+      "citation:timePeriodCoveredStart": "2023-01-01",
+      "citation:timePeriodCoveredEnd": "2023-12-31"
+    },
+    "contributor": {
+      "citation:contributorType": "Funder",
+      "citation:contributorName": "NSF"
+    },
+    "citation:dsDescription": {
+      "citation:dsDescriptionValue": "Exercising fields used by `schema.org` exporter."
+    },
+    "publication": {
+      "publicationCitation": "Tykhonov, V., & Durbin, P. (2024, March 20). Croissant ML standard in the context of Dataverse, EOSC and beyond. Zenodo. https://doi.org/10.5281/zenodo.10843668",
+      "publicationIDType": "doi",
+      "publicationIDNumber": "10.5281/zenodo.10843668",
+      "publicationURL": "https://doi.org/10.5281/zenodo.10843668"
+    },
+    "grantNumber": {
+      "citation:grantNumberAgency": "NIH",
+      "citation:grantNumberValue": "3OT2DB000004-01S3"
+    },
+    "geospatial:geographicCoverage": {
+      "geospatial:country": "United States",
+      "geospatial:state": "MA",
+      "geospatial:city": "Cambridge",
+      "geospatial:otherGeographicCoverage": "Harvard Square"
+    },
+    "citation:datasetContact": {
+      "citation:datasetContactName": "Durbin, Philip",
+      "citation:datasetContactEmail": "philip_durbin@harvard.edu"
+    },
+    "dateOfDeposit": "2024-05-01",
+    "subject": [
+      "Social Sciences",
+      "Other"
+    ],
+    "citation:depositor": "Durbin, Philip",
+    "title": "Max Schema.org",
+    "@id": "https://doi.org/10.5072/FK2/VQTYHD",
+    "@type": [
+      "ore:Aggregation",
+      "schema:Dataset"
+    ],
+    "schema:version": "3.0",
+    "schema:name": "Max Schema.org",
+    "schema:dateModified": "2025-05-21 19:25:29.653",
+    "schema:datePublished": "2024-05-01",
+    "schema:creativeWorkStatus": "RELEASED",
+    "schema:license": "http://creativecommons.org/publicdomain/zero/1.0",
+    "dvcore:fileTermsOfAccess": {
+      "dvcore:fileRequestAccess": true
+    },
+    "schema:includedInDataCatalog": "Root",
+    "schema:isPartOf": {
+      "schema:name": "Philip Durbin Dataverse",
+      "@id": "https://beta.dataverse.org/dataverse/pdurbin",
+      "schema:isPartOf": {
+        "schema:name": "Root",
+        "@id": "https://beta.dataverse.org/dataverse/root",
+        "schema:description": "The root dataverse."
+      }
+    },
+    "ore:aggregates": [
+      {
+        "schema:description": "Additional documentation.",
+        "schema:name": "README.md",
+        "dvcore:restricted": false,
+        "dvcore:directoryLabel": "doc",
+        "schema:version": 1,
+        "dvcore:datasetVersionId": 266,
+        "@id": "https://beta.dataverse.org/file.xhtml?fileId=26148",
+        "schema:sameAs": "https://beta.dataverse.org/api/access/datafile/26148",
+        "@type": "ore:AggregatedResource",
+        "schema:fileFormat": "text/markdown",
+        "dvcore:filesize": 34,
+        "dvcore:storageIdentifier": "s3://beta-dataverse-direct:18f35bee76a-f45ece0b0fcc",
+        "dvcore:rootDataFileId": -1,
+        "dvcore:checksum": {
+          "@type": "MD5",
+          "@value": "ebf050ec8cce5df0a72b100cfc9f442f"
+        }
+      },
+      {
+        "schema:name": "data.tsv",
+        "dvcore:restricted": false,
+        "schema:version": 3,
+        "dvcore:datasetVersionId": 266,
+        "@id": "https://beta.dataverse.org/file.xhtml?fileId=26646",
+        "schema:sameAs": "https://beta.dataverse.org/api/access/datafile/26646?format=original",
+        "@type": "ore:AggregatedResource",
+        "schema:fileFormat": "text/tsv",
+        "dvcore:filesize": 33,
+        "dvcore:storageIdentifier": "s3://beta-dataverse-direct:196f44cc758-4d710ffac5d8",
+        "dvcore:currentIngestedName": "data.tab",
+        "dvcore:UNF": "UNF:6:ngOUmEnfm08jahzBYqStQA==",
+        "dvcore:rootDataFileId": -1,
+        "dvcore:checksum": {
+          "@type": "MD5",
+          "@value": "3663d6a436ac00f5541a7336d6fa18c9"
+        }
+      }
+    ],
+    "schema:hasPart": [
+      "https://beta.dataverse.org/file.xhtml?fileId=26148",
+      "https://beta.dataverse.org/file.xhtml?fileId=26646"
+    ]
+  },
+  "@context": {
+    "author": "http://purl.org/dc/terms/creator",
+    "authorIdentifier": "http://purl.org/spar/datacite/AgentIdentifier",
+    "authorIdentifierScheme": "http://purl.org/spar/datacite/AgentIdentifierScheme",
+    "citation": "https://dataverse.org/schema/citation/",
+    "contributor": "http://purl.org/dc/terms/contributor",
+    "dateOfDeposit": "http://purl.org/dc/terms/dateSubmitted",
+    "dcterms": "http://purl.org/dc/terms/",
+    "dvcore": "https://dataverse.org/schema/core#",
+    "geospatial": "https://beta.dataverse.org/schema/geospatial#",
+    "grantNumber": "https://schema.org/sponsor",
+    "ore": "http://www.openarchives.org/ore/terms/",
+    "publication": "http://purl.org/dc/terms/isReferencedBy",
+    "publicationCitation": "http://purl.org/dc/terms/bibliographicCitation",
+    "publicationIDNumber": "http://purl.org/spar/datacite/ResourceIdentifier",
+    "publicationIDType": "http://purl.org/spar/datacite/ResourceIdentifierScheme",
+    "publicationURL": "https://schema.org/distribution",
+    "schema": "http://schema.org/",
+    "subject": "http://purl.org/dc/terms/subject",
+    "timePeriodCovered": "https://schema.org/temporalCoverage",
+    "title": "http://purl.org/dc/terms/title"
+  }
+}

@@ -1,0 +1,23 @@
+[
+  {
+    "id": 4,
+    "persistentId": "",
+    "filename": "data.txt",
+    "contentType": "text/plain",
+    "friendlyType": "Plain Text",
+    "filesize": 18,
+    "storageIdentifier": "local://196347bdb85-7b4820f8e4ef",
+    "rootDataFileId": -1,
+    "md5": "050644e853fdfe46a3707695ba2fe736",
+    "checksum": {
+      "type": "MD5",
+      "value": "050644e853fdfe46a3707695ba2fe736"
+    },
+    "tabularData": false,
+    "creationDate": "2025-04-14",
+    "fileAccessRequest": false,
+    "restricted": false,
+    "fileMetadataId": 1,
+    "varGroups": []
+  }
+]
