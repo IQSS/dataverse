@@ -92,52 +92,6 @@ public class SearchPermissionsServiceBean {
         return permStrings;
     }
 
-    public Map<DatasetVersion.VersionState, Boolean> getDesiredCards(Dataset dataset) {
-        Map<DatasetVersion.VersionState, Boolean> desiredCards = new LinkedHashMap<>();
-        DatasetVersion latestVersion = dataset.getLatestVersion();
-        DatasetVersion.VersionState latestVersionState = latestVersion.getVersionState();
-        DatasetVersion releasedVersion = dataset.getReleasedVersion();
-        boolean atLeastOnePublishedVersion = false;
-        if (releasedVersion != null) {
-            atLeastOnePublishedVersion = true;
-        } else {
-            atLeastOnePublishedVersion = false;
-        }
-
-        if (atLeastOnePublishedVersion == false) {
-            if (latestVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
-                desiredCards.put(DatasetVersion.VersionState.DRAFT, true);
-                desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, false);
-                desiredCards.put(DatasetVersion.VersionState.RELEASED, false);
-            } else if (latestVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
-                desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, true);
-                desiredCards.put(DatasetVersion.VersionState.RELEASED, false);
-                desiredCards.put(DatasetVersion.VersionState.DRAFT, false);
-            } else {
-                String msg = "No-op. Unexpected condition reached: There is no published version and the latest published version is neither " + DatasetVersion.VersionState.DRAFT + " nor " + DatasetVersion.VersionState.DEACCESSIONED + ". Its state is " + latestVersionState + ".";
-                logger.info(msg);
-            }
-        } else if (atLeastOnePublishedVersion == true) {
-            if (latestVersionState.equals(DatasetVersion.VersionState.RELEASED)
-                    || latestVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
-                desiredCards.put(DatasetVersion.VersionState.RELEASED, true);
-                desiredCards.put(DatasetVersion.VersionState.DRAFT, false);
-                desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, false);
-            } else if (latestVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
-                desiredCards.put(DatasetVersion.VersionState.DRAFT, true);
-                desiredCards.put(DatasetVersion.VersionState.RELEASED, true);
-                desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, false);
-            } else {
-                String msg = "No-op. Unexpected condition reached: There is at least one published version but the latest version is neither published nor draft";
-                logger.info(msg);
-            }
-        } else {
-            String msg = "No-op. Unexpected condition reached: Has a version been published or not?";
-            logger.info(msg);
-        }
-        return desiredCards;
-    }
-
     private boolean hasBeenPublished(Dataverse dataverse) {
         return dataverse.isReleased();
     }

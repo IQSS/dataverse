@@ -1,8 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.globus.Permissions;
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -160,6 +157,7 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
@@ -3130,9 +3128,18 @@ public class DatasetPage implements java.io.Serializable {
         if (deleteCommandSuccess) {
             datafileService.finalizeFileDeletes(deleteStorageLocations);
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.deleteSuccess"));
+            solrDelay();
         }
 
         return "/dataverse.xhtml?alias=" + dataset.getOwner().getAlias() + "&faces-redirect=true";
+    }
+    // delay 1 second so solr has time to update the indexes. Without the delay the UI will continue to show the deleted dataset
+    private void solrDelay() {
+        try {
+            Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String editFileMetadata(){
@@ -6251,6 +6258,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private String termsOfAccess;
     private boolean fileAccessRequest;
+    private boolean publishDisclaimerAcknowledged;
 
     public String getTermsOfAccess() {
         return termsOfAccess;
@@ -6266,6 +6274,14 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setFileAccessRequest(boolean fileAccessRequest) {
         this.fileAccessRequest = fileAccessRequest;
+    }
+
+    public boolean isPublishDisclaimerAcknowledged() {
+        return publishDisclaimerAcknowledged || !settingsWrapper.isHasPublishDatasetDisclaimerText();
+    }
+
+    public void setPublishDisclaimerAcknowledged(boolean publishDisclaimerAcknowledged) {
+        this.publishDisclaimerAcknowledged = publishDisclaimerAcknowledged;
     }
 
     // wrapper method to see if the file has been deleted (or replaced) in the current version
@@ -6872,4 +6888,7 @@ public class DatasetPage implements java.io.Serializable {
         this.requestedCSL = requestedCSL;
     }
 
+    public void validateEmbargoReason(FacesContext context, UIComponent component, Object value) {
+        FileUtil.validateEmbargoReason(context, component, value, removeEmbargo);
+    }
 }

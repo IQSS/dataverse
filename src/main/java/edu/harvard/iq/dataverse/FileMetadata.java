@@ -67,7 +67,7 @@ import jakarta.validation.constraints.Pattern;
  */
 @Table(indexes = {@Index(columnList="datafile_id"), @Index(columnList="datasetversion_id")} )
 @NamedNativeQuery(
-        name = "FileMetadata.compareFileMetadata",
+        name = "FileMetadata.getDatafilesWithChangedMetadata",
         query = "WITH fm_categories AS (" +
                 "    SELECT fmd.filemetadatas_id, " +
                 "           STRING_AGG(dfc.name, ',' ORDER BY dfc.name) AS categories " +
@@ -75,7 +75,7 @@ import jakarta.validation.constraints.Pattern;
                 "    JOIN DataFileCategory dfc ON fmd.filecategories_id = dfc.id " +
                 "    GROUP BY fmd.filemetadatas_id " +
                 ") " +
-                "SELECT fm1.id " +
+                "SELECT fm1.datafile_id AS id " +
                 "FROM FileMetadata fm1 " +
                 "LEFT JOIN FileMetadata fm2 ON fm1.datafile_id = fm2.datafile_id " +
                 "    AND fm2.datasetversion_id = ?1 " +
@@ -93,11 +93,11 @@ import jakarta.validation.constraints.Pattern;
                 "                 ) " +
                 "            ) " +
                 "        )",
-                resultSetMapping = "IdToLongMapping"
+                resultSetMapping = "IdToIntegerMapping"
     )
 /* When this mapping was to Long.class, Postgres was still returning an Integer, causing indexing failures - see #11776 */ 
 @SqlResultSetMapping(
-        name = "IdToLongMapping",
+        name = "IdToIntegerMapping",
         columns = @ColumnResult(name = "id", type = Integer.class)
     )
 @Entity
@@ -154,21 +154,21 @@ public class FileMetadata implements Serializable {
     private Collection<VariableMetadata> variableMetadatas;
         
     /**
-     * Creates a copy of {@code this}, with identical business logic fields.
-     * E.g., {@link #label} would be duplicated; {@link #version} will not.
+     * Creates a copy of {@code this}, with identical business logic fields, making the bi-drectional connections to the specified version.
      * 
-     * @return A copy of {@code this}, except for the DB-related data.
+     * @return A copy of {@code this}
      */
-    public FileMetadata createCopy() {
+    public FileMetadata createCopyInVersion(DatasetVersion dsv) {
         FileMetadata fmd = new FileMetadata();
         fmd.setCategories(new LinkedList<>(getCategories()) );
         fmd.setDataFile( getDataFile() );
-        fmd.setDatasetVersion( getDatasetVersion() );
+        fmd.setDatasetVersion( dsv );
         fmd.setDescription( getDescription() );
         fmd.setLabel( getLabel() );
         fmd.setRestricted( isRestricted() );
         fmd.setDirectoryLabel(getDirectoryLabel());
-        
+        fmd.setProvFreeForm(getProvFreeForm());
+        dsv.getFileMetadatas().add(fmd);
         return fmd;
     }
     
@@ -245,38 +245,26 @@ public class FileMetadata implements Serializable {
     
     public List<DataFileCategory> getCategories() {
         if (fileCategories != null) {
-            /*
-             * fileCategories can sometimes be an
-             * org.eclipse.persistence.indirection.IndirectList When that happens, the
-             * comparator in the Collections.sort below is not called, possibly due to
-             * https://bugs.eclipse.org/bugs/show_bug.cgi?id=446236 which is Java 1.8+
-             * specific Converting to an ArrayList solves the problem, but the longer term
-             * solution may be in avoiding the IndirectList or moving to a new version of
-             * the jar it is in.
-             */
-            if (!(fileCategories instanceof ArrayList)) {
-                List<DataFileCategory> newDFCs = new ArrayList<DataFileCategory>();
-                for (DataFileCategory fdc : fileCategories) {
-                    newDFCs.add(fdc);
+            synchronized (this) {
+                if (!(fileCategories instanceof ArrayList)) {
+                    fileCategories = new ArrayList<>(fileCategories);
                 }
-                setCategories(newDFCs);
+                Collections.sort(fileCategories, FileMetadata.compareByNameWithSortCategories);
             }
-            Collections.sort(fileCategories, FileMetadata.compareByNameWithSortCategories);
         }
         return fileCategories;
     }
-    
-    public void setCategories(List<DataFileCategory> fileCategories) {
+
+    public synchronized void setCategories(List<DataFileCategory> fileCategories) {
         this.fileCategories = fileCategories; 
     }
-    
-    public void addCategory(DataFileCategory category) {
+
+    public synchronized void addCategory(DataFileCategory category) {
         if (fileCategories == null) {
             fileCategories = new ArrayList<>();
         }
         fileCategories.add(category);
     }
-
     /**
      * Retrieve categories 
      * @return 
