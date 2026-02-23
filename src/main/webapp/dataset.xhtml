@@ -50,6 +50,7 @@
             <ui:param name="thumbnailString" value="#{DatasetPage.thumbnailString}"/>
             <ui:param name="jsonLd" value="#{DatasetPage.jsonLd}"/>
             <ui:param name="croissant" value="#{DatasetPage.croissant}"/>
+            <ui:param name="legacyFormatInHead" value="#{DatasetPage.useLegacyFormatInHead}"/>
             <ui:param name="latestVersionInReview" value="#{DatasetPage.dataset.latestVersion.inReview}"/>
             <ui:param name="showSubmitForReviewLink" value="#{DatasetPage.editMode != 'CREATE' and version == DatasetPage.dataset.latestVersion
                                                               and !DatasetPage.datasetLockedInWorkflow
@@ -95,7 +96,6 @@
                 
             <ui:define name="jsonld_header">
                 <ui:fragment rendered="#{!anonymizedAccess}">
-                    <ui:param name="legacyFormatInHead" value="#{useLegacyFormatInHead}"/>
                     <script type="application/ld+json">
                         <ui:fragment rendered="#{!legacyFormatInHead}">
                             <h:outputText value="#{croissant}"/>
