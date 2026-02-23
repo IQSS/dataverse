@@ -1490,9 +1490,13 @@ public class DataFileServiceBean implements java.io.Serializable {
         // Note that we are checking the recorded storage use not on the 
         // immediate parent necessarily, but on the specific ancestor 
         // DvObjectContainer on which the storage quota is defined:
-        Long currentSize = storageUseService.findStorageSizeByDvContainerId(testDvContainer.getId()); 
+        Long currentSize = currentStorageSizeInBytes(testDvContainer);
         
         return new UploadSessionQuotaLimit(quota.getAllocation(), currentSize);
+    }
+
+    public Long currentStorageSizeInBytes(DvObjectContainer dvObjectContainer) {
+        return storageUseService.findStorageSizeByDvContainerId(dvObjectContainer.getId());
     }
 
     public boolean isInReleasedVersion(Long id) {
