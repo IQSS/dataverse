@@ -406,10 +406,24 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     public Set<String> getIndexableStringsByTermUri(String termUri, JsonObject cvocEntry, String indexingField) {
         Set<String> strings = new HashSet<>();
         JsonObject jo = getExternalVocabularyValue(termUri);
-        JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
-        String termUriField = cvocEntry.getJsonString("term-uri-field").getString();
 
         if (jo != null) {
+            JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
+            //Check for per-vocab filtering
+            JsonObject vocabs = cvocEntry.getJsonObject("vocabs");
+            for (String key : vocabs.keySet()) {
+                JsonObject vocab = vocabs.getJsonObject(key);
+                if (vocab.containsKey("uriSpace")) {
+                    if (termUri.startsWith(vocab.getString("uriSpace"))) {
+                        if(vocab.containsKey("retrieval-filtering")) {
+                            filtering = vocab.getJsonObject("retrieval-filtering");
+                        }
+                        break;
+                    }
+                }
+            }
+            String termUriField = cvocEntry.getJsonString("term-uri-field").getString();
+
             try {
                 for (String key : jo.keySet()) {
                     String indexIn = filtering.getJsonObject(key).getString("indexIn", null);
@@ -514,6 +528,13 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             if (vocab.containsKey("uriSpace")) {
                 if (term.startsWith(vocab.getString("uriSpace"))) {
                     isExternal = true;
+                    // A specific vocabulary can override the top-level retrieval-uri and prefix
+                    if (vocab.containsKey("retrieval-uri")) {
+                        retrievalUri = vocab.getString("retrieval-uri");
+                    }
+                    if (vocab.containsKey("prefix")) {
+                        prefix = vocab.getString("prefix");
+                    }
                     break;
                 }
             }
@@ -522,6 +543,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             logger.fine("Ignoring free text entry: " + term);
             return;
         }
+        if (isExternal && (retrievalUri == null)) {
+            logger.warning("No retrieval-uri found for term " + term);
+            return;
+        }
+        
         logger.fine("Registering term: " + term);
         try {
             //Assure the term is in URI form - should be if the uriSpace entry was correct
