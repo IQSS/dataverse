@@ -3027,8 +3027,12 @@ public class DataversesIT {
         
         Response updateTermsResponse = UtilIT.updateTemplateLicenseTerms(templateId.toString(), jsonStringForUpdateTerms, apiToken);
         updateTermsResponse.prettyPrint();
-
         
+        getTemplate  = UtilIT.getTemplate(templateId.toString(),  apiToken);
+        getTemplate.prettyPrint();
+        getTemplate.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.termsOfUseAndAccess", Matchers.not(Matchers.hasKey("license")));
 
         updateTermsResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())

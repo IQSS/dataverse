@@ -64,6 +64,7 @@ public class UpdateTemplateLicenseCommand extends AbstractCommand<Template>{
             TermsOfUseAndAccess termsToUpdate = template.getTermsOfUseAndAccess();
             applyCustomTerms(termsToUpdate, customTermsOfUseAndAccess);
             template.setTermsOfUseAndAccess(termsToUpdate);
+            template.getTermsOfUseAndAccess().setLicense(null);
             savedTemplate = ctxt.templates().save(template);
         }
         
