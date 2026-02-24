@@ -1,13 +1,18 @@
 package edu.harvard.iq.dataverse.api;
 
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.customization.CustomizationConstants;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
-
+import jakarta.ws.rs.container.ContainerRequestContext;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -19,6 +24,7 @@ import jakarta.ejb.EJB;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -165,4 +171,5 @@ public class Info extends AbstractApiBean {
             return notFound("Setting " + key + " not found");
         }
     }
+    
 }
