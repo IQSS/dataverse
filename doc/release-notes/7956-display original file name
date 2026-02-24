@@ -1,0 +1,2 @@
+This release changes the display behavior for tabular files to show the original file name and metadata, and to allow editing of the original file name. The ingested *.tab version is still available from the download menu.
+ 
