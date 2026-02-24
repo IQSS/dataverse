@@ -5986,7 +5986,7 @@ public class DatasetPage implements java.io.Serializable {
         for (ExternalTool tool : previewTools) {
             boolean toolHasPublicAuxFiles = false;
             String reqString = tool.getRequirements();
-            if (!reqString.isBlank()) {
+            if (!StringUtils.isBlank(reqString)) {
                 try {
                     JsonObject reqs = JsonUtil.getJsonObject(reqString);
                     JsonArray auxFilesExist = reqs.getJsonArray(ExternalTool.AUX_FILES_EXIST);
