@@ -423,4 +423,4 @@ as the endpoint. Here are links to the most common IDEs docs on remote debugging
 Building Your Own Base Image
 ----------------------------
 
-If you find yourself tasked with upgrading Payara, you will need to create your own base image before running the :ref:`container-dev-quickstart`. For instructions, see :doc:`base-image`.
+If you find yourself tasked with upgrading Payara (or reviewing or testing such an upgrade), you will need to create your own base image before running the :ref:`container-dev-quickstart`. For instructions, see :ref:`base-image-build-instructions` under :doc:`base-image`.
