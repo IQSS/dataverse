@@ -2069,6 +2069,7 @@ Available Dataset Metadata Exporters
 
 The following dataset metadata exporters ship with Dataverse:
 
+- ``croissant``
 - ``Datacite``
 - ``dataverse_json``
 - ``dcterms``
@@ -2097,7 +2098,7 @@ Please note that the ``schema.org`` format has changed in backwards-incompatible
 
 Both forms are valid according to Google's Structured Data Testing Tool at https://search.google.com/structured-data/testing-tool . Schema.org JSON-LD is an evolving standard that permits a great deal of flexibility. For example, https://schema.org/docs/gs.html#schemaorg_expected indicates that even when objects are expected, it's ok to just use text. As with all metadata export formats, we will try to keep the Schema.org JSON-LD format backward-compatible to make integrations more stable, despite the flexibility that's afforded by the standard.
 
-The standard has further evolved into a format called Croissant. For details, see :ref:`schema.org-head` in the Admin Guide.
+The standard has further evolved into a format called Croissant. For details, see :ref:`croissant-head` in the Admin Guide.
 
 The ``schema.org`` format changed after Dataverse 6.4 as well. Previously its content type was "application/json" but now it is "application/ld+json".
 
