@@ -102,6 +102,12 @@ import jakarta.faces.event.ValueChangeEvent;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 import jakarta.persistence.OptimisticLockException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -279,6 +285,8 @@ public class DatasetPage implements java.io.Serializable {
     DataFileCategoryServiceBean dataFileCategoryService;
     @Inject
     GlobusServiceBean globusService;
+    @Inject
+    AuxiliaryFileServiceBean auxFileService;
 
     private Dataset dataset = new Dataset();
 
@@ -5963,9 +5971,47 @@ public class DatasetPage implements java.io.Serializable {
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
 
-    public boolean isShowPreviewButton(DataFile dataFile) {
+    public boolean isShowPreviewButton(FileMetadata fmd) {
+        DataFile dataFile = fmd.getDataFile();
         List<ExternalTool> previewTools = getPreviewToolsForDataFile(dataFile);
-        return previewTools.size() > 0;
+        if (previewTools.isEmpty()) {
+            return false;
+        }
+        if (fileDownloadHelper.canDownloadFile(fmd)) {
+            return true;
+        }
+        // If the user cannot download the file, we will still show the preview
+        // button if there is a previewer that requires an auxiliary file(s)
+        // and those files all exist and are public.
+        for (ExternalTool tool : previewTools) {
+            boolean toolHasPublicAuxFiles = false;
+            String reqString = tool.getRequirements();
+            if (!reqString.isBlank()) {
+                try {
+                    JsonObject reqs = JsonUtil.getJsonObject(reqString);
+                    JsonArray auxFilesExist = reqs.getJsonArray(ExternalTool.AUX_FILES_EXIST);
+                    for (JsonValue jsonValue : auxFilesExist) {
+                        JsonObject auxEntry = jsonValue.asJsonObject();
+                        String formatTag = auxEntry.getString("formatTag");
+                        String formatVersion = auxEntry.getString("formatVersion");
+                        AuxiliaryFile auxFile = auxFileService.lookupAuxiliaryFile(dataFile, formatTag, formatVersion);
+                        if (auxFile == null || !auxFile.getIsPublic()) {
+                            toolHasPublicAuxFiles = false;
+                            break;
+                        } else {
+                            toolHasPublicAuxFiles = true;
+                        }
+                    }
+                    if (toolHasPublicAuxFiles) {
+                        return true;
+                    }
+                } catch (Exception ex) {
+                    logger.warning("Failed to parse external tool requirements: " + ex.getMessage());
+                    return false;
+                }
+            }
+        }
+        return false;
     }
     
     public boolean isShowQueryButton(DataFile dataFile) { 
