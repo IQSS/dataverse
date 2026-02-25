@@ -3998,4 +3998,54 @@ public class FilesIT {
         signedUrlResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
     }
+
+    @Test
+    public void testDownloadFileWithSignedUrl() throws IOException, JsonParseException {
+        msgt("testDownloadFileWithSignedUrl");
+        // Create superuser
+        Response createUserResponse = UtilIT.createRandomUser();
+        String ownerApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String superusername = UtilIT.getUsernameFromResponse(createUserResponse);
+        UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(ownerApiToken);
+
+        // Create user with no permission
+        createUserResponse = UtilIT.createRandomUser();
+        assertEquals(200, createUserResponse.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String username = UtilIT.getUsernameFromResponse(createUserResponse);
+
+        // Create Dataset
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, ownerApiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        Response getDatasetMetadata = UtilIT.nativeGet(datasetId, ownerApiToken);
+        getDatasetMetadata.then().assertThat().statusCode(200);
+
+        // Upload files
+        JsonObjectBuilder json1 = Json.createObjectBuilder().add("description", "my description1").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/dataverseproject.png", json1.build(), ownerApiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId1 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        JsonObjectBuilder json2 = Json.createObjectBuilder().add("description", "my description2").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
+        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/orcid_16x16.png", json1.build(), ownerApiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId2 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        JsonObjectBuilder json3 = Json.createObjectBuilder().add("description", "my description3").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
+        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/cc0.png", json1.build(), ownerApiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId3 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        // Get Signed Download Url with guestbook response
+        // downloadFile(Integer fileId, String byteRange, String format, String imageThumb, String apiToken)
+        Response downloadResponse = UtilIT.downloadFile(fileId1, "&signed=true&format=original" , ownerApiToken);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+
+    }
 }

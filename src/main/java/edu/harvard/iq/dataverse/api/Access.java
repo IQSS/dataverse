@@ -230,7 +230,13 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafile/{fileId:.+}")
     @Produces({"application/xml","*/*"})
-    public Response datafile(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public Response datafile(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("signed") boolean signed,
+                             @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+
+        if (signed) {
+            AuthenticatedUser user = (AuthenticatedUser) getRequestUser(crc);
+            return returnSignedUrl(getDatafilesMap(crc, fileId), uriInfo, user, gbrecs);
+        }
 
         fileId = normalizeFileId(fileId);
                 
@@ -382,7 +388,7 @@ public class Access extends AbstractApiBean {
             return res; // could be an error or a signedUrl in the response
         } else {
             // initiate the download now
-            return datafile(crc, fileId, gbrecs, uriInfo, headers, response);
+            return datafile(crc, fileId, gbrecs, false, uriInfo, headers, response);
         }
     }
 
@@ -405,10 +411,40 @@ public class Access extends AbstractApiBean {
         return fId;
     }
     private Response processDatafileWithGuestbookResponse(ContainerRequestContext crc, String fileIds, UriInfo uriInfo, boolean gbrecs, boolean signed, String jsonBody) {
-        String fileIdParams[] = getFileIdsCSV(fileIds);
         AuthenticatedUser user = (AuthenticatedUser) getRequestUser(crc);
-        Map<Long, DataFile> datafilesMap = new HashMap<>();
+        // Get and validate all the DataFiles first
+        Map<Long, DataFile> datafilesMap = getDatafilesMap(crc, fileIds);
 
+        // Handle Guestbook Responses
+        for (DataFile df : datafilesMap.values()) {
+            try {
+                if (checkGuestbookRequiredResponse(user, df)) {
+                    GuestbookResponse gbr = getGuestbookResponseFromBody(df, GuestbookResponse.DOWNLOAD, jsonBody, user);
+                    if (gbr != null) {
+                        engineSvc.submit(new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), gbr, gbr.getDataset()));
+                    } else {
+                        return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing"));
+                    }
+                } else if (gbrecs != true && df.isReleased()) {
+                    // Write Guestbook record if not done previously and file is released
+                    guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, user);
+                    gbrecs = true; // prevent it from being written again
+                }
+            } catch (JsonParseException | CommandException ex) {
+                List<String> args = Arrays.asList(df.getDisplayName(), ex.getLocalizedMessage());
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbook.commandError", args));
+            }
+        }
+        if (signed) {
+            return returnSignedUrl(datafilesMap, uriInfo, user, gbrecs);
+        } else {
+            return null;
+        }
+    }
+
+    private Map<Long, DataFile> getDatafilesMap(ContainerRequestContext crc, String fileIds) {
+        String fileIdParams[] = getFileIdsCSV(fileIds);
+        Map<Long, DataFile> datafilesMap = new HashMap<>();
         // Get and validate all the DataFiles first
         if (fileIdParams != null && fileIdParams.length > 0) {
             for (int i = 0; i < fileIdParams.length; i++) {
@@ -426,38 +462,18 @@ public class Access extends AbstractApiBean {
                 datafilesMap.put(df.getId(), df);
             }
         }
-
-        // Handle Guestbook Responses
-        for (DataFile df : datafilesMap.values()) {
-            try {
-                if (checkGuestbookRequiredResponse(user, df)) {
-                    GuestbookResponse gbr = getGuestbookResponseFromBody(df, GuestbookResponse.DOWNLOAD, jsonBody, user);
-                    if (gbr != null) {
-                        engineSvc.submit(new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), gbr, gbr.getDataset()));
-                    } else {
-                        return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing"));
-                    }
-                } else if (gbrecs != true && df.isReleased()) {
-                    // Write Guestbook record if not done previously and file is released
-                    guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, user);
-                }
-            } catch (JsonParseException | CommandException ex) {
-                List<String> args = Arrays.asList(df.getDisplayName(), ex.getLocalizedMessage());
-                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbook.commandError", args));
-            }
-        }
-        if (signed) {
-            return returnSignedUrl(datafilesMap, uriInfo, user);
-        } else {
-            return null;
-        }
+        return datafilesMap;
     }
 
-    private Response returnSignedUrl(Map<Long, DataFile> datafilesMap, UriInfo uriInfo, User user) {
+    private Response returnSignedUrl(Map<Long, DataFile> datafilesMap, UriInfo uriInfo, User user, boolean gbrecs) {
         AuthenticatedUser requestor = (AuthenticatedUser) user;
         // Create the signed URL
         if (!datafilesMap.isEmpty()) {
-            String baseUrlEncoded = uriInfo.getAbsolutePath() + "?gbrecs=true";
+            UriBuilder builder = UriBuilder.fromUri(uriInfo.getRequestUri());
+            builder.replaceQueryParam("gbrecs", String.valueOf(gbrecs));
+            URI modifiedUri = builder.build();
+
+            String baseUrlEncoded = modifiedUri.toString();//uriInfo.getRequestUri().toString();
             String baseUrl = URLDecoder.decode(baseUrlEncoded, StandardCharsets.UTF_8);
             String key = "";
             ApiToken apiToken = authSvc.findApiTokenByUser(requestor);
@@ -717,7 +733,8 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("dataset/{id}")
     @Produces({"application/zip"})
-    public Response downloadAllFromLatest(@Context ContainerRequestContext crc, @PathParam("id") String datasetIdOrPersistentId, @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+    public Response downloadAllFromLatest(@Context ContainerRequestContext crc, @PathParam("id") String datasetIdOrPersistentId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("signed") boolean signed,
+                                          @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
         try {
             User user = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(user);
@@ -731,7 +748,11 @@ public class Access extends AbstractApiBean {
                     // We don't want downloads from Draft versions to be counted, 
                     // so we are setting the gbrecs (aka "do not write guestbook response") 
                     // variable accordingly:
-                    return downloadDatafiles(crc, fileIds, true, uriInfo, headers, response, "draft");
+                    if (signed) {
+                        return returnSignedUrl(getDatafilesMap(crc, fileIds), uriInfo, user, true);
+                    } else {
+                        return downloadDatafiles(crc, fileIds, true, uriInfo, headers, response, "draft");
+                    }
                 }
             }
             
@@ -752,7 +773,11 @@ public class Access extends AbstractApiBean {
             }
             
             String fileIds = getFileIdsAsCommaSeparated(latest.getFileMetadatas());
-            return downloadDatafiles(crc, fileIds, gbrecs, uriInfo, headers, response, latest.getFriendlyVersionNumber());
+            if (signed) {
+                return returnSignedUrl(getDatafilesMap(crc, fileIds), uriInfo, user, gbrecs);
+            } else {
+                return downloadDatafiles(crc, fileIds, gbrecs, uriInfo, headers, response, latest.getFriendlyVersionNumber());
+            }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -816,7 +841,12 @@ public class Access extends AbstractApiBean {
             if (dsv.isDraft()) {
                 gbrecs = true;
             }
-            return downloadDatafiles(crc, fileIds, gbrecs, uriInfo, headers, response, dsv.getFriendlyVersionNumber().toLowerCase());
+            if (signed) {
+                AuthenticatedUser user = (AuthenticatedUser) getRequestUser(crc);
+                return returnSignedUrl(getDatafilesMap(crc, fileIds), uriInfo, user, gbrecs);
+            } else {
+                return downloadDatafiles(crc, fileIds, gbrecs, uriInfo, headers, response, dsv.getFriendlyVersionNumber().toLowerCase());
+            }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -905,8 +935,14 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafiles/{fileIds}")
     @Produces({"application/zip"})
-    public Response datafiles(@Context ContainerRequestContext crc, @PathParam("fileIds") String fileIds, @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
-        return downloadDatafiles(crc, fileIds, gbrecs, uriInfo, headers, response, null);
+    public Response datafiles(@Context ContainerRequestContext crc, @PathParam("fileIds") String fileIds, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("signed") boolean signed,
+                              @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+        if (signed) {
+            AuthenticatedUser user = (AuthenticatedUser) getRequestUser(crc);
+            return returnSignedUrl(getDatafilesMap(crc, fileIds), uriInfo, user, gbrecs);
+        } else {
+            return downloadDatafiles(crc, fileIds, gbrecs, uriInfo, headers, response, null);
+        }
     }
 
     @POST

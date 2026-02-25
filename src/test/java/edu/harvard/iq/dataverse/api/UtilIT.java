@@ -1231,6 +1231,12 @@ public class UtilIT {
         //.header(API_TOKEN_HTTP_HEADER, apiToken)
         return requestSpecification.get("/api/access/datafile/" + fileId + "?key=" + apiToken + optionalFormat + optionalImageThumb);
     }
+
+    static Response downloadFile(Integer fileId, String queryParams, String apiToken) {
+        RequestSpecification requestSpecification = given();
+
+        return requestSpecification.get("/api/access/datafile/" + fileId + "?key=" + apiToken + queryParams);
+    }
     
     static Response downloadTabularFile(Integer fileId) {
         return given()
