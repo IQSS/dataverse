@@ -261,8 +261,12 @@ public enum FeatureFlags {
      * @apiNote Raise flag by setting "dataverse.feature.unify-api-response-message-style"
      * @since Dataverse 6.10
      */
-    UNIFY_API_RESPONSE_MESSAGE_STYLE("unify-api-response-message-style")
+    UNIFY_API_RESPONSE_MESSAGE_STYLE("unify-api-response-message-style"),
     
+    /** Require Embargo Reason. By default, adding a reason when embargoing is optional. This 
+     * flag makes a reason required, both in the UI and API.
+     */
+    REQUIRE_EMBARGO_REASON("require-embargo-reason"),
     ;
     
     

@@ -2006,6 +2006,7 @@ Available Dataset Metadata Exporters
 
 The following dataset metadata exporters ship with Dataverse:
 
+- ``croissant``
 - ``Datacite``
 - ``dataverse_json``
 - ``dcterms``
@@ -2034,7 +2035,7 @@ Please note that the ``schema.org`` format has changed in backwards-incompatible
 
 Both forms are valid according to Google's Structured Data Testing Tool at https://search.google.com/structured-data/testing-tool . Schema.org JSON-LD is an evolving standard that permits a great deal of flexibility. For example, https://schema.org/docs/gs.html#schemaorg_expected indicates that even when objects are expected, it's ok to just use text. As with all metadata export formats, we will try to keep the Schema.org JSON-LD format backward-compatible to make integrations more stable, despite the flexibility that's afforded by the standard.
 
-The standard has further evolved into a format called Croissant. For details, see :ref:`schema.org-head` in the Admin Guide.
+The standard has further evolved into a format called Croissant. For details, see :ref:`croissant-head` in the Admin Guide.
 
 The ``schema.org`` format changed after Dataverse 6.4 as well. Previously its content type was "application/json" but now it is "application/ld+json".
 
@@ -2807,6 +2808,8 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/2347/assignments/6"
 
+
+.. _create-a-preview-url-for-a-dataset:
 
 Create a Preview URL for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3695,14 +3698,14 @@ Set an Embargo on Files in a Dataset
 
 ``/api/datasets/$dataset-id/files/actions/:set-embargo`` can be used to set an embargo on one or more files in a dataset. Embargoes can be set on files that are only in a draft dataset version (and are not in any previously published version) by anyone who can edit the dataset. The same API call can be used by a superuser to add an embargo to files that have already been released as part of a previously published dataset version. 
 
-The API call requires a Json body that includes the embargo's end date (dateAvailable), a short reason (optional), and a list of the fileIds that the embargo should be set on. The dateAvailable must be after the current date and the duration (dateAvailable - today's date) must be less than the value specified by the :ref:`:MaxEmbargoDurationInMonths` setting. All files listed must be in the specified dataset. For example: 
+The API call requires a Json body that includes the embargo's end date (dateAvailable - YYYY-MM-DD format), a short reason (must not consist of whitespace only, optional unless Dataverse is configured to make it required), and a list of the fileIds that the embargo should be set on. The dateAvailable must be after the current date and the duration (dateAvailable - today's date) must be less than the value specified by the :ref:`:MaxEmbargoDurationInMonths` setting. All files listed must be in the specified dataset. For example: 
 
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
-  export JSON='{"dateAvailable":"2021-10-20", "reason":"Standard project embargo", "fileIds":[300,301,302]}'
+  export JSON='{"dateAvailable":"2021-01-20", "reason":"Standard project embargo", "fileIds":[300,301,302]}'
 
   curl -H "X-Dataverse-key: $API_TOKEN" -H "Content-Type:application/json" "$SERVER_URL/api/datasets/:persistentId/files/actions/:set-embargo?persistentId=$PERSISTENT_IDENTIFIER" -d "$JSON"
 
@@ -3914,6 +3917,8 @@ Like :ref:`get-export-formats`, this API can be used to get URLs to dataset meta
 
   curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/linkset?persistentId=$PERSISTENT_IDENTIFIER"
 
+.. _get-dataset-by-preview-url-token:
+
 Get Dataset By Preview URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3931,6 +3936,8 @@ Usage example:
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/datasets/previewUrlDatasetVersion/a56444bc-7697-4711-8964-e0577f055fd2?returnOwners=true"
+
+For downloading files using a preview URL token, see the :ref:`Data Access API <get-file-using-preview-url-token>`.
 
 
 .. _get-citation:
@@ -3996,6 +4003,7 @@ Get Citation by Preview URL Token
   export PREVIEW_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
 
   curl "$SERVER_URL/api/datasets/previewUrlDatasetVersion/$PREVIEW_URL_TOKEN/citation"
+
 
 .. _get-dataset-summary-field-names:
 

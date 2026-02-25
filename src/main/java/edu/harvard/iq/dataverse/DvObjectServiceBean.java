@@ -24,9 +24,9 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import jakarta.persistence.StoredProcedureQuery;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.persistence.exceptions.DatabaseException;
 
 /**
  * Your goto bean for everything {@link DvObject}, that's not tied to any
@@ -402,9 +402,14 @@ public class DvObjectServiceBean implements java.io.Serializable {
     }
     
     public String generateNewIdentifierByStoredProcedure() {
-        StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
-        query.execute();
-        return (String) query.getOutputParameterValue(1);
+        try {
+            Query query = em.createNativeQuery("SELECT generateIdentifierFromStoredProcedure()");
+            return (String) query.getSingleResult();
+        } catch (DatabaseException e) {
+            // It's possible that the function "generateIdentifierFromStoredProcedure" is not defined in the database
+            logger.severe("Error generating identifier using stored procedure: " + e.getMessage());
+            return null;
+        }
     }
     
     /** @deprecated Backward-compatibility method to get the effective pid generator for a DvObjectContainer.

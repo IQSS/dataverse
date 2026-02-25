@@ -306,6 +306,10 @@ public enum JvmSettings {
     SCOPE_LOCALCONTEXTS(PREFIX, "localcontexts"),
     LOCALCONTEXTS_URL(SCOPE_LOCALCONTEXTS, "url"),
     LOCALCONTEXTS_API_KEY(SCOPE_LOCALCONTEXTS, "api-key"),
+
+    // LEGACY SETTINGS
+    SCOPE_LEGACY(PREFIX, "legacy"),
+    SCHEMAORG_IN_HTML_HEAD(SCOPE_LEGACY, "schemaorg-in-html-head"),
     
     // LinkedDataNotification
     SCOPE_LINKEDDATANOTIFICATION(PREFIX, "ldn"),
