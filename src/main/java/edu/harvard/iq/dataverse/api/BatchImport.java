@@ -15,8 +15,6 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.json.JsonObjectBuilder;
@@ -31,8 +29,6 @@ import jakarta.ws.rs.core.Response;
 @Stateless
 @Path("batch")
 public class BatchImport extends AbstractApiBean {
-
-    private static final Logger logger = Logger.getLogger(BatchImport.class.getName());
 
     @EJB
     DatasetServiceBean datasetService;
@@ -92,12 +88,8 @@ public class BatchImport extends AbstractApiBean {
             String filename = null;  // Since this is a single input from a POST, there is no file that we are reading from.
             JsonObjectBuilder status = importService.doImport(dataverseRequest, owner, body, filename, ImportType.NEW, cleanupLog);
             return this.ok(status);
-        } catch (ImportException e) {
-            return error(Response.Status.BAD_REQUEST, e.getMessage());
-        } catch (IOException e) {
-            // Avoid returning low-level backend details to clients; keep full exception details in server logs.
-            logger.log(Level.WARNING, "I/O error during dataset import", e);
-            return error(Response.Status.BAD_REQUEST, "Error importing dataset");
+        } catch (ImportException | IOException e) {
+            return this.error(Response.Status.BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -142,7 +134,7 @@ public class BatchImport extends AbstractApiBean {
             batchService.processFilePath(fileDir, parentIdtf, dataverseRequest, owner, importType, createDV);
 
         } catch (ImportException e) {
-            return error(Response.Status.BAD_REQUEST, "Import Exception, " + e.getMessage());
+            return this.error(Response.Status.BAD_REQUEST, "Import Exception, " + e.getMessage());
         }
         return this.accepted();
     }
