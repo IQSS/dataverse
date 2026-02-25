@@ -811,6 +811,10 @@ public class JsonParserTest {
 
         final String guestbookResponseJson = """
                         {
+                            "name": "My Name",
+                            "email": "myemail@example.com",
+                            "institution": "Harvard",
+                            "position": "Upright",
                             "answers": [
                                 {
                                     "id": 1,
@@ -868,6 +872,21 @@ public class JsonParserTest {
         try {
             jsonObj = JsonUtil.getJsonObject(guestbookResponseJson.replace("3", "4"));
             gbr = sut.parseGuestbookResponse(jsonObj, guestbookResponse);
+        } catch (JsonParseException e) {
+            System.out.println(e.getMessage());
+            assertTrue(e.getMessage().contains("ID 4 not found"));
+        }
+
+        // Test overwrite name, email, institution and position.
+        try {
+            jsonObj = JsonUtil.getJsonObject(guestbookResponseJson);
+            gbr = sut.parseGuestbookResponse(jsonObj, guestbookResponse);
+            assertEquals("My Name", gbr.getName());
+            // Removing name from the JSON defaults it to the original value in guestbook response
+            gbr.setName("My Original Name");
+            jsonObj = JsonUtil.getJsonObject(guestbookResponseJson.replace("\"name\": \"My Name\",", ""));
+            gbr = sut.parseGuestbookResponse(jsonObj, guestbookResponse);
+            assertEquals("My Original Name", gbr.getName());
         } catch (JsonParseException e) {
             System.out.println(e.getMessage());
             assertTrue(e.getMessage().contains("ID 4 not found"));

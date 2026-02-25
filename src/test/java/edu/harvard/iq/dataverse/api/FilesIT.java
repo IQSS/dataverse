@@ -3888,6 +3888,14 @@ public class FilesIT {
         String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
         String username = UtilIT.getUsernameFromResponse(createUserResponse);
 
+        // Create second user with no permission
+        createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.prettyPrint();
+        assertEquals(200, createUserResponse.getStatusCode());
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String username2 = UtilIT.getUsernameFromResponse(createUserResponse);
+        String user2Email = JsonPath.from(createUserResponse.body().asString()).getString("data.authenticatedUser.email");
+
         // Create Dataset
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, ownerApiToken);
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
@@ -3997,6 +4005,21 @@ public class FilesIT {
         signedUrlResponse = get(signedUrl);
         signedUrlResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+
+        // TEST Overwrite name, email, institution and position in guestbook Response. Using user2
+        requestFileAccessResponse = UtilIT.requestFileAccess(fileId1.toString(), apiToken2, null);
+        assertEquals(200, requestFileAccessResponse.getStatusCode());
+        grantFileAccessResponse = UtilIT.grantFileAccess(fileId1.toString(), "@" + username2, ownerApiToken);
+        assertEquals(200, grantFileAccessResponse.getStatusCode());
+        // Modify guestbookResponse excluding email to show that the email remains unchanged
+        guestbookResponse = guestbookResponse.replace("\"guestbookResponse\": {",
+                "\"guestbookResponse\": { \"name\":\"My Name\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
+        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken2, guestbookResponse, true);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Response guestbookResponses = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), ownerApiToken);
+        assertTrue(guestbookResponses.prettyPrint().contains("My Name," + user2Email + ",My Institution,My Position"));
     }
 
     @Test
@@ -4045,7 +4068,5 @@ public class FilesIT {
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        String signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
-
     }
 }

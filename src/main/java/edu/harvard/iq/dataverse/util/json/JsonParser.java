@@ -603,6 +603,11 @@ public class JsonParser {
         if (obj == null || guestbookResponse == null || guestbookResponse.getGuestbook() == null || guestbookResponse.getGuestbook().getCustomQuestions() == null) {
             return null;
         }
+        // overwrite name, email, institution and position.
+        guestbookResponse.setName(obj.getString("name", guestbookResponse.getName()));
+        guestbookResponse.setEmail(obj.getString("email", guestbookResponse.getEmail()));
+        guestbookResponse.setInstitution(obj.getString("institution", guestbookResponse.getInstitution()));
+        guestbookResponse.setPosition(obj.getString("position", guestbookResponse.getPosition()));
         Map<Long, CustomQuestion> cqMap = new HashMap<>();
         guestbookResponse.getGuestbook().getCustomQuestions().stream().forEach(cq -> cqMap.put(cq.getId(),cq));
         JsonArray answers = obj.getJsonArray("answers");
@@ -637,14 +642,14 @@ public class JsonParser {
         }
         guestbookResponse.setCustomQuestionResponses(customQuestionResponses);
         // verify each required question is in the response
-        List<String> missingReponses = new ArrayList<>();
+        List<String> missingResponses = new ArrayList<>();
         for (Map.Entry<Long, CustomQuestion> e : cqMap.entrySet()) {
             if (e.getValue().isRequired()) {
-                missingReponses.add(e.getValue().getQuestionString());
+                missingResponses.add(e.getValue().getQuestionString());
             }
         }
-        if (!missingReponses.isEmpty()) {
-            String missing = String.join(",", missingReponses);
+        if (!missingResponses.isEmpty()) {
+            String missing = String.join(",", missingResponses);
             throw new JsonParseException(BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookresponseMissingRequired", List.of(missing)));
         }
 
