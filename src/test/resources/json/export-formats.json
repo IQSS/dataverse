@@ -49,6 +49,12 @@
       "XMLSchemaLocation": "https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd",
       "XMLSchemaVersion": "2.5"
     },
+    "croissant": {
+      "displayName": "Croissant",
+      "mediaType": "application/json",
+      "isHarvestable": false,
+      "isVisibleInUserInterface": true
+    },
     "dcterms": {
       "displayName": "Dublin Core",
       "mediaType": "application/xml",
