@@ -99,7 +99,7 @@ Basic access URI:
 
   Example ::
 
-    POST http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB&signed=true -d '{"guestbookResponse": {"answers": [{"id": 123,"value": "Good"},{"id": 124,"value": ["Multi","Line"]},{"id": 125,"value": "Yellow"}]}}'
+    POST http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB&signed=true -d '{"guestbookResponse": {"name": "My Name", "email": "myemail@example.com", "institution": "Harvard","position": "Upright", "answers": [{"id": 123,"value": "Good"},{"id": 124,"value": ["Multi","Line"]},{"id": 125,"value": "Yellow"}]}}'
 
 Parameters:
 ~~~~~~~~~~~

@@ -10,7 +10,7 @@ A post to these endpoints with the body containing a JSON Guestbook Response wil
 `/api/access/dataset/{id}`
 `/api/access/dataset/{id}/versions/{versionId}`
 
-The matching GET APIs will also take the `?signed=true` parameter to also return the signed url instead of downloading immediately. Note: Signed urls are only for Authenticated Users. Guest users will receive an error if requesting with signed=true'
+The matching GET APIs will also take the `?signed=true` parameter to also return the signed url instead of downloading immediately. Note: Signed urls are only for Authenticated Users. Guest users will receive an error if requesting with signed=true
 
 A post to these endpoints with the body containing a JSON Guestbook Response will save the response before continuing the download.
 No signed URL option exists.
