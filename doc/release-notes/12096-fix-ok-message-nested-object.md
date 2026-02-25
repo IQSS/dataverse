@@ -21,7 +21,7 @@ dataverse.legacy.api-response-message-style=true
 
 This flag will be removed in a future version.
 
-**Note:** As of this version, there is also an experimental opt-in feature that will align API responses on about 230 more occassions.
+**Note:** As of this version, there is also an experimental opt-in feature that will align API responses on about 230 more occasions.
 In these responses, the message is embedded into the "data" field as a nested object.
 If you want to test your integrations and clients, please enable the `dataverse.feature.unify-api-response-message-style` feature flag.
 In a future version of Dataverse, this now experimental style is going to become the supported default.
