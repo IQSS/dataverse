@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.api;
 
 import com.google.common.collect.Lists;
 import com.google.api.client.util.ArrayMap;
+import com.google.api.client.util.Data;
+import com.google.api.services.storage.Storage.AnywhereCaches.Get;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
@@ -2129,15 +2131,25 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/allowedStorageDrivers")
-    public Response listStorageDrivers(@Context ContainerRequestContext crc) throws WrappedResponse {
+    public Response listStorageDrivers(@Context ContainerRequestContext crc, @PathParam("identifier") String id) throws WrappedResponse {
         
+        Dataverse dv = findDataverseOrDie(id);
+
+
         /*
-         * TODO: This endpoint will return the full list but there is a request by Jim Myers 
-         * to only return the storage drivers that the dataverse can use.
+         * TODO: This endpoint ad GetDataverseAllowedStorageDriverCommand needs to be completed, 
+         * currently it mocks things that will be required to model the behavior requested by Jim Myers, 
+         * which is to return the list of storage drivers that the dataverse can use. 
+         * Currently it will return the full list of drivers available.
          */
-        JsonObjectBuilder bld = jsonObjectBuilder();
-        DataAccess.getStorageDriverLabels().entrySet().forEach(s -> bld.add(s.getKey(), s.getValue()));
-        return ok(bld);
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            DataverseRequest request = createDataverseRequest(user);
+            GetDataverseAllowedStorageDriverCommand getAllowedStorageDriversCommand = new GetDataverseAllowedStorageDriverCommand(request, dv);
+            return ok(execCommand(getAllowedStorageDriversCommand));
+        } catch (Exception e) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
     }
 
 }

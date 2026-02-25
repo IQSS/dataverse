@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import java.util.Map.Entry;
-
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
