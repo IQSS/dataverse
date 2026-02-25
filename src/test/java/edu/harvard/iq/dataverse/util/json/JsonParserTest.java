@@ -812,7 +812,7 @@ public class JsonParserTest {
         final String guestbookResponseJson = """
                         {
                             "name": "My Name",
-                            "email": "myemail@example.com",
+                            "email": "my.email@example.com",
                             "institution": "Harvard",
                             "position": "Upright",
                             "answers": [
@@ -887,6 +887,15 @@ public class JsonParserTest {
             jsonObj = JsonUtil.getJsonObject(guestbookResponseJson.replace("\"name\": \"My Name\",", ""));
             gbr = sut.parseGuestbookResponse(jsonObj, guestbookResponse);
             assertEquals("My Original Name", gbr.getName());
+            // test invalid email (does not change original)
+            gbr.setEmail("original@example.com");
+            jsonObj = JsonUtil.getJsonObject(guestbookResponseJson.replace("my.email@example.com", "badEmail.com"));
+            gbr = sut.parseGuestbookResponse(jsonObj, guestbookResponse);
+            assertEquals("original@example.com", gbr.getEmail());
+            // test valid email (overwrite email)
+            jsonObj = JsonUtil.getJsonObject(guestbookResponseJson.replace("my.email@example.com", "new@example.com"));
+            gbr = sut.parseGuestbookResponse(jsonObj, guestbookResponse);
+            assertEquals("new@example.com", gbr.getEmail());
         } catch (JsonParseException e) {
             System.out.println(e.getMessage());
             assertTrue(e.getMessage().contains("ID 4 not found"));

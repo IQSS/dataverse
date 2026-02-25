@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import jakarta.json.*;
@@ -603,9 +604,16 @@ public class JsonParser {
         if (obj == null || guestbookResponse == null || guestbookResponse.getGuestbook() == null || guestbookResponse.getGuestbook().getCustomQuestions() == null) {
             return null;
         }
-        // overwrite name, email, institution and position.
+        // overwrite name, email(if valid), institution and position.
         guestbookResponse.setName(obj.getString("name", guestbookResponse.getName()));
-        guestbookResponse.setEmail(obj.getString("email", guestbookResponse.getEmail()));
+        String email = obj.getString("email", null);
+        if (email != null) {
+            if (EMailValidator.isEmailValid(email)) {
+                guestbookResponse.setEmail(email);
+            } else {
+                logger.warning("Ignoring invalid email address in Guestbook response: " + email);
+            }
+        }
         guestbookResponse.setInstitution(obj.getString("institution", guestbookResponse.getInstitution()));
         guestbookResponse.setPosition(obj.getString("position", guestbookResponse.getPosition()));
         Map<Long, CustomQuestion> cqMap = new HashMap<>();
