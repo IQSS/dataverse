@@ -3858,6 +3858,15 @@ Example: ``dataverse.api.mdc.min-delay-ms=100`` (enforces a minimum 100ms delay 
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_MDC_MIN_DELAY_MS``.
 
+.. _dataverse.legacy.schemaorg-in-html-head:
+
+dataverse.legacy.schemaorg-in-html-head
++++++++++++++++++++++++++++++++++++++++
+
+Instead of Croissant, use the legacy format (Schema.org JSON-LD) in the head of dataset landing pages by setting ``dataverse.legacy.schemaorg-in-html-head=true``. See :ref:`croissant-head`.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_LEGACY_SCHEMAORG_IN_HTML_HEAD``.
+
 .. dataverse.ldn
 
 Linked Data Notifications (LDN) Allowed Hosts
@@ -4037,7 +4046,6 @@ dataverse.feature.only-update-datacite-when-needed
 ++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Only contact DataCite to update a DOI after checking to see if DataCite has outdated information (for efficiency, lighter load on DataCite, especially when using file DOIs).
-
 
 
 
@@ -5295,6 +5303,15 @@ This post-publish workflow is useful for actions such as sending notifications a
 ``curl -X PUT -d '2' http://localhost:8080/api/admin/settings/:PostPublishDatasetWorkflowId``
 
 See :ref:`Workflow Admin section <workflow_admin>` for more details and context.
+
+.. _:PublishDatasetDisclaimerText:
+
+:PublishDatasetDisclaimerText
++++++++++++++++++++++++++++++
+
+The text displayed to the user that must be acknowledged prior to publishing a Dataset. When not set the acknowledgment is not required nor displayed.
+
+``curl -X PUT -d "By publishing this dataset, I fully accept all legal responsibility for ensuring that the deposited content is: anonymized, free of copyright violations, and contains data that is computationally reusable. I understand and agree that any violation of these conditions may result in the immediate removal of the dataset by the repository without prior notice." http://localhost:8080/api/admin/settings/:PublishDatasetDisclaimerText``
 
 .. _:BagItHandlerEnabled:
 

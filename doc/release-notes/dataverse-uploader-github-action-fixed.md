@@ -1,0 +1,1 @@
+It came to our attention that the [Dataverse Uploader GitHub Action](https://guides.dataverse.org/en/6.10/admin/integrations.html#github) was [failing](https://github.com/IQSS/dataverse-uploader/issues/28) with an "unhashable type" error. This has been fixed in a new release, [v1.7](https://github.com/IQSS/dataverse-uploader/releases/tag/v1.7).

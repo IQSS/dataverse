@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource xmlns="http://datacite.org/schema/kernel-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4.5/metadata.xsd">
+    <identifier identifierType="DOI">10.5072/FK2/VQTYHD</identifier>
+    <creators>
+        <creator>
+            <creatorName nameType="Personal">Durbin, Philip</creatorName>
+            <givenName>Philip</givenName>
+            <familyName>Durbin</familyName>
+            <nameIdentifier nameIdentifierScheme="ORCID" schemeURI="https://orcid.org">https://orcid.org/0000-0002-9528-9470</nameIdentifier>
+            <affiliation>Harvard University</affiliation>
+        </creator>
+        <creator>
+            <creatorName nameType="Personal">IQSS</creatorName>
+            <affiliation>Harvard University</affiliation>
+        </creator>
+    </creators>
+    <titles>
+        <title>Max Schema.org</title>
+    </titles>
+    <publisher>Root</publisher>
+    <publicationYear>2024</publicationYear>
+    <subjects>
+        <subject>Social Sciences</subject>
+        <subject>Other</subject>
+        <subject>foo</subject>
+        <subject>bar</subject>
+    </subjects>
+    <contributors>
+        <contributor contributorType="ContactPerson">
+            <contributorName nameType="Personal">Durbin, Philip</contributorName>
+            <givenName>Philip</givenName>
+            <familyName>Durbin</familyName>
+        </contributor>
+    </contributors>
+    <dates>
+        <date dateType="Submitted">2024-05-01</date>
+        <date dateType="Available">2024-05-01</date>
+        <date dateType="Updated">2025-05-21</date>
+        <date dateType="Other" dateInformation="Time period covered by the data">2023-01-01/2023-12-31</date>
+    </dates>
+    <resourceType resourceTypeGeneral="Dataset"/>
+    <relatedIdentifiers>
+        <relatedIdentifier relationType="IsSupplementTo" relatedIdentifierType="DOI">10.5281/ZENODO.10843668</relatedIdentifier>
+    </relatedIdentifiers>
+    <sizes>
+        <size>34</size>
+        <size>21865</size>
+        <size>27</size>
+    </sizes>
+    <formats>
+        <format>text/markdown</format>
+        <format>text/tab-separated-values</format>
+        <format>text/tab-separated-values</format>
+    </formats>
+    <version>3.0</version>
+    <rightsList>
+        <rights rightsURI="info:eu-repo/semantics/openAccess"/>
+        <rights rightsURI="http://creativecommons.org/publicdomain/zero/1.0" rightsIdentifier="CC0-1.0" rightsIdentifierScheme="SPDX" schemeURI="https://spdx.org/licenses/" xml:lang="en">Creative Commons CC0 1.0 Universal Public Domain Dedication.</rights>
+    </rightsList>
+    <descriptions>
+        <description descriptionType="Abstract">Exercising fields used by `schema.org` exporter.</description>
+    </descriptions>
+    <geoLocations>
+        <geoLocation>
+            <geoLocationPlace>United States, MA,, Cambridge,, Harvard Square,</geoLocationPlace>
+        </geoLocation>
+    </geoLocations>
+    <fundingReferences>
+        <fundingReference>
+            <funderName>NSF</funderName>
+        </fundingReference>
+        <fundingReference>
+            <funderName>NIH</funderName>
+            <awardNumber>3OT2DB000004-01S3</awardNumber>
+        </fundingReference>
+    </fundingReferences>
+</resource>

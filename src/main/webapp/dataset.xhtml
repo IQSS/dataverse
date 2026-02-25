@@ -50,6 +50,7 @@
             <ui:param name="thumbnailString" value="#{DatasetPage.thumbnailString}"/>
             <ui:param name="jsonLd" value="#{DatasetPage.jsonLd}"/>
             <ui:param name="croissant" value="#{DatasetPage.croissant}"/>
+            <ui:param name="legacyFormatInHead" value="#{DatasetPage.useLegacyFormatInHead}"/>
             <ui:param name="latestVersionInReview" value="#{DatasetPage.dataset.latestVersion.inReview}"/>
             <ui:param name="showSubmitForReviewLink" value="#{DatasetPage.editMode != 'CREATE' and version == DatasetPage.dataset.latestVersion
                                                               and !DatasetPage.datasetLockedInWorkflow
@@ -96,11 +97,11 @@
             <ui:define name="jsonld_header">
                 <ui:fragment rendered="#{!anonymizedAccess}">
                     <script type="application/ld+json">
-                        <ui:fragment rendered="#{croissant == null}">
-                            <h:outputText value="#{jsonLd}"/>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{croissant != null}">
+                        <ui:fragment rendered="#{!legacyFormatInHead}">
                             <h:outputText value="#{croissant}"/>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{legacyFormatInHead}">
+                            <h:outputText value="#{jsonLd}"/>
                         </ui:fragment>
                     </script>
                 </ui:fragment>
@@ -2030,8 +2031,18 @@
                                 <p class="col-sm-12 help-block">#{bundle['dataset.publish.terms.help.tip']}</p>
                             </div>
                         </ui:fragment>
+                        <ui:fragment rendered="#{valid and settingsWrapper.isHasPublishDatasetDisclaimerText()}">
+                            <div class="form-group">
+                                <p:selectBooleanCheckbox class="text-danger" id="publishDisclaimer"
+                                                         itemLabel="#{settingsWrapper.getPublishDatasetDisclaimerText()}"
+                                                         value="#{DatasetPage.publishDisclaimerAcknowledged}">
+                                    <p:ajax event="change" update="releaseDatasetButton"/>
+                                </p:selectBooleanCheckbox>
+                            </div>
+                        </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton rendered="#{valid}" styleClass="btn btn-default" value="#{bundle.continue}" 
+                            <p:commandButton id="releaseDatasetButton" rendered="#{valid}" styleClass="btn btn-default" value="#{bundle.continue}"
+                                             disabled="#{!DatasetPage.publishDisclaimerAcknowledged}"
                                              onclick="PF('publishDataset').hide();
                                                      PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}" />
                             <button class="btn btn-link" onclick="PF('publishDataset').hide();
@@ -2086,7 +2097,7 @@
                         <p class="text-warning">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.rejectMessage']} #{disableReasonField ? '':bundle['dataset.rejectMessageReason']}
                         </p>
-                        
+
                         <ui:fragment  rendered="#{!disableReasonField}">
                             <p:inputTextarea id="returnReason" rows="4" value="#{DatasetPage.returnReason}" title="#{bundle['dataset.rejectMessage.label']}" maxlength="2000" widgetVar="returnReason"
                                              cols="70" counter="display" counterTemplate="{0} characters remaining." autoResize="false"
@@ -2098,7 +2109,7 @@
                             <p:watermark for="returnReason" value="#{bundle['dataset.rejectWatermark']}" id="returnReasonWatermark"/>
                             <h:message for="returnReason" styleClass="bg-danger text-danger"/>
                         </ui:fragment>
-                        
+
                         <div class="button-block">
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}"
                                              update="@form"
@@ -2183,7 +2194,7 @@
                             <script>
                                 Cite.CSL.register.addTemplate("#{requestedCSL}",
                                         "#{CSLUtil:getCitationFormat((requestedCSL == '') ? 'apa' : requestedCSL)}");
-                                
+
                                 document.getElementById('datasetForm:cslOutput').innerHTML = cite.format("bibliography", {
                                     format: "html",
                                     template: "#{requestedCSL}",
