@@ -1,0 +1,5 @@
+This release adds support to map *.qdc and *.qdpx files as [REFI-QDA standard](https://www.qdasoftware.org/) Codebook and Project files for qualitative data analysis, which allows them to be used with the 
+new REFI QDA Previewers at https://github.com/gdcc/dataverse-previewers.
+
+Note that, to enable existing qdc and qdpx files to be used with the previewers, their Mimetypes will ned to be reassigned (by api (https://guides.dataverse.org/en/latest/api/native-api.html#redetect-file-type) or in the database) or their existing types used when configuring the previewers.
+
