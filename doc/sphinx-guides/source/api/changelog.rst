@@ -12,7 +12,7 @@ v6.10
 
 - Several API endpoints that return both a ``message`` and ``data`` field were incorrectly returning the message as a nested object (``{"message":{"message":"..."}}``).
   This has been fixed so that the message is now a plain string (``{"message":"..."}``).
-  If you have integrations that depend on the old behavior, you can temporarily revert by setting ``dataverse.feature.api-message-field-legacy=true``.
+  If you have integrations that depend on the old behavior, you can temporarily revert by setting ``dataverse.legacy.api-response-message-style=true``.
   This flag will be removed in a future version.
   Affected endpoints: ``POST /api/datasets/{id}/add`` (duplicate file warning), ``PUT /api/admin/settings``, ``PUT /api/dataverses/{id}``, ``PUT /api/dataverses/{id}/inputLevels``, ``POST /api/admin/savedsearches``, ``PUT /api/harvest/clients/{nickName}``, ``PUT /api/harvest/server/oaisets/{specname}``.
   See `#12096 <https://github.com/IQSS/dataverse/issues/12096>`_.
