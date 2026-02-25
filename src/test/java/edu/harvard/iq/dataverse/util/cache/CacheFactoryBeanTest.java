@@ -1,10 +1,6 @@
 package edu.harvard.iq.dataverse.util.cache;
 
-import com.hazelcast.cluster.Address;
 import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.map.IMap;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -32,6 +28,7 @@ import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
 import javax.cache.processor.EntryProcessorResult;
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -118,7 +115,7 @@ public class CacheFactoryBeanTest {
 
     @AfterAll
     public static void cleanup() {
-        Hazelcast.shutdownAll();
+        cache = null;
     }
     @Test
     @ResourceLock(value = "cache")
@@ -212,13 +209,9 @@ public class CacheFactoryBeanTest {
 
     // convert Hazelcast IMap<String,String> to JCache Cache<Object, Object>
     private class TestCache implements Cache<String, String>{
-        HazelcastInstance hzInstance;
-        IMap<String, String> cache;
+        Map<String, String> cache = new ConcurrentHashMap<>();
         TestCache(Config config) {
-            hzInstance = Hazelcast.newHazelcastInstance(config);
-            cache = hzInstance.getMap("test");
-            Address address = hzInstance.getCluster().getLocalMember().getAddress();
-            cache.put("memberAddress", String.format("%s:%d", address.getHost(), address.getPort()));
+            cache.put("memberAddress", "127.0.0.1:5701");
         }
         @Override
         public String get(String s) {
@@ -310,7 +303,7 @@ public class CacheFactoryBeanTest {
         }
         @Override
         public void close() {
-            hzInstance.shutdown();
+            cache.clear();
         }
         @Override
         public boolean isClosed() {

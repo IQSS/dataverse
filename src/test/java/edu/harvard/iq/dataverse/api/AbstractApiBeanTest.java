@@ -7,8 +7,11 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.testing.FeatureFlag;
+import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalFeatureFlags;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
@@ -23,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @LocalFeatureFlags
+@LocalJvmSettings
 class AbstractApiBeanTest {
 
     private static final Logger logger = Logger.getLogger(AbstractApiBeanTest.class.getCanonicalName());
@@ -84,6 +88,31 @@ class AbstractApiBeanTest {
         JsonReader jsonReader = Json.createReader(new StringReader(response.getEntity().toString()));
         JsonObject jsonObject = jsonReader.readObject();
         assertEquals(message, jsonObject.getString(ApiConstants.MESSAGE_FIELD));
+    }
+
+    @Test
+    void testMessageAndDataDefaultStyle() {
+        String message = "myMessage";
+        Response response = sut.ok(message, Json.createObjectBuilder().add("test", "value"));
+
+        JsonReader jsonReader = Json.createReader(new StringReader(response.getEntity().toString()));
+        JsonObject jsonObject = jsonReader.readObject();
+
+        assertEquals(message, jsonObject.getString(ApiConstants.MESSAGE_FIELD));
+        assertEquals("value", jsonObject.getJsonObject(ApiConstants.DATA_FIELD).getString("test"));
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.LEGACY_API_RESPONSE_MESSAGE_STYLE, value = "true")
+    void testMessageAndDataLegacyStyle() {
+        String message = "myMessage";
+        Response response = sut.ok(message, Json.createObjectBuilder().add("test", "value"));
+
+        JsonReader jsonReader = Json.createReader(new StringReader(response.getEntity().toString()));
+        JsonObject jsonObject = jsonReader.readObject();
+
+        assertEquals(message, jsonObject.getJsonObject(ApiConstants.MESSAGE_FIELD).getString(ApiConstants.MESSAGE_FIELD));
+        assertEquals("value", jsonObject.getJsonObject(ApiConstants.DATA_FIELD).getString("test"));
     }
 
     /**

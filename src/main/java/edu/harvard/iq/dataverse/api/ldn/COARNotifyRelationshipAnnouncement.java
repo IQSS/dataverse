@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
@@ -20,6 +19,7 @@ import static edu.harvard.iq.dataverse.api.LDNInbox.objectKey;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 import jakarta.ws.rs.BadRequestException;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -112,7 +112,25 @@ public class COARNotifyRelationshipAnnouncement {
      * Extract a field value from the message object.
      */
     private String extractField(JsonObject msgObject, String key) {
-        return msgObject.containsKey(key) ? msgObject.getString(key) : null;
+        if (!msgObject.containsKey(key)) {
+            return null;
+        }
+
+        JsonValue value = msgObject.get(key);
+        if (value.getValueType().equals(JsonValue.ValueType.STRING)) {
+            return msgObject.getString(key);
+        }
+
+        // JSON-LD expansion may represent IRI values as {"@id":"..."} objects.
+        if (value.getValueType().equals(JsonValue.ValueType.OBJECT)) {
+            JsonObject objectValue = msgObject.getJsonObject(key);
+            JsonValue id = objectValue.get("@id");
+            if (id != null && id.getValueType().equals(JsonValue.ValueType.STRING)) {
+                return objectValue.getString("@id");
+            }
+        }
+
+        return null;
     }
 
     /**
