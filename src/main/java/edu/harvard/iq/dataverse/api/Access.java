@@ -435,11 +435,7 @@ public class Access extends AbstractApiBean {
                 return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbook.commandError", args));
             }
         }
-        if (signed) {
-            return returnSignedUrl(datafilesMap, uriInfo, user, gbrecs);
-        } else {
-            return null;
-        }
+        return signed ? returnSignedUrl(datafilesMap, uriInfo, user, gbrecs) : null;
     }
 
     private Map<Long, DataFile> getDatafilesMap(ContainerRequestContext crc, String fileIds) {
@@ -473,7 +469,7 @@ public class Access extends AbstractApiBean {
             builder.replaceQueryParam("gbrecs", String.valueOf(gbrecs));
             URI modifiedUri = builder.build();
 
-            String baseUrlEncoded = modifiedUri.toString();//uriInfo.getRequestUri().toString();
+            String baseUrlEncoded = modifiedUri.toString();
             String baseUrl = URLDecoder.decode(baseUrlEncoded, StandardCharsets.UTF_8);
             String key = "";
             ApiToken apiToken = authSvc.findApiTokenByUser(requestor);

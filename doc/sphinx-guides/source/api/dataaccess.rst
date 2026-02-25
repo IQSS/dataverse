@@ -95,11 +95,11 @@ Basic access URI:
 
     GET http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB
 
-.. note:: Restricted files that require a Guestbook Response will require an additional step to supply the Guestbook Response. A POST to the same endpoint with the Guestbook Response in the body can return a signed url (with query parameter ``&signed=true``) that can be used to download the file(s) via a browser or download manager. Without the ``signed`` parameter the download will start immediately. For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
+.. note:: Restricted files that require a Guestbook Response will require an additional step to supply the Guestbook Response. A POST to the same endpoint with the Guestbook Response in the body can return a signed url (with query parameter ``&signed=true``) that can be used to download the file(s) via a browser or download manager. Without the ``signed`` parameter the download will start immediately. For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide. In the following JSON example please note that the `name`, `email`, `institution`, and `position` fields will default to the User's account information if not included in the response.
 
   Example ::
 
-    POST http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB&signed=true -d '{"guestbookResponse": {"name": "My Name", "email": "myemail@example.com", "institution": "Harvard","position": "Upright", "answers": [{"id": 123,"value": "Good"},{"id": 124,"value": ["Multi","Line"]},{"id": 125,"value": "Yellow"}]}}'
+    POST http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB&signed=true -d '{"guestbookResponse": {"name": "My Name", "email": "myemail@example.com", "institution": "Harvard","position": "Staff", "answers": [{"id": 123,"value": "Good"},{"id": 124,"value": ["Multi","Line"]},{"id": 125,"value": "Yellow"}]}}'
 
 Parameters:
 ~~~~~~~~~~~
