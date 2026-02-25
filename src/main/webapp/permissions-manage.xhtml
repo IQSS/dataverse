@@ -274,8 +274,9 @@
                             <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['dataverse.permissions.usersOrGroups.removeBtn.confirmation']}</span>
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confirmation').hide()" 
-                                             action="#{managePermissionsPage.removeRoleAssignment()}" 
+                            <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" oncomplete="PF('confirmation').hide()" 
+                                             action="#{managePermissionsPage.removeRoleAssignment()}"
+                                             process="@this" 
                                              update=":#{p:resolveClientId('rolesPermissionsForm:configureSettings', view)} assignedRoles roleAssignmentHistory @([id$=Messages])" />
                             <button class="btn btn-link" onclick="PF('confirmation').hide()" type="button">
                                 #{bundle.cancel}

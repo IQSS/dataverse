@@ -151,7 +151,6 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
 
     public void setSelectedRoleAssignment(RoleAssignment selectedRoleAssignment) {
-        logger.info("Selecting ra: " + selectedRoleAssignment.toString());
         this.selectedRoleAssignment = selectedRoleAssignment;
     }
 
@@ -188,11 +187,6 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
 
     public void removeRoleAssignment() {
-        if(selectedRoleAssignment != null) {
-          logger.info("revoking " + selectedRoleAssignment.toString());
-        } else {
-            logger.info("No RA to revoke");
-        }
         revokeRole(selectedRoleAssignment);
 
         if (dvObject instanceof Dataverse) {
