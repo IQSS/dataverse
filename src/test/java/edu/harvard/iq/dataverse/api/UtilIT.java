@@ -3025,10 +3025,10 @@ public class UtilIT {
                 .delete("/api/admin/storageSites/" + storageSiteId);
     }
 
-    static Response listStorageDrivers(String apiToken) {
+    static Response listStorageDrivers(String apiToken, String dataverseAlias) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/admin/dataverse/storageDrivers");
+                .get("/api/dataverses/" + dataverseAlias + "/storageDrivers");
     }
 
     static Response getStorageDriver(String dvAlias, String apiToken) {
@@ -3038,14 +3038,14 @@ public class UtilIT {
         String params = getEffective != null ? "?getEffective=" + getEffective : "";
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/admin/dataverse/" + dvAlias + "/storageDriver" + params);
+                .get("/api/dataverses/" + dvAlias + "/storageDriver" + params);
     }
 
     static Response setStorageDriver(String dvAlias, String label, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(label)
-                .put("/api/admin/dataverse/" + dvAlias + "/storageDriver");
+                .put("/api/dataverses/" + dvAlias + "/storageDriver");
     }
 
     static Response getUploadUrls(String idOrPersistentIdOfDataset, long sizeInBytes, String apiToken) {

@@ -2068,20 +2068,6 @@ public class Dataverses extends AbstractApiBean {
             String storageDriver = execCommand(new GetDataverseStorageDriverCommand(req, findDataverseOrDie(id), getEffective));
             return ok(JsonPrinter.jsonStorageDriver(storageDriver));
         }, getRequestUser(crc));
-
-        
-
-        // try {
-        //     AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
-        // } catch (WrappedResponse wr) {
-        //     return error(Response.Status.NOT_FOUND, wr.getMessage());
-        // }
-
-        // if (getEffective != null && getEffective) {
-        //     return ok(JsonPrinter.jsonStorageDriver(dataverse.getEffectiveStorageDriverId()));
-        // } else {
-        //     return ok(JsonPrinter.jsonStorageDriver(dataverse.getStorageDriverId()));
-        // }
     }
     
     @PUT
