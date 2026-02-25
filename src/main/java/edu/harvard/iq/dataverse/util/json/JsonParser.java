@@ -608,6 +608,7 @@ public class JsonParser {
         guestbookResponse.setName(obj.getString("name", guestbookResponse.getName()));
         String email = obj.getString("email", null);
         if (email != null) {
+            email = email.trim();
             if (EMailValidator.isEmailValid(email)) {
                 guestbookResponse.setEmail(email);
             } else {
