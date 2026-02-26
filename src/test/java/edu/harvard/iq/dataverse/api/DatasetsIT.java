@@ -297,7 +297,7 @@ public class DatasetsIT {
         grantRole.prettyPrint();
         grantRole.then().assertThat()
                 .body("message", containsString(BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.has.role.error")))
-                .statusCode(FORBIDDEN.getStatusCode());
+                .statusCode(CONFLICT.getStatusCode());
 
         // Create another random user: 
         
@@ -2352,7 +2352,7 @@ public class DatasetsIT {
         failedGrantPermission.prettyPrint();
         failedGrantPermission.then().assertThat()
                 .body("message", containsString(BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.has.role.error")))
-                .statusCode(FORBIDDEN.getStatusCode());
+                .statusCode(CONFLICT.getStatusCode());
     }
 
     @Test
