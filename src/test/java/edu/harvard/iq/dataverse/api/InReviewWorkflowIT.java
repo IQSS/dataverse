@@ -472,6 +472,14 @@ public class InReviewWorkflowIT {
                 .body("data[1].ownerAlias", equalTo(dataverseAlias))
                 .statusCode(OK.getStatusCode());
 
+        // Confirm that when getting the dataset, the "InReview" lock is no longer listed
+        JsonArray emptyArray = Json.createArrayBuilder().build();
+        getDatasetJson = UtilIT.nativeGet(datasetId, authorApiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat()
+                .body("data.locks", equalTo(emptyArray))
+                .statusCode(200);
+
         // These println's are here in case you want to log into the GUI to see what notifications look like.
         System.out.println("Curator username/password: " + curatorUsername);
         System.out.println("Author username/password: " + authorUsername);
