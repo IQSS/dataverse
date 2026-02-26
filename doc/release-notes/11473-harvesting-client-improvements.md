@@ -1,0 +1,2 @@
+A setting has been added for configuring sleep intervals between OAI calls for specific harvesting clients. Making it possible to harvest uninterrupted from servers enforcing rate limit policies. See the configuration guide for details. Additionally, this release fixes a problem with harvesting from DataCite OAI-PMH where initial, long-runnig harvests were failing on sets with large numbers of records.
+x

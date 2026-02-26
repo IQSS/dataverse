@@ -4664,6 +4664,21 @@ Examples:
 
    ``curl -X PUT -d '{"default":"0", "CSV":"268435456"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 
+.. _:HarvestingClientCallRateLimit:
+
+:HarvestingClientCallRateLimit
+++++++++++++++++++++++++++++++
+
+This setting allows configuring sleep intervals between OAI calls for specific harvesting clients. Which makes it possible to harvest from servers that enforce rate limits.
+
+The setting value is a serialized JSON object mapping client names to the specified intervals in fractional seconds. It is also possible to set a universal default interval for all harvesting clients on the instance (in a somewhat unlikely use case where this may be practically necessary).
+
+In the following example, the harvester is instructed to sleep for 900 milliseconds between calls when running the client named ``harvarddv``, and to default to zero otherwise:
+
+``curl -X PUT -d "{\"harvarddv\": 0.9, \"default\": 0}" "http://localhost:8080/api/admin/settings/:HarvestingClientCallRateLimit"``
+
+Please note that the default in the example above is there for illustrative purposes and is otherwise redundant, since no sleep interval is the default behavior anyway. 
+
 .. _:ZipUploadFilesLimit:
 
 :ZipUploadFilesLimit
