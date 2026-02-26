@@ -1,0 +1,78 @@
+{
+    "@context": "http://schema.org",
+    "@type": "Dataset",
+    "@id": "https://doi.org/10.5072/FK2/CY7BWA",
+    "identifier": "https://doi.org/10.5072/FK2/CY7BWA",
+    "name": "Cars",
+    "creator": [
+        {
+            "@type": "Person",
+            "givenName": "Philip",
+            "familyName": "Durbin",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "Harvard"
+            },
+            "name": "Durbin, Philip"
+        }
+    ],
+    "author": [
+        {
+            "@type": "Person",
+            "givenName": "Philip",
+            "familyName": "Durbin",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "Harvard"
+            },
+            "name": "Durbin, Philip"
+        }
+    ],
+    "datePublished": "2025-05-16",
+    "dateModified": "2025-05-16",
+    "version": "1",
+    "description": "This dataset is about cars.",
+    "keywords": [
+        "Other"
+    ],
+    "license": "http://creativecommons.org/publicdomain/zero/1.0",
+    "includedInDataCatalog": {
+        "@type": "DataCatalog",
+        "name": "Root",
+        "url": "http://localhost:8080"
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "Root"
+    },
+    "provider": {
+        "@type": "Organization",
+        "name": "Root"
+    },
+    "distribution": [
+        {
+            "@type": "DataDownload",
+            "name": "compute.py",
+            "encodingFormat": "text/x-python",
+            "contentSize": 15,
+            "description": "",
+            "contentUrl": "http://localhost:8080/api/access/datafile/7"
+        },
+        {
+            "@type": "DataDownload",
+            "name": "stata13-auto.tab",
+            "encodingFormat": "text/tab-separated-values",
+            "contentSize": 4026,
+            "description": "",
+            "contentUrl": "http://localhost:8080/api/access/datafile/9"
+        },
+        {
+            "@type": "DataDownload",
+            "name": "README.md",
+            "encodingFormat": "text/markdown",
+            "contentSize": 28,
+            "description": "",
+            "contentUrl": "http://localhost:8080/api/access/datafile/8"
+        }
+    ]
+}
