@@ -3132,4 +3132,46 @@ public class DataversesIT {
         singleLang.then().assertThat().body("data", equalTo(List.of(Map.of("locale", "en", "title", "English"))));
     }
 
+    @Test
+    public void testAssignRoleOnDataverse() {
+        // Create user
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        // Create collection as that user
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Create second user
+        Response createSecondUserResponse = UtilIT.createRandomUser();
+        String secondUsername = UtilIT.getUsernameFromResponse(createSecondUserResponse);
+        String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
+
+        // Let the first user assign a role on their collection to the second user
+        Response grantRoleResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, "@" + secondUsername, apiToken);
+        grantRoleResponse.prettyPrint();
+        grantRoleResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Let the first user assign the same role to the same user again -> 409 Conflict
+        Response grantRoleTwiceResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, "@" + secondUsername, apiToken);
+        grantRoleTwiceResponse.prettyPrint();
+        grantRoleTwiceResponse.then().assertThat().statusCode(CONFLICT.getStatusCode());
+
+        // Clean up
+        Response deleteDataverse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverse.prettyPrint();
+        deleteDataverse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+
+        Response deleteSecondUserResponse = UtilIT.deleteUser(secondUsername);
+        deleteSecondUserResponse.prettyPrint();
+        assertEquals(200, deleteSecondUserResponse.getStatusCode());
+    }
+
 }
