@@ -56,7 +56,7 @@ public class ExternalToolServiceBeanTest {
         URLTokenUtil externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, null);
         List<ExternalTool> externalTools = new ArrayList<>();
         externalTools.add(externalTool);
-        List<ExternalTool> availableExternalTools = externalToolService.findExternalToolsByFile(externalTools, dataFile);
+        List<ExternalTool> availableExternalTools = externalToolService.findExternalToolsByFile(externalTools, dataFile, true);
         assertEquals(availableExternalTools.size(), 1);
     }
 
