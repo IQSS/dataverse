@@ -400,7 +400,7 @@
                                         </ui:fragment>
                                     </div>
                                     <!-- END: Preview Button Group -->
-                                    <div class="btn-group" jsf:rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                    <div class="btn-group" jsf:rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0)}">
                                         <!-- Modular/Configured Explore Tool -->
                                         <ui:remove><!-- Not sure this div will ever be rendered when terms are required and FilePage.termsMet isn't true. Leaving this logic in in case that is incorrect or changes going forward --></ui:remove>
 

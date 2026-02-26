@@ -378,7 +378,6 @@ public class FilePage implements java.io.Serializable {
         List<ExternalTool> previewTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.PREVIEW, file.getContentType());
         for (ExternalTool previewTool : previewTools) {
             RequirementStatus status = externalToolService.meetsRequirements(previewTool, file, canDownload);
-            logger.info(previewTool.getToolName() + " meets requirements: " + status.name());
             if (RequirementStatus.MET == status) {
                 retList.add(previewTool);
             }
