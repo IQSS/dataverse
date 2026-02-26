@@ -1,0 +1,87 @@
+{
+  "dcterms:modified": "2025-04-14",
+  "dcterms:creator": "Root",
+  "@type": "ore:ResourceMap",
+  "schema:additionalType": "Dataverse OREMap Format v1.0.1",
+  "dvcore:generatedBy": {
+    "@type": "schema:SoftwareApplication",
+    "schema:name": "Dataverse",
+    "schema:version": "6.6",
+    "schema:url": "https://github.com/iqss/dataverse"
+  },
+  "@id": "http://localhost:8080/api/datasets/export?exporter=OAI_ORE&persistentId=https://doi.org/10.5072/FK2/OO7TEP",
+  "ore:describes": {
+    "author": {
+      "citation:authorName": "Punk, Draft",
+      "citation:authorAffiliation": "French house"
+    },
+    "citation:datasetContact": {
+      "citation:datasetContactName": "Admin, Dataverse",
+      "citation:datasetContactAffiliation": "Dataverse.org",
+      "citation:datasetContactEmail": "dataverse@mailinator.com"
+    },
+    "citation:dsDescription": {
+      "citation:dsDescriptionValue": "This dataset hasn't been published yet."
+    },
+    "dateOfDeposit": "2025-04-14",
+    "citation:depositor": "Admin, Dataverse",
+    "subject": "Other",
+    "title": "Draft Dataset",
+    "@id": "https://doi.org/10.5072/FK2/OO7TEP",
+    "@type": [
+      "ore:Aggregation",
+      "schema:Dataset"
+    ],
+    "schema:version": "DRAFT",
+    "schema:name": "Draft Dataset",
+    "schema:dateModified": "Mon Apr 14 13:27:47 UTC 2025",
+    "schema:creativeWorkStatus": "DRAFT",
+    "schema:license": "http://creativecommons.org/publicdomain/zero/1.0",
+    "dvcore:fileTermsOfAccess": {
+      "dvcore:fileRequestAccess": true
+    },
+    "schema:includedInDataCatalog": "Root",
+    "schema:isPartOf": {
+      "schema:name": "Draft Collection",
+      "@id": "http://localhost:8080/dataverse/draft",
+      "schema:isPartOf": {
+        "schema:name": "Root",
+        "@id": "http://localhost:8080/dataverse/root",
+        "schema:description": "The root dataverse."
+      }
+    },
+    "ore:aggregates": [
+      {
+        "schema:name": "data.txt",
+        "dvcore:restricted": false,
+        "schema:version": 1,
+        "dvcore:datasetVersionId": 1,
+        "@id": "http://localhost:8080/file.xhtml?fileId=4",
+        "schema:sameAs": "http://localhost:8080/api/access/datafile/4",
+        "@type": "ore:AggregatedResource",
+        "schema:fileFormat": "text/plain",
+        "dvcore:filesize": 18,
+        "dvcore:storageIdentifier": "local://196347bdb85-7b4820f8e4ef",
+        "dvcore:rootDataFileId": -1,
+        "dvcore:checksum": {
+          "@type": "MD5",
+          "@value": "050644e853fdfe46a3707695ba2fe736"
+        }
+      }
+    ],
+    "schema:hasPart": [
+      "http://localhost:8080/file.xhtml?fileId=4"
+    ]
+  },
+  "@context": {
+    "author": "http://purl.org/dc/terms/creator",
+    "citation": "https://dataverse.org/schema/citation/",
+    "dateOfDeposit": "http://purl.org/dc/terms/dateSubmitted",
+    "dcterms": "http://purl.org/dc/terms/",
+    "dvcore": "https://dataverse.org/schema/core#",
+    "ore": "http://www.openarchives.org/ore/terms/",
+    "schema": "http://schema.org/",
+    "subject": "http://purl.org/dc/terms/subject",
+    "title": "http://purl.org/dc/terms/title"
+  }
+}
