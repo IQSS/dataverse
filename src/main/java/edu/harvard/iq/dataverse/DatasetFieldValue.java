@@ -22,6 +22,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  *
@@ -193,6 +194,22 @@ public class DatasetFieldValue implements Serializable {
         dsfv.setValue(value);
                      
         return dsfv;
-    }    
+    }
     
+    /**
+     * Compares this DatasetFieldValue with another for equality based on their values.
+     * 
+     * @param other The DatasetFieldValue to compare with
+     * @return true if both values are equal (case-sensitive), false otherwise
+     */
+    public boolean valuesEqual(DatasetFieldValue other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null) {
+            return false;
+        }
+        return Strings.CS.equals(this.getValue(), other.getValue());
+    }
+
 }

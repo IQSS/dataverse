@@ -1486,6 +1486,10 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
 
+    public boolean isUseLegacyFormatInHead() {
+        return JvmSettings.SCHEMAORG_IN_HTML_HEAD.lookupOptional(Boolean.class).orElse(false);
+    }
+
     /*
      * 4.2.1 optimization.
      * HOWEVER, this doesn't appear to be saving us anything!
@@ -3061,6 +3065,8 @@ public class DatasetPage implements java.io.Serializable {
         //dataset = datasetService.find(dataset.getId());
         dataset = null;
         workingVersion = null; 
+        
+        clearCachedPopupRequiredValues();
 
         logger.fine("refreshing working version");
 
@@ -4002,6 +4008,10 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String save() {
+        
+        //Clear cached info
+        clearCachedPopupRequiredValues();
+        
         //Before dataset saved, write cached prov freeform to version
         if (systemConfig.isProvCollectionEnabled()) {
             provPopupFragmentBean.saveStageProvFreeformToLatestVersion();
@@ -5553,24 +5563,55 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
 
+    private Boolean downloadPopupRequired = null;
+    private Boolean requestAccessPopupRequired = null;
+    private Boolean guestbookAndTermsPopupRequired = null;
+    private Boolean guestbookPopupRequired = null;
+    private Boolean termsPopupRequired = null;
+    
     public boolean isDownloadPopupRequired() {
-        return FileUtil.isDownloadPopupRequired(workingVersion);
+        if (downloadPopupRequired == null) {
+            downloadPopupRequired = FileUtil.isDownloadPopupRequired(workingVersion);
+        }
+        return downloadPopupRequired;
     }
 
     public boolean isRequestAccessPopupRequired() {
-        return FileUtil.isRequestAccessPopupRequired(workingVersion);
+        if (requestAccessPopupRequired == null) {
+            requestAccessPopupRequired = FileUtil.isRequestAccessPopupRequired(workingVersion);
+        }
+        return requestAccessPopupRequired;
     }
     
-    public boolean isGuestbookAndTermsPopupRequired() {  
-        return FileUtil.isGuestbookAndTermsPopupRequired(workingVersion);
+    public boolean isGuestbookAndTermsPopupRequired() {
+        if (guestbookAndTermsPopupRequired == null) {
+            guestbookAndTermsPopupRequired = FileUtil.isGuestbookAndTermsPopupRequired(workingVersion);
+        }
+        return guestbookAndTermsPopupRequired;
     }
 
     public boolean isGuestbookPopupRequired(){
-        return FileUtil.isGuestbookPopupRequired(workingVersion);
+        if(guestbookPopupRequired == null) {
+            guestbookPopupRequired = FileUtil.isGuestbookPopupRequired(workingVersion);
+        }
+        return guestbookPopupRequired; 
     }
     
-    public boolean isTermsPopupRequired(){
-        return FileUtil.isTermsPopupRequired(workingVersion);
+    public boolean isTermsPopupRequired() {
+        if (termsPopupRequired == null) {
+            termsPopupRequired = FileUtil.isTermsPopupRequired(workingVersion);
+        }
+        return termsPopupRequired;
+    }
+    
+    private void clearCachedPopupRequiredValues() {
+        downloadPopupRequired = null;
+        requestAccessPopupRequired = null;
+        guestbookAndTermsPopupRequired = null;
+        guestbookPopupRequired = null;
+        termsPopupRequired = null;
+        
+        downloadButtonAvailable = null;
     }
     
     public boolean isGuestbookPopupRequiredAtDownload(){

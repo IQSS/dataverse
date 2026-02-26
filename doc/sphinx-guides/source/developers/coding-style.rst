@@ -13,6 +13,8 @@ Java
 Formatting Code
 ~~~~~~~~~~~~~~~
 
+How to format Java code is being discussed on `Zulip <https://dataverse.zulipchat.com/#narrow/channel/379673-dev/topic/code.20formatting.20.28Spotless.2C.20Checkstyle.2C.20etc.2E.29/near/432974039>`_ and the `dev mailing list <https://groups.google.com/g/dataverse-dev/c/y2Jpk3szTf8/m/NhTJvXblAgAJ>`_.
+
 Tabs vs. Spaces
 ^^^^^^^^^^^^^^^
 
@@ -59,10 +61,21 @@ Place curly braces according to the style below, which is an example you can see
         }
     }
 
+Format Code with Spotless
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In some of our libraries we've had success formatting code with `Spotless <https://github.com/diffplug/spotless>`_. See https://github.com/gdcc/xoai/issues/35 for an early discussion.
+
+We've added Spotless to the main repo but have limited it to certain files. If you'd like to use Spotless on files you're editing, update the config in pom.xml to include them.
+
+To run Spotless on your code:
+
+``mvn spotless:apply``
+
 Format Code You Changed with Netbeans
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-IQSS has standardized on Netbeans. It is much appreciated when you format your code (but only the code you touched!) using the out-of-the-box Netbeans configuration. If you have created an entirely new Java class, you can just click Source -> Format. If you are adjusting code in an existing class, highlight the code you changed and then click Source -> Format. Keeping the "diff" in your pull requests small makes them easier to code review.
+For a long time IQSS standardized on Netbeans. For files not included in the Spotless config mentioned above, it is much appreciated when you format your code (but only the code you touched!) using the out-of-the-box Netbeans configuration. If you have created an entirely new Java class, you can just click Source -> Format. If you are adjusting code in an existing class, highlight the code you changed and then click Source -> Format. Keeping the "diff" in your pull requests small makes them easier to code review.
 
 Checking Your Formatting With Checkstyle
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

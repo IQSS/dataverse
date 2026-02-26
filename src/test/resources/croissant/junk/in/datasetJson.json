@@ -1,0 +1,124 @@
+{
+  "id": 2,
+  "identifier": "FK2/0CNXUJ",
+  "persistentUrl": "https://doi.org/10.5072/FK2/0CNXUJ",
+  "protocol": "doi",
+  "authority": "10.5072",
+  "separator": "/",
+  "publisher": "Root",
+  "publicationDate": "2025-03-13",
+  "storageIdentifier": "local://10.5072/FK2/0CNXUJ",
+  "datasetType": "dataset",
+  "datasetVersion": {
+    "id": 1,
+    "datasetId": 2,
+    "datasetPersistentId": "doi:10.5072/FK2/0CNXUJ",
+    "storageIdentifier": "local://10.5072/FK2/0CNXUJ",
+    "versionNumber": 1,
+    "versionMinorNumber": 0,
+    "versionState": "RELEASED",
+    "latestVersionPublishingState": "RELEASED",
+    "lastUpdateTime": "2025-03-13T14:56:36Z",
+    "releaseTime": "2025-03-13T14:56:36Z",
+    "createTime": "2025-03-13T14:56:26Z",
+    "publicationDate": "2025-03-13",
+    "citationDate": "2025-03-13",
+    "license": {
+      "name": "CC0 1.0",
+      "uri": "http://creativecommons.org/publicdomain/zero/1.0",
+      "iconUri": "https://licensebuttons.net/p/zero/1.0/88x31.png",
+      "rightsIdentifier": "CC0-1.0",
+      "rightsIdentifierScheme": "SPDX",
+      "schemeUri": "https://spdx.org/licenses/",
+      "languageCode": "en"
+    },
+    "fileAccessRequest": true,
+    "metadataBlocks": {
+      "citation": {
+        "displayName": "Citation Metadata",
+        "name": "citation",
+        "fields": [
+          {
+            "typeName": "title",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "</script><script>alert(666)</script>"
+          },
+          {
+            "typeName": "author",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "authorName": {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Ritter, Sylvester"
+                },
+                "authorAffiliation": {
+                  "typeName": "authorAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "WWF"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "datasetContact",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "datasetContactEmail": {
+                  "typeName": "datasetContactEmail",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "dataverse@mailinator.com"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "dsDescription",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "dsDescriptionValue": {
+                  "typeName": "dsDescriptionValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "A junk dataset."
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "subject",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "value": [
+              "Other"
+            ]
+          },
+          {
+            "typeName": "depositor",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "Admin, Dataverse"
+          },
+          {
+            "typeName": "dateOfDeposit",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "2025-03-13"
+          }
+        ]
+      }
+    },
+    "files": [],
+    "citation": "Ritter, Sylvester, 2025, https://doi.org/10.5072/FK2/0CNXUJ, Root, V1"
+  }
+}
