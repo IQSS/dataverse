@@ -139,14 +139,14 @@ public class ExternalToolServiceBean {
      * file supports The list of tools is passed in so it doesn't hit the
      * database each time
      */
-    public List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file) {
+    public List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file, boolean canDownload) {
         List<ExternalTool> externalTools = new ArrayList<>();
         //Map tabular data to it's mimetype (the isTabularData() check assures that this code works the same as before, but it may need to change if tabular data is split into subtypes with differing mimetypes)
         final String contentType = file.isTabularData() ? DataFileServiceBean.MIME_TYPE_TSV_ALT : file.getContentType();
         boolean isAccessible = StorageIO.isDataverseAccessible(DataAccess.getStorageDriverFromIdentifier(file.getStorageIdentifier()));
         allExternalTools.forEach((externalTool) -> {
             //Match tool and file type, then check requirements
-            if (contentType.equals(externalTool.getContentType()) && meetsRequirements(externalTool, file) && (isAccessible || externalTool.accessesAuxFiles())) {
+            if (contentType.equals(externalTool.getContentType()) && meetsRequirements(externalTool, file, canDownload) && (isAccessible || externalTool.accessesAuxFiles())) {
                 externalTools.add(externalTool);
             }
         });
@@ -154,11 +154,11 @@ public class ExternalToolServiceBean {
         return externalTools;
     }
 
-    public boolean meetsRequirements(ExternalTool externalTool, DataFile dataFile) {
+    public boolean meetsRequirements(ExternalTool externalTool, DataFile dataFile, boolean canDownload) {
         String requirements = externalTool.getRequirements();
         if (requirements == null) {
             logger.fine("Data file id" + dataFile.getId() + ": no requirements for tool id " + externalTool.getId());
-            return true;
+            return canDownload;
         }
         boolean meetsRequirements = true;
         JsonObject requirementsObj = JsonUtil.getJsonObject(requirements);
@@ -173,7 +173,7 @@ public class ExternalToolServiceBean {
                 break;
             } else {
                 logger.fine("Data file id" + dataFile.getId() + ": found required aux file. formatTag=" + formatTag + ". formatVersion=" + formatVersion);
-                meetsRequirements = true;
+                meetsRequirements = canDownload || auxFile.getIsPublic();
             }
         }
         return meetsRequirements;

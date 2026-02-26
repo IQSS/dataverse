@@ -372,10 +372,11 @@ public class FilePage implements java.io.Serializable {
 
     // findPreviewTools would be a better name
     private List<ExternalTool> sortExternalTools(){
+        boolean canDownload = fileDownloadHelper.canDownloadFile(fileMetadata);
         List<ExternalTool> retList = new ArrayList<>();
         List<ExternalTool> previewTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.PREVIEW, file.getContentType());
         for (ExternalTool previewTool : previewTools) {
-            if (externalToolService.meetsRequirements(previewTool, file)) {
+            if (externalToolService.meetsRequirements(previewTool, file, canDownload)) {
                 retList.add(previewTool);
             }
         }

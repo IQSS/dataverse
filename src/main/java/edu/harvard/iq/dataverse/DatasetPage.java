@@ -5973,46 +5973,12 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isShowPreviewButton(FileMetadata fmd) {
         DataFile dataFile = fmd.getDataFile();
-        List<ExternalTool> previewTools = getPreviewToolsForDataFile(dataFile);
+        List<ExternalTool> previewTools = getPreviewToolsForDataFile(dataFile, fileDownloadHelper.canDownloadFile(fmd));
         if (previewTools.isEmpty()) {
             return false;
         }
-        if (fileDownloadHelper.canDownloadFile(fmd)) {
-            return true;
-        }
-        // If the user cannot download the file, we will still show the preview
-        // button if there is a previewer that requires an auxiliary file(s)
-        // and those files all exist and are public.
-        for (ExternalTool tool : previewTools) {
-            boolean toolHasPublicAuxFiles = false;
-            String reqString = tool.getRequirements();
-            if (!StringUtils.isBlank(reqString)) {
-                try {
-                    JsonObject reqs = JsonUtil.getJsonObject(reqString);
-                    JsonArray auxFilesExist = reqs.getJsonArray(ExternalTool.AUX_FILES_EXIST);
-                    for (JsonValue jsonValue : auxFilesExist) {
-                        JsonObject auxEntry = jsonValue.asJsonObject();
-                        String formatTag = auxEntry.getString("formatTag");
-                        String formatVersion = auxEntry.getString("formatVersion");
-                        AuxiliaryFile auxFile = auxFileService.lookupAuxiliaryFile(dataFile, formatTag, formatVersion);
-                        if (auxFile == null || !auxFile.getIsPublic()) {
-                            toolHasPublicAuxFiles = false;
-                            break;
-                        } else {
-                            toolHasPublicAuxFiles = true;
-                        }
-                    }
-                    if (toolHasPublicAuxFiles) {
-                        return true;
-                    }
-                } catch (Exception ex) {
-                    logger.warning("Failed to parse external tool requirements: " + ex.getMessage());
                     return false;
                 }
-            }
-        }
-        return false;
-    }
     
     public boolean isShowQueryButton(DataFile dataFile) { 
 
@@ -6023,27 +5989,37 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
         
-        List<ExternalTool> fileQueryTools = getQueryToolsForDataFile(dataFile);
+        List<ExternalTool> fileQueryTools = getQueryToolsForDataFile(dataFile, true);
         return fileQueryTools.size() > 0;
     }
 
     public List<ExternalTool> getPreviewToolsForDataFile(DataFile dataFile) {
-        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.PREVIEW);
+        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.PREVIEW, null);
+    }
+    
+    public List<ExternalTool> getPreviewToolsForDataFile(DataFile dataFile, Boolean canDownload) {
+        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.PREVIEW, canDownload);
     }
 
     public List<ExternalTool> getQueryToolsForDataFile(DataFile dataFile) {
-        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.QUERY);
+        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.QUERY, null);
     }
     
+    public List<ExternalTool> getQueryToolsForDataFile(DataFile dataFile, Boolean canDownload) {
+        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.QUERY, canDownload);
+    }
+    
+    //ToDo: currently only shown if the user can Edit the dataset which means they can view files
     public List<ExternalTool> getConfigureToolsForDataFile(DataFile dataFile) {
-        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.CONFIGURE);
+        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.CONFIGURE, true);
     }
 
+    //ToDo: currently only shown if the user can Edit the dataset which means they can view files
     public List<ExternalTool> getExploreToolsForDataFile(DataFile dataFile) {
-        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.EXPLORE);
+        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.EXPLORE, true);
     }
 
-    public List<ExternalTool> getCachedToolsForDataFile(DataFile dataFile, ExternalTool.Type type) {
+    public List<ExternalTool> getCachedToolsForDataFile(DataFile dataFile, ExternalTool.Type type, Boolean canDownload) {
         Long fileId = dataFile.getId();
         Map<Long, List<ExternalTool>> cachedToolsByFileId = new HashMap<>();
         List<ExternalTool> externalTools = new ArrayList<>();
@@ -6071,7 +6047,12 @@ public class DatasetPage implements java.io.Serializable {
         if (cachedTools != null) { //if already queried before and added to list
             return cachedTools;
         }
-        cachedTools = externalToolService.findExternalToolsByFile(externalTools, dataFile);
+        if(canDownload == null) {
+            logger.warning("Call to getCachedToolsForDataFile with null canDownload parameter and no cached results");
+            //Return the set available to non-downloader in this case (versus an empty list)
+            canDownload = false;
+        }
+        cachedTools = externalToolService.findExternalToolsByFile(externalTools, dataFile, canDownload);
         cachedToolsByFileId.put(fileId, cachedTools); //add to map so we don't have to do the lifting again
         return cachedTools;
     }
