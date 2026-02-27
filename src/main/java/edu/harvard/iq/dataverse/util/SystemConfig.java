@@ -623,7 +623,7 @@ public class SystemConfig {
                     
                     Map<String, Float> limitsMap = new HashMap<>();
                     // We add the default in case the JSON does not contain the default (which is optional).
-                    limitsMap.put(DEFAULT_KEY, null);
+                    limitsMap.put(DEFAULT_KEY, 0F);
                     
                     for (Map.Entry<String, JsonValue> clientEntry : delays.entrySet()) {
                         String clientName = clientEntry.getKey();
@@ -643,18 +643,18 @@ public class SystemConfig {
                             } else {
                                 logger.warning(() -> "Invalid value type for client " + clientName + ": expected string or number");
                                 logger.warning("Disabling all harvesting client delay intervals completely until fixed!");
-                                return Map.of(DEFAULT_KEY, null);
+                                return Map.of(DEFAULT_KEY, 0F);
                             }
                             
                             limitsMap.put(lowercaseClientName, delayInterval);
                         } catch (NumberFormatException nfe) {
                             logger.warning(() -> "Could not convert " + SettingsServiceBean.Key.HarvestingClientCallRateLimit + " entry to float for client " + clientName + " (not a valid number)");
                             logger.warning("Disabling all harvesting client delay intervals completely until fixed!");
-                            return Map.of(DEFAULT_KEY, null);
+                            return Map.of(DEFAULT_KEY, 0F);
                         } catch (ArithmeticException ae) {
                             logger.warning(() -> "Number too large, or otherwise invalid for client " + clientName);
                             logger.warning("Disabling all harvesting client delay intervals completely until fixed!");
-                            return Map.of(DEFAULT_KEY, null);
+                            return Map.of(DEFAULT_KEY, 0F);
                         }
                     }
                     
@@ -662,7 +662,7 @@ public class SystemConfig {
                 } catch (JsonParsingException e) {
                     logger.warning(() -> "Invalid " + SettingsServiceBean.Key.HarvestingClientCallRateLimit + " option found, cannot parse JSON: " + e.getMessage());
                     logger.warning("Disabling all harvesting client delay intervals completely until fixed!");
-                    return Map.of(DEFAULT_KEY, null);
+                    return Map.of(DEFAULT_KEY, 0F);
                 }
             // Case B: It might be just a simple float, providing a default for all clients.
             } else {
@@ -672,16 +672,15 @@ public class SystemConfig {
                 } catch (NumberFormatException nfe) {
                     logger.warning(() -> "Could not convert " + SettingsServiceBean.Key.HarvestingClientCallRateLimit + " to float: " + nfe.getMessage());
                     logger.warning("Disabling all harvesting client delay intervals completely until fixed!");
-                    return Map.of(DEFAULT_KEY, null);
+                    return Map.of(DEFAULT_KEY, 0F);
                 }
             }
         }
-        
         // Default is not to limit at all
-        return Map.of(DEFAULT_KEY, null);
+        return Map.of(DEFAULT_KEY, 0F);
     }
 
-    public Float getHarvestingClientRequestInterval(String clientName) {
+    public float getHarvestingClientRequestInterval(String clientName) {
         if (clientName != null && !clientName.isBlank()) {
             // We convert to lowercase so it doesn't matter which variant someone uses in the JSON config
             String convertedClientName = clientName.toLowerCase();

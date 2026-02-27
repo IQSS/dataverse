@@ -405,11 +405,9 @@ public class HarvesterServiceBean {
 
     private int lookupSleepInterval(String clientName) {
         int sleepMilliseconds = 0;
-        Float clientIntervalValue = systemConfig.getHarvestingClientRequestInterval(clientName);
+        float clientIntervalValue = systemConfig.getHarvestingClientRequestInterval(clientName);
 
-        if (clientIntervalValue != null) {
-            sleepMilliseconds = (int) (clientIntervalValue * 1000);
-        }
+        sleepMilliseconds = (int) (clientIntervalValue * 1000);
         logger.info("Sleep interval in milliseconds: " + sleepMilliseconds);
 
         return sleepMilliseconds;
