@@ -141,6 +141,26 @@ We also recommend you ensure you followed all update instructions from the past 
    <jvm-options>-Ddataverse.spi.exporters.directory=/var/lib/dataverse/exporters</jvm-options>
    ```
 
+1. Comment out JSP servlet mappings.
+
+   First, backup the file you'll be editing.
+
+   `sudo cp -a /usr/local/payara7/glassfish/domains/domain1/config/default-web.xml /usr/local/payara7/glassfish/domains/domain1/config/default-web.xml.orig`
+
+   Then, edit the file and follow the instructions below.
+
+   `sudo vi /usr/local/payara7/glassfish/domains/domain1/config/default-web.xml`
+
+   Comment out the following section and save the file.
+
+   ```
+   <servlet-mapping>
+     <servlet-name>jsp</servlet-name>
+     <url-pattern>*.jsp</url-pattern>
+     <url-pattern>*.jspx</url-pattern>
+   </servlet-mapping>
+   ```
+
 1. Check the `Xmx` setting in `domain.xml`.
 
    Under `/usr/local/payara7/glassfish/domains/domain1/config/domain.xml`, check the `Xmx` setting under `<config name="server-config">`, where you put the Dataverse-related JVM options, not the one under `<config name="default-config">`. This sets the JVM heap size; a good rule of thumb is half of your system's total RAM. You may specify the value in MB (`8192m`) or GB (`8g`).
