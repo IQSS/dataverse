@@ -12,6 +12,14 @@ public final class ApiConstants {
 
     // Authentication
     public static final String CONTAINER_REQUEST_CONTEXT_USER = "user";
+    public static final String CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM = "authMechanism";
+    public static final String AUTH_MECHANISM_NONE = "none";
+    public static final String AUTH_MECHANISM_API_KEY = "apiKey";
+    public static final String AUTH_MECHANISM_WORKFLOW_KEY = "workflowKey";
+    public static final String AUTH_MECHANISM_SIGNED_URL = "signedUrl";
+    public static final String AUTH_MECHANISM_BEARER_TOKEN = "bearerToken";
+    public static final String AUTH_MECHANISM_SESSION_COOKIE = "sessionCookie";
+    public static final String CSRF_TOKEN_HEADER = "X-Dataverse-CSRF-Token";
 
     // Dataset
     public static final String DS_VERSION_LATEST = ":latest";

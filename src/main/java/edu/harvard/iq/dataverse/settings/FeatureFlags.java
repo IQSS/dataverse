@@ -25,11 +25,24 @@ import java.util.Objects;
 public enum FeatureFlags {
 
     /**
-     * Enables API authentication via session cookie (JSESSIONID). Caution: Enabling this feature flag may expose the installation to CSRF risks
+     * Enables API authentication via session cookie (JSESSIONID).
+     * Needed for JSF/SAML-oriented integrations where bearer tokens are not used.
+     * By itself this flag does not enable CSRF protections; for stricter protections,
+     * also enable {@link #API_SESSION_AUTH_HARDENING}.
+     *
      * @apiNote Raise flag by setting "dataverse.feature.api-session-auth"
      * @since Dataverse 5.14
      */
     API_SESSION_AUTH("api-session-auth"),
+    /**
+     * Enables additional hardening for session-cookie API authentication.
+     * This includes CSRF protections and session-cookie-specific endpoint guardrails.
+     * This feature only works when the feature flag {@link #API_SESSION_AUTH} is also enabled.
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-session-auth-hardening"
+     * @since Dataverse 6.9
+     */
+    API_SESSION_AUTH_HARDENING("api-session-auth-hardening"),
     /**
      * Enables API authentication via Bearer Token.
      * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth"

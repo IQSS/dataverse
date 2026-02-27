@@ -1,7 +1,10 @@
 package edu.harvard.iq.dataverse.api.auth;
 
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
@@ -10,6 +13,11 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.ext.Provider;
 import java.io.IOException;
+import java.net.URI;
+import java.util.Locale;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.logging.Logger;
 
 /**
  * @author Guillermo Portas
@@ -20,16 +28,184 @@ import java.io.IOException;
 @Priority(Priorities.AUTHENTICATION)
 public class AuthFilter implements ContainerRequestFilter {
 
+    private static final Logger logger = Logger.getLogger(AuthFilter.class.getCanonicalName());
+    private static final Set<String> STATE_CHANGING_METHODS = Set.of("POST", "PUT", "PATCH", "DELETE");
+    private static final Set<String> SAFE_METHODS = Set.of("GET", "HEAD", "OPTIONS");
+    // These patterns intentionally target exact dataset API paths in Datasets.java.
+    // We use matcher.matches() against a normalized path (query string removed by JAX-RS).
+    private static final Pattern MUTATING_UPLOAD_URLS_GET_PATTERN = Pattern.compile("datasets/[^/]+/uploadurls");
+    private static final Pattern MUTATING_CLEAN_STORAGE_GET_PATTERN = Pattern.compile("datasets/[^/]+/cleanStorage");
+    private static final String ACCESS_BATCH_DOWNLOAD_POST_PATH = "access/datafiles";
+
     @Inject
     private CompoundAuthMechanism compoundAuthMechanism;
+
+    @Inject
+    private DataverseSession session;
+
+    @Inject
+    private SystemConfig systemConfig;
 
     @Override
     public void filter(ContainerRequestContext containerRequestContext) throws IOException {
         try {
             User user = compoundAuthMechanism.findUserFromRequest(containerRequestContext);
             containerRequestContext.setProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_USER, user);
+            applySessionAuthHardening(containerRequestContext);
         } catch (WrappedAuthErrorResponse e) {
             containerRequestContext.abortWith(e.getResponse());
         }
+    }
+
+    private void applySessionAuthHardening(ContainerRequestContext containerRequestContext)
+            throws WrappedAuthErrorResponse {
+        if (!FeatureFlags.API_SESSION_AUTH_HARDENING.enabled()) {
+            return;
+        }
+        if (!isSessionCookieRequest(containerRequestContext)) {
+            return;
+        }
+
+        String path = normalizedPath(containerRequestContext);
+        if (isAccessPath(path)) {
+            applyAccessEndpointHardening(containerRequestContext, path);
+            return;
+        }
+        if (!requiresCsrfChecks(containerRequestContext, path)) {
+            return;
+        }
+        if (!isOriginOrRefererAllowed(containerRequestContext)) {
+            throw new WrappedForbiddenAuthErrorResponse(
+                    "Request origin validation failed for session-cookie authentication.");
+        }
+        if (!isCsrfTokenValid(containerRequestContext)) {
+            throw new WrappedForbiddenAuthErrorResponse(
+                    "Missing or invalid CSRF token for session-cookie authentication.");
+        }
+    }
+
+    private boolean isSessionCookieRequest(ContainerRequestContext containerRequestContext) {
+        Object authMechanism = containerRequestContext
+                .getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM);
+        return ApiConstants.AUTH_MECHANISM_SESSION_COOKIE.equals(authMechanism);
+    }
+
+    private boolean requiresCsrfChecks(ContainerRequestContext containerRequestContext, String path) {
+        String method = containerRequestContext.getMethod();
+        if (method == null) {
+            return false;
+        }
+        String normalizedMethod = method.toUpperCase(Locale.ROOT);
+        if (STATE_CHANGING_METHODS.contains(normalizedMethod)) {
+            return true;
+        }
+        if (!"GET".equals(normalizedMethod)) {
+            return false;
+        }
+        return MUTATING_UPLOAD_URLS_GET_PATTERN.matcher(path).matches()
+                || MUTATING_CLEAN_STORAGE_GET_PATTERN.matcher(path).matches();
+    }
+
+    private void applyAccessEndpointHardening(ContainerRequestContext containerRequestContext, String path)
+            throws WrappedAuthErrorResponse {
+        String method = containerRequestContext.getMethod();
+        String normalizedMethod = method == null ? "" : method.toUpperCase(Locale.ROOT);
+        if (SAFE_METHODS.contains(normalizedMethod)) {
+            return;
+        }
+        if ("POST".equals(normalizedMethod) && ACCESS_BATCH_DOWNLOAD_POST_PATH.equals(path)) {
+            if (!isOriginOrRefererAllowed(containerRequestContext)) {
+                throw new WrappedForbiddenAuthErrorResponse(
+                        "Request origin validation failed for session-cookie batch downloads.");
+            }
+            return;
+        }
+        throw new WrappedForbiddenAuthErrorResponse(
+                "Session-cookie authentication is not allowed for mutating /api/access endpoints when "
+                        + "dataverse.feature.api-session-auth-hardening is enabled.");
+    }
+
+    private boolean isOriginOrRefererAllowed(ContainerRequestContext containerRequestContext) {
+        String allowedOrigin = toOrigin(systemConfig.getDataverseSiteUrl());
+        if (allowedOrigin == null) {
+            logger.warning("Unable to validate Origin/Referer for session hardening: dataverse site URL is invalid.");
+            return false;
+        }
+        String originHeader = containerRequestContext.getHeaderString("Origin");
+        String refererHeader = containerRequestContext.getHeaderString("Referer");
+        boolean hasOrigin = originHeader != null && !originHeader.isBlank();
+        boolean hasReferer = refererHeader != null && !refererHeader.isBlank();
+
+        if (!hasOrigin && !hasReferer) {
+            return false;
+        }
+        if (hasOrigin && !allowedOrigin.equals(toOrigin(originHeader))) {
+            return false;
+        }
+        if (hasReferer && !allowedOrigin.equals(toOrigin(refererHeader))) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isCsrfTokenValid(ContainerRequestContext containerRequestContext) {
+        String requestToken = containerRequestContext.getHeaderString(ApiConstants.CSRF_TOKEN_HEADER);
+        return requestToken != null && !requestToken.isBlank() && session.matchesApiCsrfToken(requestToken);
+    }
+
+    private String normalizedPath(ContainerRequestContext containerRequestContext) {
+        String path = containerRequestContext.getUriInfo().getPath();
+        if (path == null) {
+            return "";
+        }
+        String normalized = path;
+        while (normalized.startsWith("/")) {
+            normalized = normalized.substring(1);
+        }
+        while (!normalized.isEmpty() && normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        if ("api".equals(normalized)) {
+            return "";
+        }
+        if (normalized.startsWith("api/")) {
+            normalized = normalized.substring(4);
+        }
+        return normalized;
+    }
+
+    private boolean isAccessPath(String path) {
+        return "access".equals(path) || path.startsWith("access/");
+    }
+
+    private String toOrigin(String url) {
+        if (url == null || url.isBlank()) {
+            return null;
+        }
+        try {
+            URI uri = URI.create(url.trim());
+            if (uri.getScheme() == null || uri.getHost() == null) {
+                return null;
+            }
+            String scheme = uri.getScheme().toLowerCase(Locale.ROOT);
+            String host = uri.getHost().toLowerCase(Locale.ROOT);
+            int port = uri.getPort();
+            if (port == -1 || port == defaultPort(scheme)) {
+                return scheme + "://" + host;
+            }
+            return scheme + "://" + host + ":" + port;
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private int defaultPort(String scheme) {
+        if ("http".equals(scheme)) {
+            return 80;
+        }
+        if ("https".equals(scheme)) {
+            return 443;
+        }
+        return -1;
     }
 }

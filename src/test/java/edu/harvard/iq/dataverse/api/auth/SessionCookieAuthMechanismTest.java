@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api.auth;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.api.auth.doubles.ContainerRequestTestFake;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
@@ -45,5 +46,17 @@ class SessionCookieAuthMechanismTest {
         User actual = sut.findUserFromRequest(new ContainerRequestTestFake());
 
         assertEquals(testAuthenticatedUser, actual);
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth")
+    void testFindUserFromRequest_FeatureFlagEnabled_GuestSessionUserReturnsNull() throws WrappedAuthErrorResponse {
+        DataverseSession dataverseSessionStub = Mockito.mock(DataverseSession.class);
+        Mockito.when(dataverseSessionStub.getUser()).thenReturn(GuestUser.get());
+        sut.session = dataverseSessionStub;
+
+        User actual = sut.findUserFromRequest(new ContainerRequestTestFake());
+
+        assertNull(actual);
     }
 }

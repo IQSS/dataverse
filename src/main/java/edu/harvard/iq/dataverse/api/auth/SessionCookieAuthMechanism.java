@@ -14,7 +14,8 @@ public class SessionCookieAuthMechanism implements AuthMechanism {
     @Override
     public User findUserFromRequest(ContainerRequestContext containerRequestContext) throws WrappedAuthErrorResponse {
         if (FeatureFlags.API_SESSION_AUTH.enabled()) {
-            return session.getUser();
+            User user = session.getUser();
+            return user != null && user.isAuthenticated() ? user : null;
         }
         return null;
     }

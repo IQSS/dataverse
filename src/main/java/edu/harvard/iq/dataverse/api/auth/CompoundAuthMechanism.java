@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api.auth;
 
+import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 
@@ -35,11 +36,13 @@ public class CompoundAuthMechanism implements AuthMechanism {
 
     @Override
     public User findUserFromRequest(ContainerRequestContext containerRequestContext) throws WrappedAuthErrorResponse {
+        containerRequestContext.setProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM, ApiConstants.AUTH_MECHANISM_NONE);
         User user = null;
         for (AuthMechanism authMechanism : authMechanisms) {
             User userFromRequest = authMechanism.findUserFromRequest(containerRequestContext);
             if (userFromRequest != null) {
                 user = userFromRequest;
+                containerRequestContext.setProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM, getAuthMechanismTag(authMechanism));
                 break;
             }
         }
@@ -47,5 +50,24 @@ public class CompoundAuthMechanism implements AuthMechanism {
             user = GuestUser.get();
         }
         return user;
+    }
+
+    private String getAuthMechanismTag(AuthMechanism authMechanism) {
+        if (authMechanism instanceof ApiKeyAuthMechanism) {
+            return ApiConstants.AUTH_MECHANISM_API_KEY;
+        }
+        if (authMechanism instanceof WorkflowKeyAuthMechanism) {
+            return ApiConstants.AUTH_MECHANISM_WORKFLOW_KEY;
+        }
+        if (authMechanism instanceof SignedUrlAuthMechanism) {
+            return ApiConstants.AUTH_MECHANISM_SIGNED_URL;
+        }
+        if (authMechanism instanceof BearerTokenAuthMechanism) {
+            return ApiConstants.AUTH_MECHANISM_BEARER_TOKEN;
+        }
+        if (authMechanism instanceof SessionCookieAuthMechanism) {
+            return ApiConstants.AUTH_MECHANISM_SESSION_COOKIE;
+        }
+        return ApiConstants.AUTH_MECHANISM_NONE;
     }
 }

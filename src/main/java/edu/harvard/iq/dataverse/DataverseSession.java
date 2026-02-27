@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
@@ -88,6 +89,7 @@ public class DataverseSession implements Serializable{
      * leave the state alone (see setDebug()).
      */
     private Boolean debug;
+    private String apiCsrfToken;
     
     public User getUser() {
         return getUser(false);
@@ -123,6 +125,25 @@ public class DataverseSession implements Serializable{
     }
 
     /**
+     * Returns a CSRF token scoped to the current Dataverse session.
+     * The token is lazily created and reused until it is explicitly cleared.
+     */
+    public String getOrCreateApiCsrfToken() {
+        if (apiCsrfToken == null || apiCsrfToken.isBlank()) {
+            apiCsrfToken = UUID.randomUUID().toString();
+        }
+        return apiCsrfToken;
+    }
+
+    public boolean matchesApiCsrfToken(String token) {
+        return token != null && apiCsrfToken != null && apiCsrfToken.equals(token);
+    }
+
+    public void clearApiCsrfToken() {
+        apiCsrfToken = null;
+    }
+
+    /**
      * Sets the user and configures the session timeout.
      */
     public void setUser(User aUser) {
@@ -136,6 +157,7 @@ public class DataverseSession implements Serializable{
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("deactivated.error"));
             return;
         }
+        clearApiCsrfToken();
         FacesContext context = FacesContext.getCurrentInstance();
 		// Log the login/logout and Change the session id if we're using the UI and have
 		// a session, versus an API call with no session - (i.e. /admin/submitToArchive()
