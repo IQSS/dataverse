@@ -216,6 +216,7 @@ By default, Payara doesn't send the SameSite cookie attribute, which browsers sh
 Dataverse installations are explicity set to "Lax" out of the box by the installer (in the case of a "classic" installation) or through the base image (in the case of a Docker installation). For classic, see :ref:`http.cookie-same-site-value` and :ref:`http.cookie-same-site-enabled` for how to change the values. For Docker, you must rebuild the :doc:`base image </container/base-image>`. See also Payara's `documentation <https://docs.payara.fish/community/docs/6.2024.6/Technical%20Documentation/Payara%20Server%20Documentation/General%20Administration/Administering%20HTTP%20Connectivity.html>`_ for the settings above.
 
 To inspect cookie attributes like SameSite, you can use ``curl -s -I http://localhost:8080 | grep JSESSIONID``, for example, looking for the "Set-Cookie" header.
+For session-cookie API hardening guidance (including how to verify and set ``Secure``/``HttpOnly`` for ``JSESSIONID``), see :ref:`session-cookie-hardening-guidance`.
 
 .. _ongoing-security:
 
@@ -3921,12 +3922,55 @@ When enabled, Dataverse applies these protections for requests authenticated via
     ``/api/datasets/{id}/uploadurls`` and ``/api/datasets/{id}/cleanStorage``.
 - Exposes ``/api/users/:csrf-token`` for authenticated session-cookie clients to retrieve the CSRF token.
 
+.. _session-cookie-hardening-guidance:
+
 Session-cookie hardening deployment guidance:
 
 - Use HTTPS end-to-end (or trusted TLS termination before Dataverse).
 - Ensure JSESSIONID cookies are set with ``Secure`` and ``HttpOnly``.
 - Use ``SameSite=Lax`` (recommended default) or ``SameSite=Strict`` if your login/redirect flow supports it.
   ``SameSite=Strict`` can break some cross-site IdP/login return flows.
+
+How to verify and set ``JSESSIONID`` cookie flags (Payara)
+
+- Verify cookie flags from a response header:
+
+  ``curl -s -I https://<your-dataverse-host>/ | grep -i "set-cookie: JSESSIONID"``
+
+  The ``Set-Cookie`` header should include ``HttpOnly``, ``Secure``, and your expected ``SameSite`` value.
+
+- Verify current Payara virtual-server settings:
+
+  ``./asadmin get "configs.config.server-config.http-service.virtual-server.*.session-cookie-http-only"``
+
+  ``./asadmin get "configs.config.server-config.http-service.virtual-server.*.session-cookie-secure"``
+
+- Set ``JSESSIONID`` flags on the default virtual server (``server``):
+
+  ``./asadmin set configs.config.server-config.http-service.virtual-server.server.session-cookie-http-only=true``
+
+  ``./asadmin set configs.config.server-config.http-service.virtual-server.server.session-cookie-secure=true``
+
+- If you use SSO cookie flows (``JSESSIONIDSSO``), set those too:
+
+  ``./asadmin set configs.config.server-config.http-service.virtual-server.server.sso-cookie-http-only=true``
+
+  ``./asadmin set configs.config.server-config.http-service.virtual-server.server.sso-cookie-secure=true``
+
+After changing these settings, restart Payara and re-check the response headers.
+
+Session-Cookie Hardening vs Bearer Token Auth
+
+- Session-cookie auth and bearer-token auth use different trust models:
+  - Session cookie (``JSESSIONID``) is automatically sent by browsers.
+  - Bearer token is sent only when the client explicitly includes it.
+- Because of browser auto-send behavior, session-cookie auth requires anti-CSRF controls for state-changing API calls.
+  With this hardening track enabled, Dataverse enforces Origin/Referer and CSRF token checks, which brings session-cookie browser usage into a security posture comparable to bearer for first-party, same-origin UI calls.
+- Bearer remains preferable for non-browser and cross-origin API clients.
+- Neither model protects against stolen credentials by itself:
+  - session hijack (stolen ``JSESSIONID``),
+  - bearer-token theft.
+  For both, use HTTPS, secure cookie/token handling, short lifetimes where possible, and strong XSS prevention.
 
 .. _dataverse.feature.api-bearer-auth:
 
