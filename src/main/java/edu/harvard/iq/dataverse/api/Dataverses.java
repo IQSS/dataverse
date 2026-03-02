@@ -2046,10 +2046,9 @@ public class Dataverses extends AbstractApiBean {
             /*
             You can also set a new name for your template in the json
             */
-            
-            String templateName = json.getString("name");
-            if (!templateName.isEmpty() && !templateName.isBlank()){
-                 template.setName(templateName);                
+ 
+            if (json.containsKey("name") && !json.getString("name").isBlank()) {
+                 template.setName(json.getString("name"));                
             }
 
             
@@ -2146,7 +2145,7 @@ public class Dataverses extends AbstractApiBean {
         try {
 
             Dataverse dataverse = findDataverseOrDie(dvId);
-            Template template = findAllTemplatesOrDie(templateId, dataverse);
+            Template template = findTemplateInDataverseOrParentsOrDie(templateId, dataverse);
             DataverseRequest dvReq = createDataverseRequest(getRequestUser(crc));
             SetDefaultTemplateCommand command = new SetDefaultTemplateCommand(template, dvReq, dataverse);
             

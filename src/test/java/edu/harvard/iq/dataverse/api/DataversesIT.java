@@ -2873,7 +2873,6 @@ public class DataversesIT {
         
         String jsonStringForUpdateNotReplace = """
                             {
-                              "name": "Dataverse template - edited",
                               "fields": [
                                 {
                                   "typeName": "author",
@@ -2907,7 +2906,7 @@ public class DataversesIT {
                 
         String jsonStringForUpdateReplaceData = """
                             {
-                              "name": "Dataverse template - edited - again",
+                              "name": "Dataverse template - edited",
                               "fields": [
                                 {
                                   "typeName": "author",
@@ -2992,7 +2991,7 @@ public class DataversesIT {
         updateTemplateResponse.prettyPrint();
 
         updateTemplateResponse.then().assertThat().statusCode(CREATED.getStatusCode())
-                .body("data.name", equalTo("Dataverse template - edited"))
+                .body("data.name", equalTo("Dataverse template"))
                 .body("data.usageCount", equalTo(0))
                 .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
                 .body("data.datasetFields.citation.fields.size()", equalTo(1))
@@ -3004,7 +3003,7 @@ public class DataversesIT {
         updateTemplateReplaceResponse.prettyPrint();
 
         updateTemplateReplaceResponse.then().assertThat().statusCode(CREATED.getStatusCode())
-                .body("data.name", equalTo("Dataverse template - edited - again"))
+                .body("data.name", equalTo("Dataverse template - edited"))
                 .body("data.usageCount", equalTo(0))
                 .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
                 .body("data.datasetFields.citation.fields.size()", equalTo(1))

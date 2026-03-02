@@ -384,7 +384,7 @@ public abstract class AbstractApiBean {
         return template;
     }
 
-    protected Template findAllTemplatesOrDie(Long templateId, Dataverse dataverse) throws WrappedResponse {
+    protected Template findTemplateInDataverseOrParentsOrDie(Long templateId, Dataverse dataverse) throws WrappedResponse {
         
         List<Template> templates = new ArrayList<>();
         
