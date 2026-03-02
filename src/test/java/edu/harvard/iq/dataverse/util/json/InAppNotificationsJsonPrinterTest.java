@@ -402,13 +402,16 @@ public class InAppNotificationsJsonPrinterTest {
         userNotification.setObjectId(1L);
         userNotification.setRequestor(requestor);
 
+        DatasetVersion datasetVersion = mock(DatasetVersion.class);
         Dataset dataset = mock(Dataset.class);
         Dataverse owner = mock(Dataverse.class);
+
+        when(datasetVersion.getDataset()).thenReturn(dataset);
 
         when(dataset.getGlobalId()).thenReturn(testGlobalId);
         when(dataset.getDisplayName()).thenReturn("Submitted Dataset");
         when(dataset.getOwner()).thenReturn(owner);
-        when(datasetService.find(1L)).thenReturn(dataset);
+        when(datasetVersionService.find(1L)).thenReturn(datasetVersion);
 
         when(owner.getAlias()).thenReturn("reviewDv");
         when(owner.getDisplayName()).thenReturn("Review Dataverse");
