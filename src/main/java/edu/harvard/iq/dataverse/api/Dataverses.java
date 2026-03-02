@@ -2082,7 +2082,7 @@ public class Dataverses extends AbstractApiBean {
             Template template = findTemplateOrDie(templateId);
             Dataverse dataverse = template.getDataverse();
             
-            if (requestBody.getName() != null && !requestBody.getName().isEmpty()) {
+            if (requestBody.getName() != null && !requestBody.getName().isBlank()) {
                 String licenseName = requestBody.getName();
                 License license = licenseSvc.getByNameOrUri(licenseName);
                 if (license == null) {
