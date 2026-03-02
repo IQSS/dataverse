@@ -293,22 +293,17 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-    <groupId>jakarta.servlet</groupId>
-    <artifactId>jakarta.servlet-api</artifactId>
-    <version>6.1.0</version>
-    <scope>provided</scope>
-</dependency>
-<dependency>
-    <groupId>jakarta.persistence</groupId>
-    <artifactId>jakarta.persistence-api</artifactId>
-    <version>3.2.0</version>
-    <scope>provided</scope>
-</dependency>
-        
-        
-        
-        
-        
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>6.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>3.2.0</version>
+            <scope>provided</scope>
+        </dependency>
         <!-- Jakarta Activation, MIME support etc -->
         <!-- Runtime implementation here only, as necessary for testing. -->
         <dependency>
