@@ -113,7 +113,7 @@ Install Service Dependencies Directly on localhost
 Install PostgreSQL
 ^^^^^^^^^^^^^^^^^^
 
-The Dataverse Software has been tested with PostgreSQL versions up to 21. PostgreSQL version 10+ is required.
+The Dataverse Software has been tested with PostgreSQL versions up to 17. PostgreSQL version 10+ is required.
 
 On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EDB" option. Note that version 16 is used in the command line examples below, but the process should be similar for other versions. When prompted to set a password for the "database superuser (postgres)" just enter "password".
 
