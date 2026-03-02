@@ -47,21 +47,23 @@ Java 21 is now required to run Dataverse. Solr can run under Java 17 or Java 21 
 If you are running Payara as a non-root user (and you should be!), **remember not to execute the commands below as root**. Use `sudo` to change to that user first. For example, `sudo -i -u dataverse` if `dataverse` is your dedicated application user.
 
 The steps below reuse your existing domain directory with the new distribution of Payara. You may also want to review the Payara upgrade instructions as it could be helpful during any troubleshooting:
-[Payara Release Notes](https://docs.payara.fish/community/docs/Release%20Notes/Release%20Notes%207.2026.1.html).
+[Payara Release Notes](https://docs.payara.fish/community/docs/Release%20Notes/Release%20Notes%207.2026.2.html).
 We also recommend you ensure you followed all update instructions from the past releases regarding Payara.
 (The most recent Payara update was for [Dataverse 6.9](https://github.com/IQSS/dataverse/releases/tag/v6.9).)
 
-1. Download Payara 7.2026.1.
+1. Download Payara 7.2026.2.
 
-   `curl -L -O https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/7.2026.1/payara-7.2026.1.zip`
+   `curl -L -O https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/7.2026.2/payara-7.2026.2.zip`
 
 1. Unzip it to /usr/local (or your preferred location).
 
-   `sudo unzip payara-7.2026.1.zip -d /usr/local/`
+   `sudo unzip payara-7.2026.2.zip -d /usr/local/`
 
-1. Change ownership of the unzipped Payara to your "service" user ("dataverse" by default).
+1. Set permission for the service account ("dataverse" by default).
 
-   `sudo chown -R dataverse /usr/local/payara7`
+   `sudo chown -R root:root /usr/local/payara7`
+   `sudo chown dataverse /usr/local/payara7/glassfish/lib`
+   `sudo chown -R dataverse:dataverse /usr/local/payara7/glassfish/domains/domain1`
 
 1. Undeploy Dataverse, if deployed, using the unprivileged service account.
 
@@ -88,7 +90,7 @@ We also recommend you ensure you followed all update instructions from the past 
 
    `sudo -u dataverse cp -a /usr/local/payara7/glassfish/domains/domain1/config/domain.xml /usr/local/payara7/glassfish/domains/domain1/config/domain.xml.orig`
 
-   Save the Dataverse-related lines from Payara 6 to a text file.
+   Save the Dataverse-related lines from Payara 6 to a text file. Note that "doi" is for legacy settings like "doi.baseurlstring" that should be [converted](https://guides.dataverse.org/en/6.10/installation/config.html#legacy-single-pid-provider-dataverse-pid-datacite-mds-api-url) to modern equivalents if they are still present.
 
    `sudo egrep 'dataverse|doi' /usr/local/payara6/glassfish/domains/domain1/config/domain.xml > lines.txt`
 
@@ -165,7 +167,7 @@ We also recommend you ensure you followed all update instructions from the past 
 
    Under `/usr/local/payara7/glassfish/domains/domain1/config/domain.xml`, check the `Xmx` setting under `<config name="server-config">`, where you put the Dataverse-related JVM options, not the one under `<config name="default-config">`. This sets the JVM heap size; a good rule of thumb is half of your system's total RAM. You may specify the value in MB (`8192m`) or GB (`8g`).
 
-1. Copy `jhove.conf` and `jhoveConfig.xsd` from Payara 5, edit and change `payara6` to `payara7`.
+1. Copy `jhove.conf` and `jhoveConfig.xsd` from Payara 6, edit and change `payara6` to `payara7`.
 
    `sudo bash -c 'cp /usr/local/payara6/glassfish/domains/domain1/config/jhove* /usr/local/payara7/glassfish/domains/domain1/config'`
 
