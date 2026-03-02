@@ -831,6 +831,12 @@ public class DatasetTypesIT {
         setAllowedDatasetTypesFail.prettyPrint();
         setAllowedDatasetTypesFail.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
+
+        Response failEmptyString = UtilIT.setCollectionAttribute(dataverseAlias, "allowedDatasetTypes", " ",
+                apiTokenSuperuser);
+        failEmptyString.prettyPrint();
+        failEmptyString.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
     }
 
     /**
