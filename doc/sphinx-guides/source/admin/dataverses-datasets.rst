@@ -179,7 +179,7 @@ Using the API :ref:`collection-attributes-api`, change the ``allowedDatasetTypes
 Invite Users to Create Review Datasets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-At this point, users should be able to create review datasets via API, you gave them permission on the collection. You can point them to :ref:`creating-a-review-dataset` for details.
+At this point, users should be able to create review datasets via API, if you gave them permission on the collection. You can point them to :ref:`creating-a-review-dataset` for details.
 
 Datasets
 --------
