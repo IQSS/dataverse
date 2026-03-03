@@ -70,6 +70,12 @@
       "isHarvestable": false,
       "isVisibleInUserInterface": true
     },
+    "croissantSlim": {
+        "displayName": "Croissant Slim",
+        "mediaType": "application/json",
+        "isHarvestable": false,
+        "isVisibleInUserInterface": false
+    },    
     "dataverse_json": {
       "displayName": "JSON",
       "mediaType": "application/json",
