@@ -136,18 +136,6 @@ Follow the normal steps:
 - :ref:`create-dataverse`.
 - :ref:`dataverse-permissions`.
 
-Mark Fields in the "Review" Metadata Block as Required for the Collection
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Follow the normal steps to edit the collection (:ref:`general-information`), then enable the Review block for that collection and make the following fields required for the collection you created:
-
-- URL (``itemReviewedUrl``)
-- Type (``itemReviewedType``)
-
-There is a third field that you can optionally make required:
-
-- Citation (``itemReviewedCitation``)
-
 Create and Enable Custom "Rubric" Metadata Blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
