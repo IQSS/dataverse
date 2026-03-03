@@ -2100,7 +2100,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             DataverseRequest request = createDataverseRequest(user);
-            DeleteDataverseStorageDriverComman deleteDriverCommand = new DeleteDataverseStorageDriverComman(request, dataverse);
+            DeleteDataverseStorageDriverCommand deleteDriverCommand = new DeleteDataverseStorageDriverCommand(request, dataverse);
             return ok(execCommand(deleteDriverCommand));
         } catch (WrappedResponse wr) {
             return handleWrappedResponse(wr);

@@ -9,11 +9,11 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.authorization.Permission;
 
 @RequiredPermissions(Permission.EditDataverse)
-public class DeleteDataverseStorageDriverComman extends AbstractCommand<String> {
+public class DeleteDataverseStorageDriverCommand extends AbstractCommand<String> {
 
     private Dataverse dv;
 
-    public DeleteDataverseStorageDriverComman(DataverseRequest aRequest, Dataverse dv) {
+    public DeleteDataverseStorageDriverCommand(DataverseRequest aRequest, Dataverse dv) {
         super(aRequest, dv);
         this.dv = dv;
     }
