@@ -9,9 +9,12 @@ import jakarta.ws.rs.core.MediaType;
 import java.io.OutputStream;
 import java.util.Locale;
 
-/** https://github.com/mlcommons/croissant */
+/**
+ * See CroissantExporter for more about about Croissant. This "slim" version is purposefully small
+ * for embedding into the "head" of HTML pages.
+ */
 @AutoService(Exporter.class)
-public class CroissantExporter implements Exporter {
+public class CroissantExporterSlim implements Exporter {
 
     /*
      * The name of the format it creates. If this format is already provided by a
@@ -21,7 +24,7 @@ public class CroissantExporter implements Exporter {
      */
     @Override
     public String getFormatName() {
-        return "croissant";
+        return "croissantSlim";
     }
 
     /**
@@ -34,7 +37,7 @@ public class CroissantExporter implements Exporter {
         // This example includes the language in the name to demonstrate that locale is
         // available. A production exporter would instead use the locale to generate an
         // appropriate translation.
-        return "Croissant";
+        return "Croissant Slim";
     }
 
     /** Whether the exported format should be available as an option for Harvesting */
@@ -46,7 +49,7 @@ public class CroissantExporter implements Exporter {
     /** Whether the exported format should be available for download in the UI and API */
     @Override
     public Boolean isAvailableToUsers() {
-        return true;
+        return false;
     }
 
     /**
@@ -65,6 +68,6 @@ public class CroissantExporter implements Exporter {
     @Override
     public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream)
             throws ExportException {
-        CroissantExportUtil.exportDataset(dataProvider, outputStream, false);
+        CroissantExportUtil.exportDataset(dataProvider, outputStream, true);
     }
 }
