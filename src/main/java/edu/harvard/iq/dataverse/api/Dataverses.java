@@ -2088,10 +2088,9 @@ public class Dataverses extends AbstractApiBean {
             SetDataverseStorageDriverCommand setDriverCommand = new SetDataverseStorageDriverCommand(request, dataverse, label);
             return ok(execCommand(setDriverCommand));
 
-        } catch (IllegalArgumentException iae) {
-            return error(Response.Status.NOT_FOUND, iae.getMessage());
-        }
-       
+        } catch (WrappedResponse wr) {
+            return handleWrappedResponse(wr);
+        } 
     }
 
     @DELETE
@@ -2109,9 +2108,9 @@ public class Dataverses extends AbstractApiBean {
             DataverseRequest request = createDataverseRequest(user);
             DeleteDataverseStorageDriverComman deleteDriverCommand = new DeleteDataverseStorageDriverComman(request, dataverse);
             return ok(execCommand(deleteDriverCommand));
-        } catch (Exception e) {
-            return error(Response.Status.NOT_FOUND, e.getMessage());
-        }
+        } catch (WrappedResponse wr) {
+            return handleWrappedResponse(wr);
+        } 
     }
 
     @GET
@@ -2133,9 +2132,9 @@ public class Dataverses extends AbstractApiBean {
             DataverseRequest request = createDataverseRequest(user);
             GetDataverseAllowedStorageDriverCommand getAllowedStorageDriversCommand = new GetDataverseAllowedStorageDriverCommand(request, dv);
             return ok(execCommand(getAllowedStorageDriversCommand));
-        } catch (Exception e) {
-            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
+        } catch (WrappedResponse wr) {
+            return handleWrappedResponse(wr);
+        } 
     }
 
 }
