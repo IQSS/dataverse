@@ -155,8 +155,6 @@ Review datasets are built on the :ref:`dataset-types` feature. Dataset types can
 .. literalinclude:: ../../../../scripts/api/data/datasetTypes/review.json
    :language: json
 
-We suggest using neither "linkedMetadataBlocks" nor "availableLicenses" in the JSON when creating the dataset type. Again, the JSON above is suggested.
-
 Allow the Review Dataset Type for the Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
