@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
@@ -617,8 +618,23 @@ public class JsonParser {
         }
         guestbookResponse.setInstitution(obj.getString("institution", guestbookResponse.getInstitution()));
         guestbookResponse.setPosition(obj.getString("position", guestbookResponse.getPosition()));
+        Guestbook guestbook = guestbookResponse.getGuestbook();
+        List<String> missingResponses = new ArrayList<>();
+        if (guestbook.isNameRequired() && StringUtil.isEmpty(guestbookResponse.getName())) {
+            missingResponses.add("Name");
+        }
+        if (guestbook.isEmailRequired() && StringUtil.isEmpty(guestbookResponse.getEmail())) {
+            missingResponses.add("Email");
+        }
+        if (guestbook.isInstitutionRequired() && StringUtil.isEmpty(guestbookResponse.getInstitution())) {
+            missingResponses.add("Institution");
+        }
+        if (guestbook.isPositionRequired() && StringUtil.isEmpty(guestbookResponse.getPosition())) {
+            missingResponses.add("Position");
+        }
+
         Map<Long, CustomQuestion> cqMap = new HashMap<>();
-        guestbookResponse.getGuestbook().getCustomQuestions().stream().forEach(cq -> cqMap.put(cq.getId(),cq));
+        guestbook.getCustomQuestions().stream().forEach(cq -> cqMap.put(cq.getId(),cq));
         JsonArray answers = obj.getJsonArray("answers");
         List<CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
         for (JsonObject answer : answers.getValuesAs(JsonObject.class)) {
@@ -651,7 +667,6 @@ public class JsonParser {
         }
         guestbookResponse.setCustomQuestionResponses(customQuestionResponses);
         // verify each required question is in the response
-        List<String> missingResponses = new ArrayList<>();
         for (Map.Entry<Long, CustomQuestion> e : cqMap.entrySet()) {
             if (e.getValue().isRequired()) {
                 missingResponses.add(e.getValue().getQuestionString());

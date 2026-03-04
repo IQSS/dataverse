@@ -3929,6 +3929,10 @@ public class FilesIT {
         uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/cc0.png", json1.build(), ownerApiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
         Integer fileId3 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        JsonObjectBuilder json4 = Json.createObjectBuilder().add("description", "my description4").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
+        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/Robot-Icon_2.png", json1.build(), ownerApiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId4 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
 
         // Restrict files
         Response restrictResponse = UtilIT.restrictFile(fileId1.toString(), true, ownerApiToken);
@@ -3937,6 +3941,7 @@ public class FilesIT {
         restrictResponse.then().assertThat().statusCode(OK.getStatusCode());
         restrictResponse = UtilIT.restrictFile(fileId3.toString(), true, ownerApiToken);
         restrictResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // do not restrict fileId4
 
         // Update Dataset to allow requests
         Response allowAccessRequestsResponse = UtilIT.allowAccessRequests(datasetId.toString(), true, ownerApiToken);
@@ -3965,8 +3970,35 @@ public class FilesIT {
 
         String guestbookResponse = UtilIT.generateGuestbookResponse(guestbook);
 
+        // Download unrestricted file by guest user fails without GuestbookResponse
+        Response downloadResponse = UtilIT.downloadFile(fileId4);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat()
+                .body("status", equalTo(ApiConstants.STATUS_ERROR))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing")))
+                .statusCode(BAD_REQUEST.getStatusCode());
+        // With GuestbookResponse. Guest user doesn't have the required Name and Email. so this will still fail
+        downloadResponse = UtilIT.postDownloadFile(fileId4, guestbookResponse);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat()
+                .body("status", equalTo(ApiConstants.STATUS_ERROR))
+                .body("message", containsString("(Name,Email)"))
+                .statusCode(BAD_REQUEST.getStatusCode());
+        String guestbookResponseForGuest = guestbookResponse.replace("\"guestbookResponse\": {",
+                "\"guestbookResponse\": { \"name\":\"My Name\", \"email\":\"myemail@example.com\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
+        // With GuestbookResponse. Guest user doesn't have the required Name, etc. So we will add those to the Guestbook Response
+        downloadResponse = UtilIT.postDownloadFile(fileId4, guestbookResponseForGuest);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+        // Download the file using the signed url
+        Response signedUrlResponse = get(signedUrl);
+        signedUrlResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+
         // Get Download Url attempt - Guestbook Response is required but not found
-        Response downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken, null, false);
+        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken, null);
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat()
                 .body("status", equalTo(ApiConstants.STATUS_ERROR))
@@ -3974,14 +4006,14 @@ public class FilesIT {
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         // Get Signed Download Url with guestbook response
-        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken, guestbookResponse, true);
+        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken, guestbookResponse);
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        String signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+        signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
 
         // Download the file using the signed url
-        Response signedUrlResponse = get(signedUrl);
+        signedUrlResponse = get(signedUrl);
         signedUrlResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
 
@@ -3999,7 +4031,7 @@ public class FilesIT {
         downloadResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), downloadResponse.getStatusCode());
 
-        downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(new Integer[]{fileId1, fileId2, fileId3}, apiToken, guestbookResponse, true);
+        downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(new Integer[]{fileId1, fileId2, fileId3}, apiToken, guestbookResponse);
         downloadResponse.prettyPrint();
         signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
         signedUrlResponse = get(signedUrl);
@@ -4014,7 +4046,7 @@ public class FilesIT {
         // Modify guestbookResponse excluding email to show that the email remains unchanged
         guestbookResponse = guestbookResponse.replace("\"guestbookResponse\": {",
                 "\"guestbookResponse\": { \"name\":\"My Name\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
-        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken2, guestbookResponse, true);
+        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken2, guestbookResponse);
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());

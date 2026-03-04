@@ -1201,7 +1201,11 @@ public class UtilIT {
                 //                .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/access/datafile/" + fileId);
     }
-
+    static Response postDownloadFile(Integer fileId, String jsonBody) {
+        return given()
+                .body(jsonBody)
+                .post("/api/access/datafile/" + fileId);
+    }
     static Response downloadFile(Integer fileId, String apiToken) {
         String nullByteRange = null;
         String nullFormat = null;
@@ -1259,20 +1263,18 @@ public class UtilIT {
                 .get("/api/access/datafile/" + fileId + "?format=original&key=" + apiToken);
     }
 
-    static Response getDownloadFileUrlWithGuestbookResponse(Integer fileId, String apiToken, String body, boolean signed) {
+    static Response getDownloadFileUrlWithGuestbookResponse(Integer fileId, String apiToken, String body) {
         RequestSpecification requestSpecification = given();
         requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
-        String signedParam = signed ? "?signed=true" : "";
         if (body != null) {
             requestSpecification.body(body);
         }
-        return requestSpecification.post("/api/access/datafile/" + fileId + signedParam);
+        return requestSpecification.post("/api/access/datafile/" + fileId);
     }
 
-    static Response downloadFilesUrlWithGuestbookResponse(Integer[] fileIds, String apiToken, String body, boolean signed) {
+    static Response downloadFilesUrlWithGuestbookResponse(Integer[] fileIds, String apiToken, String body) {
         RequestSpecification requestSpecification = given();
         requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
-        String signedParam = signed ? "?signed=true" : "";
         if (body != null) {
             requestSpecification.body(body);
         }
@@ -1280,7 +1282,7 @@ public class UtilIT {
         for (Integer fileId : fileIds) {
             getString += fileId + ",";
         }
-        return requestSpecification.post(getString + signedParam);
+        return requestSpecification.post(getString);
     }
 
     static Response postDownloadDatafiles(String body, String apiToken) {
