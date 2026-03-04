@@ -98,6 +98,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
             Map<String, JsonLDTerm> terms = getJsonLDTerms(oreMap);
             performArchivingAndPersist(ctxt, version, dataCiteXml, ore, terms, token, requestedSettings);
         }
+        return ctxt.datasetVersion().find(version.getId());
     }
 
     // While we have a transaction context, get the terms needed to create the baginfo file
