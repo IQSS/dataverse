@@ -1,16 +1,12 @@
 ## Feature Request: API to support Download Terms of Use and Guestbook
 
 ## New Endpoints to download a file or files that required a Guestbook Response: POST
-A post to these endpoints with the body containing a JSON Guestbook Response will save the response and 
-`?signed=true`:  return a signed URL to download the file(s) or
-`?signed=false` or missing: Write the Guestbook Responses and download the file(s)
+A post to these endpoints with the body containing a JSON Guestbook Response will save the response and return a signed URL to download the file(s)
 
 `/api/access/datafile/{fileId:.+}`
 `/api/access/datafiles/{fileIds}`
 `/api/access/dataset/{id}`
 `/api/access/dataset/{id}/versions/{versionId}`
-
-The matching GET APIs will also take the `?signed=true` parameter to also return the signed url instead of downloading immediately. Note: Signed urls are only for Authenticated Users. Guest users will receive an error if requesting with signed=true
 
 A post to these endpoints with the body containing a JSON Guestbook Response will save the response before continuing the download.
 No signed URL option exists.
