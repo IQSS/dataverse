@@ -88,6 +88,8 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
             statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE,
                     "Successful archiving of earlier versions is required.");
             version.setArchivalCopyLocation(statusObjectBuilder.build().toString());
+            // Persist the failure status
+            persistResult(ctxt, version);
         } else {
 
             String dataCiteXml = getDataCiteXml(version);
@@ -96,7 +98,6 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
             Map<String, JsonLDTerm> terms = getJsonLDTerms(oreMap);
             performArchivingAndPersist(ctxt, version, dataCiteXml, ore, terms, token, requestedSettings);
         }
-        return ctxt.em().merge(version);
     }
 
     // While we have a transaction context, get the terms needed to create the baginfo file
