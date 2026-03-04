@@ -4249,27 +4249,39 @@ The fully expanded example above (without environment variables) looks like this
 Add Dataset Type
 ^^^^^^^^^^^^^^^^
 
-Note: Before you add any types of your own, there should be a single type called "dataset".
+The default dataset type is "dataset" and ships with Dataverse.
 
-Adding certain dataset types will result in a value other than "Dataset" being sent to DataCite (if you use DataCite), see :ref:`dataset-types-datacite` for details.
+Only superusers can add additional dataset types. Once added, they can only be used if a collection has been configured to allow them (see ``allowedDatasetTypes`` under :ref:`collection-attributes-api`).
 
-Be advised that if you add a type other than "software", "workflow", or "review", you will need to add your new type to your Bundle.properties file for it to appear in Title Case rather than lower case in the "Dataset Type" facet.
+Here's an example of all available fields when creating a dataset type:
 
-With all that said, we'll add a "software" type in the example below. This API endpoint is superuser only. The "name" of a type cannot be only digits. Note that this endpoint also allows you to add metadata blocks and available licenses for your new dataset type by adding "linkedMetadataBlocks" and/or "availableLicenses" arrays to your JSON.
+.. literalinclude:: ../../../../scripts/api/data/datasetTypes/datasetTypeAllFields.json
+   :language: json
+
+Here's a description of each field:
+
+- ``name`` (required): Machine-readable name. Cannot be only digits.
+- ``displayName`` (required): Human-readable name.
+- ``description``: A description.
+- ``linkedMetadataBlocks``: Linking a dataset type with one or more metadata blocks results in additional fields from those blocks appearing in the output from the :ref:`list-metadata-blocks-for-a-collection` API endpoint. Use the machine-readable names of the blocks. See :ref:`api-link-dataset-type` for details.
+- ``availableLicenses``: Limits the dataset type to certain licenses. For example, a "software" dataset type could be limited to "MIT" and "Apache-2.0". See :ref:`dataset-types-set-available-licenses` for details.
+
+Download the :download:`datasetTypeAllFields.json <../../../../scripts/api/data/datasetTypes/datasetTypeAllFields.json>` file show above, edit it to suit your needs, and use it in the following command.
 
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export JSON='{"name":"software","linkedMetadataBlocks":["codeMeta20"],"availableLicenses":["MIT", "Apache-2.0"]}'
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-Type: application/json" "$SERVER_URL/api/datasets/datasetTypes" -X POST -d $JSON
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-Type: application/json" "$SERVER_URL/api/datasets/datasetTypes" -X POST --upload-file datasetTypeAllFields.json
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Content-Type: application/json" "https://demo.dataverse.org/api/datasets/datasetTypes" -X POST -d '{"name":"software","linkedMetadataBlocks":["codeMeta20"],"availableLicenses":["MIT", "Apache-2.0"]}'
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Content-Type: application/json" "https://demo.dataverse.org/api/datasets/datasetTypes" -X POST --upload-file datasetTypeAllFields.json
+
+Note that adding certain dataset types will result in a value other than "Dataset" being sent to DataCite (if you use DataCite), see :ref:`dataset-types-datacite` for details.
 
 .. _api-delete-dataset-type:
 
@@ -4321,6 +4333,8 @@ The fully expanded example above (without environment variables) looks like this
 To update the blocks that are linked, send an array with those blocks.
 
 To remove all links to blocks, send an empty array.
+
+.. _dataset-types-set-available-licenses:
 
 Set Available Licenses for a Dataset Type
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
