@@ -2932,6 +2932,21 @@ public class DataversesIT {
                               ]
                             }
                             """;
+
+        String jsonStringJustInstructions = """
+                            {
+                              "instructions": [
+                                {
+                                    "instructionField": "title",
+                                    "instructionText": "A title for this little beauty"
+                                },
+                                {
+                                    "instructionField": "subtitle",
+                                    "instructionText": "You know, like 'Electric Boogaloo'"
+                                }
+                              ]
+                            }
+                            """;        
         
                 String jsonStringForUpdateTerms = """
             {
@@ -3010,6 +3025,17 @@ public class DataversesIT {
                 .body("data.instructions.size()", equalTo(1))
                 .body("data.dataverseAlias", equalTo(dataverseAlias));
         
+        Response updateTemplateUpdateInstructionsOnly = UtilIT.updateTemplateMetadata(templateId.toString(), jsonStringJustInstructions, apiToken, false);
+        
+        updateTemplateUpdateInstructionsOnly.prettyPrint();
+
+        updateTemplateUpdateInstructionsOnly.then().log().body().assertThat().statusCode(CREATED.getStatusCode())
+                .body("data.name", equalTo("Dataverse template - edited"))
+                .body("data.usageCount", equalTo(0))
+                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.datasetFields.citation.fields.size()", equalTo(1))
+                .body("data.instructions.flatten().size()", equalTo(2))
+                .body("data.dataverseAlias", equalTo(dataverseAlias));
         
         //Update Template License
                 // Test case 1: Update to a valid, predefined license (CC BY 4.0).

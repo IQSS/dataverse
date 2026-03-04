@@ -2054,7 +2054,9 @@ public class Dataverses extends AbstractApiBean {
             
             List<DatasetField> updatedFields = new ArrayList<>();
             if (json.getJsonArray("fields") == null) {
-                updatedFields.add(jsonParser().parseField(json, Boolean.FALSE, replaceData));
+                if (json.isNull("instructions")){
+                    updatedFields.add(jsonParser().parseField(json, Boolean.FALSE, replaceData));
+                }
             } else {
                 updatedFields = jsonParser().parseMultipleFields(json, replaceData);
             }
