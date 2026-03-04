@@ -372,8 +372,8 @@ public class Index extends AbstractApiBean {
     @GET
     @Path("perms")
     public Response indexAllPermissions() {
-        IndexResponse indexResponse = solrIndexService.indexAllPermissions();
-        return ok(indexResponse.getMessage());
+        solrIndexService.asyncIndexAllPermissions();
+        return ok("Asynchronous indexing of all permissions has been started. Check the server logs for progress.");
     }
 
     @GET
