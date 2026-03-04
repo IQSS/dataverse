@@ -2053,14 +2053,16 @@ public class Dataverses extends AbstractApiBean {
 
             
             List<DatasetField> updatedFields = new ArrayList<>();
+            //if it doesn't contain fields, instructions or name it better have a single dataset field 
+            //to be updated
             if (json.getJsonArray("fields") == null) {
-                if (json.isNull("instructions")){
+                if (!json.containsKey("instructions")  && !json.containsKey("name")){
                     updatedFields.add(jsonParser().parseField(json, Boolean.FALSE, replaceData));
                 }
             } else {
                 updatedFields = jsonParser().parseMultipleFields(json, replaceData);
             }
-                      
+            
             Map<String, String> instructionsMap = jsonParser().parseRequestBodyInstructionsMap(json);
             
             Template updated = execCommand(new UpdateTemplateFieldsCommand(template, dataverse,  updatedFields, instructionsMap, replaceData, createDataverseRequest(getRequestUser(crc))));

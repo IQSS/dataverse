@@ -2947,7 +2947,11 @@ public class DataversesIT {
                               ]
                             }
                             """;        
-        
+                String jsonStringJustName = """
+                            {
+                              "name": "Template - Just Name"
+                            }
+                            """;  
                 String jsonStringForUpdateTerms = """
             {
                    "customTerms": {
@@ -3031,6 +3035,18 @@ public class DataversesIT {
 
         updateTemplateUpdateInstructionsOnly.then().log().body().assertThat().statusCode(CREATED.getStatusCode())
                 .body("data.name", equalTo("Dataverse template - edited"))
+                .body("data.usageCount", equalTo(0))
+                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.datasetFields.citation.fields.size()", equalTo(1))
+                .body("data.instructions.flatten().size()", equalTo(2))
+                .body("data.dataverseAlias", equalTo(dataverseAlias));
+        
+        Response updateTemplateUpdateNameOnly = UtilIT.updateTemplateMetadata(templateId.toString(), jsonStringJustName, apiToken, false);
+        
+        updateTemplateUpdateNameOnly.prettyPrint();
+
+        updateTemplateUpdateNameOnly.then().assertThat().statusCode(CREATED.getStatusCode())
+                .body("data.name", equalTo("Template - Just Name"))
                 .body("data.usageCount", equalTo(0))
                 .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
                 .body("data.datasetFields.citation.fields.size()", equalTo(1))

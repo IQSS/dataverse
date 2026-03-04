@@ -169,7 +169,9 @@ public class UpdateTemplateFieldsCommand extends AbstractCommand<Template> {
         } else {
             Map <String, String> currentInstructionsMap = template.getInstructionsMap();            
             Map<String, String> merged = new HashMap<>(currentInstructionsMap);
-            merged.putAll(instructions);
+            if(instructions != null){
+                merged.putAll(instructions);
+            }
             template.setInstructionsMap(merged);
             template.updateInstructions();           
         }       
