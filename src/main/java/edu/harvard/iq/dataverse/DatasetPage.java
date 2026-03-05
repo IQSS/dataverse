@@ -6211,6 +6211,7 @@ public class DatasetPage implements java.io.Serializable {
         return archivable;
     }
 
+    /** Method to decide if a 'Submit' button should be enabled for archiving a dataset version. */
     public boolean isVersionArchivable(Long id) {
         Boolean thisVersionArchivable = versionArchivable.get(id);
         if (thisVersionArchivable == null) {
@@ -6225,11 +6226,29 @@ public class DatasetPage implements java.io.Serializable {
                         DatasetVersion targetVersion = dataset.getVersions().stream()
                                 .filter(v -> v.getId().equals(id)).findFirst().orElse(null);
                         if (requiresEarlierVersionsToBeArchived) {// Find the specific version by id
-                            DatasetVersion priorVersion = DatasetUtil.getPriorVersion(targetVersion);
+                            // Check all prior versions to ensure they are successfully archived
+                            boolean allPriorVersionsArchived = true;
+                            boolean foundTarget = false;
+                            List<DatasetVersion> versions = dataset.getVersions();
 
-                            if (priorVersion== null || (isVersionArchivable(priorVersion.getId())
-                                    && ArchiverUtil.isVersionArchived(priorVersion))) {
+                            for (DatasetVersion versionInLoop : versions) {
+                                // Once we find the target version, start checking subsequent versions (which are prior versions)
+                                if (foundTarget) {
+                                    // Check if this prior version has been successfully archived
+                                    String archivalStatus = versionInLoop.getArchivalCopyLocationStatus();
+                                    if (archivalStatus == null || !archivalStatus.equals(DatasetVersion.ARCHIVAL_STATUS_SUCCESS)) {
+                                        allPriorVersionsArchived = false;
+                                        break;
+                                    }
+                                }
+                                if (versionInLoop.equals(targetVersion)) {
+                                    foundTarget = true;
+                                }
+                            }
+
+                            if (allPriorVersionsArchived) {
                                 thisVersionArchivable = true;
+                                // This check has been passed, so we go on to check other conditions
                             } else {
                                 // Store the false value and skip further checks
                                 versionArchivable.put(id, thisVersionArchivable);
