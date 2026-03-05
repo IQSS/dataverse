@@ -717,23 +717,7 @@ public class DatasetVersion implements Serializable {
             */
             
             for (FileMetadata fm : this.getFileMetadatas()) {
-                FileMetadata newFm = new FileMetadata();
-                // TODO: 
-                // the "category" will be removed, shortly. 
-                // (replaced by multiple, tag-like categories of 
-                // type DataFileCategory) -- L.A. beta 10
-                //newFm.setCategory(fm.getCategory());
-                // yep, these are the new categories:
-                newFm.setCategories(fm.getCategories());
-                newFm.setDescription(fm.getDescription());
-                newFm.setLabel(fm.getLabel());
-                newFm.setDirectoryLabel(fm.getDirectoryLabel());
-                newFm.setRestricted(fm.isRestricted());
-                newFm.setDataFile(fm.getDataFile());
-                newFm.setDatasetVersion(dsv);
-                newFm.setProvFreeForm(fm.getProvFreeForm());
-                
-                dsv.getFileMetadatas().add(newFm);
+                fm.createCopyInVersion(dsv);
             }
             
             if (this.getTermsOfUseAndAccess()!= null){

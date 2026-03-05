@@ -698,6 +698,13 @@ public class DatasetServiceBean implements java.io.Serializable {
         exportAllDatasets(true);
     }
 
+    // reExportAll with a date *forces* a reexport on all published datasets that were not exported or were exported before the date;
+    @Asynchronous
+    public void reExportAllAsync(Date reExportDate) {
+        exportAllDatasets(true, reExportDate);
+        
+    }
+
     public void reExportAll() {
         exportAllDatasets(true);
     }
@@ -715,7 +722,12 @@ public class DatasetServiceBean implements java.io.Serializable {
         exportAllDatasets(false);
     }
 
-    public void exportAllDatasets(boolean forceReExport) {
+    private void exportAllDatasets(boolean b) {
+     exportAllDatasets(b, null);
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    private void exportAllDatasets(boolean forceReExport, Date reExportDate) {
         Integer countAll = 0;
         Integer countSuccess = 0;
         Integer countError = 0;
@@ -723,22 +735,14 @@ public class DatasetServiceBean implements java.io.Serializable {
         Logger exportLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.DatasetServiceBean." + "ExportAll" + logTimestamp);
         String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "export_" + logTimestamp + ".log";
         FileHandler fileHandler;
-        boolean fileHandlerSuceeded;
         try {
             fileHandler = new FileHandler(logFileName);
             exportLogger.setUseParentHandlers(false);
-            fileHandlerSuceeded = true;
+            exportLogger.addHandler(fileHandler);
         } catch (IOException | SecurityException ex) {
             Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
-
-        if (fileHandlerSuceeded) {
-            exportLogger.addHandler(fileHandler);
-        } else {
-            exportLogger = logger;
-        }
-
         exportLogger.info("Starting an export all job");
 
         for (Long datasetId : findAllLocalDatasetIds()) {
@@ -757,9 +761,17 @@ public class DatasetServiceBean implements java.io.Serializable {
 
                     // can't trust dataset.getPublicationDate(), no.
                     Date publicationDate = dataset.getReleasedVersion().getReleaseTime(); // we know this dataset has a non-null released version! Maybe not - SEK 8/19 (We do now! :)
-                    if (forceReExport || (publicationDate != null
-                            && (dataset.getLastExportTime() == null
-                            || dataset.getLastExportTime().before(publicationDate)))) {
+                    /**
+                     * Three cases: force is true and no date given - reexport every dataset force
+                     * is true and reExport date given - reexport datasets last exported before that
+                     * date force is false, reExportDate ignored - reexport datasets last exported
+                     * before they were last published
+                     */
+                    if ((forceReExport && reExportDate == null)
+                            || (forceReExport && (dataset.getLastExportTime() == null || dataset.getLastExportTime().before(reExportDate)))
+                            || (forceReExport == false
+                                    && (publicationDate != null && (dataset.getLastExportTime() == null
+                                            || dataset.getLastExportTime().before(publicationDate))))) {
                         countAll++;
                         try {
                             recordService.exportAllFormatsInNewTransaction(dataset);
@@ -768,6 +780,13 @@ public class DatasetServiceBean implements java.io.Serializable {
                         } catch (Exception ex) {
                             exportLogger.log(Level.INFO, "Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage(), ex);
                             countError++;
+                        } catch (Throwable t) {
+                            exportLogger.log(Level.SEVERE, "Fatal error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + t.getClass().getName() + ": " + t.getMessage(), t);
+                            exportLogger.info("Datasets processed before fatal error: " + countAll.toString());
+                            exportLogger.info("Datasets exported successfully: " + countSuccess.toString());
+                            exportLogger.info("Datasets failures: " + countError.toString());
+                            fileHandler.close();
+                            throw t;
                         }
                     }
                 }
@@ -778,10 +797,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         exportLogger.info("Datasets failures: " + countError.toString());
         exportLogger.info("Finished export-all job.");
 
-        if (fileHandlerSuceeded) {
-            fileHandler.close();
-        }
-
+        fileHandler.close();
     }
 
     @Asynchronous
@@ -1140,19 +1156,5 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         em.flush();
     }
-    
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void setLastExportTimeInNewTransaction(Long datasetId, Date lastExportTime) {
-        try {
-            Dataset currentDataset = find(datasetId);
-            if (currentDataset != null) {
-                currentDataset.setLastExportTime(lastExportTime);
-                merge(currentDataset);
-            } else {
-                logger.log(Level.SEVERE, "Could not find Dataset with id={0} to retry persisting archival copy location after OptimisticLockException.", datasetId);
-            }
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Failed to retry export after OptimisticLockException for dataset id=" + datasetId, e);
-        }
-    }
+
 }

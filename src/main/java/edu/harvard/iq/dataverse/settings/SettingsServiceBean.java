@@ -771,7 +771,7 @@ public class SettingsServiceBean {
         FileCategories,
         CreateDataFilesMaxErrorsToDisplay,
 
-        ContactFeedbackMessageSizeLimit,
+        ContactFeedbackMessageSizeLimit,        
         //Experimental setting to allow connecting to a GET external search service expecting a GET request with query parameter mirroring the search API query parameters (without search_service) 
         GetExternalSearchUrl,
         //Experimental setting to provide a display name for the GET external search service
@@ -785,6 +785,8 @@ public class SettingsServiceBean {
         COARNotifyRelationshipAnnouncementTriggerFields,
         // JSON specification of the targets to send announcements to
         COARNotifyRelationshipAnnouncementTargets,
+        // Configurable delay between harvesting calls, when required to avoid triggering rate limits
+        HarvestingClientCallRateLimit
         ;
 
         @Override

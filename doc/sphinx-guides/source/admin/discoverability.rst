@@ -30,21 +30,22 @@ The HTML source of a dataset landing page includes "DC" (Dublin Core) ``<meta>``
         <meta name="DC.type" content="Dataset"
         <meta name="DC.title" content="..."
 
-.. _schema.org-head:
+.. _croissant-head:
 
-Schema.org JSON-LD/Croissant Metadata
-+++++++++++++++++++++++++++++++++++++
+Croissant Metadata in the ``<head>`` of Dataset Landing Pages
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-The ``<head>`` of the HTML source of a dataset landing page includes Schema.org JSON-LD metadata like this::
+`Croissant <https://github.com/mlcommons/croissant>`_ is a metadata format for machine learning datasets.
 
+In Dataverse, the ``<head>`` of the HTML source of a dataset landing page includes Croissant metadata like this::
 
-        <script type="application/ld+json">{"@context":"http://schema.org","@type":"Dataset","@id":"https://doi.org/...
+    <script type="application/ld+json">{"@context":..."cr":"http://mlcommons.org/croissant/"...
 
-If you enable the Croissant metadata export format (see :ref:`external-exporters`) the ``<head>`` will show Croissant metadata instead. It looks similar, but you should see ``"cr": "http://mlcommons.org/croissant/"`` in the output.
+This is the same Croissant file you can download from a dataset landing page by clicking "Metadata" then "Export Metadata" (see :ref:`metadata-export-formats`) and the API (see ``croissant`` at :ref:`export-dataset-metadata-api`).
 
-For backward compatibility, if you enable Croissant, the older Schema.org JSON-LD format (``schema.org`` in the API) will still be available from both the web interface (see :ref:`metadata-export-formats`) and the API (see :ref:`export-dataset-metadata-api`).
+We include Croissant in the ``<head>`` because it's `recommended <https://github.com/mlcommons/croissant/issues/530#issuecomment-1964227662>`_ by Google for `Google Dataset Search <https://datasetsearch.research.google.com>`_, where they offer a filter to narrow results to only datasets with support for Croissant.
 
-The Dataverse team has been working with Google on both formats. Google has `indicated <https://github.com/mlcommons/croissant/issues/530#issuecomment-1964227662>`_ that for `Google Dataset Search <https://datasetsearch.research.google.com>`_ (the main reason we started adding this extra metadata in the ``<head>`` of dataset pages), Croissant is the successor to the older format.
+Before Croissant was invented, Google recommended a different format that Dataverse refers to as "Schema.org JSON-LD" in the user interface (and ``schema.org`` in the API). If you prefer to put that older format in the ``<head>``, which was the behavior in older versions of Dataverse, see :ref:`dataverse.legacy.schemaorg-in-html-head`.
 
 .. _discovery-sign-posting:
 
