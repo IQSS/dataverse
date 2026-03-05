@@ -849,7 +849,7 @@ Dataset Types
 
 The vision for dataset types is to have variations on datasets. The best documented use case is :ref:`review-datasets-user`, as explained below, but other types of datasets are possible such as software datasets (see :ref:`api-add-dataset-type` for an example) or workflow datasets.
 
-Out of the box, all datasets have a dataset type of "Dataset", which is the traditional research data related dataset in Dataverse. Superusers can add additional types using the :ref:`api-add-dataset-type` API endpoint. These additional dataset types cannot be used until a superuser has allowed them on a per-collection basis using the :ref:`collection-attributes-api` API endpoint (by passing ``allowedDatasetTypes``).
+Out of the box, all datasets have a dataset type of "dataset", which is the traditional research data related dataset in Dataverse. Superusers can add additional types using the :ref:`api-add-dataset-type` API endpoint. These additional dataset types cannot be used until a superuser has allowed them on a per-collection basis using the :ref:`collection-attributes-api` API endpoint (by passing ``allowedDatasetTypes``).
 
 Dataset types can be listed, added, or deleted via API. See :ref:`api-dataset-types` in the API Guide for more.
 
@@ -893,7 +893,7 @@ Review datasets build on the :ref:`dataset-types` feature, allowing users to cho
 
 First, when multiple dataset types exist, a "Dataset Type" search facet appears that allows users to narrow results to the various kinds of dataset types that have been added, such as dataset, review, software, workflow, etc. (Under the "Collections, Datasets, Files" area, review datasets are considered datasets.)
 
-Second, when review datasets are published, different ``resourceType`` metadata is sent to DataCite. Review datasets send "Other" for the field ``resourceTypeGeneral`` ("Work Type" in the UI at https://commons.datacite.org) and "Review" as type value. See the table under :ref:`dataset-types-datacite` for details and comparison. Please note that we are not using the official general type "PeerReview" because it is too narrow to fit all possible use cases. 
+Second, when review datasets are published, different ``resourceType`` metadata is sent to DataCite. Review datasets send "Other" for the field ``resourceTypeGeneral`` ("Work Type" in the UI at https://commons.datacite.org) and "Review" as the ``resourceType`` value. See the table under :ref:`dataset-types-datacite` for details and comparison. Please note that we are not using the "PeerReview" for ``resourceTypeGeneral`` because it is (in our view) specific to scholarly communications and may carry related connotations.
 
 The following table summaries how regular datasets compare to review datasets.
 
