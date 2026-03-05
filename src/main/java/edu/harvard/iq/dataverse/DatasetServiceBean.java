@@ -1156,5 +1156,19 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         em.flush();
     }
-
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void setLastExportTimeInNewTransaction(Long datasetId, Date lastExportTime) {
+        try {
+            Dataset currentDataset = find(datasetId);
+            if (currentDataset != null) {
+                currentDataset.setLastExportTime(lastExportTime);
+                merge(currentDataset);
+            } else {
+                logger.log(Level.SEVERE, "Could not find Dataset with id={0} to retry persisting archival copy location after OptimisticLockException.", datasetId);
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Failed to retry export after OptimisticLockException for dataset id=" + datasetId, e);
+        }
+    }
 }
