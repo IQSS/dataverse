@@ -29,59 +29,48 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *       DATAVERSE_CORS_ORIGIN: "*"
  * env to `dev_dataverse`.
  */
-public class CorsIT {
+class CorsIT {
     private static final String ORIGIN_NULL = "null";
-
+    
+    private final List<String> expectedCorsMethods = List.of("GET", "POST", "PUT", "DELETE", "OPTIONS");
+    private final List<String> expectedCorsAllowHeaders = List.of("Accept", "Content-Type", "X-Dataverse-key", "Range");
+    private final List<String> expectedCorsExposeHeaders = List.of("Accept-Ranges", "Content-Range", "Content-Encoding");
+    
     @BeforeAll
-    public static void setUp() {
+    static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
     @ParameterizedTest(name = "CORS preflight headers on {0}")
     @ValueSource(strings = {
-            "/api/dataverses/root/datasets",
-            "/api/v1/dataverses/root/datasets",
-            "/page_doesnt_exist",
-            "/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/root"
+        "/api/dataverses/root/datasets",
+        "/api/v1/dataverses/root/datasets",
+        "/page_doesnt_exist",
+        "/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/root"
     })
-    public void testPreflightOptionsCorsHeaders(String path) {
-        assertPreflightCorsHeaders(path);
-    }
-
-    private void assertPreflightCorsHeaders(String path) {
-        Response response = given()
-            .header("Accept", "*/*")
-            .header("Accept-Language", "en-US,en;q=0.9,es;q=0.8,hu;q=0.7")
-            .header("Access-Control-Request-Headers", "content-type,x-dataverse-key")
-            .header("Access-Control-Request-Method", "POST")
-            .header("Origin", ORIGIN_NULL)
-            .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36")
+    void testPreflightOptionsCorsHeaders(String path) {
+        Response response =
+            given()
+                .header("Accept", "*/*")
+                .header("Accept-Language", "en-US,en;q=0.9,es;q=0.8,hu;q=0.7")
+                .header("Access-Control-Request-Headers", "content-type,x-dataverse-key")
+                .header("Access-Control-Request-Method", "POST")
+                .header("Origin", ORIGIN_NULL)
+                .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36")
             .when()
-            .options(path)
+                .options(path)
             .then()
-            .log().ifValidationFails()
-            .statusCode(anyOf(is(200), is(204)))
-            .header("Access-Control-Allow-Methods", not(blankOrNullString()))
-            .header("Access-Control-Allow-Headers", not(blankOrNullString()))
-            .header("Access-Control-Expose-Headers", not(blankOrNullString()))
-            .extract()
-            .response();
+                .log().ifValidationFails()
+                .statusCode(anyOf(is(200), is(204)))
+                .header("Access-Control-Allow-Methods", not(blankOrNullString()))
+                .header("Access-Control-Allow-Headers", not(blankOrNullString()))
+                .header("Access-Control-Expose-Headers", not(blankOrNullString()))
+                .extract()
+                .response();
 
-        assertHeaderSetEquals("Access-Control-Allow-Methods", getExpectedCorsMethods(), response);
-        assertHeaderSetEquals("Access-Control-Allow-Headers", getExpectedCorsAllowHeaders(), response);
-        assertHeaderSetEquals("Access-Control-Expose-Headers", getExpectedCorsExposeHeaders(), response);
-    }
-
-    private static List<String> getExpectedCorsMethods() {
-        return List.of("GET", "POST", "OPTIONS", "PUT", "DELETE");
-    }
-
-    private static List<String> getExpectedCorsAllowHeaders() {
-        return List.of("Accept", "Content-Type", "X-Dataverse-key", "Range");
-    }
-
-    private static List<String> getExpectedCorsExposeHeaders() {
-        return List.of("Accept-Ranges", "Content-Range", "Content-Encoding");
+        assertHeaderSetEquals("Access-Control-Allow-Methods", expectedCorsMethods, response);
+        assertHeaderSetEquals("Access-Control-Allow-Headers", expectedCorsAllowHeaders, response);
+        assertHeaderSetEquals("Access-Control-Expose-Headers", expectedCorsExposeHeaders, response);
     }
 
     private static void assertHeaderSetEquals(String headerName, List<String> expectedTokens, Response response) {
