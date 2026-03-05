@@ -6218,9 +6218,7 @@ public class DatasetPage implements java.io.Serializable {
             thisVersionArchivable = false;
             boolean requiresEarlierVersionsToBeArchived = settingsWrapper.isTrueForKey(SettingsServiceBean.Key.ArchiveOnlyIfEarlierVersionsAreArchived, false);
             if (isArchivable()) {
-                // Otherwise, we need to know if the archiver is single-version-only
-                // If it is, we have to check for an existing archived version to answer the
-                // question
+
                 String className = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ArchiverClassName, null);
                 if (className != null) {
                     try {
@@ -6232,8 +6230,15 @@ public class DatasetPage implements java.io.Serializable {
                             if (priorVersion== null || (isVersionArchivable(priorVersion.getId())
                                     && ArchiverUtil.isVersionArchived(priorVersion))) {
                                 thisVersionArchivable = true;
+                            } else {
+                                // Store the false value and skip further checks
+                                versionArchivable.put(id, thisVersionArchivable);
+                                return thisVersionArchivable;
                             }
                         }
+                        // Otherwise, we need to know if the archiver is single-version-only
+                        // If it is, we have to check for an existing archived version to answer the
+                        // question
                         if (checkForArchivalCopy == null) {
                             //Only check once
                             Class<?> clazz = Class.forName(className);
