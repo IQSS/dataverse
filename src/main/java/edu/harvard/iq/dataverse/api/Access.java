@@ -59,6 +59,7 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
@@ -198,14 +199,10 @@ public class Access extends AbstractApiBean {
     @Produces({"application/zip"})
     public BundleDownloadInstance datafileBundleWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("gbrecs") boolean gbrecs,
                                                                       @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, String jsonBody) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        Response res = processDatafileWithGuestbookResponse(crc, headers, fileId, uriInfo, gbrecs, jsonBody);
-        if (res != null) {
-            throw new WebApplicationException(res);
-            // TODO: There is no get for this so we shouldn't return a signed url
-        } else {
-            // return the download instance
-            return datafileBundle(crc, fileId, fileMetadataId, gbrecs, uriInfo, headers, response);
-        }
+        processDatafileWithGuestbookResponse(crc, headers, fileId, uriInfo, gbrecs, jsonBody);
+        // There is no get for this so we shouldn't return a signed url
+        // return the download instance
+        return datafileBundle(crc, fileId, fileMetadataId, gbrecs, uriInfo, headers, response);
     }
 
     //Added a wrapper method since the original method throws a wrapped response 
@@ -724,15 +721,10 @@ public class Access extends AbstractApiBean {
     @Produces({ "application/zip" })
     public Response postDownloadDatafiles(@Context ContainerRequestContext crc, String body, @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
 
-
-        Response res = processDatafileWithGuestbookResponse(crc, headers, body, uriInfo, gbrecs, body);
-        if (res != null) {
-            return res;
-            // TODO: There is no get for this so we shouldn't return a signed url
-        } else {
-            // initiate the download now
-            return downloadDatafiles(crc, body, gbrecs, uriInfo, headers, response, null);
-        }
+        processDatafileWithGuestbookResponse(crc, headers, body, uriInfo, gbrecs, body);
+        // There is no get for this so we shouldn't return a signed url
+        // initiate the download now
+        return downloadDatafiles(crc, body, gbrecs, uriInfo, headers, response, null);
     }
 
     @GET
@@ -938,9 +930,7 @@ public class Access extends AbstractApiBean {
         "fileIds=1,2,3"
         {fileIds:[1,2,3], "guestbookResponse":{}}
         */
-        if (body.startsWith("fileIds=")) {
-            return body.substring(8).split(","); // Trim string "fileIds=" from the front
-        } else if (body.startsWith("{")) { // assume json
+        if (body.startsWith("{")) { // assume json
             // get fileIds from json. example: {fileIds:[1,2,3], "guestbookResponse":{}}
             JsonObject jsonObject = JsonUtil.getJsonObject(body);
             if (jsonObject.containsKey("fileIds")) {
@@ -951,8 +941,11 @@ public class Access extends AbstractApiBean {
                 return new String[0];
             }
         } else {
-            // default to expected list of ids "1,2,3"
-            return body.split(",");
+            // Trim string "fileIds=" from the front if exists
+            String csv = body.substring(body.startsWith("fileIds=") ? 8 : 0);
+            //String[] list = body.substring(body.startsWith("fileIds=") ? 8 : 0).replaceAll(",$", "").split(",");
+            return Arrays.asList(csv.split(",")).stream().map(String::trim)
+                    .filter(s -> !s.isEmpty()).collect(Collectors.toList()).toArray(new String[0]);
         }
     }
 
@@ -990,33 +983,31 @@ public class Access extends AbstractApiBean {
         // Get DataFiles, check authorized access, check for multiple Datasets, and check for required guestbook response
         Set<Long> datasetIds = new HashSet<>();
         for (int i = 0; i < fileIdParams.length; i++) {
-            if (!fileIdParams[i].isBlank()) {
-                DataFile df = findDataFileOrDieWrapper(fileIdParams[i]);
-                datafilesMap.put(df.getId(), df);
-                datasetIds.add(df.getOwner() != null ? df.getOwner().getId() : 0L);
-                if (isAccessAuthorized(user, df)) {
-                    authorizedDatafileIds.add(df.getId());
-                }
-                if (datasetIds.size() > 1) {
-                    // All files must be from the same Dataset
-                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.multipleDatasets"));
-                } else if (authorizedDatafileIds.contains(df.getId()) && checkGuestbookRequiredResponse(crc, df)) {
-                    try {
-                        GuestbookResponse gbr = getGuestbookResponseFromBody(df, GuestbookResponse.DOWNLOAD, body, user);
-                        if (gbr != null) {
-                            engineSvc.submit(new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), gbr, gbr.getDataset()));
-                            donotwriteGBResponse = true;
-                            //  Further down the actual download will also create a simple download response for every datafile listed based on the donotwriteGBResponse flag.
-                            //  Modifying donotwriteGBResponse will block that so we also need to log the MDC entry here
-                            MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
-                            mdcLogService.logEntry(entry);
-                        } else {
-                            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing"));
-                        }
-                    } catch (JsonParseException | CommandException ex) {
-                        List<String> args = Arrays.asList(df.getDisplayName(), ex.getLocalizedMessage());
-                        return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbook.commandError", args));
+            DataFile df = findDataFileOrDieWrapper(fileIdParams[i]);
+            datafilesMap.put(df.getId(), df);
+            datasetIds.add(df.getOwner() != null ? df.getOwner().getId() : 0L);
+            if (isAccessAuthorized(user, df)) {
+                authorizedDatafileIds.add(df.getId());
+            }
+            if (datasetIds.size() > 1) {
+                // All files must be from the same Dataset
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.multipleDatasets"));
+            } else if (authorizedDatafileIds.contains(df.getId()) && checkGuestbookRequiredResponse(crc, df)) {
+                try {
+                    GuestbookResponse gbr = getGuestbookResponseFromBody(df, GuestbookResponse.DOWNLOAD, body, user);
+                    if (gbr != null) {
+                        engineSvc.submit(new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), gbr, gbr.getDataset()));
+                        donotwriteGBResponse = true;
+                        //  Further down the actual download will also create a simple download response for every datafile listed based on the donotwriteGBResponse flag.
+                        //  Modifying donotwriteGBResponse will block that so we also need to log the MDC entry here
+                        MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
+                        mdcLogService.logEntry(entry);
+                    } else {
+                        return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing"));
                     }
+                } catch (JsonParseException | CommandException ex) {
+                    List<String> args = Arrays.asList(df.getDisplayName(), ex.getLocalizedMessage());
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbook.commandError", args));
                 }
             }
         }
@@ -1931,9 +1922,10 @@ public class Access extends AbstractApiBean {
     private boolean checkGuestbookRequiredResponse(ContainerRequestContext crc, DataFile df) {
         // Check if guestbook response is required
         // check if this was originally a signed url - since the property only exists if true then a null check should suffice
-        Object wasSigned = crc.getProperty("wasSigned");
-        boolean required = wasSigned == null && df.getOwner().hasEnabledGuestbook();
-        return required;
+        boolean notSigned = (crc.getProperty("wasSigned") == null);
+        boolean wasWrittenInPost = true; // TODO: not required if signed and has some flag stating that the guestbook response was already written
+
+        return notSigned && !wasWrittenInPost && df.getOwner().hasEnabledGuestbook();
     }
 
     private GuestbookResponse getGuestbookResponseFromBody(DataFile dataFile, String type, String jsonBody, User requestor) throws JsonParseException {
