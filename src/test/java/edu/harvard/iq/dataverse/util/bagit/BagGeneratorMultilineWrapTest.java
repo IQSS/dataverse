@@ -157,4 +157,101 @@ public class BagGeneratorMultilineWrapTest {
         String out = callMultilineWrap(input);
         assertThat(out).isEqualTo(expected);
     }
+
+    // Tests for additional line separator characters
+
+    @Test
+    void multiline_withCR_normalizedAndIndented() {
+        String input = "Line1\rLine2\rLine3";
+        String expected = "Line1\r\n Line2\r\n Line3";
+        String out = callMultilineWrap(input);
+        assertThat(out).isEqualTo(expected);
+    }
+
+    @Test
+    void multiline_withCRLF_normalizedAndIndented() {
+        String input = "Line1\r\nLine2\r\nLine3";
+        String expected = "Line1\r\n Line2\r\n Line3";
+        String out = callMultilineWrap(input);
+        assertThat(out).isEqualTo(expected);
+    }
+
+    @Test
+    void multiline_withVT_normalizedAndIndented() {
+        // VT (U+000B) - Vertical Tab
+        String input = "Line1\u000BLine2\u000BLine3";
+        String expected = "Line1\r\n Line2\r\n Line3";
+        String out = callMultilineWrap(input);
+        assertThat(out).isEqualTo(expected);
+    }
+
+    @Test
+    void multiline_withFF_normalizedAndIndented() {
+        // FF (U+000C) - Form Feed
+        String input = "Line1\u000CLine2\u000CLine3";
+        String expected = "Line1\r\n Line2\r\n Line3";
+        String out = callMultilineWrap(input);
+        assertThat(out).isEqualTo(expected);
+    }
+
+    @Test
+    void multiline_withNEL_normalizedAndIndented() {
+        // NEL (U+0085) - Next Line
+        String input = "Line1\u0085Line2\u0085Line3";
+        String expected = "Line1\r\n Line2\r\n Line3";
+        String out = callMultilineWrap(input);
+        assertThat(out).isEqualTo(expected);
+    }
+
+    @Test
+    void multiline_withLS_normalizedAndIndented() {
+        // LS (U+2028) - Line Separator
+        String input = "Line1\u2028Line2\u2028Line3";
+        String expected = "Line1\r\n Line2\r\n Line3";
+        String out = callMultilineWrap(input);
+        assertThat(out).isEqualTo(expected);
+    }
+
+    @Test
+    void multiline_withPS_normalizedAndIndented() {
+        // PS (U+2029) - Paragraph Separator
+        String input = "Line1\u2029Line2\u2029Line3";
+        String expected = "Line1\r\n Line2\r\n Line3";
+        String out = callMultilineWrap(input);
+        assertThat(out).isEqualTo(expected);
+    }
+
+    @Test
+    void multiline_mixedSeparators_normalizedAndIndented() {
+        // Test with a mix of different line separators
+        String input = "Line1\nLine2\rLine3\r\nLine4\u000BLine5\u000CLine6\u0085Line7\u2028Line8\u2029Line9";
+        String expected = "Line1\r\n Line2\r\n Line3\r\n Line4\r\n Line5\r\n Line6\r\n Line7\r\n Line8\r\n Line9";
+        String out = callMultilineWrap(input);
+        assertThat(out).isEqualTo(expected);
+    }
+
+    @Test
+    void emptyLines_withVariousSeparators_trimmedAndSkipped() {
+        // Test empty lines with different separators
+        String input = "Line1\n\nLine3\r\rLine5\u000B\u000BLine7";
+        String expected = "Line1\r\n Line3\r\n Line5\r\n Line7";
+        String out = callMultilineWrap(input);
+        assertThat(out).isEqualTo(expected);
+    }
+
+    @Test
+    void longLine_withCRLF_wrapsAndIndents() {
+        String input = "a".repeat(100) + "\r\n" + "b".repeat(100);
+        String expected = "a".repeat(79) + "\r\n " + "a".repeat(21) + "\r\n " + "b".repeat(79) + "\r\n " + "b".repeat(21);
+        String out = callMultilineWrap(input);
+        assertThat(out).isEqualTo(expected);
+    }
+
+    @Test
+    void longLine_withMixedSeparators_wrapsAndIndents() {
+        String input = "a".repeat(100) + "\n" + "b".repeat(100) + "\r" + "c".repeat(100);
+        String expected = "a".repeat(79) + "\r\n " + "a".repeat(21) + "\r\n " + "b".repeat(79) + "\r\n " + "b".repeat(21) + "\r\n " + "c".repeat(79) + "\r\n " + "c".repeat(21);
+        String out = callMultilineWrap(input);
+        assertThat(out).isEqualTo(expected);
+    }
 }

@@ -1039,7 +1039,10 @@ public class BagGenerator {
 
     static private String multilineWrap(String value) {
         // Normalize line breaks and ensure all lines after the first are indented
-        String[] lines = value.split("\\r?\\n");
+        // Handle various line separator characters:
+        // LF (U+000A), CR (U+000D), CR+LF, VT (U+000B), FF (U+000C),
+        // NEL (U+0085), LS (U+2028), PS (U+2029)
+        String[] lines = value.split("\\r\\n|\\r|\\n|\\u000B|\\u000C|\\u0085|\\u2028|\\u2029");
         StringBuilder wrappedValue = new StringBuilder();
         for (int i = 0; i < lines.length; i++) {
             // Skip empty lines - RFC8493 (section 7.3) doesn't allow truly empty lines,
