@@ -328,6 +328,25 @@ public class DataversesIT {
         List dataverseEmailNotAllowed = with(exportDataverseAsJson.body().asString())
                 .getJsonObject("data.dataverseContacts");
         assertNull(dataverseEmailNotAllowed);
+
+        Response getDataverseWithIgnoreExcludeEmail = UtilIT.getDataverseWithIgnoreExcludeEmail(dataverseAlias, apiToken, true);
+        getDataverseWithIgnoreExcludeEmail.prettyPrint();
+        getDataverseWithIgnoreExcludeEmail.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        getDataverseWithIgnoreExcludeEmail.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.alias", equalTo(dataverseAlias))
+                .body("data.name", equalTo(dataverseAlias))
+                .body("data.dataverseContacts[0].displayOrder", equalTo(0))
+                .body("data.dataverseContacts[0].contactEmail", equalTo(emailAddressOfFirstDataverseContact))
+                .body("data.permissionRoot", equalTo(true))
+                .body("data.dataverseType", equalTo("UNCATEGORIZED"));
+
+        RestAssured.unregisterParser("text/plain");
+        List dataverseEmailAllowed = with(getDataverseWithIgnoreExcludeEmail.body().asString())
+                .getJsonObject("data.dataverseContacts");
+        assertNotNull(dataverseEmailAllowed);
         
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
         removeExcludeEmail.then().assertThat()
@@ -347,9 +366,9 @@ public class DataversesIT {
                 .body("data.dataverseType", equalTo("UNCATEGORIZED"));
         
         RestAssured.unregisterParser("text/plain");
-        List dataverseEmailAllowed = with(exportDataverseAsJson2.body().asString())
+        List dataverseEmailAllowed2 = with(exportDataverseAsJson2.body().asString())
                 .getJsonObject("data.dataverseContacts");
-        assertNotNull(dataverseEmailAllowed);
+        assertNotNull(dataverseEmailAllowed2);
         
         Response deleteDataverse2 = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteDataverse2.prettyPrint();
