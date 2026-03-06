@@ -125,36 +125,41 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             pidProvider.generatePid(theDataset);
         }
         
+        DatasetType datasetTypeToPersist = theDataset.getDatasetType();
         DatasetType defaultDatasetType = ctxt.datasetTypes().getByName(DatasetType.DEFAULT_DATASET_TYPE);
-        // Why is this called existingDatasetType? Would incomingDatasetType make more sense?
-        DatasetType existingDatasetType = theDataset.getDatasetType();
-        logger.fine("existing dataset type: " + existingDatasetType);
-        if (existingDatasetType != null) {
-            List<DatasetType> allowedByCollection = theDataset.getOwner().getAllowedDatasetTypes();
-            // Final because we apply some logic first
-            List<DatasetType> allowedDatasetTypesFinal = new ArrayList<>();
-            if (allowedByCollection.isEmpty()) {
-                // If allowedDatasetTypes is unspecified, assume
-                // only the default type (dataset) is allowed
-                allowedDatasetTypesFinal.add(defaultDatasetType);
-            } else {
-                allowedDatasetTypesFinal.addAll(allowedByCollection);
-            }
-            // Set type if allowed. Otherwise, return error.
-            if (allowedDatasetTypesFinal.contains(existingDatasetType)) {
-                theDataset.setDatasetType(existingDatasetType);
-            } else {
-                List<String> typeNames = allowedDatasetTypesFinal.stream()
-                        .map(DatasetType::getName)
-                        .toList();
-                Map<String, String> fieldErrors = new HashMap<>();
-                fieldErrors.put("datasetType", "The parent collection does not allow the datasetType "
-                        + existingDatasetType.getName() + ". Allowed types: " + String.join(", ", typeNames));
-                throw new InvalidFieldsCommandException("The dataset could not be created due to the datasetType.",
-                        this, fieldErrors);
-            }
+        // The datasetType is only sent via API. JSF doesn't send a type.
+        DatasetType dsTypeFromApi = theDataset.getDatasetType();
+        logger.fine("dataset type sent via API: " + dsTypeFromApi);
+        if (dsTypeFromApi != null) {
+            datasetTypeToPersist = dsTypeFromApi;
         } else {
-            theDataset.setDatasetType(defaultDatasetType);
+            // If the API didn't set the dataset type or if the dataset
+            // is being created in JSF, use the default datasetType.
+            datasetTypeToPersist = defaultDatasetType;
+        }
+        theDataset.setDatasetType(datasetTypeToPersist);
+
+        // Check if the datasetType is allowed by the collection
+        List<DatasetType> allowedByCollection = theDataset.getOwner().getAllowedDatasetTypes();
+        // Final because we apply some logic first
+        List<DatasetType> allowedDatasetTypesFinal = new ArrayList<>();
+        if (allowedByCollection.isEmpty()) {
+            // If allowedDatasetTypes is unspecified, assume
+            // only the default type (dataset) is allowed
+            allowedDatasetTypesFinal.add(defaultDatasetType);
+        } else {
+            allowedDatasetTypesFinal.addAll(allowedByCollection);
+        }
+        // Throw error if type isn't allowed
+        if (!allowedDatasetTypesFinal.contains(datasetTypeToPersist)) {
+            List<String> typeNames = allowedDatasetTypesFinal.stream()
+                    .map(DatasetType::getName)
+                    .toList();
+            Map<String, String> fieldErrors = new HashMap<>();
+            fieldErrors.put("datasetType", "The parent collection does not allow the datasetType "
+                    + datasetTypeToPersist.getName() + ". Allowed types: " + String.join(", ", typeNames));
+            throw new InvalidFieldsCommandException("The dataset could not be created due to the datasetType.",
+                    this, fieldErrors);
         }
         
         // Attempt the registration if importing dataset through the API, or the app (but not harvest)
