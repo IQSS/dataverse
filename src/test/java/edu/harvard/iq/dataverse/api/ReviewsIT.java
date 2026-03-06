@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.dataset.DatasetType;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
@@ -9,10 +10,33 @@ import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+/**
+ * This test class has not been added to the API test suite at
+ * tests/integration-tests.txt because it relies on the review.tsv which is not
+ * loaded out of the box. When we start loading review.tsv for new installations
+ * of Dataverse (and stop putting it under "experiemental" on the list of
+ * metadata blocks in the guides), we'll add this test class to the API test
+ * suite.
+ * 
+ * To run these tests, manually load review.tsv (or temporarily set
+ * loadReviewTsv to true below) and update Solr. Be advised that there are
+ * other places in the API test suite that make assertions on the number of
+ * metadata blocks. Again, some day we might ship Dataverse with review.tsv
+ * already loaded.
+ */
 public class ReviewsIT {
+
+    private static String apiTokenSuperuser;
 
     @BeforeAll
     public static void setUpClass() {
@@ -20,15 +44,34 @@ public class ReviewsIT {
 
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
-        String username = UtilIT.getUsernameFromResponse(createUser);
-        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
+        String usernameSuperuser = UtilIT.getUsernameFromResponse(createUser);
+        apiTokenSuperuser = UtilIT.getApiTokenFromResponse(createUser);
+        UtilIT.setSuperuserStatus(usernameSuperuser, true).then().assertThat().statusCode(OK.getStatusCode());
+
+        byte[] reviewTsv = null;
+        try {
+            reviewTsv = Files.readAllBytes(Paths.get("scripts/api/data/metadatablocks/review.tsv"));
+        } catch (IOException e) {
+        }
+
+        // See warnings above. If you enable this, don't forget to update Solr.
+        boolean loadReviewTsv = false;
+        if (loadReviewTsv) {
+            Response response = UtilIT.loadMetadataBlock(apiTokenSuperuser, reviewTsv);
+            response.prettyPrint();
+            assertEquals(200, response.getStatusCode());
+            response.then().assertThat().statusCode(OK.getStatusCode());
+        }
 
         String datasetDescription = "A study, experiment, set of observations, or publication that is uploaded by a user. A dataset can comprise a single file or multiple files.";
-        ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_DATASET, "Dataset", datasetDescription, apiToken);
+        ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_DATASET, "Dataset", datasetDescription, apiTokenSuperuser);
 
-        String reviewDescription = "A review of a dataset compiled by community experts.";
-        ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_REVIEW, "Review", reviewDescription, apiToken);
+        String reviewDescription = null;
+        try {
+            reviewDescription = JsonUtil.getJsonObjectFromFile("scripts/api/data/datasetTypes/review.json").getString("description");
+        } catch (IOException e) {
+        }
+        ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_REVIEW, "Review", reviewDescription, apiTokenSuperuser);
     }
 
     private static void ensureDatasetTypeIsPresent(String name, String displayName, String description,
@@ -50,6 +93,9 @@ public class ReviewsIT {
                 .add("name", name)
                 .add("displayName", displayName)
                 .add("description", description)
+                .add("allowedDatasetTypes", Json.createArrayBuilder()
+                        .add("review")
+                )
                 .build().toString();
         // System.out.println(JsonUtil.prettyPrint(jsonIn));
         Response typeAdded = UtilIT.addDatasetType(jsonIn, apiToken);
@@ -74,18 +120,14 @@ public class ReviewsIT {
 
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        Response setMetadataBlocks = UtilIT.setMetadataBlocks(dataverseAlias,
-                Json.createArrayBuilder().add("citation").add("review"), apiToken);
-        setMetadataBlocks.prettyPrint();
-        setMetadataBlocks.then().assertThat().statusCode(OK.getStatusCode());
-
-        String[] testInputLevelNames = { "itemReviewedUrl", "itemReviewedType" };
-        boolean[] testRequiredInputLevels = { true, true };
-        boolean[] testIncludedInputLevels = { true, true };
-        Response updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias,
-                testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, apiToken);
-        updateDataverseInputLevelsResponse.prettyPrint();
-        updateDataverseInputLevelsResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Response setAllowedDatasetTypes = UtilIT.setCollectionAttribute(dataverseAlias, "allowedDatasetTypes",
+                "review", apiTokenSuperuser);
+        setAllowedDatasetTypes.prettyPrint();
+        setAllowedDatasetTypes.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.allowedDatasetTypes[0].name", is("review"))
+                .body("data.allowedDatasetTypes[0].displayName", is("Review"))
+                .body("data.allowedDatasetTypes[0].description", is("A review of a dataset compiled by the expert community."));
 
         String itemReviewedTitle = "Percent of Children That Have Asthma";
         String itemReviewedUrl = "https://datacommons.org/tools/statvar#sv=Percent_Person_Children_WithAsthma";
