@@ -37,11 +37,11 @@ Croissant Metadata in the ``<head>`` of Dataset Landing Pages
 
 `Croissant <https://github.com/mlcommons/croissant>`_ is a metadata format for machine learning datasets.
 
-In Dataverse, the ``<head>`` of the HTML source of a dataset landing page includes Croissant metadata like this::
+In Dataverse, the ``<head>`` of the HTML source of a dataset landing page includes a "slim" version of Croissant metadata like this::
 
     <script type="application/ld+json">{"@context":..."cr":"http://mlcommons.org/croissant/"...
 
-This is the same Croissant file you can download from a dataset landing page by clicking "Metadata" then "Export Metadata" (see :ref:`metadata-export-formats`) and the API (see ``croissant`` at :ref:`export-dataset-metadata-api`).
+This slim version does not have any information about files or variables but is otherwise is identical to the Croissant file you can download from a dataset landing page by clicking "Metadata" then "Export Metadata" (see :ref:`metadata-export-formats`). From the API you can download both ``croissant`` and ``croissantSlim`` formats (see :ref:`export-dataset-metadata-api`).
 
 We include Croissant in the ``<head>`` because it's `recommended <https://github.com/mlcommons/croissant/issues/530#issuecomment-1964227662>`_ by Google for `Google Dataset Search <https://datasetsearch.research.google.com>`_, where they offer a filter to narrow results to only datasets with support for Croissant.
 
