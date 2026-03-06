@@ -112,10 +112,6 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         if (prePubWf.isPresent()) {
             // We start a workflow
             try {
-                // Create the workflow lock BEFORE starting the workflow
-                DatasetLock workflowLock = new DatasetLock(DatasetLock.Reason.Workflow, (AuthenticatedUser) getRequest().getUser());
-                workflowLock.setDataset(theDataset);
-                ctxt.datasets().addDatasetLock(theDataset, workflowLock);
                 theDataset = ctxt.em().merge(theDataset);
                 ctxt.em().flush();
 
@@ -268,7 +264,6 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             // A pre-publication workflow will call FinalizeDatasetPublicationCommand itself when it completes
             if (prePubWf.isPresent()) {
                 WorkflowContext context = buildContext(ds, TriggerType.PrePublishDataset, datasetExternallyReleased);
-                context.setLockId(ds.getLockFor(DatasetLock.Reason.Workflow).getId());
                 try {
                     ctxt.workflows().start(prePubWf.get(), context, true);
                 } catch (CommandException e) {

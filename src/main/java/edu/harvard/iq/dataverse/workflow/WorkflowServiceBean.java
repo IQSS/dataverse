@@ -133,8 +133,7 @@ public class WorkflowServiceBean {
          * (e.g. if this method is not asynchronous)
          * 
          */
-        boolean isLocked = ctxt.getLockId()!=null;
-        if (!findDataset && !isLocked) {
+        if (!findDataset) {
             /*
              * Sleep here briefly to make sure the database update from the callers
              * transaction completes which avoids any concurrency/optimistic lock issues.
@@ -152,9 +151,7 @@ public class WorkflowServiceBean {
         }
         //Refresh will only em.find the dataset if findDataset is true. (otherwise the dataset is em.merged)
         ctxt = refresh(ctxt, retrieveRequestedSettings( wf.getRequiredSettings()), getCurrentApiToken(ctxt.getRequest().getAuthenticatedUser()), findDataset);
-        if(!isLocked) {
-            lockDataset(ctxt, new DatasetLock(DatasetLock.Reason.Workflow, ctxt.getRequest().getAuthenticatedUser()));
-        }
+        lockDataset(ctxt, new DatasetLock(DatasetLock.Reason.Workflow, ctxt.getRequest().getAuthenticatedUser()));
         forward(wf, ctxt);
     }
     
@@ -417,10 +414,10 @@ public class WorkflowServiceBean {
                 logger.fine("Removing workflow lock");
                 unlockDataset(ctxt);
             }
-            } catch (CommandException ex) {
-                logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() +": " + ex.getMessage(), ex);
-                rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size()-1);
-            }
+        } catch (CommandException ex) {
+            logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() + ": " + ex.getMessage(), ex);
+            rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size() - 1);
+        }
         
     }
 
