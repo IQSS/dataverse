@@ -128,14 +128,6 @@ Then, load the block and update Solr. See the following sections of :doc:`metada
 - :ref:`load-tsv`
 - :ref:`update-solr-schema`
 
-Create a Collection for Reviews and Configure Permissions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Follow the normal steps:
-
-- :ref:`create-dataverse`.
-- :ref:`dataverse-permissions`.
-
 Create and Enable Custom "Rubric" Metadata Blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -154,6 +146,14 @@ Review datasets are built on the :ref:`dataset-types` feature. Dataset types can
 
 .. literalinclude:: ../../../../scripts/api/data/datasetTypes/review.json
    :language: json
+
+Create a Collection for Reviews and Configure Permissions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Follow the normal steps:
+
+- :ref:`create-dataverse`.
+- :ref:`dataverse-permissions`.
 
 Allow the Review Dataset Type for the Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
