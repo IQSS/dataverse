@@ -94,7 +94,6 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
             boolean isSignedUrlValid = UrlSignerUtil.isValidUrl(signedUrl, userId, requestMethod, signedUrlSigningKey);
             if (isSignedUrlValid) {
                 user = targetUser;
-                containerRequestContext.setProperty("wasSigned", Boolean.TRUE);
             }
         }
         return user;
