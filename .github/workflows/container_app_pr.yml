@@ -27,7 +27,7 @@ jobs:
               with:
                   java-version: "17"
                   distribution: 'adopt'
-            - uses: actions/cache@v4
+            - uses: actions/cache@v5
               with:
                   path: ~/.m2
                   key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -42,7 +42,7 @@ jobs:
                   password: ${{ secrets.GHCR_TOKEN }}
 
             - name: Set up QEMU for multi-arch builds
-              uses: docker/setup-qemu-action@v3
+              uses: docker/setup-qemu-action@v4
 
             # Get the image tag from either the command or default to branch name (Not used for now)
             #-   name: Get the target tag name
