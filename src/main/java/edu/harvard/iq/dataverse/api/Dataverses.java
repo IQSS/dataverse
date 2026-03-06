@@ -717,10 +717,22 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}")
-    public Response getDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf, @QueryParam("returnOwners") boolean returnOwners, @QueryParam("returnChildCount") boolean returnChildCount) {
+    public Response getDataverse(@Context ContainerRequestContext crc,
+                                 @PathParam("identifier") String idtf,
+                                 @QueryParam("returnOwners") boolean returnOwners,
+                                 @QueryParam("returnChildCount") boolean returnChildCount,
+                                 @QueryParam("ignoreSettingExcludeEmailFromExport") Boolean ignoreSettingToExcludeEmailFromExport) {
         return response(req -> {
             Dataverse dataverse = execCommand(new GetDataverseCommand(req, findDataverseOrDie(idtf)));
+
             boolean hideEmail = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false);
+
+            // Check to see if the caller wants to ignore the ExcludeEmailFromExport setting and that they have permission to do so
+            boolean ignoreSettingExcludeEmailFromExport = ignoreSettingToExcludeEmailFromExport != null ? ignoreSettingToExcludeEmailFromExport : false;
+            if (hideEmail && ignoreSettingExcludeEmailFromExport && permissionService.userOn(getRequestUser(crc), dataverse).has(Permission.EditDataverse)) {
+                hideEmail = false;
+            }
+
             return ok(json(dataverse, hideEmail, returnOwners, false, returnChildCount ? dataverseService.getChildCount(dataverse) : null));
         }, getRequestUser(crc));
     }
