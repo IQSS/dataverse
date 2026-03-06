@@ -383,32 +383,38 @@ public class WorkflowServiceBean {
 
     private void workflowCompleted(Workflow wf, WorkflowContext ctxt) {
         logger.log(Level.INFO, "Workflow {0} completed.", ctxt.getInvocationId());
-        
-            try {
-        if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
+
+        // Read fresh timestamps from DB - parallel index/exports may have occurred while the workflow ran
+        // (Nominally the workflow lock should have stopped other changes).
+        Dataset dataset = ctxt.getDataset();
+        Dataset dbDataset = em.find(Dataset.class, ctxt.getDataset().getId());
+        dataset.setIndexTime(dbDataset.getIndexTime());
+        dataset.setPermissionIndexTime(dbDataset.getPermissionIndexTime());
+        dataset.setLastExportTime(dbDataset.getLastExportTime());
+
+        try {
+            if (ctxt.getType() == TriggerType.PrePublishDataset) {
                 ctxt = refresh(ctxt);
-                //Now lock for FinalizePublication - this block mirrors that in PublishDatasetCommand
+                // Now lock for FinalizePublication - this block mirrors that in PublishDatasetCommand
                 AuthenticatedUser user = ctxt.getRequest().getAuthenticatedUser();
                 DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
-                Dataset dataset = ctxt.getDataset();
                 lock.setDataset(dataset);
-                boolean registerGlobalIdsForFiles = 
-                        systemConfig.isFilePIDsEnabledForCollection(ctxt.getDataset().getOwner()) &&
-                                dvObjects.getEffectivePidGenerator(dataset).canCreatePidsLike(dataset.getGlobalId());
-                
+                boolean registerGlobalIdsForFiles = systemConfig.isFilePIDsEnabledForCollection(ctxt.getDataset().getOwner()) &&
+                        dvObjects.getEffectivePidGenerator(dataset).canCreatePidsLike(dataset.getGlobalId());
+
                 boolean validatePhysicalFiles = systemConfig.isDatafileValidationOnPublishEnabled();
-                String info = "Publishing the dataset; "; 
+                String info = "Publishing the dataset; ";
                 info += registerGlobalIdsForFiles ? "Registering PIDs for Datafiles; " : "";
                 info += validatePhysicalFiles ? "Validating Datafiles Asynchronously" : "";
                 lock.setInfo(info);
                 lockDataset(ctxt, lock);
                 ctxt.getDataset().addLock(lock);
-                
+
                 unlockDataset(ctxt);
-                ctxt.setLockId(null); //the workflow lock
-                //Refreshing merges the dataset
+                ctxt.setLockId(null); // the workflow lock
+                // Refreshing merges the dataset
                 ctxt = refresh(ctxt);
-                //Then call Finalize
+                // Then call Finalize
                 engine.submit(new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest(), ctxt.getDatasetExternallyReleased()));
             } else {
                 logger.fine("Removing workflow lock");
@@ -418,7 +424,7 @@ public class WorkflowServiceBean {
             logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() + ": " + ex.getMessage(), ex);
             rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size() - 1);
         }
-        
+
     }
 
     public List<Workflow> listWorkflows() {
