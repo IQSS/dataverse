@@ -925,6 +925,9 @@ You can only create a review dataset if setup has already been done by a superus
 Review Datasets can only be created via API. You have the following options:
 
 - :ref:`api-create-dataset-with-type` (Native API)
+
+  - Here is an example JSON file for reference: :download:`dataset-create-review.json <../_static/api/dataset-create-review.json>`.
+
 - :ref:`api-semantic-create-dataset-with-type` (Semantic API)
 - :ref:`import-dataset-with-type`
 

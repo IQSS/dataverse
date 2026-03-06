@@ -1,0 +1,93 @@
+{
+  "datasetType": "review",
+  "datasetVersion": {
+    "license": {
+      "name": "CC0 1.0",
+      "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+    },
+    "metadataBlocks": {
+      "citation": {
+        "fields": [
+          {
+            "typeName": "title",
+            "value": "Review of Percent of Children That Have Asthma",
+            "typeClass": "primitive",
+            "multiple": false
+          },
+          {
+            "value": [
+              {
+                "authorName": {
+                  "value": "Wazowski, Mike",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "authorName"
+                }
+              }
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "author"
+          },
+          {
+            "value": [
+              {
+                "datasetContactEmail": {
+                  "value": "mwazowski@mailinator.com",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "datasetContactEmail"
+                }
+              }
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "datasetContact"
+          },
+          {
+            "value": [
+              {
+                "dsDescriptionValue": {
+                  "value": "This is a review of a dataset.",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "dsDescriptionValue"
+                }
+              }
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "dsDescription"
+          },
+          {
+            "value": [
+              "Medicine, Health and Life Sciences"
+            ],
+            "typeClass": "controlledVocabulary",
+            "multiple": true,
+            "typeName": "subject"
+          },
+          {
+            "value": {
+              "itemReviewedUrl": {
+                "value": "https://datacommons.org/tools/statvar#sv=Percent_Person_Children_WithAsthma",
+                "typeClass": "primitive",
+                "multiple": false,
+                "typeName": "itemReviewedUrl"
+              },
+              "itemReviewedType": {
+                "value": "Dataset",
+                "typeClass": "controlledVocabulary",
+                "multiple": false,
+                "typeName": "itemReviewedType"
+              }
+            },
+            "typeClass": "compound",
+            "multiple": false,
+            "typeName": "itemReviewed"
+          }
+        ]
+      }
+    }
+  }
+}
