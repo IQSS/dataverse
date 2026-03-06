@@ -185,6 +185,13 @@ Usage example:
 
   curl "https://demo.dataverse.org/api/dataverses/root?returnChildCount=true"
 
+If a user with EditDataverse permissions wants to ignore the setting ``ExcludeEmailFromExport`` in order to see the contact emails, they must include the ``ignoreSettingExcludeEmailFromExport`` query parameter.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/dataverses/root?ignoreSettingExcludeEmailFromExport=true"
 
 To view an unpublished Dataverse collection:
 
