@@ -93,7 +93,7 @@ public class ReviewsIT {
                 .add("name", name)
                 .add("displayName", displayName)
                 .add("description", description)
-                .add("allowedDatasetTypes", Json.createArrayBuilder()
+                .add("linkedMetadataBlocks", Json.createArrayBuilder()
                         .add("review")
                 )
                 .build().toString();
