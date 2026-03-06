@@ -89,6 +89,7 @@ public class ArchivalSubmissionWorkflowStep implements WorkflowStep {
              * pending as is done when running archiving from the UI/API. Instead, there is a generic workflow
              * lock on the dataset. 
              */
+
             return archiveCommand.performArchiveSubmission(
                 version, 
                 dataCiteXml, 
