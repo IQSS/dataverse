@@ -2164,8 +2164,6 @@ public class UtilIT {
         return requestFileAccess(fileIdOrPersistentId, apiToken, null);
     }
     static Response requestFileAccess(String fileIdOrPersistentId, String apiToken, String body) {
-        System.out.print ("Request file access + fileIdOrPersistentId: " + fileIdOrPersistentId);
-        System.out.print ("Request file access + apiToken: " + apiToken);
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
