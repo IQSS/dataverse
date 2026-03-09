@@ -104,20 +104,6 @@ public class SolrIndexServiceBean {
         return solrDocs;
     }
 
-    private List<DvObjectSolrDoc> determineSolrDocsForFilesFromDataset(Map.Entry<Long, List<Long>> datasetHash) {
-        List<DvObjectSolrDoc> emptyList = new ArrayList<>();
-        List<DvObjectSolrDoc> solrDocs = emptyList;
-        DvObject dvObject = dvObjectService.findDvObject(datasetHash.getKey());
-        if (dvObject == null) {
-            return emptyList;
-        }
-        if (dvObject.isInstanceofDataset()) {
-            Dataset dataset = (Dataset) dvObject;
-            solrDocs.addAll(constructDatafileSolrDocsFromDataset(dataset));
-        }
-        return solrDocs;
-    }
-
     /**
      * @todo should this method return a List? The equivalent methods for
      * datasets and files return lists.
@@ -154,29 +140,6 @@ public class SolrIndexServiceBean {
             perms = cachedPerms;
         }
         return new DvObjectSolrDoc(fileProxy.getFileId().toString(), solrId, versionId, fileProxy.getName(), perms);
-    }
-
-    private List<DvObjectSolrDoc> constructDatafileSolrDocsFromDataset(Dataset dataset) {
-        List<DvObjectSolrDoc> datafileSolrDocs = new ArrayList<>();
-        for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersionsToBuildCardsFor(dataset)) {
-            List<String> perms = new ArrayList<>();
-            if (datasetVersionFileIsAttachedTo.isReleased()) {
-                perms.add(IndexServiceBean.getPublicGroupString());
-            } else {
-                perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
-            }
-
-            for (FileMetadata fileMetadata : datasetVersionFileIsAttachedTo.getFileMetadatas()) {
-                Long fileId = fileMetadata.getDataFile().getId();
-                String solrIdStart = IndexServiceBean.solrDocIdentifierFile + fileId;
-                String solrIdEnd = getDatasetOrDataFileSolrEnding(datasetVersionFileIsAttachedTo.getVersionState());
-                String solrId = solrIdStart + solrIdEnd;
-                DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(fileId.toString(), solrId, datasetVersionFileIsAttachedTo.getId(), fileMetadata.getLabel(), perms);
-                logger.finest("adding fileid " + fileId);
-                datafileSolrDocs.add(dataFileSolrDoc);
-            }
-        }
-        return datafileSolrDocs;
     }
 
     /** Find the versions to index. The overall logic is
