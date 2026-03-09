@@ -4,7 +4,7 @@
 	itemReviewed	Item Reviewed	The item being reviewed		none	1		FALSE	FALSE	FALSE	FALSE	TRUE	TRUE		review	
 	itemReviewedUrl	URL	The URL of the item being reviewed		url	2		FALSE	FALSE	FALSE	FALSE	TRUE	TRUE	itemReviewed	review	
 	itemReviewedType	Type	The type of the item being reviewed		text	3		FALSE	TRUE	FALSE	FALSE	TRUE	TRUE	itemReviewed	review	
-	itemReviewedCitation	Citation	The full bibliographic citation of the item being reviewed		textbox	4		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	itemReviewed	review	
+	itemReviewedCitation	Citation	The full bibliographic citation of the item being reviewed		textbox	4		FALSE	FALSE	FALSE	FALSE	TRUE	TRUE	itemReviewed	review	
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder												
 	itemReviewedType	Audiovisual		0												
 	itemReviewedType	Award		1												

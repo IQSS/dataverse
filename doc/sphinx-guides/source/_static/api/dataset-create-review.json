@@ -80,6 +80,12 @@
                 "typeClass": "controlledVocabulary",
                 "multiple": false,
                 "typeName": "itemReviewedType"
+              },
+              "itemReviewedCitation": {
+                "value": "dcid: dc/base/NCHS_BRFSS_Asthma",
+                "typeClass": "primitive",
+                "multiple": false,
+                "typeName": "itemReviewedCitation"
               }
             },
             "typeClass": "compound",

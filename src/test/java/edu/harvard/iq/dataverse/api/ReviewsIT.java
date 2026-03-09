@@ -131,6 +131,8 @@ public class ReviewsIT {
 
         String itemReviewedTitle = "Percent of Children That Have Asthma";
         String itemReviewedUrl = "https://datacommons.org/tools/statvar#sv=Percent_Person_Children_WithAsthma";
+        // What's the right way to cite this data?
+        String itemReviewedCitation = "dcid: dc/base/NCHS_BRFSS_Asthma";
         String reviewTitle = "Review of " + itemReviewedTitle;
         String authorName = "Wazowski, Mike";
         String authorEmail = "mwazowski@mailinator.com";
@@ -212,7 +214,13 @@ public class ReviewsIT {
                                                                                 .add("typeClass",
                                                                                         "controlledVocabulary")
                                                                                 .add("multiple", false)
-                                                                                .add("typeName", "itemReviewedType")))
+                                                                                .add("typeName", "itemReviewedType"))
+                                                                .add("itemReviewedCitation",
+                                                                        Json.createObjectBuilder()
+                                                                                .add("value", itemReviewedCitation)
+                                                                                .add("typeClass", "primitive")
+                                                                                .add("multiple", false)
+                                                                                .add("typeName", "itemReviewedCitation")))
                                                         .add("typeClass", "compound")
                                                         .add("multiple", false)
                                                         .add("typeName", "itemReviewed"))))));
