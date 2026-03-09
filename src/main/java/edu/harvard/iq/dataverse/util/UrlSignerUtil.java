@@ -27,7 +27,7 @@ public class UrlSignerUtil {
     public static final String SIGNED_URL_USER="user";
     public static final String SIGNED_URL_UNTIL="until";
     public static final String SIGNED_URL_KEY="key"; // do not propagate the key since it's a credential
-    public static final String SIGNED_URL_SIGNED="signed"; // we need to remove this when returning a singed url to prevent a loop of signing
+    public static final String SIGNED_URL_SIGNED="signed"; // we need to remove this when returning a signed url to prevent a loop of signing
     public static final List<String> reservedParameters = List.of(SIGNED_URL_UNTIL, SIGNED_URL_USER, SIGNED_URL_METHOD, SIGNED_URL_TOKEN, SIGNED_URL_KEY, SIGNED_URL_SIGNED);
     /**
      *
