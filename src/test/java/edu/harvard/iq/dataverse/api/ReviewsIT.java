@@ -131,8 +131,8 @@ public class ReviewsIT {
 
         String itemReviewedTitle = "Percent of Children That Have Asthma";
         String itemReviewedUrl = "https://datacommons.org/tools/statvar#sv=Percent_Person_Children_WithAsthma";
-        // What's the right way to cite this data?
-        String itemReviewedCitation = "dcid: dc/base/NCHS_BRFSS_Asthma";
+        // This citation came from https://www.mybib.com
+        String itemReviewedCitation = "\"Statistical Variable Explorer - Data Commons.\" Datacommons.org, 2026, datacommons.org/tools/statvar#sv=Percent_Person_Children_WithAsthma. Accessed 9 Mar. 2026.";
         String reviewTitle = "Review of " + itemReviewedTitle;
         String authorName = "Wazowski, Mike";
         String authorEmail = "mwazowski@mailinator.com";

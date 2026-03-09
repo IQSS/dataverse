@@ -82,7 +82,7 @@
                 "typeName": "itemReviewedType"
               },
               "itemReviewedCitation": {
-                "value": "dcid: dc/base/NCHS_BRFSS_Asthma",
+                "value": "\"Statistical Variable Explorer - Data Commons.\" Datacommons.org, 2026, datacommons.org/tools/statvar#sv=Percent_Person_Children_WithAsthma. Accessed 9 Mar. 2026.",
                 "typeClass": "primitive",
                 "multiple": false,
                 "typeName": "itemReviewedCitation"
