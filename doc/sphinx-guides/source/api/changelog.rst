@@ -7,6 +7,18 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.10
+-----
+- The following GET APIs will now return ``400`` if a required Guestbook Response is not supplied. A Guestbook Response can be passed to these APIs in the body using a POST call.
+
+  - **/api/access/datafile/{fileId:.+}**
+
+  - **/api/access/datafiles/{fileIds}**
+
+  - **/api/access/dataset/{id}**
+
+  - **/api/access/dataset/{id}/versions/{versionId}**
+
 v6.9
 ----
 
