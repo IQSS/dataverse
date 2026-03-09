@@ -1223,7 +1223,7 @@ Get a Guestbook for a Dataverse Collection
 
 For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 
-Get a Guestbook by it's id
+Get a Guestbook by its id
 
 .. code-block:: bash
 
