@@ -500,6 +500,8 @@ public class AccessIT {
 
         String pathToJsonFile = "scripts/api/data/dataset-create-new.json";
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        createDatasetResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
         createDatasetResponse.prettyPrint();
         Integer datasetIdNew = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
@@ -586,6 +588,8 @@ public class AccessIT {
 
         String pathToJsonFile = "scripts/api/data/dataset-create-new.json";
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        createDatasetResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
         createDatasetResponse.prettyPrint();
         Integer datasetIdNew = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
         String persistentIdNew = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");

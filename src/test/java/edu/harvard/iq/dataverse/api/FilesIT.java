@@ -3660,6 +3660,8 @@ public class FilesIT {
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         // Update the dataverse with a datasetFileCountLimit of 1
@@ -3675,10 +3677,10 @@ public class FilesIT {
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
-        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
-        String datasetPersistenceId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
         createDatasetResponse.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String datasetPersistenceId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
 
         // -------------------------
         // Add initial file
@@ -3875,6 +3877,7 @@ public class FilesIT {
         msgt("testDownloadFileWithGuestbookResponse");
         // Create superuser
         Response createUserResponse = UtilIT.createRandomUser();
+        assertEquals(200, createUserResponse.getStatusCode());
         String ownerApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
         String superusername = UtilIT.getUsernameFromResponse(createUserResponse);
         UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
@@ -3994,7 +3997,6 @@ public class FilesIT {
         String signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
         // Download the file using the signed url
         Response signedUrlResponse = get(signedUrl);
-        signedUrlResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
 
         // Get Download Url attempt - Guestbook Response is required but not found
