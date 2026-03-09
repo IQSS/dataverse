@@ -2070,6 +2070,7 @@ Available Dataset Metadata Exporters
 The following dataset metadata exporters ship with Dataverse:
 
 - ``croissant``
+- ``croissantSlim``
 - ``Datacite``
 - ``dataverse_json``
 - ``dcterms``
