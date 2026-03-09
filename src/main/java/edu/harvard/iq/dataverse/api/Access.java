@@ -236,7 +236,8 @@ public class Access extends AbstractApiBean {
     @Produces({"application/xml","*/*"})
     public Response datafile(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("gbrids") String gbrids,
                              @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-
+        // Check is we are downloading a thumbnail image which doesn't require a guestbook response
+        boolean imageThumb = uriInfo.getQueryParameters().containsKey("imageThumb") && uriInfo.getQueryParameters().getFirst("imageThumb").equalsIgnoreCase("true");
         fileId = normalizeFileId(fileId);
                 
         DataFile df = findDataFileOrDieWrapper(fileId);
@@ -251,7 +252,7 @@ public class Access extends AbstractApiBean {
         // This will throw a ForbiddenException if access isn't authorized:
         checkAuthorization(crc, df);
         User requestor = getRequestor(crc);
-        if (checkGuestbookRequiredResponse(crc, df, gbrids)) {
+        if (!imageThumb && checkGuestbookRequiredResponse(crc, df, gbrids)) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing"));
         }
 
