@@ -336,8 +336,8 @@ public class ReviewsIT {
         Response createReview = UtilIT.createDataset(dataverseAlias, jsonForCreatingReview, apiToken);
         createReview.prettyPrint();
         // FIXME: The review was created but it shouldn't have been because
-        // required fields were not supplied. In review.tsv both
-        // itemReviewedUrl and itemReviewedType are required.
+        // required fields were not supplied. In review.tsv various fields
+        // are required. See https://github.com/IQSS/dataverse/issues/12196
         createReview.then().assertThat().statusCode(CREATED.getStatusCode());
         Integer reviewId = UtilIT.getDatasetIdFromResponse(createReview);
         String reviewPid = JsonPath.from(createReview.getBody().asString()).getString("data.persistentId");
