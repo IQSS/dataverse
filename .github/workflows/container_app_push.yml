@@ -114,7 +114,7 @@ jobs:
                   password: ${{ secrets.GHCR_TOKEN }}
 
             - name: Set up QEMU for multi-arch builds
-              uses: docker/setup-qemu-action@v3
+              uses: docker/setup-qemu-action@v4
 
             - name: Add rolling image tag when pushing to develop
               if: ${{ github.event_name == 'push' && github.ref_name == 'develop' }}

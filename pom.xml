@@ -1128,7 +1128,10 @@
                     <java>
                         <includes>
                             <include>src/main/java/edu/harvard/iq/dataverse/export/CroissantExporter.java</include>
+                            <include>src/main/java/edu/harvard/iq/dataverse/export/CroissantExporterSlim.java</include>
+                            <include>src/main/java/edu/harvard/iq/dataverse/export/croissant/CroissantExportUtil.java</include>
                             <include>src/test/java/edu/harvard/iq/dataverse/export/CroissantExporterTest.java</include>
+                            <include>src/test/java/edu/harvard/iq/dataverse/export/CroissantExporterSlimTest.java</include>
                         </includes>
                         <importOrder>
                             <wildcardsLast>false</wildcardsLast>
