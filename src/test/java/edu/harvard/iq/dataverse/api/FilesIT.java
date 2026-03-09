@@ -4016,7 +4016,6 @@ public class FilesIT {
 
         // Download the file using the signed url
         signedUrlResponse = get(signedUrl);
-        signedUrlResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
 
         // Download multiple files - Guestbook Response is required but not found for file2 and file3
@@ -4030,14 +4029,11 @@ public class FilesIT {
         // Download multiple files with guestbook response and fileIds in json
         String jsonBody = "{\"fileIds\":[" + fileId1 + "," + fileId2+ "," + fileId3 +"], " + guestbookResponse.substring(1);
         downloadResponse = UtilIT.postDownloadDatafiles(jsonBody, apiToken);
-        downloadResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), downloadResponse.getStatusCode());
 
         downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(new Integer[]{fileId1, fileId2, fileId3}, apiToken, guestbookResponse);
-        downloadResponse.prettyPrint();
         signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
         signedUrlResponse = get(signedUrl);
-        signedUrlResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
 
         // TEST Overwrite name, email, institution and position in guestbook Response. Using user2
@@ -4049,7 +4045,6 @@ public class FilesIT {
         guestbookResponse = guestbookResponse.replace("\"guestbookResponse\": {",
                 "\"guestbookResponse\": { \"name\":\"My Name\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
         downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken2, guestbookResponse);
-        downloadResponse.prettyPrint();
         downloadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         Response guestbookResponses = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), ownerApiToken);
