@@ -14,6 +14,8 @@ As a registered user, you can:
 -  Contribute to existing datasets, if permitted.
 -  Request access to restricted files, if permitted.
 
+.. _account-log-in-options:
+
 Account Log In Options
 ~~~~~~~~~~~~~~~~~~~~~~
 

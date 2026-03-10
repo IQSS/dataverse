@@ -14,7 +14,7 @@ import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.MailUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.UserNotification.Type;
@@ -124,7 +124,9 @@ public class SettingsWrapper implements java.io.Serializable {
     
     private Boolean webloaderUpload = null;
     
-    private String metricsUrl = null; 
+    private String metricsUrl = null;
+
+    private String publishDatasetDisclaimerText = null;
     
     private Boolean dataFilePIDSequentialDependent = null;
     
@@ -218,7 +220,7 @@ public class SettingsWrapper implements java.io.Serializable {
     private void initSettingsMap() {
         // initialize settings map
         settingsMap = new HashMap<>();
-        for (Setting setting : settingsService.listAll()) {
+        for (Setting setting : settingsService.listAllWithoutLocalizations()) {
             settingsMap.put(setting.getName(), setting.getContent());
         }
     }
@@ -393,10 +395,12 @@ public class SettingsWrapper implements java.io.Serializable {
                 rsyncOnly = false;
             } else {
                 String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods);
-                if (uploadMethods==null){
+                if (uploadMethods == null) {
                     rsyncOnly = false;
                 } else {
-                    rsyncOnly = Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+                    String normalizedUploadMethods = uploadMethods.toLowerCase();
+                    rsyncOnly = ListSplitUtil.split(normalizedUploadMethods).size() == 1
+                            && normalizedUploadMethods.equals(SystemConfig.FileUploadMethods.RSYNC.toString());
                 }
             }
         }
@@ -424,11 +428,11 @@ public class SettingsWrapper implements java.io.Serializable {
     
     public Integer getUploadMethodsCount() {
         if (uploadMethodsCount == null) {
-            String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods); 
-            if (uploadMethods==null){
+            String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods);
+            if (uploadMethods == null) {
                 uploadMethodsCount = 0;
             } else {
-                uploadMethodsCount = Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
+                uploadMethodsCount = ListSplitUtil.split(uploadMethods).size();
             } 
         }
         return uploadMethodsCount;
@@ -502,7 +506,7 @@ public class SettingsWrapper implements java.io.Serializable {
         if (anonymizedFieldTypes == null) {
             anonymizedFieldTypes = new ArrayList<String>();
             String names = get(SettingsServiceBean.Key.AnonymizedFieldTypeNames.toString(), "");
-            anonymizedFieldTypes.addAll(Arrays.asList(names.split(",\\s")));
+            anonymizedFieldTypes.addAll(ListSplitUtil.split(names));
         }
         return anonymizedFieldTypes.contains(df.getDatasetFieldType().getName());
     }
@@ -826,11 +830,11 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     private Boolean getUploadMethodAvailable(String method){
-        String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods); 
-        if (uploadMethods==null){
+        String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods);
+        if (uploadMethods == null) {
             return false;
         } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
+            return ListSplitUtil.splitToLowerCaseSet(uploadMethods).contains(method);
         }
     }
 
@@ -869,5 +873,16 @@ public class SettingsWrapper implements java.io.Serializable {
         }
 
         return systemMetadataBlocks;
+    }
+
+    public String getPublishDatasetDisclaimerText() {
+        if (publishDatasetDisclaimerText == null) {
+            publishDatasetDisclaimerText = getValueForKey(Key.PublishDatasetDisclaimerText);
+        }
+        return publishDatasetDisclaimerText;
+    }
+
+    public Boolean isHasPublishDatasetDisclaimerText() {
+        return !StringUtil.isEmpty(getPublishDatasetDisclaimerText());
     }
 }

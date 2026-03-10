@@ -235,6 +235,25 @@ public enum FeatureFlags {
      * or revoked, at what times, and by whom.
      */
     ROLE_ASSIGNMENT_HISTORY("role-assignment-history"),
+
+    /**
+     * Only update a DataCite DOI when needed (for efficiency, lighter load on DataCite).
+     * This flag causes Dataverse to GET the latest metadata from DataCite for a DOI and 
+     * comparing it with the current metadata in Dataverse and only sending a following POST
+     * request if needed. This potentially substitutes a read for an unnecessary write at DataCite,
+     * but would result in extra reads when all metadata in Dataverse is new. Setting the flag
+     * to "true" is recommended when using DataCite file DOIs.
+     * 
+     * @apiNote Raise flag by setting
+     *          "dataverse.feature.only-update-datacite-when-needed"
+     * @since Dataverse 6.9
+     */ 
+    ONLY_UPDATE_DATACITE_WHEN_NEEDED("only-update-datacite-when-needed"),
+    
+    /** Require Embargo Reason. By default, adding a reason when embargoing is optional. This 
+     * flag makes a reason required, both in the UI and API.
+     */
+    REQUIRE_EMBARGO_REASON("require-embargo-reason"),
     ;
     
     final String flag;

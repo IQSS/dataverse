@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2Aut
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
+import jakarta.json.stream.JsonParsingException;
 import org.passay.CharacterRule;
 
 import jakarta.ejb.EJB;
@@ -27,6 +28,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Year;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -63,6 +65,8 @@ public class SystemConfig {
      * token is valid ({@link #getMinutesUntilPasswordResetTokenExpires}).
      */
     private static final String PASSWORD_RESET_TIMEOUT_IN_MINUTES = "dataverse.auth.password-reset-timeout-in-minutes";
+    
+    public static final String DEFAULT_KEY = "default";
 
     /**
      * The default number of datafiles that we allow to be created through 
@@ -488,51 +492,203 @@ public class SystemConfig {
         }
         return null;
     }
-
-    public long getTabularIngestSizeLimit() {
-        // This method will return the blanket ingestable size limit, if 
-        // set on the system. I.e., the universal limit that applies to all 
-        // tabular ingests, regardless of fromat: 
-        
-        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit); 
-        
+    
+    /**
+     * The default key used to identify tabular ingest size limits.
+     * This value represents the standard or fallback configuration.
+     * For any other valid format strings, see implementations of {@code TabularDataFileReader.getFormatName()}.
+     */
+    public static final String TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY = "default";
+    
+    /**
+     * Retrieves the tabular ingest size limits based on the system configuration.
+     * The size limits can be defined as a JSON object with format-specific limits, a single numeric value
+     * applied to all formats, or might not exist, in which case the default limit is applied.
+     *
+     * Note that the format names in the configuration will be transformed to lowercase for user convenience
+     * of how people like to write their formats best.
+     *
+     * If the configuration contains invalid data (e.g., unparsable JSON or non-numeric values),
+     * all tabular ingest operations are disabled by setting size limits to 0.
+     *
+     * TODO: At some later point, if and when the DB lookups or JSON parsing takes a toll to heavy to bear,
+     *       we may introduce a caching singleton for these. (With TTL or using events to invalidate on update.)
+     *
+     * @return a map where the keys represent format names or a default key, and the values represent the maximum allowed size for each format.
+     */
+    public Map<String, Long> getTabularIngestSizeLimits() {
+        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit);
         if (limitEntry != null) {
-            try {
-                Long sizeOption = Long.valueOf(limitEntry);
-                return sizeOption;
-            } catch (NumberFormatException nfe) {
-                logger.warning("Invalid value for TabularIngestSizeLimit option? - " + limitEntry);
+            // Case A: the setting is using JSON to support multiple formats
+            if (limitEntry.trim().startsWith("{")) {
+                try (JsonReader reader = Json.createReader(new StringReader(limitEntry))) {
+                    JsonObject limits = reader.readObject();
+                    
+                    Map<String, Long> limitsMap = new HashMap<>();
+                    // We add the default in case the JSON does not contain the default (which is optional).
+                    limitsMap.put(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, -1L);
+                    
+                    for (Map.Entry<String, JsonValue> format : limits.entrySet()) {
+                        String formatName = format.getKey();
+                        String lowercaseFormatName = formatName.toLowerCase();
+                        
+                        try {
+                            JsonValue value = format.getValue();
+                            long sizeOption;
+                            
+                            // We want to be able to use either numbers or string values, so detect which one it is.
+                            // This is necessary as we need to tell the JSON parser what to do, it doesn't automatically handle this for us.
+                            if (value.getValueType() == JsonValue.ValueType.STRING) {
+                                sizeOption = Long.parseLong(limits.getString(formatName));
+                            } else if (value.getValueType() == JsonValue.ValueType.NUMBER) {
+                                // Will throw if not a whole number!
+                                sizeOption = limits.getJsonNumber(formatName).longValueExact();
+                            } else {
+                                logger.warning(() -> "Invalid value type for format " + formatName + ": expected string or number");
+                                logger.warning("Disabling all tabular ingest completely until fixed!");
+                                return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
+                            }
+                            
+                            limitsMap.put(lowercaseFormatName, sizeOption);
+                        } catch (NumberFormatException nfe) {
+                            logger.warning(() -> "Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long for format " + formatName + " (not a valid number)");
+                            logger.warning("Disabling all tabular ingest completely until fixed!");
+                            return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
+                        } catch (ArithmeticException ae) {
+                            logger.warning(() -> "Number too large or has fractional part for format " + formatName);
+                            logger.warning("Disabling all tabular ingest completely until fixed!");
+                            return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
+                        }
+                    }
+                    
+                    return Collections.unmodifiableMap(limitsMap);
+                } catch (JsonParsingException e) {
+                    logger.warning(() -> "Invalid TabularIngestSizeLimit option found, cannot parse JSON: " + e.getMessage());
+                    logger.warning("Disabling all tabular ingest completely until fixed!");
+                    return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
+                }
+            // Case B: It might be just a simple Long, providing a default for all formats.
+            } else {
+                try {
+                    Long limit = Long.valueOf(limitEntry);
+                    return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, limit);
+                } catch (NumberFormatException nfe) {
+                    logger.warning(() -> "Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long: " + nfe);
+                    logger.warning("Disabling all tabular ingest completely until fixed!");
+                    return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
+                }
             }
         }
-        // -1 means no limit is set; 
-        // 0 on the other hand would mean that ingest is fully disabled for 
-        // tabular data. 
-        return -1; 
+        
+        // Default is not to limit at all
+        return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, -1L);
     }
     
+    /**
+     * This method will return the blanket ingestable size limit, if set on the system.
+     * I.e., the universal limit that applies to all tabular ingests, regardless of fromat.
+     * @return -1 = unlimited if not set, 0 if disabled or invalid, some long number of bytes otherwise
+     */
+    public long getTabularIngestSizeLimit() {
+        return getTabularIngestSizeLimits().get(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY);
+    }
+    
+    /**
+     * Retrieves the size limit for tabular data ingestion based on the provided format name.
+     * The format name will be converted to lowercase, making sure the casing doesn't matter.
+     *
+     * @param formatName The name of the format for which the size limit is requested
+     *                   See also implementations of {@code TabularDataFileReader.getFormatName()} for examples.
+     * @return The size limit in bytes for tabular data ingestion associated with the specified format name,
+     *         or the default size limit if no format-specific limit is found or its name is invalid (null, blank, ...).
+     *         -1 = unlimited if not set, 0 if disabled or invalid, some long number of bytes otherwise
+     */
+    
     public long getTabularIngestSizeLimit(String formatName) {
-        // This method returns the size limit set specifically for this format name,
-        // if available, otherwise - the blanket limit that applies to all tabular 
-        // ingests regardless of a format. 
-        
-        if (formatName == null || formatName.equals("")) {
-            return getTabularIngestSizeLimit(); 
+        if (formatName != null && !formatName.isBlank()) {
+            // We convert to lowercase so it doesn't matter which variant someone uses in the JSON config
+            String convertedFormatName = formatName.toLowerCase();
+            return getTabularIngestSizeLimits().getOrDefault(convertedFormatName, getTabularIngestSizeLimit());
         }
-        
-        String limitEntry = settingsService.get(SettingsServiceBean.Key.TabularIngestSizeLimit.toString() + ":" + formatName); 
-                
-        if (limitEntry != null) {
-            try {
-                Long sizeOption = Long.valueOf(limitEntry);
-                return sizeOption;
-            } catch (NumberFormatException nfe) {
-                logger.warning("Invalid value for TabularIngestSizeLimit:" + formatName + "? - " + limitEntry );
-            }
-        }
-        
-        return getTabularIngestSizeLimit();        
+        return getTabularIngestSizeLimit();
     }
 
+    public Map<String, Float> getHarvestingClientRequestIntervals() {
+        String settingString = settingsService.getValueForKey(SettingsServiceBean.Key.HarvestingClientCallRateLimit);
+        if (settingString != null) {
+            // Case A: the setting is using JSON to support multiple clients
+            if (settingString.trim().startsWith("{")) {
+                try (JsonReader reader = Json.createReader(new StringReader(settingString))) {
+                    JsonObject delays = reader.readObject();
+                    
+                    Map<String, Float> limitsMap = new HashMap<>();
+                    // We add the default in case the JSON does not contain the default (which is optional).
+                    limitsMap.put(DEFAULT_KEY, 0F);
+                    
+                    for (Map.Entry<String, JsonValue> clientEntry : delays.entrySet()) {
+                        String clientName = clientEntry.getKey();
+                        String lowercaseClientName = clientName.toLowerCase();
+                                                
+                        try {
+                            JsonValue value = clientEntry.getValue();
+                            float delayInterval;
+                            
+                            // We want to be able to use either numbers or string values, so detect which one it is.
+                            // This is necessary as we need to tell the JSON parser what to do, it doesn't automatically handle this for us.
+                            if (value.getValueType() == JsonValue.ValueType.STRING) {
+                                delayInterval = Float.parseFloat(delays.getString(clientName));
+                            } else if (value.getValueType() == JsonValue.ValueType.NUMBER) {
+                                // Will throw if not a valid float number!
+                                delayInterval = delays.getJsonNumber(clientName).numberValue().floatValue(); //.doubleValue();
+                            } else {
+                                logger.warning(() -> "Invalid value type for client " + clientName + ": expected string or number");
+                                logger.warning("Disabling all harvesting client delay intervals completely until fixed!");
+                                return Map.of(DEFAULT_KEY, 0F);
+                            }
+                            
+                            limitsMap.put(lowercaseClientName, delayInterval);
+                        } catch (NumberFormatException nfe) {
+                            logger.warning(() -> "Could not convert " + SettingsServiceBean.Key.HarvestingClientCallRateLimit + " entry to float for client " + clientName + " (not a valid number)");
+                            logger.warning("Disabling all harvesting client delay intervals completely until fixed!");
+                            return Map.of(DEFAULT_KEY, 0F);
+                        } catch (ArithmeticException ae) {
+                            logger.warning(() -> "Number too large, or otherwise invalid for client " + clientName);
+                            logger.warning("Disabling all harvesting client delay intervals completely until fixed!");
+                            return Map.of(DEFAULT_KEY, 0F);
+                        }
+                    }
+                    
+                    return Collections.unmodifiableMap(limitsMap);
+                } catch (JsonParsingException e) {
+                    logger.warning(() -> "Invalid " + SettingsServiceBean.Key.HarvestingClientCallRateLimit + " option found, cannot parse JSON: " + e.getMessage());
+                    logger.warning("Disabling all harvesting client delay intervals completely until fixed!");
+                    return Map.of(DEFAULT_KEY, 0F);
+                }
+            // Case B: It might be just a simple float, providing a default for all clients.
+            } else {
+                try {
+                    float delayInterval = Float.valueOf(settingString);
+                    return Map.of(DEFAULT_KEY, delayInterval);
+                } catch (NumberFormatException nfe) {
+                    logger.warning(() -> "Could not convert " + SettingsServiceBean.Key.HarvestingClientCallRateLimit + " to float: " + nfe.getMessage());
+                    logger.warning("Disabling all harvesting client delay intervals completely until fixed!");
+                    return Map.of(DEFAULT_KEY, 0F);
+                }
+            }
+        }
+        // Default is not to limit at all
+        return Map.of(DEFAULT_KEY, 0F);
+    }
+
+    public float getHarvestingClientRequestInterval(String clientName) {
+        if (clientName != null && !clientName.isBlank()) {
+            // We convert to lowercase so it doesn't matter which variant someone uses in the JSON config
+            String convertedClientName = clientName.toLowerCase();
+            return getHarvestingClientRequestIntervals().getOrDefault(convertedClientName, getHarvestingClientRequestIntervals().get(DEFAULT_KEY));
+        }
+        return getHarvestingClientRequestIntervals().get(DEFAULT_KEY);
+    }
+    
     public boolean isOAIServerEnabled() {
         boolean defaultResponse = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.OAIServerEnabled, defaultResponse);
@@ -938,11 +1094,12 @@ public class SystemConfig {
             return false;
         }
         String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
-        if (uploadMethods==null){
+        if (uploadMethods == null) {
             return false;
-        } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
         }
+        String normalizedUploadMethods = uploadMethods.toLowerCase();
+        return ListSplitUtil.split(normalizedUploadMethods).size() == 1
+                && normalizedUploadMethods.equals(SystemConfig.FileUploadMethods.RSYNC.toString());
     }
 
     @Deprecated(forRemoval = true, since = "2024-07-07")
@@ -972,18 +1129,16 @@ public class SystemConfig {
                 upload ? SettingsServiceBean.Key.UploadMethods : SettingsServiceBean.Key.DownloadMethods);
         if (methods == null) {
             return false;
-        } else {
-            return Arrays.asList(methods.toLowerCase().split("\\s*,\\s*")).contains(method);
         }
+        return ListSplitUtil.split(methods.toLowerCase()).contains(method);
     }
     
     public Integer getUploadMethodCount(){
         String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods); 
-        if (uploadMethods==null){
+        if (uploadMethods == null) {
             return 0;
-        } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
-        }       
+        }
+        return ListSplitUtil.split(uploadMethods.toLowerCase()).size();
     }
 
     public boolean isAllowCustomTerms() {

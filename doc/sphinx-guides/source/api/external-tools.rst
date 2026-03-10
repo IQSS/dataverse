@@ -11,6 +11,9 @@ Introduction
 
 External tools are additional applications the user can access or open from your Dataverse installation to preview, explore, and manipulate data files and datasets. The term "external" is used to indicate that the tool is not part of the main Dataverse Software.
 
+.. note::
+  Browser-based tools must have CORS explicitly enabled via :ref:`dataverse.cors.origin <dataverse.cors.origin>`. List every origin that will host your tool (or use ``*`` when a wildcard is acceptable). If an origin is not listed, the browser will block that tool's API requests even if the tool page itself loads.
+
 Once you have created the external tool itself (which is most of the work!), you need to teach a Dataverse installation how to construct URLs that your tool needs to operate. For example, if you've deployed your tool to fabulousfiletool.com your tool might want the ID of a file and the siteUrl of the Dataverse installation like this: https://fabulousfiletool.com?fileId=42&siteUrl=https://demo.dataverse.org
 
 In short, you will be creating a manifest in JSON format that describes not only how to construct URLs for your tool, but also what types of files your tool operates on, where it should appear in the Dataverse installation web interfaces, etc. 
@@ -170,6 +173,10 @@ The signed URL mechanism is more secure than exposing API tokens and therefore r
 - Configured via the ``allowedApiCalls`` section of the manifest. The tool will be provided with signed URLs allowing the specified access to the given dataset or datafile for the specified amount of time. The tool will not be able to access any other datasets or files the user may have access to and will not be able to make calls other than those specified.
 - For tools invoked via a GET call, Dataverse will include a callback query parameter with a Base64 encoded value. The decoded value is a signed URL that can be called to retrieve a JSON response containing all of the queryParameters and allowedApiCalls specified in the manfiest.
 - For tools invoked via POST, Dataverse will send a JSON body including the requested queryParameters and allowedApiCalls. Dataverse expects the response to the POST to indicate a redirect which Dataverse will use to open the tool.
+
+.. note::
+
+   **For Dataverse site administrators:** When Dataverse is behind a proxy, signed URLs may not work correctly due to protocol mismatches (HTTP vs HTTPS). Please refer to the :ref:`signed-urls-forwarded-proto-header` section to ensure signed URLs work properly in proxy environments.
 
 API Token
 ^^^^^^^^^

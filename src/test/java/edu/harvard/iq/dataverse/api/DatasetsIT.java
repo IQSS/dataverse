@@ -31,10 +31,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hamcrest.CoreMatchers;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import javax.xml.stream.XMLInputFactory;
@@ -79,10 +76,6 @@ public class DatasetsIT {
         removeIdentifierGenerationStyle.then().assertThat()
                 .statusCode(200);
 
-        Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
-        removeExcludeEmail.then().assertThat()
-                .statusCode(200);
-
         Response removeAnonymizedFieldTypeNames = UtilIT.deleteSetting(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
         removeAnonymizedFieldTypeNames.then().assertThat()
                 .statusCode(200);
@@ -101,16 +94,16 @@ public class DatasetsIT {
          */
     }
 
+    @AfterEach
+    public void afterEach() {
+        UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
+    }
 
     @AfterAll
     public static void afterClass() {
 
         Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
         removeIdentifierGenerationStyle.then().assertThat()
-                .statusCode(200);
-
-        Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
-        removeExcludeEmail.then().assertThat()
                 .statusCode(200);
 
         Response removeAnonymizedFieldTypeNames = UtilIT.deleteSetting(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
@@ -306,7 +299,7 @@ public class DatasetsIT {
         grantRole.prettyPrint();
         grantRole.then().assertThat()
                 .body("message", containsString(BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.has.role.error")))
-                .statusCode(FORBIDDEN.getStatusCode());
+                .statusCode(CONFLICT.getStatusCode());
 
         // Create another random user: 
         
@@ -1757,11 +1750,6 @@ public class DatasetsIT {
         Response deleteUserResponse = UtilIT.deleteUser(username);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
-
-        Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
-        removeExcludeEmail.then().assertThat()
-                .statusCode(200);
-
     }
 
     @Disabled
@@ -2366,7 +2354,7 @@ public class DatasetsIT {
         failedGrantPermission.prettyPrint();
         failedGrantPermission.then().assertThat()
                 .body("message", containsString(BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.has.role.error")))
-                .statusCode(FORBIDDEN.getStatusCode());
+                .statusCode(CONFLICT.getStatusCode());
     }
 
     @Test
@@ -2401,7 +2389,7 @@ public class DatasetsIT {
         Response getDefaultSetting = UtilIT.getSetting(SettingsServiceBean.Key.FileFixityChecksumAlgorithm);
         getDefaultSetting.prettyPrint();
         getDefaultSetting.then().assertThat()
-                .body("message", equalTo("Setting :FileFixityChecksumAlgorithm not found"));
+                .body("message", equalTo("Setting :FileFixityChecksumAlgorithm not found."));
 
         Response uploadMd5File = UtilIT.uploadRandomFile(dataset1PersistentId, apiToken);
         uploadMd5File.prettyPrint();
@@ -2814,7 +2802,7 @@ public class DatasetsIT {
         Response authorsGetsBadNews = UtilIT.getNotifications(apiToken);
         authorsGetsBadNews.prettyPrint();
         authorsGetsBadNews.then().assertThat()
-                .body("data.notifications[0].type", equalTo("CHECKSUMFAIL"))
+                .body("data[0].type", equalTo("CHECKSUMFAIL"))
                 .statusCode(OK.getStatusCode());
 
         Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
@@ -3089,11 +3077,18 @@ public class DatasetsIT {
                 .statusCode(200);
         
         // Check again: 
-        // This should return an empty list, as the dataset should have no locks just yet:
+        // This should no longer return an empty list, as the dataset now has a lock:
         checkDatasetLocks = UtilIT.checkDatasetLocks(datasetId.longValue(), "Ingest", apiToken);
         checkDatasetLocks.prettyPrint();
         checkDatasetLocks.then().assertThat()
                 .body("data[0].lockType", equalTo("Ingest"))
+                .statusCode(200);
+
+        // Confirm that when getting the dataset, the lock is also listed
+        Response getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat()
+                .body("data.locks[0]", equalTo("Ingest"))
                 .statusCode(200);
         
         // Try to lock the dataset with the same type lock, AGAIN 
@@ -3208,6 +3203,13 @@ public class DatasetsIT {
         checkDatasetLocks.prettyPrint();
         checkDatasetLocks.then().assertThat()
                 .body("data", equalTo(emptyArray))
+                .statusCode(200);
+
+        // Confirm that when getting the dataset, the lock is also no longer listed
+        getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat()
+                .body("data.locks", equalTo(emptyArray))
                 .statusCode(200);
     }
     
@@ -3703,9 +3705,17 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Look for a second description
         jsonLDString = getData(response.getBody().asString());
         jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
-        assertEquals("New description",
-                ((JsonObject) jsonLDObject.getJsonArray("https://dataverse.org/schema/citation/dsDescription").get(1))
-                        .getString("https://dataverse.org/schema/citation/dsDescriptionValue"));
+        JsonArray descriptions = jsonLDObject.getJsonArray("https://dataverse.org/schema/citation/dsDescription");
+        assertEquals(2, descriptions.size(), "Should have two descriptions");
+        boolean foundNewDescription = false;
+        for (int i = 0; i < descriptions.size(); i++) {
+            JsonObject desc = descriptions.getJsonObject(i);
+            if ("New description".equals(desc.getString("https://dataverse.org/schema/citation/dsDescriptionValue"))) {
+                foundNewDescription = true;
+                break;
+            }
+        }
+        assertTrue(foundNewDescription, "Should find 'New description' in the descriptions array");
 
         // Can't add terms of use with replace=false and a value already set (single
         // valued field)
@@ -5034,7 +5044,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
                 .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Updated"))
                 .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
-                .body("resource.publicationYear", CoreMatchers.equalTo("2025"));
+                .body("resource.publicationYear", CoreMatchers.equalTo(currentYear));
 
         Response exportDatasetOaiDc = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken, true);
         exportDatasetOaiDc.prettyPrint();
@@ -6612,12 +6622,21 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                         .add("Data")
                 );
         JsonObject jsonObj = json.build();
+
         String pathToFile = "src/main/webapp/resources/images/dataverse-icon-1200.png";
         Response uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, jsonObj, apiToken);
         uploadResponse.prettyPrint();
         uploadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        Integer modifyFileId = UtilIT.getDataFileIdFromResponse(uploadResponse);
+        Integer firstFileToModify = UtilIT.getDataFileIdFromResponse(uploadResponse);
+
+        pathToFile = "src/test/resources/images/coffeeshop.png";
+        uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, jsonObj, apiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Integer secondFileToModify = UtilIT.getDataFileIdFromResponse(uploadResponse);
+
         pathToFile = "src/main/webapp/resources/images/dataverseproject_logo.jpg";
         uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, jsonObj, apiToken);
         uploadResponse.then().assertThat()
@@ -6670,9 +6689,18 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         replaceResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        // Test modify by restricting the file
-        Response restrictResponse = UtilIT.restrictFile(modifyFileId.toString(), true, apiToken);
-        restrictResponse.prettyPrint();
+        // Test modify first file by adding a new category
+        Response setFileCategoriesResponse = UtilIT.setFileCategories(firstFileToModify.toString(), apiToken, List.of("Category"));
+        setFileCategoriesResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Test modify first file by restricting it
+        Response restrictResponse = UtilIT.restrictFile(firstFileToModify.toString(), true, apiToken);
+        restrictResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Test modify second file by restricting it
+        restrictResponse = UtilIT.restrictFile(secondFileToModify.toString(), true, apiToken);
         restrictResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
@@ -6681,7 +6709,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response updateTerms = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, jsonLDTerms, true);
         updateTerms.then().assertThat()
                 .statusCode(OK.getStatusCode());
-
 
         Response compareResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, apiToken);
         compareResponse.prettyPrint();
@@ -6701,7 +6728,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data[0].summary.'Life Sciences Metadata'.added", equalTo(2))
                 .body("data[0].summary.'Life Sciences Metadata'.deleted", equalTo(0))
                 .body("data[0].summary.files.added", equalTo(1))
-                .body("data[0].summary.files.changedFileMetaData", equalTo(2))
+                // Expected total file metadata field changes: 3 (File 1 has 2 modifications + File 2 has 1 modification)
+                .body("data[0].summary.files.changedFileMetaData", equalTo(3))
                 .statusCode(OK.getStatusCode());
 
         //user with no privileges will only see the published version
@@ -7225,6 +7253,178 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response deleteSecondUserResponse = UtilIT.deleteUser(secondUsername);
         deleteSecondUserResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
+    }
+
+    @Test
+    public void testUpdateLicense() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        // Test setup: Create a user and a published dataverse to host the dataset.
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String ownerAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        UtilIT.publishDataverseViaNativeApi(ownerAlias, apiToken);
+
+        // Test setup: Create and publish a dataset within the new dataverse.
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(ownerAlias, apiToken);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+
+        // Verify the dataset's initial state, ensuring it has the default CC0 1.0 license.
+        Response getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST, apiToken);
+        getDatasetVersion.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.license.name", equalTo("CC0 1.0"));
+
+        // Test case 1: Update to a valid, predefined license (CC BY 4.0).
+        Response updateLicenseResponse = UtilIT.updateLicense(datasetId.toString(), "{ \"name\": \"CC BY 4.0\" }", apiToken);
+        updateLicenseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success")));
+
+        getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST, apiToken);
+        getDatasetVersion.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.license.name", equalTo("CC BY 4.0"));
+
+        // Test case 2: Attempt to update with an invalid license name and verify the expected error.
+        String testInvalidLicenseName = "INVALID LICENSE 4.0";
+        updateLicenseResponse = UtilIT.updateLicense(datasetId.toString(), "{ \"name\": \"" + testInvalidLicenseName + "\" }", apiToken);
+        updateLicenseResponse.then().assertThat()
+                .statusCode(NOT_FOUND.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNotFound", List.of(testInvalidLicenseName))));
+
+        // Test case 3: Update with custom terms, providing only the required 'termsOfUse' field.
+        String jsonString = """
+            {
+               "customTerms": {
+                 "termsOfUse": "testTermsOfUse"
+                }
+            }
+            """;
+
+        updateLicenseResponse = UtilIT.updateLicense(datasetId.toString(), jsonString, apiToken);
+        updateLicenseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success")));
+
+        getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST, apiToken);
+        getDatasetVersion.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.license", equalTo(null))
+                .body("data.termsOfUse", equalTo("testTermsOfUse"))
+                .body("data.confidentialityDeclaration", equalTo(null))
+                .body("data.specialPermissions", equalTo(null))
+                .body("data.restrictions", equalTo(null))
+                .body("data.citationRequirements", equalTo(null))
+                .body("data.depositorRequirements", equalTo(null))
+                .body("data.conditions", equalTo(null))
+                .body("data.disclaimer", equalTo(null));
+
+        // Test case 4: Update with a complete set of custom terms, including all optional fields.
+        jsonString = """
+            {
+               "customTerms": {
+                 "termsOfUse": "testTermsOfUse",
+                 "confidentialityDeclaration": "testConfidentialityDeclaration",
+                 "specialPermissions": "testSpecialPermissions",
+                 "restrictions": "testRestrictions",
+                 "citationRequirements": "testCitationRequirements",
+                 "depositorRequirements": "testDepositorRequirements",
+                 "conditions": "testConditions",
+                 "disclaimer": "testDisclaimer"
+               }
+             }
+            """;
+
+        updateLicenseResponse = UtilIT.updateLicense(datasetId.toString(), jsonString, apiToken);
+        updateLicenseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success")));
+
+        getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST, apiToken);
+        getDatasetVersion.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.license", equalTo(null))
+                .body("data.termsOfUse", equalTo("testTermsOfUse"))
+                .body("data.confidentialityDeclaration", equalTo("testConfidentialityDeclaration"))
+                .body("data.specialPermissions", equalTo("testSpecialPermissions"))
+                .body("data.restrictions", equalTo("testRestrictions"))
+                .body("data.citationRequirements", equalTo("testCitationRequirements"))
+                .body("data.depositorRequirements", equalTo("testDepositorRequirements"))
+                .body("data.conditions", equalTo("testConditions"))
+                .body("data.disclaimer", equalTo("testDisclaimer"));
+
+        // Test case 5: Ensure that providing an empty 'customTerms' object results in a validation error.
+        jsonString = """
+            {
+               "customTerms": {}
+             }
+            """;
+
+        updateLicenseResponse = UtilIT.updateLicense(datasetId.toString(), jsonString, apiToken);
+        updateLicenseResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.customTermsOfUseNotProvided")));
+
+        // Test case 6: The operation should return a permissions error when invoked by a user with insufficient permissions.
+        createUser = UtilIT.createRandomUser();
+        apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        updateLicenseResponse = UtilIT.updateLicense(datasetId.toString(), "{ \"name\": \"CC BY 4.0\" }", apiToken);
+        updateLicenseResponse.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    public void testExcludeEmailOverride() {
+        // Create super user
+        String apiToken = getSuperuserToken();
+        // Create user with no permission
+        String apiTokenNoPerms = UtilIT.createRandomUserGetToken();
+        // Create Collection
+        String collectionAlias = UtilIT.createRandomCollectionGetAlias(apiToken);
+        // Publish Collection
+        UtilIT.publishDataverseViaNativeApi(collectionAlias, apiToken).prettyPrint();
+        // Create Dataset
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(collectionAlias, apiToken);
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+        // Publish Dataset
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
+
+        // Setting is not set - datasetContactEmail will NOT be excluded
+        Response response = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+        String json = response.prettyPrint();
+        assertTrue(json.contains("datasetContactName"));
+        assertTrue(json.contains("datasetContactEmail"));
+
+        UtilIT.setSetting(SettingsServiceBean.Key.ExcludeEmailFromExport, "true");
+
+        // User does not ignore the setting - datasetContactEmail will be excluded
+        response = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+        json = response.prettyPrint();
+        assertTrue(json.contains("datasetContactName"));
+        assertTrue(!json.contains("datasetContactEmail"));
+
+        // User has permission to ignore the setting allowing the datasetContactEmail to be included in the response
+        response = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, true, false, false, true);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+        json = response.prettyPrint();
+        assertTrue(json.contains("datasetContactName"));
+        assertTrue(json.contains("datasetContactEmail"));
+
+        // User has no permission to override the setting - datasetContactEmail will be excluded
+        response = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, true, false, false, true);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+        json = response.prettyPrint();
+        assertTrue(json.contains("datasetContactName"));
+        assertTrue(!json.contains("datasetContactEmail"));
     }
 
     private String getSuperuserToken() {

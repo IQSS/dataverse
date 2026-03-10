@@ -7,6 +7,8 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import io.restassured.path.json.JsonPath;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +32,7 @@ public class DataRetrieverApiIT {
     }
 
     @Test
-    public void testRetrieveMyDataAsJsonString() {
+    public void testRetrieveMyDataAsJsonString() throws InterruptedException {
         // Call with bad API token
         ArrayList<Long> emptyRoleIdsList = new ArrayList<>();
         Response badApiTokenResponse = UtilIT.retrieveMyDataAsJsonString("bad-token", "dummy-user-identifier", emptyRoleIdsList);
@@ -38,7 +40,7 @@ public class DataRetrieverApiIT {
 
         // Call as superuser with invalid user identifier
         Response createUserResponse = UtilIT.createRandomUser();
-        Response makeSuperUserResponse = UtilIT.makeSuperUser(UtilIT.getUsernameFromResponse(createUserResponse));
+        Response makeSuperUserResponse = UtilIT.setSuperuserStatus(UtilIT.getUsernameFromResponse(createUserResponse), true);
         assertEquals(OK.getStatusCode(), makeSuperUserResponse.getStatusCode());
         String superUserApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
 
@@ -85,6 +87,7 @@ public class DataRetrieverApiIT {
         // Call as normal user with one valid dataverse role and one dataverse result
         UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR.toString(),
                 "@" + normalUserUsername, superUserApiToken);
+        Thread.sleep(4000);
         Response oneDataverseResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(5L)));
         oneDataverseResponse.prettyPrint();
 
@@ -116,7 +119,7 @@ public class DataRetrieverApiIT {
         Response retrieveMyCollectionListResponse;
         // Create Superuser
         Response createUserResponse = UtilIT.createRandomUser();
-        Response makeSuperUserResponse = UtilIT.makeSuperUser(UtilIT.getUsernameFromResponse(createUserResponse));
+        Response makeSuperUserResponse = UtilIT.setSuperuserStatus(UtilIT.getUsernameFromResponse(createUserResponse), true);
         assertEquals(OK.getStatusCode(), makeSuperUserResponse.getStatusCode());
         String superUserUsername = UtilIT.getUsernameFromResponse(createUserResponse);
         String superUserApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
@@ -405,6 +408,112 @@ public class DataRetrieverApiIT {
         Response deleteSuperUserResponse = UtilIT.deleteUser(superUserIdentifier);
         deleteSuperUserResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), deleteSuperUserResponse.getStatusCode());
+    }
+
+    @Test
+    public void testRetrieveMyDataWithMetadataFields() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        String datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse).toString();
+        
+        UtilIT.sleepForReindex(datasetId, apiToken, 5);
+        
+        Response myDataWithAuthor = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&metadata_fields=citation:author");
+        myDataWithAuthor.prettyPrint();
+        myDataWithAuthor.then().assertThat()
+                .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
+                .body("data.items[0].metadataBlocks.citation.fields[0].typeName", CoreMatchers.equalTo("author"))
+                .body("data.items[0].metadataBlocks.citation.fields[0].value[0].authorName.value", CoreMatchers.equalTo("Finch, Fiona"))
+                .body("data.items[0].metadataBlocks.citation.fields[0].value[0].authorAffiliation.value", CoreMatchers.equalTo("Birds Inc."))
+                .statusCode(OK.getStatusCode());
+
+        Response subFieldsNotSupported = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&metadata_fields=citation:authorAffiliation");
+        subFieldsNotSupported.prettyPrint();
+        subFieldsNotSupported.then().assertThat()
+                .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
+                // No fields returned. authorAffiliation is a subfield of author and not supported.
+                .body("data.items[0].metadataBlocks.citation.fields", Matchers.empty())
+                .statusCode(OK.getStatusCode());
+
+        Response myDataWithAllFieldsFromCitation = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&metadata_fields=citation:*");
+        // Many more fields printed
+        myDataWithAllFieldsFromCitation.prettyPrint();
+        myDataWithAllFieldsFromCitation.then().assertThat()
+                .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
+                // Many fields returned, all of the citation block that has been filled in.
+                .body("data.items[0].metadataBlocks.citation.fields", Matchers.hasSize(5))
+                .statusCode(OK.getStatusCode());
+
+    }
+
+    @Test
+    public void testRetrieveMyDataWithCollections() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        JsonPath createdDataverse = JsonPath.from(createDataverseResponse.body().asString());
+        String dataverseName = createdDataverse.getString("data.name");
+        String dataverseAlias = createdDataverse.getString("data.alias");
+        Integer dataverseId = createdDataverse.getInt("data.id");
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        JsonPath createdDataset = JsonPath.from(createDatasetResponse.body().asString());
+        int datasetId = createdDataset.getInt("data.id");
+        String datasetPid = createdDataset.getString("data.persistentId");
+
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.sleepForReindex(datasetPid, apiToken, 5);
+        
+        // Test that the Dataverse collection that the dataset was created in is returned
+        Response myDataResponse = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&show_collections=true");
+        myDataResponse.prettyPrint();
+        myDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].collections.size()", CoreMatchers.is(1))
+                .body("data.items[0].collections[0].id", CoreMatchers.is(dataverseId))
+                .body("data.items[0].collections[0].name", CoreMatchers.is(dataverseName))
+                .body("data.items[0].collections[0].alias", CoreMatchers.is(dataverseAlias));
+
+        Response createDataverse2Response = UtilIT.createRandomDataverse(apiToken);
+        createDataverse2Response.prettyPrint();
+        createDataverse2Response.then().assertThat().statusCode(CREATED.getStatusCode());
+        JsonPath createDataverse2 = JsonPath.from(createDataverse2Response.body().asString());
+        String dataverse2Name = createDataverse2.getString("data.name");
+        String dataverse2Alias = createDataverse2.getString("data.alias");
+        Integer dataverse2Id = createDataverse2.getInt("data.id");
+
+        UtilIT.publishDataverseViaNativeApi(dataverse2Alias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.linkDataset(datasetPid, dataverse2Alias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
+
+        // Test that the Dataverse collection that the dataset was linked to is also returned
+        myDataResponse = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&show_collections=true");
+        myDataResponse.prettyPrint();
+        myDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].collections.size()", CoreMatchers.is(2))
+                .body("data.items[0].collections", CoreMatchers.hasItems(
+                        Map.of("id", dataverseId, "name", dataverseName, "alias", dataverseAlias),
+                        Map.of("id", dataverse2Id, "name", dataverse2Name, "alias", dataverse2Alias)
+                ));
+
     }
 
     private static String prettyPrintError(String resourceBundleKey, List<String> params) {

@@ -14,6 +14,11 @@ public class SortBy {
     }
 
     private final String field;
+
+    public static List<String> allowedFieldStrings() {
+        return Arrays.asList(SearchFields.RELEVANCE, SearchFields.NAME_SORT, SearchFields.RELEASE_OR_CREATE_DATE);
+    }
+
     private final String order;
 
     public SortBy(String field, String order) {

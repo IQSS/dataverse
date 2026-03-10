@@ -675,4 +675,74 @@ public class JsonPrinterTest {
 
         return datafile;
     }
+    
+
+    @Test
+    public void testJsonStorageDriver() {
+        // Test with directDownload enabled (true-like values)
+        System.setProperty("dataverse.files.test-driver.type", "s3");
+        System.setProperty("dataverse.files.test-driver.label", "Test Storage Driver");
+        System.setProperty("dataverse.files.test-driver.download-redirect", "true");
+        System.setProperty("dataverse.files.test-driver.upload-redirect", "true");
+
+        JsonObject result = JsonPrinter.jsonStorageDriver("test-driver").build();
+
+        assertEquals("test-driver", result.getString("name"));
+        assertEquals("s3", result.getString("type"));
+        assertEquals("Test Storage Driver", result.getString("label"));
+        assertTrue(result.getBoolean("directUpload"));
+        assertTrue(result.getBoolean("directDownload"));
+        assertFalse(result.getBoolean("uploadOutOfBand"));
+        
+        // Test with directDownload disabled (false values)
+        System.setProperty("dataverse.files.test-driver2.type", "file");
+        System.setProperty("dataverse.files.test-driver2.label", "Local Storage");
+        System.setProperty("dataverse.files.test-driver2.download-redirect", "false");
+        System.setProperty("dataverse.files.test-driver2.upload-redirect", "false");
+
+        JsonObject result2 = JsonPrinter.jsonStorageDriver("test-driver2").build();
+
+        assertEquals("test-driver2", result2.getString("name"));
+        assertEquals("file", result2.getString("type"));
+        assertEquals("Local Storage", result2.getString("label"));
+        assertFalse(result2.getBoolean("directUpload"));
+        assertFalse(result2.getBoolean("directDownload"));
+        assertFalse(result2.getBoolean("uploadOutOfBand"));
+
+        // Test with all caps TRUE and out-of-band
+        System.setProperty("dataverse.files.test-driver3.type", "swift");
+        System.setProperty("dataverse.files.test-driver3.label", "Swift Storage");
+        System.setProperty("dataverse.files.test-driver3.download-redirect", "TRUE");
+        System.setProperty("dataverse.files.test-driver3.upload-out-of-band", "true");
+
+        JsonObject result3 = JsonPrinter.jsonStorageDriver("test-driver3").build();
+        assertTrue(result3.getBoolean("directDownload"));
+        assertTrue(result3.getBoolean("uploadOutOfBand"));
+
+        // Test with null/missing properties
+        System.setProperty("dataverse.files.test-driver4.type", "s3");
+        System.setProperty("dataverse.files.test-driver4.label", "Minimal Storage");
+        // Not setting download-redirect property
+
+        JsonObject result4 = JsonPrinter.jsonStorageDriver("test-driver4").build();
+        assertFalse(result4.getBoolean("directDownload"));
+        assertFalse(result4.getBoolean("directUpload"));
+        assertFalse(result4.getBoolean("uploadOutOfBand"));
+
+        // Clean up system properties
+        System.clearProperty("dataverse.files.test-driver.type");
+        System.clearProperty("dataverse.files.test-driver.label");
+        System.clearProperty("dataverse.files.test-driver.download-redirect");
+        System.clearProperty("dataverse.files.test-driver.upload-redirect");
+        System.clearProperty("dataverse.files.test-driver2.type");
+        System.clearProperty("dataverse.files.test-driver2.label");
+        System.clearProperty("dataverse.files.test-driver2.download-redirect");
+        System.clearProperty("dataverse.files.test-driver2.upload-redirect");
+        System.clearProperty("dataverse.files.test-driver3.type");
+        System.clearProperty("dataverse.files.test-driver3.label");
+        System.clearProperty("dataverse.files.test-driver3.download-redirect");
+        System.clearProperty("dataverse.files.test-driver3.upload-out-of-band");
+        System.clearProperty("dataverse.files.test-driver4.type");
+        System.clearProperty("dataverse.files.test-driver4.label");
+    }
 }
