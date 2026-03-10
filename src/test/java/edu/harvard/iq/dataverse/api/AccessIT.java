@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import static io.restassured.RestAssured.get;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -678,9 +679,14 @@ public class AccessIT {
         requestFileAccessResponse = UtilIT.requestFileAccess(basicFileIdNew.toString(), apiTokenRando);
         assertEquals(400, requestFileAccessResponse.getStatusCode());
 
-        //Now should be able to download
+        //Now should be able to download but the guestbook response is still required
         randoDownload = UtilIT.downloadFile(tabFile3IdRestrictedNew, apiTokenRando);
-        assertEquals(OK.getStatusCode(), randoDownload.getStatusCode());
+        assertEquals(BAD_REQUEST.getStatusCode(), randoDownload.getStatusCode());
+        randoDownload = UtilIT.getDownloadFileUrlWithGuestbookResponse(tabFile3IdRestrictedNew, apiTokenRando, guestbookResponseJson);
+        String signedUrl = UtilIT.getSignedUrlFromResponse(randoDownload);
+        // Download the file using the signed url
+        Response signedUrlResponse = get(signedUrl);
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
 
         //revokeFileAccess
         Response revokeFileAccessResponse = UtilIT.revokeFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
