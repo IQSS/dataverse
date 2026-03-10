@@ -116,6 +116,7 @@ import jakarta.faces.validator.ValidatorException;
 
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.InvalidFieldsCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetLinkingDataverseCommand;
@@ -4103,8 +4104,15 @@ public class DatasetPage implements java.io.Serializable {
                     return null;
                 }
             }
-            populateDatasetUpdateFailureMessage();
-            return returnToDraftVersion();
+            if (ex instanceof InvalidFieldsCommandException) {
+                InvalidFieldsCommandException ifce = (InvalidFieldsCommandException) ex;
+                String error = ifce.getFieldErrors().get("datasetType");
+                JsfHelper.addErrorMessage(error);
+                return null;
+            } else {
+                populateDatasetUpdateFailureMessage();
+                return returnToDraftVersion();
+            }
         }
 
         // Have we just deleted some draft datafiles (successfully)?

@@ -836,12 +836,18 @@ public class XmlMetadataTemplate {
         List<String> kindOfDataValues = new ArrayList<String>();
         Map<String, String> attributes = new HashMap<String, String>();
         String resourceType = "Dataset";
+        String datasetTypeName = null;
         if (dvObject instanceof Dataset dataset) {
-            String datasetTypeName = dataset.getDatasetType().getName();
+            datasetTypeName = dataset.getDatasetType().getName();
             resourceType = switch (datasetTypeName) {
             case DatasetType.DATASET_TYPE_DATASET -> "Dataset";
             case DatasetType.DATASET_TYPE_SOFTWARE -> "Software";
             case DatasetType.DATASET_TYPE_WORKFLOW -> "Workflow";
+            // We are not using the “PeerReview” for resourceTypeGeneral because it is
+            // specific to scholarly communications and may carry related connotations.
+            // We've asked DataCite to support "Review" so we don't have to use "Other".
+            // See also https://github.com/datacite/datacite-suggestions/discussions/214
+            case DatasetType.DATASET_TYPE_REVIEW -> "Other";
             default -> "Dataset";
             };
         }
@@ -864,6 +870,8 @@ public class XmlMetadataTemplate {
         if (!kindOfDataValues.isEmpty()) {
             XmlWriterUtil.writeFullElementWithAttributes(xmlw, "resourceType", attributes, String.join(";", kindOfDataValues));
 
+        } else if (DatasetType.DATASET_TYPE_REVIEW.equals(datasetTypeName)) {
+            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "resourceType", attributes, "Review");
         } else {
             // Write an attribute only element if there are no kindOfData values.
             xmlw.writeStartElement("resourceType");

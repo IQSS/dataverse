@@ -444,6 +444,8 @@ Please note that metadata fields share a common namespace so they must be unique
 
 We'll use this command again below to update the Solr schema to accomodate metadata fields we've added.
 
+.. _load-tsv:
+
 Loading TSV files into a Dataverse Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

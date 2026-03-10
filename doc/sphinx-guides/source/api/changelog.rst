@@ -28,6 +28,7 @@ v6.10
 v6.9
 ----
 
+- When creating datasets that contain a datasetType, that datasetType must be allowed at the collection level. This can be accomplished by passing ``allowedDatasetTypes`` to the :ref:`collection-attributes-api` API.
 - The POST /api/admin/makeDataCount/{id}/updateCitationsForDataset processing is now asynchronous and the response no longer includes the number of citations. The response can be OK if the request is queued or 503 if the queue is full (default queue size is 1000).
 - The way to set per-format size limits for tabular ingest has changed. JSON input is now used. See :ref:`:TabularIngestSizeLimit`.
 - In the past, the settings API would accept any key and value. This is no longer the case because validation has been added. See :ref:`settings_put_single`, for example.

@@ -1,53 +1,65 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
+
+import java.io.*;
+import java.util.*;
+import java.util.logging.Logger;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import static jakarta.ws.rs.core.HttpHeaders.ACCEPT_LANGUAGE;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.util.logging.Level;
+import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
+import io.restassured.path.xml.XmlPath;
+import edu.harvard.iq.dataverse.mydata.MyDataFilterParams;
+import jakarta.ws.rs.core.HttpHeaders;
+import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.util.Lists;
+import org.junit.jupiter.api.Test;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import io.restassured.specification.RequestSpecification;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
 import edu.harvard.iq.dataverse.*;
-import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
-import edu.harvard.iq.dataverse.mydata.MyDataFilterParams;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.path.json.JsonPath;
-import io.restassured.path.xml.XmlPath;
-import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
 import jakarta.json.*;
-import jakarta.ws.rs.core.HttpHeaders;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.assertj.core.util.Lists;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static io.restassured.RestAssured.given;
 import static io.restassured.path.xml.XmlPath.from;
-import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.jupiter.api.Assertions.*;
@@ -4350,6 +4362,15 @@ public class UtilIT {
         return response;
     }
 
+    static Response getDatasetVersionCitationFormat(Integer datasetId, String version, boolean includeDeaccessioned, String format, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .queryParam("includeDeaccessioned", includeDeaccessioned)
+                .get("/api/datasets/" + datasetId + "/versions/" + version + "/citation/" + format);
+        return response;
+    }
+
     static Response setDatasetCitationDateField(String datasetIdOrPersistentId, String dateField, String apiToken) {
         String idInPath = datasetIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
@@ -4834,14 +4855,28 @@ public class UtilIT {
     }
 
     public static Response getDatasetTypes() {
-        Response response = given()
-                .get("/api/datasets/datasetTypes");
-        return response;
+        return getDatasetTypes(null);
+    }
+
+    public static Response getDatasetTypes(String acceptLanguage) {
+        RequestSpecification requestSpecification = given();
+        if (acceptLanguage != null) {
+            // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Accept-Language
+            requestSpecification.header(ACCEPT_LANGUAGE, acceptLanguage);
+        }
+        return requestSpecification.get("/api/datasets/datasetTypes");
     }
 
     static Response getDatasetType(String idOrName) {
-        return given()
-                .get("/api/datasets/datasetTypes/" + idOrName);
+        return getDatasetType(idOrName, null);
+    }
+
+    static Response getDatasetType(String idOrName, String acceptLanguage) {
+        RequestSpecification requestSpecification = given();
+        if (acceptLanguage != null) {
+            requestSpecification.header(ACCEPT_LANGUAGE, acceptLanguage);
+        }
+        return requestSpecification.get("/api/datasets/datasetTypes/" + idOrName);
     }
 
     static Response addDatasetType(String jsonIn, String apiToken) {
