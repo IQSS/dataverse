@@ -98,7 +98,7 @@ This enables additional settings for each user in the notifications tab of their
 * ``CREATEDS`` Your dataset is created
 * ``CREATEDV`` Dataverse collection is created
 * ``DATASETCREATED`` Dataset was created by user
-* ``DATASETMENTIONED`` Dataset was mentioned via Linked Data Notification
+* ``DATASETMENTIONED`` Dataset was mentioned via :doc:`/api/linkeddatanotification`
 * ``DATASETMOVED`` Dataset was moved by user
 * ``FILESYSTEMIMPORT`` Dataset has been successfully uploaded and verified
 * ``GRANTFILEACCESS`` Access to file is granted
