@@ -1,0 +1,122 @@
+{
+    "@context": {
+        "@language": "en",
+        "@vocab": "https://schema.org/",
+        "citeAs": "cr:citeAs",
+        "column": "cr:column",
+        "conformsTo": "dct:conformsTo",
+        "cr": "http://mlcommons.org/croissant/",
+        "rai": "http://mlcommons.org/croissant/RAI/",
+        "data": {
+            "@id": "cr:data",
+            "@type": "@json"
+        },
+        "dataType": {
+            "@id": "cr:dataType",
+            "@type": "@vocab"
+        },
+        "dct": "http://purl.org/dc/terms/",
+        "examples": {
+            "@id": "cr:examples",
+            "@type": "@json"
+        },
+        "extract": "cr:extract",
+        "field": "cr:field",
+        "fileProperty": "cr:fileProperty",
+        "fileObject": "cr:fileObject",
+        "fileSet": "cr:fileSet",
+        "format": "cr:format",
+        "includes": "cr:includes",
+        "isLiveDataset": "cr:isLiveDataset",
+        "jsonPath": "cr:jsonPath",
+        "key": "cr:key",
+        "md5": "cr:md5",
+        "parentField": "cr:parentField",
+        "path": "cr:path",
+        "recordSet": "cr:recordSet",
+        "references": "cr:references",
+        "regex": "cr:regex",
+        "repeated": "cr:repeated",
+        "replace": "cr:replace",
+        "samplingRate": "cr:samplingRate",
+        "sc": "https://schema.org/",
+        "separator": "cr:separator",
+        "source": "cr:source",
+        "subField": "cr:subField",
+        "transform": "cr:transform",
+        "wd": "https://www.wikidata.org/wiki/"
+    },
+    "@type": "sc:Dataset",
+    "conformsTo": "http://mlcommons.org/croissant/1.0",
+    "name": "Max Schema.org",
+    "url": "https://doi.org/10.5072/FK2/VQTYHD",
+    "creator": [
+        {
+            "@type": "Person",
+            "givenName": "Philip",
+            "familyName": "Durbin",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "Harvard University"
+            },
+            "sameAs": "https://orcid.org/0000-0002-9528-9470",
+            "@id": "https://orcid.org/0000-0002-9528-9470",
+            "identifier": "https://orcid.org/0000-0002-9528-9470",
+            "name": "Durbin, Philip"
+        },
+        {
+            "@type": "Person",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "Harvard University"
+            },
+            "name": "IQSS"
+        }
+    ],
+    "description": "Exercising fields used by `schema.org` exporter.",
+    "keywords": [
+        "Social Sciences",
+        "Other",
+        "foo",
+        "bar"
+    ],
+    "license": "http://creativecommons.org/publicdomain/zero/1.0",
+    "datePublished": "2024-05-01",
+    "dateModified": "2025-05-21",
+    "includedInDataCatalog": {
+        "@type": "DataCatalog",
+        "name": "Root",
+        "url": "https://beta.dataverse.org"
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "Root"
+    },
+    "version": "3.0",
+    "citeAs": "@data{FK2/VQTYHD_2024,author = {Durbin, Philip and IQSS},publisher = {Root},title = {Max Schema.org},year = {2024},url = {https://doi.org/10.5072/FK2/VQTYHD}}",
+    "funder": [
+        {
+            "@type": "Organization",
+            "name": "NSF"
+        },
+        {
+            "@type": "Organization",
+            "name": "NIH"
+        }
+    ],
+    "spatialCoverage": [
+        "Cambridge, MA, United States, Harvard Square"
+    ],
+    "citation": [
+        {
+            "@type": "CreativeWork",
+            "name": "Tykhonov, V., & Durbin, P. (2024, March 20). Croissant ML standard in the context of Dataverse, EOSC and beyond. Zenodo. https://doi.org/10.5281/zenodo.10843668",
+            "@id": "https://doi.org/10.5281/zenodo.10843668",
+            "identifier": "https://doi.org/10.5281/zenodo.10843668",
+            "url": "https://doi.org/10.5281/zenodo.10843668"
+        }
+    ],
+    "temporalCoverage": [
+        "2023-01-01/2023-12-31"
+    ]
+}

@@ -116,6 +116,7 @@ import jakarta.faces.validator.ValidatorException;
 
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.InvalidFieldsCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetLinkingDataverseCommand;
@@ -4103,8 +4104,15 @@ public class DatasetPage implements java.io.Serializable {
                     return null;
                 }
             }
-            populateDatasetUpdateFailureMessage();
-            return returnToDraftVersion();
+            if (ex instanceof InvalidFieldsCommandException) {
+                InvalidFieldsCommandException ifce = (InvalidFieldsCommandException) ex;
+                String error = ifce.getFieldErrors().get("datasetType");
+                JsfHelper.addErrorMessage(error);
+                return null;
+            } else {
+                populateDatasetUpdateFailureMessage();
+                return returnToDraftVersion();
+            }
         }
 
         // Have we just deleted some draft datafiles (successfully)?
@@ -6074,7 +6082,12 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getCroissant() {
         if (isThisLatestReleasedVersion()) {
-            final String CROISSANT_SCHEMA_NAME = "croissant";
+            // We put the slim version of Croissant in the head of the HTML
+            // to reduce page load times. See https://github.com/IQSS/dataverse/issues/12123
+            // and https://github.com/mlcommons/croissant/issues/646
+            // The full version is available from the "Export Metadata" dropdown.
+            // Both versions are available via API.
+            final String CROISSANT_SCHEMA_NAME = "croissantSlim";
             ExportService instance = ExportService.getInstance();
             String croissant = instance.getLatestPublishedAsString(dataset, CROISSANT_SCHEMA_NAME);
             if (croissant != null && !croissant.isEmpty()) {
