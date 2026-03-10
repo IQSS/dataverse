@@ -4075,7 +4075,12 @@ dataverse.feature.only-update-datacite-when-needed
 
 Only contact DataCite to update a DOI after checking to see if DataCite has outdated information (for efficiency, lighter load on DataCite, especially when using file DOIs).
 
+.. _dataverse.feature.require-embargo-reason:
 
+dataverse.feature.require-embargo-reason
+++++++++++++++++++++++++++++++++++++++++
+
+Require an embargo reason when a user creates an embargo on one or more files. See :ref:`embargoes`.
 
 .. _:ApplicationServerSettings:
 
