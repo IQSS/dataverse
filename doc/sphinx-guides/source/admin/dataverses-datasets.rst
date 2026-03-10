@@ -109,6 +109,64 @@ If the :AllowedCurationLabels setting has a value, one of the available choices 
     
 Individual datasets can be configured to use specific curationLabelSets as well. See the "Datasets" section below.
 
+.. _review-datasets-setup:
+
+Configure a Collection for Review Datasets
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:ref:`review-datasets-user` are a specialized type of dataset that can be used to review resources (such as datasets) in the Dataverse installation itself or resources in external data repositories.
+
+Review datasets require some setup, as described below.
+
+Load the Review Metadata Block
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+First, download the Review metadata block tsv file from :ref:`experimental-metadata`.
+
+Then, load the block and update Solr. See the following sections of :doc:`metadatacustomization` for details:
+
+- :ref:`load-tsv`
+- :ref:`update-solr-schema`
+
+Create and Enable Custom "Rubric" Metadata Blocks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Review metadata block gives you a few basic fields common to all reviews such as the URL of the item being reviewed.
+
+You probably will want to create your own metadata blocks specific to the resources you are reviewing, your own "rubric". See :doc:`metadatacustomization` for details on creating and enabling custom metadata blocks.
+
+Instead of creating a new custom metadata block from scratch (if you simply want to evaluate the feature, for example), you can use the metadata blocks at https://github.com/IQSS/dataverse.harvard.edu
+
+After loading the block, don't forget to update the Solr schema!
+
+Create a Review Dataset Type
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Review datasets are built on the :ref:`dataset-types` feature. Dataset types can only be created via API so follow the steps under :ref:`api-add-dataset-type`. Copy and paste from below or download :download:`review.json <../../../../scripts/api/data/datasetTypes/review.json>` and pass it to the API.
+
+.. literalinclude:: ../../../../scripts/api/data/datasetTypes/review.json
+   :language: json
+
+Create a Collection for Reviews and Configure Permissions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Follow the normal steps:
+
+- :ref:`create-dataverse`.
+- :ref:`dataverse-permissions`.
+
+Allow the Review Dataset Type for the Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Non-dataset types, such as the "review" type, are only available when a collection admin has enabled them, via API.
+
+Using the API :ref:`collection-attributes-api`, change the ``allowedDatasetTypes`` attribute so that it includes "review". If you only want to allow reviews, you can pass just ``review``. If you want to allow multiple dataset types, you can pass a comma-separated list, such as ``review,dataset``.
+
+Invite Users to Create Review Datasets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+At this point, users should be able to create review datasets via API, if you gave them permission on the collection. You can point them to :ref:`creating-a-review-dataset` for details.
+
 Datasets
 --------
 
