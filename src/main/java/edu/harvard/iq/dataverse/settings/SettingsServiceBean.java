@@ -489,6 +489,12 @@ public class SettingsServiceBean {
          */
         
         ArchiverClassName,
+        /*
+         * Only create an archival Bag for a dataset version if all prior versions have
+         * been successfully archived
+         */
+        ArchiveOnlyIfEarlierVersionsAreArchived,
+        
         /**
          * Custom settings for each archiver. See list below.
          */
@@ -808,16 +814,13 @@ public class SettingsServiceBean {
             // Cut off the ":" we verified is present before
             String normalizedKey = key.substring(1);
             
-            // Iterate through all the known keys and return on match (case sensitive!)
             // We are case sensitive here because Dataverse implicitely uses case sensitive keys everywhere!
-            for (SettingsServiceBean.Key k : SettingsServiceBean.Key.values()) {
-                if (k.name().equals(normalizedKey)) {
-                    return k;
-                }
+            try {
+                return SettingsServiceBean.Key.valueOf(normalizedKey);
+            } catch (IllegalArgumentException e) {
+                // Fall through on no match - return null for invalid keys
+                return null;
             }
-            
-            // Fall through on no match
-            return null;
         }
     }
     
