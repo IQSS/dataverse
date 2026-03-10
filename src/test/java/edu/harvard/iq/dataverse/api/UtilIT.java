@@ -16,6 +16,7 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import static jakarta.ws.rs.core.HttpHeaders.ACCEPT_LANGUAGE;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 
 import java.nio.charset.StandardCharsets;
@@ -4267,6 +4268,15 @@ public class UtilIT {
         return response;
     }
 
+    static Response getDatasetVersionCitationFormat(Integer datasetId, String version, boolean includeDeaccessioned, String format, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .queryParam("includeDeaccessioned", includeDeaccessioned)
+                .get("/api/datasets/" + datasetId + "/versions/" + version + "/citation/" + format);
+        return response;
+    }
+
     static Response setDatasetCitationDateField(String datasetIdOrPersistentId, String dateField, String apiToken) {
         String idInPath = datasetIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
@@ -4751,14 +4761,28 @@ public class UtilIT {
     }
 
     public static Response getDatasetTypes() {
-        Response response = given()
-                .get("/api/datasets/datasetTypes");
-        return response;
+        return getDatasetTypes(null);
+    }
+
+    public static Response getDatasetTypes(String acceptLanguage) {
+        RequestSpecification requestSpecification = given();
+        if (acceptLanguage != null) {
+            // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Accept-Language
+            requestSpecification.header(ACCEPT_LANGUAGE, acceptLanguage);
+        }
+        return requestSpecification.get("/api/datasets/datasetTypes");
     }
 
     static Response getDatasetType(String idOrName) {
-        return given()
-                .get("/api/datasets/datasetTypes/" + idOrName);
+        return getDatasetType(idOrName, null);
+    }
+
+    static Response getDatasetType(String idOrName, String acceptLanguage) {
+        RequestSpecification requestSpecification = given();
+        if (acceptLanguage != null) {
+            requestSpecification.header(ACCEPT_LANGUAGE, acceptLanguage);
+        }
+        return requestSpecification.get("/api/datasets/datasetTypes/" + idOrName);
     }
 
     static Response addDatasetType(String jsonIn, String apiToken) {
