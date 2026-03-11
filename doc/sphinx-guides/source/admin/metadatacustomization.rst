@@ -664,10 +664,6 @@ Tips from the Dataverse Community
 
 When creating new metadata blocks, please review the :doc:`/style/text` section of the Style Guide, which includes guidance about naming metadata fields and writing text for metadata tooltips and watermarks.
 
-If there are tips that you feel are omitted from this document, please open an issue at https://github.com/IQSS/dataverse/issues and consider making a pull request to make improvements. You can find this document at https://github.com/IQSS/dataverse/blob/develop/doc/sphinx-guides/source/admin/metadatacustomization.rst
-
-The thinking is that the tips can become issues and the issues can eventually be worked on as features to improve the Dataverse Software metadata system.
-
 Development Tasks Specific to Changing Fields in Core Metadata Blocks
 ---------------------------------------------------------------------
 
