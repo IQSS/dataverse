@@ -123,7 +123,6 @@ public class BagGenerator {
     private PoolingHttpClientConnectionManager cm = null;
 
     private ChecksumType hashtype = null;
-    private boolean ignorehashes = false;
 
     private long dataCount = 0l;
     private long totalDataSize = 0l;
@@ -158,6 +157,8 @@ public class BagGenerator {
     private boolean usingFetchFile = false;
     private boolean createHoleyBag = false;
     private List<FileEntry> oversizedFiles = new ArrayList<>();
+
+    private ChecksumType defaultHashtype;
     
     // Bag-info.txt field labels
     private static final String CONTACT_NAME = "Contact-Name: ";
@@ -244,6 +245,13 @@ public class BagGenerator {
             e.printStackTrace();
         }
         initializeHoleyBagLimits();
+        try {
+            // Use the current type if we can retrieve it
+            defaultHashtype = CDI.current().select(SystemConfig.class).get().getFileFixityChecksumAlgorithm();
+        } catch (Exception e) {
+            // Default to MD5 if we can't
+            defaultHashtype = DataFile.ChecksumType.MD5;
+        }
     }
 
     private void initializeHoleyBagLimits() {
@@ -253,10 +261,6 @@ public class BagGenerator {
         logger.fine("BagGenerator size limits - maxDataFileSize: " + maxDataFileSize + 
                     ", maxTotalDataSize: " + maxTotalDataSize + 
                     ", createHoleyBag: " + createHoleyBag);
-    }
-
-    public void setIgnoreHashes(boolean val) {
-        ignorehashes = val;
     }
 
     public static void println(String s) {
@@ -353,13 +357,8 @@ public class BagGenerator {
             sha1StringBuffer.append(sha1Entry.getValue() + " " + path);
         }
         if(hashtype == null) { // No files - still want to send an empty manifest to nominally comply with BagIT specification requirement.
-            try {
-                // Use the current type if we can retrieve it
-                hashtype = CDI.current().select(SystemConfig.class).get().getFileFixityChecksumAlgorithm();
-            } catch (Exception e) {
-                // Default to MD5 if we can't
-                hashtype = DataFile.ChecksumType.MD5;
-            }
+                // Use the default
+                hashtype = defaultHashtype;
         }
         if (!(hashtype == null)) {
             String manifestName = "manifest-";
@@ -644,10 +643,6 @@ public class BagGenerator {
         // Track titles to detect duplicates
         Set<String> titles = new HashSet<>();
         
-        if ((hashtype == null) | ignorehashes) {
-            hashtype = DataFile.ChecksumType.SHA512;
-        }
-        
         for (FileEntry entry : sortedFiles) {
             // Extract all needed information from the JsonObject reference
             JsonObject child = entry.jsonObject;
@@ -679,12 +674,15 @@ public class BagGenerator {
                     childHash = child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@value").getAsString();
                 }
             }
-            
+            //Pick a hashtype if we encounter a file that doesn't have one
+            if (hashtype == null) {
+                hashtype = defaultHashtype;
+            }
             resourceUsed[entry.resourceIndex] = true;
             String dataUrl = entry.getDataUrl();
             
             try {
-                if ((childHash == null) | ignorehashes) {
+                if (childHash == null) {
                     // Generate missing hash
                     
                     try (InputStream inputStream = getInputStreamSupplier(dataUrl).get()){
