@@ -39,7 +39,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
@@ -103,8 +102,6 @@ import jakarta.faces.event.ValueChangeEvent;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import jakarta.json.Json;
-import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.OptimisticLockException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -389,9 +386,7 @@ public class DatasetPage implements java.io.Serializable {
     private boolean showIngestSuccess;
     
     private Boolean archivable = null;
-    private Boolean checkForArchivalCopy;
-    private Boolean supportsDelete;
-    private HashMap<Long,Boolean> versionArchivable = new HashMap<>();
+    private Boolean versionArchivable = null;
     private Boolean someVersionArchived = null;
 
     public boolean isShowIngestSuccess() {
@@ -3000,38 +2995,27 @@ public class DatasetPage implements java.io.Serializable {
                 String className = settingsService.get(SettingsServiceBean.Key.ArchiverClassName.toString());
                 AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), updateVersion);
                 if (archiveCommand != null) {
-                    //There is an archiver configured, so now decide what to do:
-                    // If a successful copy exists, don't automatically update, just note the old copy is obsolete (and enable the superadmin button in the display to allow a ~manual update if desired)
-                    // If pending or an obsolete copy exists, do nothing (nominally if a pending run succeeds and we're updating the current version here, it should be marked as obsolete - ignoring for now since updates within the time an archiving run is pending should be rare
-                    // If a failure or null, rerun archiving now. If a failure is due to an exiting copy in the repo, we'll fail again
-                    String status = updateVersion.getArchivalCopyLocationStatus();
-                    if((status==null) || status.equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE) || (JvmSettings.BAGIT_ARCHIVE_ON_VERSION_UPDATE.lookupOptional(Boolean.class).orElse(false) && archiveCommand.canDelete())){
-                        // Delete the record of any existing copy since it is now out of date/incorrect
-                        JsonObjectBuilder job = Json.createObjectBuilder();
-                        job.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_PENDING);
-                        updateVersion.setArchivalCopyLocation(JsonUtil.prettyPrint(job.build()));
-                        //Persist to db now
-                        datasetVersionService.persistArchivalCopyLocation(updateVersion);
-                        /*
-                         * Then try to generate and submit an archival copy. Note that running this
-                         * command within the CuratePublishedDatasetVersionCommand was causing an error:
-                         * "The attribute [id] of class
-                         * [edu.harvard.iq.dataverse.DatasetFieldCompoundValue] is mapped to a primary
-                         * key column in the database. Updates are not allowed." To avoid that, and to
-                         * simplify reporting back to the GUI whether this optional step succeeded, I've
-                         * pulled this out as a separate submit().
-                         */
-                        try {
-                            commandEngine.submitAsync(archiveCommand);
-                            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetversion.archive.inprogress"));
-                        } catch (CommandException ex) {
-                            errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure") + " - " + ex.toString();
-                            logger.severe(ex.getMessage());
+                    // Delete the record of any existing copy since it is now out of date/incorrect
+                    updateVersion.setArchivalCopyLocation(null);
+                    /*
+                     * Then try to generate and submit an archival copy. Note that running this
+                     * command within the CuratePublishedDatasetVersionCommand was causing an error:
+                     * "The attribute [id] of class
+                     * [edu.harvard.iq.dataverse.DatasetFieldCompoundValue] is mapped to a primary
+                     * key column in the database. Updates are not allowed." To avoid that, and to
+                     * simplify reporting back to the GUI whether this optional step succeeded, I've
+                     * pulled this out as a separate submit().
+                     */
+                    try {
+                        updateVersion = commandEngine.submit(archiveCommand);
+                        if (!updateVersion.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
+                            successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
+                        } else {
+                            errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
                         }
-                    } else if(status.equals(DatasetVersion.ARCHIVAL_STATUS_SUCCESS)) {
-                        //Not automatically replacing the old archival copy as creating it is expensive
-                        updateVersion.setArchivalStatusOnly(DatasetVersion.ARCHIVAL_STATUS_OBSOLETE);
-                        datasetVersionService.persistArchivalCopyLocation(updateVersion);
+                    } catch (CommandException ex) {
+                        errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure") + " - " + ex.toString();
+                        logger.severe(ex.getMessage());
                     }
                 }
             }
@@ -6164,33 +6148,33 @@ public class DatasetPage implements java.io.Serializable {
 
     /**
      * This method can be called from *.xhtml files to allow archiving of a dataset
-     * version from the user interface.
+     * version from the user interface. It is not currently (11/18) used in the IQSS/develop
+     * branch, but is used by QDR and is kept here in anticipation of including a
+     * GUI option to archive (already published) versions after other dataset page
+     * changes have been completed.
      *
      * @param id - the id of the datasetversion to archive.
      */
-    public void archiveVersion(Long id, boolean force) {
+    public void archiveVersion(Long id) {
         if (session.getUser() instanceof AuthenticatedUser) {
             DatasetVersion dv = datasetVersionService.retrieveDatasetVersionByVersionId(id).getDatasetVersion();
             String className = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ArchiverClassName, null);
             AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
             if (cmd != null) {
                 try {
-                    String status = dv.getArchivalCopyLocationStatus();
-                    if (status == null || (force && cmd.canDelete())) {
-
-                        // Set initial pending status
-                        JsonObjectBuilder job = Json.createObjectBuilder();
-                        job.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_PENDING);
-                        dv.setArchivalCopyLocation(JsonUtil.prettyPrint(job.build()));
-                        //Persist now
-                        datasetVersionService.persistArchivalCopyLocation(dv);
-                        commandEngine.submitAsync(cmd);
-
+                    DatasetVersion version = commandEngine.submit(cmd);
+                    if (!version.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
                         logger.info(
-                                "DatasetVersion id=" + dv.getId() + " submitted to Archive, status: " + dv.getArchivalCopyLocationStatus());
+                                "DatasetVersion id=" + version.getId() + " submitted to Archive, status: " + dv.getArchivalCopyLocationStatus());
+                    } else {
+                        logger.severe("Error submitting version " + version.getId() + " due to conflict/error at Archive");
+                    }
+                    if (version.getArchivalCopyLocation() != null) {
                         setVersionTabList(resetVersionTabList());
                         this.setVersionTabListForPostLoad(getVersionTabList());
-                        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetversion.archive.inprogress"));
+                        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetversion.archive.success"));
+                    } else {
+                        JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
                     }
                 } catch (CommandException ex) {
                     logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
@@ -6224,85 +6208,41 @@ public class DatasetPage implements java.io.Serializable {
         return archivable;
     }
 
-    /** Method to decide if a 'Submit' button should be enabled for archiving a dataset version. */
-    public boolean isVersionArchivable(Long id) {
-        Boolean thisVersionArchivable = versionArchivable.get(id);
-        if (thisVersionArchivable == null) {
+    public boolean isVersionArchivable() {
+        if (versionArchivable == null) {
             // If this dataset isn't in an archivable collection return false
-            thisVersionArchivable = false;
-            boolean requiresEarlierVersionsToBeArchived = settingsWrapper.isTrueForKey(SettingsServiceBean.Key.ArchiveOnlyIfEarlierVersionsAreArchived, false);
+            versionArchivable = false;
             if (isArchivable()) {
-
+                boolean checkForArchivalCopy = false;
+                // Otherwise, we need to know if the archiver is single-version-only
+                // If it is, we have to check for an existing archived version to answer the
+                // question
                 String className = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ArchiverClassName, null);
                 if (className != null) {
                     try {
-                        DatasetVersion targetVersion = dataset.getVersions().stream()
-                                .filter(v -> v.getId().equals(id)).findFirst().orElse(null);
-                        if (requiresEarlierVersionsToBeArchived) {// Find the specific version by id
-                            // Check all prior versions to ensure they are successfully archived
-                            boolean allPriorVersionsArchived = true;
-                            boolean foundTarget = false;
-                            List<DatasetVersion> versions = dataset.getVersions();
+                        Class<?> clazz = Class.forName(className);
+                        Method m = clazz.getMethod("isSingleVersion", SettingsWrapper.class);
+                        Object[] params = { settingsWrapper };
+                        checkForArchivalCopy = (Boolean) m.invoke(null, params);
 
-                            for (DatasetVersion versionInLoop : versions) {
-                                // Once we find the target version, start checking subsequent versions (which are prior versions)
-                                if (foundTarget) {
-                                    // Check if this prior version has been successfully archived
-                                    String archivalStatus = versionInLoop.getArchivalCopyLocationStatus();
-                                    if (archivalStatus == null || !archivalStatus.equals(DatasetVersion.ARCHIVAL_STATUS_SUCCESS)) {
-                                        allPriorVersionsArchived = false;
-                                        break;
-                                    }
-                                }
-                                if (versionInLoop.equals(targetVersion)) {
-                                    foundTarget = true;
-                                }
-                            }
-
-                            if (allPriorVersionsArchived) {
-                                thisVersionArchivable = true;
-                                // This check has been passed, so we go on to check other conditions
-                            } else {
-                                // Store the false value and skip further checks
-                                versionArchivable.put(id, thisVersionArchivable);
-                                return thisVersionArchivable;
-                            }
-                        }
-                        // Otherwise, we need to know if the archiver is single-version-only
-                        // If it is, we have to check for an existing archived version to answer the
-                        // question
-                        if (checkForArchivalCopy == null) {
-                            //Only check once
-                            Class<?> clazz = Class.forName(className);
-                            Method m = clazz.getMethod("isSingleVersion", SettingsWrapper.class);
-                            Method m2 = clazz.getMethod("supportsDelete");
-                            Object[] params = { settingsWrapper };
-                            checkForArchivalCopy = (Boolean) m.invoke(null, params);
-                            supportsDelete = (Boolean) m2.invoke(null);
-                        }
                         if (checkForArchivalCopy) {
                             // If we have to check (single version archiving), we can't allow archiving if
                             // one version is already archived (or attempted - any non-null status)
-                            thisVersionArchivable = !isSomeVersionArchived();
+                            versionArchivable = !isSomeVersionArchived();
                         } else {
-                            // If we didn't find one that has had archiving run
-                            // on it, or archiving per version is supported and either
-                            // the status is null or the archiver can delete prior runs and status isn't success,
-                            // we can archive, so return true
-                            // Find the specific version by id
-                            String status = targetVersion.getArchivalCopyLocationStatus();
-                            thisVersionArchivable = (status == null) || ((!status.equals(DatasetVersion.ARCHIVAL_STATUS_SUCCESS) && (!status.equals(DatasetVersion.ARCHIVAL_STATUS_PENDING)) && supportsDelete));
+                            // If we allow multiple versions or didn't find one that has had archiving run
+                            // on it, we can archive, so return true
+                            versionArchivable = true;
                         }
                     } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
                             | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                        logger.warning("Failed to call methods on configured archiver class: " + className);
+                        logger.warning("Failed to call isSingleVersion on configured archiver class: " + className);
                         e.printStackTrace();
                     }
                 }
             }
-            versionArchivable.put(id, thisVersionArchivable);
         }
-        return thisVersionArchivable;
+        return versionArchivable;
     }
 
     public boolean isSomeVersionArchived() {
