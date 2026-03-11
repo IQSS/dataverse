@@ -936,9 +936,6 @@ div.dvnDifferanceTable .versionValue {
 }
 div[id$="versionsTable"] tbody {word-break:break-word;}
 
-.archive-submit-link {
-    display: block;
-}
 
 /* DATATABLE + DROPDOWN BUTTON + OVERFLOW VISIBLE */
 thead.ui-datatable-scrollable-theadclone {display:none}

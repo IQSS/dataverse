@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -9,21 +10,13 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DuraCloudContext;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DuraCloudHost;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DuraCloudPort;
-
-import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
-import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -56,8 +49,8 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
     }
 
     @Override
-    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, String dataciteXml, jakarta.json.JsonObject ore,
-            Map<String, JsonLDTerm> terms, ApiToken token, Map<String, String> requestedSettings) {
+    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token,
+            Map<String, String> requestedSettings) {
 
         String port = requestedSettings.get(DURACLOUD_PORT) != null ? requestedSettings.get(DURACLOUD_PORT)
                 : DEFAULT_PORT;
@@ -71,198 +64,173 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
             // This will make the archivalCopyLocation non-null after a failure which should
             // stop retries
             
-            // Use Duracloud client classes to login
-            ContentStoreManager storeManager = new ContentStoreManagerImpl(host, port, dpnContext);
-            Credential credential = new Credential(System.getProperty("duracloud.username"),
-                    System.getProperty("duracloud.password"));
-            storeManager.login(credential);
-            /*
-             * Aliases can contain upper case characters which are not allowed in space
-             * names. Similarly, aliases can contain '_' which isn't allowed in a space
-             * name. The line below replaces any upper case chars with lowercase and
-             * replaces any '_' with '.-' . The '-' after the dot assures we don't break the
-             * rule that
-             * "The last period in a aspace may not immediately be followed by a number".
-             * (Although we could check, it seems better to just add '.-' all the time.As
-             * written the replaceAll will also change any chars not valid in a spaceName to
-             * '.' which would avoid code breaking if the alias constraints change. That
-             * said, this line may map more than one alias to the same spaceName, e.g.
-             * "test" and "Test" aliases both map to the "test" space name. This does not
-             * break anything but does potentially put bags from more than one collection in
-             * the same space.
-             */
-            String spaceName = dataset.getOwner().getAlias().toLowerCase().replaceAll("[^a-z0-9-]", ".dcsafe");
-            //This archiver doesn't use the standard spaceName, but does use it to generate the file name
-            String baseFileName = getFileName(getSpaceName(dataset), dv);
-
-            ContentStore store;
-            // Set a failure status that will be updated if we succeed
-            JsonObjectBuilder statusObject = Json.createObjectBuilder();
-            statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
-            statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
-
-            Path tempBagFile = null;
-
-            try {
+            if (dataset.getLockFor(Reason.finalizePublication) == null
+                    && dataset.getLockFor(Reason.FileValidationFailed) == null) {
+                // Use Duracloud client classes to login
+                ContentStoreManager storeManager = new ContentStoreManagerImpl(host, port, dpnContext);
+                Credential credential = new Credential(System.getProperty("duracloud.username"),
+                        System.getProperty("duracloud.password"));
+                storeManager.login(credential);
                 /*
-                 * If there is a failure in creating a space, it is likely that a prior version
-                 * has not been fully processed (snapshot created, archiving completed and files
-                 * and space deleted - currently manual operations done at the project's
-                 * duracloud website)
+                 * Aliases can contain upper case characters which are not allowed in space
+                 * names. Similarly, aliases can contain '_' which isn't allowed in a space
+                 * name. The line below replaces any upper case chars with lowercase and
+                 * replaces any '_' with '.-' . The '-' after the dot assures we don't break the
+                 * rule that
+                 * "The last period in a aspace may not immediately be followed by a number".
+                 * (Although we could check, it seems better to just add '.-' all the time.As
+                 * written the replaceAll will also change any chars not valid in a spaceName to
+                 * '.' which would avoid code breaking if the alias constraints change. That
+                 * said, this line may map more than one alias to the same spaceName, e.g.
+                 * "test" and "Test" aliases both map to the "test" space name. This does not
+                 * break anything but does potentially put bags from more than one collection in
+                 * the same space.
                  */
-                store = storeManager.getPrimaryContentStore();
-                // Create space to copy archival files to
-                if (!store.spaceExists(spaceName)) {
-                    store.createSpace(spaceName);
-                }
+                String spaceName = dataset.getOwner().getAlias().toLowerCase().replaceAll("[^a-z0-9-]", ".dcsafe");
+                String baseFileName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
+                        .replace('.', '-').toLowerCase() + "_v" + dv.getFriendlyVersionNumber();
 
-                MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-                try (PipedInputStream dataciteIn = new PipedInputStream();
-                        DigestInputStream digestInputStream = new DigestInputStream(dataciteIn, messageDigest)) {
-                    // Add datacite.xml file
+                ContentStore store;
+                //Set a failure status that will be updated if we succeed
+                JsonObjectBuilder statusObject = Json.createObjectBuilder();
+                statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
+                statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
+                
+                try {
+                    /*
+                     * If there is a failure in creating a space, it is likely that a prior version
+                     * has not been fully processed (snapshot created, archiving completed and files
+                     * and space deleted - currently manual operations done at the project's
+                     * duracloud website)
+                     */
+                    store = storeManager.getPrimaryContentStore();
+                    // Create space to copy archival files to
+                    if (!store.spaceExists(spaceName)) {
+                        store.createSpace(spaceName);
+                    }
+                    String dataciteXml = getDataCiteXml(dv);
 
-                    Thread dcThread = new Thread(new Runnable() {
-                        public void run() {
-                            try (PipedOutputStream dataciteOut = new PipedOutputStream(dataciteIn)) {
+                    MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+                    try (PipedInputStream dataciteIn = new PipedInputStream();
+                            DigestInputStream digestInputStream = new DigestInputStream(dataciteIn, messageDigest)) {
+                        // Add datacite.xml file
 
-                                dataciteOut.write(dataciteXml.getBytes(StandardCharsets.UTF_8));
-                                dataciteOut.close();
-                                success = true;
-                            } catch (Exception e) {
-                                logger.severe("Error creating datacite.xml: " + e.getMessage());
-                                // TODO Auto-generated catch block
-                                e.printStackTrace();
+                        Thread dcThread = new Thread(new Runnable() {
+                            public void run() {
+                                try (PipedOutputStream dataciteOut = new PipedOutputStream(dataciteIn)) {
+
+                                    dataciteOut.write(dataciteXml.getBytes(StandardCharsets.UTF_8));
+                                    dataciteOut.close();
+                                    success=true;
+                                } catch (Exception e) {
+                                    logger.severe("Error creating datacite.xml: " + e.getMessage());
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                }
                             }
+                        }); 
+                        dcThread.start();
+                        // Have seen Pipe Closed errors for other archivers when used as a workflow
+                        // without this delay loop
+                        int i = 0;
+                        while (digestInputStream.available() <= 0 && i < 100) {
+                            Thread.sleep(10);
+                            i++;
                         }
-                    });
-                    dcThread.start();
-                    // Have seen Pipe Closed errors for other archivers when used as a workflow
-                    // without this delay loop
-                    int i = 0;
-                    while (digestInputStream.available() <= 0 && i < 100) {
-                        Thread.sleep(10);
-                        i++;
-                    }
-                    String checksum = store.addContent(spaceName, baseFileName + "_datacite.xml", digestInputStream,
-                            -1l, null, null, null);
-                    logger.fine("Content: datacite.xml added with checksum: " + checksum);
-                    dcThread.join();
-                    String localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
-                    if (!success || !checksum.equals(localchecksum)) {
-                        logger.severe("Failure on " + baseFileName);
-                        logger.severe(success ? checksum + " not equal to " + localchecksum
-                                : "failed to transfer to DuraCloud");
-                        try {
-                            store.deleteContent(spaceName, baseFileName + "_datacite.xml");
-                        } catch (ContentStoreException cse) {
-                            logger.warning(cse.getMessage());
-                        }
-                        return new Failure("Error in transferring DataCite.xml file to DuraCloud",
-                                "DuraCloud Submission Failure: incomplete metadata transfer");
-                    }
-
-                    // Store BagIt file
-                    success = false;
-                    String fileName = baseFileName + ".zip";
-
-                    // Add BagIt ZIP file
-                    // Although DuraCloud uses SHA-256 internally, it's API uses MD5 to verify the
-                    // transfer
-                    Path bagFile = null;
-
-                    tempBagFile = Files.createTempFile("dataverse-bag-", ".zip");
-                    logger.fine("Creating bag in temporary file: " + tempBagFile.toString());
-                    // Generate bag
-                    BagGenerator bagger = new BagGenerator(ore, dataciteXml, terms);
-                    bagger.setAuthenticationKey(token.getTokenString());
-
-                    // Generate bag to temporary file using the provided ore JsonObject
-                    try (FileOutputStream fos = new FileOutputStream(tempBagFile.toFile())) {
-                        if (!bagger.generateBag(fos)) {
-                            throw new IOException("Bag generation failed");
-                        }
-                    }
-
-                    // Store BagIt file
-                    long bagSize = Files.size(tempBagFile);
-                    logger.fine("Bag created successfully, size: " + bagSize + " bytes");
-
-                    // Now upload the bag file
-                    messageDigest = MessageDigest.getInstance("MD5");
-                    try (InputStream is = Files.newInputStream(bagFile);
-                            DigestInputStream bagDigestInputStream = new DigestInputStream(is, messageDigest)) {
-                        checksum = store.addContent(spaceName, fileName, bagDigestInputStream,
-                                bagFile.toFile().length(), "application/zip", null, null);
-                        localchecksum = Hex.encodeHexString(bagDigestInputStream.getMessageDigest().digest());
-
-                        if (checksum != null && checksum.equals(localchecksum)) {
-                            logger.fine("Content: " + fileName + " added with checksum: " + checksum);
-                            success = true;
-                        } else {
-                            logger.severe("Failure on " + fileName);
-                            logger.severe(checksum + " not equal to " + localchecksum);
+                        String checksum = store.addContent(spaceName, baseFileName + "_datacite.xml", digestInputStream,
+                                -1l, null, null, null);
+                        logger.fine("Content: datacite.xml added with checksum: " + checksum);
+                        dcThread.join();
+                        String localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
+                        if (!success || !checksum.equals(localchecksum)) {
+                            logger.severe("Failure on " + baseFileName);
+                            logger.severe(success ? checksum + " not equal to " + localchecksum : "failed to transfer to DuraCloud");
                             try {
-                                store.deleteContent(spaceName, fileName);
                                 store.deleteContent(spaceName, baseFileName + "_datacite.xml");
                             } catch (ContentStoreException cse) {
                                 logger.warning(cse.getMessage());
                             }
-                            return new Failure("Error in transferring Zip file to DuraCloud",
-                                    "DuraCloud Submission Failure: incomplete archive transfer");
+                            return new Failure("Error in transferring DataCite.xml file to DuraCloud",
+                                    "DuraCloud Submission Failure: incomplete metadata transfer");
                         }
+
+                        // Store BagIt file
+                        success = false;
+                        String fileName = baseFileName + ".zip";
+
+                        // Add BagIt ZIP file
+                        // Although DuraCloud uses SHA-256 internally, it's API uses MD5 to verify the
+                        // transfer
+
+                        messageDigest = MessageDigest.getInstance("MD5");
+                        try (PipedInputStream in = new PipedInputStream(100000);
+                                DigestInputStream digestInputStream2 = new DigestInputStream(in, messageDigest)) {
+                            Thread bagThread = startBagThread(dv, in, digestInputStream2, dataciteXml, token);
+                            checksum = store.addContent(spaceName, fileName, digestInputStream2, -1l, null, null, null);
+                            bagThread.join();
+                            if (success) {
+                                logger.fine("Content: " + fileName + " added with checksum: " + checksum);
+                                localchecksum = Hex.encodeHexString(digestInputStream2.getMessageDigest().digest());
+                            }
+                            if (!success || !checksum.equals(localchecksum)) {
+                                logger.severe("Failure on " + fileName);
+                                logger.severe(success ? checksum + " not equal to " + localchecksum : "failed to transfer to DuraCloud");
+                                try {
+                                    store.deleteContent(spaceName, fileName);
+                                    store.deleteContent(spaceName, baseFileName + "_datacite.xml");
+                                } catch (ContentStoreException cse) {
+                                    logger.warning(cse.getMessage());
+                                }
+                                return new Failure("Error in transferring Zip file to DuraCloud",
+                                        "DuraCloud Submission Failure: incomplete archive transfer");
+                            }
+                        }
+
+                        logger.fine("DuraCloud Submission step: Content Transferred");
+
+                        // Document the location of dataset archival copy location (actually the URL
+                        // where you can
+                        // view it as an admin)
+                        StringBuffer sb = new StringBuffer("https://");
+                        sb.append(host);
+                        if (!port.equals("443")) {
+                            sb.append(":" + port);
+                        }
+                        sb.append("/duradmin/spaces/sm/");
+                        sb.append(store.getStoreId());
+                        sb.append("/" + spaceName + "/" + fileName);
+                        statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
+                        statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, sb.toString());
+                        
+                        logger.fine("DuraCloud Submission step complete: " + sb.toString());
+                    } catch (ContentStoreException | IOException e) {
+                        // TODO Auto-generated catch block
+                        logger.warning(e.getMessage());
+                        e.printStackTrace();
+                        return new Failure("Error in transferring file to DuraCloud",
+                                "DuraCloud Submission Failure: archive file not transferred");
+                    } catch (InterruptedException e) {
+                        logger.warning(e.getLocalizedMessage());
+                        e.printStackTrace();
                     }
-
-                    logger.fine("DuraCloud Submission step: Content Transferred");
-
-                    // Document the location of dataset archival copy location (actually the URL
-                    // where you can
-                    // view it as an admin)
-                    StringBuffer sb = new StringBuffer("https://");
-                    sb.append(host);
-                    if (!port.equals(DEFAULT_PORT)) {
-                        sb.append(":" + port);
-                    }
-                    sb.append("/duradmin/spaces/sm/");
-                    sb.append(store.getStoreId());
-                    sb.append("/" + spaceName + "/" + fileName);
-                    statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
-                    statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, sb.toString());
-
-                    logger.fine("DuraCloud Submission step complete: " + sb.toString());
-                } catch (ContentStoreException | IOException e) {
-                    // TODO Auto-generated catch block
+                } catch (ContentStoreException e) {
                     logger.warning(e.getMessage());
                     e.printStackTrace();
-                    return new Failure("Error in transferring file to DuraCloud",
-                            "DuraCloud Submission Failure: archive file not transferred");
-                } catch (InterruptedException e) {
-                    logger.warning(e.getLocalizedMessage());
-                    e.printStackTrace();
-                }
-            } catch (ContentStoreException e) {
-                logger.warning(e.getMessage());
-                e.printStackTrace();
-                String mesg = "DuraCloud Submission Failure";
-                if (!(1 == dv.getVersion()) || !(0 == dv.getMinorVersionNumber())) {
-                    mesg = mesg + ": Prior Version archiving not yet complete?";
-                }
-                return new Failure("Unable to create DuraCloud space with name: " + baseFileName, mesg);
-            } catch (NoSuchAlgorithmException e) {
-                logger.severe("MD5 MessageDigest not available!");
-            } catch (Exception e) {
-                logger.warning(e.getLocalizedMessage());
-                e.printStackTrace();
-                return new Failure("Error in transferring file to DuraCloud",
-                        "DuraCloud Submission Failure: internal error");
-            } finally {
-                if (tempBagFile != null) {
-                    try {
-                        Files.deleteIfExists(tempBagFile);
-                    } catch (IOException e) {
-                        logger.warning("Failed to delete temporary bag file: " + tempBagFile + " : " + e.getMessage());
+                    String mesg = "DuraCloud Submission Failure";
+                    if (!(1 == dv.getVersion()) || !(0 == dv.getMinorVersionNumber())) {
+                        mesg = mesg + ": Prior Version archiving not yet complete?";
                     }
+                    return new Failure("Unable to create DuraCloud space with name: " + baseFileName, mesg);
+                } catch (NoSuchAlgorithmException e) {
+                    logger.severe("MD5 MessageDigest not available!");
                 }
-                dv.setArchivalCopyLocation(statusObject.build().toString());
+                finally {
+                    dv.setArchivalCopyLocation(statusObject.build().toString());
+                }
+            } else {
+                logger.warning(
+                        "DuraCloud Submision Workflow aborted: Dataset locked for finalizePublication, or because file validation failed");
+                return new Failure("Dataset locked");
             }
             return WorkflowStepResult.OK;
         } else {

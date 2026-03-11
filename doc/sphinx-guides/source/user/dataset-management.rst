@@ -750,7 +750,7 @@ Note that only one Preview URL (normal or with anonymized access) can be configu
 Embargoes
 =========
 
-A Dataverse instance may be configured to support file-level embargoes. Embargoes make file content inaccessible after a dataset version is published  - until the embargo end date. A reason for the embargo may be supplied when creating the embargo. A reason may be required in some Dataverse instances.
+A Dataverse instance may be configured to support file-level embargoes. Embargoes make file content inaccessible after a dataset version is published  - until the embargo end date. A reason for the embargo may be supplied when creating the embargo. A reason may be :ref:`required <dataverse.feature.require-embargo-reason>` in some Dataverse instances.
 This means that file previews and the ability to download files will be blocked. The effect is similar to when a file is restricted except that the embargo will end at the specified date without further action and during the embargo, requests for file access cannot be made. 
 Embargoes of files in a version 1.0 dataset may also affect the date shown in the dataset and file citations. The recommended practice is for the citation to reflect the date on which all embargoes on files in version 1.0 end. (Since Dataverse creates one persistent identifier per dataset and doesn't create new ones for each version, the publication of later versions, with or without embargoed files, does not affect the citation date.)
 

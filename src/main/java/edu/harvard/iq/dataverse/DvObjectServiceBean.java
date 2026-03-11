@@ -222,7 +222,6 @@ public class DvObjectServiceBean implements java.io.Serializable {
      * @todo DRY! Perhaps we should merge this with the older
      * updateContentIndexTime method.
      */
-    @TransactionAttribute(REQUIRES_NEW)
     public DvObject updatePermissionIndexTime(DvObject dvObject) {
         /**
          * @todo to avoid a possible OptimisticLockException, should we merge

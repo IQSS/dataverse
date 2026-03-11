@@ -87,7 +87,7 @@ public class BagIT {
                 .replace('.', '-').toLowerCase();
         // spacename: doi-10-5072-fk2-fosg5q
 
-        String pathToZip = bagitExportDir + "/" + spaceName + ".v1.0" + ".zip";
+        String pathToZip = bagitExportDir + "/" + spaceName + "v1.0" + ".zip";
 
         try {
             // give the bag time to generate
