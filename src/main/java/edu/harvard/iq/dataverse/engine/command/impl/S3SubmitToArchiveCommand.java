@@ -2,28 +2,24 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.S3ArchiverConfig;
 import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
-import edu.harvard.iq.dataverse.util.bagit.BagGenerator.FileEntry;
+import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.annotation.Resource;
@@ -32,7 +28,6 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 
-import org.apache.commons.compress.parallel.InputStreamSupplier;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 
@@ -43,25 +38,25 @@ import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3AsyncClientBuilder;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
-import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectAttributesRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectAttributesResponse;
+import software.amazon.awssdk.services.s3.model.ObjectAttributes;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import software.amazon.awssdk.services.s3.S3ClientBuilder;
+import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.http.async.SdkAsyncHttpClient;
 import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
 import software.amazon.awssdk.utils.StringUtils;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 import software.amazon.awssdk.transfer.s3.model.CompletedFileUpload;
-import software.amazon.awssdk.transfer.s3.model.CompletedUpload;
 import software.amazon.awssdk.transfer.s3.model.FileUpload;
-import software.amazon.awssdk.transfer.s3.model.Upload;
 import software.amazon.awssdk.transfer.s3.model.UploadFileRequest;
-import software.amazon.awssdk.transfer.s3.model.UploadRequest;
 
 @RequiredPermissions(Permission.PublishDataset)
 public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
@@ -75,24 +70,16 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
     private static final Config config = ConfigProvider.getConfig();
     protected S3AsyncClient s3 = null;
     private S3TransferManager tm = null;
-
+    private String spaceName = null;
     protected String bucketName = null;
 
     public S3SubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         super(aRequest, version);
     }
-    
-    public static boolean supportsDelete() {
-        return true;
-    }
-    @Override
-    public boolean canDelete() {
-        return supportsDelete();
-    }
 
     @Override
-    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, String dataciteXml, JsonObject ore,
-            Map<String, JsonLDTerm> terms, ApiToken token, Map<String, String> requestedSettings) {
+    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token,
+            Map<String, String> requestedSettings) {
         logger.fine("In S3SubmitToArchiveCommand...");
         JsonObject configObject = null;
 
@@ -111,163 +98,76 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
             JsonObjectBuilder statusObject = Json.createObjectBuilder();
             statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
             statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
-            ExecutorService executor = Executors.newCachedThreadPool();
-            
+
             try {
 
                 Dataset dataset = dv.getDataset();
-                spaceName = getSpaceName(dataset);
+                if (dataset.getLockFor(Reason.finalizePublication) == null) {
 
-                // Define keys for datacite.xml and bag file
-                String dcKey = spaceName + "/" + getDataCiteFileName(spaceName, dv) + ".xml";
-                String bagKey = spaceName + "/" + getFileName(spaceName, dv) + ".zip";
+                    spaceName = getSpaceName(dataset);
+                    String dataciteXml = getDataCiteXml(dv);
+                 // Add datacite.xml file
+                    String dcKey = spaceName + "/" + getDataCiteFileName(spaceName, dv) + ".xml";
 
-                // Check for and delete existing files for this version
-                logger.fine("Checking for existing files in archive...");
-
-                try {
-                    HeadObjectRequest headDcRequest = HeadObjectRequest.builder()
+                    PutObjectRequest putRequest = PutObjectRequest.builder()
                             .bucket(bucketName)
                             .key(dcKey)
                             .build();
 
-                    s3.headObject(headDcRequest).join();
+                    CompletableFuture<PutObjectResponse> putFuture = s3.putObject(putRequest, 
+                            AsyncRequestBody.fromString(dataciteXml, StandardCharsets.UTF_8));
 
-                    // If we get here, the object exists, so delete it
-                    logger.fine("Found existing datacite.xml, deleting: " + dcKey);
-                    DeleteObjectRequest deleteDcRequest = DeleteObjectRequest.builder()
-                            .bucket(bucketName)
-                            .key(dcKey)
-                            .build();
+                    // Wait for the put operation to complete
+                    PutObjectResponse putResponse = putFuture.join();
 
-                    CompletableFuture<DeleteObjectResponse> deleteDcFuture = s3.deleteObject(deleteDcRequest);
-                    DeleteObjectResponse deleteDcResponse = deleteDcFuture.join();
-
-                    if (deleteDcResponse.sdkHttpResponse().isSuccessful()) {
-                        logger.fine("Deleted existing datacite.xml");
-                    } else {
-                        logger.warning("Failed to delete existing datacite.xml: " + dcKey);
+                    if (!putResponse.sdkHttpResponse().isSuccessful()) {
+                        logger.warning("Could not write datacite xml to S3");
+                        return new Failure("S3 Archiver failed writing datacite xml file");
                     }
-                } catch (Exception e) {
-                    if (e.getCause() instanceof NoSuchKeyException) {
-                        logger.fine("No existing datacite.xml found");
-                    } else {
-                        logger.warning("Error checking/deleting existing datacite.xml: " + e.getMessage());
-                    }
-                }
 
-                try {
-                    HeadObjectRequest headBagRequest = HeadObjectRequest.builder()
-                            .bucket(bucketName)
-                            .key(bagKey)
-                            .build();
+                    // Store BagIt file
+                    String fileName = getFileName(spaceName, dv);
 
-                    s3.headObject(headBagRequest).join();
+                    String bagKey = spaceName + "/" + fileName + ".zip";
+                    // Add BagIt ZIP file
+                    // Google uses MD5 as one way to verify the
+                    // transfer
 
-                    // If we get here, the object exists, so delete it
-                    logger.fine("Found existing bag file, deleting: " + bagKey);
-                    DeleteObjectRequest deleteBagRequest = DeleteObjectRequest.builder()
-                            .bucket(bucketName)
-                            .key(bagKey)
-                            .build();
+                    // Generate bag
+                    BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
+                    bagger.setAuthenticationKey(token.getTokenString());
+                    if (bagger.generateBag(fileName, false)) {
+                        File bagFile = bagger.getBagFile(fileName);
 
-                    CompletableFuture<DeleteObjectResponse> deleteBagFuture = s3.deleteObject(deleteBagRequest);
-                    DeleteObjectResponse deleteBagResponse = deleteBagFuture.join();
+                        UploadFileRequest uploadFileRequest = UploadFileRequest.builder()
+                                .putObjectRequest(req -> req.bucket(bucketName).key(bagKey)).source(bagFile.toPath())
+                                .build();
 
-                    if (deleteBagResponse.sdkHttpResponse().isSuccessful()) {
-                        logger.fine("Deleted existing bag file");
-                    } else {
-                        logger.warning("Failed to delete existing bag file: " + bagKey);
-                    }
-                } catch (Exception e) {
-                    if (e.getCause() instanceof NoSuchKeyException) {
-                        logger.fine("No existing bag file found");
-                    } else {
-                        logger.warning("Error checking/deleting existing bag file: " + e.getMessage());
-                    }
-                }
+                        FileUpload fileUpload = tm.uploadFile(uploadFileRequest);
 
-                // Add datacite.xml file
-                PutObjectRequest putRequest = PutObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(dcKey)
-                        .build();
+                        CompletedFileUpload uploadResult = fileUpload.completionFuture().join();
 
-                CompletableFuture<PutObjectResponse> putFuture = s3.putObject(putRequest,
-                        AsyncRequestBody.fromString(dataciteXml, StandardCharsets.UTF_8));
+                        if (uploadResult.response().sdkHttpResponse().isSuccessful()) {
+                            logger.fine("S3 Submission step: Content Transferred");
 
-                // Wait for the put operation to complete
-                PutObjectResponse putResponse = putFuture.join();
-
-                if (!putResponse.sdkHttpResponse().isSuccessful()) {
-                    logger.warning("Could not write datacite xml to S3");
-                    return new Failure("S3 Archiver failed writing datacite xml file");
-                }
-
-                // Store BagIt file
-                String fileName = getFileName(spaceName, dv);
-
-                // Generate bag
-                BagGenerator bagger = new BagGenerator(ore, dataciteXml, terms);
-                bagger.setAuthenticationKey(token.getTokenString());
-                if (bagger.generateBag(fileName, false)) {
-                    File bagFile = bagger.getBagFile(fileName);
-
-                    UploadFileRequest uploadFileRequest = UploadFileRequest.builder()
-                            .putObjectRequest(req -> req.bucket(bucketName).key(bagKey)).source(bagFile.toPath())
-                            .build();
-
-                    FileUpload fileUpload = tm.uploadFile(uploadFileRequest);
-
-                    CompletedFileUpload uploadResult = fileUpload.completionFuture().join();
-
-                    if (uploadResult.response().sdkHttpResponse().isSuccessful()) {
-                        logger.fine("S3 Submission step: Content Transferred");
-
-                        List<FileEntry> bigFiles = bagger.getOversizedFiles();
-
-                        for (FileEntry entry : bigFiles) {
-                            String childPath = entry.getChildPath(entry.getChildTitle());
-                            String fileKey = spaceName + "/" + childPath;
-                            InputStreamSupplier supplier = bagger.getInputStreamSupplier(entry.getDataUrl());
-                            try (InputStream is = supplier.get()) {
-
-                                PutObjectRequest filePutRequest = PutObjectRequest.builder().bucket(bucketName)
-                                        .key(fileKey).build();
-
-                                UploadRequest uploadRequest = UploadRequest.builder().putObjectRequest(filePutRequest)
-                                        .requestBody(AsyncRequestBody.fromInputStream(is, entry.getSize(), executor))
-                                        .build();
-
-                                Upload upload = tm.upload(uploadRequest);
-                                CompletedUpload completedUpload = upload.completionFuture().join();
-
-                                if (completedUpload.response().sdkHttpResponse().isSuccessful()) {
-                                    logger.fine("Successfully uploaded oversized file: " + fileKey);
-                                } else {
-                                    logger.warning("Failed to upload oversized file: " + fileKey);
-                                    return new Failure("Error uploading oversized file to S3: " + fileKey);
-                                }
-                            } catch (IOException e) {
-                                logger.log(Level.WARNING, "Failed to get input stream for oversized file: " + fileKey,
-                                        e);
-                                return new Failure("Error getting input stream for oversized file: " + fileKey);
-                            }
+                            statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
+                            statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE,
+                                    String.format("https://%s.s3.amazonaws.com/%s", bucketName, bagKey));
+                        } else {
+                            logger.severe("Error sending file to S3: " + fileName);
+                            return new Failure("Error in transferring Bag file to S3",
+                                    "S3 Submission Failure: incomplete transfer");
                         }
-
-                        statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
-                        statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE,
-                                String.format("https://%s.s3.amazonaws.com/%s", bucketName, bagKey));
                     } else {
-                        logger.severe("Error sending file to S3: " + fileName);
-                        return new Failure("Error in transferring Bag file to S3",
-                                "S3 Submission Failure: incomplete transfer");
+                        logger.warning("Could not write local Bag file " + fileName);
+                        return new Failure("S3 Archiver fail writing temp local bag");
                     }
-                } else {
-                    logger.warning("Could not write local Bag file " + fileName);
-                    return new Failure("S3 Archiver fail writing temp local bag");
-                }
 
+                } else {
+                    logger.warning(
+                            "S3 Archiver Submision Workflow aborted: Dataset locked for publication/pidRegister");
+                    return new Failure("Dataset locked");
+                }
             } catch (Exception e) {
                 logger.warning(e.getLocalizedMessage());
                 e.printStackTrace();
@@ -275,7 +175,6 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
                         e.getLocalizedMessage() + ": check log for details");
 
             } finally {
-                executor.shutdown();
                 if (tm != null) {
                     tm.close();
                 }
@@ -284,8 +183,24 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
             return WorkflowStepResult.OK;
         } else {
             return new Failure(
-                "S3 Submission not configured - no \":S3ArchivalProfile\"  and/or \":S3ArchivalConfig\" or no bucket-name defined in config.");
+                    "S3 Submission not configured - no \":S3ArchivalProfile\"  and/or \":S3ArchivalConfig\" or no bucket-name defined in config.");
         }
+    }
+
+    protected String getDataCiteFileName(String spaceName, DatasetVersion dv) {
+        return spaceName + "_datacite.v" + dv.getFriendlyVersionNumber();
+    }
+
+    protected String getFileName(String spaceName, DatasetVersion dv) {
+        return spaceName + ".v" + dv.getFriendlyVersionNumber();
+    }
+
+    protected String getSpaceName(Dataset dataset) {
+        if (spaceName == null) {
+            spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-').replace('.', '-')
+                    .toLowerCase();
+        }
+        return spaceName;
     }
 
     private S3AsyncClient createClient(JsonObject configObject) {

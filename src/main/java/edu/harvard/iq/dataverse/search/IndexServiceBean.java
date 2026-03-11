@@ -165,9 +165,6 @@ public class IndexServiceBean {
     @EJB
     DatasetFieldServiceBean datasetFieldService;
 
-    @EJB
-    IndexServiceBean self;
-    
     @Inject
     DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
 
@@ -505,7 +502,7 @@ public class IndexServiceBean {
 
     public void indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         doIndexDataset(dataset, doNormalSolrDocCleanUp);
-        self.updateLastIndexedTime(dataset.getId());
+        updateLastIndexedTime(dataset.getId());
     }
     
     private void doIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
@@ -1866,15 +1863,15 @@ public class IndexServiceBean {
     }
 
     @Asynchronous
-    public void updateLastIndexedTime(Long id) {
+    private void updateLastIndexedTime(Long id) {
         // indexing is often in a transaction with update statements
         // if we flush on query (flush-mode auto), we want to prevent locking
         // -> update the dataset asynchronously in a new transaction
-        self.updateLastIndexedTimeInNewTransaction(id);
+        updateLastIndexedTimeInNewTransaction(id);
     }
 
     @TransactionAttribute(REQUIRES_NEW)
-    public void updateLastIndexedTimeInNewTransaction(Long id) {
+    private void updateLastIndexedTimeInNewTransaction(Long id) {
         /// Dataset updatedDataset =
         /// (Dataset)dvObjectService.updateContentIndexTime(dataset);
         /// updatedDataset = null;

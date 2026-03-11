@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -96,7 +95,18 @@ public class FileMetadataVersionsHelper {
     //TODO: this could use some refactoring to cut down on the number of for loops!
     private FileMetadata getPreviousFileMetadata(FileMetadata fileMetadata, DatasetVersion currentversion) {
         List<DataFile> allfiles = allRelatedFiles(fileMetadata);
-        DatasetVersion priorVersion = DatasetUtil.getPriorVersion(fileMetadata.getDatasetVersion());
+        boolean foundCurrent = false;
+        DatasetVersion priorVersion = null;
+        for (DatasetVersion versionLoop : fileMetadata.getDatasetVersion().getDataset().getVersions()) {
+            if (foundCurrent) {
+                priorVersion = versionLoop;
+                break;
+            }
+            if (versionLoop.equals(currentversion)) {
+                foundCurrent = true;
+            }
+
+        }
         if (priorVersion != null && priorVersion.getFileMetadatasSorted() != null) {
             for (FileMetadata fmdTest : priorVersion.getFileMetadatasSorted()) {
                 for (DataFile fileTest : allfiles) {
