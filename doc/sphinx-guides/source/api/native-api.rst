@@ -6424,7 +6424,7 @@ The fully expanded example above (without environment variables) looks like this
 Show Disclaimer for Publishing Datasets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The setting "PublishDatasetDisclaimerText", when set, will prevent a draft dataset from being published through the UI without the user acknowledging the disclaimer.
+The setting :ref:`:PublishDatasetDisclaimerText`, when set, will prevent a draft dataset from being published through the UI without the user acknowledging the disclaimer.
 
 .. note:: See :ref:`show-custom-popup-for-publishing-datasets` if the user acknowledgment is not required but you want the message to be displayed in the UI.
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
