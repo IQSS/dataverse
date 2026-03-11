@@ -30,7 +30,6 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 
 import java.io.*;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.FileHandler;
@@ -1157,45 +1156,5 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         em.flush();
     }
-    
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void setLastExportTimeInNewTransaction(Long datasetId, Date lastExportTime) {
-        try {
-            Dataset currentDataset = find(datasetId);
-            if (currentDataset != null) {
-                currentDataset.setLastExportTime(lastExportTime);
-                merge(currentDataset);
-            } else {
-                logger.log(Level.SEVERE, "Could not find Dataset with id={0} to retry persisting archival copy location after OptimisticLockException.", datasetId);
-            }
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Failed to retry export after OptimisticLockException for dataset id=" + datasetId, e);
-        }
-    }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void updateIndexingAndExportTimes(Dataset dataset) {
-        Query timestampQuery = em.createNativeQuery(
-                "SELECT dvo.indextime, dvo.permissionindextime, d.lastexporttime " +
-                "FROM dvobject dvo, dataset d WHERE dvo.id = d.id AND dvo.id = ?");
-            timestampQuery.setParameter(1, dataset.getId());
-
-            Object[] timestamps = (Object[]) timestampQuery.getSingleResult();
-
-            // Cast and apply the fresh timestamps to the current dataset
-            Timestamp freshIndexTime = (Timestamp) timestamps[0];
-            Timestamp freshPermissionIndexTime = (Timestamp) timestamps[1];
-            Timestamp freshLastExportTime = (Timestamp) timestamps[2];
-
-
-            logger.fine("Updating index time from " + dataset.getIndexTime() + " to " + freshIndexTime);
-            dataset.setIndexTime(freshIndexTime);
-
-            logger.fine("Updating permission index time from " + dataset.getPermissionIndexTime() + " to " + freshPermissionIndexTime);
-            dataset.setPermissionIndexTime(freshPermissionIndexTime);
-
-            logger.fine("Updating last export time from " + dataset.getLastExportTime() + " to " + freshLastExportTime);
-            dataset.setLastExportTime(freshLastExportTime);
-        
-    }
 }

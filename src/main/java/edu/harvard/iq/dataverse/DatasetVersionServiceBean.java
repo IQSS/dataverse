@@ -28,14 +28,11 @@ import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
-import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
@@ -1335,25 +1332,5 @@ w
                 .where(predicates.toArray(new Predicate[0]));
 
         return em.createQuery(cq).getSingleResult();
-    }
-
-
-    /**
-     * Update the archival copy location for a specific version of a dataset.
-     * Archiving can be long-running and other parallel updates to the datasetversion have likely occurred
-     * so this method will just re-find the version rather than risking an
-     * OptimisticLockException and then having to retry in yet another transaction (since the OLE rolls this one back).
-     *
-     * @param dv
-     *            The dataset version whose archival copy location we want to update. Must not be {@code null}.
-     */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void persistArchivalCopyLocation(DatasetVersion dv) {
-        DatasetVersion currentVersion = find(dv.getId());
-        if (currentVersion != null) {
-            currentVersion.setArchivalCopyLocation(dv.getArchivalCopyLocation());
-        } else {
-            logger.log(Level.SEVERE, "Could not find DatasetVersion with id={0} to retry persisting archival copy location after OptimisticLockException.", dv.getId());
-        }
     }
 }
