@@ -193,6 +193,14 @@ We also recommend you ensure you followed all update instructions from the past 
 
    `sudo -u dataverse cp -r /usr/local/payara6/glassfish/domains/domain1/docroot/logos /usr/local/payara7/glassfish/domains/domain1/docroot`
 
+1. Copy sitemap from Payara 6 to Payara 7.
+
+   It's a good practice to set up a sitemap, but you can skip this step if you don't want one.
+   
+   If you already have a cron job in place as [recommended](https://guides.dataverse.org/en/6.10/installation/config.html#creating-a-sitemap-and-submitting-it-to-search-engines) by the guides, you could run that cron job manually as a final step, but we recommend copying over your existing sitemap.
+
+   `sudo -u dataverse cp -r /usr/local/payara6/glassfish/domains/domain1/docroot/sitemap /usr/local/payara7/glassfish/domains/domain1/docroot`
+
 1. If you are using Make Data Count (MDC), make various updates.
 
    Your `:MDCLogPath` database setting might be pointing to a Payara 6 directory such as `/usr/local/payara6/glassfish/domains/domain1/logs`. If so, use the settings API to change it to point to the payara7 location (once Dataverse is running again):
