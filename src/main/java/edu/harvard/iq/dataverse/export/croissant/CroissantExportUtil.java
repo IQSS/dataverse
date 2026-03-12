@@ -31,7 +31,7 @@ public class CroissantExportUtil {
             {
                 "@context": {
                     "@language": "en",
-                    "@vocab": "https://schema.org/",
+                    "@vocab": "http://schema.org/",
                     "citeAs": "cr:citeAs",
                     "column": "cr:column",
                     "conformsTo": "dct:conformsTo",
@@ -69,7 +69,7 @@ public class CroissantExportUtil {
                     "repeated": "cr:repeated",
                     "replace": "cr:replace",
                     "samplingRate": "cr:samplingRate",
-                    "sc": "https://schema.org/",
+                    "sc": "http://schema.org/",
                     "separator": "cr:separator",
                     "source": "cr:source",
                     "subField": "cr:subField",
