@@ -16,6 +16,7 @@
             "@type": "@vocab"
         },
         "dct": "http://purl.org/dc/terms/",
+        "ddi-stats": "http://rdf-vocabulary.ddialliance.org/cv/SummaryStatisticType/2.1.2/",
         "examples": {
             "@id": "cr:examples",
             "@type": "@json"
@@ -114,6 +115,12 @@
     "recordSet": [
         {
             "@type": "cr:RecordSet",
+            "cr:annotation": {
+                "@type": "cr:Field",
+                "name": "data/stata13-auto.dta/count",
+                "value": 74,
+                "dataType": "http://www.wikidata.org/entity/Q4049983"
+            },
             "field": [
                 {
                     "@type": "cr:Field",
@@ -143,7 +150,52 @@
                         "extract": {
                             "column": "price"
                         }
-                    }
+                    },
+                    "annotation": [
+                        {
+                            "@id": "data/stata13-auto.dta/price/ArithmeticMean",
+                            "value": "6165.256756756757",
+                            "dataType": "ddi-stats:7975ed0"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/price/Median",
+                            "value": "5006.5",
+                            "dataType": "ddi-stats:66851a3",
+                            "equivalentProperty": "sc:median"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/price/Mode",
+                            "value": ".",
+                            "dataType": "ddi-stats:650be61"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/price/Minimum",
+                            "value": "3291.0",
+                            "dataType": "ddi-stats:a1d0ec6",
+                            "equivalentProperty": "sc:minValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/price/Maximum",
+                            "value": "15906.0",
+                            "dataType": "ddi-stats:8321e79",
+                            "equivalentProperty": "sc:maxValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/price/StandardDeviation",
+                            "value": "2949.4958847689186",
+                            "dataType": "ddi-stats:690ab50"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/price/ValidCases",
+                            "value": "74.0",
+                            "dataType": "ddi-stats:c646dd8"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/price/InvalidCases",
+                            "value": "0.0",
+                            "dataType": "ddi-stats:6459c62"
+                        }
+                    ]
                 },
                 {
                     "@type": "cr:Field",
@@ -158,7 +210,52 @@
                         "extract": {
                             "column": "mpg"
                         }
-                    }
+                    },
+                    "annotation": [
+                        {
+                            "@id": "data/stata13-auto.dta/mpg/ArithmeticMean",
+                            "value": "21.2972972972973",
+                            "dataType": "ddi-stats:7975ed0"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/mpg/Median",
+                            "value": "20.0",
+                            "dataType": "ddi-stats:66851a3",
+                            "equivalentProperty": "sc:median"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/mpg/Mode",
+                            "value": ".",
+                            "dataType": "ddi-stats:650be61"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/mpg/Minimum",
+                            "value": "12.0",
+                            "dataType": "ddi-stats:a1d0ec6",
+                            "equivalentProperty": "sc:minValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/mpg/Maximum",
+                            "value": "41.0",
+                            "dataType": "ddi-stats:8321e79",
+                            "equivalentProperty": "sc:maxValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/mpg/StandardDeviation",
+                            "value": "5.785503209735141",
+                            "dataType": "ddi-stats:690ab50"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/mpg/ValidCases",
+                            "value": "74.0",
+                            "dataType": "ddi-stats:c646dd8"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/mpg/InvalidCases",
+                            "value": "0.0",
+                            "dataType": "ddi-stats:6459c62"
+                        }
+                    ]
                 },
                 {
                     "@type": "cr:Field",
@@ -173,7 +270,52 @@
                         "extract": {
                             "column": "rep78"
                         }
-                    }
+                    },
+                    "annotation": [
+                        {
+                            "@id": "data/stata13-auto.dta/rep78/ArithmeticMean",
+                            "value": "3.4057971014492754",
+                            "dataType": "ddi-stats:7975ed0"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/rep78/Median",
+                            "value": "3.0",
+                            "dataType": "ddi-stats:66851a3",
+                            "equivalentProperty": "sc:median"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/rep78/Mode",
+                            "value": ".",
+                            "dataType": "ddi-stats:650be61"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/rep78/Minimum",
+                            "value": "1.0",
+                            "dataType": "ddi-stats:a1d0ec6",
+                            "equivalentProperty": "sc:minValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/rep78/Maximum",
+                            "value": "5.0",
+                            "dataType": "ddi-stats:8321e79",
+                            "equivalentProperty": "sc:maxValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/rep78/StandardDeviation",
+                            "value": "0.989932270109041",
+                            "dataType": "ddi-stats:690ab50"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/rep78/ValidCases",
+                            "value": "69.0",
+                            "dataType": "ddi-stats:c646dd8"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/rep78/InvalidCases",
+                            "value": "5.0",
+                            "dataType": "ddi-stats:6459c62"
+                        }
+                    ]
                 },
                 {
                     "@type": "cr:Field",
@@ -188,7 +330,52 @@
                         "extract": {
                             "column": "headroom"
                         }
-                    }
+                    },
+                    "annotation": [
+                        {
+                            "@id": "data/stata13-auto.dta/headroom/ArithmeticMean",
+                            "value": "2.993243243243243",
+                            "dataType": "ddi-stats:7975ed0"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/headroom/Median",
+                            "value": "3.0",
+                            "dataType": "ddi-stats:66851a3",
+                            "equivalentProperty": "sc:median"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/headroom/Mode",
+                            "value": ".",
+                            "dataType": "ddi-stats:650be61"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/headroom/Minimum",
+                            "value": "1.5",
+                            "dataType": "ddi-stats:a1d0ec6",
+                            "equivalentProperty": "sc:minValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/headroom/Maximum",
+                            "value": "5.0",
+                            "dataType": "ddi-stats:8321e79",
+                            "equivalentProperty": "sc:maxValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/headroom/StandardDeviation",
+                            "value": "0.845994766828771",
+                            "dataType": "ddi-stats:690ab50"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/headroom/ValidCases",
+                            "value": "74.0",
+                            "dataType": "ddi-stats:c646dd8"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/headroom/InvalidCases",
+                            "value": "0.0",
+                            "dataType": "ddi-stats:6459c62"
+                        }
+                    ]
                 },
                 {
                     "@type": "cr:Field",
@@ -203,7 +390,52 @@
                         "extract": {
                             "column": "trunk"
                         }
-                    }
+                    },
+                    "annotation": [
+                        {
+                            "@id": "data/stata13-auto.dta/trunk/ArithmeticMean",
+                            "value": "13.756756756756756",
+                            "dataType": "ddi-stats:7975ed0"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/trunk/Median",
+                            "value": "14.0",
+                            "dataType": "ddi-stats:66851a3",
+                            "equivalentProperty": "sc:median"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/trunk/Mode",
+                            "value": ".",
+                            "dataType": "ddi-stats:650be61"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/trunk/Minimum",
+                            "value": "5.0",
+                            "dataType": "ddi-stats:a1d0ec6",
+                            "equivalentProperty": "sc:minValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/trunk/Maximum",
+                            "value": "23.0",
+                            "dataType": "ddi-stats:8321e79",
+                            "equivalentProperty": "sc:maxValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/trunk/StandardDeviation",
+                            "value": "4.277404189173201",
+                            "dataType": "ddi-stats:690ab50"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/trunk/ValidCases",
+                            "value": "74.0",
+                            "dataType": "ddi-stats:c646dd8"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/trunk/InvalidCases",
+                            "value": "0.0",
+                            "dataType": "ddi-stats:6459c62"
+                        }
+                    ]
                 },
                 {
                     "@type": "cr:Field",
@@ -218,7 +450,52 @@
                         "extract": {
                             "column": "weight"
                         }
-                    }
+                    },
+                    "annotation": [
+                        {
+                            "@id": "data/stata13-auto.dta/weight/ArithmeticMean",
+                            "value": "3019.459459459459",
+                            "dataType": "ddi-stats:7975ed0"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/weight/Median",
+                            "value": "3190.0",
+                            "dataType": "ddi-stats:66851a3",
+                            "equivalentProperty": "sc:median"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/weight/Mode",
+                            "value": ".",
+                            "dataType": "ddi-stats:650be61"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/weight/Minimum",
+                            "value": "1760.0",
+                            "dataType": "ddi-stats:a1d0ec6",
+                            "equivalentProperty": "sc:minValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/weight/Maximum",
+                            "value": "4840.0",
+                            "dataType": "ddi-stats:8321e79",
+                            "equivalentProperty": "sc:maxValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/weight/StandardDeviation",
+                            "value": "777.1935671373664",
+                            "dataType": "ddi-stats:690ab50"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/weight/ValidCases",
+                            "value": "74.0",
+                            "dataType": "ddi-stats:c646dd8"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/weight/InvalidCases",
+                            "value": "0.0",
+                            "dataType": "ddi-stats:6459c62"
+                        }
+                    ]
                 },
                 {
                     "@type": "cr:Field",
@@ -233,7 +510,52 @@
                         "extract": {
                             "column": "length"
                         }
-                    }
+                    },
+                    "annotation": [
+                        {
+                            "@id": "data/stata13-auto.dta/length/ArithmeticMean",
+                            "value": "187.93243243243245",
+                            "dataType": "ddi-stats:7975ed0"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/length/Median",
+                            "value": "192.5",
+                            "dataType": "ddi-stats:66851a3",
+                            "equivalentProperty": "sc:median"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/length/Mode",
+                            "value": ".",
+                            "dataType": "ddi-stats:650be61"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/length/Minimum",
+                            "value": "142.0",
+                            "dataType": "ddi-stats:a1d0ec6",
+                            "equivalentProperty": "sc:minValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/length/Maximum",
+                            "value": "233.0",
+                            "dataType": "ddi-stats:8321e79",
+                            "equivalentProperty": "sc:maxValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/length/StandardDeviation",
+                            "value": "22.266339902021585",
+                            "dataType": "ddi-stats:690ab50"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/length/ValidCases",
+                            "value": "74.0",
+                            "dataType": "ddi-stats:c646dd8"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/length/InvalidCases",
+                            "value": "0.0",
+                            "dataType": "ddi-stats:6459c62"
+                        }
+                    ]
                 },
                 {
                     "@type": "cr:Field",
@@ -248,7 +570,52 @@
                         "extract": {
                             "column": "turn"
                         }
-                    }
+                    },
+                    "annotation": [
+                        {
+                            "@id": "data/stata13-auto.dta/turn/ArithmeticMean",
+                            "value": "39.648648648648646",
+                            "dataType": "ddi-stats:7975ed0"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/turn/Median",
+                            "value": "40.0",
+                            "dataType": "ddi-stats:66851a3",
+                            "equivalentProperty": "sc:median"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/turn/Mode",
+                            "value": ".",
+                            "dataType": "ddi-stats:650be61"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/turn/Minimum",
+                            "value": "31.0",
+                            "dataType": "ddi-stats:a1d0ec6",
+                            "equivalentProperty": "sc:minValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/turn/Maximum",
+                            "value": "51.0",
+                            "dataType": "ddi-stats:8321e79",
+                            "equivalentProperty": "sc:maxValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/turn/StandardDeviation",
+                            "value": "4.399353727233908",
+                            "dataType": "ddi-stats:690ab50"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/turn/ValidCases",
+                            "value": "74.0",
+                            "dataType": "ddi-stats:c646dd8"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/turn/InvalidCases",
+                            "value": "0.0",
+                            "dataType": "ddi-stats:6459c62"
+                        }
+                    ]
                 },
                 {
                     "@type": "cr:Field",
@@ -263,7 +630,52 @@
                         "extract": {
                             "column": "displacement"
                         }
-                    }
+                    },
+                    "annotation": [
+                        {
+                            "@id": "data/stata13-auto.dta/displacement/ArithmeticMean",
+                            "value": "197.2972972972973",
+                            "dataType": "ddi-stats:7975ed0"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/displacement/Median",
+                            "value": "196.0",
+                            "dataType": "ddi-stats:66851a3",
+                            "equivalentProperty": "sc:median"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/displacement/Mode",
+                            "value": ".",
+                            "dataType": "ddi-stats:650be61"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/displacement/Minimum",
+                            "value": "79.0",
+                            "dataType": "ddi-stats:a1d0ec6",
+                            "equivalentProperty": "sc:minValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/displacement/Maximum",
+                            "value": "425.0",
+                            "dataType": "ddi-stats:8321e79",
+                            "equivalentProperty": "sc:maxValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/displacement/StandardDeviation",
+                            "value": "91.83721896440396",
+                            "dataType": "ddi-stats:690ab50"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/displacement/ValidCases",
+                            "value": "74.0",
+                            "dataType": "ddi-stats:c646dd8"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/displacement/InvalidCases",
+                            "value": "0.0",
+                            "dataType": "ddi-stats:6459c62"
+                        }
+                    ]
                 },
                 {
                     "@type": "cr:Field",
@@ -278,7 +690,52 @@
                         "extract": {
                             "column": "gear_ratio"
                         }
-                    }
+                    },
+                    "annotation": [
+                        {
+                            "@id": "data/stata13-auto.dta/gear_ratio/ArithmeticMean",
+                            "value": "3.0148648667979883",
+                            "dataType": "ddi-stats:7975ed0"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/gear_ratio/Median",
+                            "value": "2.9550000429153442",
+                            "dataType": "ddi-stats:66851a3",
+                            "equivalentProperty": "sc:median"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/gear_ratio/Mode",
+                            "value": ".",
+                            "dataType": "ddi-stats:650be61"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/gear_ratio/Minimum",
+                            "value": "2.190000057220459",
+                            "dataType": "ddi-stats:a1d0ec6",
+                            "equivalentProperty": "sc:minValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/gear_ratio/Maximum",
+                            "value": "3.890000104904175",
+                            "dataType": "ddi-stats:8321e79",
+                            "equivalentProperty": "sc:maxValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/gear_ratio/StandardDeviation",
+                            "value": "0.45628709670763035",
+                            "dataType": "ddi-stats:690ab50"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/gear_ratio/ValidCases",
+                            "value": "74.0",
+                            "dataType": "ddi-stats:c646dd8"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/gear_ratio/InvalidCases",
+                            "value": "0.0",
+                            "dataType": "ddi-stats:6459c62"
+                        }
+                    ]
                 },
                 {
                     "@type": "cr:Field",
@@ -293,7 +750,52 @@
                         "extract": {
                             "column": "foreign"
                         }
-                    }
+                    },
+                    "annotation": [
+                        {
+                            "@id": "data/stata13-auto.dta/foreign/ArithmeticMean",
+                            "value": "0.2972972972972975",
+                            "dataType": "ddi-stats:7975ed0"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/foreign/Median",
+                            "value": "0.0",
+                            "dataType": "ddi-stats:66851a3",
+                            "equivalentProperty": "sc:median"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/foreign/Mode",
+                            "value": ".",
+                            "dataType": "ddi-stats:650be61"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/foreign/Minimum",
+                            "value": "0.0",
+                            "dataType": "ddi-stats:a1d0ec6",
+                            "equivalentProperty": "sc:minValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/foreign/Maximum",
+                            "value": "1.0",
+                            "dataType": "ddi-stats:8321e79",
+                            "equivalentProperty": "sc:maxValue"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/foreign/StandardDeviation",
+                            "value": "0.46018845840901884",
+                            "dataType": "ddi-stats:690ab50"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/foreign/ValidCases",
+                            "value": "74.0",
+                            "dataType": "ddi-stats:c646dd8"
+                        },
+                        {
+                            "@id": "data/stata13-auto.dta/foreign/InvalidCases",
+                            "value": "0.0",
+                            "dataType": "ddi-stats:6459c62"
+                        }
+                    ]
                 }
             ]
         }

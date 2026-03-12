@@ -16,6 +16,7 @@
             "@type": "@vocab"
         },
         "dct": "http://purl.org/dc/terms/",
+        "ddi-stats": "http://rdf-vocabulary.ddialliance.org/cv/SummaryStatisticType/2.1.2/",
         "examples": {
             "@id": "cr:examples",
             "@type": "@json"
