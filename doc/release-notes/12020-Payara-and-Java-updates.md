@@ -46,7 +46,7 @@ Java 21 is now required to run Dataverse. Solr can run under Java 17 or Java 21 
 
 If you are running Payara as a non-root user (and you should be!), **remember not to execute the commands below as root**. Use `sudo` to change to that user first. For example, `sudo -i -u dataverse` if `dataverse` is your dedicated application user.
 
-The steps below reuse your existing domain directory with the new distribution of Payara. You may also want to review the Payara upgrade instructions as it could be helpful during any troubleshooting:
+The steps below involve carefully transferring your configuration settings from your existing Payara 6 domain directory into the brand new domain from the Payara 7 distribution. You may also want to review the Payara upgrade instructions as it could be helpful during any troubleshooting:
 [Payara Release Notes](https://docs.payara.fish/community/docs/Release%20Notes/Release%20Notes%207.2026.2.html).
 We also recommend you ensure you followed all update instructions from the past releases regarding Payara.
 (The most recent Payara update was for [Dataverse 6.9](https://github.com/IQSS/dataverse/releases/tag/v6.9).)
