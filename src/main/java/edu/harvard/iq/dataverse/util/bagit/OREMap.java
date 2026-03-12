@@ -49,7 +49,7 @@ public class OREMap {
     public static final String NAME = "OREMap";
     
     //NOTE: Update this value whenever the output of this class is changed
-    private static final String DATAVERSE_ORE_FORMAT_VERSION = "Dataverse OREMap Format v1.0.1";
+    private static final String DATAVERSE_ORE_FORMAT_VERSION = "Dataverse OREMap Format v1.0.2";
     //v1.0.1 - added versionNote
     private static final String DATAVERSE_SOFTWARE_NAME = "Dataverse";
     private static final String DATAVERSE_SOFTWARE_URL = "https://github.com/iqss/dataverse";
@@ -130,7 +130,8 @@ public class OREMap {
         if(vs.equals(VersionState.DEACCESSIONED)) {
             JsonObjectBuilder deaccBuilder = Json.createObjectBuilder();
             deaccBuilder.add(JsonLDTerm.schemaOrg("name").getLabel(), vs.name());
-            deaccBuilder.add(JsonLDTerm.DVCore("reason").getLabel(), version.getDeaccessionNote());
+            // Reason is supposed to not be null, but historically this has not been enforced (in the API)
+            addIfNotNull(deaccBuilder, JsonLDTerm.DVCore("reason"), version.getDeaccessionNote());
             addIfNotNull(deaccBuilder, JsonLDTerm.DVCore("forwardUrl"), version.getDeaccessionLink());
             aggBuilder.add(JsonLDTerm.schemaOrg("creativeWorkStatus").getLabel(), deaccBuilder);
             
@@ -280,7 +281,7 @@ public class OREMap {
                 JsonObject checksum = null;
                 // Add checksum. RDA recommends SHA-512
                 if (df.getChecksumType() != null && df.getChecksumValue() != null) {
-                    checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toString())
+                    checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toUri())
                             .add("@value", df.getChecksumValue()).build();
                     aggRes.add(JsonLDTerm.checksum.getLabel(), checksum);
                 }
@@ -505,11 +506,16 @@ public class OREMap {
                 for (String prefix : context.keySet()) {
                     localContext.putIfAbsent(prefix, context.getString(prefix));
                 }
-                JsonObjectBuilder job = Json.createObjectBuilder(datasetFieldService.getExternalVocabularyValue(val));
-                job.add("@id", val);
-                JsonObject extVal = job.build();
-                logger.fine("Adding: " + extVal);
-                vals.add(extVal);
+                JsonObject cachedValue = datasetFieldService.getExternalVocabularyValue(val);
+                if (cachedValue != null) {
+                    JsonObjectBuilder job = Json.createObjectBuilder(cachedValue);
+                    job.add("@id", val);
+                    JsonObject extVal = job.build();
+                    logger.fine("Adding: " + extVal);
+                    vals.add(extVal);
+                } else {
+                    vals.add(val);
+                }
             } else {
                 vals.add(val);
             }
