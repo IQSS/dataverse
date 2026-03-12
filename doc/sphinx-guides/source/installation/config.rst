@@ -2259,9 +2259,21 @@ These archival Bags include all of the files and metadata in a given dataset ver
 
 The Dataverse Software offers an internal archive workflow which may be configured as a PostPublication workflow via an admin API call to manually submit previously published Datasets and prior versions to a configured archive such as Chronopolis. The workflow creates a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse Software web interface.
 
+The size of the zipped archival Bag can be limited, and files that don't fit within that limit can either be transferred separately (placed so that they are correctly positioned according to the BagIt specification when the zipped bag in unzipped in place) or just referenced for later download (using the BagIt concept of a 'holey' bag with a list of files in a ``fetch.txt`` file) can now be configured for all archivers. These settings allow for managing large datasets by excluding files over a certain size or total data size, which can be useful for archivers with size limitations or to reduce transfer times. See the :ref:`dataverse.bagit.zip.max-file-size`, :ref:`dataverse.bagit.zip.max-data-size`, and :ref:`dataverse.bagit.zip.holey` JVM options for more details.  
+
 At present, archiving classes include the DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, GoogleCloudSubmitToArchive, and S3SubmitToArchiveCommand , which all extend the AbstractSubmitToArchiveCommand and use the configurable mechanisms discussed below. (A DRSSubmitToArchiveCommand, which works with Harvard's DRS also exists and, while specific to DRS, is a useful example of how Archivers can support single-version-only semantics and support archiving only from specified collections (with collection specific parameters)). 
 
 All current options support the :ref:`Archival Status API` calls and the same status is available in the dataset page version table (for contributors/those who could view the unpublished dataset, with more detail available to superusers).
+
+Two settings that can be used with all current Archivers are:
+
+- \:BagGeneratorThreads - the number of threads to use when adding data files to the zipped bag. The default is 2. Values of 4 or more may increase performance on larger machines but may cause problems if file access is throttled
+- \:ArchiveOnlyIfEarlierVersionsAreArchived - when true, requires dataset versions to be archived in order by confirming that all prior versions have been successfully archived before allowing a new version to be archived. Default is false 
+
+These must be included in the \:ArchiverSettings for the Archiver to work
+ 
+Archival Bags are created per dataset version. By default, if a version is republished (via the superuser-only 'Update Current Version' publication option in the UI/API), a new archival bag is not created for the version.
+If the archiver used is capable of deleting existing bags (Google, S3, and File Archivers) superusers can trigger a manual update of the archival bag, and, if the :ref:`dataverse.bagit.archive-on-version-update` flag is set to true, this will be done automatically when 'Update Current Version' is used.
 
 .. _Duracloud Configuration:
 
@@ -3715,6 +3727,14 @@ The email for your institution that you'd like to appear in bag-info.txt. See :r
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_BAGIT_SOURCEORG_EMAIL``.
 
+.. _dataverse.bagit.archive-on-version-update:
+
+dataverse.bagit.archive-on-version-update
++++++++++++++++++++++++++++++++++++++++++
+
+Indicates whether archival bag creation should be triggered (if configured) when a version is updated and was already successfully archived,
+i.e via the Update-Current-Version publication option. Setting the flag true only works if the archiver being used supports deleting existing archival bags.
+
 .. _dataverse.files.globus-monitoring-server:
 
 dataverse.files.globus-monitoring-server
@@ -3876,6 +3896,21 @@ When Dataverse receives an LDN message conforming to the COAR Notify Relationshi
 This can instead be restricted to only superusers who can publish the dataset using this option.
 
 Example: ``dataverse.coar-notify.relationship-announcement.notify-superusers-only=true``
+
+.. _dataverse.bagit.zip.holey:
+
+``dataverse.bagit.zip.holey``
+  A boolean that, if true, will cause the BagIt archiver to create a "holey" bag. In a holey bag, files that are not included in the bag are listed in the ``fetch.txt`` file with a URL from which they can be downloaded. This is used in conjunction with ``dataverse.bagit.zip.max-file-size`` and/or ``dataverse.bagit.zip.max-data-size``. Default: false.
+
+.. _dataverse.bagit.zip.max-data-size:
+
+``dataverse.bagit.zip.max-data-size``
+  The maximum total (uncompressed) size of data files (in bytes) to include in a BagIt zip archive. If the total size of the dataset files exceeds this limit, files will be excluded from the zipped bag (starting from the largest) until the total size is under the limit. Excluded files will be handled as defined by ``dataverse.bagit.zip.holey`` - just listed if that setting is true or being transferred separately and placed next to the zipped bag. When not set, there is no limit.
+
+.. _dataverse.bagit.zip.max-file-size:
+
+``dataverse.bagit.zip.max-file-size``
+  The maximum (uncompressed) size of a single file (in bytes) to include in a BagIt zip archive. Any file larger than this will be excluded. Excluded files will be handled as defined by ``dataverse.bagit.zip.holey`` - just listed if that setting is true or being transferred separately and placed next to the zipped bag. When not set, there is no limit.
 
 .. _feature-flags:
 
@@ -5378,6 +5413,11 @@ This setting specifies which storage system to use by identifying the particular
 
 For examples, see the specific configuration above in :ref:`BagIt Export`.
  
+:ArchiveOnlyIfEarlierVersionsAreArchived
+++++++++++++++++++++++++++++++++++++++++
+
+This setting, if true, only allows creation of an archival Bag for a dataset version if all prior versions have been successfully archived. The default is false (any version can be archived independently as long as other settings allow it)
+         
 :ArchiverSettings
 +++++++++++++++++
 
