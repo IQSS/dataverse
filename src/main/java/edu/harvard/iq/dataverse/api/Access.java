@@ -418,6 +418,7 @@ public class Access extends AbstractApiBean {
         // Handle Guestbook Responses
         String displayName = "";
         String gbrids = "";
+        Long datasetId = null;
         try {
             // since all files must be in the same Dataset we can generate a Guestbook Response once and just replace the DataFile for each file in the list
             DataFile firstDatafile = datafilesMap.values().size() > 0 ? (DataFile) Arrays.stream(datafilesMap.values().toArray()).findFirst().get() : null;
@@ -425,6 +426,7 @@ public class Access extends AbstractApiBean {
             boolean guestbookResponseRequired = checkGuestbookRequiredResponse(crc, uriInfo, firstDatafile, null);
             for (DataFile df : datafilesMap.values()) {
                 displayName = df.getDisplayName();
+                datasetId = df.getOwner().getId();
                 if (guestbookResponseRequired) {
                     if (gbr != null) {
                         gbr.setDataFile(df);
@@ -447,7 +449,7 @@ public class Access extends AbstractApiBean {
             List<String> args = Arrays.asList(displayName, ex.getLocalizedMessage());
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbook.commandError", args));
         }
-        return returnSignedUrl(crc, uriInfo, user, gbrids);
+        return returnSignedUrl(crc, uriInfo, user, datasetId.toString(), gbrids);
     }
 
     private Map<Long, DataFile> getDatafilesMap(ContainerRequestContext crc, String fileIds) {
@@ -473,7 +475,7 @@ public class Access extends AbstractApiBean {
         return datafilesMap;
     }
 
-    private Response returnSignedUrl(ContainerRequestContext crc, UriInfo uriInfo, User user, String gbrids) {
+    private Response returnSignedUrl(ContainerRequestContext crc, UriInfo uriInfo, User user, String id, String gbrids) {
         // Create the signed URL
         String userIdentifier = null;
         String key = null;
@@ -493,9 +495,11 @@ public class Access extends AbstractApiBean {
         UriBuilder builder = UriBuilder.fromUri(uriInfo.getRequestUri());
         builder.replaceQueryParam("gbrecs", true);
         builder.replaceQueryParam("gbrids", gbrids);
+        builder.replaceQueryParam("persistentId", null); // remove this as a parm and add the id to the path
         crc.setProperty("gbrids", gbrids);
         String baseUrlEncoded = builder.build().toString();
         String baseUrl = URLDecoder.decode(baseUrlEncoded, StandardCharsets.UTF_8);
+        baseUrl = baseUrl.replace(":persistentId", id);
         key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
         String signedUrl = UrlSignerUtil.signUrl(baseUrl, 1, userIdentifier, "GET", key);
         return ok(Json.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));

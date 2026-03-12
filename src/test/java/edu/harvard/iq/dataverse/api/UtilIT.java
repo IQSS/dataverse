@@ -1,65 +1,54 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.*;
-import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.path.json.JsonPath;
-import io.restassured.response.Response;
-
-import java.io.*;
-import java.util.*;
-import java.util.logging.Logger;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
-
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import static jakarta.ws.rs.core.HttpHeaders.ACCEPT_LANGUAGE;
-import static jakarta.ws.rs.core.Response.Status.CREATED;
-
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.util.logging.Level;
-import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
-import io.restassured.path.xml.XmlPath;
-import edu.harvard.iq.dataverse.mydata.MyDataFilterParams;
-import jakarta.ws.rs.core.HttpHeaders;
-import org.apache.commons.lang3.StringUtils;
-import org.assertj.core.util.Lists;
-import org.junit.jupiter.api.Test;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import io.restassured.specification.RequestSpecification;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
 import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
+import edu.harvard.iq.dataverse.mydata.MyDataFilterParams;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
+import io.restassured.path.xml.XmlPath;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import jakarta.json.*;
+import jakarta.ws.rs.core.HttpHeaders;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.assertj.core.util.Lists;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static io.restassured.RestAssured.given;
 import static io.restassured.path.xml.XmlPath.from;
+import static jakarta.ws.rs.core.HttpHeaders.ACCEPT_LANGUAGE;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.jupiter.api.Assertions.*;
@@ -1294,6 +1283,17 @@ public class UtilIT {
         for (Integer fileId : fileIds) {
             getString += fileId + ",";
         }
+        return requestSpecification.post(getString);
+    }
+    static Response downloadFilesUrlWithGuestbookResponse(String persistentId, String apiToken, String body) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (body != null) {
+            requestSpecification.body(body);
+        }
+        String getString = "/api/access/dataset/:persistentId?persistentId=" + persistentId;
         return requestSpecification.post(getString);
     }
 
