@@ -17,6 +17,8 @@ The Dataverse Project is committed to using standard-compliant metadata to ensur
 metadata can be mapped easily to standard metadata schemas and be exported into JSON
 format (XML for tabular file metadata) for preservation and interoperability.
 
+.. _supported-metadata:
+
 Supported Metadata
 ~~~~~~~~~~~~~~~~~~
 
@@ -34,6 +36,8 @@ Detailed below are what metadata schemas we support for Citation and Domain Spec
 - Journal Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/journals.tsv>`__): based on the `Journal Archiving and Interchange Tag Set, version 1.2 <https://jats.nlm.nih.gov/archiving/tag-library/1.2/chapter/how-to-read.html>`__.
 - 3D Objects Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/3d_objects.tsv>`__).
 
+.. _experimental-metadata:
+
 Experimental Metadata
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -43,6 +47,7 @@ Unlike supported metadata, experimental metadata is not enabled by default in a 
 - Computational Workflow Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/computational_workflow.tsv>`__): adapted from `Bioschemas Computational Workflow Profile, version 1.0 <https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE>`__ and `Codemeta <https://codemeta.github.io/terms/>`__.
 - Archival Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/archival.tsv>`__): Enables repositories to register metadata relating to the potential archiving of the dataset at a depositor archive, whether that be your own institutional archive or an external archive, i.e. a historical archive.
 - Local Contexts Metadata (`see .tsv <https://github.com/gdcc/dataverse-external-vocab-support/blob/main/packages/local_contexts/cvocLocalContexts.tsv>`__): Supports integration with the `Local Contexts <https://localcontexts.org/>`__ platform, enabling the use of Traditional Knowledge and Biocultural Labels, and Notices. For more information on setup and configuration, see :doc:`../installation/localcontexts`.
+- Review Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/review.tsv>`__): For :ref:`review-datasets-user`.
 
 Please note: these custom metadata schemas are not included in the Solr schema for indexing by default, you will need
 to add them as necessary for your custom metadata blocks. See "Update the Solr Schema" in :doc:`../admin/metadatacustomization`.

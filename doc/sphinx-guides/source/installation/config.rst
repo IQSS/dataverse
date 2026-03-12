@@ -3851,6 +3851,15 @@ Example: ``dataverse.api.mdc.min-delay-ms=100`` (enforces a minimum 100ms delay 
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_MDC_MIN_DELAY_MS``.
 
+.. _dataverse.legacy.schemaorg-in-html-head:
+
+dataverse.legacy.schemaorg-in-html-head
++++++++++++++++++++++++++++++++++++++++
+
+Instead of Croissant, use the legacy format (Schema.org JSON-LD) in the head of dataset landing pages by setting ``dataverse.legacy.schemaorg-in-html-head=true``. See :ref:`croissant-head`.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_LEGACY_SCHEMAORG_IN_HTML_HEAD``.
+
 .. dataverse.ldn
 
 Linked Data Notifications (LDN) Allowed Hosts
@@ -4031,8 +4040,12 @@ dataverse.feature.only-update-datacite-when-needed
 
 Only contact DataCite to update a DOI after checking to see if DataCite has outdated information (for efficiency, lighter load on DataCite, especially when using file DOIs).
 
+.. _dataverse.feature.require-embargo-reason:
 
+dataverse.feature.require-embargo-reason
+++++++++++++++++++++++++++++++++++++++++
 
+Require an embargo reason when a user creates an embargo on one or more files. See :ref:`embargoes`.
 
 .. _:ApplicationServerSettings:
 
@@ -4664,6 +4677,21 @@ Examples:
 
    ``curl -X PUT -d '{"default":"0", "CSV":"268435456"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 
+.. _:HarvestingClientCallRateLimit:
+
+:HarvestingClientCallRateLimit
+++++++++++++++++++++++++++++++
+
+This setting allows configuring sleep intervals between OAI calls for specific harvesting clients. Which makes it possible to harvest from servers that enforce rate limits.
+
+The setting value is a serialized JSON object mapping client names to the specified intervals in fractional seconds. It is also possible to set a universal default interval for all harvesting clients on the instance (in a somewhat unlikely use case where this may be practically necessary).
+
+In the following example, the harvester is instructed to sleep for 900 milliseconds between calls when running the client named ``harvarddv``, and to default to zero otherwise:
+
+``curl -X PUT -d "{\"harvarddv\": 0.9, \"default\": 0}" "http://localhost:8080/api/admin/settings/:HarvestingClientCallRateLimit"``
+
+Please note that the default in the example above is there for illustrative purposes and is otherwise redundant, since no sleep interval is the default behavior anyway. 
+
 .. _:ZipUploadFilesLimit:
 
 :ZipUploadFilesLimit
@@ -4767,6 +4795,10 @@ Set custom text a user will view when publishing a dataset. Note that this text 
 If you have a long text string, you can upload it as a file as in the example below.
 
 ``curl -X PUT --upload-file /tmp/long.txt http://localhost:8080/api/admin/settings/:DatasetPublishPopupCustomText``
+
+There is a related setting called :ref:`:PublishDatasetDisclaimerText` that also makes text appear on the popup when publishing, but it requires a checkbox to be clicked.
+
+See also :ref:`show-custom-popup-for-publishing-datasets` in the API Guide.
 
 :DatasetPublishPopupCustomTextOnAllVersions
 +++++++++++++++++++++++++++++++++++++++++++
@@ -5297,6 +5329,10 @@ See :ref:`Workflow Admin section <workflow_admin>` for more details and context.
 The text displayed to the user that must be acknowledged prior to publishing a Dataset. When not set the acknowledgment is not required nor displayed.
 
 ``curl -X PUT -d "By publishing this dataset, I fully accept all legal responsibility for ensuring that the deposited content is: anonymized, free of copyright violations, and contains data that is computationally reusable. I understand and agree that any violation of these conditions may result in the immediate removal of the dataset by the repository without prior notice." http://localhost:8080/api/admin/settings/:PublishDatasetDisclaimerText``
+
+There is a similar setting called :ref:`:DatasetPublishPopupCustomText` that also makes text appear on the popup when publishing, but it is only informational. There is no checkbox to click.
+
+See also :ref:`show-disclaimer-for-publishing-datasets` in the API Guide.
 
 .. _:BagItHandlerEnabled:
 

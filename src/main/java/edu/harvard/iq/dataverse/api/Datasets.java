@@ -35,6 +35,7 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.globus.GlobusUtil;
+import edu.harvard.iq.dataverse.i18n.I18nUtil;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.makedatacount.*;
@@ -100,13 +101,12 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 
-import edu.harvard.iq.dataverse.dataset.DatasetType;
-import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.license.License;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
+import static jakarta.ws.rs.core.HttpHeaders.ACCEPT_LANGUAGE;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
@@ -1444,6 +1444,8 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/files/actions/:set-embargo")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response createFileEmbargo(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
 
         // user is authenticated
@@ -1486,7 +1488,7 @@ public class Datasets extends AbstractApiBean {
         // check if embargoes are allowed(:MaxEmbargoDurationInMonths), gets the :MaxEmbargoDurationInMonths setting variable, if 0 or not set(null) return 400
         long maxEmbargoDurationInMonths = 0;
         try {
-            maxEmbargoDurationInMonths  = Long.parseLong(settingsService.get(SettingsServiceBean.Key.MaxEmbargoDurationInMonths.toString()));
+            maxEmbargoDurationInMonths  = Long.parseLong(settingsService.getValueForKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths));
         } catch (NumberFormatException nfe){
             if (nfe.getMessage().contains("null")) {
                 return error(Status.BAD_REQUEST, "No Embargoes allowed");
@@ -1496,13 +1498,19 @@ public class Datasets extends AbstractApiBean {
             return error(Status.BAD_REQUEST, "No Embargoes allowed");
         }
 
+        //Any parsing error should be handled via the JsonExceptionsHandler
         JsonObject json = JsonUtil.getJsonObject(jsonBody);
 
         Embargo embargo = new Embargo();
 
 
         LocalDate currentDateTime = LocalDate.now();
-        LocalDate dateAvailable = LocalDate.parse(json.getString("dateAvailable"));
+        LocalDate dateAvailable = null;
+        try {
+            dateAvailable = LocalDate.parse(json.getString("dateAvailable"));
+        } catch (DateTimeParseException e) {
+            return error(Status.BAD_REQUEST, "Unable to parse dateAvailable");
+        }
 
         // check :MaxEmbargoDurationInMonths if -1
         LocalDate maxEmbargoDateTime = maxEmbargoDurationInMonths != -1 ? LocalDate.now().plusMonths(maxEmbargoDurationInMonths) : null;
@@ -1519,8 +1527,16 @@ public class Datasets extends AbstractApiBean {
                 return error(Status.BAD_REQUEST, "Date available can not exceed MaxEmbargoDurationInMonths: "+maxEmbargoDurationInMonths);
             }
         }
-
-        embargo.setReason(json.getString("reason"));
+        String reason = null;
+        if(json.containsKey("reason")) {
+            reason = json.getString("reason");
+        }
+        if(reason == null && FeatureFlags.REQUIRE_EMBARGO_REASON.enabled()) {
+            return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("embargo.reason.required"));
+        } else if(reason != null && reason.isBlank()) {
+            return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("embargo.reason.blank"));
+        }
+        embargo.setReason(reason);
 
         List<DataFile> datasetFiles = dataset.getFiles();
         List<DataFile> filesToEmbargo = new LinkedList<>();
@@ -1600,6 +1616,8 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/files/actions/:unset-embargo")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response removeFileEmbargo(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
 
         // user is authenticated
@@ -5719,17 +5737,19 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
 
     @GET
     @Path("datasetTypes")
-    public Response getDatasetTypes() {
+    public Response getDatasetTypes(@HeaderParam(ACCEPT_LANGUAGE) String acceptLanguage) {
+        Locale locale = I18nUtil.parseAcceptLanguageHeader(acceptLanguage);
         JsonArrayBuilder jab = Json.createArrayBuilder();
         for (DatasetType datasetType : datasetTypeSvc.listAll()) {
-            jab.add(datasetType.toJson());
+            jab.add(datasetType.toJson(locale));
         }
         return ok(jab);
     }
 
     @GET
     @Path("datasetTypes/{idOrName}")
-    public Response getDatasetTypes(@PathParam("idOrName") String idOrName) {
+    public Response getDatasetTypes(@PathParam("idOrName") String idOrName, @HeaderParam(ACCEPT_LANGUAGE) String acceptLanguage) {
+        Locale locale = I18nUtil.parseAcceptLanguageHeader(acceptLanguage);
         DatasetType datasetType = null;
         if (StringUtils.isNumeric(idOrName)) {
             try {
@@ -5742,7 +5762,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             datasetType = datasetTypeSvc.getByName(idOrName);
         }
         if (datasetType != null) {
-            return ok(datasetType.toJson());
+            return ok(datasetType.toJson(locale));
         } else {
             return error(NOT_FOUND, "Could not find a dataset type with name " + idOrName);
         }
@@ -5767,6 +5787,8 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }
 
         String nameIn = null;
+        String displayNameIn = null;
+        String descriptionIn = null;
 
         JsonArrayBuilder datasetTypesAfter = Json.createArrayBuilder();
         List<MetadataBlock> metadataBlocksToSave = new ArrayList<>();
@@ -5775,6 +5797,8 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         try {
             JsonObject datasetTypeObj =  JsonUtil.getJsonObject(jsonIn);
             nameIn = datasetTypeObj.getString("name");
+            displayNameIn = datasetTypeObj.getString("displayName", null);
+            descriptionIn = datasetTypeObj.getString("description", null);
 
             JsonArray arr = datasetTypeObj.getJsonArray("linkedMetadataBlocks");
             if (arr != null && !arr.isEmpty()) {
@@ -5812,6 +5836,9 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         if (nameIn == null) {
             return error(BAD_REQUEST, "A name for the dataset type is required");
         }
+        if (displayNameIn == null) {
+            return error(BAD_REQUEST, "A displayName for the dataset type is required");
+        }
         if (StringUtils.isNumeric(nameIn)) {
             // getDatasetTypes supports id or name so we don't want a names that looks like an id
             return error(BAD_REQUEST, "The name of the type cannot be only digits.");
@@ -5820,12 +5847,17 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         try {
             DatasetType datasetType = new DatasetType();
             datasetType.setName(nameIn);
+            datasetType.setDisplayName(displayNameIn);
+            datasetType.setDescription(descriptionIn);
             datasetType.setMetadataBlocks(metadataBlocksToSave);
             datasetType.setLicenses(licensesToSave);
             DatasetType saved = datasetTypeSvc.save(datasetType);
             Long typeId = saved.getId();
             String name = saved.getName();
-            return ok(saved.toJson());
+            // Locale is null because when creating the dataset type we are relying entirely
+            // on the database. The new dataset type has not yet been localized in a
+            // properties file.
+            return ok(saved.toJson(null));
         } catch (WrappedResponse ex) {
             return error(BAD_REQUEST, ex.getMessage());
         }
@@ -5853,7 +5885,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         try {
             idToDelete = Long.parseLong(doomed);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("ID must be a number");
+            return error(BAD_REQUEST,"ID must be a number");
         }
 
         DatasetType datasetTypeToDelete = datasetTypeSvc.getById(idToDelete);

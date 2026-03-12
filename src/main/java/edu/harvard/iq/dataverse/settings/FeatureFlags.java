@@ -250,6 +250,11 @@ public enum FeatureFlags {
      */ 
     ONLY_UPDATE_DATACITE_WHEN_NEEDED("only-update-datacite-when-needed"),
     
+    /** Require Embargo Reason. By default, adding a reason when embargoing is optional. This 
+     * flag makes a reason required, both in the UI and API.
+     */
+    REQUIRE_EMBARGO_REASON("require-embargo-reason"),
+    
     /**
      * Experimental: Allow Locally FAIR Data. With Locally FAIR, access to a
      * collection and published data in it are restricited to people/groups

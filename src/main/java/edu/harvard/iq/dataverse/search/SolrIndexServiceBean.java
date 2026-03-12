@@ -168,14 +168,17 @@ public class SolrIndexServiceBean {
     private List<DvObjectSolrDoc> constructDatafileSolrDocsFromDataset(Dataset dataset) {
         List<DvObjectSolrDoc> datafileSolrDocs = new ArrayList<>();
         Set<String> raIds = dataset.getOwner().getLocallyFAIRRoleAssigneeIdentifiers();
+        Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(dataset);
         for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersionsToBuildCardsFor(dataset)) {
             List<String> perms = new ArrayList<>();
             if (datasetVersionFileIsAttachedTo.isReleased()) {
                 if (raIds.isEmpty()) {
                     perms.add(IndexServiceBean.getPublicGroupString());
                 } else {
-                    raIds.stream().map(searchPermissionsService::convertToIndexableString).filter(s -> s != null)
-                            .forEach(perms::add);
+                    raIds.stream()
+                      .map(searchPermissionsService::convertToIndexableString)
+                      .filter(s -> s != null)
+                      .forEach(perms::add);
                     // Also allow people who can view the unpublished dataset
                     perms.addAll(searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo));
                 }
@@ -405,7 +408,7 @@ public class SolrIndexServiceBean {
              * them), the code below does a lightweight query to see how many fileMetadatas exist in it and, if it is equal to or below fileQueryMin, calls getFileMetadatas().size() to assure they are loaded
              * (before we pass the version into a new transaction where it will be detached and fileMetadatas can't be loaded). Calling getFileMetadas.size() should be lightweight when the fileMetadatas are
              * loaded (first case) and done only when needed for the second case.
-             * 
+             *
              **/
             List<DatasetVersion> versionsToIndex = new ArrayList<>();
             for (DatasetVersion version : datasetVersionsToBuildCardsFor(dataset)) {
@@ -444,7 +447,7 @@ public class SolrIndexServiceBean {
                 if(versions.size()>1) {
                     Long releasedVersionId = null;
                     Long draftVersionId = null;
-                    
+
                     for (DatasetVersion version : versions) {
                         if (version.isReleased()) {
                             releasedVersionId = version.getId();
@@ -452,10 +455,10 @@ public class SolrIndexServiceBean {
                             draftVersionId = version.getId();
                         }
                     }
-                    
+
                     populateChangedFileIds(
-                            releasedVersionId, 
-                            draftVersionId, 
+                            releasedVersionId,
+                            draftVersionId,
                             changedFileIds
                         );
                 }
@@ -472,10 +475,10 @@ public class SolrIndexServiceBean {
         if(versions.size()>1) {
             Long releasedVersionId = versions.get(versions.get(0).isReleased() ? 0 : 1).getId();
             Long draftVersionId = versions.get(versions.get(0).isReleased() ? 1 : 0).getId();
-            
+
             populateChangedFileIds(
-                    releasedVersionId, 
-                    draftVersionId, 
+                    releasedVersionId,
+                    draftVersionId,
                     changedFileIds
                 );
         }
@@ -489,7 +492,7 @@ public class SolrIndexServiceBean {
     /**
      * Retrieves the IDs of file metadatas that have changed between the released version
      * and the draft version of a dataset.
-     * 
+     *
      * @param releasedVersionId the ID of the released dataset version
      * @param draftVersionId the ID of the draft dataset version
      * @param changedFileMetadataIds the list to populate with changed file metadata IDs
@@ -500,8 +503,8 @@ public class SolrIndexServiceBean {
         query.setParameter(2, draftVersionId);
 
         /*
-         * When the query was configured to return Long, it was returning Integer. 
-         * The query has been changed to return Integer now. The code here is robust 
+         * When the query was configured to return Long, it was returning Integer.
+         * The query has been changed to return Integer now. The code here is robust
          * if that changes in the future.
          */
         List<Object> queryResults = query.getResultList();
@@ -528,7 +531,7 @@ public class SolrIndexServiceBean {
         }
         logger.fine("Found " + changedFileIds.size() + " datafiles whose metadata has changed between versions " + releasedVersionId + " and " + draftVersionId);
     }
-    
+
     private void processDatasetVersionFiles(DatasetVersion version,
             final int[] fileCounter, int fileQueryMin, List<Long> changedFileIds) {
         List<String> cachedPerms = searchPermissionsService.findDatasetVersionPerms(version);
@@ -536,9 +539,9 @@ public class SolrIndexServiceBean {
         Long versionId = version.getId();
         List<DataFileProxy> filesToReindexAsBatch = new ArrayList<>();
 
-        // If the version is draft and there is a released version, 
+        // If the version is draft and there is a released version,
         // we only need perm docs for the files with filemetadata changes == those in changedFileMetadataIds
-        
+
         // Process files in batches of 100
         int batchSize = 100;
 

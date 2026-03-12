@@ -358,6 +358,18 @@ public class JsonPrinter {
         if (childCount != null) {
             bld.add("childCount", childCount);
         }
+        List<DatasetType> allowedDatasetTypes = dv.getAllowedDatasetTypes();
+        if (allowedDatasetTypes != null && !allowedDatasetTypes.isEmpty()) {
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+            for (DatasetType datasetType : allowedDatasetTypes) {
+                NullSafeJsonBuilder json = NullSafeJsonBuilder.jsonObjectBuilder()
+                    .add("name", datasetType.getName())
+                    .add("displayName", datasetType.getDisplayName())
+                    .add("description", datasetType.getDescription());
+                jab.add(json);
+            }
+            bld.add("allowedDatasetTypes", jab);
+        }
         addDatasetFileCountLimit(dv, bld);
         return bld;
     }
@@ -486,6 +498,13 @@ public class JsonPrinter {
             bld.add("isPartOf", getOwnersFromDvObject(ds));
         }
         bld.add("datasetType", ds.getDatasetType().getName());
+
+        JsonArrayBuilder locksArrayBuilder = Json.createArrayBuilder();
+        for (DatasetLock lock : ds.getLocks()) {
+            locksArrayBuilder.add(lock.getReason().toString());
+        }
+        bld.add("locks", locksArrayBuilder);
+
         return bld;
     }
 

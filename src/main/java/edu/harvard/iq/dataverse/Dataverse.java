@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.storageuse.StorageUse;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -200,6 +201,13 @@ public class Dataverse extends DvObjectContainer {
     }
 
     private String affiliation;
+
+    /**
+     * If null, only the default dataset type (dataset) is allowed.
+     * See AbstractCreateDatasetCommand.
+     */
+    @ManyToMany(cascade = {CascadeType.MERGE})
+    private List<DatasetType> allowedDatasetTypes = new ArrayList<>();
     
     ///private String storageDriver=null;
 
@@ -811,6 +819,14 @@ public class Dataverse extends DvObjectContainer {
 
     public void setAffiliation(String affiliation) {
         this.affiliation = affiliation;
+    }
+
+    public List<DatasetType> getAllowedDatasetTypes() {
+        return allowedDatasetTypes;
+    }
+
+    public void setAllowedDatasetTypes(List<DatasetType> allowedDatasetTypes) {
+        this.allowedDatasetTypes = allowedDatasetTypes;
     }
 
     public boolean isMetadataBlockRoot() {
