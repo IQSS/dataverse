@@ -120,6 +120,7 @@ this may be a good time to replace it with new-style `system-property` entries, 
 
    Section 2: JVM options (under `<java-config classpath-suffix="" system-classpath="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9009">`, the one under `<config name="server-config">`, not under `<config name="default-config">`)
 
+As an example, the following jvm options were encountered and transferred when upgrading a local test server:
    ```
    <jvm-options>-Ddataverse.files.directory=/usr/local/dvn/data</jvm-options>
    <jvm-options>-Ddataverse.files.file.type=file</jvm-options>
