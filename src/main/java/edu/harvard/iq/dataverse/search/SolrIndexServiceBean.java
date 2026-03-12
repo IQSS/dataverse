@@ -122,22 +122,7 @@ public class SolrIndexServiceBean {
      * datasets and files return lists.
      */
     private DvObjectSolrDoc constructDataverseSolrDoc(Dataverse dataverse) {
-        List<String> perms = new ArrayList<>();
-        if (dataverse.isReleased()) {
-            Set<String> raIds = dataverse.getLocallyFAIRRoleAssigneeIdentifiers();
-            if (raIds.isEmpty()) {
-                perms.add(IndexServiceBean.getPublicGroupString());
-            } else {
-                raIds.stream()
-                .map(searchPermissionsService::convertToIndexableString)
-                .filter(s -> s != null)
-                .forEach(perms::add);
-                // Also allow people who can view the unpublished dataverse
-                perms.addAll(searchPermissionsService.findDataversePerms(dataverse));
-            }
-        } else {
-            perms = searchPermissionsService.findDataversePerms(dataverse);
-        }
+        List<String> perms = searchPermissionsService.findDataversePerms(dataverse);
         Long noDatasetVersionForDataverses = null;
         DvObjectSolrDoc dvDoc = new DvObjectSolrDoc(dataverse.getId().toString(), IndexServiceBean.solrDocIdentifierDataverse + dataverse.getId(), noDatasetVersionForDataverses, dataverse.getName(), perms);
         return dvDoc;
