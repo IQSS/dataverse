@@ -113,6 +113,9 @@ We also recommend you ensure you followed all update instructions from the past 
    <system-property name="dataverse.mail.mta.host" value="localhost"></system-property>
    ```
 
+Please note that if your existing `domain.xml` file contains the old-style mail configuration entry that looks like this: 
+`<mail-resource auth="false" host="localhost" from="do-not-reply@yourschool.edu" user="dataversenotify" jndi-name="mail/notifyMailSession"></mail-resource>`
+this may be a good time to replace it with new-style `system-property` entries, using the lines in the example above as a model. 
    Note: If you used the Dataverse installer, you won't have a `dataverse.db.password` property. See "Create password aliases" below.
 
    Section 2: JVM options (under `<java-config classpath-suffix="" system-classpath="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9009">`, the one under `<config name="server-config">`, not under `<config name="default-config">`)
