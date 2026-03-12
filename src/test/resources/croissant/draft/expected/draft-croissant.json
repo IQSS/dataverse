@@ -47,7 +47,7 @@
         "wd": "https://www.wikidata.org/wiki/"
     },
     "@type": "sc:Dataset",
-    "conformsTo": "http://mlcommons.org/croissant/1.0",
+    "conformsTo": "http://mlcommons.org/croissant/1.1",
     "name": "Draft Dataset",
     "url": "https://doi.org/10.5072/FK2/OO7TEP",
     "creator": [
