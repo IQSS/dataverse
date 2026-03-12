@@ -43,8 +43,7 @@
         "separator": "cr:separator",
         "source": "cr:source",
         "subField": "cr:subField",
-        "transform": "cr:transform",
-        "wd": "https://www.wikidata.org/wiki/"
+        "transform": "cr:transform"
     },
     "@type": "sc:Dataset",
     "conformsTo": "http://mlcommons.org/croissant/1.1",
