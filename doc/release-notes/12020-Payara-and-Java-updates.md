@@ -171,6 +171,8 @@ As an example, the following jvm options were encountered and transferred when u
 
    Under `/usr/local/payara7/glassfish/domains/domain1/config/domain.xml`, check the `Xmx` setting under `<config name="server-config">`, where you put the Dataverse-related JVM options, not the one under `<config name="default-config">`. This sets the JVM heap size; a good rule of thumb is half of your system's total RAM. You may specify the value in MB (`8192m`) or GB (`8g`).
 
+1. **Please make sure** to check for any other custom configuration you may have in your current `domain.xml` that are not explicitly covered in the sections above. As an example, at HDV we have the thread pool size configured as follows for the main http listener: 
+`<thread-pool name="http-thread-pool" max-thread-pool-size="400"></thread-pool>`
 1. Copy `jhove.conf` and `jhoveConfig.xsd` from Payara 6, edit and change `payara6` to `payara7`.
 
    `sudo bash -c 'cp /usr/local/payara6/glassfish/domains/domain1/config/jhove* /usr/local/payara7/glassfish/domains/domain1/config'`
