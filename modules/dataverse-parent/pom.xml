@@ -132,7 +132,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>6.8</revision>
+        <revision>6.9</revision>
     
         <target.java.version>17</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -200,7 +200,7 @@
         <pomchecker-maven-plugin.version>1.7.0</pomchecker-maven-plugin.version>
         
         <!-- Container related -->
-        <fabric8-dmp.version>0.46.0</fabric8-dmp.version>
+        <fabric8-dmp.version>0.48.0</fabric8-dmp.version>
     </properties>
     
     <pluginRepositories>

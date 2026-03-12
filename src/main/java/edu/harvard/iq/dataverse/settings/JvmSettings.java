@@ -247,6 +247,7 @@ public enum JvmSettings {
     // AUTH: OIDC SETTINGS
     SCOPE_OIDC(SCOPE_AUTH, "oidc"),
     OIDC_ENABLED(SCOPE_OIDC, "enabled"),
+    OIDC_HIDDEN_JSF(SCOPE_OIDC, "hidden-jsf"), // Special case when this provider needs to be hidden in JSF UI
     OIDC_TITLE(SCOPE_OIDC, "title"),
     OIDC_SUBTITLE(SCOPE_OIDC, "subtitle"),
     OIDC_AUTH_SERVER_URL(SCOPE_OIDC, "auth-server-url"),
@@ -301,6 +302,10 @@ public enum JvmSettings {
     SCOPE_LOCALCONTEXTS(PREFIX, "localcontexts"),
     LOCALCONTEXTS_URL(SCOPE_LOCALCONTEXTS, "url"),
     LOCALCONTEXTS_API_KEY(SCOPE_LOCALCONTEXTS, "api-key"),
+
+    // LEGACY SETTINGS
+    SCOPE_LEGACY(PREFIX, "legacy"),
+    SCHEMAORG_IN_HTML_HEAD(SCOPE_LEGACY, "schemaorg-in-html-head"),
     
     // LinkedDataNotification
     SCOPE_LINKEDDATANOTIFICATION(PREFIX, "ldn"),

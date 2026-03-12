@@ -237,7 +237,7 @@
         <dependency>
             <groupId>com.github.erosb</groupId>
             <artifactId>everit-json-schema</artifactId>
-            <version>1.14.1</version>
+            <version>1.14.6</version>
         </dependency>
         <dependency>
             <groupId>org.mindrot</groupId>
@@ -721,7 +721,7 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.20.2</version>
+            <version>3.27.7</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -1115,6 +1115,33 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>3.2.1</version>
+                <configuration>
+                    <java>
+                        <includes>
+                            <include>src/main/java/edu/harvard/iq/dataverse/export/CroissantExporter.java</include>
+                            <include>src/main/java/edu/harvard/iq/dataverse/export/CroissantExporterSlim.java</include>
+                            <include>src/main/java/edu/harvard/iq/dataverse/export/croissant/CroissantExportUtil.java</include>
+                            <include>src/test/java/edu/harvard/iq/dataverse/export/CroissantExporterTest.java</include>
+                            <include>src/test/java/edu/harvard/iq/dataverse/export/CroissantExporterSlimTest.java</include>
+                        </includes>
+                        <importOrder>
+                            <wildcardsLast>false</wildcardsLast>
+                        </importOrder>
+                        <removeUnusedImports>
+                            <engine>google-java-format</engine>
+                        </removeUnusedImports>
+                        <googleJavaFormat>
+                            <version>1.17.0</version>
+                            <style>AOSP</style>
+                            <reflowLongStrings>true</reflowLongStrings>
+                        </googleJavaFormat>
+                    </java>
+                </configuration>
             </plugin>
         </plugins>
     </build>

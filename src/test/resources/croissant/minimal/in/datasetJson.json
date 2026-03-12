@@ -1,0 +1,100 @@
+{
+  "id": 26146,
+  "identifier": "FK2/4C0JYC",
+  "persistentUrl": "https://doi.org/10.5072/FK2/4C0JYC",
+  "protocol": "doi",
+  "authority": "10.5072",
+  "publisher": "Root",
+  "publicationDate": "2024-05-01",
+  "storageIdentifier": "s3://10.5072/FK2/4C0JYC",
+  "datasetVersion": {
+    "id": 108,
+    "datasetId": 26146,
+    "datasetPersistentId": "doi:10.5072/FK2/4C0JYC",
+    "storageIdentifier": "s3://10.5072/FK2/4C0JYC",
+    "versionNumber": 1,
+    "versionMinorNumber": 0,
+    "versionState": "RELEASED",
+    "latestVersionPublishingState": "RELEASED",
+    "lastUpdateTime": "2024-05-01T14:27:17Z",
+    "releaseTime": "2024-05-01T14:27:17Z",
+    "createTime": "2024-05-01T14:26:54Z",
+    "publicationDate": "2024-05-01",
+    "citationDate": "2024-05-01",
+    "license": {
+      "name": "CC0 1.0",
+      "uri": "http://creativecommons.org/publicdomain/zero/1.0",
+      "iconUri": "https://licensebuttons.net/p/zero/1.0/88x31.png"
+    },
+    "fileAccessRequest": true,
+    "metadataBlocks": {
+      "citation": {
+        "displayName": "Citation Metadata",
+        "name": "citation",
+        "fields": [
+          {
+            "typeName": "title",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "Minimal"
+          },
+          {
+            "typeName": "author",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "authorName": {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Durbin, Philip"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "datasetContact",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "datasetContactEmail": {
+                  "typeName": "datasetContactEmail",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "philip_durbin@harvard.edu"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "dsDescription",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "dsDescriptionValue": {
+                  "typeName": "dsDescriptionValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Minimal metadata and no files."
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "subject",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "value": [
+              "Other"
+            ]
+          }
+        ]
+      }
+    },
+    "files": [],
+    "citation": "Durbin, Philip, 2024, \"Minimal\", https://doi.org/10.5072/FK2/4C0JYC, Root, V1"
+  }
+}

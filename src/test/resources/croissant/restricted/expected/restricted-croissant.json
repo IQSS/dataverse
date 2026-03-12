@@ -1,0 +1,115 @@
+{
+    "@context": {
+        "@language": "en",
+        "@vocab": "https://schema.org/",
+        "citeAs": "cr:citeAs",
+        "column": "cr:column",
+        "conformsTo": "dct:conformsTo",
+        "cr": "http://mlcommons.org/croissant/",
+        "rai": "http://mlcommons.org/croissant/RAI/",
+        "data": {
+            "@id": "cr:data",
+            "@type": "@json"
+        },
+        "dataType": {
+            "@id": "cr:dataType",
+            "@type": "@vocab"
+        },
+        "dct": "http://purl.org/dc/terms/",
+        "examples": {
+            "@id": "cr:examples",
+            "@type": "@json"
+        },
+        "extract": "cr:extract",
+        "field": "cr:field",
+        "fileProperty": "cr:fileProperty",
+        "fileObject": "cr:fileObject",
+        "fileSet": "cr:fileSet",
+        "format": "cr:format",
+        "includes": "cr:includes",
+        "isLiveDataset": "cr:isLiveDataset",
+        "jsonPath": "cr:jsonPath",
+        "key": "cr:key",
+        "md5": "cr:md5",
+        "parentField": "cr:parentField",
+        "path": "cr:path",
+        "recordSet": "cr:recordSet",
+        "references": "cr:references",
+        "regex": "cr:regex",
+        "repeated": "cr:repeated",
+        "replace": "cr:replace",
+        "samplingRate": "cr:samplingRate",
+        "sc": "https://schema.org/",
+        "separator": "cr:separator",
+        "source": "cr:source",
+        "subField": "cr:subField",
+        "transform": "cr:transform",
+        "wd": "https://www.wikidata.org/wiki/"
+    },
+    "@type": "sc:Dataset",
+    "conformsTo": "http://mlcommons.org/croissant/1.0",
+    "name": "Cars",
+    "url": "https://doi.org/10.5072/FK2/CY7BWA",
+    "creator": [
+        {
+            "@type": "Person",
+            "givenName": "Philip",
+            "familyName": "Durbin",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "Harvard"
+            },
+            "name": "Durbin, Philip"
+        }
+    ],
+    "description": "This dataset is about cars.",
+    "keywords": [
+        "Other"
+    ],
+    "license": "http://creativecommons.org/publicdomain/zero/1.0",
+    "datePublished": "2025-05-16",
+    "dateModified": "2025-05-16",
+    "includedInDataCatalog": {
+        "@type": "DataCatalog",
+        "name": "Root",
+        "url": "http://localhost:8080"
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "Root"
+    },
+    "version": "1.0",
+    "citeAs": "@data{FK2/CY7BWA_2025,author = {Durbin, Philip},publisher = {Root},title = {Cars},year = {2025},url = {https://doi.org/10.5072/FK2/CY7BWA}}",
+    "distribution": [
+        {
+            "@type": "cr:FileObject",
+            "@id": "code/compute.py",
+            "name": "compute.py",
+            "encodingFormat": "text/x-python",
+            "md5": "d84985e94dde671f318076bd7a137f15",
+            "contentSize": "15",
+            "description": "",
+            "contentUrl": "http://localhost:8080/api/access/datafile/7"
+        },
+        {
+            "@type": "cr:FileObject",
+            "@id": "data/stata13-auto.dta",
+            "name": "stata13-auto.dta",
+            "encodingFormat": "application/x-stata-13",
+            "md5": "7b1201ce6b469796837a835377338c5a",
+            "contentSize": "6443",
+            "description": "",
+            "contentUrl": "http://localhost:8080/api/access/datafile/9?format=original"
+        },
+        {
+            "@type": "cr:FileObject",
+            "@id": "doc/README.md",
+            "name": "README.md",
+            "encodingFormat": "text/markdown",
+            "md5": "a2e484d07ee5590cc32182dc2c6ccc83",
+            "contentSize": "28",
+            "description": "",
+            "contentUrl": "http://localhost:8080/api/access/datafile/8"
+        }
+    ]
+}

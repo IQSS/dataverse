@@ -1,8 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.globus.Permissions;
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -119,6 +116,7 @@ import jakarta.faces.validator.ValidatorException;
 
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.InvalidFieldsCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetLinkingDataverseCommand;
@@ -160,6 +158,7 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
@@ -1486,6 +1485,10 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             return canPublishDataset();
         }
+    }
+
+    public boolean isUseLegacyFormatInHead() {
+        return JvmSettings.SCHEMAORG_IN_HTML_HEAD.lookupOptional(Boolean.class).orElse(false);
     }
 
     /*
@@ -3070,6 +3073,8 @@ public class DatasetPage implements java.io.Serializable {
         //dataset = datasetService.find(dataset.getId());
         dataset = null;
         workingVersion = null; 
+        
+        clearCachedPopupRequiredValues();
 
         logger.fine("refreshing working version");
 
@@ -3137,9 +3142,18 @@ public class DatasetPage implements java.io.Serializable {
         if (deleteCommandSuccess) {
             datafileService.finalizeFileDeletes(deleteStorageLocations);
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.deleteSuccess"));
+            solrDelay();
         }
 
         return "/dataverse.xhtml?alias=" + dataset.getOwner().getAlias() + "&faces-redirect=true";
+    }
+    // delay 1 second so solr has time to update the indexes. Without the delay the UI will continue to show the deleted dataset
+    private void solrDelay() {
+        try {
+            Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String editFileMetadata(){
@@ -4002,6 +4016,10 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String save() {
+        
+        //Clear cached info
+        clearCachedPopupRequiredValues();
+        
         //Before dataset saved, write cached prov freeform to version
         if (systemConfig.isProvCollectionEnabled()) {
             provPopupFragmentBean.saveStageProvFreeformToLatestVersion();
@@ -4093,8 +4111,15 @@ public class DatasetPage implements java.io.Serializable {
                     return null;
                 }
             }
-            populateDatasetUpdateFailureMessage();
-            return returnToDraftVersion();
+            if (ex instanceof InvalidFieldsCommandException) {
+                InvalidFieldsCommandException ifce = (InvalidFieldsCommandException) ex;
+                String error = ifce.getFieldErrors().get("datasetType");
+                JsfHelper.addErrorMessage(error);
+                return null;
+            } else {
+                populateDatasetUpdateFailureMessage();
+                return returnToDraftVersion();
+            }
         }
 
         // Have we just deleted some draft datafiles (successfully)?
@@ -5553,24 +5578,55 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
 
+    private Boolean downloadPopupRequired = null;
+    private Boolean requestAccessPopupRequired = null;
+    private Boolean guestbookAndTermsPopupRequired = null;
+    private Boolean guestbookPopupRequired = null;
+    private Boolean termsPopupRequired = null;
+    
     public boolean isDownloadPopupRequired() {
-        return FileUtil.isDownloadPopupRequired(workingVersion);
+        if (downloadPopupRequired == null) {
+            downloadPopupRequired = FileUtil.isDownloadPopupRequired(workingVersion);
+        }
+        return downloadPopupRequired;
     }
 
     public boolean isRequestAccessPopupRequired() {
-        return FileUtil.isRequestAccessPopupRequired(workingVersion);
+        if (requestAccessPopupRequired == null) {
+            requestAccessPopupRequired = FileUtil.isRequestAccessPopupRequired(workingVersion);
+        }
+        return requestAccessPopupRequired;
     }
     
-    public boolean isGuestbookAndTermsPopupRequired() {  
-        return FileUtil.isGuestbookAndTermsPopupRequired(workingVersion);
+    public boolean isGuestbookAndTermsPopupRequired() {
+        if (guestbookAndTermsPopupRequired == null) {
+            guestbookAndTermsPopupRequired = FileUtil.isGuestbookAndTermsPopupRequired(workingVersion);
+        }
+        return guestbookAndTermsPopupRequired;
     }
 
     public boolean isGuestbookPopupRequired(){
-        return FileUtil.isGuestbookPopupRequired(workingVersion);
+        if(guestbookPopupRequired == null) {
+            guestbookPopupRequired = FileUtil.isGuestbookPopupRequired(workingVersion);
+        }
+        return guestbookPopupRequired; 
     }
     
-    public boolean isTermsPopupRequired(){
-        return FileUtil.isTermsPopupRequired(workingVersion);
+    public boolean isTermsPopupRequired() {
+        if (termsPopupRequired == null) {
+            termsPopupRequired = FileUtil.isTermsPopupRequired(workingVersion);
+        }
+        return termsPopupRequired;
+    }
+    
+    private void clearCachedPopupRequiredValues() {
+        downloadPopupRequired = null;
+        requestAccessPopupRequired = null;
+        guestbookAndTermsPopupRequired = null;
+        guestbookPopupRequired = null;
+        termsPopupRequired = null;
+        
+        downloadButtonAvailable = null;
     }
     
     public boolean isGuestbookPopupRequiredAtDownload(){
@@ -6033,7 +6089,12 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getCroissant() {
         if (isThisLatestReleasedVersion()) {
-            final String CROISSANT_SCHEMA_NAME = "croissant";
+            // We put the slim version of Croissant in the head of the HTML
+            // to reduce page load times. See https://github.com/IQSS/dataverse/issues/12123
+            // and https://github.com/mlcommons/croissant/issues/646
+            // The full version is available from the "Export Metadata" dropdown.
+            // Both versions are available via API.
+            final String CROISSANT_SCHEMA_NAME = "croissantSlim";
             ExportService instance = ExportService.getInstance();
             String croissant = instance.getLatestPublishedAsString(dataset, CROISSANT_SCHEMA_NAME);
             if (croissant != null && !croissant.isEmpty()) {
@@ -6258,6 +6319,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private String termsOfAccess;
     private boolean fileAccessRequest;
+    private boolean publishDisclaimerAcknowledged;
 
     public String getTermsOfAccess() {
         return termsOfAccess;
@@ -6273,6 +6335,14 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setFileAccessRequest(boolean fileAccessRequest) {
         this.fileAccessRequest = fileAccessRequest;
+    }
+
+    public boolean isPublishDisclaimerAcknowledged() {
+        return publishDisclaimerAcknowledged || !settingsWrapper.isHasPublishDatasetDisclaimerText();
+    }
+
+    public void setPublishDisclaimerAcknowledged(boolean publishDisclaimerAcknowledged) {
+        this.publishDisclaimerAcknowledged = publishDisclaimerAcknowledged;
     }
 
     // wrapper method to see if the file has been deleted (or replaced) in the current version
@@ -6879,4 +6949,7 @@ public class DatasetPage implements java.io.Serializable {
         this.requestedCSL = requestedCSL;
     }
 
+    public void validateEmbargoReason(FacesContext context, UIComponent component, Object value) {
+        FileUtil.validateEmbargoReason(context, component, value, removeEmbargo);
+    }
 }

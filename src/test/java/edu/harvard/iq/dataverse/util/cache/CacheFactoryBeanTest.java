@@ -109,7 +109,9 @@ public class CacheFactoryBeanTest {
             RateLimitUtil.rateLimitMap.clear();
             RateLimitUtil.rateLimits.clear();
         }
-
+        // Reset cache for each test
+        cache.rateLimitCache.clear();
+        
         // Reset to default auth user
         authUser.setRateLimitTier(1);
         authUser.setSuperuser(false);
@@ -163,15 +165,23 @@ public class CacheFactoryBeanTest {
         authUser.setRateLimitTier(2); // 120 cals per hour - 1 added token every 30 seconds
         boolean rateLimited = false;
         int cnt;
+        long startTime = System.currentTimeMillis();
         for (cnt = 0; cnt <200; cnt++) {
             rateLimited = !cache.checkRate(authUser, action);
             if (rateLimited) {
                 break;
             }
         }
-        assertTrue(rateLimited);
-        assertEquals(120, cnt);
+        long endTime = System.currentTimeMillis();
+        System.out.println("Test loop took " + (endTime - startTime) + " ms");
+        //Add a few seconds to account for time outside loop
+        long durationMinutes = (6000 + endTime - startTime) / 60000L;
+        // 120 calls/hr = 2 calls/min. Add any tokens that may have been added during the test run
+        long expectedMax = 120 + (durationMinutes * 2);
 
+        assertTrue(rateLimited);
+        assertTrue(cnt >= 120 && cnt <= expectedMax, "cnt was " + cnt + ", expected between 120 and " + expectedMax);
+        
         for (cnt = 0; cnt <60; cnt++) {
             Thread.sleep(1000);// Wait for bucket to be replenished (check each second for 1 minute max)
             rateLimited = !cache.checkRate(authUser, action);
