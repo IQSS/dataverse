@@ -70,6 +70,7 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.StreamingOutput;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -2228,6 +2229,9 @@ public class Dataverses extends AbstractApiBean {
             }
 
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            if(StringUtils.isBlank(roleAssigneeIdentifier) || !dataverse.getLocallyFAIRRoleAssigneeIdentifiers().contains(roleAssigneeIdentifier)) {
+                return badRequest("Invalid role assignee identifier: " + roleAssigneeIdentifier);
+            }
             dataverse.removeLocallyFAIRRoleAssignee(roleAssigneeIdentifier);
             dataverseService.save(dataverse);
             dataverseService.index(dataverse, true);
