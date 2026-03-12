@@ -909,5 +909,13 @@ public class JsonParserTest {
             System.out.println(e.getMessage());
             assertTrue(e.getMessage().contains("Guestbook Response entry is required but not present"));
         }
+        // Test missing "answers" empty array
+        try {
+            jsonObj = JsonUtil.getJsonObject("{\"answers\" : []}");
+            gbr = sut.parseGuestbookResponse(jsonObj, guestbookResponse);
+        } catch (JsonParseException e) {
+            System.out.println(e.getMessage());
+            assertTrue(e.getMessage().contains("Guestbook Response entry is required but not present"));
+        }
     }
 }
