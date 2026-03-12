@@ -189,7 +189,7 @@ As an example, the following jvm options were encountered and transferred when u
 
 1. If you are using Make Data Count (MDC), make various updates.
 
-   Your `:MDCLogPath` database setting might be pointing to a Payara 6 directory such as `/usr/local/payara6/glassfish/domains/domain1/logs`. If so, edit this to be payara7.
+   Your `:MDCLogPath` database setting might be pointing to a Payara 6 directory such as `/usr/local/payara6/glassfish/domains/domain1/logs`. If so, use the settings API to change it to point to the payara7 location (once Dataverse is running again):
 
    `curl -X PUT -d '/usr/local/payara7/glassfish/domains/domain1/logs' http://localhost:8080/api/admin/settings/:MDCLogPath`
 
