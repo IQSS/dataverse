@@ -113,14 +113,18 @@ We also recommend you ensure you followed all update instructions from the past 
    <system-property name="dataverse.mail.mta.host" value="localhost"></system-property>
    ```
 
-Please note that if your existing `domain.xml` file contains the old-style mail configuration entry that looks like this: 
-`<mail-resource auth="false" host="localhost" from="do-not-reply@yourschool.edu" user="dataversenotify" jndi-name="mail/notifyMailSession"></mail-resource>`
-this may be a good time to replace it with new-style `system-property` entries, using the lines in the example above as a model. 
+   Please note that if your existing `domain.xml` file contains the old-style mail configuration entry that looks like the following...
+
+   `<mail-resource auth="false" host="localhost" from="do-not-reply@yourschool.edu" user="dataversenotify" jndi-name="mail/notifyMailSession"></mail-resource>`
+
+   ... this may be a good time to replace it with new-style `system-property` entries, using the lines in the example above as a model. See also the section on [SMTP configuration](https://guides.dataverse.org/en/6.10/installation/config.html#smtp-email-configuration) in the guides.
+
    Note: If you used the Dataverse installer, you won't have a `dataverse.db.password` property. See "Create password aliases" below.
 
    Section 2: JVM options (under `<java-config classpath-suffix="" system-classpath="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9009">`, the one under `<config name="server-config">`, not under `<config name="default-config">`)
 
-As an example, the following jvm options were encountered and transferred when upgrading a local test server:
+   As an example, the following jvm options were encountered and transferred when upgrading a local test server:
+
    ```
    <jvm-options>-Ddataverse.files.directory=/usr/local/dvn/data</jvm-options>
    <jvm-options>-Ddataverse.files.file.type=file</jvm-options>
@@ -171,8 +175,10 @@ As an example, the following jvm options were encountered and transferred when u
 
    Under `/usr/local/payara7/glassfish/domains/domain1/config/domain.xml`, check the `Xmx` setting under `<config name="server-config">`, where you put the Dataverse-related JVM options, not the one under `<config name="default-config">`. This sets the JVM heap size; a good rule of thumb is half of your system's total RAM. You may specify the value in MB (`8192m`) or GB (`8g`).
 
-1. **Please make sure** to check for any other custom configuration you may have in your current `domain.xml` that are not explicitly covered in the sections above. As an example, at HDV we have the thread pool size configured as follows for the main http listener: 
-`<thread-pool name="http-thread-pool" max-thread-pool-size="400"></thread-pool>`
+1. **Please make sure** to check for any other custom configuration you may have in your current `domain.xml` that are not explicitly covered in the sections above. As an example, for Harvard Dataverse we have the thread pool size configured as follows for the main http listener:
+
+   `<thread-pool name="http-thread-pool" max-thread-pool-size="400"></thread-pool>`
+
 1. Copy `jhove.conf` and `jhoveConfig.xsd` from Payara 6, edit and change `payara6` to `payara7`.
 
    `sudo bash -c 'cp /usr/local/payara6/glassfish/domains/domain1/config/jhove* /usr/local/payara7/glassfish/domains/domain1/config'`
@@ -265,6 +271,6 @@ As an example, the following jvm options were encountered and transferred when u
 
 1. For installations with internationalization or text customizations:
 
-Please remember to update translations via [Dataverse language packs](https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs).
+   Please remember to update translations via [Dataverse language packs](https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs).
 
-If you have text customizations you can get the latest English files from <https://github.com/IQSS/dataverse/tree/v6.10/src/main/java/propertyFiles>.
+   If you have text customizations you can get the latest English files from <https://github.com/IQSS/dataverse/tree/v6.10/src/main/java/propertyFiles>.
