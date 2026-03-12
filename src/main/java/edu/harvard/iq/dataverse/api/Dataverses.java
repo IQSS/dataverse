@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.api;
 import com.google.common.collect.Lists;
 import com.google.api.client.util.ArrayMap;
 import edu.harvard.iq.dataverse.*;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
 import edu.harvard.iq.dataverse.api.dto.*;
@@ -16,7 +15,6 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
@@ -24,7 +22,6 @@ import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
@@ -2140,4 +2137,120 @@ public class Dataverses extends AbstractApiBean {
             return getRoleAssignmentHistoryResponse(dataverse, authenticatedUser, false, headers);
         }, getRequestUser(crc));
     }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/locallyFairRoleAssignees")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listLocallyFairRoleAssignees(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+        try {
+            User user = getRequestUser(crc);
+            if (!user.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
+
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            JsonArrayBuilder assignees = Json.createArrayBuilder();
+            dataverse.getLocallyFAIRRoleAssigneeIdentifiers().stream()
+                    .sorted()
+                    .forEach(assignees::add);
+            return ok(assignees);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/locallyFairRoleAssignees")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setLocallyFairRoleAssignees(@Context ContainerRequestContext crc,
+                                                @PathParam("identifier") String dvIdtf,
+                                                List<String> roleAssigneeIdentifiers) {
+        try {
+            User user = getRequestUser(crc);
+            if (!user.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
+
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            Set<String> validatedIdentifiers = validateLocallyFairRoleAssigneeIdentifiers(roleAssigneeIdentifiers);
+            dataverse.setLocallyFAIRRoleAssigneeIdentifiers(validatedIdentifiers);
+            dataverseService.save(dataverse);
+            dataverseService.index(dataverse, true);
+
+            return ok(String.format("Locally FAIR role assignees updated for dataverse %s.", dvIdtf), jsonLocallyFairRoleAssignees(dataverse));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/locallyFairRoleAssignees/{roleAssigneeIdentifier: .*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addLocallyFairRoleAssignee(@Context ContainerRequestContext crc,
+                                               @PathParam("identifier") String dvIdtf,
+                                               @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
+        try {
+            User user = getRequestUser(crc);
+            if (!user.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
+
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            if (findAssignee(roleAssigneeIdentifier) == null) {
+                return badRequest("Invalid role assignee identifier: " + roleAssigneeIdentifier);
+            }
+
+            dataverse.addLocallyFAIRRoleAssignee(roleAssigneeIdentifier);
+            dataverseService.save(dataverse);
+            dataverseService.index(dataverse, true);
+
+            return ok(String.format("Locally FAIR role assignee added to dataverse %s.", dvIdtf), jsonLocallyFairRoleAssignees(dataverse));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("{identifier}/locallyFairRoleAssignees/{roleAssigneeIdentifier: .*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteLocallyFairRoleAssignee(@Context ContainerRequestContext crc,
+                                                  @PathParam("identifier") String dvIdtf,
+                                                  @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
+        try {
+            User user = getRequestUser(crc);
+            if (!user.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
+
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            dataverse.removeLocallyFAIRRoleAssignee(roleAssigneeIdentifier);
+            dataverseService.save(dataverse);
+            dataverseService.index(dataverse, true);
+
+            return ok(String.format("Locally FAIR role assignee removed from dataverse %s.", dvIdtf), jsonLocallyFairRoleAssignees(dataverse));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    private Set<String> validateLocallyFairRoleAssigneeIdentifiers(List<String> roleAssigneeIdentifiers) throws WrappedResponse {
+        if (roleAssigneeIdentifiers == null) {
+            return Collections.emptySet();
+        }
+
+        Set<String> validatedIdentifiers = new TreeSet<>();
+        for (String identifier : roleAssigneeIdentifiers) {
+            if (findAssignee(identifier) == null) {
+                throw new WrappedResponse(badRequest("Invalid role assignee identifier: " + identifier));
+            }
+            validatedIdentifiers.add(identifier);
+        }
+        return validatedIdentifiers;
+    }
+
 }

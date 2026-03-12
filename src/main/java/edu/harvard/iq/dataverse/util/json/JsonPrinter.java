@@ -1228,6 +1228,18 @@ public class JsonPrinter {
         return tabularTags;
     }
 
+    public static JsonObjectBuilder jsonLocallyFairRoleAssignees(Dataverse dataverse) {
+        JsonArrayBuilder assignees = Json.createArrayBuilder();
+        dataverse.getLocallyFAIRRoleAssigneeIdentifiers().stream()
+                .sorted()
+                .forEach(assignees::add);
+
+        return Json.createObjectBuilder()
+                .add("dataverseId", dataverse.getId())
+                .add("dataverseAlias", dataverse.getAlias())
+                .add("locallyFairRoleAssignees", assignees);
+    }
+
     private static class DatasetFieldsToJson implements DatasetFieldWalker.Listener {
 
         Deque<JsonObjectBuilder> objectStack = new LinkedList<>();

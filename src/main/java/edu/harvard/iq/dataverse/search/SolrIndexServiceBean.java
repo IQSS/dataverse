@@ -168,7 +168,6 @@ public class SolrIndexServiceBean {
     private List<DvObjectSolrDoc> constructDatafileSolrDocsFromDataset(Dataset dataset) {
         List<DvObjectSolrDoc> datafileSolrDocs = new ArrayList<>();
         Set<String> raIds = dataset.getOwner().getLocallyFAIRRoleAssigneeIdentifiers();
-        Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(dataset);
         for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersionsToBuildCardsFor(dataset)) {
             List<String> perms = new ArrayList<>();
             if (datasetVersionFileIsAttachedTo.isReleased()) {
