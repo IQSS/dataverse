@@ -635,35 +635,37 @@ public class JsonParser {
 
         Map<Long, CustomQuestion> cqMap = new HashMap<>();
         guestbook.getCustomQuestions().stream().forEach(cq -> cqMap.put(cq.getId(),cq));
-        JsonArray answers = obj.getJsonArray("answers");
         List<CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
-        for (JsonObject answer : answers.getValuesAs(JsonObject.class)) {
-            Long cqId = Long.valueOf(answer.getInt("id"));
-            // find the matching CustomQuestion
-            CustomQuestion cq = cqMap.get(cqId);
-            CustomQuestionResponse cqr = new CustomQuestionResponse();
-            cqr.setGuestbookResponse(guestbookResponse);
-            cqr.setCustomQuestion(cq);
-            String response = null;
-            if (cq == null) {
-                throw new JsonParseException(BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookresponseQuestionIdNotFound",List.of(cqId.toString())));
-            } else if (cq.getQuestionType().equalsIgnoreCase("textarea")) {
-                String lineFeed = String.valueOf((char) 10);
-                JsonArray jsonArray = answer.getJsonArray("value");
-                List<JsonString> lines = jsonArray.getValuesAs(JsonString.class);
-                response = lines.stream().map(JsonString::getString).collect(Collectors.joining(lineFeed));
-            } else if (cq.getQuestionType().equalsIgnoreCase("options")) {
-                String option = answer.getString("value");
-                if (!cq.getCustomQuestionOptions().contains(option)) {
-                    throw new JsonParseException(BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookresponseInvalidOption", List.of(option)));
+        JsonArray answers = obj.getJsonArray("answers");
+        if (answers != null) {
+            for (JsonObject answer : answers.getValuesAs(JsonObject.class)) {
+                Long cqId = Long.valueOf(answer.getInt("id"));
+                // find the matching CustomQuestion
+                CustomQuestion cq = cqMap.get(cqId);
+                CustomQuestionResponse cqr = new CustomQuestionResponse();
+                cqr.setGuestbookResponse(guestbookResponse);
+                cqr.setCustomQuestion(cq);
+                String response = null;
+                if (cq == null) {
+                    throw new JsonParseException(BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookresponseQuestionIdNotFound", List.of(cqId.toString())));
+                } else if (cq.getQuestionType().equalsIgnoreCase("textarea")) {
+                    String lineFeed = String.valueOf((char) 10);
+                    JsonArray jsonArray = answer.getJsonArray("value");
+                    List<JsonString> lines = jsonArray.getValuesAs(JsonString.class);
+                    response = lines.stream().map(JsonString::getString).collect(Collectors.joining(lineFeed));
+                } else if (cq.getQuestionType().equalsIgnoreCase("options")) {
+                    String option = answer.getString("value");
+                    if (!cq.getCustomQuestionOptions().contains(option)) {
+                        throw new JsonParseException(BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookresponseInvalidOption", List.of(option)));
+                    }
+                    response = option;
+                } else {
+                    response = answer.getString("value");
                 }
-                response = option;
-            } else {
-                response = answer.getString("value");
+                cqr.setResponse(response);
+                customQuestionResponses.add(cqr);
+                cqMap.remove(cqId); // remove so we can check the remaining for missing required questions
             }
-            cqr.setResponse(response);
-            customQuestionResponses.add(cqr);
-            cqMap.remove(cqId); // remove so we can check the remaining for missing required questions
         }
         guestbookResponse.setCustomQuestionResponses(customQuestionResponses);
         // verify each required question is in the response

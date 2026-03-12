@@ -900,5 +900,14 @@ public class JsonParserTest {
             System.out.println(e.getMessage());
             assertTrue(e.getMessage().contains("ID 4 not found"));
         }
+
+        // Test missing "answers" array
+        try {
+            jsonObj = JsonUtil.getJsonObject(guestbookResponseJson.replace("answers", "answer"));
+            gbr = sut.parseGuestbookResponse(jsonObj, guestbookResponse);
+        } catch (JsonParseException e) {
+            System.out.println(e.getMessage());
+            assertTrue(e.getMessage().contains("Guestbook Response entry is required but not present"));
+        }
     }
 }
