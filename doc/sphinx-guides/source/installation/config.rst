@@ -4796,6 +4796,10 @@ If you have a long text string, you can upload it as a file as in the example be
 
 ``curl -X PUT --upload-file /tmp/long.txt http://localhost:8080/api/admin/settings/:DatasetPublishPopupCustomText``
 
+There is a related setting called :ref:`:PublishDatasetDisclaimerText` that also makes text appear on the popup when publishing, but it requires a checkbox to be clicked.
+
+See also :ref:`show-custom-popup-for-publishing-datasets` in the API Guide.
+
 :DatasetPublishPopupCustomTextOnAllVersions
 +++++++++++++++++++++++++++++++++++++++++++
 
@@ -5325,6 +5329,10 @@ See :ref:`Workflow Admin section <workflow_admin>` for more details and context.
 The text displayed to the user that must be acknowledged prior to publishing a Dataset. When not set the acknowledgment is not required nor displayed.
 
 ``curl -X PUT -d "By publishing this dataset, I fully accept all legal responsibility for ensuring that the deposited content is: anonymized, free of copyright violations, and contains data that is computationally reusable. I understand and agree that any violation of these conditions may result in the immediate removal of the dataset by the repository without prior notice." http://localhost:8080/api/admin/settings/:PublishDatasetDisclaimerText``
+
+There is a similar setting called :ref:`:DatasetPublishPopupCustomText` that also makes text appear on the popup when publishing, but it is only informational. There is no checkbox to click.
+
+See also :ref:`show-disclaimer-for-publishing-datasets` in the API Guide.
 
 .. _:BagItHandlerEnabled:
 
