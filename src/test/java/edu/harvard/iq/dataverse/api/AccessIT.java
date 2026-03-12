@@ -497,7 +497,7 @@ public class AccessIT {
     }
 
     @Test
-    public void testRequestAccess() throws InterruptedException {
+    public void testRequestAccess() throws InterruptedException, IOException, JsonParseException {
 
         String pathToJsonFile = "scripts/api/data/dataset-create-new.json";
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
@@ -505,6 +505,13 @@ public class AccessIT {
                 .statusCode(CREATED.getStatusCode());
         createDatasetResponse.prettyPrint();
         Integer datasetIdNew = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String persistentIdNew = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+
+        // Test without guestbook-at-request=true the required guestbook response will not prevent the access request from succeeding
+        // Create a Guestbook
+        Guestbook guestbook = UtilIT.createRandomGuestbook(dataverseAlias, persistentId, apiToken);
+        // Set the guestbook on the Dataset
+        UtilIT.updateDatasetGuestbook(persistentIdNew, guestbook.getId(), apiToken).prettyPrint();
 
         basicFileName = "004.txt";
         String basicPathToFile = "scripts/search/data/replace_test/" + basicFileName;
@@ -570,7 +577,8 @@ public class AccessIT {
         requestFileAccessResponse = UtilIT.requestFileAccess(basicFileIdNew.toString(), apiTokenRando);
         assertEquals(400, requestFileAccessResponse.getStatusCode());
 
-
+        // disable the guestbook so we can download without guestbook response
+        UtilIT.enableGuestbook(dataverseAlias, guestbook.getId(), apiToken, "false").prettyPrint();
         //Now should be able to download
         randoDownload = UtilIT.downloadFile(tabFile3IdRestrictedNew, apiTokenRando);
         assertEquals(OK.getStatusCode(), randoDownload.getStatusCode());
