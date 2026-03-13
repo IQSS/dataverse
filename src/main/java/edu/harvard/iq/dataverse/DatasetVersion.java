@@ -100,6 +100,7 @@ public class DatasetVersion implements Serializable {
     public static final String ARCHIVAL_STATUS_PENDING = "pending";
     public static final String ARCHIVAL_STATUS_SUCCESS = "success";
     public static final String ARCHIVAL_STATUS_FAILURE = "failure";
+    public static final String ARCHIVAL_STATUS_OBSOLETE = "obsolete";
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -199,8 +200,9 @@ public class DatasetVersion implements Serializable {
     @Transient
     private DatasetVersionDifference dvd;
     
+    //The Json version of the archivalCopyLocation string
     @Transient 
-    private JsonObject archivalStatus;
+    private JsonObject archivalCopyLocationJson;
     
     public Long getId() {
         return this.id;
@@ -351,25 +353,25 @@ public class DatasetVersion implements Serializable {
     public String getArchivalCopyLocationStatus() {
         populateArchivalStatus(false);
         
-        if(archivalStatus!=null) {
-            return archivalStatus.getString(ARCHIVAL_STATUS);
+        if(archivalCopyLocationJson!=null) {
+            return archivalCopyLocationJson.getString(ARCHIVAL_STATUS);
         } 
         return null;
     }
     public String getArchivalCopyLocationMessage() {
         populateArchivalStatus(false);
-        if(archivalStatus!=null) {
-            return archivalStatus.getString(ARCHIVAL_STATUS_MESSAGE);
+        if(archivalCopyLocationJson!=null && archivalCopyLocationJson.containsKey(ARCHIVAL_STATUS_MESSAGE)) {
+            return archivalCopyLocationJson.getString(ARCHIVAL_STATUS_MESSAGE);
         } 
         return null;
     }
     
     private void populateArchivalStatus(boolean force) {
-        if(archivalStatus ==null || force) {
+        if(archivalCopyLocationJson ==null || force) {
             if(archivalCopyLocation!=null) {
                 try {
-            archivalStatus = JsonUtil.getJsonObject(archivalCopyLocation);
-                } catch(Exception e) {
+                    archivalCopyLocationJson = JsonUtil.getJsonObject(archivalCopyLocation);
+                } catch (Exception e) {
                     logger.warning("DatasetVersion id: " + id + "has a non-JsonObject value, parsing error: " + e.getMessage());
                     logger.fine(archivalCopyLocation);
                 }
@@ -380,6 +382,15 @@ public class DatasetVersion implements Serializable {
     public void setArchivalCopyLocation(String location) {
         this.archivalCopyLocation = location;
         populateArchivalStatus(true);
+    }
+
+    // Convenience method to just change the status without changing the location
+    public void setArchivalStatusOnly(String status) {
+        populateArchivalStatus(false);
+        JsonObjectBuilder job = Json.createObjectBuilder(archivalCopyLocationJson);
+        job.add(DatasetVersion.ARCHIVAL_STATUS, status);
+        archivalCopyLocationJson = job.build();
+        archivalCopyLocation = JsonUtil.prettyPrint(archivalCopyLocationJson);
     }
 
     public String getDeaccessionLink() {
