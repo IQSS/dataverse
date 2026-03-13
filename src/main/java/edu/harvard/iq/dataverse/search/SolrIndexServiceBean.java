@@ -154,7 +154,6 @@ public class SolrIndexServiceBean {
         List<DvObjectSolrDoc> datafileSolrDocs = new ArrayList<>();
         for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersionsToBuildCardsFor(dataset)) {
             List<String> perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
-            }
 
             for (FileMetadata fileMetadata : datasetVersionFileIsAttachedTo.getFileMetadatas()) {
                 Long fileId = fileMetadata.getDataFile().getId();
