@@ -87,17 +87,15 @@ public class SearchPermissionsServiceBean {
                 .map(this::convertToIndexableString)
                 .filter(s -> s != null)
                 .forEach(perms::add);
-                // And anyone who has permission to view the unpublished version 
-                perms.addAll(findDvObjectPerms(version.getDataset()));
             }
 
         }
-
+        // And anyone who has permission to view the unpublished version
         perms.addAll(findDvObjectPerms(version.getDataset()));
         return perms;
     }
 
-    public List<String> findDvObjectPerms(DvObject dvObject) {
+    private List<String> findDvObjectPerms(DvObject dvObject) {
         List<String> permStrings = new ArrayList<>();
         Permission p = getRequiredSearchPermission(dvObject);
 
