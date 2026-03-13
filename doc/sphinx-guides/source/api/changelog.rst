@@ -9,7 +9,7 @@ This API changelog is experimental and we would love feedback on its usefulness.
 
 v6.10
 -----
-- The following GET APIs will now return ``400`` if a required Guestbook Response is not supplied. A Guestbook Response can be passed to these APIs in the JSON body using a POST call.
+- The following GET APIs will now return ``400`` if a required Guestbook Response is not supplied. A Guestbook Response can be passed to these APIs in the JSON body using a POST call. See the notes under :ref:`basic-file-access` and :ref:`download-by-dataset-by-version` for details.
 
   - **/api/access/datafile/{fileId:.+}**
 
@@ -19,7 +19,7 @@ v6.10
 
   - **/api/access/dataset/{id}/versions/{versionId}**
 
-- The following POST APIs will now return ``400`` if a required Guestbook Response is not supplied. A Guestbook Response can be passed to these APIs in the JSON body.
+- The following POST APIs will now return ``400`` if a required Guestbook Response is not supplied. A Guestbook Response can be passed to these APIs in the JSON body. See the note under :ref:`basic-download-by-dataset` for details.
 
   - **/api/access/datafiles**
 

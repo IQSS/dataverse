@@ -27,6 +27,8 @@ Please note that in addition to the files from dataset, an additional file call 
 
 There are two forms of the "download by dataset" API, a basic form and one that supports dataset versions.
 
+.. _basic-download-by-dataset:
+
 Basic Download By Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -49,6 +51,8 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -L -O -J -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/access/dataset/:persistentId/?persistentId=doi:10.70122/FK2/N2XGBJ
+
+.. _download-by-dataset-by-version:
 
 Download By Dataset By Version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -81,6 +85,8 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -O -J -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/access/dataset/:persistentId/versions/2.0?persistentId=doi:10.70122/FK2/N2XGBJ
+
+.. _basic-file-access:
 
 Basic File Access
 -----------------
