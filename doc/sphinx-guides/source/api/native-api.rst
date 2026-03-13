@@ -1868,6 +1868,8 @@ In all commands below, dataset versions can be referred to as:
 * ``x.y`` a specific version, where ``x`` is the major version number and ``y`` is the minor version number.
 * ``x`` same as ``x.0``
 
+.. _dataset-json-representation:
+
 Get JSON Representation of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
