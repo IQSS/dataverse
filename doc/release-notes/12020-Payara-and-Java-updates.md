@@ -65,18 +65,6 @@ We also recommend you ensure you followed all update instructions from the past 
    `sudo chown dataverse /usr/local/payara7/glassfish/lib`
    `sudo chown -R dataverse:dataverse /usr/local/payara7/glassfish/domains/domain1`
 
-1. Undeploy Dataverse, if deployed, using the unprivileged service account.
-
-   `sudo -u dataverse /usr/local/payara6/bin/asadmin list-applications`
-
-   `sudo -u dataverse /usr/local/payara6/bin/asadmin undeploy dataverse-6.9`
-
-1. Stop Payara 6, if running.
-
-   Payara 6 should already be stopped because of the Java upgrade above.
-
-   `sudo -u dataverse /usr/local/payara6/bin/asadmin stop-domain`
-
 1. Start and stop Payara 7 to let it reformat its domain.xml file.
 
    When Payara starts, it will reformat its domain.xml file, which we will be backing up and editing. By stopping and starting Payara, the `diff` between the backup and the edited file will be easier to read.
