@@ -147,7 +147,7 @@ public class Access extends AbstractApiBean {
         checkAuthorization(crc, df);
         User requestor = getRequestor(crc);
         if (checkGuestbookRequiredResponse(crc, uriInfo, df, gbrids)) {
-            throw new BadRequestException(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing"));
+            throw new BadRequestException(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", getGuestbookIdFromDatafile(df)));
         }
         
         if (gbrecs != true && df.isReleased()) {
@@ -252,7 +252,7 @@ public class Access extends AbstractApiBean {
         checkAuthorization(crc, df);
         User requestor = getRequestor(crc);
         if (checkGuestbookRequiredResponse(crc, uriInfo, df, gbrids)) {
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing"));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", getGuestbookIdFromDatafile(df)));
         }
 
         if (gbrecs != true && df.isReleased()){
@@ -407,6 +407,11 @@ public class Access extends AbstractApiBean {
         return fId;
     }
 
+    // for bundle arg list
+    private List<String> getGuestbookIdFromDatafile(DataFile df) {
+         return df != null && df.getOwner() != null && df.getOwner().getGuestbook() != null ? List.of(df.getOwner().getGuestbook().getId().toString()) : List.of();
+    }
+
     // Process the guestbook response from JSON and return a signedUrl to the matching GET call
     private Response processDatafileWithGuestbookResponse(ContainerRequestContext crc, HttpHeaders headers, String fileIds, UriInfo uriInfo, boolean gbrecs, String jsonBody) {
 
@@ -435,7 +440,7 @@ public class Access extends AbstractApiBean {
                         MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
                         mdcLogService.logEntry(entry);
                     } else {
-                        return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing"));
+                        return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", getGuestbookIdFromDatafile(df)));
                     }
                 } else if (gbrecs != true && df.isReleased()) {
                     // Write Guestbook record if not done previously and file is released
@@ -1031,7 +1036,7 @@ public class Access extends AbstractApiBean {
                         MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
                         mdcLogService.logEntry(entry);
                     } else {
-                        return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing"));
+                        return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", getGuestbookIdFromDatafile(df)));
                     }
                 } catch (JsonParseException | CommandException ex) {
                     List<String> args = Arrays.asList(df.getDisplayName(), ex.getLocalizedMessage());

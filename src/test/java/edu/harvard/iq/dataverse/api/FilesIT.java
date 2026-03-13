@@ -3978,7 +3978,7 @@ public class FilesIT {
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat()
                 .body("status", equalTo(ApiConstants.STATUS_ERROR))
-                .body("message", equalTo(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing")))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", List.of(guestbook.getId().toString()))))
                 .statusCode(BAD_REQUEST.getStatusCode());
         // With GuestbookResponse. Guest user doesn't have the required Name and Email. so this will still fail
         downloadResponse = UtilIT.postDownloadFile(fileId4, guestbookResponse);
@@ -4004,7 +4004,7 @@ public class FilesIT {
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat()
                 .body("status", equalTo(ApiConstants.STATUS_ERROR))
-                .body("message", equalTo(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing")))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", List.of(guestbook.getId().toString()))))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         // Get Signed Download Url with guestbook response
@@ -4023,7 +4023,7 @@ public class FilesIT {
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat()
                 .body("status", equalTo(ApiConstants.STATUS_ERROR))
-                .body("message", equalTo(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing")))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", List.of(guestbook.getId().toString()))))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         // Download multiple files with guestbook response and fileIds in json
