@@ -152,22 +152,8 @@ public class SolrIndexServiceBean {
 
     private List<DvObjectSolrDoc> constructDatafileSolrDocsFromDataset(Dataset dataset) {
         List<DvObjectSolrDoc> datafileSolrDocs = new ArrayList<>();
-        Set<String> raIds = dataset.getOwner().getLocallyFAIRRoleAssigneeIdentifiers();
         for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersionsToBuildCardsFor(dataset)) {
-            List<String> perms = new ArrayList<>();
-            if (datasetVersionFileIsAttachedTo.isReleased()) {
-                if (raIds.isEmpty()) {
-                    perms.add(IndexServiceBean.getPublicGroupString());
-                } else {
-                    raIds.stream()
-                      .map(searchPermissionsService::convertToIndexableString)
-                      .filter(s -> s != null)
-                      .forEach(perms::add);
-                    // Also allow people who can view the unpublished dataset
-                    perms.addAll(searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo));
-                }
-            } else {
-                perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
+            List<String> perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
             }
 
             for (FileMetadata fileMetadata : datasetVersionFileIsAttachedTo.getFileMetadatas()) {
@@ -211,22 +197,8 @@ public class SolrIndexServiceBean {
         String solrIdEnd = getDatasetOrDataFileSolrEnding(version.getVersionState());
         String solrId = solrIdStart + solrIdEnd;
         String name = version.getTitle();
-        List<String> perms = new ArrayList<>();
-        if (version.isReleased()) {
-            Set<String> raIds = version.getDataset().getOwner().getLocallyFAIRRoleAssigneeIdentifiers();
-            if (raIds.isEmpty()) {
-                perms.add(IndexServiceBean.getPublicGroupString());
-            } else {
-                raIds.stream()
-                .map(searchPermissionsService::convertToIndexableString)
-                .filter(s -> s != null)
-                .forEach(perms::add);
-                // Also allow people who can view the unpublished dataset
-                perms.addAll(searchPermissionsService.findDatasetVersionPerms(version));
-            }
-        } else {
-            perms = searchPermissionsService.findDatasetVersionPerms(version);
-        }
+        List<String> perms = searchPermissionsService.findDatasetVersionPerms(version);
+
         return new DvObjectSolrDoc(version.getDataset().getId().toString(), solrId, version.getId(), name, perms);
     }
 
