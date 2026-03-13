@@ -2139,12 +2139,11 @@ public class DatasetPage implements java.io.Serializable {
                 return permissionsWrapper.notFound();
             }
 
-            // Check permisisons
-            Set<String> locallyFAIRraIds = dataset.getOwner().getLocallyFAIRRoleAssigneeIdentifiers();
-            boolean releasedAndCanView = workingVersion.isReleased() && locallyFAIRraIds.isEmpty() || permissionsWrapper
-                    .hasLocallyFAIRAccess(dvRequestService.getDataverseRequest(), locallyFAIRraIds);
+            // Check permissions
+            boolean releasedAndCanView = workingVersion.isReleased() && (!dataset.isLocallyFAIR() || permissionsWrapper
+                    .hasLocallyFAIRAccess(dvRequestService.getDataverseRequest(), dataset));
             if (!(releasedAndCanView || workingVersion.isDeaccessioned()) && !this.canViewUnpublishedDataset()) {
-                if (locallyFAIRraIds.isEmpty()) {
+                if (dataset.isLocallyFAIR()) {
                     return permissionsWrapper.notAuthorized();
                 } else {
                     return permissionsWrapper.notFound();

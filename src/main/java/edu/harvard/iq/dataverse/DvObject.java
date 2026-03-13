@@ -526,4 +526,12 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
             return false;
         }
     }
+
+    public Set<String> getLocallyFAIRRoleAssigneeIdentifiers() {
+        if(getOwner() != null) {
+            return getOwner().getLocallyFAIRRoleAssigneeIdentifiers();
+        } else {
+            return Collections.emptySet();
+        }
+    }
 }

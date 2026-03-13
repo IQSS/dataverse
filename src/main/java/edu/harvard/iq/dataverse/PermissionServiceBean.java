@@ -1070,11 +1070,11 @@ public class PermissionServiceBean {
      * and the supplied Locally FAIR role assignees.
      * 
      * @param DataversRequest The request containing the user and Ip info (for IPgroups)
-     * @param Set<String> locallyFairAssignees a non-null but possibly empty set of locally FAIR role assignees
+     * @param DvObject the dvObject that may have locallyFairAssignees
      * @return true if the user has locally FAIR access
      */
-    public boolean isALocallyFAIRAssignee(DataverseRequest req, Set<String> locallyFairAssignees) {
-        
+    public boolean hasLocallyFAIRAccess(DataverseRequest req, DvObject dvObject) {
+        Set<String> locallyFairAssignees = dvObject.getLocallyFAIRRoleAssigneeIdentifiers();
         // If no locally FAIR restrictions, it's publicly viewable
         if (locallyFairAssignees.isEmpty()) {
             return false;

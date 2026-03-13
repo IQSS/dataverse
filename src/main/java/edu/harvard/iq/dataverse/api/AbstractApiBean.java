@@ -461,6 +461,22 @@ public abstract class AbstractApiBean {
         return dataset;
     }
 
+    /** Find a dataset but filter according to the visibility from the locallyFAIRRoleAssignments
+     *
+     * @param id - the dataset identifier
+     * @param req - the DataverseRequest
+     * @param deep - whether to perform a deep search
+     * @return the dataset if found and visible, otherwise throws WrappedResponse
+     * @throws WrappedResponse if dataset is not found (in findDatasetOrDie()) or not visible
+     */
+    protected Dataset findDatasetUserCanSeeOrDie(String id, DataverseRequest req, boolean deep) throws WrappedResponse {
+        Dataset dataset = findDatasetOrDie(id, deep);
+        if (dataset.isLocallyFAIR() && !permissionSvc.hasLocallyFAIRAccess(req, dataset)) {
+            throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
+        }
+        return dataset;
+    }
+
     protected DatasetVersion findDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned) throws WrappedResponse {
         DatasetVersion dsv = execCommand(handleVersion(versionNumber, new Datasets.DsVersionHandler<Command<DatasetVersion>>() {
 

@@ -301,9 +301,9 @@ public class PermissionsWrapper implements java.io.Serializable {
     }
 
     // The locallyFAIRraIds should not change within a given view (they are set in the parent Dataverse of whatever object the view is for)
-    public boolean hasLocallyFAIRAccess(DataverseRequest req, Set<String> locallyFAIRraIds) {
+    public boolean hasLocallyFAIRAccess(DataverseRequest req, DvObject dvo) {
         if(hasLocallyFAIRAccess == null ) {
-            hasLocallyFAIRAccess = permissionService.isALocallyFAIRAssignee(req, locallyFAIRraIds);
+            hasLocallyFAIRAccess = permissionService.hasLocallyFAIRAccess(req, dvo);
         }
         return hasLocallyFAIRAccess;
     }

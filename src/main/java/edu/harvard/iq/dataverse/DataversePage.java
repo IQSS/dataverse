@@ -349,13 +349,12 @@ public class DataversePage implements java.io.Serializable {
             }
 
             // Check permissions for unreleased dataverse and Locally FAIR permissions for released dataverses
-            Set<String> locallyFAIRraIds = dataverse.getLocallyFAIRRoleAssigneeIdentifiers();
-            boolean releasedAndCanView = dataverse.isReleased() && (locallyFAIRraIds.isEmpty() || permissionsWrapper
-                    .hasLocallyFAIRAccess(dvRequestService.getDataverseRequest(), locallyFAIRraIds));
+            boolean releasedAndCanView = dataverse.isReleased() && (!dataverse.isLocallyFAIR() || permissionsWrapper
+                    .hasLocallyFAIRAccess(dvRequestService.getDataverseRequest(), dataverse));
 
             if (!releasedAndCanView && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
                 // Return notFound for FAIR-restricted content, notAuthorized otherwise
-                if (!locallyFAIRraIds.isEmpty()) {
+                if (dataverse.isLocallyFAIR()) {
                     return permissionsWrapper.notFound();
                 } else {
                     return permissionsWrapper.notAuthorized();

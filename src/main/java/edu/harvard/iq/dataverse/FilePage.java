@@ -226,13 +226,12 @@ public class FilePage implements java.io.Serializable {
             Dataset dataset = datasetVersion.getDataset();
             
             // Check Locally FAIR permissions for released datasets
-            Set<String> locallyFAIRraIds = dataset.getOwner().getLocallyFAIRRoleAssigneeIdentifiers();
-            boolean releasedAndCanView = datasetVersion.isReleased() && (locallyFAIRraIds.isEmpty() || 
-                    permissionsWrapper.hasLocallyFAIRAccess(dvRequestService.getDataverseRequest(), locallyFAIRraIds));
+            boolean releasedAndCanView = datasetVersion.isReleased() && (!file.isLocallyFAIR() ||
+                    permissionsWrapper.hasLocallyFAIRAccess(dvRequestService.getDataverseRequest(), file));
             
             if (!releasedAndCanView && !canViewUnpublishedDataset()) {
                 // Return notFound for FAIR-restricted content, notAuthorized otherwise
-                if (!locallyFAIRraIds.isEmpty()) {
+                if (file.isLocallyFAIR()) {
                     return permissionsWrapper.notFound();
                 } else {
                     return permissionsWrapper.notAuthorized();

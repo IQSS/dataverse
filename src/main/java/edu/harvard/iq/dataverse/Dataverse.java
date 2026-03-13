@@ -116,6 +116,7 @@ public class Dataverse extends DvObjectContainer {
     @Column(name = "assigneeidentifier")
     private Set<String> locallyFAIRRoleAssigneeIdentifiers = new HashSet<>();
 
+    @Override
     public Set<String> getLocallyFAIRRoleAssigneeIdentifiers() {
         return locallyFAIRRoleAssigneeIdentifiers;
     }
@@ -943,11 +944,6 @@ public class Dataverse extends DvObjectContainer {
         return false;
     }
 
-    @Override
-    public boolean isLocallyFAIR() {
-        return !locallyFAIRRoleAssigneeIdentifiers.isEmpty();
-    }
-
     public String getLocalURL() {
         return  SystemConfig.getDataverseSiteUrlStatic() + "/dataverse/" + this.getAlias();
     }
@@ -964,4 +960,10 @@ public class Dataverse extends DvObjectContainer {
     private boolean hasMetadataBlock(MetadataBlock metadataBlock) {
         return metadataBlocks.stream().anyMatch(block -> block.getId().equals(metadataBlock.getId()));
     }
+
+    @Override
+    public boolean isLocallyFAIR() {
+        return !locallyFAIRRoleAssigneeIdentifiers.isEmpty();
+    }
+
 }
