@@ -942,7 +942,12 @@ public class Dataverse extends DvObjectContainer {
         }
         return false;
     }
-    
+
+    @Override
+    public boolean isLocallyFAIR() {
+        return !locallyFAIRRoleAssigneeIdentifiers.isEmpty();
+    }
+
     public String getLocalURL() {
         return  SystemConfig.getDataverseSiteUrlStatic() + "/dataverse/" + this.getAlias();
     }
