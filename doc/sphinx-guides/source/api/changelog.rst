@@ -25,6 +25,11 @@ v6.10
 
   - **/api/access/datafile/bundle/{fileId}**
 
+- The following PUT APIs will now return ``400`` if a required Guestbook Response is not supplied. When JVM setting -Ddataverse.files.guestbook-at-request=true is set a Guestbook Response may be required to be passed to these APIs in the JSON body. See the note under Configuration :ref:`dataverse.files.guestbook-at-request` for details.
+
+  - **/api/access/datafile/{id}/requestAccess**
+
+
 v6.9
 ----
 
