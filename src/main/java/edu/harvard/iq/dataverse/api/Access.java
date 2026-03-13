@@ -1655,7 +1655,7 @@ public class Access extends AbstractApiBean {
             GuestbookResponse guestbookResponse = getGuestbookResponseFromBody(dataFile, GuestbookResponse.ACCESS_REQUEST, jsonBody, getRequestUser(crc));
             if (ds.getGuestbook() != null && ds.getGuestbook().isEnabled()) {
                 if (ds.getEffectiveGuestbookEntryAtRequest() && guestbookResponse == null) {
-                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookAccessRequestResponseMissing"));
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookAccessRequestResponseMissing", List.of(ds.getGuestbook().getId().toString())));
                 } else if (guestbookResponse != null) {
                     engineSvc.submit(new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, guestbookResponse.getDataset()));
                 }
