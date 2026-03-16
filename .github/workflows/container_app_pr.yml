@@ -69,7 +69,7 @@ jobs:
                   -Dapp.image.tag=${{ env.IMAGE_TAG }}
                   -Ddocker.registry=ghcr.io -Ddocker.platforms=${{ env.PLATFORMS }}
 
-            - uses: marocchino/sticky-pull-request-comment@v2
+            - uses: marocchino/sticky-pull-request-comment@v3
               with:
                   header: registry-push
                   hide_and_recreate: true

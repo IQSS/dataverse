@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
+import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
@@ -12,7 +13,12 @@ import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.UserNotification.Type;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.template.TemplateBuilder;
+import jakarta.json.*;
+import org.assertj.core.util.Lists;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -20,19 +26,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import edu.harvard.iq.dataverse.util.template.TemplateBuilder;
-
-import jakarta.json.*;
-
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import org.assertj.core.util.Lists;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class JsonPrinterTest {
 
@@ -478,6 +472,99 @@ public class JsonPrinterTest {
         
         assertNotNull(result);
         assertEquals(sut, result);
+    }
+
+    @Test
+    public void testDatasetWithGuestbook() {
+        String sut = "foobar";
+        DatasetType foobar = new DatasetType();
+        foobar.setName(sut);
+
+        Guestbook guestbook = new Guestbook();
+        guestbook.setId(1L);
+        guestbook.setEnabled(true);
+        guestbook.setName("Test Guestbook");
+        guestbook.setEmailRequired(true);
+        guestbook.setCreateTime(Timestamp.from(Instant.now()));
+
+        int cqOrder = 0;
+        CustomQuestion cq1 = new CustomQuestion();
+        cq1.setDisplayOrder(cqOrder);
+        cq1.setId(Long.valueOf(++cqOrder));
+        cq1.setGuestbook(guestbook);
+        cq1.setRequired(true);
+        cq1.setQuestionString("My first question");
+        cq1.setQuestionType("text"); // options, textarea, text
+
+        CustomQuestion cq2 = new CustomQuestion();
+        cq2.setDisplayOrder(cqOrder);
+        cq2.setId(Long.valueOf(++cqOrder));
+        cq2.setGuestbook(guestbook);
+        cq2.setRequired(false);
+        cq2.setQuestionString("My second question");
+        cq2.setQuestionType("textarea");
+
+        CustomQuestion cq3 = new CustomQuestion();
+        cq3.setDisplayOrder(cqOrder);
+        cq3.setId(Long.valueOf(++cqOrder));
+        cq3.setGuestbook(guestbook);
+        cq3.setRequired(false);
+        cq3.setQuestionString("My third question");
+        cq3.setQuestionType("options");
+        List<CustomQuestionValue> values = new ArrayList<>();
+        int cqvOrder = 0;
+        CustomQuestionValue cqv1 = new CustomQuestionValue();
+        cqv1.setValueString("Red");
+        cqv1.setDisplayOrder(cqvOrder);
+        cqv1.setId(Long.valueOf(++cqvOrder));
+        values.add(cqv1);
+        CustomQuestionValue cqv2 = new CustomQuestionValue();
+        cqv2.setValueString("White");
+        cqv2.setDisplayOrder(cqvOrder);
+        cqv2.setId(Long.valueOf(++cqvOrder));
+        values.add(cqv2);
+        CustomQuestionValue cqv3 = new CustomQuestionValue();
+        cqv3.setValueString("Blue");
+        cqv3.setDisplayOrder(cqvOrder);
+        cqv3.setId(Long.valueOf(++cqvOrder));
+        values.add(cqv3);
+        cq3.setCustomQuestionValues(values);
+        List<CustomQuestion> customQuestions = new ArrayList<>();
+        customQuestions.add(cq1);
+        customQuestions.add(cq2);
+        customQuestions.add(cq3);
+        guestbook.setCustomQuestions(customQuestions);
+
+        Dataverse dv = new Dataverse();
+        dv.setId(41L);
+        Dataset dataset = createDataset(42);
+        dataset.setDatasetType(foobar);
+        dataset.setOwner(dv);
+        guestbook.setDataverse(dataset.getOwner());
+        dataset.setGuestbook(guestbook);
+
+        // verify that the guestbook id is in the dataset response
+        var jsob = JsonPrinter.json(dataset.getLatestVersion(), null, false, false, false, false).build();
+        System.out.println(jsob);
+        var gbID = jsob.getInt("guestbookId");
+        assertEquals(1, gbID);
+
+        var gb = JsonPrinter.json(guestbook).build();
+        System.out.println(gb);
+
+        // verify guestbook values
+        assertEquals("Test Guestbook", gb.getString("name"));
+        assertEquals(true, gb.getBoolean("emailRequired"));
+        assertEquals(false, gb.getBoolean("nameRequired"));
+        assertEquals(3, gb.getJsonArray("customQuestions").size());
+        // verify multiple choice question
+        var result_cq3 = gb.getJsonArray("customQuestions");
+        System.out.println(result_cq3);
+        var result_cq3_options = result_cq3.getJsonObject(2).getJsonArray("optionValues"); // question 3 is index 2
+        System.out.println(result_cq3_options);
+        assertEquals(3, result_cq3_options.size());
+        var result_cq3_options2 = result_cq3_options.getJsonObject(1); // option 2 is index 1
+        assertEquals("White", result_cq3_options2.getString("value"));
     }
 
     @Test
