@@ -105,7 +105,8 @@
                                         <p:commandLink id="userGroupsAdd" styleClass="btn btn-default"
                                                        actionListener="#{managePermissionsPage.initAssigneeDialog}"
                                                        update="userGroupDialog roleAssignmentHistory"
-                                                       oncomplete="PF('userGroupsForm').show();handleResizeDialog('userGroupDialog');">
+                                                       oncomplete="PF('userGroupsForm').show();handleResizeDialog('userGroupDialog');"
+                                                       process='@this'>
                                             <span class="glyphicon glyphicon-user"/> #{bundle['dataverse.permissions.usersOrGroups.assignBtn']}
                                         </p:commandLink>
                                     </div>
@@ -133,8 +134,9 @@
                                                 </h:outputFormat>
                                                 <p:commandLink styleClass="btn btn-default"
                                                                rendered="#{managePermissionsPage.dvObject eq roleAssignment.definitionPoint}"
-                                                               onclick="PF('confirmation').show()">
-                                                    <f:setPropertyActionListener value="#{roleAssignment.roleAssignment}" target="#{managePermissionsPage.selectedRoleAssignment}" />
+                                                               process="assignedRoles"
+                                                               oncomplete="PF('confirmation').show()">
+                                                    <f:setPropertyActionListener value="#{roleAssignment.roleAssignment}" target="#{managePermissionsPage.selectedRoleAssignment}"/>
                                                     <span class="glyphicon glyphicon-remove"/> #{bundle['dataverse.permissions.usersOrGroups.removeBtn']}
                                                 </p:commandLink>
                                             </p:column>
@@ -272,8 +274,9 @@
                             <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['dataverse.permissions.usersOrGroups.removeBtn.confirmation']}</span>
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confirmation').hide()" 
-                                             action="#{managePermissionsPage.removeRoleAssignment()}" 
+                            <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" oncomplete="PF('confirmation').hide()" 
+                                             action="#{managePermissionsPage.removeRoleAssignment()}"
+                                             process="@this" 
                                              update=":#{p:resolveClientId('rolesPermissionsForm:configureSettings', view)} assignedRoles roleAssignmentHistory @([id$=Messages])" />
                             <button class="btn btn-link" onclick="PF('confirmation').hide()" type="button">
                                 #{bundle.cancel}

@@ -159,18 +159,18 @@ function final_setup(){
 
 if [ "$DOCKER_BUILD" = "true" ]
   then
-    FILES_DIR="/usr/local/payara6/glassfish/domains/domain1/files"
+    FILES_DIR="/usr/local/payara7/glassfish/domains/domain1/files"
     RSERVE_HOST="localhost"
     RSERVE_PORT="6311"
     RSERVE_USER="rserve"
     RSERVE_PASS="rserve"
     HOST_ADDRESS="localhost\:8080"
-    pushd /usr/local/payara6/glassfish/bin/
+    pushd /usr/local/payara7/glassfish/bin/
     ./asadmin start-domain domain1
     preliminary_setup
-    chmod -R 777 /usr/local/payara6/
-    rm -rf /usr/local/payara6/glassfish/domains/domain1/generated
-    rm -rf /usr/local/payara6/glassfish/domains/domain1/applications
+    chmod -R 777 /usr/local/payara7/
+    rm -rf /usr/local/payara7/glassfish/domains/domain1/generated
+    rm -rf /usr/local/payara7/glassfish/domains/domain1/applications
     popd
     exit 0
 fi

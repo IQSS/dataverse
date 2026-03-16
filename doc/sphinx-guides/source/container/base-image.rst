@@ -90,7 +90,7 @@ Image Contents
 
 The base image provides:
 
-- `Eclipse Temurin JRE using Java 17 <https://adoptium.net/temurin/releases?version=17>`_
+- `Eclipse Temurin JRE <https://adoptium.net/temurin/releases>`_
 - `Payara Community Application Server <https://docs.payara.fish/community>`_
 - CLI tools necessary to run Dataverse (i. e. ``curl`` or ``jq`` - see also :doc:`../installation/prerequisites` in Installation Guide)
 - Linux tools for analysis, monitoring and so on
