@@ -109,18 +109,22 @@ public class DataFile extends DvObject implements Comparable {
      * The list of types should be limited to the list above in the technote
      * because the string gets passed into MessageDigest.getInstance() and you
      * can't just pass in any old string.
+     * 
+     * The URIs are used in the OAI_ORE export. They are taken from the associated XML Digital Signature standards.
      */
     public enum ChecksumType {
 
-        MD5("MD5"),
-        SHA1("SHA-1"),
-        SHA256("SHA-256"),
-        SHA512("SHA-512");
+        MD5("MD5", "http://www.w3.org/2001/04/xmldsig-more#md5"),
+        SHA1("SHA-1", "http://www.w3.org/2000/09/xmldsig#sha1"),
+        SHA256("SHA-256", "http://www.w3.org/2001/04/xmlenc#sha256"),
+        SHA512("SHA-512", "http://www.w3.org/2001/04/xmlenc#sha512");
 
         private final String text;
+        private final String uri;
 
-        private ChecksumType(final String text) {
+        private ChecksumType(final String text, final String uri) {
             this.text = text;
+            this.uri = uri;
         }
 
         public static ChecksumType fromString(String text) {
@@ -131,12 +135,29 @@ public class DataFile extends DvObject implements Comparable {
                     }
                 }
             }
-            throw new IllegalArgumentException("ChecksumType must be one of these values: " + Arrays.asList(ChecksumType.values()) + ".");
+            throw new IllegalArgumentException(
+                    "ChecksumType must be one of these values: " + Arrays.asList(ChecksumType.values()) + ".");
+        }
+        
+        public static ChecksumType fromUri(String uri) {
+            if (uri != null) {
+                for (ChecksumType checksumType : ChecksumType.values()) {
+                    if (uri.equals(checksumType.uri)) {
+                        return checksumType;
+                    }
+                }
+            }
+            throw new IllegalArgumentException(
+                    "ChecksumType must be one of these values: " + Arrays.asList(ChecksumType.values()) + ".");
         }
 
         @Override
         public String toString() {
             return text;
+        }
+
+        public String toUri() {
+            return uri;
         }
     }
 

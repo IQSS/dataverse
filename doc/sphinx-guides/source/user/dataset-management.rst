@@ -872,6 +872,8 @@ If your installation is configured to use DataCite as a persistent ID (PID) prov
 Review Datasets
 ---------------
 
+.. note:: This is an experimental feature.
+
 .. _review-datasets-overview:
 
 Review Dataset Overview
