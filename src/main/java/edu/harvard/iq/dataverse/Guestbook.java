@@ -4,14 +4,12 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DateUtil;
 import jakarta.persistence.*;
-import org.hibernate.validator.constraints.NotBlank;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-<<<<<<< IQSS/12020-Payara7_Java21_update
 import jakarta.persistence.Column;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OrderBy;
@@ -19,9 +17,6 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
-import edu.harvard.iq.dataverse.util.DateUtil;
-=======
->>>>>>> develop
 
 /**
  *
