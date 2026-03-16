@@ -5,14 +5,19 @@ import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateGuestbookCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
 import jakarta.json.*;
+import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
@@ -72,25 +77,35 @@ public class Guestbooks extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}")
     public Response createGuestbook(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, String jsonBody) {
-            return response(req -> {
-                Dataverse dataverse = findDataverseOrDie(identifier);
-                if (!permissionSvc.request(req).on(dataverse).has(Permission.EditDataverse)) {
-                    return error(Response.Status.FORBIDDEN, "Not authorized");
-                }
 
-                Guestbook guestbook = new Guestbook();
-                guestbook.setDataverse(dataverse);
-                try {
-                    JsonObject jsonObj = JsonUtil.getJsonObject(jsonBody);
-                    jsonParser().parseGuestbook(jsonObj, guestbook);
-                } catch (JsonException | JsonParseException ex) {
-                    logger.log(Level.WARNING, "Error parsing guestbook JSON", ex);
-                    return badRequest("Error parsing guestbook JSON");
-                }
-                guestbook.setCreateTime(Timestamp.from(Instant.now()));
-                execCommand(new CreateGuestbookCommand(guestbook, req, dataverse));
-                return ok("Guestbook " + guestbook.getId() + " created");
-            }, getRequestUser(crc));
+        try {
+            Dataverse dataverse = findDataverseOrDie(identifier);
+            AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
+            DataverseRequest req = createDataverseRequest(u);
+            if (!permissionSvc.request(req).on(dataverse).has(Permission.EditDataverse)) {
+                    return error(Response.Status.FORBIDDEN, "Not authorized");
+            }
+
+            Guestbook guestbook = new Guestbook();
+            guestbook.setDataverse(dataverse);
+            try {
+                JsonObject jsonObj = JsonUtil.getJsonObject(jsonBody);
+                jsonParser().parseGuestbook(jsonObj, guestbook);
+            } catch (JsonException | JsonParseException ex) {
+                logger.log(Level.WARNING, "Error parsing guestbook JSON", ex);
+                return badRequest("Error parsing guestbook JSON");
+            }
+            guestbook.setCreateTime(Timestamp.from(Instant.now()));
+            Guestbook newGuestbook = execCommand(new CreateGuestbookCommand(guestbook, req, dataverse));
+            return created("/guestbooks/" + newGuestbook.getId(), json(newGuestbook));
+        } catch (WrappedResponse ww) {
+            return handleWrappedResponse(ww);
+        } catch (EJBException ex) {
+            return handleEJBException(ex, "Error creating guestbook.");
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "Error creating guestbook", ex);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error creating guestbook: " + ex.getMessage());
+        }
     }
 
     @PUT
@@ -125,5 +140,27 @@ public class Guestbooks extends AbstractApiBean {
             }
             return notFound("Guestbook " + guestbookId + " not found.");
         }, getRequestUser(crc));
+    }
+    private Response handleWrappedResponse(WrappedResponse ww) {
+        String error = ConstraintViolationUtil.getErrorStringForConstraintViolations(ww.getCause());
+        if (!error.isEmpty()) {
+            logger.log(Level.INFO, error);
+            return ww.refineResponse(error);
+        }
+        return ww.getResponse();
+    }
+
+    private Response handleEJBException(EJBException ex, String action) {
+        Throwable cause = ex;
+        StringBuilder sb = new StringBuilder();
+        sb.append(action);
+        while (cause.getCause() != null) {
+            cause = cause.getCause();
+            if (cause instanceof ConstraintViolationException) {
+                sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
+            }
+        }
+        logger.log(Level.SEVERE, sb.toString());
+        return error(Response.Status.INTERNAL_SERVER_ERROR, sb.toString());
     }
 }

@@ -5466,11 +5466,12 @@ public class UtilIT {
         jsonParsor.parseGuestbook(jsonObj, gb);
 
         Response createGuestbookResponse = UtilIT.createGuestbook(ownerAlias, guestbookAsJson, apiToken);
-        createGuestbookResponse.then().assertThat()
-                .statusCode(OK.getStatusCode());
         createGuestbookResponse.prettyPrint();
+        createGuestbookResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
         JsonPath createdGuestbook = JsonPath.from(createGuestbookResponse.body().asString());
-        Long guestbookId = Long.parseLong(createdGuestbook.getString("data.message").split(" ")[1]);
+        long guestbookId = createdGuestbook.getLong("data.id");
+
         Response guestbookEnableResponse = UtilIT.enableGuestbook(ownerAlias, guestbookId, apiToken, Boolean.TRUE.toString());
         guestbookEnableResponse.prettyPrint();
         guestbookEnableResponse.then().assertThat()
