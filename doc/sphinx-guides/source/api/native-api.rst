@@ -1168,6 +1168,100 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/guestbookResponses?guestbookId=1" -o myResponses.csv
 
+.. _guestbook-api:
+
+Guestbooks
+~~~~~~~~~~
+
+Create a Guestbook for a Dataverse Collection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
+
+Create a Guestbook that can be selected for a Dataset.
+You must have "EditDataverse" permission on the Dataverse collection.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+  export JSON='{"name": "my test guestbook","enabled": true,"emailRequired": true,"nameRequired": true,"institutionRequired": false,"positionRequired": false,"customQuestions": [{"question": "how is your day","required": true,"displayOrder": 0,"type": "text","hidden": false}]}'
+
+  curl -POST -H  "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/guestbooks/{ID}" -d "$JSON"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -POST -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/root" -d '{"name": "my test guestbook","enabled": true,"emailRequired": true,"nameRequired": true,"institutionRequired": false,"positionRequired": false}'
+
+Get a list of Guestbooks for a Dataverse Collection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
+
+Get a list of Guestbooks for a Dataverse Collection
+You must have "EditDataverse" permission on the Dataverse collection.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/guestbooks/{ID}/list"`
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/root/list"
+
+Get a Guestbook for a Dataverse Collection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
+
+Get a Guestbook by its id
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1234
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/guestbooks/{ID}"`
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/1234"
+
+Enable or Disable a Guestbook for a Dataverse Collection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
+
+Use this endpoint to enable or disable the Guestbook. A Guestbook can not be deleted or modified since there may be responses linked to it.
+You must have "EditDataverse" permission on the Dataverse collection.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export dataverseIdentifier=root
+  export ID=1234
+
+  curl -X PUT -d 'true' -H  "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/guestbooks/{dataverseIdentifier}/{ID}/enabled"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X PUT -d 'true' -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/root/1234"
+
 .. _collection-attributes-api:
   
 Change Collection Attributes
@@ -1836,6 +1930,8 @@ In all commands below, dataset versions can be referred to as:
 * ``:latest-published`` the latest published version
 * ``x.y`` a specific version, where ``x`` is the major version number and ``y`` is the minor version number.
 * ``x`` same as ``x.0``
+
+.. _dataset-json-representation:
 
 Get JSON Representation of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
