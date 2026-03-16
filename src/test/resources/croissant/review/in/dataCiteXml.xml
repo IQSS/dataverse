@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource xmlns="http://datacite.org/schema/kernel-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4.5/metadata.xsd">
+  <identifier identifierType="DOI">10.5072/FK2/ZIKBUC</identifier>
+  <creators>
+    <creator>
+      <creatorName nameType="Personal">Wazowski, Mike</creatorName>
+      <givenName>Mike</givenName>
+      <familyName>Wazowski</familyName>
+    </creator>
+  </creators>
+  <titles>
+    <title>Review of Percent of Children That Have Asthma</title>
+  </titles>
+  <publisher>Root</publisher>
+  <publicationYear>2026</publicationYear>
+  <subjects>
+    <subject>Medicine, Health and Life Sciences</subject>
+  </subjects>
+  <dates>
+    <date dateType="Available">2026-03-13</date>
+  </dates>
+  <resourceType resourceTypeGeneral="Other">Review</resourceType>
+  <version>1.0</version>
+  <rightsList>
+    <rights rightsURI="info:eu-repo/semantics/openAccess"/>
+    <rights rightsURI="http://creativecommons.org/publicdomain/zero/1.0" rightsIdentifier="CC0-1.0" rightsIdentifierScheme="SPDX" schemeURI="https://spdx.org/licenses/" xml:lang="en">Creative Commons CC0 1.0 Universal Public Domain Dedication.</rights>
+  </rightsList>
+  <descriptions>
+    <description descriptionType="Abstract">This is a review of a dataset.</description>
+  </descriptions>
+</resource>

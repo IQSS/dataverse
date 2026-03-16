@@ -1,0 +1,68 @@
+{
+  "dcterms:modified": "2026-03-13",
+  "dcterms:creator": "Root",
+  "@type": "ore:ResourceMap",
+  "schema:additionalType": "Dataverse OREMap Format v1.0.1",
+  "dvcore:generatedBy": {
+    "@type": "schema:SoftwareApplication",
+    "schema:name": "Dataverse",
+    "schema:version": "6.9",
+    "schema:url": "https://github.com/iqss/dataverse"
+  },
+  "@id": "http://localhost:8080/api/datasets/export?exporter=OAI_ORE&persistentId=https://doi.org/10.5072/FK2/ZIKBUC",
+  "ore:describes": {
+    "review:itemReviewed": {
+      "review:itemReviewedUrl": "https://datacommons.org/tools/statvar#sv=Percent_Person_Children_WithAsthma",
+      "review:itemReviewedType": "Dataset",
+      "review:itemReviewedCitation": "\"Statistical Variable Explorer - Data Commons.\" Datacommons.org, 2026, datacommons.org/tools/statvar#sv=Percent_Person_Children_WithAsthma. Accessed 9 Mar. 2026."
+    },
+    "author": {
+      "citation:authorName": "Wazowski, Mike"
+    },
+    "citation:dsDescription": {
+      "citation:dsDescriptionValue": "This is a review of a dataset."
+    },
+    "citation:datasetContact": {
+      "citation:datasetContactEmail": "mwazowski@mailinator.com"
+    },
+    "title": "Review of Percent of Children That Have Asthma",
+    "subject": "Medicine, Health and Life Sciences",
+    "@id": "https://doi.org/10.5072/FK2/ZIKBUC",
+    "@type": [
+      "ore:Aggregation",
+      "schema:Dataset"
+    ],
+    "schema:version": "1.0",
+    "schema:name": "Review of Percent of Children That Have Asthma",
+    "schema:dateModified": "2026-03-13 20:30:58.165",
+    "schema:datePublished": "2026-03-13",
+    "schema:creativeWorkStatus": "RELEASED",
+    "schema:license": "http://creativecommons.org/publicdomain/zero/1.0",
+    "dvcore:fileTermsOfAccess": {
+      "dvcore:fileRequestAccess": true
+    },
+    "schema:includedInDataCatalog": "Root",
+    "schema:isPartOf": {
+      "schema:name": "dv586b3d63",
+      "@id": "http://localhost:8080/dataverse/dv586b3d63",
+      "schema:isPartOf": {
+        "schema:name": "Root",
+        "@id": "http://localhost:8080/dataverse/root",
+        "schema:description": "The root dataverse."
+      }
+    },
+    "ore:aggregates": [],
+    "schema:hasPart": []
+  },
+  "@context": {
+    "author": "http://purl.org/dc/terms/creator",
+    "citation": "https://dataverse.org/schema/citation/",
+    "dcterms": "http://purl.org/dc/terms/",
+    "dvcore": "https://dataverse.org/schema/core#",
+    "ore": "http://www.openarchives.org/ore/terms/",
+    "review": "http://localhost:8080/schema/review#",
+    "schema": "http://schema.org/",
+    "subject": "http://purl.org/dc/terms/subject",
+    "title": "http://purl.org/dc/terms/title"
+  }
+}

@@ -42,6 +42,8 @@ public class CroissantExporterSlimTest {
     static ExportDataProvider dataProviderJunk;
     static OutputStream outputStreamDraft;
     static ExportDataProvider dataProviderDraft;
+    static OutputStream outputStreamReview;
+    static ExportDataProvider dataProviderReview;
 
     @BeforeAll
     public static void setUp() {
@@ -430,6 +432,70 @@ public class CroissantExporterSlimTest {
                         }
                     }
                 };
+
+        outputStreamReview = new ByteArrayOutputStream();
+        dataProviderReview =
+                new ExportDataProvider() {
+                    @Override
+                    public JsonObject getDatasetJson() {
+                        String pathToJsonFile =
+                                "src/test/resources/croissant/review/in/datasetJson.json";
+                        try (JsonReader jsonReader =
+                                Json.createReader(new FileReader(pathToJsonFile))) {
+                            return jsonReader.readObject();
+                        } catch (FileNotFoundException ex) {
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    public JsonObject getDatasetORE() {
+                        String pathToJsonFile =
+                                "src/test/resources/croissant/review/in/datasetORE.json";
+                        try (JsonReader jsonReader =
+                                Json.createReader(new FileReader(pathToJsonFile))) {
+                            return jsonReader.readObject();
+                        } catch (FileNotFoundException ex) {
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    public JsonArray getDatasetFileDetails() {
+                        String pathToJsonFile =
+                                "src/test/resources/croissant/review/in/datasetFileDetails.json";
+                        try (JsonReader jsonReader =
+                                Json.createReader(new FileReader(pathToJsonFile))) {
+                            return jsonReader.readArray();
+                        } catch (FileNotFoundException ex) {
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    public JsonObject getDatasetSchemaDotOrg() {
+                        String pathToJsonFile =
+                                "src/test/resources/croissant/review/in/datasetSchemaDotOrg.json";
+                        try (JsonReader jsonReader =
+                                Json.createReader(new FileReader(pathToJsonFile))) {
+                            return jsonReader.readObject();
+                        } catch (FileNotFoundException ex) {
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    public String getDataCiteXml() {
+                        try {
+                            return Files.readString(
+                                    Paths.get(
+                                            "src/test/resources/croissant/review/in/dataCiteXml.xml"),
+                                    StandardCharsets.UTF_8);
+                        } catch (IOException ex) {
+                            return null;
+                        }
+                    }
+                };
     }
 
     @Test
@@ -542,6 +608,20 @@ public class CroissantExporterSlimTest {
                         StandardCharsets.UTF_8);
         JSONAssert.assertEquals(expected, actual, true);
         assertEquals(prettyPrint(expected), prettyPrint(outputStreamDraft.toString()));
+    }
+
+    @Test
+    public void testExportDatasetReview() throws Exception {
+        exporter.exportDataset(dataProviderReview, outputStreamReview);
+        String actual = outputStreamReview.toString();
+        writeCroissantFile(actual, "review");
+        String expected =
+                Files.readString(
+                        Paths.get(
+                                "src/test/resources/croissant/review/expected/review-croissantSlim.json"),
+                        StandardCharsets.UTF_8);
+        JSONAssert.assertEquals(expected, actual, true);
+        assertEquals(prettyPrint(expected), prettyPrint(outputStreamReview.toString()));
     }
 
     private void writeCroissantFile(String actual, String name) throws IOException {

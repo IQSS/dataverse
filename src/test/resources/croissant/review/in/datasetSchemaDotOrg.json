@@ -1,0 +1,44 @@
+{
+  "@context": "http://schema.org",
+  "@type": "Dataset",
+  "@id": "https://doi.org/10.5072/FK2/ZIKBUC",
+  "identifier": "https://doi.org/10.5072/FK2/ZIKBUC",
+  "name": "Review of Percent of Children That Have Asthma",
+  "creator": [
+    {
+      "@type": "Person",
+      "givenName": "Mike",
+      "familyName": "Wazowski",
+      "name": "Wazowski, Mike"
+    }
+  ],
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Mike",
+      "familyName": "Wazowski",
+      "name": "Wazowski, Mike"
+    }
+  ],
+  "datePublished": "2026-03-13",
+  "dateModified": "2026-03-13",
+  "version": "1",
+  "description": "This is a review of a dataset.",
+  "keywords": [
+    "Medicine, Health and Life Sciences"
+  ],
+  "license": "http://creativecommons.org/publicdomain/zero/1.0",
+  "includedInDataCatalog": {
+    "@type": "DataCatalog",
+    "name": "Root",
+    "url": "http://localhost:8080"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Root"
+  },
+  "provider": {
+    "@type": "Organization",
+    "name": "Root"
+  }
+}

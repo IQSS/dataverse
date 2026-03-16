@@ -11,6 +11,7 @@ import jakarta.json.JsonObjectBuilder;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
@@ -230,6 +231,23 @@ public class ReviewsIT {
         createReview.then().assertThat().statusCode(CREATED.getStatusCode());
         Integer reviewId = UtilIT.getDatasetIdFromResponse(createReview);
         String reviewPid = JsonPath.from(createReview.getBody().asString()).getString("data.persistentId");
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(reviewPid, "major", apiToken).then().statusCode(OK.getStatusCode());
+
+        /**
+         * Review datasets are "inside out" in the sense that we don't present the
+         * normal metadata fields via Croissant. Instead, we attempt to represent the
+         * item being reviewed. The number of fields we can expose is limited, but we
+         * can expose "itemReviewedUrl" as "url" for example.
+         */
+        Response insideOutCroissant = UtilIT.exportDataset(reviewPid, "croissantSlim");
+        insideOutCroissant.prettyPrint();
+        insideOutCroissant.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("@type", is("sc:Dataset"))
+                .body("name", nullValue())
+                .body("url", is("https://datacommons.org/tools/statvar#sv=Percent_Person_Children_WithAsthma"));
 
     }
 

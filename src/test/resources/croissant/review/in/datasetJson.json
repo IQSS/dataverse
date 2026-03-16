@@ -1,0 +1,140 @@
+{
+  "id": 3,
+  "identifier": "FK2/ZIKBUC",
+  "persistentUrl": "https://doi.org/10.5072/FK2/ZIKBUC",
+  "protocol": "doi",
+  "authority": "10.5072",
+  "separator": "/",
+  "publisher": "Root",
+  "publicationDate": "2026-03-13",
+  "storageIdentifier": "local://10.5072/FK2/ZIKBUC",
+  "datasetType": "review",
+  "locks": [],
+  "datasetVersion": {
+    "id": 1,
+    "datasetId": 3,
+    "datasetPersistentId": "doi:10.5072/FK2/ZIKBUC",
+    "datasetType": "review",
+    "storageIdentifier": "local://10.5072/FK2/ZIKBUC",
+    "versionNumber": 1,
+    "internalVersionNumber": 4,
+    "versionMinorNumber": 0,
+    "versionState": "RELEASED",
+    "latestVersionPublishingState": "RELEASED",
+    "lastUpdateTime": "2026-03-13T20:30:58Z",
+    "releaseTime": "2026-03-13T20:30:58Z",
+    "createTime": "2026-03-13T20:30:56Z",
+    "publicationDate": "2026-03-13",
+    "citationDate": "2026-03-13",
+    "license": {
+      "name": "CC0 1.0",
+      "uri": "http://creativecommons.org/publicdomain/zero/1.0",
+      "iconUri": "https://licensebuttons.net/p/zero/1.0/88x31.png",
+      "rightsIdentifier": "CC0-1.0",
+      "rightsIdentifierScheme": "SPDX",
+      "schemeUri": "https://spdx.org/licenses/",
+      "languageCode": "en"
+    },
+    "fileAccessRequest": true,
+    "metadataBlocks": {
+      "citation": {
+        "displayName": "Citation Metadata",
+        "name": "citation",
+        "fields": [
+          {
+            "typeName": "title",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "Review of Percent of Children That Have Asthma"
+          },
+          {
+            "typeName": "author",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "authorName": {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Wazowski, Mike"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "datasetContact",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "datasetContactEmail": {
+                  "typeName": "datasetContactEmail",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "mwazowski@mailinator.com"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "dsDescription",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "dsDescriptionValue": {
+                  "typeName": "dsDescriptionValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "This is a review of a dataset."
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "subject",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "value": [
+              "Medicine, Health and Life Sciences"
+            ]
+          }
+        ]
+      },
+      "review": {
+        "displayName": "Review Metadata",
+        "name": "review",
+        "fields": [
+          {
+            "typeName": "itemReviewed",
+            "multiple": false,
+            "typeClass": "compound",
+            "value": {
+              "itemReviewedUrl": {
+                "typeName": "itemReviewedUrl",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "https://datacommons.org/tools/statvar#sv=Percent_Person_Children_WithAsthma"
+              },
+              "itemReviewedType": {
+                "typeName": "itemReviewedType",
+                "multiple": false,
+                "typeClass": "controlledVocabulary",
+                "value": "Dataset"
+              },
+              "itemReviewedCitation": {
+                "typeName": "itemReviewedCitation",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "\"Statistical Variable Explorer - Data Commons.\" Datacommons.org, 2026, datacommons.org/tools/statvar#sv=Percent_Person_Children_WithAsthma. Accessed 9 Mar. 2026."
+              }
+            }
+          }
+        ]
+      }
+    },
+    "files": [],
+    "citation": "Wazowski, Mike, 2026, \"Review of Percent of Children That Have Asthma\", https://doi.org/10.5072/FK2/ZIKBUC, Root, V1"
+  }
+}
