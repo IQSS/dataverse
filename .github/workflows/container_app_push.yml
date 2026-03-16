@@ -141,7 +141,7 @@ jobs:
                   ${{ env.REGISTRY }} -Ddocker.platforms=${{ env.PLATFORMS }}
                   -P ct deploy
 
-            - uses: marocchino/sticky-pull-request-comment@v2
+            - uses: marocchino/sticky-pull-request-comment@v3
               if: ${{ github.event_name == 'pull_request' }}
               with:
                   header: registry-push
