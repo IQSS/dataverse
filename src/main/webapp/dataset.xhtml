@@ -2035,6 +2035,7 @@
                             <div class="form-group">
                                 <p:selectBooleanCheckbox class="text-danger" id="publishDisclaimer"
                                                          itemLabel="#{settingsWrapper.getPublishDatasetDisclaimerText()}"
+                                                         escape="false"
                                                          value="#{DatasetPage.publishDisclaimerAcknowledged}">
                                     <p:ajax event="change" update="releaseDatasetButton"/>
                                 </p:selectBooleanCheckbox>
