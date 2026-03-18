@@ -61,6 +61,13 @@ public class AuthFilter implements ContainerRequestFilter {
             throw new WrappedForbiddenAuthErrorResponse(
                     "Request origin validation failed for session-cookie authentication.");
         }
+
+        // Allow the CSRF-token-issuing endpoint to be called without an existing CSRF header.
+        // This endpoint is used to bootstrap the CSRF token for the current authenticated session.
+        if (isCsrfTokenBootstrapEndpoint(containerRequestContext)) {
+            return;
+        }
+
         if (!isCsrfTokenValid(containerRequestContext)) {
             throw new WrappedForbiddenAuthErrorResponse(
                     "Missing or invalid CSRF token for session-cookie authentication.");
@@ -71,6 +78,25 @@ public class AuthFilter implements ContainerRequestFilter {
         Object authMechanism = containerRequestContext
                 .getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM);
         return ApiConstants.AUTH_MECHANISM_SESSION_COOKIE.equals(authMechanism);
+    }
+
+    /**
+     * Returns {@code true} if the current request targets the CSRF-token-issuing endpoint
+     * (e.g. GET /api/users/:csrf-token). For this endpoint we rely on same-origin checks
+     * plus the authenticated session cookie, and do not require an existing CSRF header.
+     */
+    private boolean isCsrfTokenBootstrapEndpoint(ContainerRequestContext containerRequestContext) {
+        String path = containerRequestContext.getUriInfo().getPath();
+        if (path == null) {
+            return false;
+        }
+        String normalizedPath = path.toLowerCase(Locale.ROOT);
+
+        // Support common variants such as "api/users/:csrf-token" or "users/:csrf-token".
+        if ("api/users/:csrf-token".equals(normalizedPath) || "users/:csrf-token".equals(normalizedPath)) {
+            return true;
+        }
+        return normalizedPath.endsWith("/api/users/:csrf-token") || normalizedPath.endsWith("/users/:csrf-token");
     }
 
     private boolean isOriginOrRefererAllowed(ContainerRequestContext containerRequestContext) {
