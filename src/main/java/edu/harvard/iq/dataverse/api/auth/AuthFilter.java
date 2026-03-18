@@ -15,8 +15,6 @@ import jakarta.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Locale;
-import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.logging.Logger;
 
 /**
@@ -29,13 +27,6 @@ import java.util.logging.Logger;
 public class AuthFilter implements ContainerRequestFilter {
 
     private static final Logger logger = Logger.getLogger(AuthFilter.class.getCanonicalName());
-    private static final Set<String> STATE_CHANGING_METHODS = Set.of("POST", "PUT", "PATCH", "DELETE");
-    private static final Set<String> SAFE_METHODS = Set.of("GET", "HEAD", "OPTIONS");
-    // These patterns intentionally target exact dataset API paths in Datasets.java.
-    // We use matcher.matches() against a normalized path (query string removed by JAX-RS).
-    private static final Pattern MUTATING_UPLOAD_URLS_GET_PATTERN = Pattern.compile("datasets/[^/]+/uploadurls");
-    private static final Pattern MUTATING_CLEAN_STORAGE_GET_PATTERN = Pattern.compile("datasets/[^/]+/cleanStorage");
-    private static final String ACCESS_BATCH_DOWNLOAD_POST_PATH = "access/datafiles";
 
     @Inject
     private CompoundAuthMechanism compoundAuthMechanism;
@@ -66,14 +57,6 @@ public class AuthFilter implements ContainerRequestFilter {
             return;
         }
 
-        String path = normalizedPath(containerRequestContext);
-        if (isAccessPath(path)) {
-            applyAccessEndpointHardening(containerRequestContext, path);
-            return;
-        }
-        if (!requiresCsrfChecks(containerRequestContext, path)) {
-            return;
-        }
         if (!isOriginOrRefererAllowed(containerRequestContext)) {
             throw new WrappedForbiddenAuthErrorResponse(
                     "Request origin validation failed for session-cookie authentication.");
@@ -88,50 +71,6 @@ public class AuthFilter implements ContainerRequestFilter {
         Object authMechanism = containerRequestContext
                 .getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM);
         return ApiConstants.AUTH_MECHANISM_SESSION_COOKIE.equals(authMechanism);
-    }
-
-    private boolean requiresCsrfChecks(ContainerRequestContext containerRequestContext, String path) {
-        String method = containerRequestContext.getMethod();
-        if (method == null) {
-            return false;
-        }
-        String normalizedMethod = method.toUpperCase(Locale.ROOT);
-        if (STATE_CHANGING_METHODS.contains(normalizedMethod)) {
-            return true;
-        }
-        if (!"GET".equals(normalizedMethod)) {
-            return false;
-        }
-        return MUTATING_UPLOAD_URLS_GET_PATTERN.matcher(path).matches()
-                || MUTATING_CLEAN_STORAGE_GET_PATTERN.matcher(path).matches();
-    }
-
-    private void applyAccessEndpointHardening(ContainerRequestContext containerRequestContext, String path)
-            throws WrappedAuthErrorResponse {
-        String method = containerRequestContext.getMethod();
-        String normalizedMethod = method == null ? "" : method.toUpperCase(Locale.ROOT);
-        if (SAFE_METHODS.contains(normalizedMethod)) {
-            return;
-        }
-        // Batch download POST only needs origin check (no CSRF token) since
-        // it returns a file stream and is the primary JSF download path.
-        if ("POST".equals(normalizedMethod) && ACCESS_BATCH_DOWNLOAD_POST_PATH.equals(path)) {
-            if (!isOriginOrRefererAllowed(containerRequestContext)) {
-                throw new WrappedForbiddenAuthErrorResponse(
-                        "Request origin validation failed for session-cookie batch downloads.");
-            }
-            return;
-        }
-        // All other mutating /api/access/* calls get the standard hardening:
-        // same-origin + CSRF token.
-        if (!isOriginOrRefererAllowed(containerRequestContext)) {
-            throw new WrappedForbiddenAuthErrorResponse(
-                    "Request origin validation failed for session-cookie authentication.");
-        }
-        if (!isCsrfTokenValid(containerRequestContext)) {
-            throw new WrappedForbiddenAuthErrorResponse(
-                    "Missing or invalid CSRF token for session-cookie authentication.");
-        }
     }
 
     private boolean isOriginOrRefererAllowed(ContainerRequestContext containerRequestContext) {
@@ -160,31 +99,6 @@ public class AuthFilter implements ContainerRequestFilter {
     private boolean isCsrfTokenValid(ContainerRequestContext containerRequestContext) {
         String requestToken = containerRequestContext.getHeaderString(ApiConstants.CSRF_TOKEN_HEADER);
         return requestToken != null && !requestToken.isBlank() && session.matchesApiCsrfToken(requestToken);
-    }
-
-    private String normalizedPath(ContainerRequestContext containerRequestContext) {
-        String path = containerRequestContext.getUriInfo().getPath();
-        if (path == null) {
-            return "";
-        }
-        String normalized = path;
-        while (normalized.startsWith("/")) {
-            normalized = normalized.substring(1);
-        }
-        while (!normalized.isEmpty() && normalized.endsWith("/")) {
-            normalized = normalized.substring(0, normalized.length() - 1);
-        }
-        if ("api".equals(normalized)) {
-            return "";
-        }
-        if (normalized.startsWith("api/")) {
-            normalized = normalized.substring(4);
-        }
-        return normalized;
-    }
-
-    private boolean isAccessPath(String path) {
-        return "access".equals(path) || path.startsWith("access/");
     }
 
     private String toOrigin(String url) {

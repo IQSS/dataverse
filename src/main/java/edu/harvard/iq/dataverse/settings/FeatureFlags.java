@@ -36,7 +36,8 @@ public enum FeatureFlags {
     API_SESSION_AUTH("api-session-auth"),
     /**
      * Enables additional hardening for session-cookie API authentication.
-     * This includes CSRF protections and session-cookie-specific endpoint guardrails.
+     * When enabled, every session-cookie API request must include a valid same-origin
+     * Origin/Referer header and the X-Dataverse-CSRF-Token header.
      * This feature only works when the feature flag {@link #API_SESSION_AUTH} is also enabled.
      *
      * @apiNote Raise flag by setting "dataverse.feature.api-session-auth-hardening"
