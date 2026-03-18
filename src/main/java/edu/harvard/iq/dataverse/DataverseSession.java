@@ -128,18 +128,18 @@ public class DataverseSession implements Serializable{
      * Returns a CSRF token scoped to the current Dataverse session.
      * The token is lazily created and reused until it is explicitly cleared.
      */
-    public String getOrCreateApiCsrfToken() {
+    public synchronized String getOrCreateApiCsrfToken() {
         if (apiCsrfToken == null || apiCsrfToken.isBlank()) {
             apiCsrfToken = UUID.randomUUID().toString();
         }
         return apiCsrfToken;
     }
 
-    public boolean matchesApiCsrfToken(String token) {
+    public synchronized boolean matchesApiCsrfToken(String token) {
         return token != null && apiCsrfToken != null && apiCsrfToken.equals(token);
     }
 
-    public void clearApiCsrfToken() {
+    public synchronized void clearApiCsrfToken() {
         apiCsrfToken = null;
     }
 
