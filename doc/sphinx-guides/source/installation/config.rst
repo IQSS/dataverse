@@ -3935,6 +3935,12 @@ dataverse.feature.api-session-auth
 ++++++++++++++++++++++++++++++++++
 
 Enables API authentication via session cookie (JSESSIONID). This is needed for some JSF/SAML-oriented integrations where bearer tokens are not used.
+
+.. warning::
+
+   Enabling this flag without also enabling :ref:`dataverse.feature.api-session-auth-hardening` exposes the installation to CSRF risks.
+   Always enable both flags together in production.
+
 By itself, this feature flag does not enable CSRF protections. For stricter protections, also enable :ref:`dataverse.feature.api-session-auth-hardening`.
 
 .. _dataverse.feature.api-session-auth-hardening:
