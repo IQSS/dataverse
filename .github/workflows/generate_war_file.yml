@@ -1,0 +1,41 @@
+name: 'Generate dataverse war file'
+
+on:
+  workflow_dispatch:
+    inputs:
+      buildlabel:
+        description: 'Custom label that will appear after the version number (the equivalent of the old "build number" entry).'
+        type: string
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      - name: Set build number
+        run: scripts/installer/custom-build-number ${{ github.event.inputs.basepath }}
+
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v6
+
+      - name: Build application war
+        run: mvn package
+
+      - name: Get war file name
+        working-directory: target
+        run: echo "war_file=$(ls *.war | head -1)">> $GITHUB_ENV
+
+      - name: Upload war artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: built-app
+          path: ./target/${{ env.war_file }}
