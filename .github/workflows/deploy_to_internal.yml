@@ -8,6 +8,9 @@ on:
         type: string
         required: false
 
+permissions:
+  contents: read
+
 concurrency:
   group: deploy-to-internal
   cancel-in-progress: false
