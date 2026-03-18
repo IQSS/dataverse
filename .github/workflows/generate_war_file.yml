@@ -25,7 +25,7 @@ jobs:
 
       - name: Get branch name
         id: branch-name
-        uses: tj-actions/branch-names@v6
+        uses: tj-actions/branch-names@v7.07
 
       - name: Build application war
         run: mvn package
