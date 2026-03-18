@@ -21,7 +21,7 @@ jobs:
           java-version: '21'
 
       - name: Set build number
-        run: scripts/installer/custom-build-number ${{ github.event.inputs.basepath }}
+        run: scripts/installer/custom-build-number ${{ github.event.inputs.buildlabel }}
 
       - name: Get branch name
         id: branch-name
