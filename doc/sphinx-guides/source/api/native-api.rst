@@ -1015,8 +1015,8 @@ You should expect an HTTP 200 ("OK") response and JSON indicating the database I
 
 .. _api-create-dataset-with-type:
 
-Create a Dataset with a Dataset Type (Software, etc.)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Create a Dataset with a Dataset Type (Software, Workflow, Review, etc.)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 By default, datasets are given the type "dataset" but if your installation had added additional types (see :ref:`api-add-dataset-type`), you can specify the type.
 
@@ -1070,8 +1070,8 @@ Before calling the API, make sure the data files referenced by the ``POST``\ ed 
 
 .. _import-dataset-with-type:
 
-Import a Dataset with a Dataset Type (Software, etc.)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Import a Dataset with a Dataset Type (Software, Workflow, Review, etc.)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 By default, datasets are given the type "dataset" but if your installation had added additional types (see :ref:`api-add-dataset-type`), you can specify the type.
 
@@ -1168,6 +1168,100 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/guestbookResponses?guestbookId=1" -o myResponses.csv
 
+.. _guestbook-api:
+
+Guestbooks
+~~~~~~~~~~
+
+Create a Guestbook for a Dataverse Collection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
+
+Create a Guestbook that can be selected for a Dataset.
+You must have "EditDataverse" permission on the Dataverse collection.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+  export JSON='{"name": "my test guestbook","enabled": true,"emailRequired": true,"nameRequired": true,"institutionRequired": false,"positionRequired": false,"customQuestions": [{"question": "how is your day","required": true,"displayOrder": 0,"type": "text","hidden": false}]}'
+
+  curl -POST -H  "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/guestbooks/{ID}" -d "$JSON"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -POST -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/root" -d '{"name": "my test guestbook","enabled": true,"emailRequired": true,"nameRequired": true,"institutionRequired": false,"positionRequired": false}'
+
+Get a list of Guestbooks for a Dataverse Collection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
+
+Get a list of Guestbooks for a Dataverse Collection
+You must have "EditDataverse" permission on the Dataverse collection.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/guestbooks/{ID}/list"`
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/root/list"
+
+Get a Guestbook for a Dataverse Collection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
+
+Get a Guestbook by its id
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1234
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/guestbooks/{ID}"`
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/1234"
+
+Enable or Disable a Guestbook for a Dataverse Collection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
+
+Use this endpoint to enable or disable the Guestbook. A Guestbook can not be deleted or modified since there may be responses linked to it.
+You must have "EditDataverse" permission on the Dataverse collection.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export dataverseIdentifier=root
+  export ID=1234
+
+  curl -X PUT -d 'true' -H  "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/guestbooks/{dataverseIdentifier}/{ID}/enabled"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X PUT -d 'true' -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/root/1234"
+
 .. _collection-attributes-api:
   
 Change Collection Attributes
@@ -1185,6 +1279,7 @@ The following attributes are supported:
 * ``affiliation`` Affiliation
 * ``filePIDsEnabled`` ("true" or "false") Restricted to use by superusers and only when the :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>` setting is true. Enables or disables registration of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
 * ``requireFilesToPublishDataset`` ("true" or "false") Restricted to use by superusers. Defines if Dataset needs files in order to be published.  If not set the determination will be made through inheritance by checking the owners of this collection. Publishing by a superusers will not be blocked.
+* ``allowedDatasetTypes`` Restricted to use by superusers. By default "dataset" is implied. Pass a comma-separated list of dataset types (e.g. "dataset,software"). You cannot unset this attribute so if you want to delete a dataset type, set ``allowedDatasetTypes`` to a dataset type you won't be deleting. See also :ref:`dataset-types`.
 
 See also :ref:`update-dataverse-api`.
 
@@ -1773,6 +1868,8 @@ In all commands below, dataset versions can be referred to as:
 * ``x.y`` a specific version, where ``x`` is the major version number and ``y`` is the minor version number.
 * ``x`` same as ``x.0``
 
+.. _dataset-json-representation:
+
 Get JSON Representation of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2007,6 +2104,7 @@ Available Dataset Metadata Exporters
 The following dataset metadata exporters ship with Dataverse:
 
 - ``croissant``
+- ``croissantSlim``
 - ``Datacite``
 - ``dataverse_json``
 - ``dcterms``
@@ -3965,11 +4063,13 @@ Usage example:
 
   curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/citation?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
 
+.. _get-citation-in-other-formats:
+
 Get Citation In Other Formats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dataverse can also generate dataset citations in "EndNote", "RIS", "BibTeX", and "CSLJson" formats.
-Unlike the call above, which wraps the result in JSON, this API call sends the raw format with the appropriate content-type (EndNote is XML, RIS and BibTeX are plain text, and CSLJson is JSON). ("Internal" is also a valid value, returning the same content as the above call as HTML).
+Dataverse can also generate dataset citations in "EndNote", "RIS", "BibTeX", and "CSL" formats.
+Unlike the call above, which wraps the result in JSON, this API call sends the raw format with the appropriate content-type (EndNote is XML, RIS and BibTeX are plain text, and CSL is JSON). ("Internal" is also a valid value, returning the same content as the above call as HTML).
 This API call adds a format parameter in the API call which can be any of the values listed above.
 
 Usage example:
@@ -3993,6 +4093,7 @@ Usage example:
 
   curl "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/citation/$FORMAT?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
 
+The type under CSL can vary based on the dataset type, with "dataset", "software", and "review" as supported values. See also :ref:`dataset-types`.
 
 Get Citation by Preview URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -4245,30 +4346,46 @@ The fully expanded example above (without environment variables) looks like this
 Add Dataset Type
 ^^^^^^^^^^^^^^^^
 
-Note: Before you add any types of your own, there should be a single type called "dataset". If you add "software" or "workflow", these types will be sent to DataCite (if you use DataCite). Otherwise, the only functionality you gain currently from adding types is an entry in the "Dataset Type" facet but be advised that if you add a type other than "software" or "workflow", you will need to add your new type to your Bundle.properties file for it to appear in Title Case rather than lower case in the "Dataset Type" facet.
+The default dataset type is "dataset" and ships with Dataverse.
 
-With all that said, we'll add a "software" type in the example below. This API endpoint is superuser only. The "name" of a type cannot be only digits. Note that this endpoint also allows you to add metadata blocks and available licenses for your new dataset type by adding "linkedMetadataBlocks" and/or "availableLicenses" arrays to your JSON.
+Only superusers can add additional dataset types. Once added, they can only be used if a collection has been configured to allow them (see ``allowedDatasetTypes`` under :ref:`collection-attributes-api`).
+
+Here's an example of all available fields when creating a dataset type:
+
+.. literalinclude:: ../../../../scripts/api/data/datasetTypes/datasetTypeAllFields.json
+   :language: json
+
+Here's a description of each field:
+
+- ``name`` (required): Machine-readable name. Cannot be only digits.
+- ``displayName`` (required): Human-readable name.
+- ``description``: A description.
+- ``linkedMetadataBlocks``: Linking a dataset type with one or more metadata blocks results in additional fields from those blocks appearing in the output from the :ref:`list-metadata-blocks-for-a-collection` API endpoint. Use the machine-readable names of the blocks. See :ref:`api-link-dataset-type` for details.
+- ``availableLicenses``: Limits the dataset type to certain licenses. For example, a "software" dataset type could be limited to "MIT" and "Apache-2.0". See :ref:`dataset-types-set-available-licenses` for details.
+
+Download the :download:`datasetTypeAllFields.json <../../../../scripts/api/data/datasetTypes/datasetTypeAllFields.json>` file show above, edit it to suit your needs, and use it in the following command.
 
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export JSON='{"name":"software","linkedMetadataBlocks":["codeMeta20"],"availableLicenses":["MIT", "Apache-2.0"]}'
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-Type: application/json" "$SERVER_URL/api/datasets/datasetTypes" -X POST -d $JSON
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-Type: application/json" "$SERVER_URL/api/datasets/datasetTypes" -X POST --upload-file datasetTypeAllFields.json
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Content-Type: application/json" "https://demo.dataverse.org/api/datasets/datasetTypes" -X POST -d '{"name":"software","linkedMetadataBlocks":["codeMeta20"],"availableLicenses":["MIT", "Apache-2.0"]}'
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Content-Type: application/json" "https://demo.dataverse.org/api/datasets/datasetTypes" -X POST --upload-file datasetTypeAllFields.json
+
+Note that adding certain dataset types will result in a value other than "Dataset" being sent to DataCite (if you use DataCite), see :ref:`dataset-types-datacite` for details.
 
 .. _api-delete-dataset-type:
 
 Delete Dataset Type
 ^^^^^^^^^^^^^^^^^^^
 
-Superuser only.
+Superuser only. Note that if a collection has the type listed as an allowed dataset type, you will be unable to delete the dataset type until you first use the :ref:`collection-attributes-api` to change ``allowedDatasetTypes`` to a dataset type (or dataset types) that you are not trying to delete.
 
 .. code-block:: bash
 
@@ -4313,6 +4430,8 @@ The fully expanded example above (without environment variables) looks like this
 To update the blocks that are linked, send an array with those blocks.
 
 To remove all links to blocks, send an empty array.
+
+.. _dataset-types-set-available-licenses:
 
 Set Available Licenses for a Dataset Type
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -6430,7 +6549,7 @@ The fully expanded example above (without environment variables) looks like this
 Show Disclaimer for Publishing Datasets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The setting "PublishDatasetDisclaimerText", when set, will prevent a draft dataset from being published through the UI without the user acknowledging the disclaimer.
+The setting :ref:`:PublishDatasetDisclaimerText`, when set, will prevent a draft dataset from being published through the UI without the user acknowledging the disclaimer.
 
 .. note:: See :ref:`show-custom-popup-for-publishing-datasets` if the user acknowledgment is not required but you want the message to be displayed in the UI.
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.

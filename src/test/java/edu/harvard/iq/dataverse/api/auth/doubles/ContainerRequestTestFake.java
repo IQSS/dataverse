@@ -5,6 +5,7 @@ import jakarta.ws.rs.core.*;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.*;
+import java.util.function.Predicate;
 
 public class ContainerRequestTestFake implements ContainerRequestContext {
 
@@ -131,5 +132,11 @@ public class ContainerRequestTestFake implements ContainerRequestContext {
     @Override
     public void abortWith(Response response) {
 
+    }
+
+    @Override
+    public boolean containsHeaderString(String name, String valueSeparatorRegex, Predicate<String> valuePredicate) {
+        // TODO Auto-generated method stub
+        return false;
     }
 }

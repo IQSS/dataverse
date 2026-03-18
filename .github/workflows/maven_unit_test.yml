@@ -29,7 +29,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                jdk: [ '17' ]
+                jdk: [ '21' ]
                 experimental: [false]
                 status:  ["Stable"]
         continue-on-error: ${{ matrix.experimental }}
@@ -62,7 +62,7 @@ jobs:
 
           # Upload the built war file. For download, it will be wrapped in a ZIP by GitHub.
           # See also https://github.com/actions/upload-artifact#zipped-artifact-downloads
-          - uses: actions/upload-artifact@v6
+          - uses: actions/upload-artifact@v7
             with:
                 name: dataverse-java${{ matrix.jdk }}.war
                 path: target/dataverse*.war
@@ -72,7 +72,7 @@ jobs:
           - run: |
                 tar -cvf java-builddir.tar target
                 tar -cvf java-m2-selection.tar ~/.m2/repository/io/gdcc/dataverse-*
-          - uses: actions/upload-artifact@v6
+          - uses: actions/upload-artifact@v7
             with:
                 name: java-artifacts
                 path: |
@@ -87,7 +87,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                jdk: [ '17' ]
+                jdk: [ '21' ]
                 experimental: [ false ]
                 status: [ "Stable" ]
                 #
@@ -112,7 +112,7 @@ jobs:
                   cache: maven
 
             # Get the build output from the unit test job
-            - uses: actions/download-artifact@v6
+            - uses: actions/download-artifact@v8
               with:
                   name: java-artifacts
             - run: |
@@ -124,7 +124,7 @@ jobs:
 
             # Wrap up and send to coverage job
             - run: tar -cvf java-reportdir.tar target/site
-            - uses: actions/upload-artifact@v6
+            - uses: actions/upload-artifact@v7
               with:
                   name: java-reportdir
                   path: java-reportdir.tar
@@ -140,12 +140,12 @@ jobs:
           - uses: actions/checkout@v6
           - uses: actions/setup-java@v5
             with:
-                java-version: '17'
+                java-version: '21'
                 distribution: temurin
                 cache: maven
 
           # Get the build output from the integration test job
-          - uses: actions/download-artifact@v6
+          - uses: actions/download-artifact@v8
             with:
                 name: java-reportdir
           - run: tar -xvf java-reportdir.tar
