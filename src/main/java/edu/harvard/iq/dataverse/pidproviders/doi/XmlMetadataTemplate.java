@@ -48,7 +48,6 @@ import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
-import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider;
@@ -1294,8 +1293,8 @@ public class XmlMetadataTemplate {
                     if (projectUrl != null) {
                         JsonObject evv = getExternalVocabularyValue(projectUrl);
                         if (evv != null) {
-                            if (evv.containsKey("notice")) {
-                                JsonValue notices = evv.get("notice");
+                            if (evv.containsKey("notices")) {
+                                JsonValue notices = evv.get("notices");
                                 if (notices.getValueType() == ValueType.ARRAY) {
                                     for (JsonValue notice : notices.asJsonArray()) {
                                         if (notice.getValueType() == ValueType.OBJECT) {
@@ -1305,8 +1304,7 @@ public class XmlMetadataTemplate {
                                         }
                                     }
                                 }
-                            }
-                            if (evv.containsKey("tk_labels")) {
+                            } else if (evv.containsKey("tk_labels")) {
                                 JsonValue tkLabels = evv.get("tk_labels");
                                 if (tkLabels.getValueType() == ValueType.ARRAY) {
                                     for (JsonValue tkLabel : tkLabels.asJsonArray()) {
@@ -1317,8 +1315,7 @@ public class XmlMetadataTemplate {
                                         }
                                     }
                                 }
-                            }
-                            if (evv.containsKey("bc_labels")) {
+                            } else if (evv.containsKey("bc_labels")) {
                                 JsonValue bcLabels = evv.get("bc_labels");
                                 if (bcLabels.getValueType() == ValueType.ARRAY) {
                                     for (JsonValue bcLabel : bcLabels.asJsonArray()) {
@@ -1330,7 +1327,6 @@ public class XmlMetadataTemplate {
                                     }
                                 }
                             }
-
                         } else {
                             
                             // No label or notice info - we'll still add a pointer to the project
