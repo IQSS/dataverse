@@ -3950,9 +3950,10 @@ When enabled, Dataverse applies these protections for requests authenticated via
 
 - Keeps read-oriented ``/api/access/*`` usage compatible with JSF downloads/previews.
 - For ``POST /api/access/datafiles`` (batch download), requires same-origin Origin/Referer validation.
-- Blocks session-cookie auth access to mutating ``/api/access/*`` endpoints (except the batch download POST above).
+- For other mutating ``/api/access/*`` endpoints, requires same-origin Origin/Referer validation plus
+  the ``X-Dataverse-CSRF-Token`` header (same checks as all other state-changing API calls).
 - Requires strict Origin/Referer validation plus the ``X-Dataverse-CSRF-Token`` header on:
-  - state-changing API calls (``POST``, ``PUT``, ``PATCH``, ``DELETE``) outside the ``/api/access`` compatibility rules above,
+  - state-changing API calls (``POST``, ``PUT``, ``PATCH``, ``DELETE``),
   - and the two known mutating ``GET`` calls: ``/api/datasets/{id}/uploadurls`` and ``/api/datasets/{id}/cleanStorage``.
 - Exposes ``/api/users/:csrf-token`` for authenticated session-cookie clients to retrieve the CSRF token.
 

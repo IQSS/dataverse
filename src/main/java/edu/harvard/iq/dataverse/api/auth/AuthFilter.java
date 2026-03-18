@@ -113,6 +113,8 @@ public class AuthFilter implements ContainerRequestFilter {
         if (SAFE_METHODS.contains(normalizedMethod)) {
             return;
         }
+        // Batch download POST only needs origin check (no CSRF token) since
+        // it returns a file stream and is the primary JSF download path.
         if ("POST".equals(normalizedMethod) && ACCESS_BATCH_DOWNLOAD_POST_PATH.equals(path)) {
             if (!isOriginOrRefererAllowed(containerRequestContext)) {
                 throw new WrappedForbiddenAuthErrorResponse(
@@ -120,9 +122,16 @@ public class AuthFilter implements ContainerRequestFilter {
             }
             return;
         }
-        throw new WrappedForbiddenAuthErrorResponse(
-                "Session-cookie authentication is not allowed for mutating /api/access endpoints when "
-                        + "dataverse.feature.api-session-auth-hardening is enabled.");
+        // All other mutating /api/access/* calls get the standard hardening:
+        // same-origin + CSRF token.
+        if (!isOriginOrRefererAllowed(containerRequestContext)) {
+            throw new WrappedForbiddenAuthErrorResponse(
+                    "Request origin validation failed for session-cookie authentication.");
+        }
+        if (!isCsrfTokenValid(containerRequestContext)) {
+            throw new WrappedForbiddenAuthErrorResponse(
+                    "Missing or invalid CSRF token for session-cookie authentication.");
+        }
     }
 
     private boolean isOriginOrRefererAllowed(ContainerRequestContext containerRequestContext) {

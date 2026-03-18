@@ -10,7 +10,7 @@ When hardening is enabled, Dataverse adds these protections for requests authent
 - `/api/access/*` guardrails for session-cookie auth:
   - Read-oriented access remains allowed for compatibility.
   - `POST /api/access/datafiles` remains allowed with same-origin validation.
-  - Other mutating `/api/access/*` endpoints are blocked for session-cookie auth.
+  - Other mutating `/api/access/*` endpoints require same-origin validation plus CSRF token.
 
 A new endpoint is available for session-cookie clients to fetch the CSRF token when hardening is enabled:
 
