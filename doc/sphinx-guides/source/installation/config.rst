@@ -3961,16 +3961,16 @@ After changing these settings, restart Payara and re-check the response headers.
 
 Session-Cookie Hardening vs Bearer Token Auth
 
-- Session-cookie auth and bearer-token auth use different trust models:
-  - Session cookie (``JSESSIONID``) is automatically sent by browsers.
-  - Bearer token is sent only when the client explicitly includes it.
-- Because of browser auto-send behavior, session-cookie auth requires anti-CSRF controls for state-changing API calls.
+- Session-cookie auth and bearer-token auth use different trust models. Session cookie
+  (``JSESSIONID``) is automatically sent by browsers, while bearer token is sent only when the
+  client explicitly includes it.
+- Because of browser auto-send behavior, session-cookie auth requires anti-CSRF controls for
+  state-changing API calls.
   With this hardening track enabled, Dataverse enforces Origin/Referer and CSRF token checks, which brings session-cookie browser usage into a security posture comparable to bearer for first-party, same-origin UI calls.
 - Bearer remains preferable for non-browser and cross-origin API clients.
-- Neither model protects against stolen credentials by itself:
-  - session hijack (stolen ``JSESSIONID``),
-  - bearer-token theft.
-  For both, use HTTPS, secure cookie/token handling, short lifetimes where possible, and strong XSS prevention.
+- Neither model protects against stolen credentials by itself (session hijack via stolen
+  ``JSESSIONID`` or bearer-token theft). For both, use HTTPS, secure cookie/token handling, short
+  lifetimes where possible, and strong XSS prevention.
 
 .. _dataverse.feature.api-bearer-auth:
 
