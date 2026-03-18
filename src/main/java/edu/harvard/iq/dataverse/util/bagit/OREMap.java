@@ -47,7 +47,7 @@ public class OREMap {
     public static final String NAME = "OREMap";
     
     //NOTE: Update this value whenever the output of this class is changed
-    private static final String DATAVERSE_ORE_FORMAT_VERSION = "Dataverse OREMap Format v1.0.2";
+    private static final String DATAVERSE_ORE_FORMAT_VERSION = "Dataverse OREMap Format v1.0.3";
     //v1.0.1 - added versionNote
     private static final String DATAVERSE_SOFTWARE_NAME = "Dataverse";
     private static final String DATAVERSE_SOFTWARE_URL = "https://github.com/iqss/dataverse";
