@@ -1,0 +1,91 @@
+name: 'Deploy to dataverse-internal.iq.harvard.edu'
+
+on:
+  push:
+    branches:
+      - develop
+
+concurrency:
+  group: deploy-to-internal
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      - name: Enable API Session Auth feature flag
+        working-directory: src/main/resources/META-INF
+        run: echo -e "dataverse.feature.api-session-auth=true" >> microprofile-config.properties
+
+      - name: Set build number
+        run: scripts/installer/custom-build-number
+
+      - name: Build application war
+        run: mvn package
+
+      - name: Get war file name
+        working-directory: target
+        run: echo "war_file=$(ls *.war | head -1)">> $GITHUB_ENV
+
+      - name: Upload war artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: built-app
+          path: ./target/${{ env.war_file }}
+
+  deploy-to-payara:
+    needs: build
+    if: ${{ github.repository_owner == 'IQSS' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download war artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: built-app
+          path: ./
+
+      - name: Get war file name
+        run: echo "war_file=$(ls *.war | head -1)">> $GITHUB_ENV
+
+      - name: Copy war file to remote instance
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.INTERNAL_PAYARA_INSTANCE_HOST }}
+          username: ${{ secrets.INTERNAL_PAYARA_INSTANCE_USERNAME }}
+          key: ${{ secrets.INTERNAL_PAYARA_INSTANCE_SSH_PRIVATE_KEY }}
+          source: './${{ env.war_file }}'
+          target: '/home/${{ secrets.INTERNAL_PAYARA_INSTANCE_USERNAME }}'
+          overwrite: true
+
+      - name: Execute payara war deployment remotely
+        uses: appleboy/ssh-action@v1.2.5
+        env:
+          INPUT_WAR_FILE: ${{ env.war_file }}
+        with:
+          host: ${{ secrets.INTERNAL_PAYARA_INSTANCE_HOST }}
+          username: ${{ secrets.INTERNAL_PAYARA_INSTANCE_USERNAME }}
+          key: ${{ secrets.INTERNAL_PAYARA_INSTANCE_SSH_PRIVATE_KEY }}
+          envs: INPUT_WAR_FILE
+          script: |
+            APPLICATION_NAME=dataverse-backend
+	    #APPLICATION_NAME=`echo ${INPUT_WAR_FILE} | sed 's/\.war//'`
+            ASADMIN='/usr/local/payara7/bin/asadmin --user admin'
+            $ASADMIN undeploy $APPLICATION_NAME
+	    # The stop/start entries are likely unnecessary; but leaving them
+	    # in place for now, just in case
+            #$ASADMIN stop-domain
+            #$ASADMIN start-domain
+            $ASADMIN deploy --name $APPLICATION_NAME $INPUT_WAR_FILE
+            #$ASADMIN stop-domain
+            #$ASADMIN start-domain
