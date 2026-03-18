@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -26,6 +27,7 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
+import jakarta.json.JsonValue.ValueType;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -504,7 +506,12 @@ public class OREMap {
                 JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
                 JsonObject context = filtering.getJsonObject("@context");
                 for (String prefix : context.keySet()) {
-                    localContext.putIfAbsent(prefix, context.getString(prefix));
+                    JsonValue prefixVal = context.get(prefix);
+                    if (prefixVal.getValueType() == ValueType.STRING) {
+                        localContext.putIfAbsent(prefix, context.getString(prefix));
+                    } else if (prefixVal.getValueType() == ValueType.OBJECT) {
+                        localContext.putIfAbsent(prefix, JsonUtil.prettyPrint(prefixVal.asJsonObject()));
+                    }
                 }
                 JsonObject cachedValue = datasetFieldService.getExternalVocabularyValue(val);
                 if (cachedValue != null) {
