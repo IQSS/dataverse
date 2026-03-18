@@ -215,6 +215,7 @@ public class Users extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path(":csrf-token")
     public Response getSessionCsrfToken(@Context ContainerRequestContext crc) {
         if (!FeatureFlags.API_SESSION_AUTH_HARDENING.enabled()) {
@@ -226,15 +227,15 @@ public class Users extends AbstractApiBean {
                     Response.Status.FORBIDDEN,
                     "CSRF token endpoint is only available for session-cookie authentication.");
         }
-
-        // Authenticate based on the current session without invoking AuthFilter,
-        // so that this endpoint can bootstrap the CSRF token for session-cookie auth.
-        User currentUser = session.getUser();
-        if (!(currentUser instanceof AuthenticatedUser)) {
-            return error(Response.Status.UNAUTHORIZED, "User must be authenticated via session cookie.");
+        // AuthFilter handles authentication and Origin/Referer validation.
+        // The CSRF header check is skipped for this endpoint (bootstrap exception in AuthFilter)
+        // so the client can obtain the token before making subsequent hardened calls.
+        try {
+            getRequestAuthenticatedUserOrDie(crc);
+            return ok(Json.createObjectBuilder().add("csrfToken", session.getOrCreateApiCsrfToken()));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
-
-        return ok(Json.createObjectBuilder().add("csrfToken", session.getOrCreateApiCsrfToken()));
     }
 
     @POST
