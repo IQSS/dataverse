@@ -1,3 +1,8 @@
 For instances enabling use of Local Contexts integration, Dataverse will now add rights information
 related to the Notices and Labels from a Local Contexts Project associated with a dataset to the metadata
 sent to DataCite (when using DataCite DOIs) and available in metadata exports (DataCite, OAI-ORE, and JSON).  
+
+It is now possible to use non-string values in the retrieval-filtering context entries for external vocabulary scripts.
+This can be used to allow filtered JSON that is not valid JSON-LD to be included in the OAI_ORE JSON-LD metadata export
+ in a way that JSON-LD parsers will accept (and not ignore/drop). The OAI_ORE export version has been updated to 1.0.3 with this change.
+   
