@@ -1,0 +1,3 @@
+For instances enabling use of Local Contexts integration, Dataverse will now add rights information
+related to the Notices and Labels from a Local Contexts Project associated with a dataset to the metadata
+sent to DataCite (when using DataCite DOIs) and available in metadata exports (DataCite, OAI-ORE, and JSON).  
