@@ -6176,7 +6176,7 @@ These hardened requests must also include an ``Origin`` or ``Referer`` header.
 
 Example::
 
-  curl -b cookies.txt "$SERVER_URL/api/users/:csrf-token"
+  curl -b cookies.txt -H "Origin:$SERVER_URL" "$SERVER_URL/api/users/:csrf-token"
 
 Example response::
 
