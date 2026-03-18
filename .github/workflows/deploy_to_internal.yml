@@ -2,8 +2,11 @@ name: 'Deploy to dataverse-internal.iq.harvard.edu'
 
 on:
   workflow_dispatch:
-    branches:
-      - develop
+    inputs:
+      branch name:
+        description: Desired branch 
+        type: string
+	required: true
 
 concurrency:
   group: deploy-to-internal
