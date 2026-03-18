@@ -5,7 +5,7 @@ When hardening is enabled, every API request authenticated via session cookie mu
 - A valid same-origin `Origin` or `Referer` header.
 - The `X-Dataverse-CSRF-Token` header matching the token from `GET /api/users/:csrf-token`.
 
-This applies uniformly to all HTTP methods and all API paths, with no exceptions. Clients not on the same origin should use bearer-token authentication instead.
+This applies uniformly to all HTTP methods and all API paths, except for the CSRF bootstrap endpoint (`GET /api/users/:csrf-token`), which is intentionally callable without an existing `X-Dataverse-CSRF-Token` header so clients can obtain the initial token. All subsequent session-cookie-authenticated requests must include the header. Clients not on the same origin should use bearer-token authentication instead.
 
 Additional changes:
 
