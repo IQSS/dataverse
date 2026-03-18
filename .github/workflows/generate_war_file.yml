@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       buildlabel:
-        description: 'Custom label that will appear after the version number (the equivalent of the old "build number" entry).'
+        description: 'Custom label that will appear after the version number (the equivalent of the old "build number" entry).  Leaving it empty will default to the legacy behavior, i.e. " build <branch>-<checksum>".'
         type: string
         required: false
 
@@ -21,11 +21,7 @@ jobs:
           java-version: '21'
 
       - name: Set build number
-        run: scripts/installer/custom-build-number ${{ github.event.inputs.buildlabel }}
-
-      - name: Get branch name
-        id: branch-name
-        uses: tj-actions/branch-names@v7.07
+        run: scripts/installer/custom-build-number "${{ github.event.inputs.buildlabel }}"
 
       - name: Build application war
         run: mvn package
