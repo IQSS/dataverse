@@ -2903,6 +2903,27 @@ public class DataversesIT {
                             }
                             """;
         
+                String jsonStringForFieldsOnly = """
+                            {
+                              "fields": [
+                                {
+                                  "typeName": "author",
+                                  "value": [
+                                    {
+                                        "authorName": {
+                                            "typeName": "authorName",
+                                            "value": "Brady, Tom"
+                                        },
+                                        "authorAffiliation": {
+                                            "typeName": "authorIdentifierScheme",
+                                            "value": "ORCID"
+                                        }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                            """;
                 
         String jsonStringForUpdateReplaceData = """
                             {
@@ -3037,7 +3058,7 @@ public class DataversesIT {
                 .body("data.name", equalTo("Dataverse template - edited"))
                 .body("data.usageCount", equalTo(0))
                 .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
-                .body("data.datasetFields.citation.fields.size()", equalTo(1))
+                .body("data.datasetFields.size()", equalTo(0))
                 .body("data.instructions.flatten().size()", equalTo(2))
                 .body("data.dataverseAlias", equalTo(dataverseAlias));
         
@@ -3049,9 +3070,21 @@ public class DataversesIT {
                 .body("data.name", equalTo("Template - Just Name"))
                 .body("data.usageCount", equalTo(0))
                 .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
-                .body("data.datasetFields.citation.fields.size()", equalTo(1))
+                .body("data.datasetFields.size()", equalTo(0))
                 .body("data.instructions.flatten().size()", equalTo(2))
                 .body("data.dataverseAlias", equalTo(dataverseAlias));
+        
+        Response updateTemplateUpdateFieldsOnly = UtilIT.updateTemplateMetadata(templateId.toString(), jsonStringForFieldsOnly, apiToken, true);
+        
+        updateTemplateUpdateFieldsOnly.prettyPrint();
+
+        updateTemplateUpdateFieldsOnly.then().assertThat().statusCode(CREATED.getStatusCode())
+                .body("data.name", equalTo("Template - Just Name"))
+                .body("data.usageCount", equalTo(0))
+                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.datasetFields.size()", equalTo(1))
+                .body("data.instructions.flatten().size()", equalTo(2))
+                .body("data.dataverseAlias", equalTo(dataverseAlias));        
         
         //Update Template License
                 // Test case 1: Update to a valid, predefined license (CC BY 4.0).

@@ -2040,7 +2040,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             Template template = findTemplateOrDie(templateId);
             Dataverse dataverse = template.getDataverse();
-      
+            boolean nameOnly = false;
             JsonObject json = JsonUtil.getJsonObject(body);
             
             /*
@@ -2048,7 +2048,8 @@ public class Dataverses extends AbstractApiBean {
             */
  
             if (json.containsKey("name") && !json.getString("name").isBlank()) {
-                 template.setName(json.getString("name"));                
+                 template.setName(json.getString("name"));
+                 nameOnly=true;
             }
 
             
@@ -2061,9 +2062,20 @@ public class Dataverses extends AbstractApiBean {
                 }
             } else {
                 updatedFields = jsonParser().parseMultipleFields(json, replaceData);
-            }
+            }          
             
             Map<String, String> instructionsMap = jsonParser().parseRequestBodyInstructionsMap(json);
+            
+            
+            //if we're only updating the name then return the metadata and instructions to previous            
+            nameOnly = nameOnly && updatedFields.isEmpty() && instructionsMap==null;
+            
+            if (nameOnly){
+                updatedFields = template.getDatasetFields();
+                instructionsMap = template.getInstructionsMap();
+            }
+            
+
             
             Template updated = execCommand(new UpdateTemplateFieldsCommand(template, dataverse,  updatedFields, instructionsMap, replaceData, createDataverseRequest(getRequestUser(crc))));
             

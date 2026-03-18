@@ -69,6 +69,12 @@ public class UpdateTemplateFieldsCommand extends AbstractCommand<Template> {
      * @param template The template to update with the new fields.
      */
     private void updateTemplateFields(Template template) {
+        
+        //if it's empty then empty out the list
+        if (updatedFields.isEmpty()) {
+            template.setDatasetFields(updatedFields);
+        }
+        
         for (DatasetField updatedField : updatedFields) {
             boolean found = false;
 
@@ -168,12 +174,17 @@ public class UpdateTemplateFieldsCommand extends AbstractCommand<Template> {
             template.updateInstructions();
         } else {
             Map <String, String> currentInstructionsMap = template.getInstructionsMap();            
-            Map<String, String> merged = new HashMap<>(currentInstructionsMap);
-            if(instructions != null){
+            Map <String, String> merged = new HashMap<>(currentInstructionsMap);
+            if (instructions != null) {
                 merged.putAll(instructions);
+                template.setInstructionsMap(merged);
+
+            } else {
+                template.getInstructionsMap().clear();
             }
-            template.setInstructionsMap(merged);
-            template.updateInstructions();           
+            
+            template.updateInstructions();
+          
         }       
     }
     
