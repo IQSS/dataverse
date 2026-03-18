@@ -3940,7 +3940,7 @@ By itself, this feature flag does not enable CSRF protections. For stricter prot
 .. _dataverse.feature.api-session-auth-hardening:
 
 dataverse.feature.api-session-auth-hardening
-+++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++
 
 Enables additional hardening for session-cookie API usage. This flag only has an effect when ``dataverse.feature.api-session-auth`` is also enabled.
 The rules are based on request authentication mechanism (session cookie), not on the identity provider used to create the session
@@ -3953,13 +3953,13 @@ When enabled, Dataverse applies these protections for requests authenticated via
 - Blocks session-cookie auth access to mutating ``/api/access/*`` endpoints (except the batch download POST above).
 - Requires strict Origin/Referer validation plus the ``X-Dataverse-CSRF-Token`` header on:
   - state-changing API calls (``POST``, ``PUT``, ``PATCH``, ``DELETE``) outside the ``/api/access`` compatibility rules above,
-  - and the two known mutating ``GET`` calls:
-    ``/api/datasets/{id}/uploadurls`` and ``/api/datasets/{id}/cleanStorage``.
+  - and the two known mutating ``GET`` calls: ``/api/datasets/{id}/uploadurls`` and ``/api/datasets/{id}/cleanStorage``.
 - Exposes ``/api/users/:csrf-token`` for authenticated session-cookie clients to retrieve the CSRF token.
 
 .. _session-cookie-hardening-guidance:
 
-Session-cookie hardening deployment guidance:
+Session-cookie hardening deployment guidance
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Use HTTPS end-to-end (or trusted TLS termination before Dataverse).
 - Ensure JSESSIONID cookies are set with ``Secure`` and ``HttpOnly``.
@@ -3967,6 +3967,7 @@ Session-cookie hardening deployment guidance:
   ``SameSite=Strict`` can break some cross-site IdP/login return flows.
 
 How to verify and set ``JSESSIONID`` cookie flags (Payara)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Verify cookie flags from a response header:
 
@@ -3995,6 +3996,7 @@ How to verify and set ``JSESSIONID`` cookie flags (Payara)
 After changing these settings, restart Payara and re-check the response headers.
 
 Session-Cookie Hardening vs Bearer Token Auth
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Session-cookie auth and bearer-token auth use different trust models. Session cookie
   (``JSESSIONID``) is automatically sent by browsers, while bearer token is sent only when the
