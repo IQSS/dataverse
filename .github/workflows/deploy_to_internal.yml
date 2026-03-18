@@ -1,7 +1,7 @@
 name: 'Deploy to dataverse-internal.iq.harvard.edu'
 
 on:
-  push:
+  workflow_dispatch:
     branches:
       - develop
 
