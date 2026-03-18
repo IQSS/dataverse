@@ -81,8 +81,6 @@ jobs:
             APPLICATION_NAME=dataverse-backend
             ASADMIN='/usr/local/payara7/bin/asadmin --user admin'
             $ASADMIN undeploy $APPLICATION_NAME
-	    # The stop/start entries are likely unnecessary; but leaving them
-	    # in place for now, just in case
             #$ASADMIN stop-domain
             #$ASADMIN start-domain
             $ASADMIN deploy --name $APPLICATION_NAME $INPUT_WAR_FILE
