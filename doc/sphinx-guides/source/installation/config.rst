@@ -3952,13 +3952,13 @@ Enables additional hardening for session-cookie API usage. This flag only has an
 The rules are based on request authentication mechanism (session cookie), not on the identity provider used to create the session
 (``builtin``, Shibboleth, OAuth, OIDC, etc.).
 
-When enabled, Dataverse requires **every** API request authenticated via session cookie to include:
+When enabled, Dataverse requires all API requests authenticated via session cookie (except the CSRF bootstrap endpoint) to include:
 
 - A valid same-origin ``Origin`` or ``Referer`` header.
 - The ``X-Dataverse-CSRF-Token`` header matching the token obtained from ``GET /api/users/:csrf-token``.
 
-This applies uniformly to all HTTP methods (``GET``, ``POST``, ``PUT``, ``DELETE``, etc.) and all
-API paths, with no per-endpoint exceptions. The simplicity is intentional: session-cookie API auth
+The only per-endpoint exception is the CSRF bootstrap call itself (``GET /api/users/:csrf-token``), which by design cannot send the token it is obtaining. All other API paths are subject to these requirements, and this applies uniformly to all HTTP methods (``GET``, ``POST``, ``PUT``, ``DELETE``, etc.).
+The simplicity is intentional: session-cookie API auth
 is only used by same-origin front-end clients that always have the CSRF token available.
 Some ``GET`` endpoints in the codebase have side effects, so exempting reads would leave gaps.
 
