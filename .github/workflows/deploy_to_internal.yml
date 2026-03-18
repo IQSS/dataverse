@@ -79,7 +79,6 @@ jobs:
           envs: INPUT_WAR_FILE
           script: |
             APPLICATION_NAME=dataverse-backend
-	    #APPLICATION_NAME=`echo ${INPUT_WAR_FILE} | sed 's/\.war//'`
             ASADMIN='/usr/local/payara7/bin/asadmin --user admin'
             $ASADMIN undeploy $APPLICATION_NAME
 	    # The stop/start entries are likely unnecessary; but leaving them
