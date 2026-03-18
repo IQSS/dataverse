@@ -119,6 +119,7 @@ public class SearchIT {
                 .body("data.total_count", CoreMatchers.is(1))
                 .body("data.count_in_response", CoreMatchers.is(1))
                 .body("data.items[0].name", CoreMatchers.is("Darwin's Finches"))
+                // Note that "Unpublished" and "Draft" are in English. That's how they are indexed.
                 .body("data.items[0].publicationStatuses", CoreMatchers.hasItems("Unpublished", "Draft"))
                 .statusCode(OK.getStatusCode());
 

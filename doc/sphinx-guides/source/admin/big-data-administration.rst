@@ -302,6 +302,7 @@ There are a broad range of options (that are not turned on by default) for impro
 - :ref:`:DisableSolrFacetsWithoutJsession` - disables facets for users who have disabled cookies (e.g. for bots)
 - :ref:`:DisableUncheckedTypesFacet` - only disables the facet showing the number of collections, datasets, files matching the query (this facet is potentially less useful than others)
 - :ref:`:StoreIngestedTabularFilesWithVarHeaders` - by default, Dataverse stores ingested files without headers and dynamically adds them back at download time. Once this setting is enabled, Dataverse will leave the headers in place (for newly ingested files), reducing the cost of downloads
+- :ref:`dataverse.bagit.zip.max-file-size`, :ref:`dataverse.bagit.zip.max-data-size`, and :ref:`dataverse.bagit.zip.holey` - options to control the size and temporary storage requirements when generating archival Bags - see :ref:`BagIt Export`
 
 
 Scaling Infrastructure

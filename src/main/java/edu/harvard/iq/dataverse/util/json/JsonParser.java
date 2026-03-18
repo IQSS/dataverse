@@ -1,23 +1,7 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import com.google.gson.Gson;
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileCategory;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseContact;
-import edu.harvard.iq.dataverse.DataverseTheme;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.api.dto.DataverseDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
@@ -35,33 +19,21 @@ import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
+import jakarta.json.*;
+import jakarta.json.JsonValue.ValueType;
 import org.apache.commons.validator.routines.DomainValidator;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonString;
-import jakarta.json.JsonValue;
-import jakarta.json.JsonValue.ValueType;
 
 /**
  * Parses JSON objects into domain objects.
@@ -577,6 +549,137 @@ public class JsonParser {
         } catch (NumberFormatException ex) {
             throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.number", Arrays.asList(ex.getMessage())), ex);
         }
+    }
+
+    public Guestbook parseGuestbook(JsonObject obj, Guestbook gb) throws JsonParseException {
+        try {
+            gb.setName(obj.getString("name", null));
+            gb.setEnabled(obj.getBoolean("enabled"));
+            gb.setEmailRequired(obj.getBoolean("emailRequired"));
+            gb.setNameRequired(obj.getBoolean("nameRequired"));
+            gb.setInstitutionRequired(obj.getBoolean("institutionRequired"));
+            gb.setPositionRequired(obj.getBoolean("positionRequired"));
+            gb.setCustomQuestions(parseCustomQuestions(obj.getJsonArray("customQuestions"), gb));
+
+            gb.setCreateTime(parseDate(obj.getString("createTime", null)));
+        } catch (ParseException ex) {
+            throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date", Arrays.asList(ex.getMessage())) , ex);
+        }
+        return gb;
+    }
+    private List<CustomQuestion> parseCustomQuestions(JsonArray customQuestions, Guestbook gb) {
+        final List<CustomQuestion> customQuestionList = (customQuestions != null && !customQuestions.isEmpty()) ? new ArrayList<>() : null;
+        if (customQuestionList != null) {
+            customQuestions.forEach(q -> {
+                JsonObject obj = q.asJsonObject();
+                CustomQuestion cq = new CustomQuestion();
+                cq.setQuestionString(obj.getString("question"));
+                cq.setRequired(obj.getBoolean("required"));
+                cq.setDisplayOrder(obj.getInt("displayOrder"));
+                cq.setQuestionType(obj.getString("type"));
+                cq.setHidden(obj.getBoolean("hidden"));
+                cq.setGuestbook(gb);
+
+                JsonArray optionValues = obj.getJsonArray("optionValues");
+                final  List<CustomQuestionValue> cqvList = (optionValues != null && !optionValues.isEmpty()) ? new ArrayList<>() : null;
+                if (cqvList != null) {
+                    optionValues.forEach(v -> {
+                        JsonObject ov = v.asJsonObject();
+                        CustomQuestionValue cqv = new CustomQuestionValue();
+                        cqv.setValueString(ov.getString("value"));
+                        cqv.setDisplayOrder(ov.getInt("displayOrder"));
+                        cqv.setCustomQuestion(cq);
+                        cqvList.add(cqv);
+                    });
+                    cq.setCustomQuestionValues(cqvList);
+                }
+
+                customQuestionList.add(cq);
+            });
+        }
+        return customQuestionList;
+    }
+
+    public GuestbookResponse parseGuestbookResponse(JsonObject obj, GuestbookResponse guestbookResponse) throws JsonParseException {
+
+        if (obj == null || guestbookResponse == null || guestbookResponse.getGuestbook() == null || guestbookResponse.getGuestbook().getCustomQuestions() == null) {
+            return null;
+        }
+        // overwrite name, email(if valid), institution and position.
+        guestbookResponse.setName(obj.getString("name", guestbookResponse.getName()));
+        String email = obj.getString("email", null);
+        if (email != null) {
+            email = email.trim();
+            if (EMailValidator.isEmailValid(email)) {
+                guestbookResponse.setEmail(email);
+            } else {
+                logger.warning("Ignoring invalid email address in Guestbook response: " + email);
+            }
+        }
+        guestbookResponse.setInstitution(obj.getString("institution", guestbookResponse.getInstitution()));
+        guestbookResponse.setPosition(obj.getString("position", guestbookResponse.getPosition()));
+        Guestbook guestbook = guestbookResponse.getGuestbook();
+        List<String> missingResponses = new ArrayList<>();
+        if (guestbook.isNameRequired() && StringUtil.isEmpty(guestbookResponse.getName())) {
+            missingResponses.add("Name");
+        }
+        if (guestbook.isEmailRequired() && StringUtil.isEmpty(guestbookResponse.getEmail())) {
+            missingResponses.add("Email");
+        }
+        if (guestbook.isInstitutionRequired() && StringUtil.isEmpty(guestbookResponse.getInstitution())) {
+            missingResponses.add("Institution");
+        }
+        if (guestbook.isPositionRequired() && StringUtil.isEmpty(guestbookResponse.getPosition())) {
+            missingResponses.add("Position");
+        }
+
+        Map<Long, CustomQuestion> cqMap = new HashMap<>();
+        guestbook.getCustomQuestions().stream().forEach(cq -> cqMap.put(cq.getId(),cq));
+        List<CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
+        JsonArray answers = obj.getJsonArray("answers");
+        if (answers != null) {
+            for (JsonObject answer : answers.getValuesAs(JsonObject.class)) {
+                Long cqId = Long.valueOf(answer.getInt("id"));
+                // find the matching CustomQuestion
+                CustomQuestion cq = cqMap.get(cqId);
+                CustomQuestionResponse cqr = new CustomQuestionResponse();
+                cqr.setGuestbookResponse(guestbookResponse);
+                cqr.setCustomQuestion(cq);
+                String response = null;
+                if (cq == null) {
+                    throw new JsonParseException(BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookresponseQuestionIdNotFound", List.of(cqId.toString())));
+                } else if (cq.getQuestionType().equalsIgnoreCase("textarea")) {
+                    String lineFeed = String.valueOf((char) 10);
+                    JsonArray jsonArray = answer.getJsonArray("value");
+                    List<JsonString> lines = jsonArray.getValuesAs(JsonString.class);
+                    response = lines.stream().map(JsonString::getString).collect(Collectors.joining(lineFeed));
+                } else if (cq.getQuestionType().equalsIgnoreCase("options")) {
+                    String option = answer.getString("value");
+                    if (!cq.getCustomQuestionOptions().contains(option)) {
+                        throw new JsonParseException(BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookresponseInvalidOption", List.of(option)));
+                    }
+                    response = option;
+                } else {
+                    response = answer.getString("value");
+                }
+                cqr.setResponse(response);
+                customQuestionResponses.add(cqr);
+                cqMap.remove(cqId); // remove so we can check the remaining for missing required questions
+            }
+        }
+        guestbookResponse.setCustomQuestionResponses(customQuestionResponses);
+        // verify each required question is in the response
+        for (Map.Entry<Long, CustomQuestion> e : cqMap.entrySet()) {
+            if (e.getValue().isRequired()) {
+                missingResponses.add(e.getValue().getQuestionString());
+            }
+        }
+        if (!missingResponses.isEmpty()) {
+            String missing = String.join(",", missingResponses);
+            throw new JsonParseException(BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookresponseMissingRequired", List.of(missing)));
+        }
+
+        return guestbookResponse;
     }
 
     private edu.harvard.iq.dataverse.license.License parseLicense(String licenseNameOrUri) throws JsonParseException {

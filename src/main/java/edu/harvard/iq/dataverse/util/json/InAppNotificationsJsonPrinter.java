@@ -241,7 +241,7 @@ public class InAppNotificationsJsonPrinter {
     }
 
     private void addSubmittedDatasetFields(final NullSafeJsonBuilder notificationJson, final UserNotification userNotification, final AuthenticatedUser requestor) {
-        addDatasetFields(notificationJson, userNotification);
+        addDatasetVersionFields(notificationJson, userNotification);
         addRequestorFields(notificationJson, requestor);
     }
 

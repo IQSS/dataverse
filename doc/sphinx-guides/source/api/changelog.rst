@@ -19,10 +19,31 @@ v6.10
 - Most API endpoints that return a success notification but no actual data have it embedded into ``data``:  ``{"data":{"message":"..."}}``.
   For now, this style will remain the supported default. In a future version of Dataverse the ``message`` will always be a separate top field: ``{"data":{},"message":"..."}``.
   Integrators and client vendors are welcome to opt-in to the new style and test thoroughly by enabling :ref:`dataverse.feature.unify-api-response-message-style`.
+- The following GET APIs will now return ``400`` if a required Guestbook Response is not supplied. A Guestbook Response can be passed to these APIs in the JSON body using a POST call. See the notes under :ref:`basic-file-access` and :ref:`download-by-dataset-by-version` for details.
+
+  - **/api/access/datafile/{fileId:.+}**
+
+  - **/api/access/datafiles/{fileIds}**
+
+  - **/api/access/dataset/{id}**
+
+  - **/api/access/dataset/{id}/versions/{versionId}**
+
+- The following POST APIs will now return ``400`` if a required Guestbook Response is not supplied. A Guestbook Response can be passed to these APIs in the JSON body. See the note under :ref:`basic-download-by-dataset` for details.
+
+  - **/api/access/datafiles**
+
+  - **/api/access/datafile/bundle/{fileId}**
+
+- The following PUT APIs will now return ``400`` if a required Guestbook Response is not supplied. When JVM setting -Ddataverse.files.guestbook-at-request=true is set a Guestbook Response may be required to be passed to these APIs in the JSON body. See the note under Configuration :ref:`dataverse.files.guestbook-at-request` for details.
+
+  - **/api/access/datafile/{id}/requestAccess**
+
 
 v6.9
 ----
 
+- When creating datasets that contain a datasetType, that datasetType must be allowed at the collection level. This can be accomplished by passing ``allowedDatasetTypes`` to the :ref:`collection-attributes-api` API.
 - The POST /api/admin/makeDataCount/{id}/updateCitationsForDataset processing is now asynchronous and the response no longer includes the number of citations. The response can be OK if the request is queued or 503 if the queue is full (default queue size is 1000).
 - The way to set per-format size limits for tabular ingest has changed. JSON input is now used. See :ref:`:TabularIngestSizeLimit`.
 - In the past, the settings API would accept any key and value. This is no longer the case because validation has been added. See :ref:`settings_put_single`, for example.

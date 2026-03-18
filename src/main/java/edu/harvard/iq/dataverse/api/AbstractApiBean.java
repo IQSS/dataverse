@@ -887,6 +887,8 @@ public abstract class AbstractApiBean {
             throw new WrappedResponse(ex, badRequest(ex.getMessage(), ex.getFieldErrors()));
         } catch (InvalidCommandArgumentsException ex) {
             throw new WrappedResponse(ex, error(Status.BAD_REQUEST, ex.getMessage()));
+        } catch (ConflictException ex) {
+            throw new WrappedResponse(ex, conflict(ex.getMessage()));
         } catch (CommandException ex) {
             Logger.getLogger(AbstractApiBean.class.getName()).log(Level.SEVERE, "Error while executing command " + cmd, ex);
             throw new WrappedResponse(ex, error(Status.INTERNAL_SERVER_ERROR, ex.getMessage()));
