@@ -18,25 +18,32 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
-import edu.harvard.iq.dataverse.datasetversionsummaries.DatasetVersionSummary;
-import software.amazon.awssdk.services.s3.model.CompletedPart;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
-import edu.harvard.iq.dataverse.dataset.*;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
 import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
+import edu.harvard.iq.dataverse.datasetversionsummaries.DatasetVersionSummary;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.exception.*;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.globus.GlobusUtil;
+import edu.harvard.iq.dataverse.i18n.I18nUtil;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.makedatacount.*;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
@@ -67,8 +74,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
 import jakarta.ws.rs.core.Response.Status;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -78,6 +85,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import software.amazon.awssdk.services.s3.model.CompletedPart;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -98,15 +106,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
-
-import edu.harvard.iq.dataverse.dataset.DatasetType;
-import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
-import edu.harvard.iq.dataverse.license.License;
-
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
+import static jakarta.ws.rs.core.HttpHeaders.ACCEPT_LANGUAGE;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
@@ -127,6 +132,9 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     GuestbookResponseServiceBean guestbookResponseService;
+
+    @EJB
+    GuestbookServiceBean guestbookService;
 
     @EJB
     GlobusServiceBean globusService;
@@ -1278,27 +1286,35 @@ public class Datasets extends AbstractApiBean {
                     DatasetVersion updateVersion = ds.getLatestVersion();
                     AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, createDataverseRequest(user), updateVersion);
                     if (archiveCommand != null) {
-                        // Delete the record of any existing copy since it is now out of date/incorrect
-                        updateVersion.setArchivalCopyLocation(null);
-                        /*
-                         * Then try to generate and submit an archival copy. Note that running this
-                         * command within the CuratePublishedDatasetVersionCommand was causing an error:
-                         * "The attribute [id] of class
-                         * [edu.harvard.iq.dataverse.DatasetFieldCompoundValue] is mapped to a primary
-                         * key column in the database. Updates are not allowed." To avoid that, and to
-                         * simplify reporting back to the GUI whether this optional step succeeded, I've
-                         * pulled this out as a separate submit().
-                         */
-                        try {
-                            updateVersion = commandEngine.submit(archiveCommand);
-                            if (!updateVersion.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
-                                successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
-                            } else {
-                                successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
+                        String status = updateVersion.getArchivalCopyLocationStatus();
+                        if ((status == null) || status.equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
+                            // Delete the record of any existing copy since it is now out of
+                            // date/incorrect
+                            JsonObjectBuilder job = Json.createObjectBuilder();
+                            job.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_PENDING);
+                            updateVersion.setArchivalCopyLocation(JsonUtil.prettyPrint(job.build()));
+                            datasetVersionSvc.persistArchivalCopyLocation(updateVersion);
+                            /*
+                             * Then try to generate and submit an archival copy. Note that running this
+                             * command within the CuratePublishedDatasetVersionCommand was causing an error:
+                             * "The attribute [id] of class
+                             * [edu.harvard.iq.dataverse.DatasetFieldCompoundValue] is mapped to a primary
+                             * key column in the database. Updates are not allowed." To avoid that, and to
+                             * simplify reporting back to the GUI whether this optional step succeeded, I've
+                             * pulled this out as a separate submit().
+                             */
+                            try {
+                                commandEngine.submitAsync(archiveCommand);
+                                successMsg = BundleUtil.getStringFromBundle("datasetversion.archive.inprogress");
+                            } catch (CommandException ex) {
+                                successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure")
+                                        + " - " + ex.toString();
+                                logger.severe(ex.getMessage());
                             }
-                        } catch (CommandException ex) {
-                            successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure") + " - " + ex.toString();
-                            logger.severe(ex.getMessage());
+                        } else if (status.equals(DatasetVersion.ARCHIVAL_STATUS_SUCCESS)) {
+                            // Not automatically replacing the old archival copy as creating it is expensive
+                            updateVersion.setArchivalStatusOnly(DatasetVersion.ARCHIVAL_STATUS_OBSOLETE);
+                            datasetVersionSvc.persistArchivalCopyLocation(updateVersion);
                         }
                     }
                 } catch (CommandException ex) {
@@ -1388,17 +1404,18 @@ public class Datasets extends AbstractApiBean {
              */
             String errorMsg = null;
             Optional<Workflow> prePubWf = wfService.getDefaultWorkflow(TriggerType.PrePublishDataset);
-
+            DataverseRequest dataverseRequest = createDataverseRequest(user);
             try {
-                // ToDo - should this be in onSuccess()? May relate to todo above
                 if (prePubWf.isPresent()) {
+                    // Build context
+                    WorkflowContext context = new WorkflowContext(dataverseRequest, ds, TriggerType.PrePublishDataset, !contactPIDProvider);
                     // Start the workflow, the workflow will call FinalizeDatasetPublication later
                     wfService.start(prePubWf.get(),
-                            new WorkflowContext(createDataverseRequest(user), ds, TriggerType.PrePublishDataset, !contactPIDProvider),
+                            new WorkflowContext(dataverseRequest, ds, TriggerType.PrePublishDataset, !contactPIDProvider),
                             false);
                 } else {
                     FinalizeDatasetPublicationCommand cmd = new FinalizeDatasetPublicationCommand(ds,
-                            createDataverseRequest(user), !contactPIDProvider);
+                            dataverseRequest, !contactPIDProvider);
                     ds = commandEngine.submit(cmd);
                 }
             } catch (CommandException ex) {
@@ -5737,17 +5754,19 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
 
     @GET
     @Path("datasetTypes")
-    public Response getDatasetTypes() {
+    public Response getDatasetTypes(@HeaderParam(ACCEPT_LANGUAGE) String acceptLanguage) {
+        Locale locale = I18nUtil.parseAcceptLanguageHeader(acceptLanguage);
         JsonArrayBuilder jab = Json.createArrayBuilder();
         for (DatasetType datasetType : datasetTypeSvc.listAll()) {
-            jab.add(datasetType.toJson());
+            jab.add(datasetType.toJson(locale));
         }
         return ok(jab);
     }
 
     @GET
     @Path("datasetTypes/{idOrName}")
-    public Response getDatasetTypes(@PathParam("idOrName") String idOrName) {
+    public Response getDatasetTypes(@PathParam("idOrName") String idOrName, @HeaderParam(ACCEPT_LANGUAGE) String acceptLanguage) {
+        Locale locale = I18nUtil.parseAcceptLanguageHeader(acceptLanguage);
         DatasetType datasetType = null;
         if (StringUtils.isNumeric(idOrName)) {
             try {
@@ -5760,7 +5779,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             datasetType = datasetTypeSvc.getByName(idOrName);
         }
         if (datasetType != null) {
-            return ok(datasetType.toJson());
+            return ok(datasetType.toJson(locale));
         } else {
             return error(NOT_FOUND, "Could not find a dataset type with name " + idOrName);
         }
@@ -5785,6 +5804,8 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }
 
         String nameIn = null;
+        String displayNameIn = null;
+        String descriptionIn = null;
 
         JsonArrayBuilder datasetTypesAfter = Json.createArrayBuilder();
         List<MetadataBlock> metadataBlocksToSave = new ArrayList<>();
@@ -5793,6 +5814,8 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         try {
             JsonObject datasetTypeObj =  JsonUtil.getJsonObject(jsonIn);
             nameIn = datasetTypeObj.getString("name");
+            displayNameIn = datasetTypeObj.getString("displayName", null);
+            descriptionIn = datasetTypeObj.getString("description", null);
 
             JsonArray arr = datasetTypeObj.getJsonArray("linkedMetadataBlocks");
             if (arr != null && !arr.isEmpty()) {
@@ -5830,6 +5853,9 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         if (nameIn == null) {
             return error(BAD_REQUEST, "A name for the dataset type is required");
         }
+        if (displayNameIn == null) {
+            return error(BAD_REQUEST, "A displayName for the dataset type is required");
+        }
         if (StringUtils.isNumeric(nameIn)) {
             // getDatasetTypes supports id or name so we don't want a names that looks like an id
             return error(BAD_REQUEST, "The name of the type cannot be only digits.");
@@ -5838,12 +5864,17 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         try {
             DatasetType datasetType = new DatasetType();
             datasetType.setName(nameIn);
+            datasetType.setDisplayName(displayNameIn);
+            datasetType.setDescription(descriptionIn);
             datasetType.setMetadataBlocks(metadataBlocksToSave);
             datasetType.setLicenses(licensesToSave);
             DatasetType saved = datasetTypeSvc.save(datasetType);
             Long typeId = saved.getId();
             String name = saved.getName();
-            return ok(saved.toJson());
+            // Locale is null because when creating the dataset type we are relying entirely
+            // on the database. The new dataset type has not yet been localized in a
+            // properties file.
+            return ok(saved.toJson(null));
         } catch (WrappedResponse ex) {
             return error(BAD_REQUEST, ex.getMessage());
         }
@@ -5871,7 +5902,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         try {
             idToDelete = Long.parseLong(doomed);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("ID must be a number");
+            return error(BAD_REQUEST,"ID must be a number");
         }
 
         DatasetType datasetTypeToDelete = datasetTypeSvc.getById(idToDelete);
@@ -5989,6 +6020,54 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
+    }
+
+    @AuthRequired
+    @PUT
+    @Path("{identifier}/guestbook")
+    public Response updateDatasetGuestbook(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, String body) {
+        return response(req -> {
+            Dataset dataset = findDatasetOrDie(identifier);
+            Long guestbookId = null;
+            try {
+                guestbookId = Long.parseLong(body);
+                final Guestbook guestbook = guestbookService.find(guestbookId);
+                if (guestbook == null) {
+                    return error(NOT_FOUND, "Could not find a guestbook with id " + guestbookId);
+                }
+                UpdateDatasetGuestbookCommand update_cmd = new UpdateDatasetGuestbookCommand(dataset, guestbook, req);
+                commandEngine.submit(update_cmd);
+            } catch (NumberFormatException nfe) {
+                return error(NOT_FOUND, "Could not find a guestbook with id " + guestbookId);
+            } catch (CommandException ex) {
+                logger.log(Level.WARNING, "Failed to update dataset guestbook for dataset " + dataset.getId(), ex);
+                return error(BAD_REQUEST, "Failed to update dataset guestbook.");
+            }
+            return ok("Guestbook " + guestbookId + " set");
+
+        }, getRequestUser(crc));
+    }
+
+    @AuthRequired
+    @DELETE
+    @Path("{identifier}/guestbook")
+    public Response deleteDatasetGuestbook(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) {
+        return response(req -> {
+            Dataset dataset = findDatasetOrDie(identifier);
+            if (dataset.getGuestbook() != null) {
+                Long guestbookId = dataset.getGuestbook().getId();
+                try {
+                    UpdateDatasetGuestbookCommand update_cmd = new UpdateDatasetGuestbookCommand(dataset, null, req);
+                    commandEngine.submit(update_cmd);
+                } catch (CommandException ex) {
+                    logger.log(Level.WARNING, "Failed to remove dataset guestbook from dataset " + dataset.getId(), ex);
+                    return error(BAD_REQUEST, "Failed to remove dataset guestbook.");
+                }
+                return ok("Guestbook removed " + guestbookId);
+            } else {
+                return ok("No Guestbook to remove.");
+            }
+        }, getRequestUser(crc));
     }
 
     @PUT
