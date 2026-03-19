@@ -262,7 +262,12 @@ public class SolrIndexServiceBean {
             persistToSolr(docs);
             boolean updatePermissionTimeSuccessful = false;
             if (dvObject != null) {
-                DvObject savedDvObject = dvObjectService.updatePermissionIndexTime(dvObject);
+                DvObject savedDvObject = null;
+                if (dvObject.isInstanceofDataset()) {
+                    savedDvObject = dvObjectService.updatePermissionIndexTimeInNewTransaction(dvObject);
+                } else {
+                    savedDvObject = dvObjectService.updatePermissionIndexTime(dvObject);
+                }
                 if (savedDvObject != null) {
                     updatePermissionTimeSuccessful = true;
                 }
