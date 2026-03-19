@@ -740,4 +740,21 @@ public class DatasetUtil {
         }
         return localizedName;
     }
+    
+    // Find the prior version - relies on version sorting by major/minor numbers 
+    public static DatasetVersion getPriorVersion(DatasetVersion version) {
+        boolean foundCurrent = false;
+        DatasetVersion priorVersion = null;
+        for (DatasetVersion versionLoop : version.getDataset().getVersions()) {
+            if (foundCurrent) {
+                priorVersion = versionLoop;
+                break;
+            }
+            if (versionLoop.equals(version)) {
+                foundCurrent = true;
+            }
+
+        }
+        return priorVersion;
+    }
 }

@@ -28,6 +28,7 @@ Supported Metadata Export Formats
 
 Once a dataset has been published, its metadata can be exported in a variety of other metadata standards and formats, which help make datasets more :doc:`discoverable </admin/discoverability>` and usable in other systems, such as other data repositories. On each dataset page's metadata tab, the following exports are available:
 
+- Croissant
 - Dublin Core
 - DDI (Data Documentation Initiative Codebook 2.5)
 - DDI HTML Codebook (A more human-readable, HTML version of the DDI Codebook 2.5 metadata export)
@@ -37,9 +38,8 @@ Once a dataset has been published, its metadata can be exported in a variety of 
 - OpenAIRE
 - Schema.org JSON-LD
 
-Additional formats can be enabled. See :ref:`inventory-of-external-exporters` in the Installation Guide. To highlight a few:
+Additional formats can be enabled. See :ref:`inventory-of-external-exporters` in the Installation Guide. For example:
 
-- Croissant
 - RO-Crate
 
 Each of these metadata exports contains the metadata of the most recently published version of the dataset.
@@ -750,7 +750,7 @@ Note that only one Preview URL (normal or with anonymized access) can be configu
 Embargoes
 =========
 
-A Dataverse instance may be configured to support file-level embargoes. Embargoes make file content inaccessible after a dataset version is published  - until the embargo end date.
+A Dataverse instance may be configured to support file-level embargoes. Embargoes make file content inaccessible after a dataset version is published  - until the embargo end date. A reason for the embargo may be supplied when creating the embargo. A reason may be :ref:`required <dataverse.feature.require-embargo-reason>` in some Dataverse instances.
 This means that file previews and the ability to download files will be blocked. The effect is similar to when a file is restricted except that the embargo will end at the specified date without further action and during the embargo, requests for file access cannot be made. 
 Embargoes of files in a version 1.0 dataset may also affect the date shown in the dataset and file citations. The recommended practice is for the citation to reflect the date on which all embargoes on files in version 1.0 end. (Since Dataverse creates one persistent identifier per dataset and doesn't create new ones for each version, the publication of later versions, with or without embargoed files, does not affect the citation date.)
 
@@ -847,21 +847,118 @@ Dataset Types
 
 .. note:: Development of the dataset types feature is ongoing. Please see https://github.com/IQSS/dataverse-pm/issues/307 for details.
 
-Out of the box, all datasets have a dataset type of "dataset". Superusers can add additional types such as "software" or "workflow" using the :ref:`api-add-dataset-type` API endpoint.
+The vision for dataset types is to have variations on datasets. The best documented use case is :ref:`review-datasets-user`, as explained below, but other types of datasets are possible such as software datasets (see :ref:`api-add-dataset-type` for an example) or workflow datasets.
 
-Once more than one type appears in search results, a facet called "Dataset Type" will appear allowing you to filter down to a certain type.
+Out of the box, all datasets have a dataset type of "dataset", which is the traditional research data related dataset in Dataverse. Superusers can add additional types using the :ref:`api-add-dataset-type` API endpoint. These additional dataset types cannot be used until a superuser has allowed them on a per-collection basis using the :ref:`collection-attributes-api` API endpoint (by passing ``allowedDatasetTypes``).
 
-If your installation is configured to use DataCite as a persistent ID (PID) provider, the appropriate type ("Dataset", "Software", "Workflow") will be sent to DataCite when the dataset is published for those three types.
+Dataset types can be listed, added, or deleted via API. See :ref:`api-dataset-types` in the API Guide for more.
 
-Currently, specifying a type for a dataset can only be done via API and only when the dataset is created. The type can't currently be changed afterward. For details, see the following sections of the API guide:
+Currently, specifying a type for a dataset can only be done via API and only when the dataset is created. (The type can't be changed afterward.) For details, see the following sections of the API guide:
 
 - :ref:`api-create-dataset-with-type` (Native API)
 - :ref:`api-semantic-create-dataset-with-type` (Semantic API)
 - :ref:`import-dataset-with-type`
 
-Dataset types can be listed, added, or deleted via API. See :ref:`api-dataset-types` in the API Guide for more.
+Once more than one type appears in dataset search results, a facet called "Dataset Type" will appear allowing you to filter down to a certain type.
 
-Dataset types can be linked with metadata blocks to make fields from those blocks available when datasets of that type are created or edited. See :ref:`api-link-dataset-type` and :ref:`list-metadata-blocks-for-a-collection` for details.
+Dataset types can be linked with metadata blocks to make fields from those blocks available when datasets of that type are created or edited (via API). See :ref:`api-link-dataset-type` and :ref:`list-metadata-blocks-for-a-collection` for details.
+
+Dataset types can change the "type" in Citation Style Language (CSL) output. See :ref:`get-citation-in-other-formats` for details.
+
+If your installation is configured to use DataCite as a persistent ID (PID) provider, the dataset type may be sent to DataCite as ``resourceTypeGeneral`` (see also `upstream schema <https://datacite-metadata-schema.readthedocs.io/en/latest/properties/resourcetype/>`_). See the table under :ref:`dataset-types-datacite` for details.
+
+.. _review-datasets-user:
+
+Review Datasets
+---------------
+
+.. note:: This is an experimental feature.
+
+.. _review-datasets-overview:
+
+Review Dataset Overview
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Review datasets are a specialized type of dataset that can be used to review resources (such as datasets) in the Dataverse installation itself or resources in external data repositories.
+
+This feature is only available via API and only if it has been configured by a superuser for your collection. See :ref:`review-datasets-setup` for details.
+
+In the recommended setup, a collection is created that is managed by a research community, typically approved at the installation level.
+
+In a typical use case, the reviews will be generated by these research communities based on the aggregation of scores for a particular domain by community-identified experts. These scores are stored in a custom metadata block, a rubric. An additional metadata block is required to hold information about the review itself, such a pointer to the resource being reviewed.
+
+We recommend implementing a policy where there is only one review of a given resource per collection.
+
+Almost all functionality is the same between regular datasets and review datasets. Review datasets build upon existing dataset functionality such as custom metadata blocks, versioning, publishing workflows, permissions, and file handling.
+
+Review datasets build on the :ref:`dataset-types` feature, allowing users to choose a dataset type of "review", which leads to a couple differences from regular datasets.
+
+First, when multiple dataset types exist, a "Dataset Type" search facet appears that allows users to narrow results to the various kinds of dataset types that have been added, such as dataset, review, software, workflow, etc. (Under the "Collections, Datasets, Files" area, review datasets are considered datasets.)
+
+Second, when review datasets are published, different ``resourceType`` metadata is sent to DataCite. Review datasets send "Other" for the field ``resourceTypeGeneral`` ("Work Type" in the UI at https://commons.datacite.org) and "Review" as the ``resourceType`` value. See the table under :ref:`dataset-types-datacite` for details and comparison. Please note that we are not using the "PeerReview" for ``resourceTypeGeneral`` because it is (in our view) specific to scholarly communications and may carry related connotations.
+
+The following table summaries how regular datasets compare to review datasets.
+
+.. list-table:: Differences between regular and review datasets
+   :header-rows: 1
+   :stub-columns: 1
+   :align: left
+
+   * -
+     - Regular Dataset
+     - Review Dataset
+   * - Collections/Datasets/Files search facet
+     - dataset
+     - dataset
+   * - Dataset Type search facet
+     - dataset
+     - review
+   * - DataCite
+     - See table under :ref:`api-add-dataset-type`
+     - See table under :ref:`api-add-dataset-type`
+
+.. _creating-a-review-dataset:
+
+Creating a Review Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can only create a review dataset if setup has already been done by a superuser. See :ref:`review-datasets-setup` for details.
+
+Review Datasets can only be created via API. You have the following options:
+
+- :ref:`api-create-dataset-with-type` (Native API)
+
+  - Here is an example JSON file for reference: :download:`dataset-create-review.json <../_static/api/dataset-create-review.json>`.
+
+- :ref:`api-semantic-create-dataset-with-type` (Semantic API)
+- :ref:`import-dataset-with-type`
+
+When creating a review dataset you will likely need to fill in required fields like ``itemReviewedUrl`` as well as fields from one or more "rubric" metadata blocks, as described above under :ref:`review-datasets-overview`.
+
+.. _dataset-types-datacite:
+
+Dataset Types and DataCite
+--------------------------
+
+Adding certain dataset types will result in a value other than "Dataset" being sent to DataCite (if you use DataCite) as shown in the table below.
+
+.. list-table:: Values sent to DataCite for resourceTypeGeneral by Dataset Type
+   :header-rows: 1
+   :stub-columns: 1
+   :align: left
+
+   * - Dataset Type
+     - Value sent to DataCite
+   * - dataset
+     - <resourceType resourceTypeGeneral="Dataset"/>
+   * - software
+     - <resourceType resourceTypeGeneral="Software"/>
+   * - workflow
+     - <resourceType resourceTypeGeneral="Workflow"/>
+   * - review
+     - <resourceType resourceTypeGeneral="Other">Review</resourceType>
+
+Note that the value for resourceType (which is either empty or "Review", as shown above) can be overridden by values in the "Data Type" (``kindOfData``) metadata field.
 
 .. |image1| image:: ./img/DatasetDiagram.png
    :class: img-responsive

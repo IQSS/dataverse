@@ -83,16 +83,24 @@ public class DOIDataCiteRegisterService {
         String numericIdentifier = identifier.substring(identifier.indexOf(":") + 1);
         String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
         String target = metadata.get("_target");
-        String currentMetadata = client.getMetadata(numericIdentifier);
-        Diff myDiff = DiffBuilder.compare(xmlMetadata)
-                .withTest(currentMetadata).ignoreWhitespace().checkForSimilar()
-                .build();
-
-        if (myDiff.hasDifferences()) {
-            for(Difference d : myDiff.getDifferences()) {
-            
-              logger.fine(d.toString());
+        String currentMetadata = null;
+        boolean hasDifferences = false;
+        try {
+            currentMetadata = client.getMetadata(numericIdentifier);
+            Diff myDiff = DiffBuilder.compare(xmlMetadata).withTest(currentMetadata).ignoreWhitespace().checkForSimilar()
+                    .build();
+            hasDifferences = myDiff.hasDifferences();
+            if (hasDifferences) {
+                for (Difference d : myDiff.getDifferences()) {
+                    logger.fine(d.toString());
+                }
             }
+        } catch (RuntimeException e) {
+            logger.log(Level.INFO, "DOI " + numericIdentifier + " not registered with DataCite, registering now.");
+            hasDifferences = true;
+        }
+
+        if (hasDifferences) {
             retString = "metadata:\\r" + client.postMetadata(xmlMetadata) + "\\r";
         }
         String currentUrl = null;

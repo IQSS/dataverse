@@ -20,6 +20,7 @@ import static edu.harvard.iq.dataverse.api.LDNInbox.objectKey;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 import jakarta.ws.rs.BadRequestException;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -73,12 +74,20 @@ public class COARNotifyRelationshipAnnouncement {
      */
     public void processMessage(JsonObject msgObject) {
         // Extract subject, object, and relationship from the message
-        String subjectId = extractField(msgObject, subjectKey);
-        String objectId = extractField(msgObject, objectKey);
-        String relationshipId = extractField(msgObject, relationshipKey);
+        String subjectId;
+        String objectId;
+        String relationshipId;
+        try {
+            // Extract subject, object, and relationship from the message
+            subjectId = extractField(msgObject, subjectKey);
+            objectId = extractField(msgObject, objectKey);
+            relationshipId = extractField(msgObject, relationshipKey);
 
-        if (subjectId == null || objectId == null || relationshipId == null) {
-            throw new BadRequestException("Can't find the subject, relationship or object in the message - ignoring");
+            if (subjectId == null || objectId == null || relationshipId == null) {
+                throw new BadRequestException("Can't find the subject, relationship or object in the message - ignoring");
+            }
+        } catch (Exception e) {
+            throw new BadRequestException("Failed to parse subject, relationship or object from the message - ignoring", e);
         }
 
         // Get metadata about the citing resource
@@ -112,7 +121,15 @@ public class COARNotifyRelationshipAnnouncement {
      * Extract a field value from the message object.
      */
     private String extractField(JsonObject msgObject, String key) {
-        return msgObject.containsKey(key) ? msgObject.getString(key) : null;
+        if (msgObject.containsKey(key)) {
+            JsonValue value = msgObject.get(key);
+            if (value.getValueType() == JsonValue.ValueType.OBJECT) {
+                return ((JsonObject) value).getString("@id", null);
+            } else if (value.getValueType() == JsonValue.ValueType.STRING) {
+                return msgObject.getString(key);
+            }
+        }
+        return null;
     }
 
     /**

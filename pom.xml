@@ -292,7 +292,18 @@
             <artifactId>jakarta.jakartaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>6.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>3.2.0</version>
+            <scope>provided</scope>
+        </dependency>
         <!-- Jakarta Activation, MIME support etc -->
         <!-- Runtime implementation here only, as necessary for testing. -->
         <dependency>
@@ -306,7 +317,6 @@
             <artifactId>payara-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        
         <!-- JSON-P -->
         <!-- Runtime implementation here only, as necessary for testing. -->
         <dependency>
@@ -721,7 +731,7 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.20.2</version>
+            <version>3.27.7</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -785,12 +795,6 @@
             Otherwise, we get very cryptic errors about missing bundle files on test runs.
             See also https://github.com/jakartaee/jakartaee-api/issues/61
         -->
-        <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
-            <version>4.0.4</version>
-            <scope>test</scope>
-        </dependency>
         
         <dependency>
             <groupId>org.mockito</groupId>
@@ -1115,6 +1119,33 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>3.2.1</version>
+                <configuration>
+                    <java>
+                        <includes>
+                            <include>src/main/java/edu/harvard/iq/dataverse/export/CroissantExporter.java</include>
+                            <include>src/main/java/edu/harvard/iq/dataverse/export/CroissantExporterSlim.java</include>
+                            <include>src/main/java/edu/harvard/iq/dataverse/export/croissant/CroissantExportUtil.java</include>
+                            <include>src/test/java/edu/harvard/iq/dataverse/export/CroissantExporterTest.java</include>
+                            <include>src/test/java/edu/harvard/iq/dataverse/export/CroissantExporterSlimTest.java</include>
+                        </includes>
+                        <importOrder>
+                            <wildcardsLast>false</wildcardsLast>
+                        </importOrder>
+                        <removeUnusedImports>
+                            <engine>google-java-format</engine>
+                        </removeUnusedImports>
+                        <googleJavaFormat>
+                            <version>1.17.0</version>
+                            <style>AOSP</style>
+                            <reflowLongStrings>true</reflowLongStrings>
+                        </googleJavaFormat>
+                    </java>
+                </configuration>
             </plugin>
         </plugins>
     </build>
