@@ -2046,45 +2046,39 @@ public class Dataverses extends AbstractApiBean {
             /*
             You can also set a new name for your template in the json
             */
- 
             if (json.containsKey("name") && !json.getString("name").isBlank()) {
-                 template.setName(json.getString("name"));
-                 nameOnly=true;
+                template.setName(json.getString("name"));
+                nameOnly = true;
             }
-
             
             List<DatasetField> updatedFields = new ArrayList<>();
             //if it doesn't contain fields, instructions or name it better have a single dataset field 
             //to be updated
             if (json.getJsonArray("fields") == null) {
-                if (!json.containsKey("instructions")  && !json.containsKey("name")){
+                if (!json.containsKey("instructions") && !json.containsKey("name")) {
                     updatedFields.add(jsonParser().parseField(json, Boolean.FALSE, replaceData));
                 }
             } else {
                 updatedFields = jsonParser().parseMultipleFields(json, replaceData);
-            }          
+            }       
             
             Map<String, String> instructionsMap = jsonParser().parseRequestBodyInstructionsMap(json);
-            
-            
+
             //if we're only updating the name then return the metadata and instructions to previous            
-            nameOnly = nameOnly && updatedFields.isEmpty() && instructionsMap==null;
-            
-            if (nameOnly){
+            nameOnly = nameOnly && updatedFields.isEmpty() && instructionsMap == null;
+
+            if (nameOnly) {
                 updatedFields = template.getDatasetFields();
                 instructionsMap = template.getInstructionsMap();
             }
-            
 
-            
-            Template updated = execCommand(new UpdateTemplateFieldsCommand(template, dataverse,  updatedFields, instructionsMap, replaceData, createDataverseRequest(getRequestUser(crc))));
-            
+            Template updated = execCommand(new UpdateTemplateFieldsCommand(template, dataverse, updatedFields, instructionsMap, replaceData, createDataverseRequest(getRequestUser(crc))));
+
             return created("/dataverses/template/" + updated.getId(), jsonTemplate(updated));
-                } catch (JsonParseException ex) {
+        } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
             return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.editMetadata.error.parseUpdate", List.of(ex.getMessage())));
-    
-        
+
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
