@@ -381,6 +381,7 @@
                 </ui:fragment>
 
                 <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery" rendered="#{!SearchIncludeFragment.wasSolrErrorEncountered()}">
+                    <!-- Known issue: The "Dataset Type facet" will show "dataset" in the facet at left but "Dataset" at top when clicked. See https://github.com/IQSS/dataverse/issues/11758 -->
                     <ui:param name="friendlyNames" value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(filterQuery)}"/>
                     <ui:param name="filterType" value="#{SearchIncludeFragment.getTypeFromFilterQuery(filterQuery)}"/>
                     <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected" rendered="#{not empty friendlyNames

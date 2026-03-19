@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
 import jakarta.persistence.*;
-import org.hibernate.validator.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  *

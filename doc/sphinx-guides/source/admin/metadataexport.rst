@@ -22,12 +22,15 @@ In addition to the automated exports, a Dataverse installation admin can start a
 
 ``curl http://localhost:8080/api/admin/metadata/reExportAll``
 
+``curl http://localhost:8080/api/admin/metadata/reExportAll?olderThan=<YYYY-MM-DD>``
+
 ``curl http://localhost:8080/api/admin/metadata/clearExportTimestamps``
 
 ``curl http://localhost:8080/api/admin/metadata/:persistentId/reExportDataset?persistentId=doi:10.5072/FK2/AAA000``
 
 The first will attempt to export all the published, local (non-harvested) datasets that haven't been exported yet. 
-The second will *force* a re-export of every published, local dataset, regardless of whether it has already been exported or not. 
+The second will *force* a re-export of every published, local dataset, regardless of whether it has already been exported or not.
+With the optional olderThan query parameter, the second will *force* re-export of all published, local datasets that were last exported before the olderThan date.
 
 The first two calls return a status message informing the administrator that the process has been launched (``{"status":"WORKFLOW_IN_PROGRESS"}``). The administrator can check the progress of the process via log files: ``[Payara directory]/glassfish/domains/domain1/logs/export_[time stamp].log``.
 

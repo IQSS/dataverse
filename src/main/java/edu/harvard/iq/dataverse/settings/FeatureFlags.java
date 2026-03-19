@@ -249,7 +249,11 @@ public enum FeatureFlags {
      * @since Dataverse 6.9
      */ 
     ONLY_UPDATE_DATACITE_WHEN_NEEDED("only-update-datacite-when-needed"),
-
+    
+    /** Require Embargo Reason. By default, adding a reason when embargoing is optional. This 
+     * flag makes a reason required, both in the UI and API.
+     */
+    REQUIRE_EMBARGO_REASON("require-embargo-reason"),
     ;
     
     final String flag;
