@@ -132,9 +132,9 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>6.9</revision>
+        <revision>6.10</revision>
     
-        <target.java.version>17</target.java.version>
+        <target.java.version>21</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <additionalparam>-Xdoclint:none</additionalparam>
         <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
@@ -149,7 +149,7 @@
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
     
         <!-- Major system components and dependencies -->
-        <payara.version>6.2025.10</payara.version>
+        <payara.version>7.2026.2</payara.version>
         <postgresql.version>42.7.7</postgresql.version>
         <solr.version>9.8.0</solr.version>
         <postgresql.server.version>16</postgresql.server.version>
@@ -461,8 +461,8 @@
                     Once the release has been made (tag created), change this back to "${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}"
                     (These properties are provided by the build-helper plugin below.)
                 -->
-                <base.image.version>${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}</base.image.version>
-                <!-- <base.image.version>${revision}</base.image.version> -->
+                <!-- <base.image.version>${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}</base.image.version> -->
+                <base.image.version>${revision}</base.image.version>
                 <!-- This is used by the maintenance CI jobs, no need to adapt during releases. -->
                 <app.image.version>${base.image.version}</app.image.version>
             </properties>

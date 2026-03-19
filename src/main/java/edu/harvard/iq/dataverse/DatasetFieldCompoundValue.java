@@ -27,6 +27,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -253,5 +254,84 @@ public class DatasetFieldCompoundValue implements Serializable {
         }
 
         return mapIn;
+    }
+    
+
+    /**
+     * Compares this DatasetFieldCompoundValue with another for equality based on
+     * their child fields. Two compound values are considered equal if they have the
+     * same child fields with the same values in the same order.
+     * 
+     * @param other The DatasetFieldCompoundValue to compare with
+     * @return true if both compound values have equal child fields, false otherwise
+     */
+    public boolean valuesEqual(DatasetFieldCompoundValue other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null) {
+            return false;
+        }
+
+        List<DatasetField> children1 = this.getChildDatasetFields();
+        List<DatasetField> children2 = other.getChildDatasetFields();
+
+        if (children1.size() != children2.size()) {
+            return false;
+        }
+        
+        // Compare each child field
+        for (DatasetField child1 : children1) {
+
+            DatasetField child2 = children2.stream()
+                    .filter(c -> c.getDatasetFieldType().equals(child1.getDatasetFieldType())).findFirst().orElse(null);
+            
+            if (child2 == null) {
+                return false;
+            }
+
+            // Compare values based on field type
+            if (child1.getDatasetFieldType().isControlledVocabulary()) {
+
+                List<ControlledVocabularyValue> cvs1 = child1.getControlledVocabularyValues();
+                List<ControlledVocabularyValue> cvs2 = child2.getControlledVocabularyValues();
+                
+                if (cvs1.size() != cvs2.size()) {
+                    
+                    return false;
+                }
+
+                for (ControlledVocabularyValue cv1Val : cvs1) {
+                    boolean found = cvs2.stream().anyMatch(cv2Val -> cv1Val.getStrValue().equals(cv2Val.getStrValue()));
+                    if (!found) {
+                        return false;
+                    }
+                }
+            } else {
+                // Handle regular field values (including multiple values)
+                List<DatasetFieldValue> dfvs1 = child1.getDatasetFieldValues();
+                List<DatasetFieldValue> dfvs2 = child2.getDatasetFieldValues();
+
+                if (dfvs1.size() != dfvs2.size()) {
+                    return false;
+                }
+
+                for (DatasetFieldValue dfv1 : dfvs1) {
+                    String value1 = dfv1.getValue();
+                    boolean found = dfvs2.stream()
+                            .anyMatch(dfv2 -> {
+                                String value2 = dfv2.getValue();
+                                if (value1 == null && value2 == null) {
+                                    return true;
+                                }
+                                return value1 != null && value1.equals(value2);
+                            });
+                    if (!found) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 }

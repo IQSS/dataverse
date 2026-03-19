@@ -171,7 +171,7 @@ OpenScholar
 
 The Dataverse Software module from OpenScholar allows a Dataverse installation's widgets to be easily embedded in its web pages:
 
-https://github.com/openscholar/openscholar/tree/SCHOLAR-3.x/openscholar/modules/os_features/os_dataverse
+https://github.com/openscholar/d7-openscholar/tree/SCHOLAR-3.x/openscholar/modules/os_features/os_dataverse 
 
 Ruby
 ----

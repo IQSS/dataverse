@@ -23,46 +23,47 @@ package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
+import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
-
-import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
-import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.settings.ConfigCheckService;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.file.BagItFileHandler;
 import edu.harvard.iq.dataverse.util.file.BagItFileHandlerFactory;
+import edu.harvard.iq.dataverse.util.file.FileExceedsStorageQuotaException;
 import edu.harvard.iq.dataverse.util.xml.XmlUtil;
 import edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil;
-import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatDoc;
-import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.HTML_H1;
-import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.HTML_TABLE_HDR;
-import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTitle;
-import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTable;
-import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTableCell;
-import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatLink;
-import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTableCellAlignRight;
-import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTableRow;
+import jakarta.activation.MimetypesFileTypeMap;
+import jakarta.ejb.EJBException;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.validator.ValidatorException;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.Tika;
+import org.primefaces.model.file.UploadedFile;
+import ucar.nc2.NetcdfFile;
+import ucar.nc2.NetcdfFiles;
 
+import javax.imageio.ImageIO;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -73,44 +74,14 @@ import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.activation.MimetypesFileTypeMap;
-import jakarta.ejb.EJBException;
-import jakarta.enterprise.inject.spi.CDI;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
-
-import javax.imageio.ImageIO;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
-
 import java.util.zip.GZIPInputStream;
-import org.apache.commons.io.FilenameUtils;
 
-import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.util.file.FileExceedsStorageQuotaException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.tika.Tika;
-import org.primefaces.model.file.UploadedFile;
-
-import ucar.nc2.NetcdfFile;
-import ucar.nc2.NetcdfFiles;
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.*;
 
 /**
  * a 4.0 implementation of the DVN FileUtil;
@@ -1332,7 +1303,7 @@ public class FileUtil implements java.io.Serializable  {
     /**
      * The FileDownloadServiceBean operates on file IDs, not DOIs.
      */
-    public static String getFileDownloadUrlPath(String downloadType, Long fileId, boolean gbRecordsWritten, Long fileMetadataId) {
+    public static String getFileDownloadUrlPath(String downloadType, Long fileId, boolean gbRecordsWritten, Long fileMetadataId, String gbrIds) {
         String fileDownloadUrl = "/api/access/datafile/" + fileId;
         if (downloadType != null) {
             switch(downloadType) {
@@ -1365,6 +1336,9 @@ public class FileUtil implements java.io.Serializable  {
             } else {
                 fileDownloadUrl += "?gbrecs=true";
             }
+        }
+        if (gbrIds != null && !gbrIds.isEmpty()) {
+            fileDownloadUrl += (fileDownloadUrl.contains("?") ? "&" : "?") + "gbrids=" + gbrIds;
         }
         logger.fine("Returning file download url: " + fileDownloadUrl);
         return fileDownloadUrl;
@@ -1835,6 +1809,47 @@ public class FileUtil implements java.io.Serializable  {
             }
         }
         return false;
+    }
+    
+    /**
+     * Validates that an embargo reason is not blank, and exists when required.
+     * This method is designed to be called from JSF validator methods.
+     * 
+     * @param context The FacesContext
+     * @param component The UIComponent being validated
+     * @param value The value to validate (embargo reason)
+     * @param removeEmbargo Whether the embargo is being removed (skips validation if true)
+     * @param saveButtonId The ID pattern of the save button that should trigger validation
+     * @throws ValidatorException if validation fails
+     */
+    public static void validateEmbargoReason(FacesContext context, UIComponent component, Object value,
+            boolean removeEmbargo) {
+        // Skip validation if removing embargo
+        if (removeEmbargo) {
+            return;
+        }
+        
+        // Get the source of the current request
+        String source = context.getExternalContext().getRequestParameterMap()
+            .get("jakarta.faces.source");
+        
+        // Only validate if the save button triggered this
+        if (source == null || !source.contains("fileEmbargoPopupSaveButton")) {
+            return;
+        }
+        
+        if (value == null && FeatureFlags.REQUIRE_EMBARGO_REASON.enabled()) {
+            throw new ValidatorException(
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                    BundleUtil.getStringFromBundle("embargo.reason.required"), null)
+            );
+        }
+        if (value != null && value.toString().trim().isEmpty()) {
+            throw new ValidatorException(
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                    BundleUtil.getStringFromBundle("embargo.reason.blank"), null)
+            );
+        }
     }
 
     public static boolean isRetentionExpired(DataFile df) {

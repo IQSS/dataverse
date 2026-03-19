@@ -740,8 +740,11 @@ public class DataCitation {
 
     public JsonObject getCSLJsonFormat() {
         CSLItemDataBuilder itemBuilder = new CSLItemDataBuilder();
-        if (type.equals(DatasetType.DATASET_TYPE_SOFTWARE)) {
+        // TODO consider making this a switch
+        if (type.getName().equals(DatasetType.DATASET_TYPE_SOFTWARE)) {
             itemBuilder.type(CSLType.SOFTWARE);
+        } else if (type.getName().equals(DatasetType.DATASET_TYPE_REVIEW)) {
+            itemBuilder.type(CSLType.REVIEW);
         } else {
             itemBuilder.type(CSLType.DATASET);
         }

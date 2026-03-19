@@ -2,7 +2,7 @@
 #counter_daily.sh
 
 COUNTER_PROCESSOR_DIRECTORY="/usr/local/counter-processor-1.06"
-MDC_LOG_DIRECTORY="/usr/local/payara6/glassfish/domains/domain1/logs/mdc"
+MDC_LOG_DIRECTORY="/usr/local/payara7/glassfish/domains/domain1/logs/mdc"
 COUNTER_PROCESSOR_TMP_DIRECTORY="/tmp"
 # If you wish to keep the logs, use a directory that is not periodically cleaned, e.g.
 #COUNTER_PROCESSOR_TMP_DIRECTORY="/usr/local/counter-processor-1.06/tmp"
