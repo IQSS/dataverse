@@ -93,10 +93,11 @@ class SystemConfigTest {
     
         // then
         assertTrue(result.startsWith("100.100"), "'" + result + "' not starting with 100.100");
-        assertTrue(result.contains("build"));
         
         // Cannot test this here - there might be the bundle file present which is not under test control
         //assertTrue(result.endsWith("FOOBAR"), "'" + result + "' not ending with FOOBAR");
+        // Not sure what to do about this. The above is correct, if there is a BuildNumber.properties
+        // file present on the developer's system, it will take precedence. - L.A. 
     }
     
     @Test

@@ -125,7 +125,7 @@ public class SystemConfig {
             }
             
             if (!buildNumber.equals("")) {
-                return appVersion + " build " + buildNumber;
+                return appVersion + " " + buildNumber;
             }
         }
         
