@@ -1,1 +1,0 @@
-In prior versions of Dataverse, configuring a proxy to forward to Dataverse over an http connection could result in failure of signed Urls (e.g. for external tools). This version of Dataverse supports having a proxy send an X-Forwarded-Proto header set to https to avoid this issue. 
