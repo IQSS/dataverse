@@ -132,6 +132,9 @@ public class InAppNotificationsJsonPrinter {
             case DATASETMENTIONED:
                 addDatasetMentionedFields(notificationJson, userNotification);
                 break;
+            case DATASETMOVED:
+                addDatasetMovedFields(notificationJson, userNotification, requestor);
+                break;
         }
     }
 
@@ -238,7 +241,7 @@ public class InAppNotificationsJsonPrinter {
     }
 
     private void addSubmittedDatasetFields(final NullSafeJsonBuilder notificationJson, final UserNotification userNotification, final AuthenticatedUser requestor) {
-        addDatasetFields(notificationJson, userNotification);
+        addDatasetVersionFields(notificationJson, userNotification);
         addRequestorFields(notificationJson, requestor);
     }
 
@@ -288,5 +291,10 @@ public class InAppNotificationsJsonPrinter {
                 notificationJson.add(KEY_ADDITIONAL_INFO, additionalInfo);
             }
         }
+    }
+
+    private void addDatasetMovedFields(final NullSafeJsonBuilder notificationJson, final UserNotification userNotification, final AuthenticatedUser requestor) {
+        addDatasetFields(notificationJson, userNotification);
+        addRequestorFields(notificationJson, requestor);
     }
 }

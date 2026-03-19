@@ -206,7 +206,7 @@ Challenges:
   Users will need to be made aware of these limitations and the possibilities for managing them (e.g. by aggregating multiple files in a single, larger file, or storing smaller files in the base-store via the normal Dataverse upload UI).
 - There is currently `a bug <https://github.com/gdcc/dataverse-globus/issues/2>`_ that won't allow users to transfer files from/to endpoints where they do not have permission to list the overall file tree (i.e. an institution manages <endpoint>/institution_name but the user only has access to <endpoint>/institution_name/my_dir.)
   Until that is fixed, a work-around is to first transfer data to an endpoint without this restriction.
-- An alternative, experimental implementation of Globus polling of ongoing upload transfers was added in v6.4. This framework does not rely on the instance staying up continuously for the duration of the transfer and saves the state information about Globus upload requests in the database. While it is now the recommended option, it is not enabled by default. See the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`) and the JVM option :ref:`dataverse.files.globus-monitoring-server`.
+- An alternative, experimental implementation of Globus polling of ongoing upload transfers was added in v6.4. This framework does not rely on the instance staying up continuously for the duration of the transfer and saves the state information about Globus upload requests in the database. While it is now the recommended option, it is not enabled by default. See the :ref:`dataverse.feature.globus-use-experimental-async-framework` feature flag and the JVM option :ref:`dataverse.files.globus-monitoring-server`.
 
 More details of the setup required to enable Globus is described in the `Community Dataverse-Globus Setup and Configuration document <https://docs.google.com/document/d/1mwY3IVv8_wTspQC0d4ddFrD2deqwr-V5iAGHgOy4Ch8/edit?usp=sharing>`_ and the references therein.
 
@@ -280,11 +280,11 @@ Scaling-related Configuration
 There are a broad range of options (that are not turned on by default) for improving how well Solr indexing and searching scales and for handling more files per dataset. Some of these are useful for all installations while others are related to specific use cases, or are mostly for emergency use (e.g. disabling facets).
 (see :ref:`database-settings`, :ref:`jvm-options`, and :ref:`feature-flags` for more details):
 
-- dataverse.feature.add-publicobject-solr-field=true - specifically marks unrestricted content as public in Solr. See :ref:`feature-flags`.
-- dataverse.feature.avoid-expensive-solr-join=true - this tells Dataverse to use the feature above to speed up searches. See :ref:`feature-flags`.
-- dataverse.feature.reduce-solr-deletes=true - when Solr entries are being updated, this avoids an unnecessary step (deletion of existing entries) for entries that are being replaced. See :ref:`feature-flags`.
-- dataverse.feature.disable-dataset-thumbnail-autoselect=true - by default, Dataverse scans through all files in a dataset to find one that can be used as a thumbnail, which is expensive for many files. This disables that behavior to improve performance. See :ref:`feature-flags`.
-- dataverse.feature.only-update-datacite-when-needed=true - reduces the load on DataCite and reduces Dataverse failures related to that load, which is important when using file PIDs on Datasets with many files. See :ref:`feature-flags`.
+- :ref:`dataverse.feature.add-publicobject-solr-field` =true - specifically marks unrestricted content as public in Solr.
+- :ref:`dataverse.feature.avoid-expensive-solr-join` =true - this tells Dataverse to use the feature above to speed up searches.
+- :ref:`dataverse.feature.reduce-solr-deletes` =true - when Solr entries are being updated, this avoids an unnecessary step (deletion of existing entries) for entries that are being replaced.
+- :ref:`dataverse.feature.disable-dataset-thumbnail-autoselect` =true - by default, Dataverse scans through all files in a dataset to find one that can be used as a thumbnail, which is expensive for many files. This disables that behavior to improve performance.
+- :ref:`dataverse.feature.only-update-datacite-when-needed` =true - reduces the load on DataCite and reduces Dataverse failures related to that load, which is important when using file PIDs on Datasets with many files.
 - :ref:`dataverse.solr.min-files-to-use-proxy` =<X> - improve performance/lower memory requirements when indexing datasets with many files, suggested value is in the range 200 to 500
 - :ref:`dataverse.solr.concurrency.max-async-indexes` =<X> - limits the number of index operations running in parallel. The default is 4, larger values may improve performance (if the Solr instance is appropriately sized)
 - :ref:`:SolrFullTextIndexing` - false improves performance at the expense of not indexing file contents
@@ -302,6 +302,7 @@ There are a broad range of options (that are not turned on by default) for impro
 - :ref:`:DisableSolrFacetsWithoutJsession` - disables facets for users who have disabled cookies (e.g. for bots)
 - :ref:`:DisableUncheckedTypesFacet` - only disables the facet showing the number of collections, datasets, files matching the query (this facet is potentially less useful than others)
 - :ref:`:StoreIngestedTabularFilesWithVarHeaders` - by default, Dataverse stores ingested files without headers and dynamically adds them back at download time. Once this setting is enabled, Dataverse will leave the headers in place (for newly ingested files), reducing the cost of downloads
+- :ref:`dataverse.bagit.zip.max-file-size`, :ref:`dataverse.bagit.zip.max-data-size`, and :ref:`dataverse.bagit.zip.holey` - options to control the size and temporary storage requirements when generating archival Bags - see :ref:`BagIt Export`
 
 
 Scaling Infrastructure

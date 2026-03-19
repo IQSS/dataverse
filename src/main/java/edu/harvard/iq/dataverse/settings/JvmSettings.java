@@ -247,6 +247,7 @@ public enum JvmSettings {
     // AUTH: OIDC SETTINGS
     SCOPE_OIDC(SCOPE_AUTH, "oidc"),
     OIDC_ENABLED(SCOPE_OIDC, "enabled"),
+    OIDC_HIDDEN_JSF(SCOPE_OIDC, "hidden-jsf"), // Special case when this provider needs to be hidden in JSF UI
     OIDC_TITLE(SCOPE_OIDC, "title"),
     OIDC_SUBTITLE(SCOPE_OIDC, "subtitle"),
     OIDC_AUTH_SERVER_URL(SCOPE_OIDC, "auth-server-url"),
@@ -275,6 +276,11 @@ public enum JvmSettings {
     BAGIT_SOURCE_ORG_NAME(SCOPE_BAGIT_SOURCEORG, "name"),
     BAGIT_SOURCEORG_ADDRESS(SCOPE_BAGIT_SOURCEORG, "address"),
     BAGIT_SOURCEORG_EMAIL(SCOPE_BAGIT_SOURCEORG, "email"),
+    SCOPE_BAGIT_ZIP(SCOPE_BAGIT, "zip"),
+    BAGIT_ZIP_MAX_FILE_SIZE(SCOPE_BAGIT_ZIP, "max-file-size"),
+    BAGIT_ZIP_MAX_DATA_SIZE(SCOPE_BAGIT_ZIP, "max-data-size"),
+    BAGIT_ZIP_HOLEY(SCOPE_BAGIT_ZIP, "holey"),
+    BAGIT_ARCHIVE_ON_VERSION_UPDATE(SCOPE_BAGIT, "archive-on-version-update"),
 
     // STORAGE USE SETTINGS
     SCOPE_STORAGEUSE(PREFIX, "storageuse"),
@@ -301,6 +307,10 @@ public enum JvmSettings {
     SCOPE_LOCALCONTEXTS(PREFIX, "localcontexts"),
     LOCALCONTEXTS_URL(SCOPE_LOCALCONTEXTS, "url"),
     LOCALCONTEXTS_API_KEY(SCOPE_LOCALCONTEXTS, "api-key"),
+
+    // LEGACY SETTINGS
+    SCOPE_LEGACY(PREFIX, "legacy"),
+    SCHEMAORG_IN_HTML_HEAD(SCOPE_LEGACY, "schemaorg-in-html-head"),
     
     // LinkedDataNotification
     SCOPE_LINKEDDATANOTIFICATION(PREFIX, "ldn"),

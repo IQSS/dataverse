@@ -25,17 +25,23 @@ public class InfoIT {
         UtilIT.deleteSetting(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
         UtilIT.deleteSetting(SettingsServiceBean.Key.ApplicationTermsOfUse);
         UtilIT.deleteSetting(SettingsServiceBean.Key.ApplicationTermsOfUse, "fr");
+        UtilIT.deleteSetting(SettingsServiceBean.Key.PublishDatasetDisclaimerText);
     }
 
     @AfterAll
     public static void afterClass() {
         UtilIT.deleteSetting(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
         UtilIT.deleteSetting(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
+        UtilIT.deleteSetting(SettingsServiceBean.Key.PublishDatasetDisclaimerText);
     }
 
     @Test
     public void testGetDatasetPublishPopupCustomText() {
         testSettingEndpoint(SettingsServiceBean.Key.DatasetPublishPopupCustomText, "Hello world!");
+    }
+    @Test
+    public void testGetDatasetPublishDisclaimerText() {
+        testSettingEndpoint(SettingsServiceBean.Key.PublishDatasetDisclaimerText, "Hello world!");
     }
 
     @Test
