@@ -6,6 +6,7 @@ import io.restassured.path.xml.XmlPath;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObjectBuilder;
 
 import static edu.harvard.iq.dataverse.UserNotification.Type.*;
@@ -119,6 +120,13 @@ public class InReviewWorkflowIT {
         submitForReviewAlreadySubmitted.then().assertThat()
                 .body("message", equalTo("You cannot submit this dataset for review because it is already in review."))
                 .statusCode(FORBIDDEN.getStatusCode());
+
+        // Confirm that when getting the dataset, the "InReview" lock is listed
+        Response getDatasetJson = UtilIT.nativeGet(datasetId, authorApiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat()
+                .body("data.locks[0]", equalTo("InReview"))
+                .statusCode(200);
 
         Response authorsChecksForCommentsPrematurely = UtilIT.getNotifications(authorApiToken);
         authorsChecksForCommentsPrematurely.prettyPrint();
@@ -427,6 +435,41 @@ public class InReviewWorkflowIT {
                 //.body("data[2].reasonsForReturn[1].message", equalTo("A README is required."))
                 .body("data[3].type", equalTo(CREATEACC.toString()))
                 //   .body("data[3].reasonsForReturn", equalTo(null))
+                .statusCode(OK.getStatusCode());
+
+        // The author realizes she wants to add another file and creates a new draft version.
+        Response authorAddsNewFileCreatingNewDraft = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, authorApiToken);
+        authorAddsNewFileCreatingNewDraft.prettyPrint();
+        authorAddsNewFileCreatingNewDraft.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // The author re-submits.
+        Response submit4 = UtilIT.submitDatasetForReview(datasetPersistentId, authorApiToken);
+        submit4.prettyPrint();
+        submit4.then().assertThat()
+                .body("data.inReview", equalTo(true))
+                .statusCode(OK.getStatusCode());
+
+        // The curator checks notifications and sees that the dataset has been re-submitted after it was published.
+        Response curatorChecksForNotificationsPostPublication = UtilIT.getNotifications(curatorApiToken);
+        curatorChecksForNotificationsPostPublication.prettyPrint();
+        curatorChecksForNotificationsPostPublication.then().assertThat()
+                .body("data[0].type", equalTo(SUBMITTEDDS.toString()))
+                .body("data[1].type", equalTo(PUBLISHEDDS.toString()))
+                .statusCode(OK.getStatusCode());
+
+        // The curator checks again, this time in app notification format.
+        Response curatorChecksForNotificationsPostPublicationInAppFormat = UtilIT.getNotifications(curatorApiToken, true, null, null, null);
+        curatorChecksForNotificationsPostPublicationInAppFormat.prettyPrint();
+        curatorChecksForNotificationsPostPublicationInAppFormat.then().assertThat()
+                .body("data[0].type", equalTo(SUBMITTEDDS.toString()))
+                .body("data[0].objectDeleted", equalTo(null))
+                .body("data[0].datasetPersistentIdentifier", equalTo(datasetPersistentId))
+                .body("data[0].ownerAlias", equalTo(dataverseAlias))
+                .body("data[1].type", equalTo(PUBLISHEDDS.toString()))
+                .body("data[1].objectDeleted", equalTo(null))
+                .body("data[1].datasetPersistentIdentifier", equalTo(datasetPersistentId))
+                .body("data[1].ownerAlias", equalTo(dataverseAlias))
                 .statusCode(OK.getStatusCode());
 
         // These println's are here in case you want to log into the GUI to see what notifications look like.

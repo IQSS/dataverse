@@ -32,7 +32,7 @@ public class DataRetrieverApiIT {
     }
 
     @Test
-    public void testRetrieveMyDataAsJsonString() {
+    public void testRetrieveMyDataAsJsonString() throws InterruptedException {
         // Call with bad API token
         ArrayList<Long> emptyRoleIdsList = new ArrayList<>();
         Response badApiTokenResponse = UtilIT.retrieveMyDataAsJsonString("bad-token", "dummy-user-identifier", emptyRoleIdsList);
@@ -40,7 +40,7 @@ public class DataRetrieverApiIT {
 
         // Call as superuser with invalid user identifier
         Response createUserResponse = UtilIT.createRandomUser();
-        Response makeSuperUserResponse = UtilIT.makeSuperUser(UtilIT.getUsernameFromResponse(createUserResponse));
+        Response makeSuperUserResponse = UtilIT.setSuperuserStatus(UtilIT.getUsernameFromResponse(createUserResponse), true);
         assertEquals(OK.getStatusCode(), makeSuperUserResponse.getStatusCode());
         String superUserApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
 
@@ -87,6 +87,7 @@ public class DataRetrieverApiIT {
         // Call as normal user with one valid dataverse role and one dataverse result
         UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR.toString(),
                 "@" + normalUserUsername, superUserApiToken);
+        Thread.sleep(4000);
         Response oneDataverseResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(5L)));
         oneDataverseResponse.prettyPrint();
 
@@ -118,7 +119,7 @@ public class DataRetrieverApiIT {
         Response retrieveMyCollectionListResponse;
         // Create Superuser
         Response createUserResponse = UtilIT.createRandomUser();
-        Response makeSuperUserResponse = UtilIT.makeSuperUser(UtilIT.getUsernameFromResponse(createUserResponse));
+        Response makeSuperUserResponse = UtilIT.setSuperuserStatus(UtilIT.getUsernameFromResponse(createUserResponse), true);
         assertEquals(OK.getStatusCode(), makeSuperUserResponse.getStatusCode());
         String superUserUsername = UtilIT.getUsernameFromResponse(createUserResponse);
         String superUserApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
@@ -476,6 +477,8 @@ public class DataRetrieverApiIT {
 
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
 
+        UtilIT.sleepForReindex(datasetPid, apiToken, 5);
+        
         // Test that the Dataverse collection that the dataset was created in is returned
         Response myDataResponse = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&show_collections=true");
         myDataResponse.prettyPrint();

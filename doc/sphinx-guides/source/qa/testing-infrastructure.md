@@ -29,7 +29,7 @@ To build and test a PR, we use a job called `IQSS_Dataverse_Internal` on <https:
 
 1. Once complete, go to <https://dataverse-internal.iq.harvard.edu> and check that the deployment succeeded, and that the homepage displays the latest build number.
 
-1. If for some reason it didn't deploy, check the server.log file. It may just be a caching issue so try un-deploying, deleting cache, restarting, and re-deploying on the server (`su - dataverse` then `/usr/local/payara6/bin/asadmin list-applications; /usr/local/payara6/bin/asadmin undeploy dataverse-6.1; /usr/local/payara6/bin/asadmin deploy /tmp/dataverse-6.1.war`)
+1. If for some reason it didn't deploy, check the server.log file. It may just be a caching issue so try un-deploying, deleting cache, restarting, and re-deploying on the server (`su - dataverse` then `/usr/local/payara7/bin/asadmin list-applications; /usr/local/payara7/bin/asadmin undeploy dataverse-6.1; /usr/local/payara7/bin/asadmin deploy /tmp/dataverse-6.1.war`)
 
 1. When a Jenkins job fails after a release, it might be due to the version number in the `pom.xml` file not being updated in the pull request (PR). To verify this, open the relevant GitHub issue, navigate to the PR branch, and go to `dataverse > modules > dataverse-parent > pom.xml`. Look for the version number, typically shown as `<revision>6.3</revision>`, and ensure it matches the current Dataverse build version. If it doesn't match, ask the developer to update the branch with the latest from the "develop" branch.
 

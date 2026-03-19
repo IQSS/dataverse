@@ -2067,6 +2067,7 @@ public class Admin extends AbstractApiBean {
             if(dv==null) {
                 return error(Status.BAD_REQUEST, "Requested version not found.");
             }
+            //ToDo - allow forcing with a non-success status for archivers that supportsDelete()
             if (dv.getArchivalCopyLocation() == null) {
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
                 // Note - the user is being sent via the createDataverseRequest(au) call to the
@@ -2132,7 +2133,7 @@ public class Admin extends AbstractApiBean {
 
         try {
             AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
-
+            //ToDo - allow forcing with a non-success status for archivers that supportsDelete()
             List<DatasetVersion> dsl = datasetversionService.getUnarchivedDatasetVersions();
             if (dsl != null) {
                 if (listonly) {
