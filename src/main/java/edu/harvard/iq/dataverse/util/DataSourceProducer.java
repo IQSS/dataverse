@@ -12,10 +12,8 @@ import javax.sql.DataSource;
         name = "java:app/jdbc/dataverse",
         // The app server (Payara) deploys a managed pool for this data source for us.
         // We don't need to deal with this on our own.
-        //
-        // HINT: PGSimpleDataSource would work too, but as we use a connection pool, go with a javax.sql.ConnectionPoolDataSource
-        // HINT: PGXADataSource is unnecessary (no distributed transactions used) and breaks ingest.
-        className = "org.postgresql.ds.PGConnectionPoolDataSource",
+
+        className = "org.postgresql.ds.PGSimpleDataSource",
         
         // BEWARE: as this resource is created before defaults are read from META-INF/microprofile-config.properties,
         // defaults must be provided in this Payara-proprietary manner.
@@ -56,7 +54,9 @@ import javax.sql.DataSource;
             // LOGGING, SLOWNESS, PERFORMANCE
             "fish.payara.statement-timeout-in-seconds=${MPCONFIG=dataverse.db.statement-timeout-in-seconds:-1}",
             "fish.payara.slow-query-threshold-in-seconds=${MPCONFIG=dataverse.db.slow-query-threshold-in-seconds:-1}",
-            "fish.payara.log-jdbc-calls=${MPCONFIG=dataverse.db.log-jdbc-calls:false}"
+            "fish.payara.log-jdbc-calls=${MPCONFIG=dataverse.db.log-jdbc-calls:false}",
+            // OTHER OPTIONS
+            "fish.payara.fail-all-connections=${MPCONFIG=dataverse.db.fail-all-connections:true}"
         })
 public class DataSourceProducer {
 
