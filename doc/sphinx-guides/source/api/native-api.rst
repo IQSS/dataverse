@@ -8867,11 +8867,10 @@ A curl example listing objects
   export PUBLISHED_STATES=Unpublished
   export PER_PAGE=10
 
-  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve?role_ids=$ROLE_IDS&dvobject_types=$DVOBJECT_TYPES&published_states=$PUBLISHED_STATES&per_page=$PER_PAGE"
-
+ curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve?role_ids=6&role_ids=34&dvobject_types=Dataset&published_states=Published&published_states=Draft&published_states=In+Review&selected_page=1"
 Parameters:
 
-``role_id`` Roles are customizable. Standard roles include:
+``role_id`` Roles are customizable. Multiple "role_ids" parameters can be used to filter by several roles. Standard roles include:
 
 - ``1`` = Admin
 - ``2`` = File Downloader
@@ -8884,7 +8883,7 @@ Parameters:
 
 ``dvobject_types`` Type of object, several possible values among: ``DataFile`` , ``Dataset`` & ``Dataverse`` .
 
-``published_states`` State of the object, several possible values among:``Published`` , ``Unpublished`` , ``Draft`` , ``Deaccessioned`` & ``In+Review`` .
+``published_states`` State of the object. Multiple "published_states" parameters can be used. Several possible values among: ``Published`` , ``Unpublished`` , ``Draft`` , ``Deaccessioned`` & ``In+Review``
 
 ``per_page`` Number of results returned per page.
 
@@ -8896,7 +8895,7 @@ Parameters:
 
 ``order`` The order in which to sort. Can either be "asc" or "desc".
 
-``fq`` A filter query to filter the list returned. Multiple "fq" parameters can be used.
+``fq`` A filter query (Solr syntax) to narrow the list returned. Multiple "fq" parameters can be used.
 
 MyData Collection List
 ~~~~~~~~~~~~~~~~~~~~~~
