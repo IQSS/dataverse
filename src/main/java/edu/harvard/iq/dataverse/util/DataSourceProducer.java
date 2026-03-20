@@ -46,6 +46,7 @@ import javax.sql.DataSource;
             "fish.payara.validation-table-name=${MPCONFIG=dataverse.db.validation-table-name:}",
             "fish.payara.validation-classname=${MPCONFIG=dataverse.db.validation-classname:}",
             "fish.payara.validate-atmost-once-period-in-seconds=${MPCONFIG=dataverse.db.validate-atmost-once-period-in-seconds:0}",
+            "fish.payara.fail-all-connections=${MPCONFIG=dataverse.db.fail-all-connections:true}",
             // LEAK DETECTION
             "fish.payara.connection-leak-timeout-in-seconds=${MPCONFIG=dataverse.db.connection-leak-timeout-in-seconds:0}",
             "fish.payara.connection-leak-reclaim=${MPCONFIG=dataverse.db.connection-leak-reclaim:false}",
@@ -54,9 +55,8 @@ import javax.sql.DataSource;
             // LOGGING, SLOWNESS, PERFORMANCE
             "fish.payara.statement-timeout-in-seconds=${MPCONFIG=dataverse.db.statement-timeout-in-seconds:-1}",
             "fish.payara.slow-query-threshold-in-seconds=${MPCONFIG=dataverse.db.slow-query-threshold-in-seconds:-1}",
-            "fish.payara.log-jdbc-calls=${MPCONFIG=dataverse.db.log-jdbc-calls:false}",
-            // OTHER OPTIONS
-            "fish.payara.fail-all-connections=${MPCONFIG=dataverse.db.fail-all-connections:true}"
+            "fish.payara.log-jdbc-calls=${MPCONFIG=dataverse.db.log-jdbc-calls:false}"
+
         })
 public class DataSourceProducer {
 
