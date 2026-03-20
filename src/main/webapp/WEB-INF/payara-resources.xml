@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE resources PUBLIC "-//Payara.fish//DTD Payara Server {page-version} Resource Definitions//EN" "{payaraResourcesDtd}">
+<!DOCTYPE resources PUBLIC "-//Payara.fish//DTD Payara Server 4 Resource Definitions//EN" "https://github.com/payara/Payara-Documentation/raw/refs/heads/main-6/docs/modules/ROOT/pages/Appendix/Schemas/payara-resources_1_8.dtd">
 <resources>
     <!-- This executor is used in edu.harvard.iq.dataverse.dataaccess.S3AccessIO to support asynchronous operations -->
     <custom-resource res-type="javax.enterprise.concurrent.ManagedExecutorService" 
