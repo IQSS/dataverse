@@ -271,8 +271,8 @@ public class Admin extends AbstractApiBean {
             
             String content = settingsSvc.get(name);
             return (content != null) ? ok(content) : notFound("Setting " + name + " not found.");
-        } catch (IllegalArgumentException iae) {
-            return error(Response.Status.BAD_REQUEST, iae.getMessage());
+        } catch (SettingsValidationException sve) {
+            return error(Response.Status.BAD_REQUEST, sve.getMessage());
         }
     }
     
