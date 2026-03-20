@@ -949,6 +949,9 @@ Connection Validation
    * - dataverse.db.validate-atmost-once-period-in-seconds
      - Specifies the time interval in seconds between successive requests to validate a connection at most once.
      - ``0`` (disabled)
+   * - dataverse.db.fail-all-connections
+     - When true, refreshes all connections when one fails, speeding recover vs. detecting and refreshing connections individually.
+     - ``true`` (enabled)
 
 Connection & Statement Leaks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

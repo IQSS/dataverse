@@ -1,0 +1,1 @@
+This version of Dataverse changes the class used for connecting with Postgres. This should help avoid problems seen under high load and potentially improve performance. See #12241 for details.
