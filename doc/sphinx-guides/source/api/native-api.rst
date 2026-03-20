@@ -4116,6 +4116,8 @@ Usage example:
 
 The type under CSL can vary based on the dataset type, with "dataset", "software", and "review" as supported values. See also :ref:`dataset-types`.
 
+.. note:: You can also get the Datafile Citation by using the Access Datafile API. See: :ref:`datafile-citation-formatted-access`.
+
 Get Citation by Preview URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -130,7 +130,29 @@ public class Access extends AbstractApiBean {
     
     private static final String DEFAULT_BUNDLE_NAME = "dataverse_files.zip";
     //@EJB
-    
+
+    @GET
+    @AuthRequired
+    @Path("datafile/{fileId}/citation/{format}")
+    public Response datafileCitation(@Context ContainerRequestContext crc,
+                                     @PathParam("fileId") String fileId,
+                                     @PathParam("format") String formatString) {
+
+        DataCitation.Format format = DataCitation.getFormat(formatString);
+        if (format == null) {
+            return badRequest(BundleUtil.getStringFromBundle("datasets.api.citation.invalidFormat"));
+        }
+
+        DataFile df = findDataFileOrDieWrapper(fileId);
+
+        // This will throw a ForbiddenException if access isn't authorized:
+        checkAuthorization(crc, df);
+
+        String dataCitationFormatted = (new DataCitation(df.getFileMetadata())).toString(format, true, false);
+
+        return Response.ok().type(DataCitation.getCitationFormatMediaType(format, true)).entity(dataCitationFormatted).build();
+    }
+
     // TODO: 
     // versions? -- L.A. 4.0 beta 10
     @GET

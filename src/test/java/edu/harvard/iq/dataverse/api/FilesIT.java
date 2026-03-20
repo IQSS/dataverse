@@ -4060,4 +4060,73 @@ public class FilesIT {
         signedUrlResponse = get(signedUrl);
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
     }
+
+    @Test
+    public void testGetFileCitationFormatted() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadFile.then().assertThat().statusCode(OK.getStatusCode());
+
+        String fileId = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        // Test good formats
+        Response response = UtilIT.getFileCitationFormat(fileId,"EndNote", apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(response.prettyPrint().contains("<custom1>coffeeshop.png</custom1>"));
+
+        response = UtilIT.getFileCitationFormat(fileId,"RIS", apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(response.prettyPrint().contains("C1  - coffeeshop.png"));
+
+        response = UtilIT.getFileCitationFormat(fileId,"BibTeX", apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(response.prettyPrint().contains("author = {Finch, Fiona},"));
+
+        response = UtilIT.getFileCitationFormat(fileId,"CSL", apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(response.prettyPrint().contains("\"title\": \"Darwin's Finches\","));
+
+        response = UtilIT.getFileCitationFormat(fileId,"Internal", apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(response.prettyPrint().contains("coffeeshop.png [fileName]"));
+
+        // Test an unknown format
+        response = UtilIT.getFileCitationFormat(fileId,"bad", apiToken);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.citation.invalidFormat")));
+        // Test an NULL format
+        response = UtilIT.getFileCitationFormat(fileId,null, apiToken);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.citation.invalidFormat")));
+
+        // Test a user that doesn't have permission to get the citation
+        Response createUser2 = UtilIT.createRandomUser();
+        createUser2.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+        response = UtilIT.getFileCitationFormat(fileId,"EndNote",apiToken2);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode());
+    }
 }

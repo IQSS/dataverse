@@ -1443,6 +1443,12 @@ public class UtilIT {
                 .get("/api/files/" + fileId + "/versions/" + datasetVersionId);
     }
 
+    static Response getFileCitationFormat(String dataFileId, String format, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + dataFileId +  "/citation/" + format);
+    }
+
     static Response getFileVersionDifferences(String fileId, String apiToken) {
         return getFileVersionDifferences(fileId, apiToken, null, null);
     }
