@@ -1351,12 +1351,16 @@ public class XmlMetadataTemplate {
         xmlw.writeAttribute("rightsURI", projectUrl); // repeated in @id in evv
         xmlw.writeAttribute("rightsIdentifierScheme", "Local Contexts");
         xmlw.writeAttribute("schemeURI", "https://localcontexts.org");
+        if (noticeObject.containsKey("notice_type")) {
+            String noticeType = noticeObject.getString("notice_type");
+            xmlw.writeAttribute("rightsIdentifier", noticeType);
+        }
         String rightsValue = null;
         String lang = null;
         if (noticeObject.containsKey("name")) {
             String name = noticeObject.getString("name");
             xmlw.writeAttribute("rightsIdentifier", name);
-            rightsValue = "Local Contexts " + name;
+            rightsValue = name;
         }
         if (noticeObject.containsKey("notice_page")) {
             rightsValue = rightsValue + " " + noticeObject.getString("notice_page");
@@ -1383,10 +1387,14 @@ public class XmlMetadataTemplate {
         xmlw.writeAttribute("schemeURI", "https://localcontexts.org");
         String rightsValue = null;
         String lang = null;
+        if (labelObject.containsKey("label_type")) {
+            String labelType = labelObject.getString("label_type");
+            xmlw.writeAttribute("rightsIdentifier", labelType);
+        }
         if (labelObject.containsKey("name")) {
             String name = labelObject.getString("name");
             xmlw.writeAttribute("rightsIdentifier", name);
-            rightsValue = "Local Contexts " + name;
+            rightsValue = name;
         }
         if (labelObject.containsKey("default_text")) {
             rightsValue = rightsValue + ": " + labelObject.getString("default_text");
