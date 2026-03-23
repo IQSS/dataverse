@@ -4124,9 +4124,21 @@ public class FilesIT {
         Response createUser2 = UtilIT.createRandomUser();
         createUser2.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
-        response = UtilIT.getFileCitationFormat(fileId,"EndNote",apiToken2);
+        response = UtilIT.getFileCitationFormat(fileId,"EndNote", apiToken2);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode());
+
+        // Test a guest user after publishing
+        response = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        response = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        response = UtilIT.getFileCitationFormat(fileId,"EndNote", null);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
 }
