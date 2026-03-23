@@ -880,7 +880,7 @@ public class DataCitation {
                         cslAuthors.add(new CSLNameBuilder().given(givenName).family(familyName).isInstitution(false).build());
                     } else {
                         cslAuthors.add(
-                                new CSLNameBuilder().literal(formatString(authorJson.getString("fullName"), true)).isInstitution(false).build());
+                                new CSLNameBuilder().literal(formatString(authorJson.getString("fullName"), true)).isInstitution(true).build());
                     }
                 }
             }
