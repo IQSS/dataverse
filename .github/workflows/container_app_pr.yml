@@ -25,9 +25,9 @@ jobs:
                   ref: 'refs/pull/${{ github.event.client_payload.pull_request.number }}/merge'
             - uses: actions/setup-java@v5
               with:
-                  java-version: "17"
+                  java-version: "21"
                   distribution: 'adopt'
-            - uses: actions/cache@v4
+            - uses: actions/cache@v5
               with:
                   path: ~/.m2
                   key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -35,14 +35,14 @@ jobs:
 
             # Note: Accessing, pushing tags etc. to GHCR will only succeed in upstream because secrets.
             - name: Login to Github Container Registry
-              uses: docker/login-action@v3
+              uses: docker/login-action@v4
               with:
                   registry: ghcr.io
                   username: ${{ secrets.GHCR_USERNAME }}
                   password: ${{ secrets.GHCR_TOKEN }}
 
             - name: Set up QEMU for multi-arch builds
-              uses: docker/setup-qemu-action@v3
+              uses: docker/setup-qemu-action@v4
 
             # Get the image tag from either the command or default to branch name (Not used for now)
             #-   name: Get the target tag name
@@ -69,7 +69,7 @@ jobs:
                   -Dapp.image.tag=${{ env.IMAGE_TAG }}
                   -Ddocker.registry=ghcr.io -Ddocker.platforms=${{ env.PLATFORMS }}
 
-            - uses: marocchino/sticky-pull-request-comment@v2
+            - uses: marocchino/sticky-pull-request-comment@v3
               with:
                   header: registry-push
                   hide_and_recreate: true

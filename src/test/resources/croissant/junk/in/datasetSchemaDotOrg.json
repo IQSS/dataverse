@@ -1,0 +1,52 @@
+{
+  "@context": "http://schema.org",
+  "@type": "Dataset",
+  "@id": "https://doi.org/10.5072/FK2/0CNXUJ",
+  "identifier": "https://doi.org/10.5072/FK2/0CNXUJ",
+  "name": "",
+  "creator": [
+    {
+      "@type": "Person",
+      "givenName": "Sylvester",
+      "familyName": "Ritter",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "WWF"
+      },
+      "name": "Ritter, Sylvester"
+    }
+  ],
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Sylvester",
+      "familyName": "Ritter",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "WWF"
+      },
+      "name": "Ritter, Sylvester"
+    }
+  ],
+  "datePublished": "2025-03-13",
+  "dateModified": "2025-03-13",
+  "version": "1",
+  "description": "A junk dataset.",
+  "keywords": [
+    "Other"
+  ],
+  "license": "http://creativecommons.org/publicdomain/zero/1.0",
+  "includedInDataCatalog": {
+    "@type": "DataCatalog",
+    "name": "Root",
+    "url": "http://localhost:8080"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Root"
+  },
+  "provider": {
+    "@type": "Organization",
+    "name": "Root"
+  }
+}

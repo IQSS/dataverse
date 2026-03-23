@@ -11,6 +11,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 
+import java.util.List;
+
 /**
  *
  * @author skraffmiller
@@ -21,8 +23,17 @@ public class GuestbookServiceBean implements java.io.Serializable {
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
-    
+
+    public List<Guestbook> findGuestbooksForGivenDataverse(Dataverse dataverse) {
+        if (dataverse != null) {
+            Query query = em.createNamedQuery("Guestbook.findByDataverse");
+            query.setParameter("dataverse", dataverse);
+            return query.getResultList();
+        } else {
+            return List.of();
+        }
+    }
+
     public Long findCountUsages(Long guestbookId, Long dataverseId) {
         String queryString = "";
         if (guestbookId != null && dataverseId != null) {

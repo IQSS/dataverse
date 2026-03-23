@@ -9,18 +9,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
@@ -30,9 +18,15 @@ import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import jakarta.persistence.StoredProcedureQuery;
 import jakarta.persistence.TypedQuery;
 import org.apache.commons.text.StringEscapeUtils;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.logging.Logger;
 /**
  *
  * @author skraffmiller
@@ -815,7 +809,7 @@ public class GuestbookResponseServiceBean {
         }        
         guestbookResponse.setDataset(dataset);
         guestbookResponse.setResponseTime(new Date());
-        guestbookResponse.setSessionId(session.toString());
+        guestbookResponse.setSessionId(session != null ? session.toString() : "");
         guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
         setUserDefaultResponses(guestbookResponse, session, user);
         return guestbookResponse;

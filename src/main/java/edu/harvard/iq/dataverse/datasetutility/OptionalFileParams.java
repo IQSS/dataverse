@@ -618,7 +618,7 @@ public class OptionalFileParams {
         // --------------------------------------------------
         // Is this a tabular file?
         // --------------------------------------------------
-        if (!df.isTabularData()){
+        if (!df.isTabularData() && !getDataFileTags().isEmpty()){
             String errMsg = BundleUtil.getStringFromBundle("file.metadata.datafiletag.not_tabular");
 
             throw new DataFileTagException(errMsg);
