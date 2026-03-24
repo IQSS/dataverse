@@ -3475,6 +3475,66 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/24/link/test"
 
+Unlink a Dataset
+~~~~~~~~~~~~~~~~
+
+Removes a link between a dataset and a Dataverse collection (see :ref:`dataset-linking` section of Dataverse Collection Management in the User Guide for more information):
+
+.. code-block:: bash
+
+export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+export SERVER_URL=https://demo.dataverse.org
+export DATASET_ID=24
+export DATAVERSE_ID=test
+
+curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/$DATASET_ID/deleteLink/$DATAVERSE_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/24/deleteLink/test"
+
+Link a Dataverse collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Creates a link between one Dataverse collection and another Dataverse collection (see :ref:`dataverse-linking` section of Dataverse Collection Management in the User Guide for more information):
+
+.. code-block:: bash
+
+export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+export SERVER_URL=https://demo.dataverse.org
+export LINKED_DATAVERSE_ID=linked-collection
+export LINKING_DATAVERSE_ID=linking-collection
+
+curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/dataverses/$LINKED_DATAVERSE_ID/link/$LINKING_DATAVERSE_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/dataverses/linked-collection/link/linking-collection"
+
+Unlink a Dataverse collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Removes a link between one Dataverse collection and another Dataverse collection (see :ref:`dataverse-linking` section of Dataverse Collection Management in the User Guide for more information):
+
+.. code-block:: bash
+
+export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+export SERVER_URL=https://demo.dataverse.org
+export LINKED_DATAVERSE_ID=linked-collection
+export LINKING_DATAVERSE_ID=linking-collection
+
+curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE "$SERVER_URL/api/dataverses/$LINKED_DATAVERSE_ID/deleteLink/$LINKING_DATAVERSE_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverses/linked-collection/deleteLink/linking-collection"
+
 Dataset Locks
 ~~~~~~~~~~~~~
 
