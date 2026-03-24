@@ -843,7 +843,7 @@ public class Dataverses extends AbstractApiBean {
 
     @DELETE
     @AuthRequired
-    @Path("{linkingDataverseId}/deleteLink/{linkedDataverseId}")
+    @Path("{linkedDataverseId}/deleteLink/{linkingDataverseId}")
     public Response deleteDataverseLinkingDataverse(@Context ContainerRequestContext crc, @PathParam("linkingDataverseId") String linkingDataverseId, @PathParam("linkedDataverseId") String linkedDataverseId) {
         boolean index = true;
         return response(req -> {
