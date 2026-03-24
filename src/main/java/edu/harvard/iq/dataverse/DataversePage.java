@@ -218,7 +218,7 @@ public class DataversePage implements java.io.Serializable {
             testquery = query;
         }
 
-        return (session.getUser().isSuperuser() && (dataverse.getOwner() != null || !testquery.isEmpty()));
+        return (dataverse.getOwner() != null || !testquery.isEmpty());
     }
     
     public void setupLinkingPopup (String popupSetting){
