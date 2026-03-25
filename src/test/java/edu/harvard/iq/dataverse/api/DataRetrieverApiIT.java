@@ -544,13 +544,4 @@ public class DataRetrieverApiIT {
         }
         return  message.replaceAll("\"", "\\\\\"");
     }
-
-    @Test
-    public void testRetrieveMyDataAsJsonString2() {
-        String apiToken = "3db5d5ce-ad6c-4501-ab42-8781cfea0829";
-
-        // Call with bad API token
-        Response response = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(0L)));
-        response.prettyPrint();
-    }
 }
