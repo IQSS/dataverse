@@ -2059,7 +2059,7 @@ public class Dataverses extends AbstractApiBean {
         }
         
         return response(req -> {
-            String storageDriver = execCommand(new GetDataverseStorageDriverCommand(req, findDataverseOrDie(id), getEffective));
+            String storageDriver = execCommand(new GetDataverseStorageDriverCommand(req, dataverse, getEffective));
             return ok(JsonPrinter.jsonStorageDriver(storageDriver));
         }, getRequestUser(crc));
     }
