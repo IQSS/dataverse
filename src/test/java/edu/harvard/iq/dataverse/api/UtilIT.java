@@ -3028,7 +3028,7 @@ public class UtilIT {
     static Response listStorageDrivers(String apiToken, String dataverseAlias) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/dataverses/" + dataverseAlias + "/storageDrivers");
+                .get("/api/dataverses/" + dataverseAlias + "/allowedStorageDrivers");
     }
 
     static Response getStorageDriver(String dvAlias, String apiToken) {
