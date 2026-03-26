@@ -26,16 +26,18 @@ public class SetDataverseStorageDriverCommand extends AbstractCommand<String> {
 
         String storageDriverId = null;
         for (Entry<String, String> store: DataAccess.getStorageDriverLabels().entrySet()) {
-            if(store.getKey().equals(label)) {
+            if (store.getKey().equals(label)) {
                 storageDriverId = store.getValue();
-            }  
+                break;
+            }
         }
 
         if (storageDriverId != null) {
             dv.setStorageDriverId(storageDriverId);
+            ctxt.dataverses().save(dv);
             return "Storage set to: " + storageDriverId + "/" + label;
         } else {
-            throw new IllegalArgumentException("No Storage Driver found for : " + label);
+            throw new edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArgumentsException("No Storage Driver found for : " + label);
         }
 
     }
