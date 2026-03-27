@@ -355,10 +355,10 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/datasetSchema")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDatasetSchema(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf) {
-        User u = getRequestUser(crc);
+        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
 
         try {
-            String datasetSchema = execCommand(new GetDatasetSchemaCommand(createDataverseRequest(u), findDataverseOrDie(idtf)));
+            String datasetSchema = execCommand(new GetDatasetSchemaCommand(req, findDataverseUserCanSeeOrDie(idtf, req)));
             JsonObject jsonObject = JsonUtil.getJsonObject(datasetSchema);
             return Response.ok(jsonObject).build();
         } catch (WrappedResponse ex) {
@@ -717,7 +717,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}")
     public Response getDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf, @QueryParam("returnOwners") boolean returnOwners, @QueryParam("returnChildCount") boolean returnChildCount) {
         return response(req -> {
-            Dataverse dataverse = execCommand(new GetDataverseCommand(req, findDataverseOrDie(idtf)));
+            Dataverse dataverse = execCommand(new GetDataverseCommand(req, findDataverseUserCanSeeOrDie(idtf, req)));
             boolean hideEmail = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false);
             return ok(json(dataverse, hideEmail, returnOwners, false, returnChildCount ? dataverseService.getChildCount(dataverse) : null));
         }, getRequestUser(crc));
@@ -767,8 +767,9 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/inputLevels")
     public Response getInputLevels(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) {
         try {
-            Dataverse dataverse = findDataverseOrDie(identifier);
-            List<DataverseFieldTypeInputLevel> inputLevels = execCommand(new ListDataverseInputLevelsCommand(createDataverseRequest(getRequestUser(crc)), dataverse));
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            Dataverse dataverse = findDataverseUserCanSeeOrDie(identifier, req);
+            List<DataverseFieldTypeInputLevel> inputLevels = execCommand(new ListDataverseInputLevelsCommand(req, dataverse));
             return ok(jsonDataverseInputLevels(inputLevels));
         } catch (WrappedResponse e) {
             return e.getResponse();
@@ -859,11 +860,12 @@ public class Dataverses extends AbstractApiBean {
                                        @QueryParam("returnDatasetFieldTypes") boolean returnDatasetFieldTypes,
                                        @QueryParam("datasetType") String datasetTypeIn) {
         try {
-            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            Dataverse dataverse = findDataverseUserCanSeeOrDie(dvIdtf, req);
             DatasetType datasetType = datasetTypeSvc.getByName(datasetTypeIn);
             final List<MetadataBlock> metadataBlocks = execCommand(
                     new ListMetadataBlocksCommand(
-                            createDataverseRequest(getRequestUser(crc)),
+                            req,
                             dataverse,
                             onlyDisplayedOnCreate,
                             datasetType
@@ -918,7 +920,7 @@ public class Dataverses extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMetadataRoot(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
         return response(req -> {
-            final Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            final Dataverse dataverse = findDataverseUserCanSeeOrDie(dvIdtf, req);
             if (permissionSvc.request(req)
                     .on(dataverse)
                     .has(Permission.EditDataverse)) {
@@ -964,7 +966,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             User user = getRequestUser(crc);
             DataverseRequest request = createDataverseRequest(user);
-            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            Dataverse dataverse = findDataverseUserCanSeeOrDie(dvIdtf, request);
             List<DataverseFacet> dataverseFacets = execCommand(new ListFacetsCommand(request, dataverse));
 
             if (returnDetails) {
@@ -993,7 +995,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             User u = getRequestUser(crc);
             DataverseRequest r = createDataverseRequest(u);
-            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            Dataverse dataverse = findDataverseUserCanSeeOrDie(dvIdtf, r);
             JsonArrayBuilder fs = Json.createArrayBuilder();
             for (Dataverse f : execCommand(new ListFeaturedCollectionsCommand(r, dataverse))) {
                 fs.add(f.getAlias());
@@ -1124,7 +1126,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             User u = getRequestUser(crc);
             DataverseRequest request = createDataverseRequest(u);
-            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            Dataverse dataverse = findDataverseUserCanSeeOrDie(dvIdtf, request);
             List<DataverseMetadataBlockFacet> metadataBlockFacets = Optional.ofNullable(execCommand(new ListMetadataBlockFacetsCommand(request, dataverse))).orElse(Collections.emptyList());
             List<DataverseMetadataBlockFacetDTO.MetadataBlockDTO> metadataBlocksDTOs = metadataBlockFacets.stream()
                     .map(item -> new DataverseMetadataBlockFacetDTO.MetadataBlockDTO(item.getMetadataBlock().getName(), item.getMetadataBlock().getLocaleDisplayFacet()))
@@ -1220,7 +1222,7 @@ public class Dataverses extends AbstractApiBean {
         };
 
         return response(req -> ok(
-                execCommand(new ListDataverseContentCommand(req, findDataverseOrDie(dvIdtf)))
+                execCommand(new ListDataverseContentCommand(req, findDataverseUserCanSeeOrDie(dvIdtf, req)))
                         .stream()
                         .map(dvo -> (JsonObjectBuilder) dvo.accept(ser))
                         .collect(toJsonArray())
@@ -1233,7 +1235,7 @@ public class Dataverses extends AbstractApiBean {
     public Response getStorageSize(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("includeCached") boolean includeCached) throws WrappedResponse {
                 
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.datasize"),
-                execCommand(new GetDataverseStorageSizeCommand(req, findDataverseOrDie(dvIdtf), includeCached)))), getRequestUser(crc));
+                execCommand(new GetDataverseStorageSizeCommand(req, findDataverseUserCanSeeOrDie(dvIdtf, req), includeCached)))), getRequestUser(crc));
     }
     
     @GET
@@ -1241,7 +1243,8 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/storage/quota")
     public Response getCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("showInherited") boolean showInherited) throws WrappedResponse {
         try {
-            Long bytesAllocated = execCommand(new GetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf), showInherited));
+            DataverseRequest request = createDataverseRequest(getRequestUser(crc));
+            Long bytesAllocated = execCommand(new GetCollectionQuotaCommand(request, findDataverseUserCanSeeOrDie(dvIdtf, request), showInherited));
             if (bytesAllocated != null) {
                 return ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.storage.quota.allocation"),bytesAllocated));
             }
@@ -1295,7 +1298,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/storage/use")
     public Response getCollectionStorageUse(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) throws WrappedResponse {
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.storage.use"),
-                execCommand(new GetCollectionStorageUseCommand(req, findDataverseOrDie(identifier))))), getRequestUser(crc));
+                execCommand(new GetCollectionStorageUseCommand(req, findDataverseUserCanSeeOrDie(identifier, req))))), getRequestUser(crc));
     }
 
     @GET
@@ -1303,7 +1306,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/roles")
     public Response listRoles(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
         return response(req -> ok(
-                execCommand(new ListRolesCommand(req, findDataverseOrDie(dvIdtf)))
+                execCommand(new ListRolesCommand(req, findDataverseUserCanSeeOrDie(dvIdtf, req)))
                         .stream().map(r -> json(r))
                         .collect(toJsonArray())
         ), getRequestUser(crc));
@@ -1321,7 +1324,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/assignments")
     public Response listAssignments(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
         return response(req -> ok(
-                execCommand(new ListRoleAssignments(req, findDataverseOrDie(dvIdtf)))
+                execCommand(new ListRoleAssignments(req, findDataverseUserCanSeeOrDie(dvIdtf, req)))
                         .stream()
                         .map(a -> json(a))
                         .collect(toJsonArray())
@@ -1511,7 +1514,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/groups/")
     public Response listGroups(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey) {
         return response(req -> ok(
-                execCommand(new ListExplicitGroupsCommand(req, findDataverseOrDie(dvIdtf)))
+                execCommand(new ListExplicitGroupsCommand(req, findDataverseUserCanSeeOrDie(dvIdtf, req)))
                         .stream().map(eg -> json(eg))
                         .collect(toJsonArray())
         ), getRequestUser(crc));
@@ -1523,7 +1526,7 @@ public class Dataverses extends AbstractApiBean {
     public Response getGroupByOwnerAndAliasInOwner(@Context ContainerRequestContext crc,
                                                    @PathParam("identifier") String dvIdtf,
                                                    @PathParam("aliasInOwner") String grpAliasInOwner) {
-        return response(req -> ok(json(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf),
+        return response(req -> ok(json(findExplicitGroupOrDie(findDataverseUserCanSeeOrDie(dvIdtf, req),
                 req,
                 grpAliasInOwner))), getRequestUser(crc));
     }
@@ -1536,9 +1539,10 @@ public class Dataverses extends AbstractApiBean {
 
         Dataverse dv;
         try {
-            dv = findDataverseOrDie(dvIdtf);
             User u = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(u);
+            dv = findDataverseUserCanSeeOrDie(dvIdtf, req);
+
             if (permissionSvc.request(req)
                     .on(dv)
                     .has(Permission.EditDataverse)) {
@@ -1695,7 +1699,8 @@ public class Dataverses extends AbstractApiBean {
     public Response listLinks(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
         try {
             User u = getRequestUser(crc);
-            Dataverse dv = findDataverseOrDie(dvIdtf);
+            DataverseRequest req = createDataverseRequest(u);
+            Dataverse dv = findDataverseUserCanSeeOrDie(dvIdtf, req);
             if (!u.isSuperuser()) {
                 return error(Status.FORBIDDEN, "Not a superuser");
             }

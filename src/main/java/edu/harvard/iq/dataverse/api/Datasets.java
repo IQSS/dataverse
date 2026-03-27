@@ -255,7 +255,7 @@ public class Datasets extends AbstractApiBean {
 
             // Trying to get version 1.0 for a dataset that's already at 3.0, for example, is not supported.
             if (!datasetVersion.isDraft() && versionId != null) {
-                Command<DatasetVersion> cmd = new GetLatestPublishedDatasetVersionCommand(dvRequestService.getDataverseRequest(), dataset);
+                Command<DatasetVersion> cmd = new GetLatestPublishedDatasetVersionCommand(req, dataset);
                 DatasetVersion latestPublishedVersion = commandEngine.submit(cmd);
                 if (latestPublishedVersion == null) {
                     return error(BAD_REQUEST, "Non-draft version requested but for published versions only the latest (" + DS_VERSION_LATEST_PUBLISHED + ") is supported.");

@@ -370,6 +370,20 @@ public abstract class AbstractApiBean {
         }
         return dv;
     }
+    /** Find a dataverse but filter according to the visibility from the locallyFAIRRoleAssignments
+     *
+     * @param dvIdtf - the dataverse identifier
+     * @param req - the DataverseRequest
+     * @return the dataverse if found and visible, otherwise throws WrappedResponse
+     * @throws WrappedResponse if dataverse is not found (in findDatasetOrDie()) or not visible
+     */
+    protected Dataverse findDataverseUserCanSeeOrDie(String dvIdtf, DataverseRequest req) throws WrappedResponse {
+        Dataverse dataverse = findDataverseOrDie(dvIdtf);
+        if (dataverse.isLocallyFAIR() && !permissionSvc.hasLocallyFAIRAccess(req, dataverse)) {
+            throw new WrappedResponse(error( Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + dvIdtf + "'"));
+        }
+        return dataverse;
+    }
 
     protected Template findTemplateOrDie(Long templateId, Dataverse dataverse) throws WrappedResponse {
         
@@ -553,6 +567,21 @@ public abstract class AbstractApiBean {
                         badRequest(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.bad.id", Collections.singletonList(id))));
             }
         }
+    }
+
+    /** Find a datafile but filter according to the visibility from the locallyFAIRRoleAssignments
+     *
+     * @param id - the datafile identifier
+     * @param req - the DataverseRequest
+     * @return the datafile if found and visible, otherwise throws WrappedResponse
+     * @throws WrappedResponse if datafile is not found (in findDatasetOrDie()) or not visible
+     */
+    protected DataFile findDataFileUserCanSeeOrDie(String id, DataverseRequest req) throws WrappedResponse {
+        DataFile dataFile = findDataFileOrDie(id);
+        if (dataFile.isLocallyFAIR() && !permissionSvc.hasLocallyFAIRAccess(req, dataFile)) {
+            throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.id", Collections.singletonList(id))));
+        }
+        return dataFile;
     }
        
     protected DataverseRole findRoleOrDie(String id) throws WrappedResponse {
