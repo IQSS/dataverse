@@ -8862,15 +8862,24 @@ A curl example listing objects
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export ROLE_IDS=6
+  export ROLE_ID1=6
+  export ROLE_ID2=8
   export DVOBJECT_TYPES=Dataset
-  export PUBLISHED_STATES=Unpublished
+  export PUBLISHED_STATE1=Unpublished
+  export PUBLISHED_STATE2=Published
   export PER_PAGE=10
 
- curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve?role_ids=6&role_ids=34&dvobject_types=Dataset&published_states=Published&published_states=Draft&published_states=In+Review&selected_page=1"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve?role_ids=$ROLE_ID1&role_ids=$ROLE_ID2&dvobject_types=$DVOBJECT_TYPES&published_states=$PUBLISHED_STATE1&published_states=$PUBLISHED_STATE2&per_page=$PER_PAGE"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" https://demo.dataverse.org/api/mydata/retrieve?role_ids=6&role_ids=8&dvobject_types=Dataset&published_states=Unpublished&published_states=Published&per_page=10
+
 Parameters:
 
-``role_id`` Roles are customizable. Multiple "role_ids" parameters can be used to filter by several roles. Standard roles include:
+``role_ids`` Roles are customizable. Multiple "role_ids" parameters can be used to filter by several roles. Standard roles include:
 
 - ``1`` = Admin
 - ``2`` = File Downloader
