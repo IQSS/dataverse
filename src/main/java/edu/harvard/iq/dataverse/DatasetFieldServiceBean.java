@@ -513,7 +513,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      * @param relatedDatasetFields  - siblings or childs of the term
      */
     public void registerExternalTerm(JsonObject cvocEntry, String term, List<DatasetField> relatedDatasetFields) {
-        String retrievalUri = cvocEntry.getString("retrieval-uri");
+        String retrievalUri = cvocEntry.getString("retrieval-uri", null);
         String termUriFieldName = cvocEntry.getString("term-uri-field");
         String prefix = cvocEntry.getString("prefix", null);
         if(StringUtils.isBlank(term)) {
