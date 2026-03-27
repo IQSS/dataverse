@@ -39,6 +39,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
+import jakarta.persistence.PostLoad;
 import jakarta.persistence.SqlResultSetMapping;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
@@ -153,11 +154,19 @@ public class FileMetadata implements Serializable {
     @OneToMany (mappedBy="fileMetadata", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
     private Collection<VariableMetadata> variableMetadatas;
         
+    // A transient field is needed for JSF UI - validation errors on label do not get routed directly to the input for labelNoExtension, causing rollback.
+    // With a separate transient field kept in sync with label, the validation can be done on the labelNoExtension field, which avoids the issue and allows proper validation.
     @Transient
     @ValidateDataFileLabel(message = "{filename.illegalCharacters}")
     @NotBlank(message = "{filename.blank}")
     String labelNoExtension;
     
+    // Initialize the labelNoExtension from label after loading the entity
+    @PostLoad
+    public void postLoad() {
+        getLabelNoExtension();
+    }
+
     /**
      * Creates a copy of {@code this}, with identical business logic fields, making the bi-drectional connections to the specified version.
      * 
@@ -221,9 +230,6 @@ public class FileMetadata implements Serializable {
     public FileMetadata() {
         variableMetadatas = new ArrayList<VariableMetadata>();
         varGroups = new ArrayList<VarGroup>();
-        int last = label.lastIndexOf(".");
-        labelNoExtension = (last == -1) ? label : label.substring(0, last);
-
     }
 
     public String getDirectoryLabel() {
