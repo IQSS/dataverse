@@ -7,6 +7,10 @@ An overview of Dataverse features can be found at <https://dataverse.org/softwar
 :depth: 3
 ```
 
+## Highlights
+
+- ...
+- ...
 
 ## AI
 
@@ -21,6 +25,55 @@ Model Context Protocol (MCP) is a standard for AI Agents to communicate with too
 {ref}`More information.<mcp>`
 
 ## Access and download
+
+### Faceted search
+
+Facets are data driven and customizable per collection.
+{doc}`More information.</user/find-use-data>`
+
+### File previews
+
+A preview is available for text, tabular, image, audio, video, and geospatial files.
+{ref}`More information.<file-previews>`
+
+### Preview URL
+
+Create a URL for reviewers to view an unpublished (and optionally anonymized) dataset.
+{ref}`More information.<previewUrl>`
+
+### Guestbook
+
+Optionally collect data about who is downloading the files from your datasets.
+{ref}`More information.<dataset-guestbooks>`
+
+### File download in open tabular formats
+
+Proprietary tabular formats are converted into TSV and RData for download.
+{doc}`More information.</user/tabulardataingest/index>`
+
+## Administration
+
+### User management
+
+Dashboard for common user-related tasks.
+{doc}`More information.</admin/dashboard>`
+
+### Quotas
+
+For number of files, amount of storage, etc.
+{doc}`More information.</admin/collectionquotas>`
+
+### Usage statistics and metrics
+
+Download counters, support for Make Data Count.
+{doc}`More information.</admin/make-data-count>`
+
+### Configurable notifications
+
+In-app and email notifications for access requests, requests for review, etc. can be muted.
+{ref}`More information.<account-notifications>`
+
+## Authentication
 
 ### Login via Shibboleth
 
@@ -37,69 +90,12 @@ Log in using popular OAuth2 providers.
 Log in using your institution's identity provider or a third party.
 {doc}`More information.</installation/oidc>`
 
-### Versioning
-
-History of changes to datasets and files are preserved.
-{doc}`More information.</user/dataset-management>`
-
-### File previews
-
-A preview is available for text, tabular, image, audio, video, and geospatial files.
-{ref}`More information.<file-previews>`
-
-### Preview and analysis of tabular files
-
-Data Explorer allows for searching, charting and cross tabulation analysis
-{ref}`More information.<inventory-of-external-tools>`
-
-### Guestbook
-
-Optionally collect data about who is downloading the files from your datasets.
-{ref}`More information.<dataset-guestbooks>`
-
-### File download in R and TSV format
-
-Proprietary tabular formats are converted into RData and TSV.
-{doc}`More information.</user/tabulardataingest/index>`
-
-### Faceted search
-
-Facets are data driven and customizable per collection.
-{doc}`More information.</user/find-use-data>`
-
-## Administration
-
-### Quotas
-
-For number of files, etc.
-{doc}`More information.</admin/collectionquotas>`
-
-### Usage statistics and metrics
-
-Download counters, support for Make Data Count.
-{doc}`More information.</admin/make-data-count>`
-
-### Private URL
-
-Create a URL for reviewers to view an unpublished (and optionally anonymized) dataset.
-{ref}`More information.<previewUrl>`
-
-### Notifications
-
-In app and email notifications for access requests, requests for review, etc.
-{ref}`More information.<account-notifications>`
-
-### User management
-
-Dashboard for common user-related tasks.
-{doc}`More information.</admin/dashboard>`
-
-### Curation status labels
-
-Let curators mark datasets with a status label customized to your needs.
-{ref}`More information.<:AllowedCurationLabels>`
-
 ## Customization
+
+### Branding
+
+Your installation can be branded with a custom homepage, header, footer, CSS, etc.
+{ref}`More information.<Branding Your Installation>`
 
 ### Internationalization
 
@@ -116,33 +112,34 @@ Each personal or organizational collection can be customized and branded.
 Embed listings of data in external websites.
 {ref}`More information.<dataverse-widgets>`
 
-### Branding
-
-Your installation can be branded with a custom homepage, header, footer, CSS, etc.
-{ref}`More information.<Branding Your Installation>`
-
 ## FAIR data publication
+
+### Support for FAIR Data Principles
+
+Findable, Accessible, Interoperable, Reusable.
+[More information.](https://web.archive.org/web/20191206043258/https://scholar.harvard.edu/mercecrosas/presentations/fair-guiding-principles-implementation-dataverse)
+
+### Versioning
+
+History of changes to datasets and files are preserved.
+{doc}`More information.</user/dataset-management>`
+
+### Prepublication Review Support
+
+Datasets start as drafts and can be submitted for review before publication.
+{ref}`More information.<dataverse-permissions>`
 
 ### TK Labels
 
 Integrate with the Local Contexts platform, enabling the use of Traditional Knowledge and Biocultural Labels, and Notices.
 {doc}`More information.</installation/localcontexts>`
 
-### Support for FAIR Data Principles
-
-Findable, Accessible, Interoperable, Reusable.
-[More information.](https://web.archive.org/web/20191206043258/https://scholar.harvard.edu/mercecrosas/presentations/fair-guiding-principles-implementation-dataverse)
-### Prepublication Review Support
-
-Datasets start as drafts and can be submitted for review before publication.
-{ref}`More information.<dataverse-permissions>`
-
 ## File management
 
-### Retention Periods
+### File hierarchy
 
-Make files inaccessible once the retention period set has passed.
-{ref}`More information.<retention-periods>`
+Users are able to control dataset file hierarchy and directory structure.
+{doc}`More information.</user/dataset-management>`
 
 ### Restricted files
 
@@ -154,17 +151,12 @@ Control who can download files and choose whether or not to enable a "Request Ac
 Make files inaccessible until an embargo end date.
 {ref}`More information.<embargoes>`
 
-### File hierarchy
+### Retention Periods
 
-Users are able to control dataset file hierarchy and directory structure.
-{doc}`More information.</user/dataset-management>`
+Make files inaccessible once the retention period set has passed.
+{ref}`More information.<retention-periods>`
 
-### Fixity checks for files
-
-MD5, SHA-1, SHA-256, SHA-512, UNF.
-{ref}`More information.<:FileFixityChecksumAlgorithm>`
-
-### Backend storage on S3 or Swift
+### Configurable storage
 
 Choose between filesystem or object storage, configurable per collection and per dataset.
 {doc}`More information.</developers/big-data-support>`
@@ -174,10 +166,10 @@ Choose between filesystem or object storage, configurable per collection and per
 After a permission check, files can pass freely and directly between a client computer and S3.
 {doc}`More information.</developers/big-data-support>`
 
-### Pull header metadata from Astronomy (FITS) files
+### Fixity checks for files
 
-Dataset metadata prepopulated from FITS file metadata.
-{ref}`More information.<fits>`
+MD5, SHA-1, SHA-256, SHA-512, UNF.
+{ref}`More information.<:FileFixityChecksumAlgorithm>`
 
 ### Auxiliary files for data files
 
@@ -185,6 +177,16 @@ Each data file can have any number of auxiliary files for documentation or other
 {doc}`More information.</developers/aux-file-support>`
 
 ## Geospatial
+
+### Geospatial Metadata Fields
+
+There is a dedicated geospatial metadata block.
+{ref}`More information.<metadata-references>`
+
+### Geospatial File Preview
+
+GeoJSON, GeoTIFF, and Shapefiles can be previewed as a map.
+{ref}`More information.<geojson>`
 
 ### Metadata Extraction from Geospatial Files
 
@@ -196,17 +198,19 @@ Populate the bounding box from NetCDF and HDF5 files.
 Pass `geo_point` and `geo_radius` to find datasets based on their bounding box.
 {doc}`More information.</api/search>`
 
-### Geospatial File Preview
-
-GeoJSON, GeoTIFF, and Shapefiles can be previewed as a map.
-{ref}`More information.<geojson>`
-
-### Geospatial Metadata Fields
-
-There is a dedicated geospatial metadata block.
-{ref}`More information.<metadata-references>`
-
 ## Integrations
+
+Dataverse integrates with a wide variety of third party systems, some of which are highlighted below. For a full list, see {doc}`Integrations</admin/integrations>`.
+
+### DataCite Integration
+
+DOIs are reserved, and when datasets are published, their metadata is published to DataCite.
+{doc}`More information.</admin/discoverability>`
+
+### External tools
+
+Enable additional features not built in to the Dataverse software.
+{doc}`More information.</installation/external-tools>`
 
 ### Galaxy Integration
 
@@ -228,20 +232,10 @@ Upload from and download to Dataverse using Globus endpoints.
 Pull data from an iRODS instance to a Dataverse dataset.
 {ref}`More information.<irods>`
 
-### DMPTool Integration Via RSpace
+### RSpace
 
-A Data Management Plan (DMP) can be uploaded to RSpace and updated with the DOI of a Dataverse dataset.
+Exchange data and metadata with RSpace. For example, a Data Management Plan (DMP) can be uploaded to RSpace and updated with the DOI of a Dataverse dataset.
 {ref}`More information.<rspace>`
-
-### DataCite integration
-
-DOIs are reserved, and when datasets are published, their metadata is published to DataCite.
-{doc}`More information.</admin/discoverability>`
-
-### External tools
-
-Enable additional features not built in to the Dataverse software.
-{doc}`More information.</installation/external-tools>`
 
 ### Dropbox integration
 
@@ -337,3 +331,23 @@ Allow publication of a dataset to kick off external processes and integrations.
 Upload standard W3C provenance files or enter free text instead.
 {ref}`More information.<provenance>`
 
+
+## Misc
+
+### Preview and analysis of tabular files
+
+Data Explorer allows for searching, charting and cross tabulation analysis
+{ref}`More information.<inventory-of-external-tools>`
+
+
+## Curation
+
+### Curation status labels
+
+Let curators mark datasets with a status label customized to your needs.
+{ref}`More information.<:AllowedCurationLabels>`
+
+### Pull header metadata from Astronomy (FITS) files
+
+Dataset metadata prepopulated from FITS file metadata.
+{ref}`More information.<fits>`
