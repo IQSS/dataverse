@@ -273,7 +273,7 @@ Harvest metadata directly from DataCite to Dataverse using OAI-PMH.
 ### Croissant
 
 Export metadata as linked data following the Croissant ontology.
-{ref}`More information.<schema.org-head>`
+{ref}`More information.<croissant-head>`
 
 ### RO-Crate
 

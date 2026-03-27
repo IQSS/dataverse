@@ -1,8 +1,11 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
+import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
@@ -26,7 +29,7 @@ import static edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult.OK;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -88,12 +91,34 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
                 // First check that we have what is required
                 Dataset d = context.getDataset();
                 DatasetVersion dv = d.getReleasedVersion();
+                DatasetVersion priorVersion = d.getPriorReleasedVersion();
                 List<DatasetField> dvf = dv.getDatasetFields();
                 Map<String, DatasetField> fields = new HashMap<String, DatasetField>();
                 List<String> reqFields = ListSplitUtil.split((String) context.getSettings().getOrDefault(COARNotifyRelationshipAnnouncementTriggerFields.toString(), ""));
+                
+                Map<String, DatasetField> priorFields = new HashMap<String, DatasetField>();
+                if (priorVersion != null) {
+                    for (DatasetField pdf : priorVersion.getDatasetFields()) {
+                        if (!pdf.isEmpty() && reqFields.contains(pdf.getDatasetFieldType().getName())) {
+                            priorFields.put(pdf.getDatasetFieldType().getName(), pdf);
+                        }
+                    }
+                }
+                
                 for (DatasetField df : dvf) {
                     if (!df.isEmpty() && reqFields.contains(df.getDatasetFieldType().getName())) {
-                        fields.put(df.getDatasetFieldType().getName(), df);
+                        DatasetField priorField = priorFields.get(df.getDatasetFieldType().getName());
+                        
+                        if (priorVersion == null || priorField == null) {
+                            // No prior version, include all values
+                            fields.put(df.getDatasetFieldType().getName(), df);
+                        } else {
+                            // Create a filtered field with only new values
+                            DatasetField filteredField = filterNewValues(df, priorField);
+                            if (!filteredField.isEmpty()) {
+                                fields.put(df.getDatasetFieldType().getName(), filteredField);
+                            }
+                        }
                     }
                 }
 
@@ -214,6 +239,14 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
 
     private JsonObject getRelationshipObject(DatasetFieldType dft, JsonValue jval, Dataset d,
             Map<String, String> localContext) {
+        if (logger.isLoggable(Level.FINE)) {
+            if (jval.getValueType().equals(jakarta.json.JsonValue.ValueType.OBJECT)) {
+                logger.fine("Parsing : " + JsonUtil.prettyPrint(jval.asJsonObject()));
+            }
+            else if (jval.getValueType().equals(jakarta.json.JsonValue.ValueType.STRING)) {
+                logger.fine("Parsing : " + jval.toString());
+            }
+        }
         String[] answers = getBestIdAndType(dft, jval);
         String id = answers[0];
         String type = answers[1];
@@ -335,7 +368,8 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
                         break;
                     }
                 }
-            } else if (jo.containsKey(publicationURL.getLabel())) {
+            }
+            if (id == null && jo.containsKey(publicationURL.getLabel())) {
 
                 String value = jo.getString(publicationURL.getLabel());
                 if (isURI(value)) {
@@ -412,4 +446,90 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
         return false;
     }
 
+    /**
+     * Create a new DatasetField containing only values that are new compared to the
+     * prior field. This creates a detached copy to avoid modifying the managed
+     * entity.
+     * 
+     * @param currentField The field from the current version
+     * @param priorField   The field from the prior version
+     * @return A new DatasetField with only new values
+     */
+    private DatasetField filterNewValues(DatasetField currentField, DatasetField priorField) {
+        DatasetField filtered = new DatasetField();
+        DatasetFieldType fieldType = currentField.getDatasetFieldType();
+        filtered.setDatasetFieldType(fieldType);
+
+        // Handle primitive fields
+        if (fieldType.isPrimitive()) {
+            if (fieldType.isControlledVocabulary()) {
+                // Handle controlled vocabulary fields
+                List<ControlledVocabularyValue> currentCVs = currentField.getControlledVocabularyValues();
+                List<ControlledVocabularyValue> priorCVs = priorField != null ? priorField.getControlledVocabularyValues() : new ArrayList<>();
+                
+                List<ControlledVocabularyValue> newCVs = new ArrayList<>();
+                for (ControlledVocabularyValue currentCV : currentCVs) {
+                    boolean isNew = true;
+                    for (ControlledVocabularyValue priorCV : priorCVs) {
+                        if (currentCV.getStrValue().equals(priorCV.getStrValue())) {
+                            isNew = false;
+                            break;
+                        }
+                    }
+                    if (isNew) {
+                        newCVs.add(currentCV);
+                    }
+                }
+                filtered.setControlledVocabularyValues(newCVs);
+            } else {
+             // Handle regular fields
+                List<DatasetFieldValue> currentDFVs = currentField.getDatasetFieldValues();
+                List<DatasetFieldValue> priorDFVs = priorField != null ? priorField.getDatasetFieldValues() : new ArrayList<>();
+                
+                List<DatasetFieldValue> newDFVs = new ArrayList<>();
+                for (DatasetFieldValue currentDFV : currentDFVs) {
+                    boolean isNew = true;
+                    for (DatasetFieldValue priorDFV : priorDFVs) {
+                        if (currentDFV.valuesEqual(priorDFV)) {
+                            isNew = false;
+                            break;
+                        }
+                    }
+                    if (isNew) {
+                        newDFVs.add(currentDFV);
+                    }
+                }
+                filtered.setDatasetFieldValues(newDFVs);
+            }
+        } else {
+            // Handle compound fields
+            List<DatasetFieldCompoundValue> currentCompounds = currentField.getDatasetFieldCompoundValues();
+            List<DatasetFieldCompoundValue> priorCompounds = priorField != null ? priorField.getDatasetFieldCompoundValues() : new ArrayList<>();
+            
+            List<DatasetFieldCompoundValue> newCompounds = new ArrayList<>();
+            
+            for (DatasetFieldCompoundValue currentCompound : currentCompounds) {
+                boolean isNew = true;
+                
+                for (DatasetFieldCompoundValue priorCompound : priorCompounds) {
+
+                    if (currentCompound.valuesEqual(priorCompound)) {
+                        isNew = false;
+                        break;
+                    }
+                }
+                
+                if (isNew) {
+                    // Create a copy of the compound value with all its children
+                    DatasetFieldCompoundValue newCompound = currentCompound.copy(filtered);
+                    newCompound.setParentDatasetField(filtered);
+                    newCompounds.add(newCompound);
+                }
+            }
+            
+            filtered.setDatasetFieldCompoundValues(newCompounds);
+        }
+        
+        return filtered;
+    }
 }
