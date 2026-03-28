@@ -8860,16 +8860,18 @@ A curl example listing objects
 
 .. code-block:: bash
 
-  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
   export ROLE_ID1=6
   export ROLE_ID2=8
-  export DVOBJECT_TYPES=Dataset
+  export DVTYPE1=Dataset
+  export DVTYPE2=Dataverse
   export PUBLISHED_STATE1=Unpublished
   export PUBLISHED_STATE2=Published
   export PER_PAGE=10
 
-  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve?role_ids=$ROLE_ID1&role_ids=$ROLE_ID2&dvobject_types=$DVOBJECT_TYPES&published_states=$PUBLISHED_STATE1&published_states=$PUBLISHED_STATE2&per_page=$PER_PAGE"
+  curl -H "X-Dataverse-key:$API_TOKEN" \
+       "$SERVER_URL/api/mydata/retrieve?role_ids=$ROLE_ID1&role_ids=$ROLE_ID2&dvobject_types=$DVTYPE1&dvobject_types=$DVTYPE2&published_states=$PUBLISHED_STATE1&published_states=$PUBLISHED_STATE2&per_page=$PER_PAGE"
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -8877,34 +8879,26 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" https://demo.dataverse.org/api/mydata/retrieve?role_ids=6&role_ids=8&dvobject_types=Dataset&published_states=Unpublished&published_states=Published&per_page=10
 
-Parameters:
+**Parameters:**
 
-``role_ids`` Roles are customizable. Multiple "role_ids" parameters can be used to filter by several roles. Standard roles include:
-
-- ``1`` = Admin
-- ``2`` = File Downloader
-- ``3`` = Dataverse + Dataset Creator
-- ``4`` = Dataverse Creator
-- ``5`` = Dataset Creator
-- ``6`` = Contributor
-- ``7`` = Curator
-- ``8`` = Member
-
-``dvobject_types`` Type of object, several possible values among: ``DataFile`` , ``Dataset`` & ``Dataverse`` .
-
-``published_states`` State of the object. Multiple "published_states" parameters can be used. Several possible values among: ``Published`` , ``Unpublished`` , ``Draft`` , ``Deaccessioned`` & ``In+Review``
-
-``per_page`` Number of results returned per page.
-
-``metadata_fields`` Includes the requested fields for each dataset in the response. Multiple "metadata_fields" parameters can be used to include several fields. See :doc:`search` for further information on this parameter.
-
-``show_collections`` Whether or not to include a list of parent and linked collections for each dataset search result.
-
-``sort`` The sort field. Supported values include "name", "date" and "relevance".
-
-``order`` The order in which to sort. Can either be "asc" or "desc".
-
-``fq`` A filter query (Solr syntax) to narrow the list returned. Multiple "fq" parameters can be used.
+* ``role_ids``: Roles are customizable. Multiple "role_ids" parameters can be used to filter by several roles. Standard roles include:
+    * ``1`` = Admin
+    * ``2`` = File Downloader
+* ``dvobject_types``: Type of object. Multiple "dvobject_types" parameters can be used. Possible values:
+    * ``Dataverse``
+    * ``Dataset``
+    * ``DataFile``
+* ``published_states``: State of the object. Multiple "published_states" parameters can be used. Possible values:
+    * ``Published``
+    * ``Unpublished``
+    * ``Draft``
+    * ``Deaccessioned``
+    * ``In+Review``
+* ``mydata_search_term``: A string used to search for specific data within the user's MyData collection.
+* ``selected_page``: The page number of results to return (used for pagination).
+* ``per_page``: Number of results returned per page.
+* ``order``: The order in which to sort. Can either be "asc" or "desc".
+* ``fq``: A filter query (Solr syntax) to narrow the list returned. Multiple "fq" parameters can be used.
 
 MyData Collection List
 ~~~~~~~~~~~~~~~~~~~~~~
