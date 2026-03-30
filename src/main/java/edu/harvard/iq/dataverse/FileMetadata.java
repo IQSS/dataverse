@@ -158,7 +158,6 @@ public class FileMetadata implements Serializable {
     // With a separate transient field kept in sync with label, the validation can be done on the labelNoExtension field, which avoids the issue and allows proper validation.
     @Transient
     @ValidateDataFileLabel(message = "{filename.illegalCharacters}")
-    @NotBlank(message = "{filename.blank}")
     String labelNoExtension;
     
     // Initialize the labelNoExtension from label after loading the entity
