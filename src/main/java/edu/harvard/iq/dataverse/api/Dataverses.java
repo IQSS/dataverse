@@ -2073,7 +2073,7 @@ public class Dataverses extends AbstractApiBean {
                                      @PathParam("identifier") String id, String label) throws WrappedResponse {
         Dataverse dataverse = findDataverseOrDie(id);
         if (dataverse == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + id + ".");
         }
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
