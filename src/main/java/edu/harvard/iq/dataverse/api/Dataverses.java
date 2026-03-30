@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
@@ -37,6 +38,7 @@ import edu.harvard.iq.dataverse.util.json.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
@@ -2069,25 +2071,26 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/storageDriver")
     public Response setStorageDriver(@Context ContainerRequestContext crc, 
                                      @PathParam("identifier") String id, String label) throws WrappedResponse {
-       
         Dataverse dataverse = findDataverseOrDie(id);
-
         if (dataverse == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on the identifier supplied: " + id + ".");
+            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
         }
-
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
-            DataverseRequest request = createDataverseRequest(user);
-            SetDataverseStorageDriverCommand setDriverCommand = new SetDataverseStorageDriverCommand(request, dataverse, label);
-            return ok(execCommand(setDriverCommand));
-
         } catch (WrappedResponse wr) {
-            return handleWrappedResponse(wr);
-        } 
+            return wr.getResponse();
+        }
+        for (Entry<String, String> store: DataAccess.getStorageDriverLabels().entrySet()) {
+            if(store.getKey().equals(label)) {
+                dataverse.setStorageDriverId(store.getValue());
+                return ok("Storage set to: " + store.getKey() + "/" + store.getValue());
+            }
+        }
+        return error(Response.Status.BAD_REQUEST,
+                "No Storage Driver found for : " + label);
     }
 
     @DELETE
@@ -2097,19 +2100,18 @@ public class Dataverses extends AbstractApiBean {
         
         Dataverse dataverse = findDataverseOrDie(id);
         if (dataverse == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on the identifier supplied: " + id + ".");
+            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
         }
-
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
-            DataverseRequest request = createDataverseRequest(user);
-            DeleteDataverseStorageDriverCommand deleteDriverCommand = new DeleteDataverseStorageDriverCommand(request, dataverse);
-            return ok(execCommand(deleteDriverCommand));
         } catch (WrappedResponse wr) {
-            return handleWrappedResponse(wr);
+            return wr.getResponse();
+        }
+        dataverse.setStorageDriverId("");
+        return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
         } 
     }
 
