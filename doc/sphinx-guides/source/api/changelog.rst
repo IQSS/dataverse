@@ -7,6 +7,13 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.11
+-----
+
+- The following API will now return ``403`` if the ``requireFilesToPublishDataset`` flag is set and the dataset version contains 0 files.
+
+  - **/api/datasets/{Id}/submitForReview**
+
 v6.10
 -----
 - The following GET APIs will now return ``400`` if a required Guestbook Response is not supplied. A Guestbook Response can be passed to these APIs in the JSON body using a POST call. See the notes under :ref:`basic-file-access` and :ref:`download-by-dataset-by-version` for details.
