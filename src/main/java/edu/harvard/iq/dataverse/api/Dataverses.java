@@ -2100,8 +2100,9 @@ public class Dataverses extends AbstractApiBean {
         
         Dataverse dataverse = findDataverseOrDie(id);
         if (dataverse == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + id + ".");
         }
+
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
@@ -2112,7 +2113,7 @@ public class Dataverses extends AbstractApiBean {
         }
         dataverse.setStorageDriverId("");
         return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
-        } 
+        
     }
 
     @GET
