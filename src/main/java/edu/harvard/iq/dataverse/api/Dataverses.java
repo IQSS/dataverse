@@ -2078,6 +2078,9 @@ public class Dataverses extends AbstractApiBean {
 
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
             DataverseRequest request = createDataverseRequest(user);
             SetDataverseStorageDriverCommand setDriverCommand = new SetDataverseStorageDriverCommand(request, dataverse, label);
             return ok(execCommand(setDriverCommand));
@@ -2099,6 +2102,9 @@ public class Dataverses extends AbstractApiBean {
 
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
             DataverseRequest request = createDataverseRequest(user);
             DeleteDataverseStorageDriverCommand deleteDriverCommand = new DeleteDataverseStorageDriverCommand(request, dataverse);
             return ok(execCommand(deleteDriverCommand));
