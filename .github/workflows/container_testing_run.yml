@@ -1,0 +1,169 @@
+name: 21 CFR Part 11 Testing in a Container
+
+on:
+  push:
+    branches:
+      - develop
+    paths-ignore:
+      - 'doc/**'
+      - '**/*.md'
+      - '**/*.txt'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/*.md'
+  pull_request:
+    branches:
+      - develop
+    paths-ignore:
+      - 'doc/**'
+      - '**/*.md'
+      - '**/*.txt'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/*.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  testing-21cfrpart11-container-run:
+    runs-on: ubuntu-latest
+    if: vars.ENABLE_21CFRPART11_TESTS == 'true'
+    timeout-minutes: 60
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      # ---------------------------
+      # CHECKOUT
+      # ---------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ---------------------------
+      # VERIFY DOCKER
+      # ---------------------------
+      - name: Verify Docker
+        run: |
+          set -euo pipefail
+          docker version
+
+      # ---------------------------
+      # SETUP JAVA + MAVEN
+      # ---------------------------
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Verify Maven
+        run: |
+          set -euo pipefail
+          mvn -version
+
+      # ---------------------------
+      # CLEAN PREVIOUS VOLUMES
+      # ---------------------------
+      - name: Clean docker-dev-volumes
+        run: |
+          set -euo pipefail
+          rm -rf docker-dev-volumes || true
+
+      # ---------------------------
+      # BUILD IMAGES (Dataverse-native)
+      # ---------------------------
+      - name: Build Dataverse containers via Maven
+        run: |
+          set -euo pipefail
+          mvn -Pct clean package
+
+      # ---------------------------
+      # START CONTAINERS (BACKGROUND)
+      # ---------------------------
+      - name: Start Dataverse stack
+        run: |
+          set -euo pipefail
+          mvn -Pct docker:start
+
+      # ---------------------------
+      # WAIT FOR API READINESS
+      # ---------------------------
+      - name: Wait for Dataverse API readiness
+        run: |
+          set -euo pipefail
+
+          URL="http://localhost:8080/api/info/version"
+          MAX_ATTEMPTS=10
+          SLEEP_TIME=15
+
+          echo "Waiting for Dataverse readiness..."
+
+          for attempt in $(seq 1 $MAX_ATTEMPTS); do
+            echo "Attempt $attempt..."
+
+            RESPONSE=$(curl -s --max-time 15 "$URL" || true)
+            STATUS=$(echo "$RESPONSE" | jq -r '.status' 2>/dev/null || echo "NOT_READY")
+
+            if [ "$STATUS" = "OK" ]; then
+              echo "Dataverse is READY."
+              echo "Response: $RESPONSE"
+              exit 0
+            fi
+
+            echo "Not ready. Sleeping ${SLEEP_TIME}s..."
+            sleep $SLEEP_TIME
+
+            if [ $SLEEP_TIME -lt 60 ]; then
+              SLEEP_TIME=$((SLEEP_TIME * 2))
+              if [ $SLEEP_TIME -gt 60 ]; then
+                SLEEP_TIME=60
+              fi
+            fi
+          done
+
+          echo "Dataverse failed to become ready."
+          docker ps
+          docker logs $(docker ps -q) || true
+          exit 1
+
+    #   # ---------------------------
+    #   # RUN CYPRESS TESTS
+    #   # ---------------------------
+    #   - name: Run Cypress E2E Tests
+    #     uses: cypress-io/github-action@v7.1.5
+    #     with:
+    #       working-directory: tests/21cfrpart11
+    #       browser: chrome
+    #       # We don't need 'start' because your containers are already running
+    #       # We don't need 'wait-on' because your previous step handled it
+
+    #   # ---------------------------
+    #   # UPLOAD VISUAL ARTIFACTS
+    #   # ---------------------------
+    #   - name: Upload Cypress Artifacts (Videos & Screenshots)
+    #     uses: actions/upload-artifact@v7.0.0
+    #     if: always()
+    #     with:
+    #       name: cypress-visual-logs
+    #       path: |
+    #         tests/21cfrpart11/cypress/screenshots
+    #         tests/21cfrpart11/cypress/videos
+    #       retention-days: 3
+    #       if-no-files-found: warn
+
+      # ---------------------------
+      # SHUTDOWN STACK
+      # ---------------------------
+      - name: Stop Dataverse stack
+        if: always()
+        run: |
+          set -euo pipefail
+          mvn -Pct docker:stop || true
+
+      - name: Final Docker cleanup
+        if: always()
+        run: |
+          docker system prune -af || true
