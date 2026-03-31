@@ -27,7 +27,7 @@ concurrency:
 jobs:
   testing-21cfrpart11-container-run:
     runs-on: ubuntu-latest
-    if: vars.ENABLE_21CFRPART11_TESTS == 'true'
+    if: vars.ENABLE_DOCKER_TESTS == 'true'
     timeout-minutes: 60
 
     defaults:
