@@ -39,7 +39,7 @@ jobs:
       # CHECKOUT
       # ---------------------------
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # ---------------------------
       # VERIFY DOCKER
@@ -53,7 +53,7 @@ jobs:
       # SETUP JAVA + MAVEN
       # ---------------------------
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
