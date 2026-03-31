@@ -136,6 +136,13 @@ jobs:
         run: |
             set -euo pipefail
             mvn test -Dtest=S3AccessIT -Ddataverse.test.baseurl=http://localhost:8080
+      
+      # ---------------------------
+      # DUMP LOGS ON FAILURE
+      # ---------------------------
+      - name: Dump Dataverse Logs on Failure
+        if: failure()
+        run: docker compose logs dev_dataverse
 
     #   # ---------------------------
     #   # RUN CYPRESS TESTS
