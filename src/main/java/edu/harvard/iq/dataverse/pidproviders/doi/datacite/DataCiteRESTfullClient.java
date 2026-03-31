@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.pidproviders.doi.datacite;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Base64;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,10 +27,9 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-
-
-
 import org.apache.http.util.EntityUtils;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import jakarta.json.JsonObject;
 
 /**
  * DataCiteRESTfullClient
@@ -46,12 +46,24 @@ public class DataCiteRESTfullClient implements Closeable {
     private static final long RETRY_DELAY_MS = 10000; // 10 seconds
     
     private String url;
+    private String restApiUrl; 
     private CloseableHttpClient httpClient;
     private HttpClientContext context;
     private String encoding = "utf-8";
     
     public DataCiteRESTfullClient(String url, String username, String password) {
         this.url = url;
+        context = HttpClientContext.create();
+        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+        credsProvider.setCredentials(new AuthScope(null, -1), new UsernamePasswordCredentials(username, password));
+        context.setCredentialsProvider(credsProvider);
+
+        httpClient = HttpClients.createDefault();
+    }
+    
+    public DataCiteRESTfullClient(String url, String restApiUrl, String username, String password) {
+        this.url = url;
+        this.restApiUrl = restApiUrl; 
         context = HttpClientContext.create();
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(new AuthScope(null, -1), new UsernamePasswordCredentials(username, password));
@@ -206,6 +218,57 @@ public class DataCiteRESTfullClient implements Closeable {
         } catch (IOException ioe) {
             logger.log(Level.SEVERE, "IOException when get metadata", ioe);
             throw new RuntimeException("IOException when get metadata", ioe);
+        }
+    }
+    
+    /**
+     * getMetadataViaRestApi
+     * a temporary/dev. version of the method utilizing REST API instead of MDS
+     *
+     * @param doi
+     * @return
+     */
+    public String getMetadataViaRestApi(String doi) {
+        HttpGet httpGet = new HttpGet(this.restApiUrl + "/dois/" + doi);
+
+        try {
+            HttpResponse response = executeWithRetry(httpGet, "getMetadataViaRestApi");
+            String restApiRawData = EntityUtils.toString(response.getEntity(), encoding);
+            
+            logger.fine("REST API raw data: " + restApiRawData);
+            
+            if (response.getStatusLine().getStatusCode() != 200) {
+                String errMsg = "getMetadataViaRestApi, Response: " + response.getStatusLine().getStatusCode() + ", " + restApiRawData;
+                logger.log(Level.SEVERE, errMsg);
+                throw new RuntimeException(errMsg);
+            }
+
+            JsonObject restApiJson = JsonUtil.getJsonObject(restApiRawData);
+            String xmlEncoded = null; 
+            
+            JsonObject restApiJsonData = restApiJson.getJsonObject("data");
+            if (restApiJsonData != null) {
+                JsonObject restApiJsonAttributes = restApiJsonData.getJsonObject("attributes");
+                if (restApiJsonAttributes != null) {
+                    xmlEncoded = restApiJsonAttributes.getString("xml");
+                }
+            }
+            logger.fine("encoded XML entry: " + xmlEncoded);
+            
+            String metadata = null; // what we want to return, registration metadata in the XML format
+
+            if (xmlEncoded != null) {
+                // Stripping any newlines below may be unnecessary - it is likely
+                // always returned as a continuous string; but shouldn't hurt 
+                // either. 
+                metadata = new String(Base64.getDecoder().decode(xmlEncoded.replaceAll("[\\r\\n]", "")), encoding);
+            }
+            
+            logger.fine("decoded XML metadata: " + metadata);
+            return metadata;
+        } catch (IOException ioe) {
+            logger.log(Level.SEVERE, "IOException in getMetadataViaRestApi", ioe);
+            throw new RuntimeException("IOException in getMetadataViaRestAPi", ioe);
         }
     }
     

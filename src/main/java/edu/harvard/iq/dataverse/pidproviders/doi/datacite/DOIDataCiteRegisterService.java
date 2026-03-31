@@ -46,6 +46,10 @@ public class DOIDataCiteRegisterService {
             client = new DataCiteRESTfullClient(url, username, password);
     }
 
+    public DOIDataCiteRegisterService(String url, String restApiUrl, String username, String password) {
+            client = new DataCiteRESTfullClient(url, restApiUrl, username, password);
+    }
+
     /**
      * This "reserveIdentifier" method is heavily based on the
      * "registerIdentifier" method below but doesn't, this one doesn't doesn't
@@ -80,13 +84,14 @@ public class DOIDataCiteRegisterService {
     
     public String reRegisterIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) throws IOException {
         String retString = "";
-        String numericIdentifier = identifier.substring(identifier.indexOf(":") + 1);
+        // "bare identifier" is the canonical pid with the "doi:" prefix stripped
+        String bareIdentifier = identifier.substring(identifier.indexOf(":") + 1);
         String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
         String target = metadata.get("_target");
         String currentMetadata = null;
         boolean hasDifferences = false;
         try {
-            currentMetadata = client.getMetadata(numericIdentifier);
+            currentMetadata = client.getMetadataViaRestApi(bareIdentifier);
             Diff myDiff = DiffBuilder.compare(xmlMetadata).withTest(currentMetadata).ignoreWhitespace().checkForSimilar()
                     .build();
             hasDifferences = myDiff.hasDifferences();
@@ -96,7 +101,7 @@ public class DOIDataCiteRegisterService {
                 }
             }
         } catch (RuntimeException e) {
-            logger.log(Level.INFO, "DOI " + numericIdentifier + " not registered with DataCite, registering now.");
+            logger.log(Level.INFO, "DOI " + bareIdentifier + " not registered with DataCite, registering now.");
             hasDifferences = true;
         }
 
@@ -106,13 +111,13 @@ public class DOIDataCiteRegisterService {
         String currentUrl = null;
         try {
             //May get a 204 if the DOI is still draft
-            currentUrl = client.getUrl(numericIdentifier);
+            currentUrl = client.getUrl(bareIdentifier);
         } catch (RuntimeException ex) {
-            logger.fine("Error getting Url for " + numericIdentifier + ": " + ex.getMessage());
+            logger.fine("Error getting Url for " + bareIdentifier + ": " + ex.getMessage());
         }
         if (!target.equals(currentUrl)) {
             logger.info("Updating target URL to " +  target);
-            client.postUrl(numericIdentifier, target);
+            client.postUrl(bareIdentifier, target);
             retString = retString + "url:\\r" + target;
 
         }
