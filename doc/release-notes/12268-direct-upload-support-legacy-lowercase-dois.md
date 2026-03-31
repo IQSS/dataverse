@@ -1,0 +1,1 @@
+Fixed a problem with S3 direct upload to older datasets which still contain lowercase letters in the database.
