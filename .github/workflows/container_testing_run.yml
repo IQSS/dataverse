@@ -129,6 +129,14 @@ jobs:
           docker logs $(docker ps -q) || true
           exit 1
 
+      # ---------------------------
+      # RUN MAVEN TESTS
+      # ---------------------------
+      - name: Run Maven Integration Tests
+        run: |
+            set -euo pipefail
+            mvn test -Dtest=S3AccessIT -Ddataverse.test.baseurl=http://localhost:8080
+
     #   # ---------------------------
     #   # RUN CYPRESS TESTS
     #   # ---------------------------
