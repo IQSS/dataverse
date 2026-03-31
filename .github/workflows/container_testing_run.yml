@@ -134,6 +134,9 @@ jobs:
       # ---------------------------
       # RUN MAVEN TESTS
       # ---------------------------
+      - name: Map localstack to localhost for Maven tests
+      
+        run: echo "127.0.0.1 localstack" | sudo tee -a /etc/hosts
       - name: Run Maven Integration Tests
         run: |
             set -euo pipefail
