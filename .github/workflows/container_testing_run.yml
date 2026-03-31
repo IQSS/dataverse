@@ -108,7 +108,9 @@ jobs:
             STATUS=$(echo "$RESPONSE" | jq -r '.status' 2>/dev/null || echo "NOT_READY")
 
             if [ "$STATUS" = "OK" ]; then
-              echo "Dataverse is READY."
+              echo "Dataverse endpoint is READY."
+              echo "Dataverse waiting for full readiness. Waiting 30 more seconds."
+              sleep 30
               echo "Response: $RESPONSE"
               exit 0
             fi
