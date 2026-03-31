@@ -3,7 +3,7 @@ name: 21 CFR Part 11 Testing in a Container
 on:
   push:
     branches:
-      - develop
+      - 12036-remove-minio-usage-from-tests
     paths-ignore:
       - 'doc/**'
       - '**/*.md'
@@ -12,7 +12,7 @@ on:
       - '.github/*.md'
   pull_request:
     branches:
-      - develop
+      - 12036-remove-minio-usage-from-tests
     paths-ignore:
       - 'doc/**'
       - '**/*.md'
