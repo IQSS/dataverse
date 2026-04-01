@@ -13,4 +13,4 @@ The SQL statements to modify the datasets is:
 
 Once the database is updated the Solr indexes need to be rebuilt using the following Admin API:
 
-- `curl http://localhost:8080/api/admin/index/continue`
+- `curl http://localhost:8080/api/admin/index`
