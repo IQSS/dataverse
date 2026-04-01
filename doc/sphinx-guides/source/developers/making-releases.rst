@@ -106,9 +106,7 @@ Build Release Candidate
 
 |dedicated|
 
-First, build the release candidate. For a regular release, you will use the "develop" branch, as shown below. For a hotfix, you will use whatever branch name is used for the hotfix.
-
-Go to https://github.com/IQSS/dataverse/actions/workflows/generate_war_file.yml click "run workflow". Make sure the branch is "develop". Leave the custom label blank and click "run workflow". This will create an action that should result in a zip file. Inside that zip is another zip that contains the war file.
+Go to https://github.com/IQSS/dataverse/actions/workflows/generate_war_file.yml click "run workflow". For a regular release, make sure the branch is "develop". For a hotfix, you will use whatever branch name is used for the hotfix. Leave the custom label blank and click "run workflow". This will create an action that should result in a zip file. Inside that zip is another zip that contains the war file.
 
 Deploy Release Candidate to Internal
 ------------------------------------
