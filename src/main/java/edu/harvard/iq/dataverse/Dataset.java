@@ -662,7 +662,7 @@ public class Dataset extends DvObjectContainer {
         return retVal;         
     }
 
-    public String getGlobalIdForFileStorage() {
+    public String getGlobalIdForFileStorageAsString() {
         return getProtocolForFileStorage() + ":" + getAuthorityForFileStorage() + "/" + getIdentifierForFileStorage();
     }
 

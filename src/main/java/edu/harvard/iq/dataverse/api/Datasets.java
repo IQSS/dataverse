@@ -2798,7 +2798,7 @@ public class Datasets extends AbstractApiBean {
             String storageIdentifier = null;
             try {
                 storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
-                response = s3io.generateTemporaryS3UploadUrls(dataset.getGlobalIdForFileStorage(), storageIdentifier, fileSize);
+                response = s3io.generateTemporaryS3UploadUrls(dataset.getGlobalIdForFileStorageAsString(), storageIdentifier, fileSize);
 
             } catch (IOException io) {
                 logger.warning(io.getMessage());

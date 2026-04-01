@@ -1706,7 +1706,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         String storageIdentifier = null;
         try {
             storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
-            urls = s3io.generateTemporaryS3UploadUrls(dataset.getGlobalIdForFileStorage(), storageIdentifier, fileSize);
+            urls = s3io.generateTemporaryS3UploadUrls(dataset.getGlobalIdForFileStorageAsString(), storageIdentifier, fileSize);
 
         } catch (IOException io) {
             logger.warning(io.getMessage());
