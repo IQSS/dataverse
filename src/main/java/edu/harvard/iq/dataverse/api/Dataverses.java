@@ -2055,10 +2055,6 @@ public class Dataverses extends AbstractApiBean {
                                      @QueryParam("getEffective") Boolean getEffective) throws WrappedResponse {
 
         Dataverse dataverse = findDataverseOrDie(id);
-
-        if (dataverse == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on the identifier supplied: " + id + ".");
-        }
         
         return response(req -> {
             String storageDriver = execCommand(new GetDataverseStorageDriverCommand(req, dataverse, getEffective));
@@ -2072,9 +2068,7 @@ public class Dataverses extends AbstractApiBean {
     public Response setStorageDriver(@Context ContainerRequestContext crc, 
                                      @PathParam("identifier") String id, String label) throws WrappedResponse {
         Dataverse dataverse = findDataverseOrDie(id);
-        if (dataverse == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + id + ".");
-        }
+
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
@@ -2099,10 +2093,6 @@ public class Dataverses extends AbstractApiBean {
     public Response resetStorageDriver(@Context ContainerRequestContext crc, @PathParam("identifier") String id) throws WrappedResponse {
         
         Dataverse dataverse = findDataverseOrDie(id);
-        if (dataverse == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + id + ".");
-        }
-
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
@@ -2122,7 +2112,6 @@ public class Dataverses extends AbstractApiBean {
     public Response listStorageDrivers(@Context ContainerRequestContext crc, @PathParam("identifier") String id) throws WrappedResponse {
         
         Dataverse dv = findDataverseOrDie(id);
-
 
         /*
          * TODO: This endpoint ad GetDataverseAllowedStorageDriverCommand needs to be completed, 
