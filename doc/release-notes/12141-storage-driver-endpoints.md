@@ -1,6 +1,6 @@
 ### Breaking Changes
 
-All the endpoints related to Storage Drivers have been moved out of the Admin API. 
+All endpoints related to storage drivers have been moved out of the Admin API.
 
-- The endpoints GET, PUT AND DELETE for `/api/admin/dataverse/{alias}/storageDriver` have been moved to `/api/dataverses/{alias}/storageDriver`.
-- The endpoint `/api/admin/dataverse/storageDrivers` has been moved and renamed to `/api/dataverses/{alias}/allowedStorageDrivers`. Regarding the change of the name, this endpoint will in the future only display the storageDrivers that are allowed on the specified collection, as of now, it will display the entire list of available Drivers on the installation.
+- The GET, PUT, and DELETE endpoints for `/api/admin/dataverse/{alias}/storageDriver` have been moved to `/api/dataverses/{alias}/storageDriver`. Write operations continue to be accessible only to superusers, while GET methods are public.
+- The endpoint `/api/admin/dataverse/storageDrivers` has been made public, moved, and renamed to `/api/dataverses/{alias}/allowedStorageDrivers`. Regarding the name change, this endpoint will in the future only display the storage drivers that are allowed on the specified collection. For now, it will display the entire list of available drivers on the installation.
