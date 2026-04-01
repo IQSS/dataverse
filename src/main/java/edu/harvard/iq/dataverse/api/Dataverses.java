@@ -2114,9 +2114,8 @@ public class Dataverses extends AbstractApiBean {
         Dataverse dv = findDataverseOrDie(id);
 
         /*
-         * TODO: This endpoint ad GetDataverseAllowedStorageDriverCommand needs to be completed, 
-         * currently it mocks things that will be required to model the behavior requested by Jim Myers, 
-         * which is to return the list of storage drivers that the dataverse can use. 
+         * TODO: This endpoint ad GetDataverseAllowedStorageDriverCommand needs to be completed implementing 
+         * the request from Jim Myers, which is to return the list of storage drivers that the dataverse can use. 
          * Currently it will return the full list of drivers available.
          */
         try {
