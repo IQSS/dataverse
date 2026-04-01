@@ -284,13 +284,22 @@ The build number will appear in ``/api/info/version`` (along with the commit men
 Build Installer (dvinstall.zip)
 -------------------------------
 
-- In a git checkout of the dataverse source switch to the master branch and pull the latest.
-- Copy the war file from the previous step to the ``target`` directory in the root of the repo (create it, if necessary):
-- ``mkdir target``
-- ``cp /tmp/dataverse-6.10.1.war target``
-- ``cd scripts/installer``
-- ``make clean``
-- ``make``
+In a git checkout of the source, switch to the master branch and pull the latest.
+
+Copy the war file from the previous step (shown in ``/tmp`` in the example below ) to the ``target`` directory in the root of the repo (create the ``target`` directory, if necessary):
+
+.. code-block:: bash
+
+  mkdir target
+  cp /tmp/dataverse-6.10.1.war target
+
+Then, create the installer:
+
+.. code-block:: bash
+
+  cd scripts/installer
+  make clean
+  make
 
 A zip file called ``dvinstall.zip`` should be produced.
 
@@ -299,7 +308,7 @@ Create a Draft Release on GitHub
 
 Go to https://github.com/IQSS/dataverse/releases/new to start creating a draft release.
 
-- Under "Select tag" you will be creating a new tag. Have it start with a "v" such as ``v6.10.1``. Click "Create new tag". Don't worry, this won't happen until you publish.
+- Under "Select tag" you will be creating a new tag. Have it start with a "v" such as ``v6.10.1``. Click "Create new tag". Don't worry, the tag won't be created until you publish.
 - Under "Target", choose "master". This commit will appear in ``/api/info/version`` from a running installation.
 - Under "Release title" use the same name as the tag such as ``v6.10.1``.
 - In the description, copy and paste the content from the release notes .md file created in the "Write Release Notes" steps above.
