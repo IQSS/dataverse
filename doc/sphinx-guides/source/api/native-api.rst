@@ -1239,7 +1239,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/root/list"
 
-.. note:: By adding the query param "ignoreStats=true" `usageCount` and `responseCount` values can be excluded for faster response.
+.. note:: By adding the query param "includeStats=true" `usageCount` and `responseCount` values can be added to the response.
 
 Get a Guestbook for a Dataverse Collection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

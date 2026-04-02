@@ -60,7 +60,7 @@ public class Guestbooks extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/list")
-    public Response getGuestbooks(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, @QueryParam("ignoreStats") boolean ignoreStats) {
+    public Response getGuestbooks(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, @QueryParam("includeStats") boolean includeStats) {
         return response( req -> {
             Dataverse dataverse = findDataverseOrDie(identifier);
             final Long dataverseId = dataverse.getId();
@@ -71,8 +71,7 @@ public class Guestbooks extends AbstractApiBean {
             JsonArrayBuilder guestbookArray = Json.createArrayBuilder();
             JsonPrinter jsonPrinter = new JsonPrinter();
             for (Guestbook gb : guestbooks) {
-                // default is to include the stats. Ignore the stats for a faster reply if they are not needed
-                if (!ignoreStats) {
+                if (includeStats) {
                     gb.setUsageCount(guestbookService.findCountUsages(gb.getId(), dataverseId));
                     gb.setResponseCount(guestbookResponseService.findCountByGuestbookId(gb.getId(), dataverseId));
                 }

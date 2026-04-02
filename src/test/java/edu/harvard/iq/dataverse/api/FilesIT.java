@@ -4062,7 +4062,7 @@ public class FilesIT {
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
 
         // Verify that the guestbook has proper stats
-        Response guestbookListResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken);
+        Response guestbookListResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, true);
         guestbookListResponse.prettyPrint();
         guestbookListResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())

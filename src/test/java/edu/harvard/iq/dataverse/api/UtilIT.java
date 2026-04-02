@@ -612,9 +612,13 @@ public class UtilIT {
     }
 
     static Response getGuestbooks(String dataverseAlias, String apiToken) {
+        return getGuestbooks(dataverseAlias, apiToken, false);
+    }
+    static Response getGuestbooks(String dataverseAlias, String apiToken, boolean includeStats) {
+        String params = "?includeStats=" + includeStats;
         RequestSpecification requestSpec = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken);
-        return requestSpec.get("/api/guestbooks/" + dataverseAlias + "/list" );
+        return requestSpec.get("/api/guestbooks/" + dataverseAlias + "/list" + params );
     }
 
     static Response enableGuestbook(String dataverseAlias, Long guestbookId, String apiToken, String enable) {
