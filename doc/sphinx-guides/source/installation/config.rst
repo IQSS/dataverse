@@ -223,7 +223,7 @@ To inspect cookie attributes like SameSite, you can use ``curl -s -I http://loca
 Cross-Origin Resource Sharing (CORS)
 ++++++++++++++++++++++++++++++++++++
 
-For any Dataverse installation using or planning to use advanced features like big data support or previewers, dealing with CORS is imminent.
+For any Dataverse installation using or planning to use advanced features like :doc:`big data support </installation/big-data-support>` or :ref:`file previewers <file-previews>`, CORS must be configured.
 
 To understand what CORS is all about and how it works, the following are recommended reads:
 
@@ -3821,7 +3821,7 @@ Experimental. See :doc:`/developers/search-services`.
 dataverse.cors.origin
 +++++++++++++++++++++
 
-Allowed origins for CORS requests.
+Allowed origins for CORS requests. See also :ref:`dataverse.cors`.
 
 Default: ``*`` (allow all)
 

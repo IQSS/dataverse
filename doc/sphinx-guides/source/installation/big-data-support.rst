@@ -1,7 +1,7 @@
 Big Data Support
 ================
 
-Big data support includes some experimental options. Eventually more of this content will move to the Installation Guide.
+Big data support includes some experimental options.
 
 .. contents:: |toctitle|
         :local:
@@ -55,11 +55,12 @@ The following features are disabled when S3 direct upload is enabled.
 Allow CORS for S3 Buckets
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**IMPORTANT:** This additional step of allowing cross-site request to your S3 buckets is required to enable direct uploads via a Dataverse installation, direct download to work with previewers, or direct upload to work with *dvwebloader* (:ref:`folder-upload`).
+**IMPORTANT:** This additional step of allowing cross-site request to your S3 buckets is required to enable direct uploads via a Dataverse installation, direct download to work with :ref:`file previewers <file-previews>`, or direct upload to work with :ref:`DVWebloader <folder-upload>`.
 
 To successfully enable direct uploads (e.g. :ref:`folder-upload`) or direct downloads (e. g. consumed by previewers), you must both:
-* Enable CORS in Dataverse (see :ref:`dataverse.cors`).
-* Configure a matching/compatible CORS policy on each S3 bucket (and any CDN/proxy in front of it) that will be used.
+
+- Enable CORS in Dataverse (see :ref:`dataverse.cors`).
+- Configure a matching/compatible CORS policy on each S3 bucket (and any CDN/proxy in front of it) that will be used.
 
 **NOTE:** Make sure the bucket's CORS configuration ``AllowedOrigins`` is at least as permissive as the origins you configure in :ref:`dataverse.cors.origin`.
 If the bucket allows the wildcard ``*`` but the Dataverse application only allows a subset, the browser will still enforce the more restrictive application response!
