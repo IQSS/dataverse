@@ -8,14 +8,9 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  *
- * @author landreev
  * Gets the default contributor role of a collection.
  * Used by the /api/dataverses/.../defaultContributorRole API.
  */
