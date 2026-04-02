@@ -422,7 +422,7 @@ public class Access extends AbstractApiBean {
 
         // Handle Guestbook Responses
         String displayName = "";
-        String gbrids = "";
+        String gbrids = null;
         Long datasetId = null;
         try {
             // since all files must be in the same Dataset we can generate a Guestbook Response once and just replace the DataFile for each file in the list
@@ -499,7 +499,9 @@ public class Access extends AbstractApiBean {
 
         UriBuilder builder = UriBuilder.fromUri(uriInfo.getRequestUri());
         builder.replaceQueryParam("gbrecs", true);
-        builder.replaceQueryParam("gbrids", gbrids);
+        if (gbrids != null && !gbrids.isEmpty()) {
+            builder.replaceQueryParam("gbrids", gbrids);
+        }
         builder.replaceQueryParam("persistentId", null); // remove this as a parm and add the id to the path
         crc.setProperty("gbrids", gbrids);
         String baseUrlEncoded = builder.build().toString();
