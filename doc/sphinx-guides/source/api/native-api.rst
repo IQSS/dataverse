@@ -525,7 +525,7 @@ The fully expanded example above (without environment variables) looks like this
 Assign Default Role to User Creating a Dataset in a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Assign a default role to a user creating a dataset in a Dataverse collection ``id`` where ``roleAlias`` is the database alias of the role to be assigned:
+Assign a default role to a user creating a dataset in a Dataverse collection ``id`` where ``roleAlias`` is the database alias of the role to be assigned (requires ``ManageDataversePermissions``):
 
 .. code-block:: bash
 
@@ -549,7 +549,7 @@ Note: You may use "none" as the ``ROLE_ALIAS``. This will prevent a user who cre
 Get Default Role Assigned to User Creating a Dataset in a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get the default role that is assigned to a user creating a dataset in a Dataverse collection ``id``:
+Get the default role that is assigned to a user creating a dataset in a Dataverse collection ``id`` (requires ``ManageDataversePermissions``):
 
 .. code-block:: bash
 
