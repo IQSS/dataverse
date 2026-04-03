@@ -324,11 +324,11 @@ public class DataCiteRESTfullClient implements Closeable {
     }
 
     /**
-     * The main() method can be used to test the functionality on the command 
-     * line outside of Dataverse. 
-     * Un-comment out and modify the code below as needed. 
+     * The main() method can be used to test the functionality on the command
+     * line outside of Dataverse.
+     * Un-comment out and modify the code below as needed.
      * @param args
-     * @throws Exception 
+     * @throws Exception
      */
     public static void main(String[] args) throws Exception {
         String doi = "10.5072/DVN/274533";
