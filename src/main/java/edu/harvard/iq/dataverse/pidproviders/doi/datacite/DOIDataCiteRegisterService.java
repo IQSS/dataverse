@@ -42,10 +42,6 @@ public class DOIDataCiteRegisterService {
     //A singleton since it, and the httpClient in it can be reused.
     private DataCiteRESTfullClient client=null;
 
-    public DOIDataCiteRegisterService(String url, String username, String password) {
-            client = new DataCiteRESTfullClient(url, username, password);
-    }
-
     public DOIDataCiteRegisterService(String url, String restApiUrl, String username, String password) {
             client = new DataCiteRESTfullClient(url, restApiUrl, username, password);
     }

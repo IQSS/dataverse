@@ -46,24 +46,14 @@ public class DataCiteRESTfullClient implements Closeable {
     private static final long RETRY_DELAY_MS = 10000; // 10 seconds
     
     private String url;
-    private String restApiUrl; 
+    private String restApiUrl;
     private CloseableHttpClient httpClient;
     private HttpClientContext context;
     private String encoding = "utf-8";
-    
-    public DataCiteRESTfullClient(String url, String username, String password) {
-        this.url = url;
-        context = HttpClientContext.create();
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(new AuthScope(null, -1), new UsernamePasswordCredentials(username, password));
-        context.setCredentialsProvider(credsProvider);
 
-        httpClient = HttpClients.createDefault();
-    }
-    
     public DataCiteRESTfullClient(String url, String restApiUrl, String username, String password) {
         this.url = url;
-        this.restApiUrl = restApiUrl; 
+        this.restApiUrl = restApiUrl;
         context = HttpClientContext.create();
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(new AuthScope(null, -1), new UsernamePasswordCredentials(username, password));
@@ -333,9 +323,16 @@ public class DataCiteRESTfullClient implements Closeable {
         }
     }
 
+    /**
+     * The main() method can be used to test the functionality on the command 
+     * line outside of Dataverse. 
+     * Un-comment out and modify the code below as needed. 
+     * @param args
+     * @throws Exception 
+     */
     public static void main(String[] args) throws Exception {
         String doi = "10.5072/DVN/274533";
-        DataCiteRESTfullClient client = new DataCiteRESTfullClient("https://mds.test.datacite.org", "DATACITE_TEST_USERNAME", "DATACITE_TEST_PASSWORD");
+        DataCiteRESTfullClient client = new DataCiteRESTfullClient("https://mds.test.datacite.org", "https://api.test.datacite.org", "DATACITE_TEST_USERNAME", "DATACITE_TEST_PASSWORD");
 //		System.out.println(client.getUrl(doi));
 //		System.out.println(client.getMetadata(doi));
 //        System.out.println(client.postMetadata(readAndClose("C:/Users/luopc/Desktop/datacite.xml", "utf-8")));
