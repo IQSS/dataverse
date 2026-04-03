@@ -24,10 +24,7 @@ import org.assertj.core.util.Lists;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -4058,7 +4055,9 @@ public class FilesIT {
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
     }
 
+    // This test is disabled because it is only compatible with the containerized development environment and would cause the Jenkins job to fail.
     @Test
+    @Disabled
     public void testDownloadFileWithGuestbookResponseUsingBearerToken() throws IOException, JsonParseException {
         msgt("testDownloadFileWithGuestbookResponseUsingBearerToken");
         // Create superuser
