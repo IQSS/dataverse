@@ -67,7 +67,7 @@ To run Spotless on your code:
 
 #### Format Code You Changed with Netbeans
 
-For a long time IQSS standardized on Netbeans. For files not included in the Spotless config mentioned above, it is much appreciated when you format your code (but only the code you touched) using the out-of-the-box Netbeans configuration. If you have created an entirely new Java class, you can just click `Source -> Format`. If you are adjusting code in an existing class, highlight the code you changed and then click `Source -> Format`. Keeping the "diff" in your pull requests small makes them easier to code review.
+For a long time IQSS standardized on Netbeans. For files not included in the Spotless config mentioned above, it is much appreciated when you format your code (but only the code you touched) using the out-of-the-box Netbeans configuration. If you have created an entirely new Java class, you can just click Source -> Format. If you are adjusting code in an existing class, highlight the code you changed and then click Source -> Format. Keeping the "diff" in your pull requests small makes them easier to code review.
 
 #### Checking Your Formatting With Checkstyle
 
@@ -113,7 +113,7 @@ The translation effort is hampered if you hard code user-facing messages in Engl
 
 ### Type Safety
 
-If you just downloaded Netbeans and are using the out-of-the-box settings, you should be in pretty good shape. Unfortunately, the default configuration of Netbeans doesn't warn you about type-safety problems you may be inadvertently introducing into the code. To see these warnings, click `Netbeans -> Preferences -> Editor -> Hints` and check the following:
+If you just downloaded Netbeans and are using the out-of-the-box settings, you should be in pretty good shape. Unfortunately, the default configuration of Netbeans doesn't warn you about type-safety problems you may be inadvertently introducing into the code. To see these warnings, click Netbeans -> Preferences -> Editor -> Hints and check the following:
 
 - "Raw Types" under "Standard Javac Warnings"
 
