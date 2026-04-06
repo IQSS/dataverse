@@ -220,7 +220,7 @@ public class DataCiteRESTfullClient implements Closeable {
     
     /**
      * getMetadataViaRestApi
-     * obtains registration metdata utilizing REST API instead of MDS. 
+     * obtains registration metadata utilizing REST API instead of MDS. 
      * This solves some known issues, see #12070 for details. 
      *
      * @param doi
