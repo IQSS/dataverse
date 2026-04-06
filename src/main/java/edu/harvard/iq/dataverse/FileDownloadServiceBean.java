@@ -28,6 +28,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.primefaces.PrimeFaces;
 
 import java.io.IOException;
@@ -146,7 +147,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         if (!doNotSaveGuestbookRecord) {
             // Code here assumes user can download all files (which should be true when called from DatasetPage)
             // Authorization will be checked in the custom zipper or redirect URL, so the only impact would be extra guestbookresponses
-            gbrid = writeGuestbookResponseRecords(guestbookResponse, selectedDataFiles ).getLast();
+            List<String> gbrids = writeGuestbookResponseRecords(guestbookResponse, selectedDataFiles);
+            if(!gbrids.isEmpty()){
+                gbrid = gbrids.getFirst();
+            } else {
+                logger.warning("No GuestbookResponse records were created for the files that were selected for download.");
+            }
         }
         if(useCustomZipService) {
 
@@ -170,7 +176,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             }
 
         }
-
         if (useCustomZipService) {
             redirectToCustomZipDownloadService(customZipDownloadUrl, zipServiceKey);
         } else {
@@ -245,7 +250,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     public List<String> writeGuestbookResponseRecords(GuestbookResponse guestbookResponse, List<DataFile> selectedDataFiles) {
-        if (guestbookResponse == null || guestbookResponse.getSelectedFileIds() == null || guestbookResponse.getSelectedFileIds().isBlank()) {
+        if (guestbookResponse == null || selectedDataFiles == null) {
             return Collections.emptyList();
         }
 
@@ -318,10 +323,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 response.setResponseTime(now);
                 em.persist(response);
 
-                if (response.getId() != null) {
-                    savedIds.add(response.getId().toString());
-                }
-
                 DatasetVersion version = response.getDatasetVersion();
                 if (version == null) {
                     version = response.getDataset().getReleasedVersion();
@@ -352,12 +353,15 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         em.flush();
         em.clear();
-
+        for (GuestbookResponse response : guestbookResponses) {
+            savedIds.add(response.getId().toString());
+        }
         return savedIds;
     }
 
     public String writeGuestbookResponseRecord(GuestbookResponse guestbookResponse) {
         String guestbookResponseIds = "";
+
         try {
             CreateGuestbookResponseCommand cmd = new CreateGuestbookResponseCommand(
                     dvRequestService.getDataverseRequest(),

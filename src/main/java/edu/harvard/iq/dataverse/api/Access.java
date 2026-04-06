@@ -1086,7 +1086,7 @@ public class Access extends AbstractApiBean {
         }
         if(!selectedDataFiles.isEmpty()) {
 
-            Boolean guestbookResponseRequired = checkGuestbookRequiredResponse(crc, uriInfo, selectedDataFiles.getFirst(), gbrids);
+            Boolean guestbookResponseRequired = checkGuestbookRequiredResponse(user, uriInfo, selectedDataFiles.getFirst(), gbrids);
             logger.fine("Downloading" + fileIdParams.length + " files. GBR required: " + guestbookResponseRequired);
 
             for (DataFile df : selectedDataFiles) {
