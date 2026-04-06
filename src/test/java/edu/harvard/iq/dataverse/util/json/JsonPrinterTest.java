@@ -2,37 +2,31 @@ package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
+import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.UserNotification.Type;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonString;
-
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.template.TemplateBuilder;
+import jakarta.json.*;
 import org.assertj.core.util.Lists;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class JsonPrinterTest {
 
@@ -205,10 +199,7 @@ public class JsonPrinterTest {
         datasetContactField.setDatasetFieldCompoundValues(vals);
         fields.add(datasetContactField);
 
-        SettingsServiceBean nullServiceBean = null;
-        DatasetFieldServiceBean nullDFServiceBean = null;
-        DataverseFieldTypeInputLevelServiceBean nullDFILServiceBean = null;
-        JsonPrinter.injectSettingsService(nullServiceBean, nullDFServiceBean, nullDFILServiceBean);
+        JsonPrinter.injectSettingsService(null, null, null, null, null, null);
 
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
@@ -249,9 +240,7 @@ public class JsonPrinterTest {
         datasetContactField.setDatasetFieldCompoundValues(vals);
         fields.add(datasetContactField);
 
-        DatasetFieldServiceBean nullDFServiceBean = null;
-        DataverseFieldTypeInputLevelServiceBean nullDFILServiceBean = null;
-        JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean, nullDFILServiceBean);
+        JsonPrinter.injectSettingsService(new MockSettingsSvc(), null, null, null, null, null);
 
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
@@ -301,9 +290,7 @@ public class JsonPrinterTest {
 
         block.setDatasetFieldTypes(datasetFieldTypes);
 
-        DatasetFieldServiceBean nullDFServiceBean = null;
-        DataverseFieldTypeInputLevelServiceBean nullDFILServiceBean = null;
-        JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean, nullDFILServiceBean);
+        JsonPrinter.injectSettingsService(new MockSettingsSvc(), null, null ,null, null, null);
 
         JsonObject jsonObject = JsonPrinter.json(block).build();
         assertNotNull(jsonObject);
@@ -404,5 +391,434 @@ public class JsonPrinterTest {
         assertEquals(BundleUtil.getStringFromBundle("dataset.anonymized.withheld"), actualAuthorJsonObject.getString("value"));
         assertEquals("primitive", actualAuthorJsonObject.getString("typeClass"));
         assertFalse(actualAuthorJsonObject.getBoolean("multiple"));
+    }
+
+    @Test
+    public void testDataverseFeaturedItemDataverseTest() {
+        Dataverse dataverse = createDataverse(42);
+        Dataverse dvObject = createDataverse(1);
+
+        DataverseFeaturedItem fi = new DataverseFeaturedItem();
+        fi.setDataverse(dataverse);
+        fi.setContent(null);
+        fi.setDisplayOrder(0);
+        fi.setImageFileName("testfile");
+
+        fi.setDvObject("dataverse", dvObject);
+        JsonObject jsonObject = JsonPrinter.json(fi).build();
+        assertNotNull(jsonObject);
+
+        System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
+        assertEquals(fi.getType(), jsonObject.getString("type"));
+        assertEquals(dvObject.getAlias(), jsonObject.getString("dvObjectIdentifier"));
+        assertEquals(dvObject.getName(), jsonObject.getString("dvObjectDisplayName"));
+    }
+    @Test
+    public void testDataverseFeaturedItemDatasetTest() {
+        Dataverse dataverse = createDataverse(42);
+        Dataset dvObject = createDataset(1);
+
+        DataverseFeaturedItem fi = new DataverseFeaturedItem();
+        fi.setDataverse(dataverse);
+        fi.setContent(null);
+        fi.setDisplayOrder(0);
+        fi.setImageFileName("testfile");
+
+        fi.setDvObject("dataset", dvObject);
+        JsonObject jsonObject = JsonPrinter.json(fi).build();
+        assertNotNull(jsonObject);
+
+        System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
+        assertEquals(fi.getType(), jsonObject.getString("type"));
+        assertEquals(dvObject.getGlobalId().asString(), jsonObject.getString("dvObjectIdentifier"));
+        assertEquals(dvObject.getDisplayName(), jsonObject.getString("dvObjectDisplayName"));
+    }
+
+    @Test
+    public void testDataverseFeaturedItemDatafileTest() {
+        Dataverse dataverse = createDataverse(42);
+        DataFile dvObject = createDatafile(1L);
+        dvObject.setPublicationDate(Timestamp.from(Instant.now()));
+
+        DataverseFeaturedItem fi = new DataverseFeaturedItem();
+        fi.setDataverse(dataverse);
+        fi.setContent(null);
+        fi.setDisplayOrder(0);
+        fi.setImageFileName("testfile");
+
+        fi.setDvObject("datafile", dvObject);
+        JsonObject jsonObject = JsonPrinter.json(fi).build();
+        assertNotNull(jsonObject);
+
+        System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
+        assertEquals(fi.getType(), jsonObject.getString("type"));
+        assertEquals(dvObject.getId().toString(), jsonObject.getString("dvObjectIdentifier"));
+        assertEquals(dvObject.getDisplayName(), jsonObject.getString("dvObjectDisplayName"));
+
+        assertNotNull(jsonObject);
+    }
+    
+    @Test
+    public void testDatasetWithNondefaultType() {
+        String sut = "foobar";
+        DatasetType foobar = new DatasetType();
+        foobar.setName(sut);
+        
+        Dataset dataset = createDataset(42);
+        dataset.setDatasetType(foobar);
+        
+        var jsob = JsonPrinter.json(dataset.getLatestVersion(), false, false).build();
+        String result = jsob.getString("datasetType");
+        
+        assertNotNull(result);
+        assertEquals(sut, result);
+    }
+
+    @Test
+    public void testDatasetWithGuestbook() {
+        String sut = "foobar";
+        DatasetType foobar = new DatasetType();
+        foobar.setName(sut);
+
+        Guestbook guestbook = new Guestbook();
+        guestbook.setId(1L);
+        guestbook.setEnabled(true);
+        guestbook.setName("Test Guestbook");
+        guestbook.setEmailRequired(true);
+        guestbook.setCreateTime(Timestamp.from(Instant.now()));
+
+        int cqOrder = 0;
+        CustomQuestion cq1 = new CustomQuestion();
+        cq1.setDisplayOrder(cqOrder);
+        cq1.setId(Long.valueOf(++cqOrder));
+        cq1.setGuestbook(guestbook);
+        cq1.setRequired(true);
+        cq1.setQuestionString("My first question");
+        cq1.setQuestionType("text"); // options, textarea, text
+
+        CustomQuestion cq2 = new CustomQuestion();
+        cq2.setDisplayOrder(cqOrder);
+        cq2.setId(Long.valueOf(++cqOrder));
+        cq2.setGuestbook(guestbook);
+        cq2.setRequired(false);
+        cq2.setQuestionString("My second question");
+        cq2.setQuestionType("textarea");
+
+        CustomQuestion cq3 = new CustomQuestion();
+        cq3.setDisplayOrder(cqOrder);
+        cq3.setId(Long.valueOf(++cqOrder));
+        cq3.setGuestbook(guestbook);
+        cq3.setRequired(false);
+        cq3.setQuestionString("My third question");
+        cq3.setQuestionType("options");
+        List<CustomQuestionValue> values = new ArrayList<>();
+        int cqvOrder = 0;
+        CustomQuestionValue cqv1 = new CustomQuestionValue();
+        cqv1.setValueString("Red");
+        cqv1.setDisplayOrder(cqvOrder);
+        cqv1.setId(Long.valueOf(++cqvOrder));
+        values.add(cqv1);
+        CustomQuestionValue cqv2 = new CustomQuestionValue();
+        cqv2.setValueString("White");
+        cqv2.setDisplayOrder(cqvOrder);
+        cqv2.setId(Long.valueOf(++cqvOrder));
+        values.add(cqv2);
+        CustomQuestionValue cqv3 = new CustomQuestionValue();
+        cqv3.setValueString("Blue");
+        cqv3.setDisplayOrder(cqvOrder);
+        cqv3.setId(Long.valueOf(++cqvOrder));
+        values.add(cqv3);
+        cq3.setCustomQuestionValues(values);
+        List<CustomQuestion> customQuestions = new ArrayList<>();
+        customQuestions.add(cq1);
+        customQuestions.add(cq2);
+        customQuestions.add(cq3);
+        guestbook.setCustomQuestions(customQuestions);
+
+        Dataverse dv = new Dataverse();
+        dv.setId(41L);
+        Dataset dataset = createDataset(42);
+        dataset.setDatasetType(foobar);
+        dataset.setOwner(dv);
+        guestbook.setDataverse(dataset.getOwner());
+        dataset.setGuestbook(guestbook);
+
+        // verify that the guestbook id is in the dataset response
+        var jsob = JsonPrinter.json(dataset.getLatestVersion(), null, false, false, false, false).build();
+        System.out.println(jsob);
+        var gbID = jsob.getInt("guestbookId");
+        assertEquals(1, gbID);
+
+        var gb = JsonPrinter.json(guestbook).build();
+        System.out.println(gb);
+
+        // verify guestbook values
+        assertEquals("Test Guestbook", gb.getString("name"));
+        assertEquals(true, gb.getBoolean("emailRequired"));
+        assertEquals(false, gb.getBoolean("nameRequired"));
+        assertEquals(3, gb.getJsonArray("customQuestions").size());
+        // verify multiple choice question
+        var result_cq3 = gb.getJsonArray("customQuestions");
+        System.out.println(result_cq3);
+        var result_cq3_options = result_cq3.getJsonObject(2).getJsonArray("optionValues"); // question 3 is index 2
+        System.out.println(result_cq3_options);
+        assertEquals(3, result_cq3_options.size());
+        var result_cq3_options2 = result_cq3_options.getJsonObject(1); // option 2 is index 1
+        assertEquals("White", result_cq3_options2.getString("value"));
+    }
+
+    @Test
+    public void testJsonArrayDataverseCollections() {
+        List<Dataverse> collections = new ArrayList<>();
+        for (long i = 0; i < 10; i++) {
+            Dataverse dv = new Dataverse();
+            dv.setAlias("alias" + i);
+            dv.setName("Alias" + i);
+            dv.setId(i);
+            collections.add(dv);
+        }
+        JsonObjectBuilder job = JsonPrinter.jsonArray(collections);
+        JsonObject result = job.build();
+        assertNotNull(result);
+        assertEquals(10, result.getInt("count"));
+        JsonArray items = result.getJsonArray("items");
+        JsonObject item6 = items.getJsonObject(6);
+        assertEquals(6, item6.getInt("id"));
+        assertEquals("Alias6", item6.getString("name"));
+        assertEquals("alias6", item6.getString("alias"));
+    }
+
+    @Test
+    public void testJsonTermsOfUseAndAccess() {
+        // Setup a test TermsOfUseAndAccess
+        TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
+        termsOfUseAndAccess.setId(1L);
+        termsOfUseAndAccess.setTermsOfUse("Test Terms of Use");
+        termsOfUseAndAccess.setTermsOfAccess("Test Terms of Access");
+        termsOfUseAndAccess.setConfidentialityDeclaration("Test Confidentiality Declaration");
+        termsOfUseAndAccess.setSpecialPermissions("Test Special Permissions");
+        termsOfUseAndAccess.setRestrictions("Test Restrictions");
+        termsOfUseAndAccess.setCitationRequirements("Test Citation Requirements");
+        termsOfUseAndAccess.setDepositorRequirements("Test Depositor Requirements");
+        termsOfUseAndAccess.setConditions("Test Conditions");
+        termsOfUseAndAccess.setDisclaimer("Test Disclaimer");
+        termsOfUseAndAccess.setDataAccessPlace("Test Data Access Place");
+        termsOfUseAndAccess.setOriginalArchive("Test Original Archive");
+        termsOfUseAndAccess.setAvailabilityStatus("Test Availability Status");
+        termsOfUseAndAccess.setSizeOfCollection("Test Size of Collection");
+        termsOfUseAndAccess.setStudyCompletion("Test Study Completion");
+        termsOfUseAndAccess.setContactForAccess("Test Contact for Access");
+        termsOfUseAndAccess.setFileAccessRequest(true);
+
+        JsonObjectBuilder job = JsonPrinter.jsonTermsOfUseAndAccess(termsOfUseAndAccess);
+        assertNotNull(job);
+        JsonObject jsonObject = job.build();
+
+        // Assert all fields are present and correct
+        assertEquals(termsOfUseAndAccess.getId().longValue(), jsonObject.getJsonNumber("id").longValue());
+        assertEquals(termsOfUseAndAccess.getTermsOfUse(), jsonObject.getString("termsOfUse"));
+        assertEquals(termsOfUseAndAccess.getTermsOfAccess(), jsonObject.getString("termsOfAccess"));
+        assertEquals(termsOfUseAndAccess.getConfidentialityDeclaration(), jsonObject.getString("confidentialityDeclaration"));
+        assertEquals(termsOfUseAndAccess.getSpecialPermissions(), jsonObject.getString("specialPermissions"));
+        assertEquals(termsOfUseAndAccess.getRestrictions(), jsonObject.getString("restrictions"));
+        assertEquals(termsOfUseAndAccess.getCitationRequirements(), jsonObject.getString("citationRequirements"));
+        assertEquals(termsOfUseAndAccess.getDepositorRequirements(), jsonObject.getString("depositorRequirements"));
+        assertEquals(termsOfUseAndAccess.getConditions(), jsonObject.getString("conditions"));
+        assertEquals(termsOfUseAndAccess.getDisclaimer(), jsonObject.getString("disclaimer"));
+        assertEquals(termsOfUseAndAccess.getDataAccessPlace(), jsonObject.getString("dataAccessPlace"));
+        assertEquals(termsOfUseAndAccess.getOriginalArchive(), jsonObject.getString("originalArchive"));
+        assertEquals(termsOfUseAndAccess.getAvailabilityStatus(), jsonObject.getString("availabilityStatus"));
+        assertEquals(termsOfUseAndAccess.getSizeOfCollection(), jsonObject.getString("sizeOfCollection"));
+        assertEquals(termsOfUseAndAccess.getStudyCompletion(), jsonObject.getString("studyCompletion"));
+        assertEquals(termsOfUseAndAccess.getContactForAccess(), jsonObject.getString("contactForAccess"));
+        assertEquals(termsOfUseAndAccess.isFileAccessRequest(), jsonObject.getBoolean("fileAccessRequest"));
+
+        // Assert license is null
+        assertNull(jsonObject.getJsonObject("license"));
+
+        // Test with a license
+        long testLicenseId = 1L;
+        termsOfUseAndAccess.setLicense(createLicense(testLicenseId));
+        job = JsonPrinter.jsonTermsOfUseAndAccess(termsOfUseAndAccess);
+        assertNotNull(job);
+        jsonObject = job.build();
+        assertFalse(jsonObject.isNull("license"));
+        assertEquals(testLicenseId, jsonObject.getJsonObject("license").getJsonNumber("id").longValue());
+    }
+
+    @Test
+    public void testJsonTemplate() {
+        // Setup a test Template
+        Template template = TemplateBuilder.aTemplate().build();
+        JsonObjectBuilder job = JsonPrinter.jsonTemplate(template);
+        assertNotNull(job);
+        JsonObject jsonObject = job.build();
+
+        // Assert all fields are present and correct, skipping the ID since it is not set.
+        assertEquals(template.getName(), jsonObject.getString("name"));
+        assertEquals(template.isIsDefaultForDataverse(), jsonObject.getBoolean("isDefault"));
+        assertEquals(template.getUsageCount().longValue(), jsonObject.getJsonNumber("usageCount").longValue());
+        assertEquals(template.getCreateTime().toString(), jsonObject.getString("createTime"));
+        assertEquals(template.getCreateDate(), jsonObject.getString("createDate"));
+        assertEquals(template.getDataverse().getAlias(), jsonObject.getString("dataverseAlias"));
+
+        // Verify termsOfUseAndAccess field by checking a sub-field
+        JsonObject termsJson = jsonObject.getJsonObject("termsOfUseAndAccess");
+        assertNotNull(termsJson);
+        assertEquals(template.getTermsOfUseAndAccess().getTermsOfUse(), termsJson.getString("termsOfUse"));
+
+        // Verify datasetFields field is an empty JSON object
+        JsonObject datasetFieldsJson = jsonObject.getJsonObject("datasetFields");
+        assertNotNull(datasetFieldsJson);
+        assertTrue(datasetFieldsJson.isEmpty());
+
+        // Verify instructions map properties are correct regardless of order
+        JsonArray instructionsJson = jsonObject.getJsonArray("instructions");
+        assertEquals(2, instructionsJson.size());
+
+        Map<String, String> instructionsMap = instructionsJson.stream()
+                .map(jsonValue -> (JsonObject) jsonValue)
+                .collect(Collectors.toMap(
+                        obj -> obj.getString("instructionField"),
+                        obj -> obj.getString("instructionText")
+                ));
+
+        assertEquals("Enter the author's name here.", instructionsMap.get("author"));
+        assertEquals("Provide a title for the dataset.", instructionsMap.get("title"));
+    }
+
+    private License createLicense(long id) {
+        License license = new License();
+        license.setId(id);
+        license.setName("Test License " + id);
+        license.setShortDescription("Short description for license " + id);
+        try {
+            license.setUri(new java.net.URI("http://test.org/" + id));
+        } catch (java.net.URISyntaxException e) {
+            e.printStackTrace();
+        }
+        license.setActive(true);
+        return license;
+    }
+
+    private Dataverse createDataverse(long id) {
+        Dataverse dataverse = new Dataverse();
+        dataverse.setId(id);
+        dataverse.setAlias("dv" + id);
+        dataverse.setName("Dataverse " + id);
+        dataverse.setAffiliation(id + " Inc.");
+        dataverse.setDescription("Description for Dataverse " + id + ".");
+        dataverse.setPublicationDate(Timestamp.from(Instant.now()));
+        return dataverse;
+    }
+    private Dataset createDataset(long id) {
+        Dataset dataset = new Dataset();
+        DatasetVersion dsVersion = new DatasetVersion();
+        dsVersion.setDataset(dataset);
+        dsVersion.setVersion(1L);
+        List<DatasetField> dsFields = new ArrayList<>();
+        DatasetField titleField = new DatasetField();
+        DatasetFieldType dsft = new DatasetFieldType();
+        DatasetFieldValue dsfv = new DatasetFieldValue();
+        dsfv.setValue("Dataset Title " + id);
+        dsfv.setDatasetField(titleField);
+        dsft.setName(DatasetFieldConstant.title);
+        dsft.setFieldType(FieldType.TEXT);
+        titleField.setDatasetFieldType(dsft);
+        titleField.setDatasetFieldValues(List.of(dsfv));
+        dsFields.add(titleField);
+        dsVersion.setDatasetFields(dsFields);
+        dsVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
+        dsVersion.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+        dataset.setId(id);
+
+        dataset.setVersions(List.of(dsVersion));
+        dataset.setPublicationDate(Timestamp.from(Instant.now()));
+        dataset.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL,"10.5072","FK2/BYM3IW", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null));
+
+        return dataset;
+    }
+    private DataFile createDatafile(long id) {
+        DataFile datafile = new DataFile();
+        datafile.setId(1L);
+        datafile.setRestricted(false);
+
+        FileMetadata fm = new FileMetadata();
+        fm.setLabel("xyz.txt");
+        fm.setDataFile(datafile);
+
+        datafile.setFileMetadatas(List.of(fm));
+
+        return datafile;
+    }
+    
+
+    @Test
+    public void testJsonStorageDriver() {
+        // Test with directDownload enabled (true-like values)
+        System.setProperty("dataverse.files.test-driver.type", "s3");
+        System.setProperty("dataverse.files.test-driver.label", "Test Storage Driver");
+        System.setProperty("dataverse.files.test-driver.download-redirect", "true");
+        System.setProperty("dataverse.files.test-driver.upload-redirect", "true");
+
+        JsonObject result = JsonPrinter.jsonStorageDriver("test-driver").build();
+
+        assertEquals("test-driver", result.getString("name"));
+        assertEquals("s3", result.getString("type"));
+        assertEquals("Test Storage Driver", result.getString("label"));
+        assertTrue(result.getBoolean("directUpload"));
+        assertTrue(result.getBoolean("directDownload"));
+        assertFalse(result.getBoolean("uploadOutOfBand"));
+        
+        // Test with directDownload disabled (false values)
+        System.setProperty("dataverse.files.test-driver2.type", "file");
+        System.setProperty("dataverse.files.test-driver2.label", "Local Storage");
+        System.setProperty("dataverse.files.test-driver2.download-redirect", "false");
+        System.setProperty("dataverse.files.test-driver2.upload-redirect", "false");
+
+        JsonObject result2 = JsonPrinter.jsonStorageDriver("test-driver2").build();
+
+        assertEquals("test-driver2", result2.getString("name"));
+        assertEquals("file", result2.getString("type"));
+        assertEquals("Local Storage", result2.getString("label"));
+        assertFalse(result2.getBoolean("directUpload"));
+        assertFalse(result2.getBoolean("directDownload"));
+        assertFalse(result2.getBoolean("uploadOutOfBand"));
+
+        // Test with all caps TRUE and out-of-band
+        System.setProperty("dataverse.files.test-driver3.type", "swift");
+        System.setProperty("dataverse.files.test-driver3.label", "Swift Storage");
+        System.setProperty("dataverse.files.test-driver3.download-redirect", "TRUE");
+        System.setProperty("dataverse.files.test-driver3.upload-out-of-band", "true");
+
+        JsonObject result3 = JsonPrinter.jsonStorageDriver("test-driver3").build();
+        assertTrue(result3.getBoolean("directDownload"));
+        assertTrue(result3.getBoolean("uploadOutOfBand"));
+
+        // Test with null/missing properties
+        System.setProperty("dataverse.files.test-driver4.type", "s3");
+        System.setProperty("dataverse.files.test-driver4.label", "Minimal Storage");
+        // Not setting download-redirect property
+
+        JsonObject result4 = JsonPrinter.jsonStorageDriver("test-driver4").build();
+        assertFalse(result4.getBoolean("directDownload"));
+        assertFalse(result4.getBoolean("directUpload"));
+        assertFalse(result4.getBoolean("uploadOutOfBand"));
+
+        // Clean up system properties
+        System.clearProperty("dataverse.files.test-driver.type");
+        System.clearProperty("dataverse.files.test-driver.label");
+        System.clearProperty("dataverse.files.test-driver.download-redirect");
+        System.clearProperty("dataverse.files.test-driver.upload-redirect");
+        System.clearProperty("dataverse.files.test-driver2.type");
+        System.clearProperty("dataverse.files.test-driver2.label");
+        System.clearProperty("dataverse.files.test-driver2.download-redirect");
+        System.clearProperty("dataverse.files.test-driver2.upload-redirect");
+        System.clearProperty("dataverse.files.test-driver3.type");
+        System.clearProperty("dataverse.files.test-driver3.label");
+        System.clearProperty("dataverse.files.test-driver3.download-redirect");
+        System.clearProperty("dataverse.files.test-driver3.upload-out-of-band");
+        System.clearProperty("dataverse.files.test-driver4.type");
+        System.clearProperty("dataverse.files.test-driver4.label");
     }
 }

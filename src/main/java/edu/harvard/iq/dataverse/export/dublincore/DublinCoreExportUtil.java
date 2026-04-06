@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.json.JsonObject;
 import javax.xml.stream.XMLOutputFactory;
@@ -68,29 +69,40 @@ public class DublinCoreExportUtil {
     }
     
     private static void dto2dublincore(DatasetDTO datasetDto, OutputStream outputStream, String dcFlavor) throws XMLStreamException {
-        XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
-        if (DC_FLAVOR_DCTERMS.equals(dcFlavor)) {
-		xmlw.writeStartDocument();
-            xmlw.writeStartElement("metadata");
-            xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-            xmlw.writeAttribute("xmlns:dc", DC_XML_NAMESPACE);
-            xmlw.writeAttribute("xmlns:dcterms", DCTERMS_XML_NAMESPACE);
-            xmlw.writeDefaultNamespace(DCTERMS_DEFAULT_NAMESPACE);
-            //xmlw.writeAttribute("xsi:schemaLocation", DCTERMS_DEFAULT_NAMESPACE+" "+DCTERMS_XML_SCHEMALOCATION);
-            createDC(xmlw, datasetDto, dcFlavor);
-        } else if (DC_FLAVOR_OAI.equals(dcFlavor)) {      
-            xmlw.writeStartElement("oai_dc:dc");        
-            xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-            xmlw.writeAttribute("xmlns:oai_dc", OAI_DC_XML_NAMESPACE);
-            xmlw.writeAttribute("xmlns:dc", DC_XML_NAMESPACE);
-            xmlw.writeAttribute("xsi:schemaLocation", OAI_DC_XML_NAMESPACE+" "+OAI_DC_XML_SCHEMALOCATION);
-            //writeAttribute(xmlw, "version", DEFAULT_XML_VERSION);
-            createOAIDC(xmlw, datasetDto, dcFlavor);
+        XMLStreamWriter xmlw = null;
+        try {
+            xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
+            if (DC_FLAVOR_DCTERMS.equals(dcFlavor)) {
+                xmlw.writeStartDocument();
+                xmlw.writeStartElement("metadata");
+                xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                xmlw.writeAttribute("xmlns:dc", DC_XML_NAMESPACE);
+                xmlw.writeAttribute("xmlns:dcterms", DCTERMS_XML_NAMESPACE);
+                xmlw.writeDefaultNamespace(DCTERMS_DEFAULT_NAMESPACE);
+                // xmlw.writeAttribute("xsi:schemaLocation", DCTERMS_DEFAULT_NAMESPACE+" "+DCTERMS_XML_SCHEMALOCATION);
+                createDC(xmlw, datasetDto, dcFlavor);
+            } else if (DC_FLAVOR_OAI.equals(dcFlavor)) {
+                xmlw.writeStartElement("oai_dc:dc");
+                xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                xmlw.writeAttribute("xmlns:oai_dc", OAI_DC_XML_NAMESPACE);
+                xmlw.writeAttribute("xmlns:dc", DC_XML_NAMESPACE);
+                xmlw.writeAttribute("xsi:schemaLocation", OAI_DC_XML_NAMESPACE + " " + OAI_DC_XML_SCHEMALOCATION);
+                // writeAttribute(xmlw, "version", DEFAULT_XML_VERSION);
+                createOAIDC(xmlw, datasetDto, dcFlavor);
+            }
+
+            xmlw.writeEndElement(); // <metadata> or <oai_dc:dc>
+            xmlw.flush();
+        } finally {
+            if (xmlw != null) {
+                try {
+                    xmlw.close();
+                } catch (XMLStreamException e) {
+                    // Log this exception, but don't rethrow as it's in finally block
+                    logger.log(Level.WARNING, "Error closing XMLStreamWriter", e);
+                }
+            }
         }
-        
-        
-        xmlw.writeEndElement(); // <metadata> or <oai_dc:dc>
-        xmlw.flush();
     }
     
     //UPDATED by rmo-cdsp:

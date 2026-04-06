@@ -20,18 +20,18 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.ColumnResult;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
-import jakarta.persistence.NamedStoredProcedureQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderBy;
-import jakarta.persistence.ParameterMode;
-import jakarta.persistence.StoredProcedureParameter;
+import jakarta.persistence.SqlResultSetMapping;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -69,28 +69,28 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
     @NamedQuery(name = "Dataset.findByReleaseUserId",
                 query = "SELECT o FROM Dataset o WHERE o.releaseUser.id=:releaseUserId"),
     @NamedQuery(name = "Dataset.countAll",
-                query = "SELECT COUNT(ds) FROM Dataset ds")
+                query = "SELECT COUNT(ds) FROM Dataset ds"),
+    @NamedQuery(name = "Dataset.countFilesByOwnerId",
+                query = "SELECT COUNT(dvo) FROM DvObject dvo WHERE dvo.owner.id=:ownerId AND dvo.dtype='DataFile'")
 })
-
-/*
-    Below is the database stored procedure for getting a string dataset id.
-    Used when the Dataverse is (optionally) configured to use
-    procedurally generated values for dataset ids, instead of the default
-    random strings. 
-
-    The use of a stored procedure to create an identifier is explained in the
-    installation documentation (where an example script is supplied).
-    The stored procedure can be implemented using other SQL flavors -
-    without having to modify the application code. 
-            -- L.A. 4.6.2 (modified by C.S. for version 5.4.1+)
-*/ 
-@NamedStoredProcedureQuery(
-        name = "Dataset.generateIdentifierFromStoredProcedure",
-        procedureName = "generateIdentifierFromStoredProcedure",
-        parameters = {
-            @StoredProcedureParameter(mode = ParameterMode.OUT, type = String.class)
-        }
+@NamedNativeQuery(
+        name = "Dataset.findAllOrSubsetOrderByFilesOwned",
+        query = "SELECT DISTINCT CAST(o.id AS BIGINT) as id, COUNT(f.id) as numFiles " +
+                "FROM dvobject o " +
+                "LEFT JOIN dvobject f ON f.owner_id = o.id " +
+                "WHERE o.dtype = 'Dataset' " +
+                "AND (? = false OR o.indexTime IS NULL) " +
+                "GROUP BY o.id " +
+                "ORDER BY numfiles ASC, id",
+        resultSetMapping = "DatasetIdMapping"
+    )
+@SqlResultSetMapping(
+    name = "DatasetIdMapping",
+    columns = {
+        @ColumnResult(name = "id", type = Long.class)
+    }
 )
+
 @Entity
 @Table(indexes = {
     @Index(columnList = "guestbook_id"),
@@ -384,21 +384,7 @@ public class Dataset extends DvObjectContainer {
             in a pre-save validation SEK 12/6/2021
             */
             for (FileMetadata fm : latestVersion.getFileMetadatas()) {
-                FileMetadata newFm = new FileMetadata();
-                // TODO: 
-                // the "category" will be removed, shortly. 
-                // (replaced by multiple, tag-like categories of 
-                // type DataFileCategory) -- L.A. beta 10
-                //newFm.setCategory(fm.getCategory());
-                // yep, these are the new categories:
-                newFm.setCategories(fm.getCategories());
-                newFm.setDescription(fm.getDescription());
-                newFm.setLabel(fm.getLabel());
-                newFm.setDirectoryLabel(fm.getDirectoryLabel());
-                newFm.setRestricted(fm.isRestricted());
-                newFm.setDataFile(fm.getDataFile());
-                newFm.setDatasetVersion(dsv);
-                newFm.setProvFreeForm(fm.getProvFreeForm());
+                FileMetadata newFm = fm.createCopyInVersion(dsv);
                 newFm.setInPriorVersion(true);
 
                 //fmVarMet would be updated in DCT
@@ -410,8 +396,6 @@ public class Dataset extends DvObjectContainer {
                         newFm.copyVarGroups(fm.getVarGroups());
                     }
                 }
-                
-                dsv.getFileMetadatas().add(newFm);
             }
             
             if (latestVersion.getTermsOfUseAndAccess()!= null){
@@ -507,6 +491,26 @@ public class Dataset extends DvObjectContainer {
         for (DatasetVersion version : this.getVersions()) {
             if (version.isReleased()) {
                 return version;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the second-most-recent released version of this dataset.
+     * Assumes versions are ordered from most recent to oldest.
+     * 
+     * @return The prior released version, or null if there is only one or no released versions
+     */
+    public DatasetVersion getPriorReleasedVersion() {
+        boolean foundReleasedVersion = false;
+        for (DatasetVersion version : this.getVersions()) {
+            if (version.isReleased()) {
+                if(foundReleasedVersion) {
+                    return version;
+                } else {
+                    foundReleasedVersion = true;
+                }
             }
         }
         return null;

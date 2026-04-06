@@ -1,4 +1,4 @@
-Sphinx==7.2.6
+Sphinx==7.4.0
 
 # inline icons
 sphinx-icon==0.1.2
@@ -11,3 +11,6 @@ sphinx-tabs==3.4.5
 
 # jQuery
 sphinxcontrib-jquery
+
+Sphinx-Substitution-Extensions==2025.1.2
+semver>=3,<4

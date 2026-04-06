@@ -7,6 +7,11 @@
             <outputDirectory>app</outputDirectory>
             <excludes>
                 <exclude>WEB-INF/lib/**/*</exclude>
+                <!-- Keep these excludes in sync with packagingExcludes in the main pom.xml. -->
+                <exclude>WEB-INF/classes/edu/harvard/iq/dataverse/search/GetExternalSearchServiceBean.class</exclude>
+                <exclude>WEB-INF/classes/edu/harvard/iq/dataverse/search/PostExternalSearchServiceBean.class</exclude>
+                <exclude>WEB-INF/classes/edu/harvard/iq/dataverse/search/GoldenOldiesSearchServiceBean.class</exclude>
+                <exclude>WEB-INF/classes/edu/harvard/iq/dataverse/search/OddlyEnoughSearchServiceBean.class</exclude>
             </excludes>
         </fileSet>
         <!-- Get our dependencies in a seperate folder (image layer cache!) -->

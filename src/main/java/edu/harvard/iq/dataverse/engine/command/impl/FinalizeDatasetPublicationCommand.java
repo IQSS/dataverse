@@ -1,11 +1,14 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.CurationStatus;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.DatasetVersion;
+
 import static edu.harvard.iq.dataverse.DatasetVersion.VersionState.*;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -19,17 +22,15 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
-import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
+
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,10 +38,11 @@ import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import java.util.ArrayList;
-import java.util.concurrent.Future;
-import org.apache.solr.client.solrj.SolrServerException;
 
+import java.util.concurrent.Future;
+
+import org.apache.logging.log4j.util.Strings;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  *
@@ -60,7 +62,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      */
     final boolean datasetExternallyReleased;
     
-    List<Dataverse> dataversesToIndex = new ArrayList<>();
+    Set<Dataverse> dataversesToIndex = new HashSet<>();
     
     public static final String FILE_VALIDATION_ERROR = "FILE VALIDATION ERROR";
     
@@ -151,20 +153,24 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             theDataset.setEmbargoCitationDate(latestEmbargoDate);
         } 
 
-        //Clear any external status
-        theDataset.getLatestVersion().setExternalStatusLabel(null);
+        DatasetVersion version = theDataset.getLatestVersion();
         
-        // update metadata
-        if (theDataset.getLatestVersion().getReleaseTime() == null) {
-            // Allow migrated versions to keep original release dates
-            theDataset.getLatestVersion().setReleaseTime(getTimestamp());
+        // Clear any external status
+        CurationStatus status = version.getCurrentCurationStatus();
+        if (status != null && Strings.isNotBlank(status.getLabel())) {
+            version.addCurationStatus(new CurationStatus(null, version, getRequest().getAuthenticatedUser()));
         }
-        theDataset.getLatestVersion().setLastUpdateTime(getTimestamp());
+        // update metadata
+        if (version.getReleaseTime() == null) {
+            // Allow migrated versions to keep original release dates
+            version.setReleaseTime(getTimestamp());
+        }
+        version.setLastUpdateTime(getTimestamp());
         theDataset.setModificationTime(getTimestamp());
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
         
         //Use dataset pub date (which may not be the current date for migrated datasets)
-        updateFiles(new Timestamp(theDataset.getLatestVersion().getReleaseTime().getTime()), ctxt);
+        updateFiles(new Timestamp(version.getReleaseTime().getTime()), ctxt);
         
         // 
         // TODO: Not sure if this .merge() is necessary here - ? 
@@ -198,6 +204,15 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
         }
 
+        // The owning dataverse plus all dataverses linking to this dataset must be re-indexed to update their
+        // datasetCount
+        dataversesToIndex.add(getDataset().getOwner());
+        dataversesToIndex.addAll(getDataset().getOwner().getOwners());
+        getDataset().getDatasetLinkingDataverses().forEach(dld -> {
+            dataversesToIndex.add(dld.getLinkingDataverse());
+            dataversesToIndex.addAll(dld.getLinkingDataverse().getOwners());
+        });
+
         List<Command> previouslyCalled = ctxt.getCommandsCalled();
         
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
@@ -226,17 +241,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         //Remove any pre-pub workflow lock (not needed as WorkflowServiceBean.workflowComplete() should already have removed it after setting the finalizePublication lock?)
         ctxt.datasets().removeDatasetLocks(ds, DatasetLock.Reason.Workflow);
         
-        //Should this be in onSuccess()?
-        ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
-            try {
-                ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased), false);
-            } catch (CommandException ex) {
-                ctxt.datasets().removeDatasetLocks(ds, DatasetLock.Reason.Workflow);
-                logger.log(Level.SEVERE, "Error invoking post-publish workflow: " + ex.getMessage(), ex);
-            }
-        });
-
         Dataset readyDataset = ctxt.em().merge(ds);
+        
+        setDataset(readyDataset);
         
         // Finally, unlock the dataset (leaving any post-publish workflow lock in place)
         ctxt.datasets().removeDatasetLocks(readyDataset, DatasetLock.Reason.finalizePublication);
@@ -246,6 +253,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         logger.info("Successfully published the dataset "+readyDataset.getGlobalId().asString());
         readyDataset = ctxt.em().merge(readyDataset);
+
+        // Delete any Featured Items that are invalidated by publishing this version
+        ctxt.dataverseFeaturedItems().deleteInvalidatedFeaturedItemsByDataset(readyDataset);
         
         return readyDataset;
     }
@@ -266,6 +276,21 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         } catch (Exception e) {
             logger.warning("Failure to send dataset published messages for : " + dataset.getId() + " : " + e.getMessage());
         }
+
+        final Dataset ds = dataset;
+        ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
+            // Build context with the lock attached
+            WorkflowContext context = buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased);
+            try {
+                ctxt.workflows().start(wf, context, false);
+            } catch (CommandException e) {
+                logger.log(Level.SEVERE, "Error invoking post-publish workflow: " + e.getMessage(), e);
+            }
+        });
+        // Metadata export:
+        ctxt.datasets().reExportDatasetAsync(dataset);
+        
+        ctxt.index().asyncIndexDataset(dataset, true);
         
         //re-indexing dataverses that have additional subjects
         if (!dataversesToIndex.isEmpty()){
@@ -281,23 +306,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             }
         }
 
-        // Metadata export:
-        
-        try {
-            ExportService instance = ExportService.getInstance();
-            instance.exportAllFormats(dataset);
-            dataset = ctxt.datasets().merge(dataset); 
-        } catch (Exception ex) {
-            // Something went wrong!
-            // Just like with indexing, a failure to export is not a fatal
-            // condition. We'll just log the error as a warning and keep
-            // going:
-            logger.log(Level.WARNING, "Finalization: exception caught while exporting: "+ex.getMessage(), ex);
-            // ... but it is important to only update the export time stamp if the 
-            // export was indeed successful.
-        }
-        ctxt.index().asyncIndexDataset(dataset, true);
-        
         return retVal;
     }
 
@@ -312,12 +320,16 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 while (dv != null) {
                     boolean newSubjectsAdded = false;
                     for (ControlledVocabularyValue cvv : dsf.getControlledVocabularyValues()) {                   
-                        if (!dv.getDataverseSubjects().contains(cvv)) {
-                            logger.fine("dv "+dv.getAlias()+" does not have subject "+cvv.getStrValue());
-                            newSubjectsAdded = true;
-                            dv.getDataverseSubjects().add(cvv);
+                        if (!cvv.getStrValue().equals(DatasetField.NA_VALUE)) {
+                            if (!dv.getDataverseSubjects().contains(cvv)) {
+                                logger.fine("dv "+dv.getAlias()+" does not have subject "+cvv.getStrValue());
+                                newSubjectsAdded = true;
+                                dv.getDataverseSubjects().add(cvv);
+                            } else {
+                                logger.fine("dv "+dv.getAlias()+" already has subject "+cvv.getStrValue());
+                            }
                         } else {
-                            logger.fine("dv "+dv.getAlias()+" already has subject "+cvv.getStrValue());
+                            logger.fine("Subject is not recognized : " + cvv.getStrValue());
                         }
                     }
                     if (newSubjectsAdded) {

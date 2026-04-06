@@ -7,6 +7,56 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.10
+-----
+- The following GET APIs will now return ``400`` if a required Guestbook Response is not supplied. A Guestbook Response can be passed to these APIs in the JSON body using a POST call. See the notes under :ref:`basic-file-access` and :ref:`download-by-dataset-by-version` for details.
+
+  - **/api/access/datafile/{fileId:.+}**
+
+  - **/api/access/datafiles/{fileIds}**
+
+  - **/api/access/dataset/{id}**
+
+  - **/api/access/dataset/{id}/versions/{versionId}**
+
+- The following POST APIs will now return ``400`` if a required Guestbook Response is not supplied. A Guestbook Response can be passed to these APIs in the JSON body. See the note under :ref:`basic-download-by-dataset` for details.
+
+  - **/api/access/datafiles**
+
+  - **/api/access/datafile/bundle/{fileId}**
+
+- The following PUT APIs will now return ``400`` if a required Guestbook Response is not supplied. When JVM setting -Ddataverse.files.guestbook-at-request=true is set a Guestbook Response may be required to be passed to these APIs in the JSON body. See the note under Configuration :ref:`dataverse.files.guestbook-at-request` for details.
+
+  - **/api/access/datafile/{id}/requestAccess**
+
+
+v6.9
+----
+
+- When creating datasets that contain a datasetType, that datasetType must be allowed at the collection level. This can be accomplished by passing ``allowedDatasetTypes`` to the :ref:`collection-attributes-api` API.
+- The POST /api/admin/makeDataCount/{id}/updateCitationsForDataset processing is now asynchronous and the response no longer includes the number of citations. The response can be OK if the request is queued or 503 if the queue is full (default queue size is 1000).
+- The way to set per-format size limits for tabular ingest has changed. JSON input is now used. See :ref:`:TabularIngestSizeLimit`.
+- In the past, the settings API would accept any key and value. This is no longer the case because validation has been added. See :ref:`settings_put_single`, for example.
+- For GET /api/notifications/all the JSON response has changed breaking the backward compatibility of the API.
+- For GET /api/admin/dataverse/{dataverse-alias}/storageDriver and /api/datasets/{identifier}/storageDriver the driver name is no longer returned in data.message. Instead, it is returned as data.name (along with other information about the storageDriver).
+
+v6.8
+----
+
+- For POST /api/files/{id}/metadata passing an empty string ("description":"")  or array ("categories":[]) will no longer be ignored. Empty fields will now clear out the values in the file's metadata. To ignore the fields simply do not include them in the JSON string.
+- For PUT /api/datasets/{id}/editMetadata the query parameter "sourceInternalVersionNumber" has been removed and replaced with "sourceLastUpdateTime" to verify that the data being edited hasn't been modified and isn't stale.
+- For GET /api/dataverses/$dataverse-alias/links the JSON response has changed breaking the backward compatibility of the API.
+- For PUT /api/dataverses/$dataverse-alias/inputLevels custom input levels that had been previously set will no longer be deleted. To delete input levels send an empty list (deletes all), then send the new/modified list.
+- For GET /api/externalTools and /api/externalTools/{id} the responses are now formatted as JSON (previously the toolParameters and allowedApiCalls were a JSON object and array (respectively) that were serialized as JSON strings) and any configured "requirements" are included.
+
+v6.7
+----
+
+- An undocumented :doc:`search` parameter called "show_my_data" has been removed. It was never exercised by tests and is believed to be unused. API users should use the :ref:`api-mydata` API instead.
+- /api/datasets/{id}/curationStatus API now includes a JSON object with curation label, createtime, and assigner rather than a string 'label' and it supports a new boolean includeHistory parameter (default false) that returns a JSON array of statuses
+- /api/datasets/{id}/listCurationStates includes new columns "Status Set Time" and "Status Set By" columns listing the time the current status was applied and by whom. It also supports the boolean includeHistory parameter. 
+- Due to updates in libraries used by Dataverse, XML serialization may have changed slightly with respect to whether self-closing tags are used for empty elements. This primarily affects XML-based metadata exports. The XML structure of the export itself has not changed, so this is only an incompatibility if you are not using an XML parser.
+
 v6.6
 ----
 

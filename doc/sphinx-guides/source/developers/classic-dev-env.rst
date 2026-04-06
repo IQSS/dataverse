@@ -37,7 +37,7 @@ Windows is gaining support through Docker as described in the :doc:`windows` sec
 Install Java
 ~~~~~~~~~~~~
 
-The Dataverse Software requires Java 17.
+The Dataverse Software requires Java 21.
 
 We suggest downloading OpenJDK from https://adoptopenjdk.net
 
@@ -93,17 +93,17 @@ On Linux, install ``jq`` from your package manager or download a binary from htt
 Install Payara
 ~~~~~~~~~~~~~~
 
-Payara 6.2025.2 or higher is required.
+See :ref:`payara` under the Installation Guide for how to download the correct version of Payara. For the instructions below, we'll assume you've downloaded it to ``/tmp`` and will refer to it as ``payara*.zip`` (so we don't have to maintain the version number in multiple places).
 
 To install Payara, run the following commands:
 
 ``cd /usr/local``
 
-``sudo curl -O -L https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2025.2/payara-6.2025.2.zip``
+``cp /tmp/payara*zip .``
 
-``sudo unzip payara-6.2025.2.zip``
+``sudo unzip payara*.zip``
 
-``sudo chown -R $USER /usr/local/payara6``
+``sudo chown -R $USER /usr/local/payara7``
 
 If nexus.payara.fish is ever down for maintenance, Payara distributions are also available from https://repo1.maven.org/maven2/fish/payara/distributions/payara/
 

@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetFieldsValidator;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -26,9 +27,13 @@ import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SearchServiceFactory;
+
 import java.util.Map;
 import java.util.Set;
+
+import jakarta.ejb.AsyncResult;
+import jakarta.ejb.Asynchronous;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
@@ -43,6 +48,7 @@ import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Stack;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.annotation.Resource;
@@ -87,7 +93,7 @@ public class EjbDataverseEngine {
     SolrIndexServiceBean solrIndexService;
 
     @EJB
-    SearchServiceBean searchService;
+    SearchServiceFactory searchServiceFactory;
     
     @EJB
     IngestServiceBean ingestService;
@@ -190,6 +196,9 @@ public class EjbDataverseEngine {
 
     @EJB
     DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
+
+    @EJB
+    LicenseServiceBean licenseServiceBean;
 
     @EJB
     DatasetFieldsValidator datasetFieldsValidator;
@@ -343,6 +352,27 @@ public class EjbDataverseEngine {
             logSvc.log(logRec);
         }
     }
+
+    /**
+     * Submits a command for asynchronous execution.
+     * The command will be executed in a separate thread and won't block the caller.
+     * 
+     * @param <R> The return type of the command
+     * @param aCommand The command to execute
+     * @return A Future representing the pending result
+     * @throws CommandException if the command cannot be submitted
+     */
+    @Asynchronous
+    public <R> Future<R> submitAsync(Command<R> aCommand) throws CommandException {
+        try {
+            logger.log(Level.INFO, "Submitting async command: {0}", aCommand.getClass().getSimpleName());
+            R result = submit(aCommand);
+            return new AsyncResult<>(result);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Async command execution failed: " + aCommand.getClass().getSimpleName(), e);
+            throw e;
+        }
+    }
     
     protected void completeCommand(Command command, Object r, Stack<Command> called) {
         
@@ -441,8 +471,8 @@ public class EjbDataverseEngine {
                 }
 
                 @Override
-                public SearchServiceBean search() {
-                    return searchService;
+                public SearchServiceFactory search() {
+                    return searchServiceFactory;
                 }
 
                 @Override
@@ -538,6 +568,11 @@ public class EjbDataverseEngine {
                 @Override
                 public DatasetFieldsValidator datasetFieldsValidator() {
                     return datasetFieldsValidator;
+                }
+
+                @Override
+                public LicenseServiceBean licenses() {
+                    return licenseServiceBean;
                 }
 
                 @Override

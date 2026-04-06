@@ -1,49 +1,43 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.*;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
-import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
-import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
-import edu.harvard.iq.dataverse.datavariable.VarGroup;
-import edu.harvard.iq.dataverse.datavariable.VariableCategory;
-import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
-import edu.harvard.iq.dataverse.datavariable.VariableRange;
+import edu.harvard.iq.dataverse.datasetversionsummaries.*;
+import edu.harvard.iq.dataverse.datavariable.*;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
-import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.globus.FileDetailsHolder;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-
+import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Singleton;
+import jakarta.json.*;
 
 import java.util.*;
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObjectBuilder;
-
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -51,12 +45,10 @@ import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import static java.util.stream.Collectors.toList;
 
-import jakarta.ejb.EJB;
-import jakarta.ejb.Singleton;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
+import static edu.harvard.iq.dataverse.util.json.FileVersionDifferenceJsonPrinter.jsonFileVersionDifference;
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Convert objects to Json.
@@ -73,10 +65,27 @@ public class JsonPrinter {
 
     @EJB
     static DatasetFieldServiceBean datasetFieldService;
-    
-    public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb, DataverseFieldTypeInputLevelServiceBean dfils) {
+
+    @EJB
+    static DatasetServiceBean datasetService;
+
+    @EJB
+    static MailServiceBean mailService;
+
+    @EJB
+    static InAppNotificationsJsonPrinter inAppNotificationsJsonPrinter;
+
+    public static void injectSettingsService(SettingsServiceBean ssb,
+                                             DatasetFieldServiceBean dfsb,
+                                             DataverseFieldTypeInputLevelServiceBean dfils,
+                                             DatasetServiceBean ds,
+                                             MailServiceBean ms,
+                                             InAppNotificationsJsonPrinter njp) {
             settingsService = ssb;
             datasetFieldService = dfsb;
+            datasetService = ds;
+            mailService = ms;
+            inAppNotificationsJsonPrinter = njp;
     }
 
     public JsonPrinter() {
@@ -124,11 +133,18 @@ public class JsonPrinter {
         return builder;
     }
 
+    public static JsonArrayBuilder jsonRoleAssignments(List<RoleAssignment> roleAssignments) {
+        JsonArrayBuilder bld = Json.createArrayBuilder();
+        roleAssignments.forEach(roleAssignment -> bld.add(json(roleAssignment)));
+        return bld;
+    }
+
     public static JsonObjectBuilder json(RoleAssignment ra) {
         return jsonObjectBuilder()
                 .add("id", ra.getId())
                 .add("assignee", ra.getAssigneeIdentifier())
                 .add("roleId", ra.getRole().getId())
+                .add("roleName", ra.getRole().getName())
                 .add("_roleAlias", ra.getRole().getAlias())
                 .add("privateUrlToken", ra.getPrivateUrlToken())
                 .add("definitionPointId", ra.getDefinitionPoint().getId());
@@ -221,17 +237,28 @@ public class JsonPrinter {
         return arr;
     }
 
-    public static JsonObjectBuilder json(DataverseRole role) {
-        JsonObjectBuilder bld = jsonObjectBuilder()
-                .add("alias", role.getAlias())
-                .add("name", role.getName())
-                .add("permissions", JsonPrinter.json(role.permissions()))
-                .add("description", role.getDescription());
-        if (role.getId() != null) {
-            bld.add("id", role.getId());
+    public static JsonArrayBuilder jsonDataverseRoles(List<DataverseRole> roles) {
+        JsonArrayBuilder jsonArrayOfDataverseRoles = Json.createArrayBuilder();
+        for (DataverseRole role : roles) {
+            jsonArrayOfDataverseRoles.add(json(role));
         }
-        if (role.getOwner() != null && role.getOwner().getId() != null) {
-            bld.add("ownerId", role.getOwner().getId());
+        return jsonArrayOfDataverseRoles;
+    }
+
+    public static JsonObjectBuilder json(DataverseRole role) {
+        JsonObjectBuilder bld = jsonObjectBuilder();
+
+        if (role != null) {
+            bld.add("alias", role.getAlias())
+               .add("name", role.getName())
+               .add("permissions", JsonPrinter.json(role.permissions()))
+               .add("description", role.getDescription());
+            if (role.getId() != null) {
+                bld.add("id", role.getId());
+            }
+            if (role.getOwner() != null && role.getOwner().getId() != null) {
+                bld.add("ownerId", role.getOwner().getId());
+            }
         }
 
         return bld;
@@ -257,22 +284,35 @@ public class JsonPrinter {
 
         return bld;
     }
+    
+    public static JsonObjectBuilder json(Dataverse dv, boolean minimal) {
+        if (!minimal){
+            return json(dv, false, false, false, null);
+        } else {
+            return json(dv, false, false, true, null);        
+        }
+    }
 
     public static JsonObjectBuilder json(Dataverse dv) {
-        return json(dv, false, false, null);
+        return json(dv, false, false, false, null);
     }
 
     //TODO: Once we upgrade to Java EE 8 we can remove objects from the builder, and this email removal can be done in a better place.
-    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail, Boolean returnOwners, Long childCount) {
+    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail, Boolean returnOwners, Boolean minimal, Long childCount) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dv.getId())
                 .add("alias", dv.getAlias())
-                .add("name", dv.getName())
-                .add("affiliation", dv.getAffiliation());
-        if(!hideEmail) {
+                .add("name", dv.getName());
+        //minimal refers to only returning the id alias and name for 
+        //used in selecting collections available for linking
+        if (minimal) {
+            return bld;
+        }
+        bld.add("affiliation", dv.getAffiliation());
+        if (!hideEmail) {
             bld.add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()));
         }
-        if (returnOwners){
+        if (returnOwners) {
             bld.add("isPartOf", getOwnersFromDvObject(dv));
         }
         bld.add("permissionRoot", dv.isPermissionRoot())
@@ -289,8 +329,8 @@ public class JsonPrinter {
         if (dv.getDataverseTheme() != null) {
             bld.add("theme", JsonPrinter.json(dv.getDataverseTheme()));
         }
-        if(dv.getStorageDriverId() != null) {
-        	bld.add("storageDriverLabel", DataAccess.getStorageDriverLabelFor(dv.getStorageDriverId()));
+        if (dv.getStorageDriverId() != null) {
+            bld.add("storageDriverLabel", DataAccess.getStorageDriverLabelFor(dv.getStorageDriverId()));
         }
         if (dv.getFilePIDsEnabled() != null) {
             bld.add("filePIDsEnabled", dv.getFilePIDsEnabled());
@@ -299,15 +339,42 @@ public class JsonPrinter {
         bld.add("isReleased", dv.isReleased());
 
         List<DataverseFieldTypeInputLevel> inputLevels = dv.getDataverseFieldTypeInputLevels();
-        if(!inputLevels.isEmpty()) {
+        if (!inputLevels.isEmpty()) {
             bld.add("inputLevels", JsonPrinter.jsonDataverseFieldTypeInputLevels(inputLevels));
         }
 
         if (childCount != null) {
             bld.add("childCount", childCount);
         }
-
+        List<DatasetType> allowedDatasetTypes = dv.getAllowedDatasetTypes();
+        if (allowedDatasetTypes != null && !allowedDatasetTypes.isEmpty()) {
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+            for (DatasetType datasetType : allowedDatasetTypes) {
+                NullSafeJsonBuilder json = NullSafeJsonBuilder.jsonObjectBuilder()
+                    .add("name", datasetType.getName())
+                    .add("displayName", datasetType.getDisplayName())
+                    .add("description", datasetType.getDescription());
+                jab.add(json);
+            }
+            bld.add("allowedDatasetTypes", jab);
+        }
+        addDatasetFileCountLimit(dv, bld);
         return bld;
+    }
+
+    public static JsonObjectBuilder jsonArray(List<Dataverse> dataverses) {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("count", dataverses.size());
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        for (Dataverse dataverse : dataverses) {
+            NullSafeJsonBuilder jsonObject = NullSafeJsonBuilder.jsonObjectBuilder();
+            jsonObject.add("id", dataverse.getId());
+            jsonObject.add("name", dataverse.getDisplayName());
+            jsonObject.add("alias", dataverse.getAlias());
+            jsonArrayBuilder.add(jsonObject);
+        }
+        job.add("items", jsonArrayBuilder);
+        return job;
     }
 
     public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
@@ -323,6 +390,54 @@ public class JsonPrinter {
 
     public static JsonObjectBuilder getOwnersFromDvObject(DvObject dvObject){
         return getOwnersFromDvObject(dvObject, null);
+    }
+
+    public static JsonObjectBuilder json(Guestbook guestbook) {
+        JsonObjectBuilder guestbookObject = jsonObjectBuilder();
+        if (guestbook != null) {
+            guestbookObject.add("id", guestbook.getId());
+            guestbookObject.add("name", guestbook.getName());
+            guestbookObject.add("enabled", guestbook.isEnabled());
+            guestbookObject.add("emailRequired", guestbook.isEmailRequired());
+            guestbookObject.add("nameRequired", guestbook.isNameRequired());
+            guestbookObject.add("institutionRequired", guestbook.isInstitutionRequired());
+            guestbookObject.add("positionRequired", guestbook.isPositionRequired());
+            JsonArrayBuilder customQuestions = Json.createArrayBuilder();
+            if (guestbook.getCustomQuestions() != null) {
+                for (CustomQuestion cq : guestbook.getCustomQuestions()) {
+                    customQuestions.add(json(cq));
+                }
+            }
+            guestbookObject.add("customQuestions", customQuestions);
+            if (guestbook.getCreateTime() != null) {
+                guestbookObject.add("createTime", guestbook.getCreateTime().toString());
+            }
+            if (guestbook.getDataverse() != null) {
+                guestbookObject.add("dataverseId", guestbook.getDataverse().getId());
+            }
+        }
+        return guestbookObject;
+    }
+    public static JsonObjectBuilder json(CustomQuestion customQuestion) {
+        JsonObjectBuilder customQuestionObject = jsonObjectBuilder();
+        customQuestionObject.add("id", customQuestion.getId());
+        customQuestionObject.add("question", customQuestion.getQuestionString());
+        customQuestionObject.add("required", customQuestion.isRequired());
+        customQuestionObject.add("displayOrder", customQuestion.getDisplayOrder());
+        customQuestionObject.add("type", customQuestion.getQuestionType());
+        customQuestionObject.add("hidden", customQuestion.isHidden());
+        if (customQuestion.getCustomQuestionValues() != null && !customQuestion.getCustomQuestionValues().isEmpty()) {
+            JsonArrayBuilder customQuestionsValues = Json.createArrayBuilder();
+            for (CustomQuestionValue value : customQuestion.getCustomQuestionValues()) {
+                JsonObjectBuilder customQuestionValueObject = jsonObjectBuilder();
+                customQuestionValueObject.add("id", value.getId());
+                customQuestionValueObject.add("value", value.getValueString());
+                customQuestionValueObject.add("displayOrder", value.getDisplayOrder());
+                customQuestionsValues.add(customQuestionValueObject);
+            }
+            customQuestionObject.add("optionValues", customQuestionsValues);
+        }
+        return customQuestionObject;
     }
 
     public static JsonObjectBuilder getOwnersFromDvObject(DvObject dvObject, DatasetVersion dsv) {
@@ -410,6 +525,11 @@ public class JsonPrinter {
                 .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
                 .add("storageIdentifier", ds.getStorageIdentifier());
+        if (ds.getGuestbook() != null) {
+            bld.add("guestbookId", ds.getGuestbook().getId());
+        }
+        addDatasetFileCountLimit(ds, bld);
+
         if (DvObjectContainer.isMetadataLanguageSet(ds.getMetadataLanguage())) {
             bld.add("metadataLanguage", ds.getMetadataLanguage());
         }
@@ -417,7 +537,29 @@ public class JsonPrinter {
             bld.add("isPartOf", getOwnersFromDvObject(ds));
         }
         bld.add("datasetType", ds.getDatasetType().getName());
+
+        JsonArrayBuilder locksArrayBuilder = Json.createArrayBuilder();
+        for (DatasetLock lock : ds.getLocks()) {
+            locksArrayBuilder.add(lock.getReason().toString());
+        }
+        bld.add("locks", locksArrayBuilder);
+
         return bld;
+    }
+
+    private static void addDatasetFileCountLimit(DvObjectContainer dvo, JsonObjectBuilder bld) {
+        Integer effectiveDatasetFileCountLimit = dvo.getEffectiveDatasetFileCountLimit();
+        if (dvo.isDatasetFileCountLimitSet(effectiveDatasetFileCountLimit)) {
+            bld.add("effectiveDatasetFileCountLimit", effectiveDatasetFileCountLimit);
+        }
+        Integer datasetFileCountLimit = dvo.getDatasetFileCountLimit();
+        if (dvo.isDatasetFileCountLimitSet(datasetFileCountLimit)) {
+            bld.add("datasetFileCountLimit", datasetFileCountLimit);
+        }
+        if (dvo.isInstanceofDataset() && dvo.isDatasetFileCountLimitSet(effectiveDatasetFileCountLimit)) {
+            int available = effectiveDatasetFileCountLimit - datasetService.getDataFileCountByOwner(dvo.getId());
+            bld.add("datasetFileUploadsAvailable", Math.max(0, available));
+        }
     }
 
     public static JsonObjectBuilder json(FileDetailsHolder ds) {
@@ -429,21 +571,22 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv, boolean includeFiles) {
-        return json(dsv, null, includeFiles, false,true);
+        return json(dsv, null, includeFiles, false, true, false);
     }
     public static JsonObjectBuilder json(DatasetVersion dsv, boolean includeFiles, boolean includeMetadataBlocks) {
-        return json(dsv, null, includeFiles, false, includeMetadataBlocks);
+        return json(dsv, null, includeFiles, false, includeMetadataBlocks, false);
     }
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList,
                                          boolean includeFiles, boolean returnOwners) {
-        return  json( dsv,  anonymizedFieldTypeNamesList, includeFiles,  returnOwners,true);
+        return  json(dsv, anonymizedFieldTypeNamesList, includeFiles, returnOwners, true, false);
     }
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList,
-        boolean includeFiles, boolean returnOwners, boolean includeMetadataBlocks) {
+        boolean includeFiles, boolean returnOwners, boolean includeMetadataBlocks, boolean ignoreSettingExcludeEmailFromExport) {
         Dataset dataset = dsv.getDataset();
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dataset.getId())
                 .add("datasetPersistentId", dataset.getGlobalId().asString())
+                .add("datasetType", dataset.getDatasetType().getName())
                 .add("storageIdentifier", dataset.getStorageIdentifier())
                 .add("versionNumber", dsv.getVersionNumber())
                 .add("internalVersionNumber", dsv.getVersion())
@@ -462,6 +605,10 @@ public class JsonPrinter {
                 .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
                 .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD())
                 .add("versionNote", dsv.getVersionNote());
+        if (dataset.getGuestbook() != null) {
+            bld.add("guestbookId", dataset.getGuestbook().getId());
+        }
+        addDatasetFileCountLimit(dataset, bld);
 
         License license = DatasetUtil.getLicense(dsv);
         if (license != null) {
@@ -486,10 +633,8 @@ public class JsonPrinter {
                 .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion())
                 .add("fileAccessRequest", dsv.getTermsOfUseAndAccess().isFileAccessRequest());
         if(includeMetadataBlocks) {
-            bld.add("metadataBlocks", (anonymizedFieldTypeNamesList != null) ?
-                    jsonByBlocks(dsv.getDatasetFields(), anonymizedFieldTypeNamesList)
-                    : jsonByBlocks(dsv.getDatasetFields())
-            );
+            bld.add("metadataBlocks",
+                    jsonByBlocks(dsv.getDatasetFields(), anonymizedFieldTypeNamesList, ignoreSettingExcludeEmailFromExport));
         }
         if(returnOwners){
             bld.add("isPartOf", getOwnersFromDvObject(dataset));
@@ -573,15 +718,15 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder jsonByBlocks(List<DatasetField> fields) {
-        return jsonByBlocks(fields, null);
+        return jsonByBlocks(fields, null, false);
     }
 
-    public static JsonObjectBuilder jsonByBlocks(List<DatasetField> fields, List<String> anonymizedFieldTypeNamesList) {
+    public static JsonObjectBuilder jsonByBlocks(List<DatasetField> fields, List<String> anonymizedFieldTypeNamesList, boolean ignoreSettingExcludeEmailFromExport) {
         JsonObjectBuilder blocksBld = jsonObjectBuilder();
 
         for (Map.Entry<MetadataBlock, List<DatasetField>> blockAndFields : DatasetField.groupByBlock(fields).entrySet()) {
             MetadataBlock block = blockAndFields.getKey();
-            blocksBld.add(block.getName(), JsonPrinter.json(block, blockAndFields.getValue(), anonymizedFieldTypeNamesList));
+            blocksBld.add(block.getName(), JsonPrinter.json(block, blockAndFields.getValue(), anonymizedFieldTypeNamesList, ignoreSettingExcludeEmailFromExport));
         }
         return blocksBld;
     }
@@ -599,6 +744,10 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(MetadataBlock block, List<DatasetField> fields, List<String> anonymizedFieldTypeNamesList) {
+        return json(block, fields, anonymizedFieldTypeNamesList, false);
+    }
+
+    public static JsonObjectBuilder json(MetadataBlock block, List<DatasetField> fields, List<String> anonymizedFieldTypeNamesList, boolean ignoreSettingExcludeEmailFromExport) {
         JsonObjectBuilder blockBld = jsonObjectBuilder();
 
         blockBld.add("displayName", block.getDisplayName());
@@ -606,7 +755,12 @@ public class JsonPrinter {
 
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
         Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(true);
-        DatasetFieldWalker.walk(fields, settingsService, cvocMap, new DatasetFieldsToJson(fieldsArray, anonymizedFieldTypeNamesList));
+        List<DatasetFieldType.FieldType> excludedFieldTypeList = new ArrayList<>();
+        // Exclude the Email field or override the exclusion of the Email field type based on the settings ExcludeEmailFromExport and ignoreSettingExcludeEmailFromExport
+        if ((settingsService != null) && settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false) && !ignoreSettingExcludeEmailFromExport) {
+            excludedFieldTypeList.add(DatasetFieldType.FieldType.EMAIL);
+        }
+        DatasetFieldWalker.walk(fields, excludedFieldTypeList, cvocMap, new DatasetFieldsToJson(fieldsArray, anonymizedFieldTypeNamesList));
 
         blockBld.add("fields", fieldsArray);
         return blockBld;
@@ -723,6 +877,7 @@ public class JsonPrinter {
         fieldsBld.add("description", fld.getDescription());
         fieldsBld.add("multiple", fld.isAllowMultiples());
         fieldsBld.add("isControlledVocabulary", fld.isControlledVocabulary());
+        fieldsBld.add("isAdvancedSearchFieldType", fld.isAdvancedSearchFieldType());
         fieldsBld.add("displayFormat", fld.getDisplayFormat());
         fieldsBld.add("displayOrder", fld.getDisplayOrder());
 
@@ -831,6 +986,7 @@ public class JsonPrinter {
         }
 
         fileName = fileMetadata.getLabel();
+        String directoryLabel = fileMetadata.getDirectoryLabel();
         GlobalId filePid = df.getGlobalId();
         String pidURL = (filePid!=null)? filePid.asURL(): null;
         //For backward compatibility - prior to #8674, asString() returned "" for the value when no PID exists.
@@ -873,7 +1029,9 @@ public class JsonPrinter {
                 .add("tabularData", df.isTabularData())
                 .add("tabularTags", getTabularFileTags(df))
                 .add("creationDate", df.getCreateDateFormattedYYYYMMDD())
-                .add("publicationDate",  df.getPublicationDateFormattedYYYYMMDD());
+                .add("publicationDate",  df.getPublicationDateFormattedYYYYMMDD())
+                .add("directoryLabel", directoryLabel)
+                .add("lastUpdateTime", format(fileMetadata.getDatasetVersion().getLastUpdateTime()));
         Dataset dfOwner = df.getOwner();
         if (dfOwner != null) {
             builder.add("fileAccessRequest", dfOwner.isFileAccessRequest());
@@ -1493,11 +1651,198 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DataverseFeaturedItem dataverseFeaturedItem) {
-        return jsonObjectBuilder()
+        NullSafeJsonBuilder job = jsonObjectBuilder()
                 .add("id", dataverseFeaturedItem.getId())
                 .add("content", dataverseFeaturedItem.getContent())
                 .add("imageFileName", dataverseFeaturedItem.getImageFileName())
                 .add("imageFileUrl", dataverseFeaturedItem.getImageFileUrl())
-                .add("displayOrder", dataverseFeaturedItem.getDisplayOrder());
+                .add("displayOrder", dataverseFeaturedItem.getDisplayOrder())
+                .add("type", dataverseFeaturedItem.getType());
+
+        DvObject dvObject = dataverseFeaturedItem.getDvObject();
+        if (dvObject != null) {
+            String identifier = null;
+            String displayName = null;
+    
+            if (dvObject.isInstanceofDataverse()) {
+                identifier = ((Dataverse) dvObject).getAlias();
+                displayName = ((Dataverse) dvObject).getName();
+            } else if (dvObject.isInstanceofDataset()) {
+                identifier = dvObject.getGlobalId() != null ? dvObject.getGlobalId().asString() : String.valueOf(dvObject.getId());
+                displayName = ((Dataset) dvObject).getCurrentName();
+            } else if (dvObject.isInstanceofDataFile()) {
+                identifier = String.valueOf(dvObject.getId());
+                displayName = ((DataFile) dvObject).getDisplayName();
+            }
+    
+            job.add("dvObjectIdentifier", identifier);
+            job.add("dvObjectDisplayName", displayName);
+        }
+        return job;
+    }
+
+    public static JsonArrayBuilder jsonTemplates(List<Template> templates) {
+        JsonArrayBuilder templatesArrayBuilder = Json.createArrayBuilder();
+        for (Template template : templates) {
+            templatesArrayBuilder.add(jsonTemplate(template));
+        }
+        return templatesArrayBuilder;
+    }
+
+    public static JsonObjectBuilder jsonTemplate(Template template) {
+        return jsonObjectBuilder()
+                .add("id", template.getId())
+                .add("name", template.getName())
+                .add("isDefault", template.isIsDefaultForDataverse())
+                .add("usageCount", template.getUsageCount())
+                .add("createTime", template.getCreateTime().toString())
+                .add("createDate", template.getCreateDate())
+                .add("termsOfUseAndAccess", jsonTermsOfUseAndAccess(template.getTermsOfUseAndAccess()))
+                .add("datasetFields", jsonByBlocks(template.getDatasetFields()))
+                .add("instructions", jsonTemplateInstructions(template.getInstructionsMap()))
+                .add("dataverseAlias", template.getDataverse().getAlias());
+    }
+
+    public static JsonObjectBuilder jsonTermsOfUseAndAccess(TermsOfUseAndAccess termsOfUseAndAccess) {
+        License license = termsOfUseAndAccess.getLicense();
+        return jsonObjectBuilder()
+                .add("id", termsOfUseAndAccess.getId())
+                .add("license", license != null ? json(license) : null)
+                .add("termsOfUse", termsOfUseAndAccess.getTermsOfUse())
+                .add("termsOfAccess", termsOfUseAndAccess.getTermsOfAccess())
+                .add("confidentialityDeclaration", termsOfUseAndAccess.getConfidentialityDeclaration())
+                .add("specialPermissions", termsOfUseAndAccess.getSpecialPermissions())
+                .add("restrictions", termsOfUseAndAccess.getRestrictions())
+                .add("citationRequirements", termsOfUseAndAccess.getCitationRequirements())
+                .add("depositorRequirements", termsOfUseAndAccess.getDepositorRequirements())
+                .add("conditions", termsOfUseAndAccess.getConditions())
+                .add("disclaimer", termsOfUseAndAccess.getDisclaimer())
+                .add("dataAccessPlace", termsOfUseAndAccess.getDataAccessPlace())
+                .add("originalArchive", termsOfUseAndAccess.getOriginalArchive())
+                .add("availabilityStatus", termsOfUseAndAccess.getAvailabilityStatus())
+                .add("sizeOfCollection", termsOfUseAndAccess.getSizeOfCollection())
+                .add("studyCompletion", termsOfUseAndAccess.getStudyCompletion())
+                .add("contactForAccess", termsOfUseAndAccess.getContactForAccess())
+                .add("fileAccessRequest", termsOfUseAndAccess.isFileAccessRequest());
+    }
+
+    public static JsonArrayBuilder jsonTemplateInstructions(Map<String, String> templateInstructions) {
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+
+        for (Map.Entry<String, String> entry : templateInstructions.entrySet()) {
+            JsonObjectBuilder instructionObject = Json.createObjectBuilder()
+                    .add("instructionField", entry.getKey())
+                    .add("instructionText", entry.getValue());
+            jsonArrayBuilder.add(instructionObject);
+        }
+
+        return jsonArrayBuilder;
+    }
+
+    public static JsonObjectBuilder jsonStorageDriver(String storageDriverId) {
+        JsonObjectBuilder jsonObjectBuilder = new NullSafeJsonBuilder();
+        jsonObjectBuilder.add("name", storageDriverId);
+        jsonObjectBuilder.add("type", StorageIO.getConfigParamForDriver(storageDriverId, StorageIO.TYPE));
+        jsonObjectBuilder.add("label", StorageIO.getConfigParamForDriver(storageDriverId, StorageIO.LABEL));
+        jsonObjectBuilder.add("directUpload", Boolean.parseBoolean(StorageIO.getConfigParamForDriver(storageDriverId, StorageIO.UPLOAD_REDIRECT)));
+        jsonObjectBuilder.add("directDownload", Boolean.parseBoolean(StorageIO.getConfigParamForDriver(storageDriverId, StorageIO.DOWNLOAD_REDIRECT)));
+        jsonObjectBuilder.add("uploadOutOfBand", Boolean.parseBoolean(StorageIO.getConfigParamForDriver(storageDriverId, StorageIO.UPLOAD_OUT_OF_BAND)));
+
+        return jsonObjectBuilder;
+    }
+
+    public static JsonArrayBuilder json(List<UserNotification> notifications, AuthenticatedUser authenticatedUser, boolean inAppNotificationFormat) {
+        JsonArrayBuilder notificationsArray = Json.createArrayBuilder();
+
+        for (UserNotification notification : notifications) {
+            NullSafeJsonBuilder notificationJson = jsonObjectBuilder();
+            UserNotification.Type type = notification.getType();
+
+            notificationJson.add("id", notification.getId());
+            notificationJson.add("type", type.toString());
+            notificationJson.add("displayAsRead", notification.isReadNotification());
+            notificationJson.add("sentTimestamp", notification.getSendDateTimestamp());
+
+            if (inAppNotificationFormat) {
+                inAppNotificationsJsonPrinter.addFieldsByType(notificationJson, authenticatedUser, notification);
+            } else {
+                Object relatedObject = mailService.getObjectOfNotification(notification);
+                if (relatedObject != null) {
+                    String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, relatedObject);
+                    String messageText = mailService.getMessageTextBasedOnNotification(
+                            notification, relatedObject, null, notification.getRequestor()
+                    );
+
+                    notificationJson.add("subjectText", subjectText);
+                    notificationJson.add("messageText", messageText);
+                }
+            }
+
+            notificationsArray.add(notificationJson);
+        }
+
+        return notificationsArray;
+    }
+    
+    public static JsonObjectBuilder jsonLanguage(String locale, String title) {
+        // returns a single metadata language entry
+        return jsonObjectBuilder().add("locale", locale).add("title", title);
+    }
+
+    public static JsonArrayBuilder jsonLanguage(Map<String, String> langMap) {
+        // returns an array of metadatalanguages
+        return Json.createArrayBuilder(langMap.entrySet().stream().map(entry -> jsonLanguage(entry.getKey(), entry.getValue())).toList());
+    }
+    
+    public static JsonArrayBuilder jsonDatasetVersionSummaries(List<DatasetVersionSummary> summaries) {
+        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        summaries.stream()
+                .filter(Objects::nonNull)
+                .map(JsonPrinter::json)
+                .forEach(arrayBuilder::add);
+
+        return arrayBuilder;
+    }
+
+    private static JsonObjectBuilder json(DatasetVersionSummary summary) {
+        JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder()
+                .add("id", summary.id())
+                .add("versionNumber", summary.versionNumber())
+                .add("versionNote", summary.versionNote())
+                .add("contributors", summary.contributorNames())
+                .add("publishedOn", summary.publicationDate());
+
+        DatasetVersionSummaryContent content = summary.content();
+        if (content instanceof DatasetVersionSummaryContentDeaccessioned deaccessioned) {
+            JsonObject deaccessionedDetailsJsonObject = jsonObjectBuilder()
+                    .add("reason", deaccessioned.getDeaccessionNote())
+                    .add("url", deaccessioned.getDeaccessionLink())
+                    .build();
+            JsonObject deaccessionedJsonObject = jsonObjectBuilder()
+                    .add("deaccessioned", deaccessionedDetailsJsonObject)
+                    .build();
+            jsonObjectBuilder.add("summary", deaccessionedJsonObject
+            );
+        } else if (content instanceof DatasetVersionSummaryContentSimple simple) {
+            jsonObjectBuilder.add("summary", simple.getValue().name());
+
+        } else if (content instanceof DatasetVersionSummaryContentDifferences differences) {
+            jsonObjectBuilder.add("summary", differences
+                    .getDatasetVersionDifference()
+                    .getSummaryDifferenceAsJson()
+                    .build());
+        }
+
+        return jsonObjectBuilder;
+    }
+
+    public static JsonArrayBuilder jsonFileVersionSummaries(List<FileVersionDifference> differences) {
+        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        differences.stream()
+                .filter(Objects::nonNull)
+                .map(diff -> jsonFileVersionDifference(diff).build())
+                .forEach(arrayBuilder::add);
+
+        return arrayBuilder;
     }
 }

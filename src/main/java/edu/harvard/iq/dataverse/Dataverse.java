@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.storageuse.StorageUse;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -31,12 +32,11 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  *
@@ -56,7 +56,13 @@ import org.hibernate.validator.constraints.NotEmpty;
     @NamedQuery(name = "Dataverse.filterByAlias", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias) LIKE :alias order by dv.alias"),
     @NamedQuery(name = "Dataverse.filterByAliasNameAffiliation", query="SELECT dv FROM Dataverse dv WHERE (LOWER(dv.alias) LIKE :alias) OR (LOWER(dv.name) LIKE :name) OR (LOWER(dv.affiliation) LIKE :affiliation) order by dv.alias"),
     @NamedQuery(name = "Dataverse.filterByName", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.name) LIKE :name  order by dv.alias"),
-    @NamedQuery(name = "Dataverse.countAll", query = "SELECT COUNT(dv) FROM Dataverse dv")
+    @NamedQuery(name = "Dataverse.countAll", query = "SELECT COUNT(dv) FROM Dataverse dv"),
+    @NamedQuery(name = "Dataverse.getDatasetCount",
+                query = "SELECT " +
+                        "(SELECT COUNT(DISTINCT d) FROM Dataset d JOIN d.versions v WHERE d.owner.id IN :ids AND v.versionState = :datasetState) + " +
+                        "(SELECT COUNT(DISTINCT l.dataset) FROM DatasetLinkingDataverse l JOIN l.dataset.versions v WHERE l.linkingDataverse.id IN :ids AND v.versionState = :datasetState) " +
+                        // The WHERE statement is a hacky way of ensuring the count is returned in a single result row
+                        "FROM Dataverse d WHERE d.id = (SELECT MIN(d2.id) FROM Dataverse d2)")
 })
 @Entity
 @Table(indexes = {@Index(columnList="defaultcontributorrole_id")
@@ -160,6 +166,13 @@ public class Dataverse extends DvObjectContainer {
     }
 
     private String affiliation;
+
+    /**
+     * If null, only the default dataset type (dataset) is allowed.
+     * See AbstractCreateDatasetCommand.
+     */
+    @ManyToMany(cascade = {CascadeType.MERGE})
+    private List<DatasetType> allowedDatasetTypes = new ArrayList<>();
     
     ///private String storageDriver=null;
 
@@ -237,7 +250,16 @@ public class Dataverse extends DvObjectContainer {
     public void setDataverseFeaturingDataverses(List<DataverseFeaturedDataverse> dataverseFeaturingDataverses) {
         this.dataverseFeaturingDataverses = dataverseFeaturingDataverses;
     }
-    
+
+    @OneToMany(mappedBy = "dataverse", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<Metric> dataverseMetrics = new ArrayList<>();
+    public List<Metric> getDataverseMetrics() {
+        return dataverseMetrics;
+    }
+    public void setDataverseMetrics(List<Metric> dataverseMetrics) {
+        this.dataverseMetrics = dataverseMetrics;
+    }
+
     @OneToMany(mappedBy="dataverse", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DataverseLinkingDataverse> dataverseLinkingDataverses;
 
@@ -351,17 +373,6 @@ public class Dataverse extends DvObjectContainer {
 
     public void setMetadataBlockFacets(List<DataverseMetadataBlockFacet> metadataBlockFacets) {
         this.metadataBlockFacets = metadataBlockFacets;
-    }
-
-    @OneToMany(mappedBy = "dataverse")
-    private List<DataverseFeaturedItem> dataverseFeaturedItems = new ArrayList<>();
-
-    public List<DataverseFeaturedItem> getDataverseFeaturedItems() {
-        return this.dataverseFeaturedItems;
-    }
-
-    public void setDataverseFeaturedItems(List<DataverseFeaturedItem> dataverseFeaturedItems) {
-        this.dataverseFeaturedItems = dataverseFeaturedItems;
     }
 
     public List<Guestbook> getParentGuestbooks() {
@@ -773,6 +784,14 @@ public class Dataverse extends DvObjectContainer {
 
     public void setAffiliation(String affiliation) {
         this.affiliation = affiliation;
+    }
+
+    public List<DatasetType> getAllowedDatasetTypes() {
+        return allowedDatasetTypes;
+    }
+
+    public void setAllowedDatasetTypes(List<DatasetType> allowedDatasetTypes) {
+        this.allowedDatasetTypes = allowedDatasetTypes;
     }
 
     public boolean isMetadataBlockRoot() {

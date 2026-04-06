@@ -56,13 +56,19 @@ To direct new files (uploaded when datasets are created or edited) for all datas
 
 (Note that for ``dataverse.files.store1.label=MyLabel``, you should pass ``MyLabel``.)
     
-The current driver can be seen using::
+A store assigned directly to a collection can be seen using::
 
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
 
-(Note that for ``dataverse.files.store1.label=MyLabel``, ``store1`` will be returned.)
+This may be null. To get the effective storageDriver for a collection, which may be inherited from a parent collection or be the installation default, you can use:: 
 
-and can be reset to the default store with::
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver?getEffective=true
+    
+This will never be null.
+
+(Note that for ``dataverse.files.store1.label=MyLabel``, the JSON response will include "name":"store1" and "label":"MyLabel".)
+
+To delete a store assigned directly to a collection (so that the colllection's effective store is inherted from it's parent or is the global default), use::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
     
@@ -103,6 +109,64 @@ If the :AllowedCurationLabels setting has a value, one of the available choices 
     
 Individual datasets can be configured to use specific curationLabelSets as well. See the "Datasets" section below.
 
+.. _review-datasets-setup:
+
+Configure a Collection for Review Datasets
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:ref:`review-datasets-user` are a specialized type of dataset that can be used to review resources (such as datasets) in the Dataverse installation itself or resources in external data repositories.
+
+Review datasets require some setup, as described below.
+
+Load the Review Metadata Block
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+First, download the Review metadata block tsv file from :ref:`experimental-metadata`.
+
+Then, load the block and update Solr. See the following sections of :doc:`metadatacustomization` for details:
+
+- :ref:`load-tsv`
+- :ref:`update-solr-schema`
+
+Create and Enable Custom "Rubric" Metadata Blocks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Review metadata block gives you a few basic fields common to all reviews such as the URL of the item being reviewed.
+
+You probably will want to create your own metadata blocks specific to the resources you are reviewing, your own "rubric". See :doc:`metadatacustomization` for details on creating and enabling custom metadata blocks.
+
+Instead of creating a new custom metadata block from scratch (if you simply want to evaluate the feature, for example), you can use the metadata blocks at https://github.com/IQSS/dataverse.harvard.edu
+
+After loading the block, don't forget to update the Solr schema!
+
+Create a Review Dataset Type
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Review datasets are built on the :ref:`dataset-types` feature. Dataset types can only be created via API so follow the steps under :ref:`api-add-dataset-type`. Copy and paste from below or download :download:`review.json <../../../../scripts/api/data/datasetTypes/review.json>` and pass it to the API.
+
+.. literalinclude:: ../../../../scripts/api/data/datasetTypes/review.json
+   :language: json
+
+Create a Collection for Reviews and Configure Permissions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Follow the normal steps:
+
+- :ref:`create-dataverse`.
+- :ref:`dataverse-permissions`.
+
+Allow the Review Dataset Type for the Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Non-dataset types, such as the "review" type, are only available when a collection admin has enabled them, via API.
+
+Using the API :ref:`collection-attributes-api`, change the ``allowedDatasetTypes`` attribute so that it includes "review". If you only want to allow reviews, you can pass just ``review``. If you want to allow multiple dataset types, you can pass a comma-separated list, such as ``review,dataset``.
+
+Invite Users to Create Review Datasets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+At this point, users should be able to create review datasets via API, if you gave them permission on the collection. You can point them to :ref:`creating-a-review-dataset` for details.
+
 Datasets
 --------
 
@@ -118,7 +182,7 @@ Moves a dataset whose id is passed to a Dataverse collection whose alias is pass
 Link a Dataset
 ^^^^^^^^^^^^^^
 
-Creates a link between a dataset and a Dataverse collection (see the :ref:`dataset-linking` section of the User Guide for more information). ::
+Creates a link between a dataset and a Dataverse collection (see the :ref:`dataset-linking` section of the User Guide for more information). Accessible to users with Link Dataset permission on the Dataverse collection. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/datasets/$linked-dataset-id/link/$linking-dataverse-alias
 
@@ -155,7 +219,7 @@ It returns a list in the following format (new format as of v6.4):
 Unlink a Dataset
 ^^^^^^^^^^^^^^^^
 
-Removes a link between a dataset and a Dataverse collection. Accessible to users with Publish Dataset permissions. ::
+Removes a link between a dataset and a Dataverse collection. Accessible to users with Link Dataset permission on the Dataverse collection. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$linked-dataset-id/deleteLink/$linking-dataverse-alias
 
@@ -257,15 +321,17 @@ To identify invalid data values in specific datasets (if, for example, an attemp
 Configure a Dataset to Store All New Files in a Specific File Store
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Configure a dataset to use a specific file store (this API can only be used by a superuser) ::
+Configure an individual dataset to use a specific file store (this API can only be used by a superuser) ::
  
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $storageDriverLabel http://$SERVER/api/datasets/$dataset-id/storageDriver
     
-The current driver can be seen using::
+The effective store can be seen using::
 
     curl http://$SERVER/api/datasets/$dataset-id/storageDriver
 
-It can be reset to the default store as follows (only a superuser can do this) ::
+The output of the API will include the id, label, type (for example, "file" or "s3") as well as the support for direct download and upload.
+
+To remove an assigned store, and allow the dataset to inherit the store from it's parent collection, use the following (only a superuser can do this) ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$dataset-id/storageDriver
     

@@ -10,6 +10,8 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.ForeignMetadataFieldMapping;
 import edu.harvard.iq.dataverse.ForeignMetadataFormatMapping;
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -68,7 +70,7 @@ public class ForeignMetadataImportServiceBean {
         
         try {
             reader = new StringReader(xmlToParse);
-            XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
+            XMLInputFactory xmlFactory = XmlUtil.getSecureXMLInputFactory();
             xmlr =  xmlFactory.createXMLStreamReader(reader);
             processXML(xmlr, mappingSupported, datasetVersion);
         
@@ -95,7 +97,7 @@ public class ForeignMetadataImportServiceBean {
         
         try {
             in = new FileInputStream(xmlFile);
-            XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
+            XMLInputFactory xmlFactory = XmlUtil.getSecureXMLInputFactory();
             xmlr =  xmlFactory.createXMLStreamReader(in);
             processXML(xmlr, mappingSupported, datasetVersion);
         } catch (FileNotFoundException ex) {

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-DOCKER_IMAGE="quay.io/keycloak/keycloak:21.0"
+DOCKER_IMAGE="quay.io/keycloak/keycloak:26.3.2"
 KEYCLOAK_USER="kcadmin"
 KEYCLOAK_PASSWORD="kcpassword"
 KEYCLOAK_PORT=8090

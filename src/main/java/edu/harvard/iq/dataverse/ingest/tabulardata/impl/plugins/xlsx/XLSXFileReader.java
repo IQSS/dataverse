@@ -23,6 +23,9 @@ package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx;
 import java.io.*;
 import java.io.FileReader;
 import java.util.logging.*;
+
+import javax.xml.parsers.ParserConfigurationException;
+
 import java.util.*;
 
 import edu.harvard.iq.dataverse.DataTable;
@@ -33,6 +36,8 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
+
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
@@ -246,7 +251,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         sheet1.close();
     }
     
-    public XMLReader fetchSheetParser(SharedStrings sst, DataTable dataTable, PrintWriter tempOut) throws SAXException {
+    public XMLReader fetchSheetParser(SharedStrings sst, DataTable dataTable, PrintWriter tempOut) throws ParserConfigurationException, SAXException {
         // An attempt to use org.apache.xerces.parsers.SAXParser resulted 
         // in some weird conflict in the app; the default XMLReader obtained 
         // from the XMLReaderFactory (from xml-apis.jar) appears to be working
@@ -260,7 +265,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         // unnecessary.
         // -- L.A. 4.0 alpha 1
  
-        XMLReader xReader = XMLReaderFactory.createXMLReader();
+        XMLReader xReader = XmlUtil.getSecureXMLReader();
         dbglog.fine("creating new SheetHandler;");
         ContentHandler handler = new SheetHandler(sst, dataTable, tempOut);
         xReader.setContentHandler(handler);

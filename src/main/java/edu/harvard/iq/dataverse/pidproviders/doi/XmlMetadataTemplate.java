@@ -58,6 +58,9 @@ import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import edu.harvard.iq.dataverse.util.xml.XmlWriterUtil;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import jakarta.json.JsonValue.ValueType;
 
 public class XmlMetadataTemplate {
 
@@ -621,8 +624,12 @@ public class XmlMetadataTemplate {
             if (externalIdentifier.isValidIdentifier(orgName)) {
                 isROR = true;
                 JsonObject jo = getExternalVocabularyValue(orgName);
-                if (jo != null) {
-                    orgName = jo.getString("termName");
+                // Some ext. cvv configs store a JsonArray of multiple objects/values. In such cases, we'll leave orgName blank 
+                if (jo != null && jo.containsKey("termName")) {
+                    JsonValue termName = jo.get("termName");
+                    if (termName.getValueType() == ValueType.STRING) {
+                        orgName = ((JsonString) termName).getString();
+                    }
                 }
             }
           
@@ -829,12 +836,18 @@ public class XmlMetadataTemplate {
         List<String> kindOfDataValues = new ArrayList<String>();
         Map<String, String> attributes = new HashMap<String, String>();
         String resourceType = "Dataset";
+        String datasetTypeName = null;
         if (dvObject instanceof Dataset dataset) {
-            String datasetTypeName = dataset.getDatasetType().getName();
+            datasetTypeName = dataset.getDatasetType().getName();
             resourceType = switch (datasetTypeName) {
             case DatasetType.DATASET_TYPE_DATASET -> "Dataset";
             case DatasetType.DATASET_TYPE_SOFTWARE -> "Software";
             case DatasetType.DATASET_TYPE_WORKFLOW -> "Workflow";
+            // We are not using the “PeerReview” for resourceTypeGeneral because it is
+            // specific to scholarly communications and may carry related connotations.
+            // We've asked DataCite to support "Review" so we don't have to use "Other".
+            // See also https://github.com/datacite/datacite-suggestions/discussions/214
+            case DatasetType.DATASET_TYPE_REVIEW -> "Other";
             default -> "Dataset";
             };
         }
@@ -857,6 +870,8 @@ public class XmlMetadataTemplate {
         if (!kindOfDataValues.isEmpty()) {
             XmlWriterUtil.writeFullElementWithAttributes(xmlw, "resourceType", attributes, String.join(";", kindOfDataValues));
 
+        } else if (DatasetType.DATASET_TYPE_REVIEW.equals(datasetTypeName)) {
+            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "resourceType", attributes, "Review");
         } else {
             // Write an attribute only element if there are no kindOfData values.
             xmlw.writeStartElement("resourceType");
@@ -920,10 +935,9 @@ public class XmlMetadataTemplate {
         }
 
         for (DatasetFieldCompoundValue otherIdentifier : otherIdentifiers) {
-            String identifierType = null;
+            String identifierType = ":unav";
             String identifier = null;
             for (DatasetField subField : otherIdentifier.getChildDatasetFields()) {
-                identifierType = ":unav";
                 switch (subField.getDatasetFieldType().getName()) {
                 case DatasetFieldConstant.otherIdAgency:
                     identifierType = subField.getValue();

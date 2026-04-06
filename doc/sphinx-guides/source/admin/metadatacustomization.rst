@@ -144,6 +144,7 @@ Each of the three main sections own sets of properties:
 |                           |                                                        |                                                          | \• email              |
 |                           |                                                        |                                                          | \• text               |
 |                           |                                                        |                                                          | \• textbox            |
+|                           |                                                        |                                                          | \• string             |
 |                           |                                                        |                                                          | \• url                |
 |                           |                                                        |                                                          | \• int                |
 |                           |                                                        |                                                          | \• float              |
@@ -311,9 +312,15 @@ FieldType definitions
 |               | permitted, only a subset of HTML   |
 |               | tags will be rendered in the UI.   |
 |               | See the                            |
-|               | :ref:`supported-html-fields`       |
+|               | :ref:`supported-html-tags`         |
 |               | section of the Dataset + File      |
 |               | Management page in the User Guide. |
++---------------+------------------------------------+
+| string        | Any text may be entered into this  |
+|               | field. The value is stored and     |
+|               | indexed exactly as provided,       |
+|               | without any text analysis or       |
+|               | transformations.                   |
 +---------------+------------------------------------+
 | url           | If not empty, field must contain   |
 |               | a valid URL.                       |
@@ -436,6 +443,8 @@ Please note that metadata fields share a common namespace so they must be unique
 ``curl http://localhost:8080/api/admin/index/solr/schema``
 
 We'll use this command again below to update the Solr schema to accomodate metadata fields we've added.
+
+.. _load-tsv:
 
 Loading TSV files into a Dataverse Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -656,10 +665,6 @@ Tips from the Dataverse Community
 When creating new metadata blocks, please review the :doc:`/style/text` section of the Style Guide, which includes guidance about naming metadata fields and writing text for metadata tooltips and watermarks.
 
 If there are tips that you feel are omitted from this document, please open an issue at https://github.com/IQSS/dataverse/issues and consider making a pull request to make improvements. You can find this document at https://github.com/IQSS/dataverse/blob/develop/doc/sphinx-guides/source/admin/metadatacustomization.rst
-
-Alternatively, you are welcome to request "edit" access to this "Tips for Dataverse Software metadata blocks from the community" Google doc: https://docs.google.com/document/d/1XpblRw0v0SvV-Bq6njlN96WyHJ7tqG0WWejqBdl7hE0/edit?usp=sharing
-
-The thinking is that the tips can become issues and the issues can eventually be worked on as features to improve the Dataverse Software metadata system.
 
 Development Tasks Specific to Changing Fields in Core Metadata Blocks
 ---------------------------------------------------------------------

@@ -1,0 +1,119 @@
+{
+  "@context": "http://schema.org",
+  "@type": "Dataset",
+  "@id": "https://doi.org/10.5072/FK2/VQTYHD",
+  "identifier": "https://doi.org/10.5072/FK2/VQTYHD",
+  "name": "Max Schema.org",
+  "creator": [
+    {
+      "@type": "Person",
+      "givenName": "Philip",
+      "familyName": "Durbin",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "Harvard University"
+      },
+      "sameAs": "https://orcid.org/0000-0002-9528-9470",
+      "@id": "https://orcid.org/0000-0002-9528-9470",
+      "identifier": "https://orcid.org/0000-0002-9528-9470",
+      "name": "Durbin, Philip"
+    },
+    {
+      "@type": "Person",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "Harvard University"
+      },
+      "name": "IQSS"
+    }
+  ],
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Philip",
+      "familyName": "Durbin",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "Harvard University"
+      },
+      "sameAs": "https://orcid.org/0000-0002-9528-9470",
+      "@id": "https://orcid.org/0000-0002-9528-9470",
+      "identifier": "https://orcid.org/0000-0002-9528-9470",
+      "name": "Durbin, Philip"
+    },
+    {
+      "@type": "Person",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "Harvard University"
+      },
+      "name": "IQSS"
+    }
+  ],
+  "datePublished": "2024-05-01",
+  "dateModified": "2025-05-21",
+  "version": "3",
+  "description": "Exercising fields used by `schema.org` exporter.",
+  "keywords": [
+    "Social Sciences",
+    "Other",
+    "foo",
+    "bar"
+  ],
+  "citation": [
+    {
+      "@type": "CreativeWork",
+      "name": "Tykhonov, V., & Durbin, P. (2024, March 20). Croissant ML standard in the context of Dataverse, EOSC and beyond. Zenodo. https://doi.org/10.5281/zenodo.10843668",
+      "@id": "https://doi.org/10.5281/zenodo.10843668",
+      "identifier": "https://doi.org/10.5281/zenodo.10843668",
+      "url": "https://doi.org/10.5281/zenodo.10843668"
+    }
+  ],
+  "temporalCoverage": [
+    "2023-01-01/2023-12-31"
+  ],
+  "license": "http://creativecommons.org/publicdomain/zero/1.0",
+  "includedInDataCatalog": {
+    "@type": "DataCatalog",
+    "name": "Root",
+    "url": "https://beta.dataverse.org"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Root"
+  },
+  "provider": {
+    "@type": "Organization",
+    "name": "Root"
+  },
+  "funder": [
+    {
+      "@type": "Organization",
+      "name": "NSF"
+    },
+    {
+      "@type": "Organization",
+      "name": "NIH"
+    }
+  ],
+  "spatialCoverage": [
+    "Cambridge, MA, United States, Harvard Square"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "name": "data.tab",
+      "encodingFormat": "text/tab-separated-values",
+      "contentSize": 27,
+      "contentUrl": "https://beta.dataverse.org/api/access/datafile/26646"
+    },
+    {
+      "@type": "DataDownload",
+      "name": "README.md",
+      "encodingFormat": "text/markdown",
+      "contentSize": 34,
+      "description": "Additional documentation.",
+      "contentUrl": "https://beta.dataverse.org/api/access/datafile/26148"
+    }
+  ]
+}

@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.json.Json;
@@ -28,7 +29,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import java.util.Date;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 /**
  * REST API bean for managing {@link BuiltinUser}s.
@@ -39,8 +39,6 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 public class BuiltinUsers extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(BuiltinUsers.class.getName());
-
-    private static final String API_KEY_IN_SETTINGS = "BuiltinUsers.KEY";
 
     @EJB
     protected BuiltinUserServiceBean builtinUserSvc;
@@ -129,7 +127,7 @@ public class BuiltinUsers extends AbstractApiBean {
     }
     
     private Response internalSave(BuiltinUser user, String password, String key, Boolean sendEmailNotification) {
-        String expectedKey = settingsSvc.get(API_KEY_IN_SETTINGS);
+        String expectedKey = settingsSvc.getValueForKey(SettingsServiceBean.Key.BuiltinUsersKey);
         
         if (expectedKey == null) {
             return error(Status.SERVICE_UNAVAILABLE, "Dataverse config issue: No API key defined for built in user management");

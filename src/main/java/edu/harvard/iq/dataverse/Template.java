@@ -30,6 +30,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 import edu.harvard.iq.dataverse.util.DateUtil;
@@ -37,7 +38,6 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
@@ -137,7 +137,11 @@ public class Template implements Serializable {
 
     @Transient
     private Map<String, String> instructionsMap = null;
-    
+
+    public void setInstructionsMap(Map<String, String> instructionsMap) {
+        this.instructionsMap = instructionsMap;
+    }
+
     @Transient
     private TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForView = new TreeMap<>();
     @Transient

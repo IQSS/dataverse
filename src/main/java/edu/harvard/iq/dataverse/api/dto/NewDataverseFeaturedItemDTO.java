@@ -1,61 +1,31 @@
 package edu.harvard.iq.dataverse.api.dto;
 
+import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.DvObject;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 
 import java.io.InputStream;
 
-public class NewDataverseFeaturedItemDTO {
-    private String content;
-    private int displayOrder;
-    private InputStream imageFileInputStream;
-    private String imageFileName;
+public class NewDataverseFeaturedItemDTO extends AbstractDataverseFeaturedItemDTO {
 
     public static NewDataverseFeaturedItemDTO fromFormData(String content,
                                                            int displayOrder,
                                                            InputStream imageFileInputStream,
-                                                           FormDataContentDisposition contentDispositionHeader) {
+                                                           FormDataContentDisposition contentDispositionHeader,
+                                                           String type,
+                                                           DvObject dvObject) {
         NewDataverseFeaturedItemDTO newDataverseFeaturedItemDTO = new NewDataverseFeaturedItemDTO();
 
         newDataverseFeaturedItemDTO.content = content;
         newDataverseFeaturedItemDTO.displayOrder = displayOrder;
+        newDataverseFeaturedItemDTO.type = type;
+        newDataverseFeaturedItemDTO.dvObject = dvObject;
 
         if (imageFileInputStream != null) {
             newDataverseFeaturedItemDTO.imageFileInputStream = imageFileInputStream;
-            newDataverseFeaturedItemDTO.imageFileName = contentDispositionHeader.getFileName();
+            newDataverseFeaturedItemDTO.imageFileName = FileUtil.decodeFileName(contentDispositionHeader.getFileName());
         }
 
         return newDataverseFeaturedItemDTO;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setDisplayOrder(int displayOrder) {
-        this.displayOrder = displayOrder;
-    }
-
-    public int getDisplayOrder() {
-        return displayOrder;
-    }
-
-    public void setImageFileInputStream(InputStream imageFileInputStream) {
-        this.imageFileInputStream = imageFileInputStream;
-    }
-
-    public InputStream getImageFileInputStream() {
-        return imageFileInputStream;
-    }
-
-    public void setImageFileName(String imageFileName) {
-        this.imageFileName = imageFileName;
-    }
-
-    public String getImageFileName() {
-        return imageFileName;
     }
 }

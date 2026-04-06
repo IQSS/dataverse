@@ -21,16 +21,20 @@ There are a number of reasons why not all of the files can be downloaded:
 - Some of the files are restricted and your API token doesn't have access (you will still get the unrestricted files).
 - The Dataverse installation has limited how large the zip bundle can be.
 
-In the curl example below, the flags ``-O`` and ``J`` are used. When there are no errors, this has the effect of saving the file as "dataverse_files.zip" (just like the web interface). The flags force errors to be downloaded as a file.
+In the curl example below, the flags ``-O`` and ``-J`` are used. When there are no errors, this has the effect of saving the file under the name suggested by Dataverse (which as of v6.7 will be based on the persistent identifier of the dataset and the latest version number, for example ``doi-10.70122-fk2-n2xgbj_1.1.zip``; in prior versions the file name was ``dataverse_files.zip`` in all cases). This mirrors the way the files are saved when downloaded in a browser. The flags also force error messages to be downloaded as a file.
 
 Please note that in addition to the files from dataset, an additional file call "MANIFEST.TXT" will be included in the zipped bundle. It has additional information about the files.
 
 There are two forms of the "download by dataset" API, a basic form and one that supports dataset versions.
 
+.. _basic-download-by-dataset:
+
 Basic Download By Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The basic form downloads files from the latest accessible version of the dataset. If you are not using an API token, this means the most recently published version. If you are using an API token with full access to the dataset, this means the draft version or the most recently published version if no draft exists.
+
+.. note:: Files that require a Guestbook Response will require an additional step to supply the Guestbook Response. A POST to the same endpoint with the Guestbook Response in the body can return a signed url that can be used to download the file(s) via a browser or download manager. To determine what information is required in the response you must first get the Guestbook for the Dataset whose file(s) you are trying to access along with any Custom Questions. Call ``GET http://$SERVER/api/guestbooks/{id}`` with the guestbookId from the Dataset (See :ref:`dataset-json-representation` to get the Dataset with guestbookId) to retrieve the Guestbook and Custom Questions. Build the JSON response with the information requested and add it to the body of the POST call within "guestbookResponse":{}. For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 
 A curl example using a DOI (no version):
 
@@ -48,6 +52,8 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -L -O -J -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/access/dataset/:persistentId/?persistentId=doi:10.70122/FK2/N2XGBJ
 
+.. _download-by-dataset-by-version:
+
 Download By Dataset By Version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -58,6 +64,8 @@ The second form of the "download by dataset" API allows you to specify which ver
 * ``:latest-published`` the latest published version
 * ``x.y`` a specific version, where ``x`` is the major version number and ``y`` is the minor version number.
 * ``x`` same as ``x.0``
+
+.. note:: Files that require a Guestbook Response will require an additional step to supply the Guestbook Response. A POST to the same endpoint with the Guestbook Response in the body can return a signed url that can be used to download the file(s) via a browser or download manager. To determine what information is required in the response you must first get the Guestbook for the Dataset whose file(s) you are trying to access along with any Custom Questions. Call ``GET http://$SERVER/api/guestbooks/{id}`` with the guestbookId from the Dataset (See :ref:`dataset-json-representation` to get the Dataset with guestbookId) to retrieve the Guestbook and Custom Questions. Build the JSON response with the information requested and add it to the body of the POST call within "guestbookResponse":{}. For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 
 A curl example using a DOI (with version):
 
@@ -70,11 +78,15 @@ A curl example using a DOI (with version):
 
   curl -O -J -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/access/dataset/:persistentId/versions/$VERSION?persistentId=$PERSISTENT_ID
 
+Similarly to the API above, this will save the downloaded bundle under the name based on the persistent identifier and the version number, for example, ``doi-10.70122-fk2-n2xgbj_1.1.zip`` or ``doi-10.70122-fk2-n2xgbj_draft.zip``.
+
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
   curl -O -J -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/access/dataset/:persistentId/versions/2.0?persistentId=doi:10.70122/FK2/N2XGBJ
+
+.. _basic-file-access:
 
 Basic File Access
 -----------------
@@ -89,6 +101,11 @@ Basic access URI:
 
     GET http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB
 
+.. note:: Files that require a Guestbook Response will require an additional step to supply the Guestbook Response. A POST to the same endpoint with the Guestbook Response in the body can return a signed url that can be used to download the file(s) via a browser or download manager. For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide. In the following JSON example please note that the `name`, `email`, `institution`, and `position` fields will default to the User's account information if not included in the response. Call ``GET http://$SERVER/api/guestbooks/{id}`` with the guestbookId from the Dataset (See :ref:`dataset-json-representation` to get the Dataset with guestbookId) to retrieve the Guestbook and Custom Questions. Build the JSON response with the information requested and add it to the body of the POST call within "guestbookResponse":{}.
+
+  Example ::
+
+    POST http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB&signed=true -d '{"guestbookResponse": {"name": "My Name", "email": "myemail@example.com", "institution": "Harvard","position": "Staff", "answers": [{"id": 123,"value": "Good"},{"id": 124,"value": ["Multi","Line"]},{"id": 125,"value": "Yellow"}]}}'
 
 Parameters:
 ~~~~~~~~~~~
@@ -166,6 +183,23 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "Range:bytes=0-9" https://demo.dataverse.org/api/access/datafile/42
 
+
+.. _get-file-using-preview-url-token:
+
+Using a Preview URL Token
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you want to access a file in a dataset shared by a preview URL (see :ref:`previewUrl`, :ref:`get-dataset-by-preview-url-token` and :ref:`create-a-preview-url-for-a-dataset`) using the API, you can use the token in the preview URL as API_TOKEN.
+
+.. code-block:: bash
+
+  SERVER_URL=https://demo.dataverse.org
+  PREVIEW_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
+  FILE_ID=1111111
+  FILENAME=example.txt
+  curl -H "X-Dataverse-key:$PREVIEW_URL_TOKEN" -o "$FILENAME" "$SERVER_URL/api/access/datafile/$FILE_ID"
+
+
 Multiple File ("bundle") download
 ---------------------------------
 
@@ -173,11 +207,13 @@ Multiple File ("bundle") download
 
 Alternate Form: POST to ``/api/access/datafiles`` with a ``fileIds`` input field containing the same comma separated list of file ids. This is most useful when your list of files surpasses the allowed URL length (varies but can be ~2000 characters).  
 
-Returns the files listed, zipped. 
+Returns the files listed, zipped. As of v6.7 the name of the zipped bundle will be based on the persistent identifier of the parent dataset, for example, ``doi-10.70122-fk2-xxyyzz.zip``; in prior versions the file name was ``dataverse_files.zip`` in all cases).
 
 .. note:: If the request can only be completed partially - if only *some* of the requested files can be served (because of the permissions and/or size restrictions), the file MANIFEST.TXT included in the zipped bundle will have entries specifying the reasons the missing files could not be downloaded. IN THE FUTURE the API will return a 207 status code to indicate that the result was a partial success. (As of writing this - v.4.11 - this hasn't been implemented yet)
 
 .. note:: If any of the datafiles have the ``DirectoryLabel`` attributes in the corresponding ``FileMetadata`` entries, these will be added as folders to the Zip archive, and the files will be placed in them accordingly. 
+
+.. note:: If Guestbook Responses are required they can be included in the body along with the file ids as JSON: ``{"fileIds" :[1,2,3], {"guestbookResponse": {"answers": []}}}``. For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 
 Parameters: 
 ~~~~~~~~~~~
@@ -359,7 +395,9 @@ This method requests access to the datafile whose id is passed on the behalf of 
 A curl example using an ``id``::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X PUT http://$SERVER/api/access/datafile/{id}/requestAccess
-    
+
+.. note:: Some installations of Dataverse may require you to provide a Guestbook Response when requesting access to certain restricted files. The response can be passed in the body of this call. See "Get a Guestbook for a Dataverse Collection" in the :doc:`native-api`.
+
 Grant File Access:
 ~~~~~~~~~~~~~~~~~~ 
 

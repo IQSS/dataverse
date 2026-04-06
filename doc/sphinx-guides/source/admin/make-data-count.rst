@@ -72,7 +72,7 @@ Enable or Disable Display of Make Data Count Metrics
 
 By default, when MDC logging is enabled (when ``:MDCLogPath`` is set), your Dataverse installation will display MDC metrics instead of it's internal (legacy) metrics. You can avoid this (e.g. to collect MDC metrics for some period of time before starting to display them) by setting ``:DisplayMDCMetrics`` to false.
 
-The following discussion assumes ``:MDCLogPath`` has been set to ``/usr/local/payara6/glassfish/domains/domain1/logs/mdc``
+The following discussion assumes ``:MDCLogPath`` has been set to ``/usr/local/payara7/glassfish/domains/domain1/logs/mdc``
 You can also decide to display MDC metrics along with Dataverse's traditional download counts from the time before MDC was enabled. To do this, set the :ref:`:MDCStartDate` to when you started MDC logging.
 
 Configure Counter Processor
@@ -103,7 +103,7 @@ Soon we will be setting up a cron job to run nightly but we start with a single 
 
 * If you are running Counter Processor for the first time in the middle of a month, you will need create blank log files for the previous days. e.g.:
 
-  * ``cd /usr/local/payara6/glassfish/domains/domain1/logs/mdc``
+  * ``cd /usr/local/payara7/glassfish/domains/domain1/logs/mdc``
 
   * ``touch counter_2019-02-01.log``
   
@@ -130,7 +130,7 @@ Populate Views and Downloads Nightly
 
 Running ``main.py`` to create the SUSHI JSON file and the subsequent calling of the Dataverse Software API to process it should be added as a cron job.
 
-The Dataverse Software provides example scripts that run the steps to process new accesses and uploads and update your Dataverse installation's database :download:`counter_daily.sh <../_static/util/counter_daily.sh>` and to retrieve citations for all Datasets from DataCite :download:`counter_weekly.sh <../_static/util/counter_weekly.sh>`. These scripts should be configured for your environment and can be run manually or as cron jobs.
+The Dataverse Software provides an example script that run the steps to process new accesses and uploads and update your Dataverse installation's database :download:`counter_daily.sh <../_static/util/counter_daily.sh>` The script should be configured for your environment and can be run manually or as a cron job.
 
 Sending Usage Metrics to the DataCite Hub
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -160,10 +160,13 @@ To confirm that the environment variable was set properly, you can use echo like
 ``echo $DOI``
 
 On some periodic basis (perhaps weekly) you should call the following curl command for each published dataset to update the list of citations that have been made for that dataset.
+The example :download:`counter_weekly.sh <../_static/util/counter_weekly.sh>` will do this for you. The script should be configured for your environment and can be run manually or as a cron job.
 
 ``curl -X POST "http://localhost:8080/api/admin/makeDataCount/:persistentId/updateCitationsForDataset?persistentId=$DOI"``
 
 Citations will be retrieved for each published dataset and recorded in the your Dataverse installation's database.
+
+Note that the :ref:`dataverse.api.mdc.min-delay-ms` setting can be used to avoid getting rate-limit errors from DataCite.
 
 For how to get the citations out of your Dataverse installation, see "Retrieving Citations for a Dataset" under :ref:`Dataset Metrics <dataset-metrics-api>` in the :doc:`/api/native-api` section of the API Guide.
   

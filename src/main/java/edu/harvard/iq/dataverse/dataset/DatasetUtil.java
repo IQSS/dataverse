@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -38,6 +39,7 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.EnumUtils;
+import org.apache.logging.log4j.util.Strings;
 
 public class DatasetUtil {
 
@@ -530,7 +532,7 @@ public class DatasetUtil {
         } else {
             summaryFieldNames = customFieldNames;
         }
-        return summaryFieldNames.split("\\s*,\\s*");
+        return ListSplitUtil.split(summaryFieldNames).toArray(new String[0]);
     }
 
     public static boolean isRsyncAppropriateStorageDriver(Dataset dataset){
@@ -716,18 +718,43 @@ public class DatasetUtil {
         return localizedLicenseValue;
     }
 
-    public static String getLocaleExternalStatus(String status) {
-        String localizedName =  "" ;
-        try {
-            localizedName = BundleUtil.getStringFromPropertyFile(status.toLowerCase().replace(" ", "_"), "CurationLabels");
+    public static String getLocaleCurationStatusLabel(CurationStatus status) {
+        String label = (status != null && Strings.isNotBlank(status.getLabel())) ? status.getLabel() : null;
+        return getLocaleCurationStatusLabelFromString(label);
+    }
+
+    public static String getLocaleCurationStatusLabelFromString(String label) {
+
+        if (label == null) {
+            return null;
         }
-        catch (Exception e) {
-            localizedName = status;
+        String localizedName = "";
+        try {
+            localizedName = BundleUtil.getStringFromPropertyFile(label.toLowerCase().replace(" ", "_"), "CurationLabels");
+        } catch (Exception e) {
+            localizedName = label;
         }
 
         if (localizedName == null) {
-            localizedName = status ;
+            localizedName = label;
         }
         return localizedName;
+    }
+    
+    // Find the prior version - relies on version sorting by major/minor numbers 
+    public static DatasetVersion getPriorVersion(DatasetVersion version) {
+        boolean foundCurrent = false;
+        DatasetVersion priorVersion = null;
+        for (DatasetVersion versionLoop : version.getDataset().getVersions()) {
+            if (foundCurrent) {
+                priorVersion = versionLoop;
+                break;
+            }
+            if (versionLoop.equals(version)) {
+                foundCurrent = true;
+            }
+
+        }
+        return priorVersion;
     }
 }

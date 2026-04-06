@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.export.openaire;
 
 import java.io.OutputStream;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.json.JsonObject;
@@ -49,19 +50,31 @@ public class OpenAireExportUtil {
     }
 
     private static void dto2openaire(DatasetDTO datasetDto, OutputStream outputStream) throws XMLStreamException {
-        XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
+        XMLStreamWriter xmlw = null;
+        try {
+            xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
 
-        xmlw.writeStartElement("resource"); // <resource>
+            xmlw.writeStartElement("resource"); // <resource>
 
-        xmlw.writeAttribute("xmlns:xsi", XSI_NAMESPACE);
-        xmlw.writeAttribute("xmlns", RESOURCE_NAMESPACE);
-        xmlw.writeAttribute("xsi:schemaLocation", RESOURCE_NAMESPACE + " " + RESOURCE_SCHEMA_LOCATION);
+            xmlw.writeAttribute("xmlns:xsi", XSI_NAMESPACE);
+            xmlw.writeAttribute("xmlns", RESOURCE_NAMESPACE);
+            xmlw.writeAttribute("xsi:schemaLocation", RESOURCE_NAMESPACE + " " + RESOURCE_SCHEMA_LOCATION);
 
-        createOpenAire(xmlw, datasetDto);
+            createOpenAire(xmlw, datasetDto);
 
-        xmlw.writeEndElement(); // </resource>
+            xmlw.writeEndElement(); // </resource>
 
-        xmlw.flush();
+            xmlw.flush();
+        } finally {
+            if (xmlw != null) {
+                try {
+                    xmlw.close();
+                } catch (XMLStreamException e) {
+                    // Log this exception, but don't rethrow as it's in finally block
+                    logger.log(Level.WARNING, "Error closing XMLStreamWriter", e);
+                }
+            }
+        }
     }
 
     private static void createOpenAire(XMLStreamWriter xmlw, DatasetDTO datasetDto) throws XMLStreamException {

@@ -8,17 +8,24 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:jsf="http://xmlns.jcp.org/jsf">
 
-<ui:fragment rendered="#{widgetWrapper.widgetView}">
+<ui:param name="isWidgetView" value="#{widgetWrapper.widgetView}" />
+<ui:param name="currentFileMetadata" value="#{FilePage.fileMetadata}" />
+<ui:param name="currentDatasetVersion" value="#{currentFileMetadata.datasetVersion}" />
+<ui:param name="currentDataset" value="#{currentDatasetVersion.dataset}" />
+<ui:param name="rootDataverseName" value="#{dataverseServiceBean.findRootDataverse().displayName}" />
+<ui:param name="compareVersionsCount" value="#{FilePage.compareVersionsCount}" />
+
+<ui:fragment rendered="#{isWidgetView}">
     <p class="help-block">
         <h:outputFormat value="#{bundle['file.dataFilesTab.versions.widget.viewMoreInfo']}" escape="false">
-            <f:param value="#{FilePage.fileMetadata.datasetVersion.dataset.globalId.asString()}"/>
-            <f:param value="#{FilePage.fileMetadata.datasetVersion.dataset.displayName}"/>
-            <f:param value="#{dataverseServiceBean.findRootDataverse().displayName}"/>
+            <f:param value="#{currentDataset.globalId.asString()}"/>
+            <f:param value="#{currentDataset.displayName}"/>
+            <f:param value="#{rootDataverseName}"/>
         </h:outputFormat>
     </p>
 </ui:fragment>
 
-<ui:fragment rendered="#{!widgetWrapper.widgetView}">
+<ui:fragment rendered="#{!isWidgetView}">
     <!-- VERSIONS -->
     <script>
         //<![CDATA[
@@ -35,7 +42,7 @@
         -->
         <div class="text-right margin-bottom">
             <p:commandLink styleClass="btn btn-default" onclick="testCheckBoxes();"
-                           rendered="#{FilePage.compareVersionsCount > 2}">
+                           rendered="#{compareVersionsCount > 2}">
                 <span class="glyphicon glyphicon-transfer"/> #{bundle['file.dataFilesTab.versions.viewDiffBtn']}
             </p:commandLink>
             <p:commandButton value="#{bundle['file.dataFilesTab.button.direct']}" id="compareVersions"
@@ -55,7 +62,7 @@
         </ui:remove>
         <!-- start: version number column -->
         <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.dataset']}" class="col-sm-1 text-center">
-            <ui:fragment rendered="#{versionTab.datasetVersion != FilePage.fileMetadata.datasetVersion }">
+            <ui:fragment rendered="#{versionTab.datasetVersion != currentDatasetVersion }">
                 <ui:fragment rendered="#{versionTab.datasetVersion.released or ((versionTab.datasetVersion.deaccessioned or versionTab.datasetVersion.draft)
                                      and permissionServiceBean.on(versionTab.datasetVersion.dataset).has('ViewUnpublishedDataset'))}">
                     <h:outputLink rendered="#{!(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned) and versionTab.dataFile != null }"
@@ -75,7 +82,7 @@
                                      and !permissionServiceBean.on(versionTab.datasetVersion.dataset).has('ViewUnpublishedDataset')}"
                               value="#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" />
             </ui:fragment>
-            <ui:fragment rendered="#{versionTab.datasetVersion == FilePage.fileMetadata.datasetVersion }">
+            <ui:fragment rendered="#{versionTab.datasetVersion == currentDatasetVersion }">
                 <h:outputText rendered="#{!versionTab.datasetVersion.draft}" styleClass="highlightBold"
                               value="#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" /> 
                 <h:outputText rendered="#{versionTab.datasetVersion.draft}" styleClass="highlightBold"

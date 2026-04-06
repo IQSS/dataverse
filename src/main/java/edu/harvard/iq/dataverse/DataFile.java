@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
+import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -50,6 +52,26 @@ import jakarta.validation.constraints.NotBlank;
         @NamedQuery(name="DataFile.findDataFileThatReplacedId",
                 query="SELECT s.id FROM DataFile s WHERE s.previousDataFileId=:identifier")
 })
+@NamedNativeQuery(
+        name = "DataFile.getDataFileInfoForPermissionIndexing",
+        query = "SELECT fm.label, df.id, dvo.publicationDate " +
+                "FROM filemetadata fm " +
+                "JOIN datafile df ON fm.datafile_id = df.id " +
+                "JOIN dvobject dvo ON df.id = dvo.id " +
+                "WHERE fm.datasetversion_id = ?",
+        resultSetMapping = "DataFileInfoMapping"
+    )
+    @SqlResultSetMapping(
+        name = "DataFileInfoMapping",
+        classes = @ConstructorResult(
+            targetClass = SolrIndexServiceBean.DataFileProxy.class,
+            columns = {
+                @ColumnResult(name = "label", type = String.class),
+                @ColumnResult(name = "id", type = Long.class),
+                @ColumnResult(name = "publicationDate", type = Date.class)
+            }
+        )
+    )
 @Entity
 @Table(indexes = {@Index(columnList="ingeststatus")
         , @Index(columnList="checksumvalue")
@@ -87,18 +109,22 @@ public class DataFile extends DvObject implements Comparable {
      * The list of types should be limited to the list above in the technote
      * because the string gets passed into MessageDigest.getInstance() and you
      * can't just pass in any old string.
+     * 
+     * The URIs are used in the OAI_ORE export. They are taken from the associated XML Digital Signature standards.
      */
     public enum ChecksumType {
 
-        MD5("MD5"),
-        SHA1("SHA-1"),
-        SHA256("SHA-256"),
-        SHA512("SHA-512");
+        MD5("MD5", "http://www.w3.org/2001/04/xmldsig-more#md5"),
+        SHA1("SHA-1", "http://www.w3.org/2000/09/xmldsig#sha1"),
+        SHA256("SHA-256", "http://www.w3.org/2001/04/xmlenc#sha256"),
+        SHA512("SHA-512", "http://www.w3.org/2001/04/xmlenc#sha512");
 
         private final String text;
+        private final String uri;
 
-        private ChecksumType(final String text) {
+        private ChecksumType(final String text, final String uri) {
             this.text = text;
+            this.uri = uri;
         }
 
         public static ChecksumType fromString(String text) {
@@ -109,12 +135,29 @@ public class DataFile extends DvObject implements Comparable {
                     }
                 }
             }
-            throw new IllegalArgumentException("ChecksumType must be one of these values: " + Arrays.asList(ChecksumType.values()) + ".");
+            throw new IllegalArgumentException(
+                    "ChecksumType must be one of these values: " + Arrays.asList(ChecksumType.values()) + ".");
+        }
+        
+        public static ChecksumType fromUri(String uri) {
+            if (uri != null) {
+                for (ChecksumType checksumType : ChecksumType.values()) {
+                    if (uri.equals(checksumType.uri)) {
+                        return checksumType;
+                    }
+                }
+            }
+            throw new IllegalArgumentException(
+                    "ChecksumType must be one of these values: " + Arrays.asList(ChecksumType.values()) + ".");
         }
 
         @Override
         public String toString() {
             return text;
+        }
+
+        public String toUri() {
+            return uri;
         }
     }
 

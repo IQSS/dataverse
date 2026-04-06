@@ -28,14 +28,21 @@ import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -171,41 +178,66 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataFileTags")
             .getSingleResult();
     }
-    
+
     /**
-     * Performs the same database lookup as the one behind Dataset.getVersions().
-     * Additionally, provides the arguments for selecting a partial list of 
-     * (length-offset) versions for pagination, plus the ability to pre-select 
-     * only the publicly-viewable versions. 
-     * It is recommended that individual software components utilize the 
-     * ListVersionsCommand, instead of calling this service method directly.
-     * @param datasetId
-     * @param offset for pagination through long lists of versions
-     * @param length for pagination through long lists of versions
-     * @param includeUnpublished retrieves all the versions, including drafts and deaccessioned. 
-     * @return (partial) list of versions
+     * Performs the same database lookup as the one behind {@code Dataset.getVersions()}.
+     * <p>
+     * Additionally, supports:
+     * <ul>
+     *   <li>Pagination via {@code offset} and {@code length}</li>
+     *   <li>Filtering by visibility (all, released only, or released + deaccessioned)</li>
+     * </ul>
+     * <p>
+     * It is recommended that individual software components utilize
+     * {@link edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand},
+     * instead of calling this service method directly.
+     *
+     * @param datasetId the dataset identifier
+     * @param offset    pagination offset (nullable)
+     * @param length    pagination length (nullable)
+     * @param includeAllVersions if {@code true}, retrieves all versions (drafts, released, and deaccessioned)
+     * @param includeDeaccessioned if {@code true}, includes deaccessioned versions
+     *                             when {@code includeAll} is {@code false}
+     * @return a (possibly partial) list of dataset versions
      */
-    public List<DatasetVersion> findVersions(Long datasetId, Integer offset, Integer length, boolean includeUnpublished) {
-        TypedQuery<DatasetVersion> query;  
-        if (includeUnpublished) {
+    public List<DatasetVersion> findVersions(Long datasetId,
+                                             Integer offset,
+                                             Integer length,
+                                             boolean includeAllVersions,
+                                             boolean includeDeaccessioned) {
+        TypedQuery<DatasetVersion> query;
+
+        if (includeAllVersions) {
             query = em.createNamedQuery("DatasetVersion.findByDataset", DatasetVersion.class);
+        } else if (includeDeaccessioned) {
+            query = em.createNamedQuery("DatasetVersion.findByDesiredStatesAndDataset", DatasetVersion.class);
+            query.setParameter("states", List.of(
+                    VersionState.RELEASED,
+                    VersionState.DEACCESSIONED
+            ));
         } else {
-            query = em.createNamedQuery("DatasetVersion.findReleasedByDataset", DatasetVersion.class)
-                    .setParameter("datasetId", datasetId);
+            query = em.createNamedQuery("DatasetVersion.findReleasedByDataset", DatasetVersion.class);
         }
-        
+
         query.setParameter("datasetId", datasetId);
-        
+
         if (offset != null) {
             query.setFirstResult(offset);
         }
         if (length != null) {
             query.setMaxResults(length);
         }
-        
+
         return query.getResultList();
     }
-    
+
+    public List<DatasetVersion> findVersions(Long datasetId,
+                                             Integer offset,
+                                             Integer length,
+                                             boolean includeAllVersions) {
+        return findVersions(datasetId, offset, length, includeAllVersions, false);
+    }
+
     public DatasetVersion findByFriendlyVersionNumber(Long datasetId, String friendlyVersionNumber) {
         Long majorVersionNumber = null;
         Long minorVersionNumber = null;
@@ -1259,5 +1291,69 @@ w
             logger.log(Level.WARNING, "EJBException exception: {0}", e.getMessage());
             return null;
         }
-    } // end getUnarchivedDatasetVersions
-} // end class
+    }
+
+    /**
+     * Calculates the total number of versions for a specified dataset.
+     * <p>
+     * This method provides a flexible way to count dataset versions. It can either
+     * return a total count of all versions or restrict the count to only those
+     * that are publicly visible (i.e., {@code RELEASED} or {@code DEACCESSIONED}).
+     * This is particularly useful for displaying different counts to users with
+     * different permission levels.
+     *
+     * @param datasetId The unique identifier of the dataset for which to count versions.
+     * Must not be {@code null}.
+     * @param canViewUnpublishedVersions A boolean flag that controls the scope of the count:
+     * <ul>
+     * <li>{@code true} - All versions of the dataset are counted,
+     * regardless of their {@link VersionState}.</li>
+     * <li>{@code false} - Only versions with a state of
+     * {@link VersionState#RELEASED} or
+     * {@link VersionState#DEACCESSIONED} are counted.</li>
+     * </ul>
+     * @return A {@code Long} representing the total count of matching dataset versions.
+     * This will be {@code 0L} if the dataset has no versions or does not exist.
+     */
+    public Long getDatasetVersionCount(Long datasetId, boolean canViewUnpublishedVersions) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+        Root<DatasetVersion> versionRoot = cq.from(DatasetVersion.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Add the primary predicate to filter by the dataset's ID.
+        predicates.add(cb.equal(versionRoot.join("dataset").get("id"), datasetId));
+
+        // Conditionally add a predicate to filter for public versions only.
+        if (!canViewUnpublishedVersions) {
+            predicates.add(versionRoot.get("versionState").in(
+                    VersionState.RELEASED, VersionState.DEACCESSIONED));
+        }
+
+        cq.select(cb.count(versionRoot))
+                .where(predicates.toArray(new Predicate[0]));
+
+        return em.createQuery(cq).getSingleResult();
+    }
+
+
+    /**
+     * Update the archival copy location for a specific version of a dataset.
+     * Archiving can be long-running and other parallel updates to the datasetversion have likely occurred
+     * so this method will just re-find the version rather than risking an
+     * OptimisticLockException and then having to retry in yet another transaction (since the OLE rolls this one back).
+     *
+     * @param dv
+     *            The dataset version whose archival copy location we want to update. Must not be {@code null}.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void persistArchivalCopyLocation(DatasetVersion dv) {
+        DatasetVersion currentVersion = find(dv.getId());
+        if (currentVersion != null) {
+            currentVersion.setArchivalCopyLocation(dv.getArchivalCopyLocation());
+        } else {
+            logger.log(Level.SEVERE, "Could not find DatasetVersion with id={0} to retry persisting archival copy location after OptimisticLockException.", dv.getId());
+        }
+    }
+}

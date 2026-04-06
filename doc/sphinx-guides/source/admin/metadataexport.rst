@@ -22,12 +22,15 @@ In addition to the automated exports, a Dataverse installation admin can start a
 
 ``curl http://localhost:8080/api/admin/metadata/reExportAll``
 
+``curl http://localhost:8080/api/admin/metadata/reExportAll?olderThan=<YYYY-MM-DD>``
+
 ``curl http://localhost:8080/api/admin/metadata/clearExportTimestamps``
 
 ``curl http://localhost:8080/api/admin/metadata/:persistentId/reExportDataset?persistentId=doi:10.5072/FK2/AAA000``
 
 The first will attempt to export all the published, local (non-harvested) datasets that haven't been exported yet. 
-The second will *force* a re-export of every published, local dataset, regardless of whether it has already been exported or not. 
+The second will *force* a re-export of every published, local dataset, regardless of whether it has already been exported or not.
+With the optional olderThan query parameter, the second will *force* re-export of all published, local datasets that were last exported before the olderThan date.
 
 The first two calls return a status message informing the administrator that the process has been launched (``{"status":"WORKFLOW_IN_PROGRESS"}``). The administrator can check the progress of the process via log files: ``[Payara directory]/glassfish/domains/domain1/logs/export_[time stamp].log``.
 
@@ -65,5 +68,5 @@ Two exporters - Schema.org JSONLD and OpenAire - use an algorithm to determine w
 
 The Dataverse software implements two jvm-options that can be used to tune the algorithm:
 
-- :ref:`dataverse.personOrOrg.assumeCommaInPersonName` - boolean, default false. If true, Dataverse will assume any name without a comma must be an organization. This may be most useful for curated Dataverse instances that enforce the "family name, given name" convention.
-- :ref:`dataverse.personOrOrg.orgPhraseArray` - a JsonArray of strings. Any name that contains one of the strings is assumed to be an organization. For example, "Project" is a word that is not otherwise associated with being an organization. 
+- :ref:`dataverse.person-or-org.assume-comma-in-person-name` - boolean, default false. If true, Dataverse will assume any name without a comma must be an organization. This may be most useful for curated Dataverse instances that enforce the "family name, given name" convention.
+- :ref:`dataverse.person-or-org.org-phrase-array` - a JsonArray of strings. Any name that contains one of the strings is assumed to be an organization. For example, "Project" is a word that is not otherwise associated with being an organization. 

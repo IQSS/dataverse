@@ -23,7 +23,6 @@ import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchIncludeFragment;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchFilterQuery;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
@@ -88,8 +87,6 @@ public class DataversePage implements java.io.Serializable {
     DataverseSession session;
     @EJB
     EjbDataverseEngine commandEngine;
-    @EJB
-    SearchServiceBean searchService;
     @EJB
     DatasetFieldServiceBean datasetFieldService;
     @EJB
@@ -923,11 +920,20 @@ public class DataversePage implements java.io.Serializable {
         try {
             commandEngine.submit(cmd);
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.delete.success"));
+            solrDelay();
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Unexpected Exception calling  delete dataverse command", ex);
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.delete.failure"));
         }
         return "/dataverse.xhtml?alias=" + dataverse.getOwner().getAlias() + "&faces-redirect=true";
+    }
+    // delay 1 second so solr has time to update the indexes. Without the delay the UI will continue to show the deleted dataverse
+    private void solrDelay() {
+        try {
+            Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String getMetadataBlockPreview(MetadataBlock mdb, int numberOfItems) {
@@ -1241,7 +1247,7 @@ public class DataversePage implements java.io.Serializable {
                 setNames.put(BundleUtil.getStringFromBundle("dataverse.curationLabels.disabled"), SystemConfig.CURATIONLABELSDISABLED);
 
                 allowedSetNames.forEach(name -> {
-                    String localizedName = DatasetUtil.getLocaleExternalStatus(name) ;
+                    String localizedName = DatasetUtil.getLocaleCurationStatusLabelFromString(name) ;
                     setNames.put(localizedName,name);
                 });
             }
@@ -1351,7 +1357,7 @@ public class DataversePage implements java.io.Serializable {
             existingLevel.setInclude(dsft.isInclude());
             existingLevel.setRequired(dsft.isRequiredDV());
             listDFTIL.add(existingLevel);
-        } else if (dsft.isInclude() || (dsft.getLocalDisplayOnCreate()!=null) || dsft.isRequiredDV()) {
+        } else if (!dsft.isInclude() || (dsft.getLocalDisplayOnCreate()!=null) || dsft.isRequiredDV()) {
             // Only create new input level if there is any specific configuration
             listDFTIL.add(new DataverseFieldTypeInputLevel(
                 dsft, 

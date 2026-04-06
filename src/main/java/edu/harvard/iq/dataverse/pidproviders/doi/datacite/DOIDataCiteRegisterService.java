@@ -83,19 +83,34 @@ public class DOIDataCiteRegisterService {
         String numericIdentifier = identifier.substring(identifier.indexOf(":") + 1);
         String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
         String target = metadata.get("_target");
-        String currentMetadata = client.getMetadata(numericIdentifier);
-        Diff myDiff = DiffBuilder.compare(xmlMetadata)
-                .withTest(currentMetadata).ignoreWhitespace().checkForSimilar()
-                .build();
-
-        if (myDiff.hasDifferences()) {
-            for(Difference d : myDiff.getDifferences()) {
-            
-              logger.fine(d.toString());
+        String currentMetadata = null;
+        boolean hasDifferences = false;
+        try {
+            currentMetadata = client.getMetadata(numericIdentifier);
+            Diff myDiff = DiffBuilder.compare(xmlMetadata).withTest(currentMetadata).ignoreWhitespace().checkForSimilar()
+                    .build();
+            hasDifferences = myDiff.hasDifferences();
+            if (hasDifferences) {
+                for (Difference d : myDiff.getDifferences()) {
+                    logger.fine(d.toString());
+                }
             }
+        } catch (RuntimeException e) {
+            logger.log(Level.INFO, "DOI " + numericIdentifier + " not registered with DataCite, registering now.");
+            hasDifferences = true;
+        }
+
+        if (hasDifferences) {
             retString = "metadata:\\r" + client.postMetadata(xmlMetadata) + "\\r";
         }
-        if (!target.equals(client.getUrl(numericIdentifier))) {
+        String currentUrl = null;
+        try {
+            //May get a 204 if the DOI is still draft
+            currentUrl = client.getUrl(numericIdentifier);
+        } catch (RuntimeException ex) {
+            logger.fine("Error getting Url for " + numericIdentifier + ": " + ex.getMessage());
+        }
+        if (!target.equals(currentUrl)) {
             logger.info("Updating target URL to " +  target);
             client.postUrl(numericIdentifier, target);
             retString = retString + "url:\\r" + target;

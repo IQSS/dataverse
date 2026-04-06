@@ -478,6 +478,12 @@ public class MailServiceBean implements java.io.Serializable {
                 String[] paramArrayDatasetCreated = {getDatasetLink(dataset), dataset.getDisplayName(), userNotification.getRequestor().getName(), dataset.getOwner().getDisplayName()};
                 messageText += MessageFormat.format(pattern, paramArrayDatasetCreated);
                 return messageText;
+            case DATASETMOVED:
+                dataset = (Dataset) targetObject;
+                pattern = BundleUtil.getStringFromBundle("notification.email.datasetWasMoved");
+                String[] paramArrayDatasetMoved = {getDatasetLink(dataset), dataset.getDisplayName(), userNotification.getRequestor().getName(), dataset.getOwner().getDisplayName()};
+                messageText += MessageFormat.format(pattern, paramArrayDatasetMoved);
+                return messageText;
             case CREATEDS:
                 version =  (DatasetVersion) targetObject;
                 String datasetCreatedMessage = BundleUtil.getStringFromBundle("notification.email.createDataset", Arrays.asList(
@@ -569,8 +575,25 @@ public class MailServiceBean implements java.io.Serializable {
             case STATUSUPDATED:
                 version =  (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.status.change");
-                String[] paramArrayStatus = {version.getDataset().getDisplayName(), (version.getExternalStatusLabel()==null) ? "<none>" : DatasetUtil.getLocaleExternalStatus(version.getExternalStatusLabel())};
+                CurationStatus status = version.getCurationStatusAsOfDate(userNotification.getSendDateTimestamp());
+                String curationLabel = DatasetUtil.getLocaleCurationStatusLabel(status);
+                if(curationLabel == null) {
+                    curationLabel = BundleUtil.getStringFromBundle("dataset.curationstatus.none");
+                }
+                String[] paramArrayStatus = {
+                        version.getDataset().getDisplayName(),
+                        getDatasetLink(version.getDataset()),
+                        version.getDataset().getOwner().getDisplayName(),
+                        getDataverseLink(version.getDataset().getOwner()),
+                        curationLabel
+                    };
                 messageText += MessageFormat.format(pattern, paramArrayStatus);
+                  
+                return messageText;
+            case PIDRECONCILED:
+                version =  (DatasetVersion) targetObject;
+                pattern = BundleUtil.getStringFromBundle("notification.email.pid.reconciled");
+                messageText += MessageFormat.format(pattern, new String[] {version.getDataset().getDisplayName(), version.getDataset().getGlobalId().asString()});
                 return messageText;
             case CREATEACC:
                 String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
@@ -720,9 +743,9 @@ public class MailServiceBean implements java.io.Serializable {
                 Object[] paramArrayDatasetMentioned = {
                         userNotification.getUser().getName(),
                         BrandingUtil.getInstallationBrandName(), 
-                        citingResource.getString("@type"),
+                        citingResource.getString("@type", "External Resource"),
                         citingResource.getString("@id"),
-                        citingResource.getString("name"),
+                        citingResource.getString("name", citingResource.getString("@id")),
                         citingResource.getString("relationship"), 
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalId().toString(), 
@@ -768,6 +791,7 @@ public class MailServiceBean implements java.io.Serializable {
             case GRANTFILEACCESS:
             case REJECTFILEACCESS:
             case DATASETCREATED:
+            case DATASETMOVED:
             case DATASETMENTIONED:
                 return datasetService.find(userNotification.getObjectId());
             case CREATEDS:
@@ -777,6 +801,7 @@ public class MailServiceBean implements java.io.Serializable {
             case RETURNEDDS:
             case WORKFLOW_SUCCESS:
             case WORKFLOW_FAILURE:
+            case PIDRECONCILED:
             case STATUSUPDATED:
                 return versionService.find(userNotification.getObjectId());
             case CREATEACC:

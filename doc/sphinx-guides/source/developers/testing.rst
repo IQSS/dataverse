@@ -128,7 +128,7 @@ You might find studying the following test classes helpful in writing tests for 
 - DeletePrivateUrlCommandTest.java
 - GetPrivateUrlCommandTest.java
 
-In addition, there is a writeup on "The Testable Command" at https://github.com/IQSS/dataverse/blob/develop/doc/theTestableCommand/TheTestableCommand.md .
+In addition, there is a writeup on "The Testable Command" at https://github.com/IQSS/dataverse/blob/master/doc/theTestableCommand/TheTestableCommand.md .
 
 Running Non-Essential (Excluded) Unit Tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -169,12 +169,12 @@ different people. For our purposes, an integration test can have two flavors:
 Running the Full API Test Suite Using EC2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Prerequisite:** To run the API test suite in an EC2 instance you should first follow the steps in the :doc:`deployment` section to get set up with the AWS binary to launch EC2 instances. If you're here because you just want to spin up a branch, you'll still want to follow the AWS deployment setup steps, but may find the `ec2-create README.md <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/blob/master/ec2/README.md>`_ Quick Start section helpful.
+**Prerequisite:** To run the API test suite in an EC2 instance you should first follow the steps in the :doc:`deployment` section to get set up with the AWS binary to launch EC2 instances. If you're here because you just want to spin up a branch, you'll still want to follow the AWS deployment setup steps, but may find the `ec2-create README.md <https://github.com/gdcc/dataverse-ansible/blob/develop/ec2/README.md>`_ Quick Start section helpful.
 
-You may always retrieve a current copy of the ec2-create-instance.sh script and accompanying group_var.yml file from the `dataverse-ansible repo <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/>`_. Since we want to run the test suite, let's grab the group_vars used by Jenkins:
+You may always retrieve a current copy of the ec2-create-instance.sh script and accompanying group_var.yml file from the `dataverse-ansible repo <https://github.com/gdcc/dataverse-ansible/>`_. Since we want to run the test suite, let's grab the group_vars used by Jenkins:
 
-- `ec2-create-instance.sh <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/ec2/ec2-create-instance.sh>`_
-- `jenkins.yml <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/tests/group_vars/jenkins.yml>`_
+- `ec2-create-instance.sh <https://raw.githubusercontent.com/gdcc/dataverse-ansible/develop/ec2/ec2-create-instance.sh>`_
+- `jenkins.yml <https://raw.githubusercontent.com/gdcc/dataverse-ansible/develop/tests/group_vars/jenkins.yml>`_
 
 Edit ``jenkins.yml`` to set the desired GitHub repo and branch, and to adjust any other options to meet your needs:
 
@@ -184,7 +184,7 @@ Edit ``jenkins.yml`` to set the desired GitHub repo and branch, and to adjust an
 - ``dataverse.unittests.enabled: true``
 - ``dataverse.sampledata.enabled: true``
 
-If you wish, you may pass the script a ``-l`` flag with a local relative path in which the script will `copy various logs <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/blob/master/ec2/ec2-create-instance.sh#L185>`_ at the end of the test suite for your review.
+If you wish, you may pass the script a ``-l`` flag with a local relative path in which the script will `copy various logs <https://github.com/gdcc/dataverse-ansible/blob/develop/ec2/ec2-create-instance.sh>`_ at the end of the test suite for your review.
 
 Finally, run the script:
 
@@ -209,7 +209,7 @@ The Burrito Key
 
 For reasons that have been lost to the mists of time, the Dataverse software really wants you to to have a burrito. Specifically, if you're trying to run REST Assured tests and see the error "Dataverse config issue: No API key defined for built in user management", you must run the following curl command (or make an equivalent change to your database):
 
-``curl -X PUT -d 'burrito' http://localhost:8080/api/admin/settings/BuiltinUsers.KEY``
+``curl -X PUT -d 'burrito' http://localhost:8080/api/admin/settings/:BuiltinUsersKey``
 
 Without this "burrito" key in place, REST Assured will not be able to create users. We create users to create objects we want to test, such as collections, datasets, and files.
 
@@ -344,7 +344,7 @@ Notes:
 Measuring Coverage of API Tests
 -------------------------------
 
-Measuring the code coverage of API tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/payara6" as the Payara directory and "dataverse" as the Payara Unix user.
+Measuring the code coverage of API tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/payara7" as the Payara directory and "dataverse" as the Payara Unix user.
 
 Please note that this was tested under Glassfish 4 but it is hoped that the same steps will work with Payara.
 
@@ -365,9 +365,9 @@ Note that we are running the following commands as the user "dataverse". In shor
   cd local/jacoco-0.8.1
   wget https://github.com/jacoco/jacoco/releases/download/v0.8.1/jacoco-0.8.1.zip
   unzip jacoco-0.8.1.zip
-  /usr/local/payara6/bin/asadmin stop-domain
-  cp /home/dataverse/local/jacoco-0.8.1/lib/jacocoagent.jar /usr/local/payara6/glassfish/lib
-  /usr/local/payara6/bin/asadmin start-domain
+  /usr/local/payara7/bin/asadmin stop-domain
+  cp /home/dataverse/local/jacoco-0.8.1/lib/jacocoagent.jar /usr/local/payara7/glassfish/lib
+  /usr/local/payara7/bin/asadmin start-domain
 
 Add jacococli.jar to the WAR File
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -390,21 +390,21 @@ Run this as the "dataverse" user.
 
 .. code-block:: bash
 
-  /usr/local/payara6/bin/asadmin deploy dataverse-jacoco.war
+  /usr/local/payara7/bin/asadmin deploy dataverse-jacoco.war
 
-Note that after deployment the file "/usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec" exists and is empty.
+Note that after deployment the file "/usr/local/payara7/glassfish/domains/domain1/config/jacoco.exec" exists and is empty.
 
 Run API Tests to Determine Code Coverage
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Note that if you are looking for how to run API tests generally, you should refer to :ref:`integration-tests`.
 
-Note that "/usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec" will become non-empty after you stop and start Payara. You must stop and start Payara before every run of the integration test suite.
+Note that "/usr/local/payara7/glassfish/domains/domain1/config/jacoco.exec" will become non-empty after you stop and start Payara. You must stop and start Payara before every run of the integration test suite.
 
 .. code-block:: bash
 
-  /usr/local/payara6/bin/asadmin stop-domain
-  /usr/local/payara6/bin/asadmin start-domain
+  /usr/local/payara7/bin/asadmin stop-domain
+  /usr/local/payara7/bin/asadmin start-domain
   git clone https://github.com/IQSS/dataverse.git
   cd dataverse
   TESTS=$(<tests/integration-tests.txt)
@@ -420,7 +420,7 @@ Run these commands as the "dataverse" user. The ``cd dataverse`` means that you 
 .. code-block:: bash
 
   cd dataverse
-  java -jar /home/dataverse/local/jacoco-0.8.1/lib/jacococli.jar report --classfiles target/classes --sourcefiles src/main/java --html target/coverage-it/ /usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec
+  java -jar /home/dataverse/local/jacoco-0.8.1/lib/jacococli.jar report --classfiles target/classes --sourcefiles src/main/java --html target/coverage-it/ /usr/local/payara7/glassfish/domains/domain1/config/jacoco.exec
 
 Read Code Coverage Report
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -526,7 +526,7 @@ Browser-Based Testing
 Installation Testing
 ~~~~~~~~~~~~~~~~~~~~
 
-- Work with @donsizemore to automate testing of https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible
+- Work with @donsizemore to automate testing of https://github.com/gdcc/dataverse-ansible
 
 Future Work on Load/Performance Testing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -538,4 +538,4 @@ Future Work on Load/Performance Testing
 Future Work on Accessibility Testing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Using https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible and hooks available from accessibility testing tools, automate the running of accessibility tools on PRs so that developers will receive quicker feedback on proposed code changes that reduce the accessibility of the application.
+- Using https://github.com/gdcc/dataverse-ansible and hooks available from accessibility testing tools, automate the running of accessibility tools on PRs so that developers will receive quicker feedback on proposed code changes that reduce the accessibility of the application.

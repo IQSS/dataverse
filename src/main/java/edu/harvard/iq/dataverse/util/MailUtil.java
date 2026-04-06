@@ -47,6 +47,8 @@ public class MailUtil {
                 return BundleUtil.getStringFromBundle("notification.email.rejected.file.access.subject", rootDvNameAsList);
             case DATASETCREATED:
                 return BundleUtil.getStringFromBundle("notification.email.dataset.created.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
+            case DATASETMOVED:
+                return BundleUtil.getStringFromBundle("notification.email.dataset.moved.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case CREATEDS:
                 return BundleUtil.getStringFromBundle("notification.email.create.dataset.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case SUBMITTEDDS:
@@ -63,6 +65,8 @@ public class MailUtil {
                 return BundleUtil.getStringFromBundle("notification.email.workflow.failure.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case STATUSUPDATED:
                 return BundleUtil.getStringFromBundle("notification.email.status.change.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
+            case PIDRECONCILED:
+                return BundleUtil.getStringFromBundle("notification.email.pid.reconciled.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case CREATEACC:
                 return BundleUtil.getStringFromBundle("notification.email.create.account.subject", rootDvNameAsList);
             case CHECKSUMFAIL:

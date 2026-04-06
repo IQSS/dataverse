@@ -12,11 +12,13 @@ These instructions are oriented around Docker but the "classic" instructions we 
 Quickstart
 ----------
 
-First, install Java 17, Maven, and Docker.
+First, install Java 21, Maven, and Docker.
 
 After cloning the `dataverse repo <https://github.com/IQSS/dataverse>`_, run this:
 
 ``mvn -Pct clean package docker:run``
+
+(Note that if you are Windows, you must run the command above in `WSL <https://learn.microsoft.com/windows/wsl>`_ rather than cmd.exe. See :doc:`windows`.)
 
 After some time you should be able to log in:
 
@@ -30,9 +32,9 @@ Detailed Steps
 Install Java
 ~~~~~~~~~~~~
 
-The Dataverse Software requires Java 17.
+The recommended version is Java 21 because it's the version we test with. See https://github.com/IQSS/dataverse/pull/12043.
 
-On Mac and Windows, we suggest using `SDKMAN <https://sdkman.io>`_ to install Temurin (Eclipe's name for its OpenJDK distribution). Type ``sdk install java 17`` and then hit the "tab" key until you get to a version that ends with ``-tem`` and then hit enter.
+On Mac and Windows, we suggest using `SDKMAN <https://sdkman.io>`_ to install Temurin (Eclipe's name for its OpenJDK distribution). Type ``sdk install java 21`` and then hit the "tab" key until you get to a version that ends with ``-tem`` and then hit enter. If you don't set this version as the default, you will need to type ``sdk use java 21`` and then hit the tab to autocomplete the version.
 
 Alternatively you can download Temurin from https://adoptium.net (formerly `AdoptOpenJDK <https://adoptopenjdk.net>`_).
 

@@ -224,7 +224,13 @@ public final class DatasetVersionDifference {
             logger.warning("New version does not have TermsOfUseAndAccess");
             newTerms = new TermsOfUseAndAccess();
         }
-        
+
+        //get license name or bundle val for none to test for differences
+        String originalLicenseName = originalTerms.getLicense() != null ? originalTerms.getLicense().getName() : BundleUtil.getStringFromBundle("license.none.chosen");
+        String newLicenseName = newTerms.getLicense() != null ? newTerms.getLicense().getName() : BundleUtil.getStringFromBundle("license.none.chosen");
+
+        checkAndAddToChangeList(originalLicenseName, newLicenseName,
+                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.license"));        
         checkAndAddToChangeList(originalTerms.getTermsOfUse(), newTerms.getTermsOfUse(),
                 BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.header"));
         checkAndAddToChangeList(originalTerms.getConfidentialityDeclaration(), newTerms.getConfidentialityDeclaration(),
@@ -1760,12 +1766,7 @@ public final class DatasetVersionDifference {
             job.add("replaced", 0);
         }
         
-        if (!changedFileMetadata.isEmpty()) {
-            job.add("changedFileMetaData", changedFileMetadata.size());
-           
-        } else{
-            job.add("changedFileMetaData", 0);
-        }
+        job.add("changedFileMetaData", getTotalFileMetadataChangesCount());
         
         if (!changedVariableMetadata.isEmpty()) {
             job.add("changedVariableMetadata", changedVariableMetadata.size());
@@ -1781,10 +1782,14 @@ public final class DatasetVersionDifference {
         JsonObjectBuilder job = new NullSafeJsonBuilder();
         JsonObjectBuilder jobVersion = new NullSafeJsonBuilder();
         jobVersion.add("versionNumber", originalVersion.getFriendlyVersionNumber());
+        jobVersion.add("versionState", originalVersion.getVersionState().name());
+        jobVersion.add("versionNote", originalVersion.getVersionNote());
         jobVersion.add("lastUpdatedDate", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(originalVersion.getLastUpdateTime()));
         job.add("oldVersion", jobVersion);
         jobVersion = new NullSafeJsonBuilder();
         jobVersion.add("versionNumber", newVersion.getFriendlyVersionNumber());
+        jobVersion.add("versionState", newVersion.getVersionState().name());
+        jobVersion.add("versionNote", newVersion.getVersionNote());
         jobVersion.add("lastUpdatedDate", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(newVersion.getLastUpdateTime()));
         job.add("newVersion", jobVersion);
 
@@ -1902,5 +1907,27 @@ public final class DatasetVersionDifference {
             job.add("tags", jabTags);
         }
         return job;
+    }
+
+    /**
+     * Calculates the total number of individual file metadata field changes
+     * across all files tracked in the {@code changedFileMetadataDiff} map.
+     *
+     * @return The total count of all file metadata field changes.
+     */
+    private int getTotalFileMetadataChangesCount() {
+        int totalChanges = 0;
+
+        if (this.changedFileMetadataDiff == null) {
+            return 0;
+        }
+
+        for (Map<String, List<String>> fileSpecificDiffs : this.changedFileMetadataDiff.values()) {
+            if (fileSpecificDiffs != null) {
+                totalChanges += fileSpecificDiffs.size();
+            }
+        }
+
+        return totalChanges;
     }
 }
