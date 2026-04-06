@@ -1,0 +1,60 @@
+{
+  "@context": "http://schema.org",
+  "@type": "Dataset",
+  "@id": "https://doi.org/10.5072/FK2/OO7TEP",
+  "identifier": "https://doi.org/10.5072/FK2/OO7TEP",
+  "name": "Draft Dataset",
+  "creator": [
+    {
+      "@type": "Person",
+      "givenName": "Draft",
+      "familyName": "Punk",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "French house"
+      },
+      "name": "Punk, Draft"
+    }
+  ],
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Draft",
+      "familyName": "Punk",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "French house"
+      },
+      "name": "Punk, Draft"
+    }
+  ],
+  "dateModified": "",
+  "version": "DRAFT",
+  "description": "This dataset hasn't been published yet.",
+  "keywords": [
+    "Other"
+  ],
+  "license": "http://creativecommons.org/publicdomain/zero/1.0",
+  "includedInDataCatalog": {
+    "@type": "DataCatalog",
+    "name": "Root",
+    "url": "http://localhost:8080"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Root"
+  },
+  "provider": {
+    "@type": "Organization",
+    "name": "Root"
+  },
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "name": "data.txt",
+      "encodingFormat": "text/plain",
+      "contentSize": 18,
+      "contentUrl": "http://localhost:8080/api/access/datafile/4"
+    }
+  ]
+}
