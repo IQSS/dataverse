@@ -87,7 +87,7 @@ public class DOIDataCiteRegisterService {
         String currentMetadata = null;
         boolean hasDifferences = false;
         try {
-            currentMetadata = client.getMetadataViaRestApi(bareIdentifier);
+            currentMetadata = client.getMetadata(bareIdentifier);
             Diff myDiff = DiffBuilder.compare(xmlMetadata).withTest(currentMetadata).ignoreWhitespace().checkForSimilar()
                     .build();
             hasDifferences = myDiff.hasDifferences();

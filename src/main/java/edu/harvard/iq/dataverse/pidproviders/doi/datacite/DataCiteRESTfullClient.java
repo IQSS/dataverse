@@ -194,6 +194,13 @@ public class DataCiteRESTfullClient implements Closeable {
      * @return
      */
     public String getMetadata(String doi) {
+        // Try obtaining the metadata using the new, REST API:
+        try {
+            return getMetadataViaRestApi(doi);
+        } catch (RuntimeException rex) {
+            logger.warning("Failed to getMetadata via REST API for doi " + doi +", falling back to MDS");
+        }
+        
         HttpGet httpGet = new HttpGet(this.url + "/metadata/" + doi);
         httpGet.setHeader("Accept", "application/xml");
         try {
