@@ -11,9 +11,14 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.InvalidFieldsCommandException;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -120,14 +125,41 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             pidProvider.generatePid(theDataset);
         }
         
+        DatasetType datasetTypeToPersist = theDataset.getDatasetType();
         DatasetType defaultDatasetType = ctxt.datasetTypes().getByName(DatasetType.DEFAULT_DATASET_TYPE);
-        DatasetType existingDatasetType = theDataset.getDatasetType();
-        logger.fine("existing dataset type: " + existingDatasetType);
-        if (existingDatasetType != null) {
-            // A dataset type can be specified via API, for example.
-            theDataset.setDatasetType(existingDatasetType);
+        // The datasetType is only sent via API. JSF doesn't send a type.
+        DatasetType dsTypeFromApi = theDataset.getDatasetType();
+        logger.fine("dataset type sent via API: " + dsTypeFromApi);
+        if (dsTypeFromApi != null) {
+            datasetTypeToPersist = dsTypeFromApi;
         } else {
-            theDataset.setDatasetType(defaultDatasetType);
+            // If the API didn't set the dataset type or if the dataset
+            // is being created in JSF, use the default datasetType.
+            datasetTypeToPersist = defaultDatasetType;
+        }
+        theDataset.setDatasetType(datasetTypeToPersist);
+
+        // Check if the datasetType is allowed by the collection
+        List<DatasetType> allowedByCollection = theDataset.getOwner().getAllowedDatasetTypes();
+        // Final because we apply some logic first
+        List<DatasetType> allowedDatasetTypesFinal = new ArrayList<>();
+        if (allowedByCollection.isEmpty()) {
+            // If allowedDatasetTypes is unspecified, assume
+            // only the default type (dataset) is allowed
+            allowedDatasetTypesFinal.add(defaultDatasetType);
+        } else {
+            allowedDatasetTypesFinal.addAll(allowedByCollection);
+        }
+        // Throw error if type isn't allowed
+        if (!allowedDatasetTypesFinal.contains(datasetTypeToPersist)) {
+            List<String> typeNames = allowedDatasetTypesFinal.stream()
+                    .map(DatasetType::getName)
+                    .toList();
+            Map<String, String> fieldErrors = new HashMap<>();
+            fieldErrors.put("datasetType", "The parent collection does not allow the datasetType "
+                    + datasetTypeToPersist.getName() + ". Allowed types: " + String.join(", ", typeNames));
+            throw new InvalidFieldsCommandException("The dataset could not be created due to the datasetType.",
+                    this, fieldErrors);
         }
         
         // Attempt the registration if importing dataset through the API, or the app (but not harvest)

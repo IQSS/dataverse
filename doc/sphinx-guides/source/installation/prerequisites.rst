@@ -14,12 +14,12 @@ After following all the steps below, you can proceed to the :doc:`installation-m
 Linux
 -----
 
-We assume you plan to run your Dataverse installation on Linux and we recommend RHEL or a derivative such as RockyLinux or AlmaLinux, which is the distribution family tested by the Dataverse Project team. Please be aware that while EL8 (RHEL/derivatives) is the recommended platform, the steps below were orginally written for EL6 and may need to be updated (please feel free to make a pull request!). A number of community members have installed the Dataverse Software in Debian/Ubuntu environments.
+We assume you plan to run your Dataverse installation on Linux and we recommend RHEL or a derivative such as Rocky Linux, which is the distribution family tested by the Dataverse Project team. These instructions are written for RHEL9 and derivatives, but Dataverse is known to work well in Debian, Ubuntu, and most any modern Linux distribution.
 
 Java
 ----
 
-The recommended version is Java 17 because it's the version we test with.
+The recommended version is Java 21 because it's the version we test with.
 
 Installing Java
 ===============
@@ -28,13 +28,13 @@ The Dataverse Software should run fine with only the Java Runtime Environment (J
 
 The Oracle JDK can be downloaded from https://www.oracle.com/technetwork/java/javase/downloads/index.html
 
-On a RHEL/derivative, install OpenJDK (devel version) using yum::
+On a RHEL/derivative OS, install OpenJDK (devel version) using dnf::
 
-	# sudo yum install java-17-openjdk
+	# sudo dnf install java-21-openjdk
 
-If you have multiple versions of Java installed, Java 17 should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
+If you have multiple versions of Java installed, Java 21 should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
 
-On RHEL/derivative you can make Java 17 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
+On RHEL/derivative you can make Java 21 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
 
         # alternatives --config java
 
@@ -44,7 +44,7 @@ On RHEL/derivative you can make Java 17 the default with the ``alternatives`` co
 Payara
 ------
 
-Payara 6.2025.3 is recommended. Newer versions might work fine. Regular updates are recommended.
+Payara 7.2026.2 is recommended. Newer versions might work fine. Regular updates are recommended.
 
 Installing Payara
 =================
@@ -53,11 +53,11 @@ Installing Payara
 
 	# useradd dataverse
 
-- Download and install Payara (installed in ``/usr/local/payara6`` in the example commands below)::
+- Download and install Payara (installed in ``/usr/local/payara7`` in the example commands below)::
 
-	# wget https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2025.3/payara-6.2025.3.zip
-	# unzip payara-6.2025.3.zip
-	# mv payara6 /usr/local
+	# wget https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/7.2026.2/payara-7.2026.2.zip
+	# unzip payara-7.2026.2.zip
+	# mv payara7 /usr/local
 
 If nexus.payara.fish is ever down for maintenance, Payara distributions are also available from https://repo1.maven.org/maven2/fish/payara/distributions/payara/
 
@@ -65,15 +65,15 @@ If you intend to install and run Payara under a service account (and we hope you
 
 - Set service account permissions::
 
-	# chown -R root:root /usr/local/payara6
-	# chown dataverse /usr/local/payara6/glassfish/lib
-	# chown -R dataverse:dataverse /usr/local/payara6/glassfish/domains/domain1
+	# chown -R root:root /usr/local/payara7
+	# chown dataverse /usr/local/payara7/glassfish/lib
+	# chown -R dataverse:dataverse /usr/local/payara7/glassfish/domains/domain1
 
 After installation, you may chown the lib/ directory back to root; the installer only needs write access to copy the JDBC driver into that directory.
 
 - Change from ``-client`` to ``-server`` under ``<jvm-options>-client</jvm-options>``::
 
-	# vim /usr/local/payara6/glassfish/domains/domain1/config/domain.xml
+	# vim /usr/local/payara7/glassfish/domains/domain1/config/domain.xml
 
 This recommendation comes from http://www.c2b2.co.uk/middleware-blog/glassfish-4-performance-tuning-monitoring-and-troubleshooting.php among other places.
 
@@ -106,14 +106,14 @@ Installing PostgreSQL
 
 *For example*, to install PostgreSQL 16 under RHEL9/derivative::
 
-	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-	# yum makecache fast
-	# yum install -y postgresql16-server
-	# /usr/pgsql-16/bin/postgresql-16-setup initdb
-	# /usr/bin/systemctl start postgresql-16
-	# /usr/bin/systemctl enable postgresql-16
+	# sudo dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+	# sudo dnf check-update
+	# sudo dnf install -y postgresql16-server
+	# sudo /usr/pgsql-16/bin/postgresql-16-setup initdb
+	# sudo /usr/bin/systemctl start postgresql-16
+	# sudo /usr/bin/systemctl enable postgresql-16
 
-For RHEL8/derivative the process would be identical, except for the first two commands: you would need to install the "EL-8" yum repository configuration and run ``yum makecache`` instead.
+You may need to disable the OS's built-in postgresql module with ``dnf -qy module disable postgresql``.
 
 Configuring Database Access for the Dataverse Installation (and the Dataverse Software Installer)
 =================================================================================================
@@ -147,7 +147,7 @@ Configuring Database Access for the Dataverse Installation (and the Dataverse So
 
   The file ``postgresql.conf`` will be located in the same directory as the ``pg_hba.conf`` above.
 
-- **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL7/derivative and similar (provided you installed Postgres as instructed above)::
+- **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL9/derivative and similar (provided you installed Postgres as instructed above)::
 
         # systemctl restart postgresql-16
 
@@ -205,7 +205,7 @@ On operating systems which use systemd such as RHEL/derivative, you may then add
 
 Solr launches asynchronously and attempts to use the ``lsof`` binary to watch for its own availability. Installation of this package isn't required but will prevent a warning in the log at startup::
 
-	# yum install lsof
+	# dnf install lsof
 
 Finally, you need to tell Solr to create the core "collection1" on startup::
 
@@ -278,6 +278,7 @@ Installing jq
 
 ``jq`` is a command line tool for parsing JSON output that is used by the Dataverse Software installation script. It is available in the ``appstream`` repository::
 
+	# dnf install epel-release
 	# dnf install jq
 
 or you may install the latest binary for your OS and platform, available from https://github.com/jqlang/jq/releases
@@ -294,10 +295,10 @@ Installing and configuring ImageMagick
 
 On a Red Hat or derivative Linux distribution, you can install ImageMagick with something like::
 
-	# yum install ImageMagick
+	# dnf install ImageMagick
 
 (most RedHat systems will have it pre-installed).
-When installed using standard ``yum`` mechanism, above, the executable for the ImageMagick convert utility will be located at ``/usr/bin/convert``. No further configuration steps will then be required.
+When installed using standard ``dnf`` mechanism, above, the executable for the ImageMagick convert utility will be located at ``/usr/bin/convert``. No further configuration steps will then be required.
 
 If the installed location of the convert executable is different from ``/usr/bin/convert``, you will also need to specify it in your Payara configuration using the JVM option, below. For example::
 
@@ -322,32 +323,35 @@ Installing R
 
 For RHEL/derivative, the EPEL distribution is strongly recommended:
 
-If :fixedwidthplain:`yum` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ):
+If :fixedwidthplain:`dnf` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ):
+
+RHEL9/derivative users can install the epel-release RPM::
+
+       dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
 
 RHEL8/derivative users can install the epel-release RPM::
 
-       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+       dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 
-RHEL7/derivative users can install the epel-release RPM::
+Rocky 9 users will need te enable the CodeReady-Builder repository::
 
-       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+       dnf config-manager --enable crb
 
 RHEL 8 users will need to enable the CodeReady-Builder repository::
 
        subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms
 
-Rocky or AlmaLinux 8.3+ users will need to enable the PowerTools repository::
+Rocky 8 users will need to enable the PowerTools repository::
 
        dnf config-manager --enable powertools
 
-RHEL 7 users will want to log in to their organization's respective RHN interface, find the particular machine in question and:
+To compile the modules below, on a RHEL/Rocky-based system you'll minimally need the following packages:
 
-• click on "Subscribed Channels: Alter Channel Subscriptions"
-• enable EPEL, Server Extras, Server Optional
+       dnf install openssl-devel libcurl-devel
 
-Finally, install R with :fixedwidthplain:`yum`::
+Finally, install R with :fixedwidthplain:`dnf`::
 
-       yum install R-core R-core-devel
+       dnf install R-core R-core-devel
 
 Installing the required R libraries
 ===================================
@@ -472,7 +476,7 @@ The following commands are intended to be run as root but we are aware that Pyth
 
 Install Python 3.9::
 
-        yum install python39
+        dnf install python3
 
 Install Counter Processor Python requirements::
 

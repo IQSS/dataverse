@@ -8,6 +8,9 @@ This list provides a way to refer to the documentation for previous and future v
 
 - pre-release `HTML (not final!) <http://preview.guides.gdcc.io/en/develop/>`__ and `PDF (experimental!) <http://preview.guides.gdcc.io/_/downloads/en/develop/pdf/>`__ built from the :doc:`develop </developers/version-control>` branch :doc:`(how to contribute!) </contributor/documentation>`
 - |version|
+- `6.10 </en/6.10/>`__
+- `6.9 </en/6.9/>`__
+- `6.8 </en/6.8/>`__
 - `6.7.1 </en/6.7.1/>`__
 - `6.7 </en/6.7/>`__
 - `6.6 </en/6.6/>`__
