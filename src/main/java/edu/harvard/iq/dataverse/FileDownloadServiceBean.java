@@ -18,9 +18,12 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.*;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.ServletOutputStream;
@@ -31,7 +34,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.logging.Logger;
-//import org.primefaces.context.RequestContext;
+import java.io.FileNotFoundException;
 
 /**
  *
@@ -43,6 +46,7 @@ import java.util.logging.Logger;
 @Named
 public class FileDownloadServiceBean implements java.io.Serializable {
 
+    public static final double GUESTBOOK_RESPONSE_BATCH_SIZE = 250;
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
@@ -123,23 +127,35 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         
         String customZipDownloadUrl = settingsService.getValueForKey(SettingsServiceBean.Key.CustomZipDownloadServiceUrl);
         boolean useCustomZipService = customZipDownloadUrl != null; 
-        String zipServiceKey = null; 
+        String zipServiceKey = null;
+        List<String> fileIdsList = new ArrayList<>(Arrays.asList(fileIds));
 
-        // Do we need to write GuestbookRecord entries for the files? 
-        if (!doNotSaveGuestbookRecord || useCustomZipService) {
+        List<DataFile> selectedDataFiles = new ArrayList<>();
+        //Should not be getting exceptions with Dataverse generating the fileIds
+        try {
+            selectedDataFiles = resolveSelectedDataFilesInDataset(fileIdsList);
+        } catch (FileNotFoundException e) {
+            PrimeFaces.current().dialog().showMessageDynamic(new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.getMessage()));
+            return;
+        } catch (MultipleDatasetsException e) {
+            PrimeFaces.current().dialog().showMessageDynamic(new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.getMessage()));
+            return;
+        }
 
-            List<String> list = new ArrayList<>(Arrays.asList(guestbookResponse.getSelectedFileIds().split(",")));
-            Timestamp timestamp = null; 
-            
-            for (String idAsString : list) {
+        // Do we need to write GuestbookRecord entries for the files?
+        if (!doNotSaveGuestbookRecord) {
+            // Code here assumes user can download all files (which should be true when called from DatasetPage)
+            // Authorization will be checked in the custom zipper or redirect URL, so the only impact would be extra guestbookresponses
+            gbrid = writeGuestbookResponseRecords(guestbookResponse, selectedDataFiles ).getLast();
+        }
+        if(useCustomZipService) {
+
+            Timestamp timestamp = null;
+            //Reset values
+
+            for (DataFile df : selectedDataFiles) {
                 //DataFile df = datafileService.findCheapAndEasy(new Long(idAsString));
-                DataFile df = datafileService.find(new Long(idAsString));
                 if (df != null) {
-                    if (!doNotSaveGuestbookRecord) {
-                        guestbookResponse.setDataFile(df);
-                        gbrid = writeGuestbookResponseRecord(guestbookResponse);
-                    }
-                    
                     if (useCustomZipService) {
                         if (zipServiceKey == null) {
                             zipServiceKey = generateServiceKey();
@@ -152,8 +168,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                     }
                 }
             }
+
         }
-        
+
         if (useCustomZipService) {
             redirectToCustomZipDownloadService(customZipDownloadUrl, zipServiceKey);
         } else {
@@ -226,27 +243,153 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             writeGuestbookResponseRecord(guestbookResponse);
         }
     }
-    
+
+    public List<String> writeGuestbookResponseRecords(GuestbookResponse guestbookResponse, List<DataFile> selectedDataFiles) {
+        if (guestbookResponse == null || guestbookResponse.getSelectedFileIds() == null || guestbookResponse.getSelectedFileIds().isBlank()) {
+            return Collections.emptyList();
+        }
+
+        if (selectedDataFiles.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<GuestbookResponse> responsesToPersist = new ArrayList<>(selectedDataFiles.size());
+        for (DataFile dataFile : selectedDataFiles) {
+            GuestbookResponse perFileResponse = new GuestbookResponse(guestbookResponse);
+            perFileResponse.setDataFile(dataFile);
+            responsesToPersist.add(perFileResponse);
+        }
+        List<String> savedIds = saveGuestbookResponseRecordsAndMDCLogEntries(responsesToPersist);
+        return savedIds;
+    }
+
+    public List<DataFile> resolveSelectedDataFilesInDataset(List<String> rawFileIds)
+            throws FileNotFoundException, MultipleDatasetsException {
+
+        List<DataFile> selectedDataFiles = new ArrayList<>(rawFileIds.size());
+        Long datasetId = null;
+
+        for (String rawFileId : rawFileIds) {
+            if (rawFileId == null || rawFileId.isBlank()) {
+                continue;
+            }
+
+            Long fileId;
+            try {
+                fileId = Long.valueOf(rawFileId.trim());
+            } catch (NumberFormatException nfe) {
+                throw new FileNotFoundException("Invalid file id: " + rawFileId);
+            }
+
+            DataFile dataFile = datafileService.find(fileId);
+            if (dataFile == null) {
+                throw new FileNotFoundException("No file found for id: " + fileId);
+            }
+
+            Long currentDatasetId = dataFile.getOwner().getId();
+            if (datasetId == null) {
+                datasetId = currentDatasetId;
+            } else if (!datasetId.equals(currentDatasetId)) {
+                throw new MultipleDatasetsException(
+                        "Selected files do not belong to the same dataset."
+                );
+            }
+
+            selectedDataFiles.add(dataFile);
+        }
+
+        return selectedDataFiles;
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public List<String> saveGuestbookResponseRecordsAndMDCLogEntries(List<GuestbookResponse> guestbookResponses) {
+        if (guestbookResponses == null || guestbookResponses.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<String> savedIds = new ArrayList<>(guestbookResponses.size());
+
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
+        for (int i = 0; i < guestbookResponses.size(); i++) {
+            GuestbookResponse response = guestbookResponses.get(i);
+
+            try {
+                response.setResponseTime(now);
+                em.persist(response);
+
+                if (response.getId() != null) {
+                    savedIds.add(response.getId().toString());
+                }
+
+                DatasetVersion version = response.getDatasetVersion();
+                if (version == null) {
+                    version = response.getDataset().getReleasedVersion();
+                }
+
+                DataFile dataFile = response.getDataFile();
+                MakeDataCountEntry entry = new MakeDataCountEntry(
+                        FacesContext.getCurrentInstance(),
+                        dvRequestService,
+                        version,
+                        dataFile
+                );
+                entry.setTargetUrl("/api/access/datafile/" + dataFile.getId());
+                entry.setRequestUrl("/api/access/datafile/" + dataFile.getId());
+                mdcLogService.logEntry(entry);
+
+                if ((i + 1) % GUESTBOOK_RESPONSE_BATCH_SIZE == 0) {
+                    em.flush();
+                    em.clear();
+                }
+            } catch (RuntimeException ex) {
+                DataFile dataFile = response.getDataFile();
+                logger.warning("Exception writing GuestbookResponse"
+                        + (dataFile != null ? " for file: " + dataFile.getId() : "")
+                        + " : " + ex.getLocalizedMessage());
+            }
+        }
+
+        em.flush();
+        em.clear();
+
+        return savedIds;
+    }
+
     public String writeGuestbookResponseRecord(GuestbookResponse guestbookResponse) {
         String guestbookResponseIds = "";
         try {
-            CreateGuestbookResponseCommand cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, guestbookResponse.getDataset());
+            CreateGuestbookResponseCommand cmd = new CreateGuestbookResponseCommand(
+                    dvRequestService.getDataverseRequest(),
+                    guestbookResponse,
+                    guestbookResponse.getDataset()
+            );
             commandEngine.submit(cmd);
             guestbookResponseIds = guestbookResponse.getId().toString();
+
             DatasetVersion version = guestbookResponse.getDatasetVersion();
-            
+
             //Sometimes guestbookResponse doesn't have a version, so we grab the released version
             if (null == version) {
                 version = guestbookResponse.getDataset().getReleasedVersion();
             }
-            MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, version, guestbookResponse.getDataFile());
+
+            MakeDataCountEntry entry = new MakeDataCountEntry(
+                    FacesContext.getCurrentInstance(),
+                    dvRequestService,
+                    version,
+                    guestbookResponse.getDataFile()
+            );
             //As the api download url is not available at this point we construct it manually
             entry.setTargetUrl("/api/access/datafile/" + guestbookResponse.getDataFile().getId());
             entry.setRequestUrl("/api/access/datafile/" + guestbookResponse.getDataFile().getId());
             mdcLogService.logEntry(entry);
         } catch (CommandException e) {
             //if an error occurs here then download won't happen no need for response recs...
-            logger.warning("Exception writing GuestbookResponse for file: " + guestbookResponse.getDataFile().getId() + " : " + e.getLocalizedMessage());
+            logger.warning("Exception writing GuestbookResponse for file: "
+                    + guestbookResponse.getDataFile().getId()
+                    + " : "
+                    + e.getLocalizedMessage());
         }
         return guestbookResponseIds;
     }
@@ -637,5 +780,10 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
             
         return null; 
+    }
+
+    public class MultipleDatasetsException extends Throwable {
+        public MultipleDatasetsException(String s) {
+        }
     }
 }

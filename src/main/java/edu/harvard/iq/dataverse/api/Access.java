@@ -1051,7 +1051,7 @@ public class Access extends AbstractApiBean {
         }
 
         String[] fileIdParams = getFileIdsCSV(body);
-
+        List<String> fileIdsList = new ArrayList<>(Arrays.asList(fileIdParams));
         /* Note - fileIds coming from the POST ends in '\n' and a ',' has been added after the last file id number and before a
          * final '\n' - this stops the last item from being parsed in the fileIds.split(","); line below.
          */
@@ -1070,175 +1070,179 @@ public class Access extends AbstractApiBean {
             }
         }
 
-        Map<Long, DataFile> datafilesMap = new HashMap<>();
-        List<Long> authorizedDatafileIds = new ArrayList<>();
+       List<DataFile> authorizedDatafiles = new ArrayList<>();
 
-        // Get DataFiles, check authorized access, check for multiple Datasets, and check for required guestbook response
-        Set<Long> datasetIds = new HashSet<>();
-        Boolean guestbookResponseRequired = null;
-        for (int i = 0; i < fileIdParams.length; i++) {
-            DataFile df = findDataFileUserCanSeeOrDieWrapper(fileIdParams[i], req);
-            if (guestbookResponseRequired == null) {
-                // Only need to check this on the first file
-                guestbookResponseRequired = checkGuestbookRequiredResponse(user, uriInfo, df, gbrids);
+        // Get DataFiles, check authorized access, and check for required guestbook response
+        //  ToDo - cache dataset perms, e.g. editdataset let's you get all files (assuming one dataset)
+        // Same for filedownload if assigned at the dataset level
+
+        List<DataFile> selectedDataFiles = new ArrayList<>();
+        try {
+            selectedDataFiles = fileDownloadService.resolveSelectedDataFilesInDataset(fileIdsList);
+        } catch (FileNotFoundException e) {
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.invalidFileId"));
+        } catch (FileDownloadServiceBean.MultipleDatasetsException e) {
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.multipleDatasets"));
+        }
+        if(!selectedDataFiles.isEmpty()) {
+
+            Boolean guestbookResponseRequired = checkGuestbookRequiredResponse(crc, uriInfo, selectedDataFiles.getFirst(), gbrids);
+            logger.fine("Downloading" + fileIdParams.length + " files. GBR required: " + guestbookResponseRequired);
+
+            for (DataFile df : selectedDataFiles) {
+                if (isAccessAuthorized(user, df)) {
+                    authorizedDatafiles.add(df);
+                }
             }
-            datafilesMap.put(df.getId(), df);
-            datasetIds.add(df.getOwner() != null ? df.getOwner().getId() : 0L);
-            if (isAccessAuthorized(user, df)) {
-                authorizedDatafileIds.add(df.getId());
+            if (!donotwriteGBResponse) {
+                if (guestbookResponseRequired) {
+                    try {
+                        GuestbookResponse gbr = getGuestbookResponseFromBody(authorizedDatafiles.getFirst(), GuestbookResponse.DOWNLOAD, body, user);
+                        if (gbr != null) {
+                            fileDownloadService.writeGuestbookResponseRecords(gbr, authorizedDatafiles);
+                        } else {
+                            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", getGuestbookIdFromDatafile(authorizedDatafiles.getFirst())));
+                        }
+                    } catch (JsonParseException ex) {
+                        List<String> args = Arrays.asList(authorizedDatafiles.getFirst().getDisplayName(), ex.getLocalizedMessage());
+                        return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbook.commandError", args));
+                    }
+
+                } else {
+                    GuestbookResponse gbr = guestbookResponseService.initAPIGuestbookResponse(authorizedDatafiles.getFirst().getOwner(), authorizedDatafiles.getFirst(), session, user);
+                    fileDownloadService.writeGuestbookResponseRecords(gbr, authorizedDatafiles);
+                }
+                //We've written the gb responses if needed
+                donotwriteGBResponse = true;
             }
-            if (datasetIds.size() > 1) {
-                // All files must be from the same Dataset
-                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.multipleDatasets"));
-            } else if (authorizedDatafileIds.contains(df.getId()) && guestbookResponseRequired) {
+
+
+            if (useCustomZipService) {
+                URI redirect_uri = null;
                 try {
-                    GuestbookResponse gbr = getGuestbookResponseFromBody(df, GuestbookResponse.DOWNLOAD, body, user);
-                    if (gbr != null) {
-                        engineSvc.submit(new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), gbr, gbr.getDataset()));
-                        donotwriteGBResponse = true;
-                        //  Further down the actual download will also create a simple download response for every datafile listed based on the donotwriteGBResponse flag.
-                        //  Modifying donotwriteGBResponse will block that so we also need to log the MDC entry here
-                        MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
-                        mdcLogService.logEntry(entry);
-                    } else {
-                        return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", getGuestbookIdFromDatafile(df)));
-                    }
-                } catch (JsonParseException | CommandException ex) {
-                    List<String> args = Arrays.asList(df.getDisplayName(), ex.getLocalizedMessage());
-                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbook.commandError", args));
+                    redirect_uri = handleCustomZipDownload(user, customZipServiceUrl, fileIdParams, uriInfo, headers, donotwriteGBResponse, true);
+                } catch (WebApplicationException wae) {
+                    throw wae;
                 }
-            }
-        }
 
-        if (useCustomZipService) {
-            URI redirect_uri = null;
-            try {
-                //ToDo - make extnerla Zipper LocallyFAIR aware
-                redirect_uri = handleCustomZipDownload(user, customZipServiceUrl, fileIdParams, uriInfo, headers, donotwriteGBResponse, true);
-            } catch (WebApplicationException wae) {
-                throw wae;
+                Response redirect = Response.seeOther(redirect_uri).build();
+                logger.fine("Issuing redirect to the file location on S3.");
+                throw new RedirectionException(redirect);
+
             }
 
-            Response redirect = Response.seeOther(redirect_uri).build();
-            logger.fine("Issuing redirect to the file location on S3.");
-            throw new RedirectionException(redirect);
+            // Not using the "custom service" - API will zip the file,
+            // and stream the output, in the "normal" manner:
 
-        }
+            // to use via anon inner class
+            final boolean getOriginal = getOrig;
+            final boolean skipGBResponse = donotwriteGBResponse; // Response may have been written prior and donotwriteGBResponse may have been modified.
+            final List<DataFile> allSelectedDataFiles = selectedDataFiles;
+            StreamingOutput stream = new StreamingOutput() {
 
-        // Not using the "custom service" - API will zip the file,
-        // and stream the output, in the "normal" manner:
+                @Override
+                public void write(OutputStream os) throws IOException,
+                        WebApplicationException {
+                    DataFileZipper zipper = null;
+                    String fileManifest = "";
+                    long sizeTotal = 0L;
 
-        // to use via anon inner class
-        final boolean getOriginal = getOrig;
-        final boolean skipGBResponse = donotwriteGBResponse; // Response may have been written prior and donotwriteGBResponse may have been modified.
+                    for (DataFile file : allSelectedDataFiles) {
+                        if (authorizedDatafiles.contains(file)) {
+                            logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
+                            //downloadInstance.addDataFile(file);
 
-        StreamingOutput stream = new StreamingOutput() {
 
-            @Override
-            public void write(OutputStream os) throws IOException,
-                    WebApplicationException {
-                DataFileZipper zipper = null;
-                String fileManifest = "";
-                long sizeTotal = 0L;
+                            if (zipper == null) {
+                                // This is the first file we can serve - so we now know that we are going to be able
+                                // to produce some output.
+                                zipper = new DataFileZipper(os);
+                                zipper.setFileManifest(fileManifest);
+                                String bundleName = generateMultiFileBundleName(file.getOwner(), versionTag);
+                                response.setHeader("Content-disposition", "attachment; filename=\"" + bundleName + "\"");
+                                response.setHeader("Content-Type", "application/zip; name=\"" + bundleName + "\"");
+                            }
 
-                for (DataFile file : datafilesMap.values()) {
-                    if (authorizedDatafileIds.contains(file.getId())) {
-                        logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
-                        //downloadInstance.addDataFile(file);
-                        if (skipGBResponse != true && file.isReleased()) {
-                            GuestbookResponse gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, user);
-                            guestbookResponseService.save(gbr);
-                            MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, file);
-                            mdcLogService.logEntry(entry);
-                        }
+                            long size = 0L;
+                            // is the original format requested, and is this a tabular datafile, with a preserved original?
+                            if (getOriginal
+                                    && file.isTabularData()
+                                    && !StringUtil.isEmpty(file.getDataTable().getOriginalFileFormat())) {
+                                //This size check is probably fairly inefficient as we have to get all the AccessObjects
+                                //We do this again inside the zipper. I don't think there is a better solution
+                                //without doing a large deal of rewriting or architecture redo.
+                                //The previous size checks for non-original download is still quick.
+                                //-MAD 4.9.2
+                                // OK, here's the better solution: we now store the size of the original file in
+                                // the database (in DataTable), so we get it for free.
+                                // However, there may still be legacy datatables for which the size is not saved.
+                                // so the "inefficient" code is kept, below, as a fallback solution.
+                                // -- L.A., 4.10
 
-                        if (zipper == null) {
-                            // This is the first file we can serve - so we now know that we are going to be able
-                            // to produce some output.
-                            zipper = new DataFileZipper(os);
-                            zipper.setFileManifest(fileManifest);
-                            String bundleName = generateMultiFileBundleName(file.getOwner(), versionTag);
-                            response.setHeader("Content-disposition", "attachment; filename=\"" + bundleName + "\"");
-                            response.setHeader("Content-Type", "application/zip; name=\"" + bundleName + "\"");
-                        }
+                                if (file.getDataTable().getOriginalFileSize() != null) {
+                                    size = file.getDataTable().getOriginalFileSize();
+                                } else {
+                                    DataAccessRequest daReq = new DataAccessRequest();
+                                    StorageIO<DataFile> storageIO = DataAccess.getStorageIO(file, daReq);
+                                    storageIO.open();
+                                    size = storageIO.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
 
-                        long size = 0L;
-                        // is the original format requested, and is this a tabular datafile, with a preserved original?
-                        if (getOriginal
-                                && file.isTabularData()
-                                && !StringUtil.isEmpty(file.getDataTable().getOriginalFileFormat())) {
-                            //This size check is probably fairly inefficient as we have to get all the AccessObjects
-                            //We do this again inside the zipper. I don't think there is a better solution
-                            //without doing a large deal of rewriting or architecture redo.
-                            //The previous size checks for non-original download is still quick.
-                            //-MAD 4.9.2
-                            // OK, here's the better solution: we now store the size of the original file in
-                            // the database (in DataTable), so we get it for free.
-                            // However, there may still be legacy datatables for which the size is not saved.
-                            // so the "inefficient" code is kept, below, as a fallback solution.
-                            // -- L.A., 4.10
-
-                            if (file.getDataTable().getOriginalFileSize() != null) {
-                                size = file.getDataTable().getOriginalFileSize();
+                                    // save it permanently:
+                                    file.getDataTable().setOriginalFileSize(size);
+                                    fileService.saveDataTable(file.getDataTable());
+                                }
+                                if (size == 0L) {
+                                    throw new IOException("Invalid file size or accessObject when checking limits of zip file");
+                                }
                             } else {
-                                DataAccessRequest daReq = new DataAccessRequest();
-                                StorageIO<DataFile> storageIO = DataAccess.getStorageIO(file, daReq);
-                                storageIO.open();
-                                size = storageIO.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-
-                                // save it permanently:
-                                file.getDataTable().setOriginalFileSize(size);
-                                fileService.saveDataTable(file.getDataTable());
+                                size = file.getFilesize();
                             }
-                            if (size == 0L) {
-                                throw new IOException("Invalid file size or accessObject when checking limits of zip file");
+                            if (sizeTotal + size < zipDownloadSizeLimit) {
+                                sizeTotal += zipper.addFileToZipStream(file, getOriginal);
+                            } else {
+                                String fileName = file.getFileMetadata().getLabel();
+                                String mimeType = file.getContentType();
+
+                                zipper.addToManifest(fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + zipDownloadSizeLimit + " bytes.\r\n");
                             }
                         } else {
-                            size = file.getFilesize();
-                        }
-                        if (sizeTotal + size < zipDownloadSizeLimit) {
-                            sizeTotal += zipper.addFileToZipStream(file, getOriginal);
-                        } else {
-                            String fileName = file.getFileMetadata().getLabel();
-                            String mimeType = file.getContentType();
-
-                            zipper.addToManifest(fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + zipDownloadSizeLimit + " bytes.\r\n");
-                        }
-                    } else {
-                        boolean embargoed = FileUtil.isActivelyEmbargoed(file);
-                        boolean retentionExpired = FileUtil.isRetentionExpired(file);
-                        String manifestEntry = file.getFileMetadata().getLabel() + " IS " + (
-                                embargoed ? "EMBARGOED" :
-                                retentionExpired ? "RETENTIONEXPIRED" :
-                                file.isRestricted() ? "RESTRICTED" :
-                                "NOTAUTHORIZED")
-                                + " AND CANNOT BE DOWNLOADED\r\n";
-                        if (zipper == null) {
-                            fileManifest = fileManifest + manifestEntry;
-                        } else {
-                            zipper.addToManifest(manifestEntry);
+                            boolean embargoed = FileUtil.isActivelyEmbargoed(file);
+                            boolean retentionExpired = FileUtil.isRetentionExpired(file);
+                            String manifestEntry = file.getFileMetadata().getLabel() + " IS " + (
+                                    embargoed ? "EMBARGOED" :
+                                            retentionExpired ? "RETENTIONEXPIRED" :
+                                            file.isRestricted() ? "RESTRICTED" :
+                                            "NOTAUTHORIZED")
+                                    + " AND CANNOT BE DOWNLOADED\r\n";
+                            if (zipper == null) {
+                                fileManifest = fileManifest + manifestEntry;
+                            } else {
+                                zipper.addToManifest(manifestEntry);
+                            }
                         }
                     }
+
+                    if (zipper == null) {
+                        // If the DataFileZipper object is still NULL, it means that
+                        // there were file ids supplied - but none of the corresponding
+                        // files were accessible for this user.
+                        // In which case we don't bother generating any output, and
+                        // just give them a 403:
+                        throw new ForbiddenException();
+                    }
+
+                    // This will add the generated File Manifest to the zipped output,
+                    // then flush and close the stream:
+                    zipper.finalizeZipStream();
+
+                    //os.flush();
+                    //os.close();
                 }
+            };
 
-                if (zipper == null) {
-                    // If the DataFileZipper object is still NULL, it means that
-                    // there were file ids supplied - but none of the corresponding
-                    // files were accessible for this user.
-                    // In which case we don't bother generating any output, and
-                    // just give them a 403:
-                    throw new ForbiddenException();
-                }
-
-                // This will add the generated File Manifest to the zipped output,
-                // then flush and close the stream:
-                zipper.finalizeZipStream();
-
-                //os.flush();
-                //os.close();
-            }
-        };
-        return Response.ok(stream).build();
+            return Response.ok(stream).build();
+        }
+        return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.noFiles"));
     }
     
     /* 
