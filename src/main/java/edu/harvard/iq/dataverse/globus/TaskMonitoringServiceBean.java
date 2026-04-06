@@ -206,7 +206,10 @@ public class TaskMonitoringServiceBean {
             try {
                 retrieved = globusService.getTask(globusClientToken, task.getTaskId(), null);
             } catch (ExpiredTokenException ete) {
+                logger.info("token expired; renewing");
                 globusClientToken = getClientTokenForStorageDriver(task.getDataset(), true);
+            } catch (Exception ex) {
+                logger.warning("Unknown exception attempting to look up task " + task.getTaskId() + ": " + ex);
             }
             attempts--;
         }

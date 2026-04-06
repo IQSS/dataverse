@@ -75,13 +75,10 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import jakarta.json.JsonNumber;
-import jakarta.json.JsonReader;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Response;
-import org.apache.http.util.EntityUtils;
 
 @Stateless
 @Named("GlobusServiceBean")
@@ -517,17 +514,19 @@ public class GlobusServiceBean implements java.io.Serializable {
         }
         
         if (result.status != 200) {
-            // @todo It should probably retry it 2-3 times before giving up;
-            // similarly, it should probably differentiate between a "no such task" 
-            // response and something intermittent like a server/network error or 
-            // an expired token... i.e. something that's recoverable (?)
-            // edit: yes, but, should be done outside of this method, in the code
-            // that uses it
+            
+            String failureReason; 
+            if (result.jsonResponse != null) {
+                failureReason = result.jsonResponse;
+            } else {
+                failureReason = "unknown";
+            }
+            
             myLogger.warning("Cannot find information for the task " + taskId
                     + " status: "
                     + result.status
                     + " : Reason :   "
-                    + result.jsonResponse != null ? result.jsonResponse.toString() : "unknown" );
+                    + failureReason);
         }
         
         if (result.status == 401) {
@@ -1754,6 +1753,10 @@ public class GlobusServiceBean implements java.io.Serializable {
             boolean deleteRule,
             Logger taskLogger) {
     
+        if (globusTask.getDataset() == null) {
+            return; 
+        }
+        
         String ruleId = globusTask.getRuleId();
         Dataset dataset = globusTask.getDataset();
         AuthenticatedUser authUser = globusTask.getLocalUser();
