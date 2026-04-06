@@ -22,7 +22,7 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-
+import jakarta.validation.constraints.NotBlank;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import java.util.Arrays;
 import java.util.Date;
@@ -30,7 +30,6 @@ import java.util.List;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.component.UIInput;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.validator.constraints.NotBlank;
 
 @ViewScoped
 @Named("PasswordResetPage")

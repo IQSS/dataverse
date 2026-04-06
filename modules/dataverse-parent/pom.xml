@@ -132,9 +132,9 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>6.9</revision>
+        <revision>6.10.1</revision>
     
-        <target.java.version>17</target.java.version>
+        <target.java.version>21</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <additionalparam>-Xdoclint:none</additionalparam>
         <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
@@ -149,7 +149,7 @@
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
     
         <!-- Major system components and dependencies -->
-        <payara.version>6.2025.10</payara.version>
+        <payara.version>7.2026.2</payara.version>
         <postgresql.version>42.7.7</postgresql.version>
         <solr.version>9.8.0</solr.version>
         <postgresql.server.version>16</postgresql.server.version>
@@ -200,7 +200,7 @@
         <pomchecker-maven-plugin.version>1.7.0</pomchecker-maven-plugin.version>
         
         <!-- Container related -->
-        <fabric8-dmp.version>0.46.0</fabric8-dmp.version>
+        <fabric8-dmp.version>0.48.0</fabric8-dmp.version>
     </properties>
     
     <pluginRepositories>

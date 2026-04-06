@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.ConflictException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
@@ -73,7 +74,7 @@ public RoleAssignment execute(CommandContext ctxt) throws CommandException {
         }
     }
     if(isExistingRole(ctxt)){
-        throw new IllegalCommandException(BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.has.role.error"), this);
+        throw new ConflictException(BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.has.role.error"), this);
     }
     // TODO make sure the role is defined on the dataverse.
     RoleAssignment roleAssignment = new RoleAssignment(role, grantee, defPoint, privateUrlToken, anonymizedAccess);
