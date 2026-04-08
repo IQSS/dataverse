@@ -662,6 +662,10 @@ public class Dataset extends DvObjectContainer {
         return retVal;         
     }
 
+    public String getGlobalIdForFileStorageAsString() {
+        return getProtocolForFileStorage() + ":" + getAuthorityForFileStorage() + "/" + getIdentifierForFileStorage();
+    }
+
     public String getNextMajorVersionString() {
         // Never need to get the next major version for harvested studies.
         if (isHarvested()) {
