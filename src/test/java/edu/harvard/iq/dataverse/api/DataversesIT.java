@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -545,12 +546,26 @@ public class DataversesIT {
         updateDataverseDefaultRole.then().assertThat()
                 .body("data.message", equalTo("Default contributor role for Dataverse " + dataverseAlias + " has been set to Curator."))
                 .statusCode(200);
+
+        // test GET API for retrieving the role that was just set
+        Response getDataverseDefaultRole = UtilIT.getDefaultContributorsRoleOnDataverse(dataverseAlias, apiToken);
+        getDataverseDefaultRole.prettyPrint();
+        getDataverseDefaultRole.then().assertThat()
+                .body("data.alias", equalTo("curator"))
+                .statusCode(200);
         
         //for test use an existing role. In practice this likely will be a custom role
         Response updateDataverseDefaultRoleNone = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "none", apiToken);
         updateDataverseDefaultRoleNone.prettyPrint();
         updateDataverseDefaultRoleNone.then().assertThat()
                 .body("data.message", equalTo("Default contributor role for Dataverse " + dataverseAlias + " has been set to None."))
+                .statusCode(200);
+
+        // test GET API for retrieving the role that was just set
+        Response getDataverseDefaultRoleNone = UtilIT.getDefaultContributorsRoleOnDataverse(dataverseAlias, apiToken);
+        getDataverseDefaultRoleNone.prettyPrint();
+        getDataverseDefaultRoleNone.then().assertThat()
+                .body("data", equalTo(Collections.emptyMap()))
                 .statusCode(200);
 
         // try bad role alias

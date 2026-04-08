@@ -2729,12 +2729,19 @@ public class UtilIT {
                 .get(url);
     }
     
-    static Response updateDefaultContributorsRoleOnDataverse(String dataverseAliasOrId,String roleAlias, String apiToken) {
+    static Response updateDefaultContributorsRoleOnDataverse(String dataverseAliasOrId, String roleAlias, String apiToken) {
         String url = "/api/dataverses/" + dataverseAliasOrId + "/defaultContributorRole/" + roleAlias;
         System.out.println("URL: " + url);
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .put(url);
+    }
+
+    static Response getDefaultContributorsRoleOnDataverse(String dataverseAliasOrId, String apiToken) {
+        String url = "/api/dataverses/" + dataverseAliasOrId + "/defaultContributorRole";
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get(url);
     }
 
     static Response getRoleAssignmentsOnDataset(String datasetId, String persistentId, String apiToken) {
