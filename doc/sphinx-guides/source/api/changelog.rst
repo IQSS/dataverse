@@ -12,6 +12,8 @@ v6.11
 
 - The GET /api/mydata/retrieve, if the search returns no data, now includes the "data" block with 0 results. The message that was returned in "error_message" will be returned in "message" and the "success" will be `true`. All other errors will continue to reply with "success":false and the error message in "error_message".
 
+- The Croissant :ref:`metadata export format <metadata-export-formats>` has been updated from version 1.0 to 1.1, which is reflected in the ``conformsTo`` property. ``@vocab`` and ``sc`` properties now use "http" as `recommended <https://github.com/mlcommons/croissant/pull/929#pullrequestreview-3079137662>`_. The unused ``wd`` property has been dropped.
+
 v6.10
 -----
 - The following GET APIs will now return ``400`` if a required Guestbook Response is not supplied. A Guestbook Response can be passed to these APIs in the JSON body using a POST call. See the notes under :ref:`basic-file-access` and :ref:`download-by-dataset-by-version` for details.
