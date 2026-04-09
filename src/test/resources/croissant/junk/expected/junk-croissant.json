@@ -1,7 +1,7 @@
 {
     "@context": {
         "@language": "en",
-        "@vocab": "https://schema.org/",
+        "@vocab": "http://schema.org/",
         "citeAs": "cr:citeAs",
         "column": "cr:column",
         "conformsTo": "dct:conformsTo",
@@ -16,6 +16,7 @@
             "@type": "@vocab"
         },
         "dct": "http://purl.org/dc/terms/",
+        "ddi-stats": "http://rdf-vocabulary.ddialliance.org/cv/SummaryStatisticType/2.1.2/",
         "examples": {
             "@id": "cr:examples",
             "@type": "@json"
@@ -39,15 +40,14 @@
         "repeated": "cr:repeated",
         "replace": "cr:replace",
         "samplingRate": "cr:samplingRate",
-        "sc": "https://schema.org/",
+        "sc": "http://schema.org/",
         "separator": "cr:separator",
         "source": "cr:source",
         "subField": "cr:subField",
-        "transform": "cr:transform",
-        "wd": "https://www.wikidata.org/wiki/"
+        "transform": "cr:transform"
     },
     "@type": "sc:Dataset",
-    "conformsTo": "http://mlcommons.org/croissant/1.0",
+    "conformsTo": "http://mlcommons.org/croissant/1.1",
     "name": "&lt;/script&gt;&lt;script&gt;alert(666)&lt;/script&gt;",
     "url": "https://doi.org/10.5072/FK2/0CNXUJ",
     "creator": [
