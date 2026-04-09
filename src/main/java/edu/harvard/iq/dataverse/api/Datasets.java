@@ -18,18 +18,22 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
-import edu.harvard.iq.dataverse.datasetversionsummaries.DatasetVersionSummary;
-import org.checkerframework.checker.units.qual.C;
-import software.amazon.awssdk.services.s3.model.CompletedPart;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
-import edu.harvard.iq.dataverse.dataset.*;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
 import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
+import edu.harvard.iq.dataverse.datasetversionsummaries.DatasetVersionSummary;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.exception.*;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
@@ -39,6 +43,7 @@ import edu.harvard.iq.dataverse.globus.GlobusUtil;
 import edu.harvard.iq.dataverse.i18n.I18nUtil;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.makedatacount.*;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
@@ -69,8 +74,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
 import jakarta.ws.rs.core.Response.Status;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -80,6 +85,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import software.amazon.awssdk.services.s3.model.CompletedPart;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -100,10 +106,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
-
-import edu.harvard.iq.dataverse.license.License;
-
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
@@ -128,6 +132,9 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     GuestbookResponseServiceBean guestbookResponseService;
+
+    @EJB
+    GuestbookServiceBean guestbookService;
 
     @EJB
     GlobusServiceBean globusService;
@@ -2806,7 +2813,7 @@ public class Datasets extends AbstractApiBean {
             String storageIdentifier = null;
             try {
                 storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
-                response = s3io.generateTemporaryS3UploadUrls(dataset.getGlobalId().asString(), storageIdentifier, fileSize);
+                response = s3io.generateTemporaryS3UploadUrls(dataset.getGlobalIdForFileStorageAsString(), storageIdentifier, fileSize);
 
             } catch (IOException io) {
                 logger.warning(io.getMessage());
@@ -6047,6 +6054,54 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
+    }
+
+    @AuthRequired
+    @PUT
+    @Path("{identifier}/guestbook")
+    public Response updateDatasetGuestbook(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, String body) {
+        return response(req -> {
+            Dataset dataset = findDatasetOrDie(identifier);
+            Long guestbookId = null;
+            try {
+                guestbookId = Long.parseLong(body);
+                final Guestbook guestbook = guestbookService.find(guestbookId);
+                if (guestbook == null) {
+                    return error(NOT_FOUND, "Could not find a guestbook with id " + guestbookId);
+                }
+                UpdateDatasetGuestbookCommand update_cmd = new UpdateDatasetGuestbookCommand(dataset, guestbook, req);
+                commandEngine.submit(update_cmd);
+            } catch (NumberFormatException nfe) {
+                return error(NOT_FOUND, "Could not find a guestbook with id " + guestbookId);
+            } catch (CommandException ex) {
+                logger.log(Level.WARNING, "Failed to update dataset guestbook for dataset " + dataset.getId(), ex);
+                return error(BAD_REQUEST, "Failed to update dataset guestbook.");
+            }
+            return ok("Guestbook " + guestbookId + " set");
+
+        }, getRequestUser(crc));
+    }
+
+    @AuthRequired
+    @DELETE
+    @Path("{identifier}/guestbook")
+    public Response deleteDatasetGuestbook(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) {
+        return response(req -> {
+            Dataset dataset = findDatasetOrDie(identifier);
+            if (dataset.getGuestbook() != null) {
+                Long guestbookId = dataset.getGuestbook().getId();
+                try {
+                    UpdateDatasetGuestbookCommand update_cmd = new UpdateDatasetGuestbookCommand(dataset, null, req);
+                    commandEngine.submit(update_cmd);
+                } catch (CommandException ex) {
+                    logger.log(Level.WARNING, "Failed to remove dataset guestbook from dataset " + dataset.getId(), ex);
+                    return error(BAD_REQUEST, "Failed to remove dataset guestbook.");
+                }
+                return ok("Guestbook removed " + guestbookId);
+            } else {
+                return ok("No Guestbook to remove.");
+            }
+        }, getRequestUser(crc));
     }
 
     @PUT

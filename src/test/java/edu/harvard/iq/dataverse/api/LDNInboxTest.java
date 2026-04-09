@@ -251,7 +251,7 @@ public class LDNInboxTest {
 
     static String createRelationshipAnnouncementMessage(String sourceId, String targetId, String relationship) {
         JsonArray context = Json.createArrayBuilder().add("https://www.w3.org/ns/activitystreams")
-                .add("https://purl.org/coar/notify").build();
+                .add("https://coar-notify.net").build();
 
         JsonArray type = Json.createArrayBuilder().add("Announce").add("coar-notify:RelationshipAction").build();
 

@@ -28,7 +28,7 @@ Supported Metadata Export Formats
 
 Once a dataset has been published, its metadata can be exported in a variety of other metadata standards and formats, which help make datasets more :doc:`discoverable </admin/discoverability>` and usable in other systems, such as other data repositories. On each dataset page's metadata tab, the following exports are available:
 
-- Croissant
+- Croissant (example: :download:`max-croissant.json <../../../../src/test/resources/croissant/max/expected/max-croissant.json>`)
 - Dublin Core
 - DDI (Data Documentation Initiative Codebook 2.5)
 - DDI HTML Codebook (A more human-readable, HTML version of the DDI Codebook 2.5 metadata export)
