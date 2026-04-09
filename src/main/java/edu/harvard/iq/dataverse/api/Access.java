@@ -146,7 +146,7 @@ public class Access extends AbstractApiBean {
         
         // This will throw a ForbiddenException if access isn't authorized:
         checkAuthorization(req.getUser(), df);
-        if (checkGuestbookRequiredResponse(crc, uriInfo, df, gbrids)) {
+        if (checkGuestbookRequiredResponse(req.getUser(), uriInfo, df, gbrids)) {
             throw new BadRequestException(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", getGuestbookIdFromDatafile(df)));
         }
         
@@ -251,7 +251,7 @@ public class Access extends AbstractApiBean {
                
         // This will throw a ForbiddenException if access isn't authorized:
         checkAuthorization(req.getUser(), df);
-        if (checkGuestbookRequiredResponse(crc, uriInfo, df, gbrids)) {
+        if (checkGuestbookRequiredResponse(req.getUser(), uriInfo, df, gbrids)) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", getGuestbookIdFromDatafile(df)));
         }
 
@@ -428,7 +428,7 @@ public class Access extends AbstractApiBean {
             // since all files must be in the same Dataset we can generate a Guestbook Response once and just replace the DataFile for each file in the list
             DataFile firstDatafile = datafilesMap.values().size() > 0 ? (DataFile) Arrays.stream(datafilesMap.values().toArray()).findFirst().get() : null;
             GuestbookResponse gbr = getGuestbookResponseFromBody(firstDatafile, GuestbookResponse.DOWNLOAD, jsonBody, user);
-            boolean guestbookResponseRequired = checkGuestbookRequiredResponse(crc, uriInfo, firstDatafile, null);
+            boolean guestbookResponseRequired = checkGuestbookRequiredResponse(user, uriInfo, firstDatafile, null);
             for (DataFile df : datafilesMap.values()) {
                 displayName = df.getDisplayName();
                 datasetId = df.getOwner().getId();
@@ -458,12 +458,13 @@ public class Access extends AbstractApiBean {
     }
 
     private Map<Long, DataFile> getDatafilesMap(ContainerRequestContext crc, String fileIds) {
+        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         String fileIdParams[] = getFileIdsCSV(fileIds);
         Map<Long, DataFile> datafilesMap = new HashMap<>();
         // Get and validate all the DataFiles first
         if (fileIdParams != null && fileIdParams.length > 0) {
             for (int i = 0; i < fileIdParams.length; i++) {
-                DataFile df = findDataFileUserCanSeeOrDieWrapper(fileIdParams[i]);
+                DataFile df = findDataFileUserCanSeeOrDieWrapper(fileIdParams[i], req);
 
                 if (df.isHarvested()) {
                     String errorMessage = "Datafile " + df.getId() + " is a harvested file that cannot be accessed in this Dataverse";
@@ -472,7 +473,7 @@ public class Access extends AbstractApiBean {
                 }
 
                 // This will throw a ForbiddenException if access isn't authorized:
-                checkAuthorization(crc, df);
+                checkAuthorization(req.getUser(), df);
 
                 datafilesMap.put(df.getId(), df);
             }
@@ -1015,10 +1016,10 @@ public class Access extends AbstractApiBean {
         Set<Long> datasetIds = new HashSet<>();
         Boolean guestbookResponseRequired = null;
         for (int i = 0; i < fileIdParams.length; i++) {
-            DataFile df = findDataFileUserCanSeeOrDieWrapper(fileIdParams[i]);
+            DataFile df = findDataFileUserCanSeeOrDieWrapper(fileIdParams[i], req);
             if (guestbookResponseRequired == null) {
                 // Only need to check this on the first file
-                guestbookResponseRequired = checkGuestbookRequiredResponse(crc, uriInfo, df, gbrids);
+                guestbookResponseRequired = checkGuestbookRequiredResponse(user, uriInfo, df, gbrids);
             }
             datafilesMap.put(df.getId(), df);
             datasetIds.add(df.getOwner() != null ? df.getOwner().getId() : 0L);
@@ -1900,12 +1901,12 @@ public class Access extends AbstractApiBean {
         return ok(jsonObjectBuilder);
     }
 
-    private boolean checkGuestbookRequiredResponse(ContainerRequestContext crc, UriInfo uriInfo, DataFile df, String gbrids) throws WebApplicationException {
+    private boolean checkGuestbookRequiredResponse(User user, UriInfo uriInfo, DataFile df, String gbrids) throws WebApplicationException {
         // Check if guestbook response is required
         boolean required = df.getOwner().hasEnabledGuestbook();
         boolean wasWrittenInPost = false;
         if (required) {
-            User requestor = getRequestor(crc);
+            User requestor = getRequestor(user);
             if (requestor instanceof AuthenticatedUser && permissionService.userOn(requestor, df.getOwner()).has(Permission.EditDataset)) {
                 required = false;
             }
