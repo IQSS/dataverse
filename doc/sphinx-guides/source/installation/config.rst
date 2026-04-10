@@ -4082,6 +4082,15 @@ dataverse.feature.require-embargo-reason
 
 Require an embargo reason when a user creates an embargo on one or more files. See :ref:`embargoes`.
 
+.. _dataverse.feature.allow-locally-fair-data:
+
+dataverse.feature.allow-locally-fair-data
++++++++++++++++++++++++++++++++++++++++++
+
+Allows support for Locally FAIR collections and datasets.
+When enabled, selected content can remain visible only to authorized users or groups within a Dataverse installation.
+See :doc:`/user/locally-fair` for more information.
+
 .. _:ApplicationServerSettings:
 
 Application Server Settings

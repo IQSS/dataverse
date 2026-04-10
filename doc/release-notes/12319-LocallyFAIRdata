@@ -1,0 +1,9 @@
+This release includes experimental support for "Locally FAIR" data.
+This feature allows publication of content that will only be visible to authorized users or groups within a Dataverse installation.
+User without authorization will not see the Locally FAIR collections, datasets, or files in search results and cannot visit their
+pages or access them via the Dataverse API.
+
+For more information, see the [Locally FAIR Data](https://guides.dataverse.org/en/latest/user/locally-fair-data.html) guide.
+
+New Config Option:
+Whether Locally FAIR content can be created is controlled by the new `dataverse.feature.allow-locally-fair-data` feature flag.
