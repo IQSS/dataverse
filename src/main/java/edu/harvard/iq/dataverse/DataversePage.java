@@ -1358,7 +1358,13 @@ public class DataversePage implements java.io.Serializable {
             }
         }
     }
-    
+    /**
+     * Returns role assignees matching the search query, while excluding any assignees
+     * that are already associated with this dataverse through locally FAIR role assignment.
+     *
+     * @param query search text used to filter possible role assignees
+     * @return matching role assignees that can still be added to the dataverse
+     */
     public List<RoleAssignee> completeRoleAssignee( String query ) {
         List<RoleAssignee> existingAssignees = dataverse.getLocallyFAIRRoleAssigneeIdentifiers().stream()
                 .map(id -> roleAssigneeService.getRoleAssignee(id))
