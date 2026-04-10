@@ -2144,9 +2144,9 @@ public class DatasetPage implements java.io.Serializable {
                     .hasLocallyFAIRAccess(dvRequestService.getDataverseRequest(), dataset));
             if (!(releasedAndCanView || workingVersion.isDeaccessioned()) && !this.canViewUnpublishedDataset()) {
                 if (dataset.isLocallyFAIR()) {
-                    return permissionsWrapper.notAuthorized();
-                } else {
                     return permissionsWrapper.notFound();
+                } else {
+                    return permissionsWrapper.notAuthorized();
                 }
             }
 
