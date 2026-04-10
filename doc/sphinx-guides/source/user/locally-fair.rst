@@ -44,7 +44,7 @@ That means:
 
 - **Interoperable** Data should be compatible with other datasets and systems. Locally FAIR datasets in Dataverse use the same standard metadata blocks as for public content and files undergo the same ingest process, use the same previewers and tools, etc.
 
-- **Reusable** Data should be well-described and licensed in a way that allows others to use it for future research. The licenses and terns on locally FAIR content make it clear how and when the data can be re-used.
+- **Reusable** Data should be well-described and licensed in a way that allows others to use it for future research. The licenses and terms on locally FAIR content make it clear how and when the data can be re-used.
 
 Why Repositories Use It
 =======================
