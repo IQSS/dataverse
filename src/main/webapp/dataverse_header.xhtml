@@ -111,7 +111,7 @@
                         </li>
                         <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
                             <li>
-                                <h:outputLink rendered="#{dataverseHeaderFragment.signupAllowed}"
+                                <h:outputLink rendered="#{dataverseHeaderFragment.signupAllowed and !dataverseHeaderFragment.autoLoginOidcProvider}"
                                               value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}">
                                     #{bundle['header.signUp']}
                                 </h:outputLink>

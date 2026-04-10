@@ -27,6 +27,7 @@ import com.nimbusds.openid.connect.sdk.AuthenticationRequest;
 import com.nimbusds.openid.connect.sdk.Nonce;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
+import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 import com.nimbusds.openid.connect.sdk.UserInfoRequest;
 import com.nimbusds.openid.connect.sdk.UserInfoResponse;
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
@@ -36,6 +37,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -43,6 +45,8 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -50,6 +54,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import java.io.StringReader;
 
 /**
  * TODO: this should not EXTEND, but IMPLEMENT the contract to be used in {@link edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2LoginBackingBean}
@@ -184,6 +192,41 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
     }
     
     /**
+     * Build the OIDC end session (logout) URL.
+     * @param postLogoutRedirectUri Where to redirect after logout
+     * @param idTokenHint The ID token from the session, used to skip confirmation screen
+     * @return The logout URL, or null if the provider doesn't support end_session_endpoint
+     */
+    public String buildLogoutUrl(String postLogoutRedirectUri, OAuth2TokenData tokenData) {
+        URI endSessionEndpoint = idpMetadata.getEndSessionEndpointURI();
+        if (endSessionEndpoint == null) {
+            return null;
+        }
+        String idTokenHint = extractIdToken(tokenData);
+        String url = endSessionEndpoint + "?post_logout_redirect_uri="
+                + URLEncoder.encode(postLogoutRedirectUri, StandardCharsets.UTF_8);
+        if (idTokenHint != null && !idTokenHint.isEmpty()) {
+            url += "&id_token_hint=" + URLEncoder.encode(idTokenHint, StandardCharsets.UTF_8);
+        } else {
+            url += "&client_id=" + URLEncoder.encode(clientAuth.getClientID().getValue(), StandardCharsets.UTF_8);
+        }
+        return url;
+    }
+
+    private String extractIdToken(OAuth2TokenData tokenData) {
+        if (tokenData == null || tokenData.getRawResponse() == null || tokenData.getRawResponse().isEmpty()) {
+            return null;
+        }
+        try (StringReader stringReader = new StringReader(tokenData.getRawResponse());
+             JsonReader jsonReader = Json.createReader(stringReader)) {
+            JsonObject tokenResponse = jsonReader.readObject();
+            return tokenResponse.getString("id_token", null);
+        } catch (RuntimeException ex) {
+            return null;
+        }
+    }
+
+    /**
      * Receive user data from OIDC provider after authn/z has been successfull. (Callback view uses this)
      * Request a token and access the resource, parse output and return user details.
      * @param code The authz code sent from the provider
@@ -195,7 +238,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * @throws ExecutionException Thrown when the requests thread is failing
      */
     @Override
-    public OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception {
+    public OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception, InterruptedException, ExecutionException {
         // Retrieve the verifier from the cache and clear from the cache. If not found, will be null.
         // Will be sent to token endpoint for verification, so if required but missing, will lead to exception.
         CodeVerifier verifier = verifierCache.getIfPresent(state);
@@ -204,16 +247,23 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
         AuthorizationGrant codeGrant = new AuthorizationCodeGrant(
             new AuthorizationCode(code), URI.create(redirectUrl), verifier);
     
-        // Get Access Token first
-        Optional<BearerAccessToken> accessToken = getAccessToken(codeGrant);
+        // Get Tokens first
+        OIDCTokens tokens = getOidcTokens(codeGrant).orElse(null);
         
         // Now retrieve User Info
-        if (accessToken.isPresent()) {
-            Optional<UserInfo> userInfo = getUserInfo(accessToken.get());
+        if (tokens != null && tokens.getBearerAccessToken() != null) {
+            Optional<UserInfo> userInfo = getUserInfo(tokens.getBearerAccessToken());
             
             // Construct our internal user representation
             if (userInfo.isPresent()) {
-                return getUserRecord(userInfo.get());
+                OAuth2TokenData tokenData = new OAuth2TokenData();
+                if (tokens.getIDToken() != null) {
+                    tokenData.setRawResponse(Json.createObjectBuilder()
+                            .add("id_token", tokens.getIDToken().getParsedString())
+                            .build()
+                            .toString());
+                }
+                return getUserRecord(userInfo.get(), tokenData);
             }
         }
         
@@ -225,9 +275,14 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * Create the OAuth2UserRecord from the OIDC UserInfo.
      * TODO: extend to retrieve and insert claims about affiliation and position.
      * @param userInfo
+     * @param tokenData
      * @return the usable user record for processing ing {@link edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2LoginBackingBean}
      */
     public OAuth2UserRecord getUserRecord(UserInfo userInfo) {
+        return getUserRecord(userInfo, null);
+    }
+
+    private OAuth2UserRecord getUserRecord(UserInfo userInfo, OAuth2TokenData tokenData) {
         // Extract Shibboleth persistent identifier claim if present
         Object shibUniqueIdObj = userInfo.getClaim(ShibUtil.uniquePersistentIdentifier);
 
@@ -257,18 +312,22 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
                 shibUniqueId,
                 idp,
                 oidcUserId,
-                null,
+                tokenData,
                 displayInfo,
                 null
         );
     }
 
     /**
-     * Retrieve the Access Token from provider. Encapsulate for testing.
+     * Retrieve the OIDC Tokens (including id_token) from provider.
      * @param grant
-     * @return The bearer access token used in code (grant) flow. May be empty if SDK could not cast internally.
+     * @return The OIDC tokens. May be empty if SDK could not cast internally.
      */
     Optional<BearerAccessToken> getAccessToken(AuthorizationGrant grant) throws IOException, OAuth2Exception {
+        return getOidcTokens(grant).map(OIDCTokens::getBearerAccessToken);
+    }
+
+    private Optional<OIDCTokens> getOidcTokens(AuthorizationGrant grant) throws IOException, OAuth2Exception {
         // Request token
         HTTPResponse response = new TokenRequest(this.idpMetadata.getTokenEndpointURI(),
                                                  this.clientAuth,
@@ -287,15 +346,17 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
                 throw new OAuth2Exception(error.getHTTPStatusCode(), error.getDescription(), "auth.providers.token.failRetrieveToken");
             }
     
-            // Success --> return token
+            // Success --> return tokens
             OIDCTokenResponse successResponse = (OIDCTokenResponse)tokenRespone.toSuccessResponse();
             
-            return Optional.of(successResponse.getOIDCTokens().getBearerAccessToken());
+            return Optional.of(successResponse.getOIDCTokens());
             
         } catch (ParseException ex) {
             throw new OAuth2Exception(-1, ex.getMessage(), "auth.providers.token.failParseToken");
         }
     }
+    
+    
     
     /**
      * Retrieve User Info from provider. Encapsulate for testing.

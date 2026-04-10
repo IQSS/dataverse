@@ -5,7 +5,12 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenDataServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -41,6 +46,12 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     @EJB
     GroupServiceBean groupService;
+
+    @EJB
+    AuthenticationServiceBean authenticationSvc;
+
+    @EJB
+    OAuth2TokenDataServiceBean oauth2Tokens;
 
     @EJB
     SystemConfig systemConfig;
@@ -220,6 +231,8 @@ public class DataverseHeaderFragment implements java.io.Serializable {
      }
      */
     public String logout() {
+        String oidcLogoutUrl = getOidcLogoutUrl();
+
         dataverseSession.setUser(null);
         dataverseSession.setStatusDismissed(false);
         
@@ -234,7 +247,16 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         // .getExternalContext().getSession(false) will return null at this point!
         // so it is important to redirect the user to the next page, where a new 
         // session is going to be issued to them. 
-        
+
+        if (oidcLogoutUrl != null) {
+            try {
+                FacesContext.getCurrentInstance().getExternalContext().redirect(oidcLogoutUrl);
+                return null;
+            } catch (java.io.IOException ex) {
+                logger.log(Level.WARNING, "Failed to redirect to OIDC logout endpoint", ex);
+            }
+        }
+
         String redirectPage = navigationWrapper.getPageFromContext();
         try {
             redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
@@ -249,6 +271,34 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
         logger.log(Level.INFO, "Sending user to = " + redirectPage);
         return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";
+    }
+
+    private String getOidcLogoutUrl() {
+        String redirectPage = navigationWrapper.getPageFromContext();
+        try {
+            redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(LoginPage.class.getName()).log(Level.SEVERE, null, ex);
+            redirectPage = redirectToRoot();
+        }
+
+        if (StringUtils.isEmpty(redirectPage)) {
+            redirectPage = redirectToRoot();
+        }
+
+        if (!redirectPage.startsWith("/")) {
+            redirectPage = "/" + redirectPage;
+        }
+
+        OIDCAuthProvider oidcProvider = getOidcProvider();
+        if (oidcProvider == null) {
+            return null;
+        }
+
+        AuthenticatedUser user = (AuthenticatedUser) dataverseSession.getUser();
+        String providerId = user.getAuthenticatedUserLookup().getAuthenticationProviderId();
+        return oidcProvider.buildLogoutUrl(systemConfig.getDataverseSiteUrl() + redirectPage,
+                oauth2Tokens.get(user.getId(), providerId).orElse(null));
     }
 
     private Boolean signupAllowed = null;
@@ -313,6 +363,16 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     public void setBannerMessages(List<BannerMessage> bannerMessages) {
         this.bannerMessages = bannerMessages;
+    }
+
+    public boolean isAutoLoginOidcProvider() {
+        OIDCAuthProvider oidcProvider = getOidcProvider();
+        return oidcProvider != null && oidcProvider.isHidden();
+    }
+
+    private OIDCAuthProvider getOidcProvider() {
+        AuthenticationProvider provider = authenticationSvc.getAuthenticationProvider(systemConfig.getDefaultAuthProvider());
+        return provider instanceof OIDCAuthProvider ? (OIDCAuthProvider) provider : null;
     }
 
     public String getSignupUrl(String loginRedirect) {

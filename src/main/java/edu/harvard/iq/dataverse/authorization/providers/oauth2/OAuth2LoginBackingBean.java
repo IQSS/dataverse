@@ -4,8 +4,10 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -92,6 +94,12 @@ public class OAuth2LoginBackingBean implements Serializable {
         String state = createState(idp, toOption(redirectPage));
         return idp.buildAuthzUrl(state, systemConfig.getOAuth2CallbackUrl());
     }
+
+    private boolean isAutoLoginOidcProvider(AuthenticationProvider idp) {
+        return idp instanceof OIDCAuthProvider
+                && idp.isHidden()
+                && idp.getId().equals(systemConfig.getDefaultAuthProvider());
+    }
     
     /**
      * View action for callback.xhtml, the browser redirect target for the OAuth2 provider.
@@ -131,14 +139,35 @@ public class OAuth2LoginBackingBean implements Serializable {
                             oauthUser.getDisplayInfo()
                                     .setOrcid(((OrcidOAuth2AP) idp).getOrcidUrl(oauthUser.getIdInService()));
                         }
-                        newAccountPage.setNewUser(oauthUser);
-                        Faces.redirect("/oauth2/firstLogin.xhtml");
+                        if (isAutoLoginOidcProvider(idp)) {
+                            String newUsername = oauthUser.getUsername();
+                            AuthenticatedUserDisplayInfo displayInfo = oauthUser.getDisplayInfo();
+                            dvUser = authenticationSvc.createAuthenticatedUser(
+                                oauthUser.getUserRecordIdentifier(), newUsername, displayInfo, true);
+                            session.setUser(dvUser);
+
+                            final OAuth2TokenData tokenData = oauthUser.getTokenData();
+                            if (tokenData != null) {
+                                tokenData.setUser(dvUser);
+                                tokenData.setOauthProviderId(idp.getId());
+                                oauth2Tokens.store(tokenData);
+                            }
+                            Faces.redirect(redirectPage.orElse("/"));
+                        } else {
+                            newAccountPage.setNewUser(oauthUser);
+                            Faces.redirect("/oauth2/firstLogin.xhtml");
+                        }
                     }
         
                 } else {
                     // login the user and redirect to HOME of intended page (if any).
                     // setUser checks for deactivated users.
                     dvUser = userService.updateLastLogin(dvUser);
+                    if (isAutoLoginOidcProvider(idp)) {
+                        AuthenticatedUserDisplayInfo oidcDisplayInfo = oauthUser.getDisplayInfo();
+                        dvUser.applyDisplayInfo(oidcDisplayInfo);
+                        userService.save(dvUser);
+                    }
                     // On the first login (after this code was added) via the Orcid provider, set the user's ORCID
                     // Doing this here assures the user authenticated to ORCID before their profile's ORCID is set
                     // (and not, for example, when an account was created via API)
@@ -182,7 +211,6 @@ public class OAuth2LoginBackingBean implements Serializable {
                 AbstractOAuth2AuthenticationProvider idp = oIdp.get();
                 oauthUser = idp.getUserRecord(code.get(), req.getParameter("state"), systemConfig.getDataverseSiteUrl() + "/oauth2/orcidConfirm.xhtml");
                 
-                UserRecordIdentifier idtf = oauthUser.getUserRecordIdentifier();
                 User user = session.getUser();
                 String orcid = ((OrcidOAuth2AP)idp).getOrcidUrl(oauthUser.getIdInService());
                 if(authenticationSvc.lookupUserByOrcid(orcid)!= null) {

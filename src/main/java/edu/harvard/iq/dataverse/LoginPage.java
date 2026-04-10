@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2LoginBackingBean;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
@@ -18,6 +20,7 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.*;
 import java.util.logging.Level;
@@ -96,6 +99,9 @@ public class LoginPage implements java.io.Serializable {
     
     @EJB
     ShibServiceBean shibService;
+
+    @Inject
+    OAuth2LoginBackingBean oauth2Page;
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
@@ -119,6 +125,15 @@ public class LoginPage implements java.io.Serializable {
         }
         resetFilledCredentials(null);
         authProvider = authSvc.getAuthenticationProvider(systemConfig.getDefaultAuthProvider());
+        if (authProvider instanceof OIDCAuthProvider && authProvider.isHidden()) {
+            try {
+                FacesContext.getCurrentInstance().getExternalContext().redirect(oauth2Page.linkFor(authProvider.getId(), redirectPage));
+                FacesContext.getCurrentInstance().responseComplete();
+                return;
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }
         random = new Random();
     }
 
