@@ -200,24 +200,12 @@ Pass `geo_point` and `geo_radius` to find datasets based on their bounding box.
 
 ## Integrations
 
-Dataverse integrates with a wide variety of third party systems, some of which are highlighted below. For a full list, see {doc}`Integrations</admin/integrations>`.
-
-### DataCite Integration
+### DataCite
 
 DOIs are reserved, and when datasets are published, their metadata is published to DataCite.
 {doc}`More information.</admin/discoverability>`
 
-### External tools
-
-Enable additional features not built in to the Dataverse software.
-{doc}`More information.</installation/external-tools>`
-
-### Galaxy Integration
-
-Import files directly from Dataverse into Galaxy as well as publish datasets containing artifacts (Histories, datasets, etc.) from Galaxy to Dataverse.
-{ref}`More information.<galaxy-integration>`
-
-### Handles
+### Handle
 
 Handles are a Persistent ID (PID) that are an alternative to DOIs.
 {ref}`More information.<pids-configuration>`
@@ -227,42 +215,56 @@ Handles are a Persistent ID (PID) that are an alternative to DOIs.
 Upload from and download to Dataverse using Globus endpoints.
 {ref}`More information.<globus-support>`
 
+### RSpace
+
+Exchange data and metadata with RSpace (e.g. IGSN ID). For example, a Data Management Plan (DMP) can be uploaded to RSpace and updated with the DOI of a Dataverse dataset.
+{ref}`More information.<rspace>`
+
+### GitHub
+
+A GitHub Action is available to upload files from GitHub to a dataset.
+{doc}`More information.</admin/integrations>`
+
 ### iRODS
 
 Pull data from an iRODS instance to a Dataverse dataset.
 {ref}`More information.<irods>`
 
-### RSpace
-
-Exchange data and metadata with RSpace. For example, a Data Management Plan (DMP) can be uploaded to RSpace and updated with the DOI of a Dataverse dataset.
-{ref}`More information.<rspace>`
-
-### Dropbox integration
+### Dropbox
 
 Upload files stored on Dropbox.
 {doc}`More information.</admin/integrations>`
 
-### GitHub integration
-
-A GitHub Action is available to upload files from GitHub to a dataset.
-{doc}`More information.</admin/integrations>`
-
-### Integration with Jupyter notebooks
+### Jupyter Notebooks
 
 Datasets can be opened in Binder to run code in Jupyter notebooks, RStudio, and other computation environments. They can also be previewed in Dataverse itself.
 {ref}`More information.<binder>`
 
+### Galaxy
+
+Import files directly from Dataverse into Galaxy as well as publish datasets containing artifacts (Histories, datasets, etc.) from Galaxy to Dataverse.
+{ref}`More information.<galaxy-integration>`
+
+### External Tools
+
+Enable additional features not built in to the Dataverse software.
+{doc}`More information.</installation/external-tools>`
+
+### Additional Integrations
+
+Dataverse integrates with a wide variety of third party systems, some of which are highlighted above. For a full list, see {doc}`Integrations</admin/integrations>`.
+
 ## Interoperability
+
+### OAI-PMH (Serving and Harvesting)
+
+Serve and harvest metadata to and from other systems (e.g. DataCite, other Dataverse installations, etc.) using standardized metadata formats: Dublin Core, Data Document Initiative (DDI), OpenAIRE, etc.
+{doc}`More information.</admin/harvestserver>`
 
 ### Signposting
 
 Enable easier machine access to datasets by adding linkset in a Dataverse header.
 {ref}`More information.<discovery-sign-posting>`
-
-### Harvest from DataCite
-
-Harvest metadata directly from DataCite to Dataverse using OAI-PMH.
-{ref}`More information.<harvesting-from-datacite>`
 
 ### Croissant
 
@@ -273,11 +275,6 @@ Export metadata as linked data following the Croissant ontology.
 
 Export dataset metadata as an ro-crate.json.
 {ref}`More information.<metadata-export-formats>`
-
-### OAI-PMH (Harvesting)
-
-Gather and expose metadata from and to other systems using standardized metadata formats: Dublin Core, Data Document Initiative (DDI), OpenAIRE, etc.
-{doc}`More information.</admin/harvestclients>`
 
 ### APIs for interoperability and custom integrations
 
