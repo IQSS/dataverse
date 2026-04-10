@@ -265,6 +265,8 @@ public enum JvmSettings {
     UI_SHOW_VALIDITY_FILTER(SCOPE_UI, "show-validity-filter"),
     UI_SHOW_VALIDITY_LABEL_WHEN_PUBLISHED(SCOPE_UI, "show-validity-label-when-published"),
     UI_SHOW_CURATION_STATUS_TO_ALL(SCOPE_UI, "show-curation-status-to-all"),
+    UI_LOCALE_COOKIE_NAME(SCOPE_UI, "locale-cookie-name"),
+    UI_LOCALE_COOKIE_DOMAIN(SCOPE_UI, "locale-cookie-domain"),
 
     // NetCDF SETTINGS
     SCOPE_NETCDF(PREFIX, "netcdf"),

@@ -12,8 +12,10 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SessionUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -24,6 +26,7 @@ import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 /**
@@ -187,46 +190,75 @@ public class DataverseSession implements Serializable{
     
     // Language Locale methods: 
     
-    private String localeCode;
-    
     public String getLocaleCode() {
-        if (localeCode == null) {
-            initLocale();
+        String cookieLocale = getLocaleFromCookie();
+        if (cookieLocale != null && !cookieLocale.isEmpty()) {
+            if (settingsWrapper != null && settingsWrapper.getConfiguredLocales().containsKey(cookieLocale)) {
+                return cookieLocale;
+            }
         }
-        return localeCode;
+
+        if (FacesContext.getCurrentInstance() != null) {
+            if (FacesContext.getCurrentInstance().getViewRoot() == null) {
+                return FacesContext.getCurrentInstance().getExternalContext().getRequestLocale().getLanguage();
+            } else if (FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage().equals("en_US")) {
+                return "en";
+            } else {
+                return FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage();
+            }
+        }
+        return "en";
     }
 
     public void setLocaleCode(String localeCode) {
-        this.localeCode = localeCode;
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null || facesContext.getExternalContext() == null) {
+            return;
+        }
+        String cookieName = JvmSettings.UI_LOCALE_COOKIE_NAME.lookupOptional().orElse("ui_locale");
+        Optional<String> cookieDomain = JvmSettings.UI_LOCALE_COOKIE_DOMAIN.lookupOptional();
+        
+        Object response = facesContext.getExternalContext().getResponse();
+        if (response instanceof HttpServletResponse) {
+            jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie(cookieName, localeCode);
+            cookie.setPath("/");
+            cookie.setMaxAge(31536000); // 1 year
+            if (cookieDomain.isPresent() && !cookieDomain.get().isEmpty()) {
+                cookie.setDomain(cookieDomain.get());
+            }
+            ((HttpServletResponse) response).addCookie(cookie);
+        }
     }
 
     public String getLocaleTitle() {
-        if (localeCode == null) {
-            initLocale();
-        }
-        return settingsWrapper.getConfiguredLocales().get(localeCode);
+        return settingsWrapper.getConfiguredLocales().get(getLocaleCode());
     }
-    
-    public void initLocale() {
-        
 
-        localeCode = "en";
-        if (FacesContext.getCurrentInstance() != null) {
-            if (FacesContext.getCurrentInstance().getViewRoot() == null) {
-                localeCode = FacesContext.getCurrentInstance().getExternalContext().getRequestLocale().getLanguage();
-            } else if (FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage().equals("en_US")) {
-                localeCode = "en";
-            } else {
-                localeCode = FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage();
+    private String getLocaleFromCookie() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null || facesContext.getExternalContext() == null) {
+            return null;
+        }
+        
+        String cookieName = JvmSettings.UI_LOCALE_COOKIE_NAME.lookupOptional().orElse("ui_locale");
+        
+        Object request = facesContext.getExternalContext().getRequest();
+        if (request instanceof HttpServletRequest) {
+            HttpServletRequest req = (HttpServletRequest) request;
+            if (req.getCookies() != null) {
+                for (jakarta.servlet.http.Cookie cookie : req.getCookies()) {
+                    if (cookieName.equals(cookie.getName())) {
+                        return cookie.getValue();
+                    }
+                }
             }
         }
-        logger.fine("init: locale set to "+localeCode);
+        return null;
     }
 
     public void updateLocaleInViewRootAndRedirect(String code) {
-
-        localeCode = code;
         FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale(code));
+        setLocaleCode(code);
         try {
             String url = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getHeader("referer");
             FacesContext.getCurrentInstance().getExternalContext().redirect(url);
@@ -236,11 +268,13 @@ public class DataverseSession implements Serializable{
     }
 
     public void updateLocaleInViewRoot() {
-        if (localeCode != null 
+        String currentLocale = getLocaleCode();
+        if (currentLocale != null 
                 && FacesContext.getCurrentInstance() != null 
                 && FacesContext.getCurrentInstance().getViewRoot() != null 
-                && !localeCode.equals(FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage())) {
-            FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale(localeCode));
+                && !currentLocale.equals(FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage())) {
+            FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale(currentLocale));
+            setLocaleCode(currentLocale);
         } 
     }
     
