@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assumptions;
@@ -43,6 +44,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.time.Instant;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -928,5 +930,40 @@ public class JsonParserTest {
             System.out.println(e.getMessage());
             assertTrue(e.getMessage().contains("Guestbook Response entry is required but not present"));
         }
+    }
+
+    // Testing that output of JsonPrinter can be used as input to JsonParser
+    // Additional tests can be added but this was created for Issue: API inconsistency for release time between JsonParser/JsonPrinter #11594
+    @Test
+    public void testDatasetVersionJsonPrinterJsonParser() throws JsonParseException {
+        // Set up to prevent NullPointerExceptions
+        String sut = "foobar";
+        DatasetType foobar = new DatasetType();
+        foobar.setName(sut);
+        TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
+        termsOfUseAndAccess.setTermsOfUse("TOU");
+        settingsSvc = new MockSettingsSvc();
+        DatasetType datasetType = new DatasetType();
+        datasetType.setName(DatasetType.DEFAULT_DATASET_TYPE);
+        datasetType.setId(1l);
+        Mockito.when(datasetTypeService.getByName(DatasetType.DEFAULT_DATASET_TYPE)).thenReturn(datasetType);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService);
+
+        Dataset ds = new Dataset();
+        DatasetVersion dsv1 = new DatasetVersion();
+        DatasetVersion dsv2 = new DatasetVersion();
+
+        ds.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL,"10.5072","FK2/BYM3IW", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null));
+        ds.setDatasetType(foobar);
+        dsv1.setDataset(ds);
+        dsv1.setReleaseTime(Date.from(Instant.now()));
+        dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
+        dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
+
+        // Test output of JsonPrinter can be used as input to JsonParser
+        JsonObject json = JsonPrinter.json(dsv1, false).build();
+        jsonParser.parseDatasetVersion(json, dsv2);
+
+        assertEquals(dsv1.getReleaseTime().toString(), dsv2.getReleaseTime().toString());
     }
 }
