@@ -5421,7 +5421,25 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/dataverses/" + templateId + "/template");
     }
-    
+
+    static Response getReviews(String datasetIdOrPersistentId) {
+        return getReviews(datasetIdOrPersistentId, null);
+    }
+
+    static Response getReviews(String datasetIdOrPersistentId, String apiToken) {
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+        RequestSpecification responseSpec = given();
+        if (apiToken != null) {
+            responseSpec.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return responseSpec.get("/api/datasets/" + idInPath + "/reviews" + optionalQueryParam);
+    }
+
     /**
      * Gets the tool URL for a dataset with optional parameters
      * @param datasetId The ID of the dataset

@@ -6261,7 +6261,23 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             }
         }, getRequestUser(crc));
     }
-    
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/reviews")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getReviews(@Context ContainerRequestContext crc, @PathParam("identifier") String id) {
+        return response(req -> {
+            Dataset dataset = findDatasetOrDie(id);
+            try {
+                JsonObjectBuilder job = execCommand(new GetDatasetReviewsCommand(req, dataset));
+                return ok(job);
+            } catch (Exception ex) {
+                return error(BAD_REQUEST, ex.getMessage());
+            }
+        }, getRequestUser(crc));
+    }
+
     /**
      * Storage quotas and use. Note that these methods replicate the
      * collection-level equivalents 1:1. Both the quotas and the system for
