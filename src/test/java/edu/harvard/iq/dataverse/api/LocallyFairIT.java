@@ -11,6 +11,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -26,6 +27,11 @@ public class LocallyFairIT {
 
     private static final Logger logger = Logger.getLogger(LocallyFairIT.class.getCanonicalName());
 
+    private List<String> dataverseAliases = new ArrayList<>();
+    private List<String> datasetPids = new ArrayList<>();
+    private List<String> usernames = new ArrayList<>();
+    private String adminToken;
+
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
@@ -35,11 +41,33 @@ public class LocallyFairIT {
     public static void tearDownClass() {
     }
 
+    @org.junit.jupiter.api.AfterEach
+    public void tearDown() {
+        if (adminToken == null) {
+            adminToken = getSuperuserToken();
+        }
+        for (String datasetPid : datasetPids) {
+            UtilIT.destroyDataset(datasetPid, adminToken);
+        }
+        for (String dataverseAlias : dataverseAliases) {
+            UtilIT.deleteDataverse(dataverseAlias, adminToken);
+        }
+        for (String username : usernames) {
+            UtilIT.deleteUser(username);
+        }
+        dataverseAliases.clear();
+        datasetPids.clear();
+        usernames.clear();
+        adminToken = null;
+    }
+
     private String getSuperuserToken() {
         Response createResponse = UtilIT.createRandomUser();
         String adminApiToken = UtilIT.getApiTokenFromResponse(createResponse);
         String username = UtilIT.getUsernameFromResponse(createResponse);
+        usernames.add(username);
         UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(Status.OK.getStatusCode());
+        this.adminToken = adminApiToken;
         return adminApiToken;
     }
 
@@ -51,8 +79,10 @@ public class LocallyFairIT {
     public void testLocallyFairAssigneesCRUD() {
         String superUserToken = getSuperuserToken();
         String dataverseAlias = UtilIT.createRandomCollectionGetAlias(superUserToken);
+        dataverseAliases.add(dataverseAlias);
         Response userResponse = UtilIT.createRandomUser();
         String username = "@" + UtilIT.getUsernameFromResponse(userResponse);
+        usernames.add(UtilIT.getUsernameFromResponse(userResponse));
         String userToken = UtilIT.getApiTokenFromResponse(userResponse);
 
         // 1. Add locally fair assignee
@@ -66,8 +96,10 @@ public class LocallyFairIT {
                 .body("data", hasItem(username));
 
         // 3. Set locally fair assignees (replaces)
-        String userToken2 = UtilIT.createRandomUserGetToken();
-        String username2 = "@" + UtilIT.getUsernameFromResponse(UtilIT.getAuthenticatedUserByToken(userToken2));
+        Response userResponse2 = UtilIT.createRandomUser();
+        String userToken2 = UtilIT.getApiTokenFromResponse(userResponse2);
+        String username2 = "@" + UtilIT.getUsernameFromResponse(userResponse2);
+        usernames.add(UtilIT.getUsernameFromResponse(userResponse2));
         setLocallyFairRoleAssignees(dataverseAlias, Arrays.asList(username2), superUserToken)
                 .then().assertThat().statusCode(Status.OK.getStatusCode())
                 .body("data.locallyFairRoleAssignees", hasItem(username2))
@@ -91,19 +123,26 @@ public class LocallyFairIT {
     public void testLocallyFairAccessPermissions() {
         String superUserToken = getSuperuserToken();
         String dvAlias = UtilIT.createRandomCollectionGetAlias(superUserToken);
+        dataverseAliases.add(dvAlias);
 
         Response dvResponse = UtilIT.exportDataverse(dvAlias, superUserToken);
         Integer dataverseId =UtilIT.getDataverseIdFromResponse(dvResponse);
                 //dvResponse.jsonPath().getInt("data.id");
 
         // Create Users
-        String directUserToken = UtilIT.createRandomUserGetToken();
-        String directUsername = "@" + UtilIT.getUsernameFromResponse(UtilIT.getAuthenticatedUserByToken(directUserToken));
+        Response directUserResponse = UtilIT.createRandomUser();
+        String directUserToken = UtilIT.getApiTokenFromResponse(directUserResponse);
+        String directUsername = "@" + UtilIT.getUsernameFromResponse(directUserResponse);
+        usernames.add(UtilIT.getUsernameFromResponse(directUserResponse));
 
-        String groupUserToken = UtilIT.createRandomUserGetToken();
-        String groupUsername = "@" + UtilIT.getUsernameFromResponse(UtilIT.getAuthenticatedUserByToken(groupUserToken));
+        Response groupUserResponse = UtilIT.createRandomUser();
+        String groupUserToken = UtilIT.getApiTokenFromResponse(groupUserResponse);
+        String groupUsername = "@" + UtilIT.getUsernameFromResponse(groupUserResponse);
+        usernames.add(UtilIT.getUsernameFromResponse(groupUserResponse));
 
-        String unauthorizedUserToken = UtilIT.createRandomUserGetToken();
+        Response unauthorizedUserResponse = UtilIT.createRandomUser();
+        String unauthorizedUserToken = UtilIT.getApiTokenFromResponse(unauthorizedUserResponse);
+        usernames.add(UtilIT.getUsernameFromResponse(unauthorizedUserResponse));
 
         // Create Group
         String groupAlias = "testGroup" + UtilIT.getRandomString(4);
@@ -137,10 +176,12 @@ public class LocallyFairIT {
     public void testLocallyFairAcrossAllObjectTypes() {
         String superUserToken = getSuperuserToken();
         String dvAlias = UtilIT.createRandomCollectionGetAlias(superUserToken);
+        dataverseAliases.add(dvAlias);
 
         // Create Dataset
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dvAlias, superUserToken);
         String datasetPid = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        datasetPids.add(datasetPid);
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
         // Upload File
@@ -152,11 +193,15 @@ public class LocallyFairIT {
         UtilIT.publishDatasetViaNativeApi(datasetPid, "major", superUserToken).then().assertThat().statusCode(Status.OK.getStatusCode());
 
         // Restrict Dataverse
-        String authorizedUserToken = UtilIT.createRandomUserGetToken();
-        String authorizedUsername = "@" + UtilIT.getUsernameFromResponse(UtilIT.getAuthenticatedUserByToken(authorizedUserToken));
+        Response authorizedUserResponse = UtilIT.createRandomUser();
+        String authorizedUserToken = UtilIT.getApiTokenFromResponse(authorizedUserResponse);
+        String authorizedUsername = "@" + UtilIT.getUsernameFromResponse(authorizedUserResponse);
+        usernames.add(UtilIT.getUsernameFromResponse(authorizedUserResponse));
         addLocallyFairRoleAssignee(dvAlias, authorizedUsername, superUserToken).then().assertThat().statusCode(Status.OK.getStatusCode());
 
-        String unauthorizedUserToken = UtilIT.createRandomUserGetToken();
+        Response unauthorizedUserResponse = UtilIT.createRandomUser();
+        String unauthorizedUserToken = UtilIT.getApiTokenFromResponse(unauthorizedUserResponse);
+        usernames.add(UtilIT.getUsernameFromResponse(unauthorizedUserResponse));
 
         // 1. Check Dataverse
         UtilIT.getDataverseWithOwners(dvAlias, authorizedUserToken, false).then().assertThat().statusCode(Status.OK.getStatusCode());
@@ -178,11 +223,14 @@ public class LocallyFairIT {
     public void testLocallyFairSearchVisibility() {
         String superUserToken = getSuperuserToken();
         String dvAlias = UtilIT.createRandomCollectionGetAlias(superUserToken);
+        dataverseAliases.add(dvAlias);
         String dvName = JsonPath.from(UtilIT.getDataverseWithOwners(dvAlias, superUserToken, false).body().asString()).getString("data.name");
 
         // Restrict Dataverse
-        String authorizedUserToken = UtilIT.createRandomUserGetToken();
-        String authorizedUsername = "@" + UtilIT.getUsernameFromResponse(UtilIT.getAuthenticatedUserByToken(authorizedUserToken));
+        Response authorizedUserResponse = UtilIT.createRandomUser();
+        String authorizedUserToken = UtilIT.getApiTokenFromResponse(authorizedUserResponse);
+        String authorizedUsername = "@" + UtilIT.getUsernameFromResponse(authorizedUserResponse);
+        usernames.add(UtilIT.getUsernameFromResponse(authorizedUserResponse));
         addLocallyFairRoleAssignee(dvAlias, authorizedUsername, superUserToken).then().assertThat().statusCode(Status.OK.getStatusCode());
 
         // Publish
@@ -192,7 +240,9 @@ public class LocallyFairIT {
         UtilIT.sleepForSearch(dvName, superUserToken, "", 1, 5);
 
         // Unauthorized search
-        String unauthorizedUserToken = UtilIT.createRandomUserGetToken();
+        Response unauthorizedUserResponse = UtilIT.createRandomUser();
+        String unauthorizedUserToken = UtilIT.getApiTokenFromResponse(unauthorizedUserResponse);
+        usernames.add(UtilIT.getUsernameFromResponse(unauthorizedUserResponse));
         UtilIT.search("name:\"" + dvName + "\"", unauthorizedUserToken).then().assertThat().statusCode(Status.OK.getStatusCode())
                 .body("data.total_count", equalTo(0));
 
@@ -210,8 +260,10 @@ public class LocallyFairIT {
     public void testReindexingMakesDatasetLocallyFair() {
         String superUserToken = getSuperuserToken();
         String parentDv = UtilIT.createRandomCollectionGetAlias(superUserToken);
+        dataverseAliases.add(parentDv);
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(parentDv, superUserToken);
         String datasetPid = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        datasetPids.add(datasetPid);
 
         // Publish normally
         UtilIT.publishDataverseViaNativeApi(parentDv, superUserToken).then().assertThat().statusCode(Status.OK.getStatusCode());
@@ -225,8 +277,10 @@ public class LocallyFairIT {
                 .body("data.total_count", equalTo(1));
 
         // Restrict parent
-        String authorizedUserToken = UtilIT.createRandomUserGetToken();
-        String authorizedUsername = "@" + UtilIT.getUsernameFromResponse(UtilIT.getAuthenticatedUserByToken(authorizedUserToken));
+        Response authorizedUserResponse = UtilIT.createRandomUser();
+        String authorizedUserToken = UtilIT.getApiTokenFromResponse(authorizedUserResponse);
+        String authorizedUsername = "@" + UtilIT.getUsernameFromResponse(authorizedUserResponse);
+        usernames.add(UtilIT.getUsernameFromResponse(authorizedUserResponse));
         addLocallyFairRoleAssignee(parentDv, authorizedUsername, superUserToken).then().assertThat().statusCode(Status.OK.getStatusCode());
 
         // Reindex dataset
