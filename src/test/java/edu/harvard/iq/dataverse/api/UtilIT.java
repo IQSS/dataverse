@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.google.api.client.auth.oauth2.BearerToken;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
@@ -1286,9 +1287,15 @@ public class UtilIT {
         return requestSpecification.post(getString);
     }
     static Response downloadFilesUrlWithGuestbookResponse(String persistentId, String apiToken, String body) {
+        return downloadFilesUrlWithGuestbookResponse(persistentId, apiToken, body, null);
+    }
+    static Response downloadFilesUrlWithGuestbookResponse(String persistentId, String apiToken, String body, String bearerToken) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (bearerToken != null) {
+            requestSpecification.header("Authorization", "Bearer " + bearerToken);
         }
         if (body != null) {
             requestSpecification.body(body);

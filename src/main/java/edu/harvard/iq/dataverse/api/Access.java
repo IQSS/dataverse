@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
@@ -422,7 +423,7 @@ public class Access extends AbstractApiBean {
 
         // Handle Guestbook Responses
         String displayName = "";
-        String gbrids = "";
+        String gbrids = null;
         Long datasetId = null;
         try {
             // since all files must be in the same Dataset we can generate a Guestbook Response once and just replace the DataFile for each file in the list
@@ -487,8 +488,15 @@ public class Access extends AbstractApiBean {
         if (user != null && user instanceof AuthenticatedUser) {
             AuthenticatedUser requestor = (AuthenticatedUser) user;
             userIdentifier = requestor.getUserIdentifier();
+            // Find the latest token: Use for signing
+            // Could be null if no token was generated: Generate one to be used for signing (expire in 1 minute to match timeout in signedUrl)
+            // Could be expired: The user was already authenticated (possible by bearer token). Only used for signing so we don't care
             ApiToken apiToken = authSvc.findApiTokenByUser(requestor);
-            if (apiToken != null && !apiToken.isExpired() && !apiToken.isDisabled()) {
+            if (apiToken == null) {
+                logger.fine("Generating temporary API token for user " + userIdentifier);
+                apiToken = authSvc.generateApiTokenForUser(requestor, AuthenticationServiceBean.INTERVAL.MINUTES, 1);
+            }
+            if (apiToken != null) {
                 key = apiToken.getTokenString();
             }
         } else {
@@ -499,7 +507,9 @@ public class Access extends AbstractApiBean {
 
         UriBuilder builder = UriBuilder.fromUri(uriInfo.getRequestUri());
         builder.replaceQueryParam("gbrecs", true);
-        builder.replaceQueryParam("gbrids", gbrids);
+        if (gbrids != null && !gbrids.isEmpty()) {
+            builder.replaceQueryParam("gbrids", gbrids);
+        }
         builder.replaceQueryParam("persistentId", null); // remove this as a parm and add the id to the path
         crc.setProperty("gbrids", gbrids);
         String baseUrlEncoded = builder.build().toString();
