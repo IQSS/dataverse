@@ -92,6 +92,10 @@ public class LocallyFairIT {
         String superUserToken = getSuperuserToken();
         String dvAlias = UtilIT.createRandomCollectionGetAlias(superUserToken);
 
+        Response dvResponse = UtilIT.exportDataverse(dvAlias, superUserToken);
+        Integer dataverseId =UtilIT.getDataverseIdFromResponse(dvResponse);
+                //dvResponse.jsonPath().getInt("data.id");
+
         // Create Users
         String directUserToken = UtilIT.createRandomUserGetToken();
         String directUsername = "@" + UtilIT.getUsernameFromResponse(UtilIT.getAuthenticatedUserByToken(directUserToken));
@@ -104,8 +108,8 @@ public class LocallyFairIT {
         // Create Group
         String groupAlias = "testGroup" + UtilIT.getRandomString(4);
         UtilIT.createGroup(dvAlias, groupAlias, "Test Group", superUserToken).then().assertThat().statusCode(Status.CREATED.getStatusCode());
-        String groupIdentifier = "&explicit/" + dvAlias + "/" + groupAlias;
-        UtilIT.addToGroup(dvAlias, groupIdentifier, Arrays.asList(groupUsername), superUserToken).then().assertThat().statusCode(Status.OK.getStatusCode());
+        String groupIdentifier = "&explicit/" + dataverseId + "-" + groupAlias;
+        UtilIT.addToGroup(dvAlias, groupAlias, Arrays.asList(groupUsername), superUserToken).then().assertThat().statusCode(Status.OK.getStatusCode());
 
         // Restrict Dataverse
         setLocallyFairRoleAssignees(dvAlias, Arrays.asList(directUsername, groupIdentifier), superUserToken)
@@ -140,12 +144,12 @@ public class LocallyFairIT {
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
         // Upload File
-        Response uploadFileResponse = UtilIT.uploadRandomFile(datasetPid, superUserToken);
+        Response uploadFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), "scripts/search/data/binary/trees.zip", superUserToken);
         Integer fileId = UtilIT.getDataFileIdFromResponse(uploadFileResponse);
 
         // Publish all
-        UtilIT.publishDatasetViaNativeApi(datasetPid, "major", superUserToken).then().assertThat().statusCode(Status.OK.getStatusCode());
         UtilIT.publishDataverseViaNativeApi(dvAlias, superUserToken).then().assertThat().statusCode(Status.OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetPid, "major", superUserToken).then().assertThat().statusCode(Status.OK.getStatusCode());
 
         // Restrict Dataverse
         String authorizedUserToken = UtilIT.createRandomUserGetToken();
@@ -163,8 +167,8 @@ public class LocallyFairIT {
         UtilIT.nativeGetUsingPersistentId(datasetPid, unauthorizedUserToken).then().assertThat().statusCode(Status.NOT_FOUND.getStatusCode());
 
         // 3. Check Datafile
-        UtilIT.getFileMetadata(fileId.toString(), null, authorizedUserToken).then().assertThat().statusCode(Status.OK.getStatusCode());
-        UtilIT.getFileMetadata(fileId.toString(), null, unauthorizedUserToken).then().assertThat().statusCode(Status.NOT_FOUND.getStatusCode());
+        UtilIT.getFileData(fileId.toString(), authorizedUserToken).then().assertThat().statusCode(Status.OK.getStatusCode());
+        UtilIT.getFileData(fileId.toString(), unauthorizedUserToken).then().assertThat().statusCode(Status.NOT_FOUND.getStatusCode());
     }
 
     /**
@@ -185,7 +189,7 @@ public class LocallyFairIT {
         UtilIT.publishDataverseViaNativeApi(dvAlias, superUserToken).then().assertThat().statusCode(Status.OK.getStatusCode());
 
         // Wait for index
-        UtilIT.sleepForSearch(dvName, superUserToken, null, 1, 30);
+        UtilIT.sleepForSearch(dvName, superUserToken, "", 1, 5);
 
         // Unauthorized search
         String unauthorizedUserToken = UtilIT.createRandomUserGetToken();
@@ -208,17 +212,16 @@ public class LocallyFairIT {
         String parentDv = UtilIT.createRandomCollectionGetAlias(superUserToken);
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(parentDv, superUserToken);
         String datasetPid = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
-        String datasetName = JsonPath.from(UtilIT.nativeGetUsingPersistentId(datasetPid, superUserToken).body().asString()).getString("data.latestVersion.metadataBlocks.citation.fields[0].value");
 
         // Publish normally
         UtilIT.publishDataverseViaNativeApi(parentDv, superUserToken).then().assertThat().statusCode(Status.OK.getStatusCode());
         UtilIT.publishDatasetViaNativeApi(datasetPid, "major", superUserToken).then().assertThat().statusCode(Status.OK.getStatusCode());
 
         // Wait for search
-        UtilIT.sleepForSearch(datasetName, null, null, 1, 30);
+        UtilIT.sleepForSearch("\"" + datasetPid + "\"", null, "", 1, 5);
 
         // Verify publicly visible
-        UtilIT.search("name:\"" + datasetName + "\"", null).then().assertThat().statusCode(Status.OK.getStatusCode())
+        UtilIT.search("\"" + datasetPid + "\"", null).then().assertThat().statusCode(Status.OK.getStatusCode())
                 .body("data.total_count", equalTo(1));
 
         // Restrict parent
@@ -232,17 +235,20 @@ public class LocallyFairIT {
         // Wait for reindex to propagate (should disappear for anonymous)
         boolean disappeared = false;
         for (int i = 0; i < 10; i++) {
-            Response searchResp = UtilIT.search("name:\"" + datasetName + "\"", null);
+            Response searchResp = UtilIT.search("\"" + datasetPid + "\"", null);
             if (searchResp.jsonPath().getInt("data.total_count") == 0) {
                 disappeared = true;
                 break;
             }
-            try { Thread.sleep(2000); } catch (InterruptedException e) {}
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+            }
         }
         assertTrue(disappeared, "Dataset should have disappeared from search for anonymous users");
 
         // Verify authorized user can still see it in search
-        UtilIT.search("name:\"" + datasetName + "\"", authorizedUserToken).then().assertThat().statusCode(Status.OK.getStatusCode())
+        UtilIT.search("\"" + datasetPid + "\"", authorizedUserToken).then().assertThat().statusCode(Status.OK.getStatusCode())
                 .body("data.total_count", equalTo(1));
     }
 

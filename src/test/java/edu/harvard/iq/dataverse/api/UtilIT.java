@@ -59,6 +59,7 @@ public class UtilIT {
 
     public static final String API_TOKEN_HTTP_HEADER = "X-Dataverse-key";
     private static final String USERNAME_KEY = "userName";
+    private static final String PERSISTENTUSERID_KEY = "persistentUserId";
     private static final String EMAIL_KEY = "email";
     private static final String API_TOKEN_KEY = "apiToken";
     private static final String BUILTIN_USER_KEY = "burrito";
@@ -309,6 +310,11 @@ public class UtilIT {
         JsonPath createdUser = JsonPath.from(createUserResponse.body().asString());
         String username = createdUser.getString("data.user." + USERNAME_KEY);
         logger.info("Username found in create user response: " + username);
+        //Support for when user is created via a call to /api/users/:me which doesn't return username
+        if( username == null ) {
+            username = createdUser.getString("data." + PERSISTENTUSERID_KEY);
+            logger.info("Username found via persistentUserId in create user response: " + username);
+        }
         return username;
     }
 
@@ -1969,9 +1975,11 @@ public class UtilIT {
     }
     
     static Response getDataverseWithOwners(String alias,  String apiToken, boolean returnOwners) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/dataverses/"
+        RequestSpecification rs = given();
+        if(apiToken != null) {
+            rs = rs.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return rs.get("/api/dataverses/"
                         + alias
                         + (returnOwners ? "/?returnOwners=true" : ""));
     }
