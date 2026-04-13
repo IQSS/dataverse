@@ -4835,6 +4835,29 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/3/license" -H "Content-type:application/json" --upload-file license.json
 
+.. _api-list-reviews:
+
+List Reviews
+~~~~~~~~~~~~
+
+Datasets can have reviews. Specifically, if a :ref:`review dataset <review-datasets-user>` points at (using the ``itemReviewedUrl`` field) the URL form of a persistent ID of a dataset (e.g. https://doi.org/10.5072/FK2/ABCDEF) that is in the same Dataverse installation as the review dataset, the review dataset will be included in the list of reviews for the dataset. It is considered a local review.
+
+An API token is optional if the review dataset has been published.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/ABCDEF
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/reviews?persistentId=$PERSISTENT_IDENTIFIER"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/datasets/:persistentId/reviews?persistentId=doi:10.5072/FK2/ABCDEF"
+
 Files
 -----
 
