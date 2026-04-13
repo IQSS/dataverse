@@ -57,13 +57,12 @@ public class Guestbooks extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/list")
-    public Response getGuestbooks(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) {
+    public Response getGuestbooks(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, @QueryParam("includeInherited") boolean includeInherited) {
         return response( req -> {
             Dataverse dataverse = findDataverseOrDie(identifier);
-            if (!permissionSvc.request(req).on(dataverse).has(Permission.EditDataverse)) {
-                return error(Response.Status.FORBIDDEN, "Not authorized");
-            }
-            List<Guestbook> guestbooks = guestbookService.findGuestbooksForGivenDataverse(dataverse);
+            List<Guestbook> guestbooks = (includeInherited) ? guestbookService.findEffectiveGuestbooksForGivenDataverse(dataverse):
+            guestbookService.findGuestbooksForGivenDataverse(dataverse);
+
             JsonArrayBuilder guestbookArray = Json.createArrayBuilder();
             JsonPrinter jsonPrinter = new JsonPrinter();
             for (Guestbook gb : guestbooks) {

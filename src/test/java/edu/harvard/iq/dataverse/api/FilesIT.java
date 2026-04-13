@@ -3882,8 +3882,16 @@ public class FilesIT {
         String superusername = UtilIT.getUsernameFromResponse(createUserResponse);
         UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
 
+        // Create Parent Dataverse
+        String parentDataverseAlias = createDataverseGetAlias(ownerApiToken);
+        Response publishResponse = UtilIT.publishDataverseViaNativeApi(parentDataverseAlias, ownerApiToken);
+        assertEquals(200, publishResponse.getStatusCode());
+        // Create a Parent Guestbook
+        Guestbook parentGuestbook = UtilIT.createRandomGuestbook(parentDataverseAlias, null, ownerApiToken);
+
         // Create Dataverse
         String dataverseAlias = createDataverseGetAlias(ownerApiToken);
+        UtilIT.moveDataverse(dataverseAlias, parentDataverseAlias, null, ownerApiToken);
 
         // Create user with no permission
         createUserResponse = UtilIT.createRandomUser();
@@ -3919,6 +3927,10 @@ public class FilesIT {
         getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken);
         getGuestbooksResponse.then().assertThat().statusCode(200);
         assertEquals(1, getGuestbooksResponse.getBody().jsonPath().getList("data").size());
+        // Get the list of Guestbooks including Parent Guestbook
+        getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, Boolean.TRUE);
+        getGuestbooksResponse.then().assertThat().statusCode(200);
+        assertEquals(2, getGuestbooksResponse.getBody().jsonPath().getList("data").size());
 
         // Upload files
         JsonObjectBuilder json1 = Json.createObjectBuilder().add("description", "my description1").add("directoryLabel", directoryLabel).add("categories", Json.createArrayBuilder().add("Data"));

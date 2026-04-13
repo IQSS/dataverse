@@ -1230,7 +1230,6 @@ Get a list of Guestbooks for a Dataverse Collection
 For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 
 Get a list of Guestbooks for a Dataverse Collection
-You must have "EditDataverse" permission on the Dataverse collection.
 
 .. code-block:: bash
 
@@ -1245,6 +1244,12 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/root/list"
+
+To include the inherited Guestbooks of the Dataverse Collection add the query parameter `includeInherited=true`
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/root/list?includeInherited=true"
 
 Get a Guestbook for a Dataverse Collection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
