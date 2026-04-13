@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -543,6 +544,28 @@ public class ReviewsIT {
         createReview.then().assertThat().statusCode(CREATED.getStatusCode());
         Integer reviewId = UtilIT.getDatasetIdFromResponse(createReview);
         String reviewPid = JsonPath.from(createReview.getBody().asString()).getString("data.persistentId");
+
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiTokenReviewer, 5);
+
+        Response getReviewsPrePubReviewer = UtilIT.getReviews(datasetPid, apiTokenReviewer);
+        getReviewsPrePubReviewer.prettyPrint();
+        getReviewsPrePubReviewer.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.reviews[0].title", is(reviewTitle))
+                .body("data.reviews[0].persistentId", is(reviewPid))
+                .body("data.reviews[0].id", is(reviewId));
+
+        Response getReviewsPrePubGuest = UtilIT.getReviews(datasetPid);
+        getReviewsPrePubGuest.prettyPrint();
+        getReviewsPrePubGuest.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.reviews", Matchers.empty());
+
+        Response getReviewsPrePubDatasetAuthor = UtilIT.getReviews(datasetPid, apiTokenDatasetAuthor);
+        getReviewsPrePubDatasetAuthor.prettyPrint();
+        getReviewsPrePubDatasetAuthor.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.reviews", Matchers.empty());
 
         Response publishCollectionReviews = UtilIT.publishDataverseViaNativeApi(collectionAliasReviews,
                 apiTokenReviewer);
