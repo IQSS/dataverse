@@ -553,6 +553,20 @@ public class ReviewsIT {
         publishReview.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        // Putting PID as URL in quotes to avoid hits we don't want
+        Response searchForReviews = UtilIT.search("itemReviewedUrl:\"" + itemReviewedUrl + "\"", null);
+        searchForReviews.prettyPrint();
+        searchForReviews.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].name", is(reviewTitle));
+
+        Response getReviews = UtilIT.getReviews(datasetPid);
+        getReviews.prettyPrint();
+        getReviews.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.reviews[0].title", is(reviewTitle))
+                .body("data.reviews[0].persistentId", is(reviewPid))
+                .body("data.reviews[0].id", is(reviewId));
     }
 
 }
