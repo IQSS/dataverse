@@ -12,7 +12,7 @@ import static io.restassured.path.json.JsonPath.with;
 
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.Template;
+
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
@@ -2696,6 +2696,19 @@ public class DataversesIT {
                               ]
                             }
                             """;
+        
+                String jsonStringWithoutFields = """
+                            {
+                              "name": "Dataverse template - No Fields",
+                              "isDefault": true,
+                              "instructions": [
+                                {
+                                    "instructionField": "author",
+                                    "instructionText": "The author data"
+                                }
+                              ]
+                            }
+                            """;
 
         Response createTemplateResponse = UtilIT.createTemplate(
                 dataverseAlias,
@@ -2715,6 +2728,8 @@ public class DataversesIT {
 
         Long templateId = createTemplateResponse.body().jsonPath().getLong("data.id");
 
+
+        
         //Check for failure due unauthorized user.
         Response setDefaultResp = UtilIT.setDefaultTemplate(dataverseAlias, templateId, secondApiToken);
         setDefaultResp.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
@@ -2798,6 +2813,31 @@ public class DataversesIT {
         deleteTemplateResponse = UtilIT.deleteTemplate(templateId.toString(), apiToken);
         deleteTemplateResponse.prettyPrint();
         deleteTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        
+        //make sure you can create a template with no dataset fields
+        Response createTemplateResponseNoFields = UtilIT.createTemplate(
+                dataverseAlias,
+                jsonStringWithoutFields,
+                apiToken);
+
+        createTemplateResponseNoFields.then().assertThat().statusCode(CREATED.getStatusCode())
+                .body("data.name", equalTo("Dataverse template - No Fields"))
+                .body("data.isDefault", equalTo(true))
+                .body("data.usageCount", equalTo(0))
+                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.instructions.size()", equalTo(1))
+                .body("data.instructions[0].instructionField", equalTo("author"))
+                .body("data.instructions[0].instructionText", equalTo("The author data"))
+                .body("data.dataverseAlias", equalTo(dataverseAlias));
+
+        Long templateIdNoFields = createTemplateResponseNoFields.body().jsonPath().getLong("data.id");        
+
+        deleteTemplateResponse = UtilIT.deleteTemplate(templateIdNoFields.toString(), apiToken);
+        deleteTemplateResponse.prettyPrint();
+        deleteTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        
         // back to super for cleanup
         
         UtilIT.setSuperuserStatus(username, true);

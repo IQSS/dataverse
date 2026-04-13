@@ -771,7 +771,10 @@ public class JsonParser {
 
     public List<DatasetField> parseMultipleFields(JsonObject json, boolean replaceData) throws JsonParseException {
         JsonArray fieldsJson = json.getJsonArray("fields");
-        List<DatasetField> fields = parseFieldsFromArray(fieldsJson, false, replaceData);
+        List<DatasetField> fields = new ArrayList();
+        if (fieldsJson != null) {
+            fields = parseFieldsFromArray(fieldsJson, false, replaceData);
+        }
         return fields;
     }
 
