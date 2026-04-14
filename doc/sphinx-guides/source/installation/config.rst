@@ -3823,10 +3823,10 @@ dataverse.cors.origin
 
 Allowed origins for CORS requests. See also :ref:`dataverse.cors`.
 
-Default: ``*`` (allow all)
+Default: *not configured*
 
 .. warning:: | If this setting is not explicitly configured, no CORS headers at all are added to responses.
-          | The default policy (see all CORS related settings) is still being enforced!
+             | The default policy (see all CORS related settings) is still being enforced!
 
 .. list-table::
     :align: left

@@ -1,6 +1,8 @@
 ## CORS Filter Fix
 
-Fixed an inconsistency where the `CorsFilter` was not always being invoked when accessing `/api/...` endpoints, preventing these endpoints from being used from webapps even when CORS was properly configured.
+Fixed an inconsistency where the `CorsFilter` was not always being invoked when accessing `/api/...` endpoints, preventing these endpoints from being used from webapps even when CORS was properly configured. See #12151.
+
+In addition, the documentation around the Dataverse features regarding CORS has been extended and improved. The "Big Data" page has been moved from the development section to the installation section of the guides. See #12161.
 
 ## Updates for Documentation Writers
 
