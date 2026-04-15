@@ -455,7 +455,7 @@ If requesting a page before page 1 or requesting the number of items to be 0 or 
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X GET http://$SERVER/api/access/datafile/{id}/listRequests?includeHistory=true&start=1&per_page=20
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET "http://$SERVER/api/access/datafile/{id}/listRequests?includeHistory=true&start=1&per_page=20"
 
 User Has Requested Access to a File:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
