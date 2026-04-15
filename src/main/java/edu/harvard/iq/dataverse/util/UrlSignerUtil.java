@@ -1,20 +1,22 @@
 package edu.harvard.iq.dataverse.util;
 
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.joda.time.LocalDateTime;
+
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.joda.time.LocalDateTime;
-
 /**
  * Simple class to sign/validate URLs.
- * 
+ *
  */
 public class UrlSignerUtil {
 
@@ -24,8 +26,11 @@ public class UrlSignerUtil {
     public static final String SIGNED_URL_METHOD="method";
     public static final String SIGNED_URL_USER="user";
     public static final String SIGNED_URL_UNTIL="until";
+    public static final String SIGNED_URL_KEY="key"; // do not propagate the key since it's a credential
+    public static final String SIGNED_URL_SIGNED="signed"; // we need to remove this when returning a signed url to prevent a loop of signing
+    public static final List<String> reservedParameters = List.of(SIGNED_URL_UNTIL, SIGNED_URL_USER, SIGNED_URL_METHOD, SIGNED_URL_TOKEN, SIGNED_URL_KEY, SIGNED_URL_SIGNED);
     /**
-     * 
+     *
      * @param baseUrl - the URL to sign - cannot contain query params
      *                "until","user", "method", or "token"
      * @param timeout - how many minutes to make the URL valid for (note - time skew
@@ -39,12 +44,23 @@ public class UrlSignerUtil {
      * @return - the signed URL
      */
     public static String signUrl(String baseUrl, Integer timeout, String user, String method, String key) {
+
+        // check for reserved parameter names ("until","user", "method", or "token")
+        String[] urlQP = baseUrl.split("\\?");
+        if (urlQP.length > 1) {
+            try {
+                URIBuilder uriBuilder = new URIBuilder(baseUrl);
+                List<NameValuePair> params = uriBuilder.getQueryParams();
+                params.removeIf(pair -> reservedParameters.contains(pair.getName()));
+                uriBuilder.setParameters(params);
+                baseUrl = uriBuilder.build().toString();
+            } catch (URISyntaxException e) {
+                logger.severe("Invalid URL for signing: " + baseUrl + " " + e.getMessage());
+            }
+        }
+        boolean firstParam = !baseUrl.contains("?");
         StringBuilder signedUrlBuilder = new StringBuilder(baseUrl);
 
-        boolean firstParam = true;
-        if (baseUrl.contains("?")) {
-            firstParam = false;
-        }
         if (timeout != null) {
             LocalDateTime validTime = LocalDateTime.now();
             validTime = validTime.plusMinutes(timeout);

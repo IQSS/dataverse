@@ -93,10 +93,11 @@ class SystemConfigTest {
     
         // then
         assertTrue(result.startsWith("100.100"), "'" + result + "' not starting with 100.100");
-        assertTrue(result.contains("build"));
         
         // Cannot test this here - there might be the bundle file present which is not under test control
         //assertTrue(result.endsWith("FOOBAR"), "'" + result + "' not ending with FOOBAR");
+        // Not sure what to do about this. The above is correct, if there is a BuildNumber.properties
+        // file present on the developer's system, it will take precedence. - L.A. 
     }
     
     @Test
@@ -201,6 +202,55 @@ class SystemConfigTest {
         // then
         assertEquals(1, result.size());
         assertEquals(0L, (long) result.get(SystemConfig.TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY));
+    }
+
+    @Test
+    public void testGetHarvestingClientRequestIntervals() {
+
+        // Test with setting not set will return default 0.0
+        // given
+        doReturn(null).when(settingsService).getValueForKey(SettingsServiceBean.Key.HarvestingClientCallRateLimit);
+        // when
+        Map<String, Float> result = systemConfig.getHarvestingClientRequestIntervals();
+        // then
+        assertEquals(1, result.size());
+        assertEquals(0, result.get(SystemConfig.DEFAULT_KEY));
+
+        // Test with good client
+        String value = "{\"harvarddv\": 0.9, \"default\": 0.0}";
+        // given
+        doReturn(value).when(settingsService).getValueForKey(SettingsServiceBean.Key.HarvestingClientCallRateLimit);
+        // when
+        result = systemConfig.getHarvestingClientRequestIntervals();
+        // then
+        assertEquals(2, result.size());
+        assertTrue(result.containsKey("harvarddv"));
+        assertTrue(result.containsKey("default"));
+        assertEquals(0.9F, systemConfig.getHarvestingClientRequestInterval("harvarddv"));
+        assertEquals(0.0F, systemConfig.getHarvestingClientRequestInterval("notFoundSoDefault"));
+
+        // Test with missing default will create default 0.0
+        value = "{\"harvarddv\": 0.9}";
+        // given
+        doReturn(value).when(settingsService).getValueForKey(SettingsServiceBean.Key.HarvestingClientCallRateLimit);
+        // when
+        result = systemConfig.getHarvestingClientRequestIntervals();
+        // then
+        assertEquals(2, result.size());
+        assertTrue(result.containsKey("default"));
+        assertEquals(0.0F, systemConfig.getHarvestingClientRequestInterval("default"));
+
+        // Test with invalid JSON (value as string instead of float) will default setting to default 0.0
+        value = "{\"harvarddv1\": 0.9, \"harvarddv2\": \"string\"}";
+        // given
+        doReturn(value).when(settingsService).getValueForKey(SettingsServiceBean.Key.HarvestingClientCallRateLimit);
+        // when
+        result = systemConfig.getHarvestingClientRequestIntervals();
+        // then
+        assertEquals(1, result.size());
+        assertTrue(result.containsKey("default"));
+        assertTrue(!result.containsKey("harvarddv1"));
+        assertTrue(!result.containsKey("harvarddv2"));
     }
     
     @ParameterizedTest

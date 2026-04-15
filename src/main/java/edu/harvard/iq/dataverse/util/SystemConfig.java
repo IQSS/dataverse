@@ -65,6 +65,8 @@ public class SystemConfig {
      * token is valid ({@link #getMinutesUntilPasswordResetTokenExpires}).
      */
     private static final String PASSWORD_RESET_TIMEOUT_IN_MINUTES = "dataverse.auth.password-reset-timeout-in-minutes";
+    
+    public static final String DEFAULT_KEY = "default";
 
     /**
      * The default number of datafiles that we allow to be created through 
@@ -123,7 +125,7 @@ public class SystemConfig {
             }
             
             if (!buildNumber.equals("")) {
-                return appVersion + " build " + buildNumber;
+                return appVersion + " " + buildNumber;
             }
         }
         
@@ -601,6 +603,7 @@ public class SystemConfig {
      *         or the default size limit if no format-specific limit is found or its name is invalid (null, blank, ...).
      *         -1 = unlimited if not set, 0 if disabled or invalid, some long number of bytes otherwise
      */
+    
     public long getTabularIngestSizeLimit(String formatName) {
         if (formatName != null && !formatName.isBlank()) {
             // We convert to lowercase so it doesn't matter which variant someone uses in the JSON config
@@ -610,6 +613,82 @@ public class SystemConfig {
         return getTabularIngestSizeLimit();
     }
 
+    public Map<String, Float> getHarvestingClientRequestIntervals() {
+        String settingString = settingsService.getValueForKey(SettingsServiceBean.Key.HarvestingClientCallRateLimit);
+        if (settingString != null) {
+            // Case A: the setting is using JSON to support multiple clients
+            if (settingString.trim().startsWith("{")) {
+                try (JsonReader reader = Json.createReader(new StringReader(settingString))) {
+                    JsonObject delays = reader.readObject();
+                    
+                    Map<String, Float> limitsMap = new HashMap<>();
+                    // We add the default in case the JSON does not contain the default (which is optional).
+                    limitsMap.put(DEFAULT_KEY, 0F);
+                    
+                    for (Map.Entry<String, JsonValue> clientEntry : delays.entrySet()) {
+                        String clientName = clientEntry.getKey();
+                        String lowercaseClientName = clientName.toLowerCase();
+                                                
+                        try {
+                            JsonValue value = clientEntry.getValue();
+                            float delayInterval;
+                            
+                            // We want to be able to use either numbers or string values, so detect which one it is.
+                            // This is necessary as we need to tell the JSON parser what to do, it doesn't automatically handle this for us.
+                            if (value.getValueType() == JsonValue.ValueType.STRING) {
+                                delayInterval = Float.parseFloat(delays.getString(clientName));
+                            } else if (value.getValueType() == JsonValue.ValueType.NUMBER) {
+                                // Will throw if not a valid float number!
+                                delayInterval = delays.getJsonNumber(clientName).numberValue().floatValue(); //.doubleValue();
+                            } else {
+                                logger.warning(() -> "Invalid value type for client " + clientName + ": expected string or number");
+                                logger.warning("Disabling all harvesting client delay intervals completely until fixed!");
+                                return Map.of(DEFAULT_KEY, 0F);
+                            }
+                            
+                            limitsMap.put(lowercaseClientName, delayInterval);
+                        } catch (NumberFormatException nfe) {
+                            logger.warning(() -> "Could not convert " + SettingsServiceBean.Key.HarvestingClientCallRateLimit + " entry to float for client " + clientName + " (not a valid number)");
+                            logger.warning("Disabling all harvesting client delay intervals completely until fixed!");
+                            return Map.of(DEFAULT_KEY, 0F);
+                        } catch (ArithmeticException ae) {
+                            logger.warning(() -> "Number too large, or otherwise invalid for client " + clientName);
+                            logger.warning("Disabling all harvesting client delay intervals completely until fixed!");
+                            return Map.of(DEFAULT_KEY, 0F);
+                        }
+                    }
+                    
+                    return Collections.unmodifiableMap(limitsMap);
+                } catch (JsonParsingException e) {
+                    logger.warning(() -> "Invalid " + SettingsServiceBean.Key.HarvestingClientCallRateLimit + " option found, cannot parse JSON: " + e.getMessage());
+                    logger.warning("Disabling all harvesting client delay intervals completely until fixed!");
+                    return Map.of(DEFAULT_KEY, 0F);
+                }
+            // Case B: It might be just a simple float, providing a default for all clients.
+            } else {
+                try {
+                    float delayInterval = Float.valueOf(settingString);
+                    return Map.of(DEFAULT_KEY, delayInterval);
+                } catch (NumberFormatException nfe) {
+                    logger.warning(() -> "Could not convert " + SettingsServiceBean.Key.HarvestingClientCallRateLimit + " to float: " + nfe.getMessage());
+                    logger.warning("Disabling all harvesting client delay intervals completely until fixed!");
+                    return Map.of(DEFAULT_KEY, 0F);
+                }
+            }
+        }
+        // Default is not to limit at all
+        return Map.of(DEFAULT_KEY, 0F);
+    }
+
+    public float getHarvestingClientRequestInterval(String clientName) {
+        if (clientName != null && !clientName.isBlank()) {
+            // We convert to lowercase so it doesn't matter which variant someone uses in the JSON config
+            String convertedClientName = clientName.toLowerCase();
+            return getHarvestingClientRequestIntervals().getOrDefault(convertedClientName, getHarvestingClientRequestIntervals().get(DEFAULT_KEY));
+        }
+        return getHarvestingClientRequestIntervals().get(DEFAULT_KEY);
+    }
+    
     public boolean isOAIServerEnabled() {
         boolean defaultResponse = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.OAIServerEnabled, defaultResponse);
