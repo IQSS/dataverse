@@ -1069,8 +1069,8 @@ public class PermissionServiceBean {
      * Determines if a user can view a dataset version based on its release status
      * and the supplied Locally FAIR role assignees.
      * 
-     * @param DataversRequest The request containing the user and Ip info (for IPgroups)
-     * @param DvObject the dvObject that may have locallyFairAssignees
+     * @param req The request containing the user and Ip info (for IPgroups)
+     * @param dvObject the dvObject that may have locallyFairAssignees
      * @return true if the user has locally FAIR access
      */
     public boolean hasLocallyFAIRAccess(DataverseRequest req, DvObject dvObject) {
@@ -1084,6 +1084,9 @@ public class PermissionServiceBean {
         Set<RoleAssignee> userAndGroups = new HashSet<>(groupService.groupsFor(req));
         User user = req.getUser();
         if (user.isAuthenticated()) {
+            if(user.isSuperuser()) {
+                return true;
+            }
             userAndGroups.add(user);
         }
         
