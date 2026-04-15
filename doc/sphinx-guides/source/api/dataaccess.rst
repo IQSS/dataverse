@@ -440,7 +440,7 @@ This method returns a list of Authenticated Users who have requested access to t
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X GET http://$SERVER/api/access/datafile/{id}/listRequests
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET $SERVER/api/access/datafile/{id}/listRequests
 
 Query parameters have been added to retrieve the historical list of "created", "granted", and "rejected" requests:
 
@@ -455,7 +455,7 @@ If requesting a page before page 1 or requesting the number of items to be 0 or 
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X GET "http://$SERVER/api/access/datafile/{id}/listRequests?includeHistory=true&start=1&per_page=20"
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER/api/access/datafile/{id}/listRequests?includeHistory=true&start=1&per_page=20"
 
 User Has Requested Access to a File:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -466,7 +466,7 @@ This method returns true or false depending on whether or not the calling user h
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X GET "http://$SERVER/api/access/datafile/{id}/userFileAccessRequested"
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER/api/access/datafile/{id}/userFileAccessRequested"
 
 
 Get User Permissions on a File:
