@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.text.StringEscapeUtils;
 
+// Validate with src/test/resources/croissant/validate.sh
 public class CroissantExportUtil {
 
     public static void exportDataset(
@@ -31,7 +32,7 @@ public class CroissantExportUtil {
             {
                 "@context": {
                     "@language": "en",
-                    "@vocab": "http://schema.org/",
+                    "@vocab": "https://schema.org/",
                     "citeAs": "cr:citeAs",
                     "column": "cr:column",
                     "conformsTo": "dct:conformsTo",
@@ -70,7 +71,7 @@ public class CroissantExportUtil {
                     "repeated": "cr:repeated",
                     "replace": "cr:replace",
                     "samplingRate": "cr:samplingRate",
-                    "sc": "http://schema.org/",
+                    "sc": "https://schema.org/",
                     "separator": "cr:separator",
                     "source": "cr:source",
                     "subField": "cr:subField",
