@@ -1,13 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
 import io.restassured.RestAssured;
-import io.restassured.response.Response;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -17,8 +10,6 @@ import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.blankOrNullString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Integration tests for CORS headers on API endpoints. These tests verify that the expected CORS
@@ -30,17 +21,32 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * env to `dev_dataverse`.
  */
 class CorsIT {
-    private static final String ORIGIN_NULL = "null";
-    
-    private final List<String> expectedCorsMethods = List.of("GET", "POST", "PUT", "DELETE", "OPTIONS");
-    private final List<String> expectedCorsAllowHeaders = List.of("Accept", "Content-Type", "X-Dataverse-key", "Range");
-    private final List<String> expectedCorsExposeHeaders = List.of("Accept-Ranges", "Content-Range", "Content-Encoding");
-    
     @BeforeAll
     static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
-
+    
+    /**
+     * Tests the presence of CORS preflight headers on various subsystems by sending HTTP OPTIONS requests
+     * to specified paths and validating the responses for expected headers and status.
+     * These paths are served by different servlets, filters, and frameworks.
+     * Nonetheless, any of them should present CORS headers when configured.
+     *
+     * <p>
+     * TODO: Currently, this test relies on the CI infrastructure executing the test to have set at least
+     *       the JVM setting dataverse.cors.origin. Otherwise, no headers will be sent.
+     * </p>
+     *
+     * <p>
+     * NOTE: At the time of writing (2026-04), there is no infrastructure available to a) manipulate
+     *       these settings in this end-to-end testing scenario nor b) to dynamically reload the test subject.
+     *       It is initialized once at deployment time, which would require isolating this test some other way.
+     *       Thus, only the <i>presence</i> of headers is checked, but not its content
+     *       (which is fine, given the scope of the test).
+     * </p>
+     *
+     * @param path the relative path on the subsystem to which the CORS preflight request is sent
+     */
     @ParameterizedTest(name = "CORS preflight headers on {0}")
     @ValueSource(strings = {
         "/api/dataverses/root/datasets",
@@ -48,31 +54,38 @@ class CorsIT {
         "/page_doesnt_exist",
         "/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/root"
     })
-    void testPreflightOptionsCorsHeaders(String path) {
-        Response response =
-            given()
-                .header("Accept", "*/*")
-                .header("Accept-Language", "en-US,en;q=0.9,es;q=0.8,hu;q=0.7")
-                .header("Access-Control-Request-Headers", "content-type,x-dataverse-key")
-                .header("Access-Control-Request-Method", "POST")
-                .header("Origin", ORIGIN_NULL)
-                .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36")
-            .when()
-                .options(path)
-            .then()
-                .log().ifValidationFails()
-                .statusCode(anyOf(is(200), is(204)))
-                .header("Access-Control-Allow-Methods", not(blankOrNullString()))
-                .header("Access-Control-Allow-Headers", not(blankOrNullString()))
-                .header("Access-Control-Expose-Headers", not(blankOrNullString()))
-                .extract()
-                .response();
-
-        assertHeaderSetEquals("Access-Control-Allow-Methods", expectedCorsMethods, response);
-        assertHeaderSetEquals("Access-Control-Allow-Headers", expectedCorsAllowHeaders, response);
-        assertHeaderSetEquals("Access-Control-Expose-Headers", expectedCorsExposeHeaders, response);
+    void ensurePresenceOnDifferentSubsystems(String path) {
+        given()
+            .header("Accept", "*/*")
+            .header("Accept-Language", "en-US,en;q=0.9,es;q=0.8,hu;q=0.7")
+            .header("Access-Control-Request-Headers", "content-type,x-dataverse-key")
+            .header("Access-Control-Request-Method", "POST")
+            .header("Origin", "null")
+            .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36")
+        .when()
+            .options(path)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(anyOf(is(200), is(204)))
+            .header("Access-Control-Allow-Methods", not(blankOrNullString()))
+            .header("Access-Control-Allow-Headers", not(blankOrNullString()))
+            .header("Access-Control-Expose-Headers", not(blankOrNullString()));
     }
+    
+    /*
+    The following code may be used in a future test enabling assertions of header contents:
+    
+    Usage:
+    assertHeaderSetEquals("Access-Control-Allow-Methods", expectedCorsMethods, response);
+    assertHeaderSetEquals("Access-Control-Allow-Headers", expectedCorsAllowHeaders, response);
+    assertHeaderSetEquals("Access-Control-Expose-Headers", expectedCorsExposeHeaders, response);
+    
+    Class fields:
+    private final List<String> expectedCorsMethods = List.of("GET", "POST", "PUT", "DELETE", "OPTIONS");
+    private final List<String> expectedCorsAllowHeaders = List.of("Accept", "Content-Type", "X-Dataverse-key", "Range");
+    private final List<String> expectedCorsExposeHeaders = List.of("Accept-Ranges", "Content-Range", "Content-Encoding");
 
+    Assertions methods:
     private static void assertHeaderSetEquals(String headerName, List<String> expectedTokens, Response response) {
         String headerValue = response.getHeader(headerName);
         assertTrue(headerValue != null && !headerValue.isBlank(), "Missing header: " + headerName);
@@ -93,4 +106,6 @@ class CorsIT {
     private static String normalizeToken(String value) {
         return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
     }
+    
+    */
 }
