@@ -247,11 +247,31 @@ public class DataFile extends DvObject implements Comparable {
     inverseJoinColumns = @JoinColumn(name = "authenticated_user_id"))
     private List<AuthenticatedUser> fileAccessRequesters;
 
-    
-    public List<FileAccessRequest> getFileAccessRequests(){
-        return fileAccessRequests;
+    public List<FileAccessRequest> getFileAccessRequests() {
+        return getFileAccessRequests(0, 0);
     }
-    
+
+    /**
+     * Get Requests with pagination option
+     * @param numResultsPerPageRequested
+     * @param paginationStart starts at 1
+     * @return
+     */
+    public List<FileAccessRequest> getFileAccessRequests(int numResultsPerPageRequested, int paginationStart) {
+        if (numResultsPerPageRequested < 1 || paginationStart < 1) {
+            return fileAccessRequests;
+        } else {
+            int startIndex = (paginationStart - 1) * numResultsPerPageRequested;
+            int endIndex = startIndex + numResultsPerPageRequested;
+            if (startIndex >= fileAccessRequests.size()) {
+                return List.of();
+            } else if (endIndex > fileAccessRequests.size()) {
+                endIndex = fileAccessRequests.size();
+            }
+            return fileAccessRequests.subList(startIndex, endIndex);
+        }
+    }
+
     public List<FileAccessRequest> getFileAccessRequests(FileAccessRequest.RequestState state){
         return fileAccessRequests.stream().filter(far -> far.getState() == state).collect(Collectors.toList());
     }
@@ -847,6 +867,15 @@ public class DataFile extends DvObject implements Comparable {
         }
 
         this.fileAccessRequests.add(request);
+    }
+
+    public List<FileAccessRequest> getAccessRequestsForAssignee(RoleAssignee roleAssignee) {
+        if (this.fileAccessRequests == null) {
+            return null;
+        }
+
+        return this.fileAccessRequests.stream()
+                .filter(fileAccessRequest -> fileAccessRequest.getRequester().equals(roleAssignee)).toList();
     }
 
     public FileAccessRequest getAccessRequestForAssignee(RoleAssignee roleAssignee) {
