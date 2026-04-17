@@ -105,7 +105,7 @@ Basic access URI:
 
   Example ::
 
-    POST http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB&signed=true -d '{"guestbookResponse": {"name": "My Name", "email": "myemail@example.com", "institution": "Harvard","position": "Staff", "answers": [{"id": 123,"value": "Good"},{"id": 124,"value": ["Multi","Line"]},{"id": 125,"value": "Yellow"}]}}'
+    curl -X POST -H 'Content-Type:application/json' -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB" -d '{"guestbookResponse": {"name": "My Name", "email": "myemail@example.com", "institution": "Harvard","position": "Staff", "answers": [{"id": 123,"value": "Good"},{"id": 124,"value": ["Multi","Line"]},{"id": 125,"value": "Yellow"}]}}'
 
 Parameters:
 ~~~~~~~~~~~
