@@ -13,6 +13,9 @@ import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+import java.io.IOException;
+import java.util.zip.ZipInputStream;
+
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -20,13 +23,11 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import static io.restassured.RestAssured.get;
 import static jakarta.ws.rs.core.Response.Status.*;
@@ -564,6 +565,12 @@ public class AccessIT {
         Response rejectFileAccessResponse = UtilIT.rejectFileAccessRequest(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
         assertEquals(200, rejectFileAccessResponse.getStatusCode());
 
+        // including history includes "rejected"
+        Response listAccessRequestWithHistoryResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken, Boolean.TRUE);
+        listAccessRequestWithHistoryResponse.prettyPrint();
+        assertEquals(200, listAccessRequestWithHistoryResponse.getStatusCode());
+        assertTrue(listAccessRequestWithHistoryResponse.prettyPrint().contains("\"requestState\": \"rejected\""));
+
         requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
         //grant file access
         Response grantFileAccessResponse = UtilIT.grantFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
@@ -702,6 +709,71 @@ public class AccessIT {
 
         listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken);
         assertEquals(404, listAccessRequestResponse.getStatusCode());
+
+        // create multiple users and grant some access and reject the others
+        for (int i=0 ; i <15; i++) {
+            Response createUserResponse = UtilIT.createRandomUser();
+            createUserResponse.prettyPrint();
+            assertEquals(200, createUserResponse.getStatusCode());
+            String token = UtilIT.getApiTokenFromResponse(createUserResponse);
+            String apiIdentifier = UtilIT.getUsernameFromResponse(createUserResponse);
+            Response fileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), token);
+            assertEquals(200, fileAccessResponse.getStatusCode());
+            if (i % 2 == 0) {
+                fileAccessResponse = UtilIT.grantFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifier, apiToken);
+                assertEquals(200, fileAccessResponse.getStatusCode());
+            } else {
+                fileAccessResponse = UtilIT.rejectFileAccessRequest(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifier, apiToken);
+                assertEquals(200, fileAccessResponse.getStatusCode());
+            }
+        }
+
+        // include full history
+        Response listAccessRequestWithHistoryResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken, Boolean.TRUE);
+        listAccessRequestWithHistoryResponse.prettyPrint();
+        listAccessRequestWithHistoryResponse.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(17));
+
+        // include paginated history
+        for (int page = 1; page <= 9; page++) {
+            // There are 9 pages (1 though 9). The first 8 pages should have 2 entries each. The last page should have 1 entry. (Total 17)
+            int expectedCount = page < 9 ? 2 : 1;
+            listAccessRequestWithHistoryResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken, page, 2);
+            listAccessRequestWithHistoryResponse.prettyPrint();
+            listAccessRequestWithHistoryResponse.then()
+                    .assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("data.size()", equalTo(expectedCount))
+                    .body("pagination.selectedPageNumber", equalTo(page))
+                    .body("pagination.pageCount", equalTo(9))
+                    .body("pagination.hasPreviousPageNumber", equalTo(page > 1))
+                    .body("pagination.hasNextPageNumber", equalTo(page < 9))
+                    .body("pagination.numResults", equalTo(17));
+        }
+        // Edge cases.
+        // Return 404 if requesting a page to high.
+        // Gets the entire list if requesting page < 1 or number of items per page < 1
+        listAccessRequestWithHistoryResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken, 99, 2);
+        listAccessRequestWithHistoryResponse.prettyPrint();
+        listAccessRequestWithHistoryResponse.then()
+                .assertThat()
+                .statusCode(NOT_FOUND.getStatusCode());
+        listAccessRequestWithHistoryResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken, 0, 2);
+        listAccessRequestWithHistoryResponse.prettyPrint();
+        listAccessRequestWithHistoryResponse.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("pagination", nullValue())
+                .body("data.size()", equalTo(17));
+        listAccessRequestWithHistoryResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken, 1, 0);
+        listAccessRequestWithHistoryResponse.prettyPrint();
+        listAccessRequestWithHistoryResponse.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("pagination", nullValue())
+                .body("data.size()", equalTo(17));
     }
 
     // This is a round trip test of uploading a zipped archive, with some folder

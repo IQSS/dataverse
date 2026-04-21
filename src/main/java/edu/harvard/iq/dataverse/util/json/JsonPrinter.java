@@ -132,6 +132,11 @@ public class JsonPrinter {
             .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
         return builder;
     }
+    public static JsonObjectBuilder json(FileAccessRequest fileAccessRequest) {
+        JsonObjectBuilder builder = json(fileAccessRequest.getRequester())
+                .add("requestState", fileAccessRequest.getStateLabel());
+        return builder;
+    }
 
     public static JsonArrayBuilder jsonRoleAssignments(List<RoleAssignment> roleAssignments) {
         JsonArrayBuilder bld = Json.createArrayBuilder();
@@ -246,16 +251,19 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DataverseRole role) {
-        JsonObjectBuilder bld = jsonObjectBuilder()
-                .add("alias", role.getAlias())
-                .add("name", role.getName())
-                .add("permissions", JsonPrinter.json(role.permissions()))
-                .add("description", role.getDescription());
-        if (role.getId() != null) {
-            bld.add("id", role.getId());
-        }
-        if (role.getOwner() != null && role.getOwner().getId() != null) {
-            bld.add("ownerId", role.getOwner().getId());
+        JsonObjectBuilder bld = jsonObjectBuilder();
+
+        if (role != null) {
+            bld.add("alias", role.getAlias())
+               .add("name", role.getName())
+               .add("permissions", JsonPrinter.json(role.permissions()))
+               .add("description", role.getDescription());
+            if (role.getId() != null) {
+                bld.add("id", role.getId());
+            }
+            if (role.getOwner() != null && role.getOwner().getId() != null) {
+                bld.add("ownerId", role.getOwner().getId());
+            }
         }
 
         return bld;
