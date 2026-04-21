@@ -24,25 +24,11 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import edu.harvard.iq.dataverse.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.ocpsoft.common.util.Strings;
 
-import edu.harvard.iq.dataverse.AlternativePersistentIdentifier;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetAuthor;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetRelPublication;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.ExternalIdentifier;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
@@ -67,9 +53,9 @@ public class XmlMetadataTemplate {
     private static final Logger logger = Logger.getLogger(XmlMetadataTemplate.class.getName());
 
     public static final String XML_NAMESPACE = "http://datacite.org/schema/kernel-4";
-    public static final String XML_SCHEMA_LOCATION = "http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4.5/metadata.xsd";
+    public static final String XML_SCHEMA_LOCATION = "http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4.7/metadata.xsd";
     public static final String XML_XSI = "http://www.w3.org/2001/XMLSchema-instance";
-    public static final String XML_SCHEMA_VERSION = "4.5";
+    public static final String XML_SCHEMA_VERSION = "4.7";
 
     private DoiMetadata doiMetadata;
 
@@ -425,7 +411,8 @@ public class XmlMetadataTemplate {
      * 7, Contributor (with optional given name, family name, name identifier and
      * affiliation sub-properties)
      *
-     * @see #writeContributorElement(javax.xml.stream.XMLStreamWriter,
+     * @see #writeEntityElements(javax.xml.stream.XMLStreamWriter,
+     *      java.lang.String, java.lang.String, jakarta.json.JsonObject,
      *      java.lang.String, java.lang.String, java.lang.String)
      *
      * @param xmlw
@@ -570,7 +557,7 @@ public class XmlMetadataTemplate {
     //List from https://schema.datacite.org/meta/kernel-4/include/datacite-contributorType-v4.xsd
     private Set<String> contributorTypes = new HashSet<>(Arrays.asList("ContactPerson", "DataCollector", "DataCurator", "DataManager", "Distributor", "Editor", 
                 "HostingInstitution", "Other", "Producer", "ProjectLeader", "ProjectManager", "ProjectMember", "RegistrationAgency", "RegistrationAuthority", 
-                "RelatedPerson", "ResearchGroup", "RightsHolder", "Researcher", "Sponsor", "Supervisor", "WorkPackageLeader"));
+                "RelatedPerson", "ResearchGroup", "RightsHolder", "Researcher", "Sponsor", "Supervisor", "Translator", "WorkPackageLeader"));
 
     private String getCanonicalContributorType(String contributorType) {
         if(StringUtils.isBlank(contributorType) || !contributorTypes.contains(contributorType)) {
@@ -824,10 +811,34 @@ public class XmlMetadataTemplate {
 
     // 9, Language (MA), language
     private void writeLanguage(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
-        // Currently not supported. Spec indicates one 'primary' language. Could send
-        // the first entry in DatasetFieldConstant.language or send iff there is only
-        // one entry, and/or default to the machine's default lang, or the dataverse metadatalang?
+        // Spec indicates one 'primary' language. Sending a language iff there is only
+        // one citation mdb language entry (Could send first entry if there are several and/or default to the machine's default lang, or use the dataset's metadatalang?)
+        if (dvObject.isInstanceofDataFile()) {
+            dvObject = dvObject.getOwner();
+        }
+        if (!(dvObject instanceof Dataset dataset)) {
+            return;
+        }
+
+        DatasetVersion dv = dataset.getLatestVersionForCopy();
+        if (dv == null) {
+            return;
+        }
+        Optional<DatasetField> dsf = dv.getDatasetFields().stream().filter(f -> f.getDatasetFieldType().getName().equals(DatasetFieldConstant.language)).findFirst();
+        if (dsf.isPresent()) {
+            String languageIdentifier = null;
+            List<ControlledVocabularyValue> controlledVocabularyValues = dsf.get().getControlledVocabularyValues();
+            if (controlledVocabularyValues != null && controlledVocabularyValues.size() == 1) {
+                ControlledVocabularyValue cvv = controlledVocabularyValues.get(0);
+                languageIdentifier = cvv.getIdentifier();
+            }
+            // 'Not applicable' has no identifier - we want to skip it.
+            if (StringUtils.isNotBlank(languageIdentifier)) {
+                XmlWriterUtil.writeFullElement(xmlw, "language", StringEscapeUtils.escapeXml10(languageIdentifier));
+            }
+        }
         return;
+
     }
 
     // 10, ResourceType (with mandatory general type
