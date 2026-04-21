@@ -1,0 +1,179 @@
+name: Container Integration Tests Workflow
+
+on:
+  push:
+    branches:
+      - develop
+    paths-ignore:
+      - "doc/**"
+      - "**/*.md"
+      - "**/*.txt"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/*.md"
+  pull_request:
+    branches:
+      - develop
+    paths-ignore:
+      - "doc/**"
+      - "**/*.md"
+      - "**/*.txt"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/*.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  main-integration-tests-workflow:
+    runs-on: ubuntu-latest
+    if: vars.ENABLE_DOCKER_TESTS == 'true'
+    timeout-minutes: 60
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      # ---------------------------
+      # CHECKOUT
+      # ---------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      # ---------------------------
+      # VERIFY DOCKER
+      # ---------------------------
+      - name: Verify Docker
+        run: |
+          set -euo pipefail
+          docker version
+          
+      # ---------------------------
+      # SETUP JAVA + MAVEN
+      # ---------------------------
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "21"
+          cache: "maven"
+
+      - name: Verify Maven
+        run: |
+          set -euo pipefail
+          mvn -version
+          
+      # ---------------------------
+      # CLEAN PREVIOUS VOLUMES
+      # ---------------------------
+      - name: Clean docker-dev-volumes
+        run: |
+          set -euo pipefail
+          rm -rf docker-dev-volumes || true
+          
+      # ---------------------------
+      # BUILD IMAGES (Dataverse-native)
+      # ---------------------------
+      - name: Build Dataverse containers via Maven
+        run: |
+          set -euo pipefail
+          mvn -Pct clean package
+          
+      # ---------------------------
+      # START CONTAINERS (BACKGROUND)
+      # ---------------------------
+      - name: Start Dataverse stack
+        run: |
+          set -euo pipefail
+          mvn -Pct docker:start
+          
+      # ---------------------------
+      # WAIT FOR API READINESS
+      # ---------------------------
+      - name: Wait for Dataverse API readiness
+        run: |
+          set -euo pipefail
+          URL="http://localhost:8080/api/info/version"
+          MAX_ATTEMPTS=10
+          SLEEP_TIME=15
+          echo "Waiting for Dataverse readiness..."
+          for attempt in $(seq 1 $MAX_ATTEMPTS); do
+            echo "Attempt $attempt..."
+            RESPONSE=$(curl -s --max-time 15 "$URL" || true)
+            STATUS=$(echo "$RESPONSE" | jq -r '.status' 2>/dev/null || echo "NOT_READY")
+            if [ "$STATUS" = "OK" ]; then
+              echo "Dataverse endpoint is READY."
+              echo "Dataverse waiting for full readiness. Waiting 30 more seconds."
+              sleep 30
+              echo "Response: $RESPONSE"
+              exit 0
+            fi
+            echo "Not ready. Sleeping ${SLEEP_TIME}s..."
+            sleep $SLEEP_TIME
+            if [ $SLEEP_TIME -lt 60 ]; then
+              SLEEP_TIME=$((SLEEP_TIME * 2))
+              if [ $SLEEP_TIME -gt 60 ]; then
+                SLEEP_TIME=60
+              fi
+            fi
+          done
+          echo "Dataverse failed to become ready."
+          docker ps
+          CONTAINERS="$(docker ps -q)"
+          if [ -n "$CONTAINERS" ]; then
+            for cid in $CONTAINERS; do
+              echo "===== Logs for container $cid ====="
+              docker logs "$cid" || true
+            done
+          else
+            echo "No running containers to show logs for."
+          fi
+          exit 1
+          
+      # ---------------------------
+      # MAP LOCALSTACK TO LOCALHOST
+      # ---------------------------
+      - name: Map localstack to localhost for Maven tests
+        run: echo "127.0.0.1 localstack" | sudo tee -a /etc/hosts
+      
+      # ---------------------------
+      # RUN MAVEN TESTS
+      # ---------------------------
+      - name: Run Maven Integration Tests
+        env:
+          # Setting the three requested environment variables
+          DVAPIKEY: "burrito"
+          DV_APIKEY: "burrito"
+          DV_API_KEY: "burrito"
+        run: |
+          set -euo pipefail
+          # Read the file content into a variable
+          TEST_SUITE=$(cat tests/integration-tests.txt)
+          
+          echo "Running suite: $TEST_SUITE"
+          
+          mvn test surefire-report:report jacoco:report \
+            -Dtest="$TEST_SUITE" \
+            -Ddataverse.test.baseurl=http://localhost:8080 \
+            -Dmaven.test.failure.ignore=true
+            
+      # ---------------------------
+      # DUMP LOGS ON FAILURE
+      # ---------------------------
+      - name: Dump Dataverse Logs on Failure
+        if: failure()
+        run: docker logs dev_dataverse
+
+      # ---------------------------
+      # SHUTDOWN STACK
+      # ---------------------------
+      - name: Stop Dataverse stack
+        if: always()
+        run: |
+          set -euo pipefail
+          mvn -Pct docker:stop || true
+      - name: Final Docker cleanup
+        if: always()
+        run: |
+          docker system prune -af || true
