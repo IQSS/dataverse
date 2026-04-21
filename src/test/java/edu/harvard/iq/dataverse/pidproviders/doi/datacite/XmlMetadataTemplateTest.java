@@ -166,6 +166,53 @@ public class XmlMetadataTemplateTest {
         testDatasetField.setSingleValue("First Title");
         List<DatasetField> fields = new ArrayList<>();
         fields.add(testDatasetField);
+
+        DatasetFieldType contributorTypeFieldType = new DatasetFieldType(DatasetFieldConstant.contributor,
+                DatasetFieldType.FieldType.TEXT, false);
+        DatasetFieldType contributorNameFieldType = new DatasetFieldType(DatasetFieldConstant.contributorName,
+                DatasetFieldType.FieldType.TEXT, false);
+        DatasetFieldType contributorRoleFieldType = new DatasetFieldType(DatasetFieldConstant.contributorType,
+                DatasetFieldType.FieldType.TEXT, false);
+
+        DatasetField translatorField = new DatasetField();
+        translatorField.setDatasetVersion(dv);
+        translatorField.setDatasetFieldType(contributorTypeFieldType);
+        DatasetFieldCompoundValue translatorValue = new DatasetFieldCompoundValue();
+
+        DatasetField translatorName = new DatasetField();
+        translatorName.setDatasetVersion(dv);
+        translatorName.setDatasetFieldType(contributorNameFieldType);
+        translatorName.setSingleValue("Translator Name");
+
+        DatasetField translatorRole = new DatasetField();
+        translatorRole.setDatasetVersion(dv);
+        translatorRole.setDatasetFieldType(contributorRoleFieldType);
+        translatorRole.setSingleValue("Translator");
+
+        List<DatasetField> translatorChildren = new ArrayList<>();
+        translatorChildren.add(translatorName);
+        translatorChildren.add(translatorRole);
+        translatorValue.setChildDatasetFields(translatorChildren);
+
+        List<DatasetFieldCompoundValue> translatorValues = new ArrayList<>();
+        translatorValues.add(translatorValue);
+        translatorField.setDatasetFieldCompoundValues(translatorValues);
+        fields.add(translatorField);
+
+        DatasetFieldType languageFieldType = new DatasetFieldType(DatasetFieldConstant.language,
+                DatasetFieldType.FieldType.TEXT, false);
+        DatasetField languageField = new DatasetField();
+        languageField.setDatasetVersion(dv);
+        languageField.setDatasetFieldType(languageFieldType);
+        languageField.setSingleValue("en");
+        ControlledVocabularyValue languageCvv = new ControlledVocabularyValue();
+        languageCvv.setId(1L);
+        languageCvv.setIdentifier("en");
+        languageCvv.setStrValue("English");
+        languageCvv.setDatasetFieldType(languageFieldType);
+        languageField.setControlledVocabularyValues(List.of(languageCvv));
+        fields.add(languageField);
+
         dv.setDatasetFields(fields);
         ArrayList<DatasetVersion> dsvs = new ArrayList<>();
         dsvs.add(0, dv);
@@ -200,6 +247,9 @@ public class XmlMetadataTemplateTest {
         assertEquals("ROR", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@nameIdentifierScheme"));
         assertEquals("https://ror.org", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@schemeURI"));
         assertEquals("Dataverse", XmlPath.from(xml).getString("resource.publisher"));
+        assertEquals("Translator", XmlPath.from(xml).getString("resource.contributors.contributor[0].@contributorType"));
+        assertEquals("Translator Name", XmlPath.from(xml).getString("resource.contributors.contributor[0].contributorName"));
+        assertEquals("en", XmlPath.from(xml).getString("resource.language"));
 
         dv.setVersionNumber(1L);
         dv.setMinorVersionNumber(0l);
