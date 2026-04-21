@@ -1,1 +1,3 @@
 This release updates the DataCite XML metadata format to indicate compliance with the version 4.7 schema, adds support for specifying a 'Translator' contributor, and adds a language element when a dataset has one language defined in its Citation block metadata.
+
+As it adds Translator to the contributorTypes allowed in the citation block, people would have to reload the block to get the new option.
