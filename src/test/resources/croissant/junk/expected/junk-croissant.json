@@ -1,7 +1,7 @@
 {
     "@context": {
         "@language": "en",
-        "@vocab": "http://schema.org/",
+        "@vocab": "https://schema.org/",
         "citeAs": "cr:citeAs",
         "column": "cr:column",
         "conformsTo": "dct:conformsTo",
@@ -40,7 +40,7 @@
         "repeated": "cr:repeated",
         "replace": "cr:replace",
         "samplingRate": "cr:samplingRate",
-        "sc": "http://schema.org/",
+        "sc": "https://schema.org/",
         "separator": "cr:separator",
         "source": "cr:source",
         "subField": "cr:subField",
