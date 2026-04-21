@@ -61,7 +61,11 @@ import jakarta.ws.rs.core.Response.Status;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -488,21 +492,32 @@ public abstract class AbstractApiBean {
     }
 
     protected void validateInternalTimestampIsNotOutdated(DvObject dvObject, String sourceLastUpdateTime) throws WrappedResponse {
-        Date date = sourceLastUpdateTime != null ? DateUtil.parseDate(sourceLastUpdateTime, "yyyy-MM-dd'T'HH:mm:ss'Z'") : null;
-        if (date == null) {
+        LocalDateTime dtIN = null;
+        try {
+            dtIN = sourceLastUpdateTime != null ? LocalDateTime.parse(sourceLastUpdateTime, DateTimeFormatter.ISO_OFFSET_DATE_TIME) : null;
+        } catch (DateTimeParseException e) {
+        }
+        if (dtIN == null) {
             throw new WrappedResponse(
-                    badRequest(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date", Collections.singletonList(sourceLastUpdateTime)))
+                    badRequest(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date", List.of(sourceLastUpdateTime)))
             );
         }
-        Instant instant = date.toInstant();
-        Instant updateTimestamp =
-                (dvObject instanceof DataFile) ? ((DataFile) dvObject).getFileMetadata().getDatasetVersion().getLastUpdateTime().toInstant() :
-                (dvObject instanceof Dataset) ? ((Dataset) dvObject).getLatestVersion().getLastUpdateTime().toInstant() :
-                instant;
-        // granularity is to the second since the json output only returns dates in this format to the second
-        if (updateTimestamp.getEpochSecond() != instant.getEpochSecond()) {
+
+        Date lastUpdateTimestamp =
+                (dvObject instanceof DataFile) ? ((DataFile) dvObject).getFileMetadata().getDatasetVersion().getLastUpdateTime() :
+                (dvObject instanceof Dataset) ? ((Dataset) dvObject).getLatestVersion().getLastUpdateTime() :
+                null;
+
+        if (lastUpdateTimestamp != null) {
+            LocalDateTime localDateTime = lastUpdateTimestamp.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().truncatedTo(ChronoUnit.SECONDS);
+            if (!localDateTime.equals(dtIN)) {
+                throw new WrappedResponse(
+                        badRequest(BundleUtil.getStringFromBundle("abstractApiBean.error.internalVersionTimestampIsOutdated", List.of(sourceLastUpdateTime)))
+                );
+            }
+        } else {
             throw new WrappedResponse(
-                    badRequest(BundleUtil.getStringFromBundle("abstractApiBean.error.internalVersionTimestampIsOutdated", Collections.singletonList(sourceLastUpdateTime)))
+                    badRequest(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date", List.of(sourceLastUpdateTime)))
             );
         }
     }

@@ -1,11 +1,20 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.util.DateUtil;
 import org.junit.jupiter.api.Test;
+
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static org.assertj.core.api.Fail.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -54,5 +63,61 @@ public class DatasetsTest {
         assertTrue(deleted.contains("18383198c49-aeda08ccffff"));
         assertTrue(deleted.contains("1837fda17ce-d7b9987fc6e9_suffix"));
         assertTrue(deleted.contains("1837fda17ce-d7b9987fc6e9.aux"));
+    }
+
+    @Test
+    public void testValidateInternalTimestampIsNotOutdated() {
+        Datasets dsBean = new Datasets();
+        Dataset ds = new Dataset();
+        DatasetVersion dsv = new DatasetVersion();
+        dsv.setDataset(ds);
+        ds.setVersions(List.of(dsv));
+
+        // setLastUpdateTime LOCAL TIME ZONE
+        String str1 = "2023-10-01T10:00:00+05:00";
+        LocalDateTime dt1 = LocalDateTime.parse(str1, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        dsv.setLastUpdateTime(Date.from(dt1.atZone(ZoneId.systemDefault()).toInstant()));
+
+        // Test not Equal
+        String str2 = "2023-10-01T11:00:00-08:00";
+        try {
+            dsBean.validateInternalTimestampIsNotOutdated(ds,str2);
+            fail();
+        } catch (AbstractApiBean.WrappedResponse e) {
+        }
+
+        // Test Equal
+        try {
+            dsBean.validateInternalTimestampIsNotOutdated(ds,str1);
+        } catch (AbstractApiBean.WrappedResponse e) {
+            fail();
+        }
+
+        // setLastUpdateTime UTC
+        String str11 = "2023-10-01T10:00:00Z";
+        Date dt11 = DateUtil.parseDate(str11, "yyyy-MM-dd'T'HH:mm:ss'Z'");
+        dsv.setLastUpdateTime(dt11);
+
+        // Test Not Equal
+        String str12 = "2023-10-01T11:00:00Z";
+        try {
+            dsBean.validateInternalTimestampIsNotOutdated(ds,str12);
+            fail();
+        } catch (AbstractApiBean.WrappedResponse e) {
+        }
+
+        // Test Equal
+        try {
+            dsBean.validateInternalTimestampIsNotOutdated(ds,str11);
+        } catch (AbstractApiBean.WrappedResponse e) {
+            fail();
+        }
+
+        // Test BAD Date/Time
+        try {
+            dsBean.validateInternalTimestampIsNotOutdated(ds,"invalid");
+            fail();
+        } catch (AbstractApiBean.WrappedResponse e) {
+        }
     }
 }
