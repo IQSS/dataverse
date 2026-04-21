@@ -7,20 +7,7 @@ package edu.harvard.iq.dataverse.api.imports;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseContact;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
@@ -762,6 +749,8 @@ public class ImportServiceBean {
      */
     private boolean validateVersionMetadata(DatasetVersion version, boolean sanitize, PrintWriter cleanupLog) throws ImportException {
         boolean fixed = false;
+        boolean allowHarvestingMissingCVV =  version.getDataset().getHarvestedFrom() != null ? version.getDataset().getHarvestedFrom().getAllowHarvestingMissingCVV() : false;
+
         Set<ConstraintViolation> invalidViolations = version.validate();
         if (!invalidViolations.isEmpty()) {
             for (ConstraintViolation v : invalidViolations) {
@@ -772,6 +761,10 @@ public class ImportServiceBean {
                     
                     msg += "Missing required field: " + f.getDatasetFieldType().getDisplayName() + ";";                  
                     if (sanitize) {
+                        if (allowHarvestingMissingCVV && f.getDatasetFieldType().isControlledVocabulary()) {
+                            ControlledVocabularyValue ccv = new ControlledVocabularyValue(null, DatasetField.NA_VALUE, f.getDatasetFieldType());
+                            f.setControlledVocabularyValues(List.of(ccv));
+                        }
                         msg += " populated with '" + DatasetField.NA_VALUE + "'";
                         f.setSingleValue(DatasetField.NA_VALUE);
                         fixed = true;
