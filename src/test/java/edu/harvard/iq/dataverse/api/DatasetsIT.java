@@ -6868,10 +6868,22 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(id), pathToFile, apiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId = UtilIT.getDataFileIdFromResponse(uploadResponse);
 
         publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(String.valueOf(id), "major", apiToken);
         publishDatasetResponse.prettyPrint();
         publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Remove the file and try to publish again. Dataset still has a file but the new version has none
+        Response deleteResponse = UtilIT.deleteFileInDataset(fileId, apiToken);
+        deleteResponse.prettyPrint();
+        deleteResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(String.valueOf(id), "major", apiToken);
+        publishDatasetResponse.prettyPrint();
+        publishDatasetResponse.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", containsString( BundleUtil.getStringFromBundle("dataset.mayNotPublish.FilesRequired")));
     }
     
     @Test
