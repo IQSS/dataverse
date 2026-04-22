@@ -254,6 +254,10 @@ public class PermissionsWrapper implements java.io.Serializable {
     
     // PUBLISH DATASET
     public boolean canIssuePublishDatasetCommand(DvObject dvo){
+        User u = session.getUser();
+        if (u != null && u.isSuperuser()) {
+            return true;
+        }
         // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
         if (dvo.isInstanceofDataset()) {
             Dataverse dv =((Dataset)dvo).getOwner();
