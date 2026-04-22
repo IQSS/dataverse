@@ -356,6 +356,7 @@ public class JsonPrinter {
             JsonArrayBuilder jab = Json.createArrayBuilder();
             for (DatasetType datasetType : allowedDatasetTypes) {
                 NullSafeJsonBuilder json = NullSafeJsonBuilder.jsonObjectBuilder()
+                    .add("id", datasetType.getId())
                     .add("name", datasetType.getName())
                     .add("displayName", datasetType.getDisplayName())
                     .add("description", datasetType.getDescription());
