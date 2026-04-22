@@ -1,0 +1,265 @@
+name: Container Integration Tests Workflow
+
+on:
+  push:
+    branches:
+      - develop
+    paths-ignore:
+      - "doc/**"
+      - "**/*.md"
+      - "**/*.txt"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/*.md"
+  pull_request:
+    branches:
+      - develop
+    paths-ignore:
+      - "doc/**"
+      - "**/*.md"
+      - "**/*.txt"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/*.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  main-integration-tests-workflow:
+    runs-on: ubuntu-latest
+    if: vars.ENABLE_DOCKER_TESTS == 'true'
+    timeout-minutes: 120
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      # ---------------------------
+      # CHECKOUT
+      # ---------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      # ---------------------------
+      # VERIFY DOCKER
+      # ---------------------------
+      - name: Verify Docker
+        run: |
+          set -euo pipefail
+          docker version
+          
+      # ---------------------------
+      # SETUP JAVA + MAVEN
+      # ---------------------------
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "21"
+          cache: "maven"
+
+      - name: Verify Maven
+        run: |
+          set -euo pipefail
+          mvn -version
+          
+      # ---------------------------
+      # CLEAN PREVIOUS VOLUMES
+      # ---------------------------
+      - name: Clean docker-dev-volumes
+        run: |
+          set -euo pipefail
+          rm -rf docker-dev-volumes || true
+          
+      # ---------------------------
+      # BUILD IMAGES (Dataverse-native)
+      # ---------------------------
+      - name: Build Dataverse containers via Maven
+        run: |
+          set -euo pipefail
+          mvn -Pct clean package
+          
+      # ---------------------------
+      # START CONTAINERS (BACKGROUND)
+      # ---------------------------
+      - name: Start Dataverse stack
+        run: |
+          set -euo pipefail
+          mvn -Pct docker:start \
+            -Ddataverse.cors.origin=* \
+            -Ddataverse.cors.methods=GET,POST,PUT,DELETE,OPTIONS \
+            -Ddataverse.cors.headers.allow=range,content-type,x-dataverse-key,accept \
+            -Ddataverse.cors.headers.expose=content-encoding,content-range,accept-ranges \
+            -Ddataverse.feature.index-harvested-metadata-source=true \
+            -Ddataverse.oai.server.maxidentifiers=2 \
+            -Ddataverse.oai.server.maxrecords=2 \
+            -Ddataverse.mail.system-email=noreply@dataverse.yourinstitution.edu
+          
+      # ---------------------------
+      # WAIT FOR API READINESS
+      # ---------------------------
+      - name: Wait for Dataverse API readiness
+        run: |
+          set -euo pipefail
+          URL="http://localhost:8080/api/info/version"
+          MAX_ATTEMPTS=10
+          SLEEP_TIME=15
+          echo "Waiting for Dataverse readiness..."
+          for attempt in $(seq 1 $MAX_ATTEMPTS); do
+            echo "Attempt $attempt..."
+            RESPONSE=$(curl -s --max-time 15 "$URL" || true)
+            STATUS=$(echo "$RESPONSE" | jq -r '.status' 2>/dev/null || echo "NOT_READY")
+            if [ "$STATUS" = "OK" ]; then
+              echo "Dataverse endpoint is READY."
+              echo "Dataverse waiting for full readiness. Waiting 30 more seconds."
+              sleep 30
+              echo "Response: $RESPONSE"
+              exit 0
+            fi
+            echo "Not ready. Sleeping ${SLEEP_TIME}s..."
+            sleep $SLEEP_TIME
+            if [ $SLEEP_TIME -lt 60 ]; then
+              SLEEP_TIME=$((SLEEP_TIME * 2))
+              if [ $SLEEP_TIME -gt 60 ]; then
+                SLEEP_TIME=60
+              fi
+            fi
+          done
+          echo "Dataverse failed to become ready."
+          docker ps
+          CONTAINERS="$(docker ps -q)"
+          if [ -n "$CONTAINERS" ]; then
+            for cid in $CONTAINERS; do
+              echo "===== Logs for container $cid ====="
+              docker logs "$cid" || true
+            done
+          else
+            echo "No running containers to show logs for."
+          fi
+          exit 1
+          
+      # ---------------------------
+      # MAP LOCALSTACK TO LOCALHOST
+      # ---------------------------
+      - name: Map localstack to localhost for Maven tests
+        run: echo "127.0.0.1 localstack" | sudo tee -a /etc/hosts
+
+      # ---------------------------
+      # CONFIGURE DATAVERSE FOR TESTS
+      # ---------------------------
+      - name: Configure Dataverse API Settings
+        run: |
+          set -euo pipefail
+          
+          echo "Setting API Database Settings via internal container curl..."
+          
+          # We define the settings in an array
+          declare -A settings=(
+            [":BuiltinUsersKey"]="burrito"
+            [":ProvCollectionEnabled"]="true"
+            [":AllowApiTokenLookupViaApi"]="true"
+            [":AllowSignUp"]="true"
+          )
+          # We run curl INSIDE the container so the source IP is 127.0.0.1
+          for key in "${!settings[@]}"; do
+            echo "Setting $key..."
+            docker exec dev_dataverse curl -s -X PUT -d "${settings[$key]}" "http://localhost:8080/api/admin/settings/$key"
+            echo ""
+          done
+
+      # ---------------------------
+      # PRE-TEST INJECTIONS (FROM YOUR ALTERNATE WORKFLOWS)
+      # ---------------------------
+      - name: Put SUSHI config file in place
+        run: |
+          set -euo pipefail
+          # Fixes MakeDataCountApiIT
+          docker exec dev_dataverse sh -c 'curl https://raw.githubusercontent.com/IQSS/dataverse/develop/src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json > /tmp/sushi_sample_logs.json && head /tmp/sushi_sample_logs.json'
+      - name: Run database sequence
+        run: |
+          set -euo pipefail
+          # Fixes DataRetrieverApiIT count expectations
+          export PGPASSWORD=secret
+          sed -i 's/dvnapp/dataverse/g' doc/sphinx-guides/source/_static/util/createsequence.sql
+          psql -h localhost -U dataverse dataverse -f doc/sphinx-guides/source/_static/util/createsequence.sql
+
+      # ---------------------------
+      # RUN MAVEN TESTS
+      # ---------------------------
+      - name: Run Maven Integration Tests
+        env:
+          DVAPIKEY: "burrito"
+          DV_APIKEY: "burrito"
+          DV_API_KEY: "burrito"
+        run: |
+          set -euo pipefail
+          # Read the file content into a variable
+          TEST_SUITE=$(cat tests/integration-tests.txt)
+          
+          echo "Running suite: $TEST_SUITE"
+          
+          # Notice we removed the reporting goals from this line so it strictly runs tests
+          mvn verify \
+            -Dtest="$TEST_SUITE" \
+            -Ddataverse.test.baseurl=http://localhost:8080 \
+            -DcompilerArgument=-Xlint:unchecked \
+            -DforkCount=1 \
+            -DreuseForks=true \
+            -DthreadCount=1 \
+            -Dparallel=none \
+            -P all-unit-tests package
+
+      # ---------------------------
+      # GENERATE REPORTS & DEPOSIT TO COVERALLS
+      # ---------------------------
+      - name: Generate Reports and Deposit to Coveralls
+        if: always()
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        # We use continue-on-error here so a Coveralls API hiccup doesn't mark your build as a failure
+        continue-on-error: true 
+        run: |
+          set -euo pipefail
+          
+          echo "Generating JaCoCo XML and pushing to Coveralls..."
+          
+          # 1. We combine jacoco:report and coveralls:report into ONE command.
+          # 2. We include the -P all-unit-tests profile so Coveralls inherits the POM configs.
+          # 3. We explicitly feed the path to the XML file via -DjacocoReports.
+          mvn jacoco:report coveralls:report \
+            -P all-unit-tests \
+            -DrepoToken=$COVERALLS_REPO_TOKEN \
+            -DjacocoReports=target/site/jacoco/jacoco.xml
+
+      # ---------------------------
+      # UPLOAD RAW HTML ARTIFACT
+      # ---------------------------
+      - name: Upload JaCoCo HTML Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-coverage-report
+          # This is the standard Maven output path for JaCoCo. Adjust if your POM changes this!
+          path: target/site/jacoco/
+          retention-days: 14
+
+      # ---------------------------
+      # DUMP LOGS ON FAILURE
+      # ---------------------------
+      - name: Dump Dataverse Logs on Failure
+        if: failure()
+        run: docker logs dev_dataverse
+
+      # ---------------------------
+      # SHUTDOWN STACK
+      # ---------------------------
+      - name: Stop Dataverse stack
+        if: always()
+        run: |
+          set -euo pipefail
+          mvn -Pct docker:stop || true
+      - name: Final Docker cleanup
+        if: always()
+        run: |
+          docker system prune -af || true
