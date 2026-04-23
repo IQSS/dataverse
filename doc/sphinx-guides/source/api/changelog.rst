@@ -10,7 +10,11 @@ This API changelog is experimental and we would love feedback on its usefulness.
 v6.11
 -----
 
-- The Croissant :ref:`metadata export format <metadata-export-formats>` has been updated from version 1.0 to 1.1, which is reflected in the ``conformsTo`` property. ``@vocab`` and ``sc`` properties now use "http" as `recommended <https://github.com/mlcommons/croissant/pull/929#pullrequestreview-3079137662>`_. The unused ``wd`` property has been dropped.
+- The following API will now return ``403`` if the ``requireFilesToPublishDataset`` flag is set and the dataset version contains 0 files.
+
+  - **/api/datasets/{Id}/submitForReview**
+
+- The Croissant :ref:`metadata export format <metadata-export-formats>` has been updated from version 1.0 to 1.1, which is reflected in the ``conformsTo`` property. The unused ``wd`` property has been dropped.
 
 v6.10
 -----

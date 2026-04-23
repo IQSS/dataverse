@@ -2231,19 +2231,29 @@ public class UtilIT {
     }
 
     static Response getAccessRequestList(String fileIdOrPersistentId, String apiToken) {
+        return getAccessRequestList(fileIdOrPersistentId, apiToken, null);
+    }
+    static Response getAccessRequestList(String fileIdOrPersistentId, String apiToken, int pageStart, int pageNumItems) {
+        return getAccessRequestList(fileIdOrPersistentId, apiToken, Boolean.TRUE, pageStart, pageNumItems);
+    }
+    static Response getAccessRequestList(String fileIdOrPersistentId, String apiToken, Boolean includeHistory) {
+        return getAccessRequestList(fileIdOrPersistentId, apiToken, includeHistory, 0, 0);
+    }
+    static Response getAccessRequestList(String fileIdOrPersistentId, String apiToken, Boolean includeHistory, int pageStart, int pageNumItems) {
+        RequestSpecification requestSpecification = given();
+
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
-        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
-            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+            requestSpecification.queryParam("persistentId", fileIdOrPersistentId);
         }
-        String keySeparator = "&";
-        if (optionalQueryParam.isEmpty()) {
-            keySeparator = "?";
+        if (includeHistory != null) {
+            requestSpecification.queryParam("includeHistory", includeHistory);
+            requestSpecification.queryParam("start", pageStart);
+            requestSpecification.queryParam("per_page", pageNumItems);
         }
-        Response response = given()
-                .get("/api/access/datafile/" + idInPath + "/listRequests/" + optionalQueryParam + keySeparator + "key=" + apiToken);
-        return response;
+        requestSpecification.queryParam("key", apiToken);
+        return requestSpecification.get("/api/access/datafile/" + idInPath + "/listRequests");
     }
 
     static Response rejectFileAccessRequest(String fileIdOrPersistentId, String identifier, String apiToken) {

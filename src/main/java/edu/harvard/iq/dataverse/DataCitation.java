@@ -135,7 +135,7 @@ public class DataCitation {
         getCommonValuesFrom(dsv);
 
         // file Title for direct File citation
-        fileTitle = fm.getLabel();
+        fileTitle = fm.getLabelForOriginal();
         DataFile df = fm.getDataFile();
 
         // File description

@@ -132,6 +132,11 @@ public class JsonPrinter {
             .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
         return builder;
     }
+    public static JsonObjectBuilder json(FileAccessRequest fileAccessRequest) {
+        JsonObjectBuilder builder = json(fileAccessRequest.getRequester())
+                .add("requestState", fileAccessRequest.getStateLabel());
+        return builder;
+    }
 
     public static JsonArrayBuilder jsonRoleAssignments(List<RoleAssignment> roleAssignments) {
         JsonArrayBuilder bld = Json.createArrayBuilder();
@@ -351,6 +356,7 @@ public class JsonPrinter {
             JsonArrayBuilder jab = Json.createArrayBuilder();
             for (DatasetType datasetType : allowedDatasetTypes) {
                 NullSafeJsonBuilder json = NullSafeJsonBuilder.jsonObjectBuilder()
+                    .add("id", datasetType.getId())
                     .add("name", datasetType.getName())
                     .add("displayName", datasetType.getDisplayName())
                     .add("description", datasetType.getDescription());
