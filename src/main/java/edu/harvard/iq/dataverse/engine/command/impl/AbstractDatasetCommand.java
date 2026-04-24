@@ -315,4 +315,14 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
             }
         }
     }
+
+    // To block Publishing dataset or Submitting dataset for review
+    protected boolean getEffectiveRequiresFilesToPublishDataset() {
+        if (getUser().isSuperuser()) {
+            return false;
+        } else {
+            Dataverse dv = getDataset().getOwner();
+            return dv != null &&  dv.getEffectiveRequiresFilesToPublishDataset();
+        }
+    }
 }

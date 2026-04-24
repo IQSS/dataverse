@@ -835,6 +835,18 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         String reminderString;
 
+        if (dataset.getOwner().getEffectiveRequiresFilesToPublishDataset()) {
+            List<FileMetadata> files = dataset.getLatestVersion().getFileMetadatas();
+            if (files.size() < 1) {
+                if (canPublishDataset) {
+                    reminderString = BundleUtil.getStringFromBundle("dataset.mayNotPublish.FilesRequired");
+                } else {
+                    reminderString = BundleUtil.getStringFromBundle("dataset.mayNotSubmitForReview.FilesRequired");
+                }
+                return reminderString;
+            }
+        }
+
         if (canPublishDataset) {
             reminderString = BundleUtil.getStringFromBundle("dataset.message.publish.warning");
         } else {

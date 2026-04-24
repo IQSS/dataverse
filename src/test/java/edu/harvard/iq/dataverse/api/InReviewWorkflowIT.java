@@ -1,12 +1,12 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import jakarta.json.Json;
-import jakarta.json.JsonArray;
 import jakarta.json.JsonObjectBuilder;
 
 import static edu.harvard.iq.dataverse.UserNotification.Type.*;
@@ -478,4 +478,60 @@ public class InReviewWorkflowIT {
 
     }
 
+    @Test
+    public void testRequireFilesToSubmitDatasetForReview() {
+        // create dataverse owner and dataset creator
+        Response superUser = UtilIT.createRandomUser();
+        superUser.prettyPrint();
+        superUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(superUser);
+        String superUserApiToken = UtilIT.getApiTokenFromResponse(superUser);
+        Response makeSuperUserResponse = UtilIT.setSuperuserStatus(username, true);
+        makeSuperUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response createCurator = UtilIT.createRandomUser();
+        createCurator.prettyPrint();
+        createCurator.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String authorUsername = UtilIT.getUsernameFromResponse(createCurator);
+        String apiToken = UtilIT.getApiTokenFromResponse(createCurator);
+
+        // Create the dataverse and set it to require files to publish and submit for review
+        Response createDataverseResponse = UtilIT.createRandomDataverse(superUserApiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response setDataverseAttributeResponse = UtilIT.setCollectionAttribute(dataverseAlias, "requireFilesToPublishDataset", "true", superUserApiToken);
+        setDataverseAttributeResponse.prettyPrint();
+        setDataverseAttributeResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // grant role to dataset creator to be able to create a dataset in the dataverse
+        Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR.toString(), "@" + authorUsername, superUserApiToken);
+        grantAuthorAddDataset.prettyPrint();
+        grantAuthorAddDataset.then().assertThat()
+                .body("data.assignee", equalTo("@" + authorUsername))
+                .body("data._roleAlias", equalTo("dsContributor"))
+                .statusCode(OK.getStatusCode());
+
+        // Create a dataset with no files
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+
+        // Submit for review with no data files
+        Response submitForReview = UtilIT.submitDatasetForReview(datasetPersistentId, apiToken);
+        submitForReview.prettyPrint();
+        submitForReview.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataset.mayNotSubmitForReview.FilesRequired")));
+    }
 }

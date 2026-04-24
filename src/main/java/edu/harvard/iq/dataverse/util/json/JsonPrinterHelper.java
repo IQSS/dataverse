@@ -1,9 +1,6 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevelServiceBean;
-import edu.harvard.iq.dataverse.MailServiceBean;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import jakarta.annotation.PostConstruct;
@@ -37,6 +34,9 @@ public class JsonPrinterHelper {
     @EJB
     InAppNotificationsJsonPrinter inAppNotificationsJsonPrinter;
 
+    @EJB
+    RoleAssigneeServiceBean roleAssigneeService;
+
     @PostConstruct
     public void injectService() {
         JsonPrinter.injectSettingsService(
@@ -45,7 +45,8 @@ public class JsonPrinterHelper {
                 datasetFieldInpuLevelSvc,
                 datasetSvc,
                 mailSvc,
-                inAppNotificationsJsonPrinter
+                inAppNotificationsJsonPrinter,
+                roleAssigneeService
         );
     }
 }
