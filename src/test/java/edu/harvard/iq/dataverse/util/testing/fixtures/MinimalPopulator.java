@@ -9,7 +9,9 @@ import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.util.testing.recipes.FileBuildContext;
+import edu.harvard.iq.dataverse.util.testing.recipes.VariableMetadataBuildContext;
 import edu.harvard.iq.dataverse.util.testing.recipes.VariableSetBuildContext;
 
 import java.util.ArrayList;
@@ -129,6 +131,20 @@ public final class MinimalPopulator implements FixturePopulator {
         dataVariable.setCategories(new ArrayList<>());
         dataVariable.setVariableMetadatas(new ArrayList<>());
         dataVariable.setInvalidRangeItems(new ArrayList<>());
+    }
+    
+    /**
+     * Populates metadata for a data variable. Updates the label with a unique identifier
+     * generated based on the provided build context.
+     *
+     * @param metadata the variable metadata object to be populated
+     * @param variableMetadataBuildContext the context containing information about
+     *        the variable, including file and variable indices
+     */
+    @Override
+    public void populateVariableMetadata(VariableMetadata metadata, VariableMetadataBuildContext variableMetadataBuildContext) {
+        metadata.setLabel("variable-metadata-" + variableMetadataBuildContext.fileIndex() +
+            "-" + variableMetadataBuildContext.variableIndex());
     }
     
     /**

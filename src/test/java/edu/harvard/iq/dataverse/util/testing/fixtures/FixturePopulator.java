@@ -5,15 +5,12 @@ import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.util.testing.recipes.FileBuildContext;
+import edu.harvard.iq.dataverse.util.testing.recipes.VariableMetadataBuildContext;
 import edu.harvard.iq.dataverse.util.testing.recipes.VariableSetBuildContext;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
 
 /**
  * Populator interface responsible for initializing scalar/non-relationship fields of
@@ -84,6 +81,17 @@ public interface FixturePopulator {
             VariableSetBuildContext variableBuildContext,
             int variableIndex,
             DatasetFixtureBuilder.BuildContext context
+    );
+    
+    /**
+     * Populates scalar fields and safe defaults for metadata of a variable.
+     *
+     * @param metadata variable metadata being initialized
+     * @param variableMetadataBuildContext variable metadata build context
+     */
+    void populateVariableMetadata(
+        VariableMetadata metadata,
+        VariableMetadataBuildContext variableMetadataBuildContext
     );
 
     /**
