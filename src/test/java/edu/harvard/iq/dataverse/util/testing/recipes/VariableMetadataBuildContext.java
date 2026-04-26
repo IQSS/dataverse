@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.util.testing.recipes;
 
 /**
  * Context object supplied while deciding whether a variable should receive
- * {@code VariableMetadata}.
+ * {@link edu.harvard.iq.dataverse.datavariable.VariableMetadata}.
  *
  * <p>A variable metadata entry belongs to a specific pair of:</p>
  * <ul>

@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.util.testing.recipes;
 import java.util.function.Predicate;
 
 /**
- * Recipe describing whether a {@code VariableMetadata} row should be created for
+ * Recipe describing whether a {@link edu.harvard.iq.dataverse.datavariable.VariableMetadata} row should be created for
  * a generated {@code (FileMetadata, DataVariable)} pair.
  *
  * <p>This is modeled as a yes/no decision because the current schema enforces

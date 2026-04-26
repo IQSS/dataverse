@@ -7,7 +7,7 @@ import java.util.function.Predicate;
 /**
  * Recipe describing how many variables should be created for a tabular file
  * or data table, and whether generated file-variable pairs should receive
- * {@code VariableMetadata}.
+ * {@link edu.harvard.iq.dataverse.datavariable.VariableMetadata}.
  */
 public interface VariableSetRecipe {
     
