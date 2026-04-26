@@ -68,7 +68,7 @@ class DatasetFixtureTest {
         assertNotNull(result);
         
         start = Instant.now();
-        System.out.println(result);
+        result.toString();
         finish = Instant.now();
         System.out.println("print: " + Duration.between(start, finish).toMillis() + " msec");
         
