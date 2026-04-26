@@ -248,8 +248,4 @@ public class DatasetFixtureBuilder {
      *
      * @param sequence deterministic sequence number for the fixture instance
      */
-    public record BuildContext(
-            long sequence
-    ) {
-    }
 }

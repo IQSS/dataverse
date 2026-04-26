@@ -27,7 +27,7 @@ public final class MinimalPopulator implements FixturePopulator {
      * @param context fixture build context
      */
     @Override
-    public void populateDataset(Dataset dataset, DatasetFixtureBuilder.BuildContext context) {
+    public void populateDataset(Dataset dataset, BuildContext context) {
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072");
         dataset.setIdentifier("fixture-dataset-" + context.sequence());
@@ -42,7 +42,7 @@ public final class MinimalPopulator implements FixturePopulator {
      * @param context fixture build context
      */
     @Override
-    public void populateDatasetVersion(DatasetVersion version, DatasetFixtureBuilder.BuildContext context) {
+    public void populateDatasetVersion(DatasetVersion version, BuildContext context) {
         Date now = new Date();
         version.setVersionNumber(1L);
         version.setMinorVersionNumber(0L);
@@ -57,11 +57,11 @@ public final class MinimalPopulator implements FixturePopulator {
      * Populates basic file-metadata scalar fields.
      *
      * @param fileMetadata file metadata being initialized
-     * @param fileIndex zero-based file index
+     * @param fileBuildContext file build context
      * @param context fixture build context
      */
     @Override
-    public void populateFileMetadata(FileMetadata fileMetadata, FileBuildContext fileBuildContext, DatasetFixtureBuilder.BuildContext context) {
+    public void populateFileMetadata(FileMetadata fileMetadata, FileBuildContext fileBuildContext, BuildContext context) {
         fileMetadata.setLabel("file-" + fileBuildContext.fileIndex() + ".tab");
         fileMetadata.setDescription("Fixture file " + fileBuildContext.fileIndex());
         fileMetadata.setVarGroups(new ArrayList<>());
@@ -72,11 +72,11 @@ public final class MinimalPopulator implements FixturePopulator {
      * Populates basic data-file scalar fields and null-sensitive defaults.
      *
      * @param dataFile data file being initialized
-     * @param fileIndex zero-based file index
+     * @param fileBuildContext file build context
      * @param context fixture build context
      */
     @Override
-    public void populateDataFile(DataFile dataFile, FileBuildContext fileBuildContext, DatasetFixtureBuilder.BuildContext context) {
+    public void populateDataFile(DataFile dataFile, FileBuildContext fileBuildContext, BuildContext context) {
         dataFile.setContentType("text/tab-separated-values");
         dataFile.setChecksumType(DataFile.ChecksumType.SHA1);
         dataFile.setChecksumValue("fixture-checksum-" + fileBuildContext.fileIndex());
@@ -90,11 +90,11 @@ public final class MinimalPopulator implements FixturePopulator {
      * Populates basic data-table scalar fields and variable collection defaults.
      *
      * @param dataTable data table being initialized
-     * @param fileIndex zero-based file index
+     * @param fileBuildContext file build context
      * @param context fixture build context
      */
     @Override
-    public void populateDataTable(DataTable dataTable, FileBuildContext fileBuildContext, DatasetFixtureBuilder.BuildContext context) {
+    public void populateDataTable(DataTable dataTable, FileBuildContext fileBuildContext, BuildContext context) {
         dataTable.setVarQuantity(0L);
         dataTable.setCaseQuantity(100L);
         dataTable.setRecordsPerCase(1L);
@@ -110,7 +110,7 @@ public final class MinimalPopulator implements FixturePopulator {
      * that are null-sensitive in serialization.
      *
      * @param dataVariable data variable being initialized
-     * @param fileIndex zero-based file index
+     * @param variableSetBuildContext larger context of the data variable being populated
      * @param variableIndex zero-based variable index within the file/table
      * @param context fixture build context
      */
@@ -119,7 +119,7 @@ public final class MinimalPopulator implements FixturePopulator {
         DataVariable dataVariable,
         VariableSetBuildContext variableSetBuildContext,
         int variableIndex,
-        DatasetFixtureBuilder.BuildContext context
+        BuildContext context
     ) {
         dataVariable.setName("var_" + variableSetBuildContext.fileIndex() + "_" + variableIndex);
         dataVariable.setLabel("Variable " + variableSetBuildContext.fileIndex() + "/" + variableIndex);
@@ -152,7 +152,7 @@ public final class MinimalPopulator implements FixturePopulator {
      * variable set.
      *
      * @param varGroup var group being initialized
-     * @param fileIndex zero-based file index
+     * @param fileBuildContext file build context
      * @param groupIndex zero-based group index within the file
      * @param context fixture build context
      */
@@ -161,7 +161,7 @@ public final class MinimalPopulator implements FixturePopulator {
         VarGroup varGroup,
         FileBuildContext fileBuildContext,
         int groupIndex,
-        DatasetFixtureBuilder.BuildContext context
+        BuildContext context
     ) {
         varGroup.setLabel("group-" + fileBuildContext.fileIndex() + "-" + groupIndex);
         varGroup.setVarsInGroup(new HashSet<>());

@@ -31,7 +31,7 @@ public interface FixturePopulator {
      * @param dataset dataset being initialized
      * @param context fixture build context
      */
-    void populateDataset(Dataset dataset, DatasetFixtureBuilder.BuildContext context);
+    void populateDataset(Dataset dataset, BuildContext context);
 
     /**
      * Populates scalar fields and safe defaults for a dataset version.
@@ -39,40 +39,40 @@ public interface FixturePopulator {
      * @param version dataset version being initialized
      * @param context fixture build context
      */
-    void populateDatasetVersion(DatasetVersion version, DatasetFixtureBuilder.BuildContext context);
+    void populateDatasetVersion(DatasetVersion version, BuildContext context);
 
     /**
      * Populates scalar fields and safe defaults for file metadata.
      *
      * @param fileMetadata file metadata being initialized
-     * @param fileIndex zero-based file index
+     * @param fileBuildContext file build context
      * @param context fixture build context
      */
-    void populateFileMetadata(FileMetadata fileMetadata, FileBuildContext fileBuildContext, DatasetFixtureBuilder.BuildContext context);
+    void populateFileMetadata(FileMetadata fileMetadata, FileBuildContext fileBuildContext, BuildContext context);
 
     /**
      * Populates scalar fields and safe defaults for a data file.
      *
      * @param dataFile data file being initialized
-     * @param fileIndex zero-based file index
+     * @param fileBuildContext file build context
      * @param context fixture build context
      */
-    void populateDataFile(DataFile dataFile, FileBuildContext fileBuildContext, DatasetFixtureBuilder.BuildContext context);
+    void populateDataFile(DataFile dataFile, FileBuildContext fileBuildContext, BuildContext context);
 
     /**
      * Populates scalar fields and safe defaults for a data table.
      *
      * @param dataTable data table being initialized
-     * @param fileIndex zero-based file index
+     * @param fileBuildContext file build context
      * @param context fixture build context
      */
-    void populateDataTable(DataTable dataTable, FileBuildContext fileBuildContext, DatasetFixtureBuilder.BuildContext context);
+    void populateDataTable(DataTable dataTable, FileBuildContext fileBuildContext, BuildContext context);
 
     /**
      * Populates scalar fields and safe defaults for a data variable.
      *
      * @param dataVariable data variable being initialized
-     * @param fileIndex zero-based file index
+     * @param variableBuildContext variable set build context
      * @param variableIndex zero-based variable index within the file/table
      * @param context fixture build context
      */
@@ -80,7 +80,7 @@ public interface FixturePopulator {
             DataVariable dataVariable,
             VariableSetBuildContext variableBuildContext,
             int variableIndex,
-            DatasetFixtureBuilder.BuildContext context
+            BuildContext context
     );
     
     /**
@@ -98,7 +98,7 @@ public interface FixturePopulator {
      * Populates scalar fields and safe defaults for a variable group.
      *
      * @param varGroup var group being initialized
-     * @param fileIndex zero-based file index
+     * @param fileBuildContext file build context
      * @param groupIndex zero-based group index within the file
      * @param context fixture build context
      */
@@ -106,7 +106,7 @@ public interface FixturePopulator {
             VarGroup varGroup,
             FileBuildContext fileBuildContext,
             int groupIndex,
-            DatasetFixtureBuilder.BuildContext context
+            BuildContext context
     );
 
     /**
