@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 
 import java.util.List;
 
@@ -18,13 +19,17 @@ import java.util.List;
  * generated child entities. That makes it easier to inspect, persist, or tweak
  * the graph after building it.</p>
  *
+ * <p>The fixture currently represents a single dataset version. Multi-version
+ * support will be added in a later iteration via dedicated evolution recipes.</p>
+ *
  * @param dataset root dataset
  * @param currentVersion current dataset version
  * @param fileMetadatas generated file metadata objects
  * @param dataFiles generated data files
  * @param dataTables generated data tables
  * @param dataVariables generated data variables
- * @param varGroups generated var groups
+ * @param varGroups generated variable groups
+ * @param variableMetadata generated variable metadata rows
  */
 public record DatasetFixture(
     Dataset dataset,
@@ -33,7 +38,8 @@ public record DatasetFixture(
     List<DataFile> dataFiles,
     List<DataTable> dataTables,
     List<DataVariable> dataVariables,
-    List<VarGroup> varGroups
+    List<VarGroup> varGroups,
+    List<VariableMetadata> variableMetadata
 ) {
     
     /**
@@ -45,5 +51,6 @@ public record DatasetFixture(
         dataTables = List.copyOf(dataTables);
         dataVariables = List.copyOf(dataVariables);
         varGroups = List.copyOf(varGroups);
+        variableMetadata = List.copyOf(variableMetadata);
     }
 }
