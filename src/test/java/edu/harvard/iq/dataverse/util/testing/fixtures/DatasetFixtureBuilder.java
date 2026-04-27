@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
@@ -114,6 +115,7 @@ public class DatasetFixtureBuilder {
         
         // Create the top-level dataset and its current version, then wire them.
         Dataset dataset = createEmptyDataset(context);
+        DatasetType datasetType = datasetRecipe.datasetTypeRecipe().datasetType();
         DatasetVersion currentVersion = createDatasetVersion(context);
         wireDatasetAndVersion(dataset, currentVersion);
         
@@ -123,7 +125,7 @@ public class DatasetFixtureBuilder {
         // Walk the file recipes and create files (plus tabular structure where applicable).
         buildVersionFiles(currentVersion, context, accumulator);
         
-        return accumulator.toFixture(dataset, currentVersion);
+        return accumulator.toFixture(dataset, datasetType, currentVersion);
     }
     
     /**
@@ -138,6 +140,10 @@ public class DatasetFixtureBuilder {
     private Dataset createEmptyDataset(BuildContext context) {
         Dataset dataset = new Dataset();
         populator.populateDataset(dataset, context);
+        // DatasetType comes from the recipe, not the populator, because it is a shared
+        // reference entity that must pre-exist in the database. The recipe either wraps
+        //        // a pre-existing instance or builds one from scalar values for this fixture.
+        dataset.setDatasetType(datasetRecipe.datasetTypeRecipe().datasetType());
         dataset.setVersions(new ArrayList<>());
         return dataset;
     }
@@ -481,9 +487,10 @@ public class DatasetFixtureBuilder {
             variableMetadata.add(metadata);
         }
         
-        DatasetFixture toFixture(Dataset dataset, DatasetVersion currentVersion) {
+        DatasetFixture toFixture(Dataset dataset, DatasetType datasetType, DatasetVersion currentVersion) {
             return new DatasetFixture(
                 dataset,
+                datasetType,
                 currentVersion,
                 fileMetadatas,
                 dataFiles,

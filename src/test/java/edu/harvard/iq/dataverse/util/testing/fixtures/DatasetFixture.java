@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
@@ -33,6 +34,7 @@ import java.util.List;
  */
 public record DatasetFixture(
     Dataset dataset,
+    DatasetType datasetType,
     DatasetVersion currentVersion,
     List<FileMetadata> fileMetadatas,
     List<DataFile> dataFiles,

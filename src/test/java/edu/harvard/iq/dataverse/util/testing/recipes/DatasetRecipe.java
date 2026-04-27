@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.util.testing.recipes;
 
+import java.util.Objects;
+
 /**
  * Top-level recipe describing how to construct a {@code Dataset} fixture.
  *
@@ -13,31 +15,43 @@ package edu.harvard.iq.dataverse.util.testing.recipes;
  * to evolve later.</p>
  */
 public interface DatasetRecipe {
-
+    
+    /**
+     * Returns the dataset type recipe providing the type to assign.
+     *
+     * @return dataset type recipe
+     */
+    DatasetTypeRecipe datasetTypeRecipe();
+    
     /**
      * Returns the recipe describing the current version of the dataset.
      *
      * @return recipe for the current dataset version
      */
     VersionRecipe currentVersionRecipe();
-
+    
     /**
-     * Creates a dataset recipe with a single current version recipe.
+     * Creates a dataset recipe with the supplied type and version recipes.
      *
-     * @param currentVersionRecipe the recipe for the current dataset version
+     * @param datasetTypeRecipe recipe providing the dataset type
+     * @param currentVersionRecipe recipe for the current dataset version
      * @return a dataset recipe
      */
-    static DatasetRecipe of(VersionRecipe currentVersionRecipe) {
-        return new SimpleDatasetRecipe(currentVersionRecipe);
+    static DatasetRecipe of(DatasetTypeRecipe datasetTypeRecipe, VersionRecipe currentVersionRecipe) {
+        Objects.requireNonNull(datasetTypeRecipe, "datasetTypeRecipe must not be null");
+        Objects.requireNonNull(currentVersionRecipe, "currentVersionRecipe must not be null");
+        return new SimpleDatasetRecipe(datasetTypeRecipe, currentVersionRecipe);
     }
-
+    
     /**
      * Minimal immutable implementation of {@link DatasetRecipe}.
      *
-     * @param currentVersionRecipe the recipe for the current dataset version
+     * @param datasetTypeRecipe recipe providing the dataset type
+     * @param currentVersionRecipe recipe for the current dataset version
      */
     record SimpleDatasetRecipe(
-            VersionRecipe currentVersionRecipe
+        DatasetTypeRecipe datasetTypeRecipe,
+        VersionRecipe currentVersionRecipe
     ) implements DatasetRecipe {
     }
 }

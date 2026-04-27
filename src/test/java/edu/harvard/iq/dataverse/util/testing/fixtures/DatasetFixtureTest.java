@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.testing.recipes.DatasetRecipe;
+import edu.harvard.iq.dataverse.util.testing.recipes.DatasetTypeRecipe;
 import edu.harvard.iq.dataverse.util.testing.recipes.FileRecipe;
 import edu.harvard.iq.dataverse.util.testing.recipes.VariableSetRecipe;
 import edu.harvard.iq.dataverse.util.testing.recipes.VersionRecipe;
@@ -38,6 +39,7 @@ class DatasetFixtureTest {
     void smoketest() {
         
         var recipe = DatasetRecipe.of(
+            DatasetTypeRecipe.dataset(),
             VersionRecipe.of(
                 FileRecipe.tabular(10, VariableSetRecipe.uniform(10)),
                 //FileRecipe.tabular(50, VariableSetRecipe.byPredicate()),

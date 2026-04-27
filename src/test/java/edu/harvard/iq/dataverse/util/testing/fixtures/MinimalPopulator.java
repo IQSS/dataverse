@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
-import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
@@ -31,7 +30,6 @@ public final class MinimalPopulator implements FixturePopulator {
         dataset.setAuthority("10.5072");
         dataset.setIdentifier("fixture-dataset-" + context.sequence());
         dataset.setStorageIdentifier("fixture-storage-" + context.sequence());
-        dataset.setDatasetType(new DatasetType());
         
         // necessary as DvObject says "not nullable"
         dataset.setCreateDate(context.getTimestamp());
