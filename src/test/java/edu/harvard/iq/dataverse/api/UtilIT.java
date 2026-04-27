@@ -1302,7 +1302,7 @@ public class UtilIT {
         if (body != null) {
             requestSpecification.body(body);
         }
-        String getString = "/api/access/dataset/:persistentId?persistentId=" + persistentId;
+        String getString = "/api/access/datafile/:persistentId?persistentId=" + persistentId;
         return requestSpecification.post(getString);
     }
 

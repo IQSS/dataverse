@@ -63,6 +63,11 @@ public class FilesIT {
         removePublicInstall.then().assertThat().statusCode(200);
     }
 
+    @AfterEach
+    public void resetClass() {
+        UtilIT.deleteSetting(SettingsServiceBean.Key.FilePIDsEnabled);
+    }
+
     @AfterAll
     public static void tearDownClass() {
         UtilIT.deleteSetting(SettingsServiceBean.Key.PublicInstall);
@@ -3869,6 +3874,7 @@ public class FilesIT {
     @Test
     public void testDownloadFileWithGuestbookResponse() throws IOException, JsonParseException {
         msgt("testDownloadFileWithGuestbookResponse");
+        UtilIT.enableSetting(SettingsServiceBean.Key.FilePIDsEnabled);
         // Create superuser
         Response createUserResponse = UtilIT.createRandomUser();
         assertEquals(200, createUserResponse.getStatusCode());
@@ -3929,7 +3935,9 @@ public class FilesIT {
         JsonObjectBuilder json4 = Json.createObjectBuilder().add("description", "my description4").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
         uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/Robot-Icon_2.png", json1.build(), ownerApiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        uploadResponse.prettyPrint();
         Integer fileId4 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        String filePersistentId = JsonPath.from(uploadResponse.body().asString()).getString("data.files[0].dataFile.persistentId");
 
         // Restrict files
         Response restrictResponse = UtilIT.restrictFile(fileId1.toString(), true, ownerApiToken);
@@ -4044,13 +4052,18 @@ public class FilesIT {
         Response guestbookResponses = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), ownerApiToken);
         assertTrue(guestbookResponses.prettyPrint().contains("My Name," + user2Email + ",My Institution,My Position"));
 
-        // Get Signed Download Url with guestbook response using persistentId
-        // POST /api/access/dataset/:persistentId?persistentId=doi:10.xxxx/FK2/ABC
-        downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(persistentId, apiToken, guestbookResponse);
+        // Get Signed Download Url for guest with guestbook response using file's persistentId
+        // POST /api/access/dataset/:persistentId?persistentId=
+        downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(filePersistentId, null, guestbookResponseForGuest);
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+        // verify that the fileId is correct
+        assertTrue(signedUrl.contains("/access/datafile/" + fileId4 + "?"));
+        // verify that the persistentId is no longer in the url
+        assertFalse(signedUrl.contains("persistentId"));
+        // verify that the signed url is good
         signedUrlResponse = get(signedUrl);
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
     }
