@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util.testing.fixtures;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.testing.recipes.DatasetRecipe;
 import edu.harvard.iq.dataverse.util.testing.recipes.FileRecipe;
@@ -24,6 +25,8 @@ class DatasetFixtureTest {
     @BeforeAll
     static void setUp() {
         BrandingUtilTest.setupMocks();
+        // Let MPCONFIG init and cache the lookup classes
+        JvmSettings.PREFIX.lookupOptional();
     }
     
     @AfterAll
@@ -71,7 +74,6 @@ class DatasetFixtureTest {
         result.toString();
         finish = Instant.now();
         System.out.println("print: " + Duration.between(start, finish).toMillis() + " msec");
-        
     }
     
 }
