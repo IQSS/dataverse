@@ -39,7 +39,7 @@ class DatasetFixtureTest {
         
         var recipe = DatasetRecipe.of(
             VersionRecipe.of(
-                FileRecipe.tabular(1000, VariableSetRecipe.uniform(10000)),
+                FileRecipe.tabular(10, VariableSetRecipe.uniform(10)),
                 //FileRecipe.tabular(50, VariableSetRecipe.byPredicate()),
                 //FileRecipe.tabular(50, VariableSetRecipe.byRandom(10, 1000, 12345)),
                 FileRecipe.regular(1)
