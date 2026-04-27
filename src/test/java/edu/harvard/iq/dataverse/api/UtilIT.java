@@ -5311,6 +5311,31 @@ public class UtilIT {
                 .post("/api/dataverses/" + dataverseAlias + "/templates");
     }
     
+    public static Response updateTemplateMetadata(String templateId, String jsonString, String apiToken, Boolean replaceData) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .put("/api/dataverses/" + templateId + "/metadata?replace=" + replaceData);
+    }
+    
+    public static Response updateTemplateLicenseTerms(String templateId, String jsonString, String apiToken) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .put("/api/dataverses/" + templateId + "/licenseTerms");
+    }
+    
+        
+    public static Response updateTemplateAccessTerms(String templateId, String jsonString, String apiToken) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .put("/api/dataverses/" + templateId + "/access");
+    }
+    
     public static Response deleteTemplate(String id,  String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)

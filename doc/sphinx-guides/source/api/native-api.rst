@@ -1755,6 +1755,69 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/1/templates" --upload-file dataverse-template.json
 
+Update the Metadata and Instructions of a Template
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates the metadata and instructions of a template with a given ``id``.
+
+To update the template, you must send a JSON file. Your JSON file might look like :download:`template-update-metadata.json <../_static/api/template-update-metadata.json>` which you would send to the Dataverse installation like this:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/dataverses/{ID}/metadata" --upload-file template-update-metadata.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/dataverses/1/metadata" --upload-file template-update-metadata.json
+
+Update the License or Terms Of Use of a Template
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates the license or custom terms of use of a template with a given ``id``.
+
+To update the template, you must send a JSON file containing either the name of an active license or custom terms of use. Your JSON file might look like :download:`template-update-license.json <../_static/api/template-update-license.json>`  or :download:`template-update-terms.json <../_static/api/template-update-terms.json>` which you would send to the Dataverse installation like this:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/dataverses/{ID}/licenseTerms" --upload-file template-update-license.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/dataverses/1/licenseTerms" --upload-file template-update-license.json
+
+Update the Terms Of Access of a Template
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates the terms of access of a template with a given ``id``.
+
+To update the template, you must send a JSON file containing either the name of an active license or custom terms of use. Your JSON file might look like :download:`template-update-access.json <../_static/api/template-update-access.json>` which you would send to the Dataverse installation like this:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/dataverses/{ID}/access" --upload-file template-update-access.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/dataverses/1/access" --upload-file template-update-access.json
+
 Set a Default Template for a Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
