@@ -15,7 +15,6 @@ import edu.harvard.iq.dataverse.util.testing.recipes.VariableMetadataBuildContex
 import edu.harvard.iq.dataverse.util.testing.recipes.VariableSetBuildContext;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 
 public final class MinimalPopulator implements FixturePopulator {
@@ -33,6 +32,10 @@ public final class MinimalPopulator implements FixturePopulator {
         dataset.setIdentifier("fixture-dataset-" + context.sequence());
         dataset.setStorageIdentifier("fixture-storage-" + context.sequence());
         dataset.setDatasetType(new DatasetType());
+        
+        // necessary as DvObject says "not nullable"
+        dataset.setCreateDate(context.getTimestamp());
+        dataset.setModificationTime(context.getTimestamp());
     }
     
     /**
@@ -43,13 +46,12 @@ public final class MinimalPopulator implements FixturePopulator {
      */
     @Override
     public void populateDatasetVersion(DatasetVersion version, BuildContext context) {
-        Date now = new Date();
         version.setVersionNumber(1L);
         version.setMinorVersionNumber(0L);
         version.setVersionState(DatasetVersion.VersionState.DRAFT);
         version.setVersionNote("fixture-version");
-        version.setCreateTime(now);
-        version.setLastUpdateTime(now);
+        version.setCreateTime(context.getDate());
+        version.setLastUpdateTime(context.getDate());
         
         // TermsOfUseAndAccess and DatasetVersion are mutually linked via a OneToOne.
         // The validator reads datasetVersion from the terms object, so both sides
@@ -90,6 +92,10 @@ public final class MinimalPopulator implements FixturePopulator {
         dataFile.setDataTables(new ArrayList<>());
         dataFile.setFileMetadatas(new ArrayList<>());
         dataFile.setTags(new ArrayList<>());
+        
+        // necessary as DvObject says "not nullable"
+        dataFile.setCreateDate(context.getTimestamp());
+        dataFile.setModificationTime(context.getTimestamp());
     }
     
     /**

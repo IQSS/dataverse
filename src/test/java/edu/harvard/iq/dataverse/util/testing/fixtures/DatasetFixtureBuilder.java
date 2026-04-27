@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.util.testing.recipes.VariableSetBuildContext;
 import edu.harvard.iq.dataverse.util.testing.recipes.VariableSetRecipe;
 import edu.harvard.iq.dataverse.util.testing.recipes.VersionRecipe;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -109,7 +110,7 @@ public class DatasetFixtureBuilder {
         Objects.requireNonNull(populator, "populator must not be null");
         
         // One context per build, so populators can use deterministic information about this fixture instance.
-        BuildContext context = new BuildContext(SEQUENCE.getAndIncrement());
+        BuildContext context = new BuildContext(SEQUENCE.getAndIncrement(), Instant.now());
         
         // Create the top-level dataset and its current version, then wire them.
         Dataset dataset = createEmptyDataset(context);

@@ -1,5 +1,9 @@
 package edu.harvard.iq.dataverse.util.testing.fixtures;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Date;
+
 /**
  * Immutable build context shared across a single fixture build.
  *
@@ -11,6 +15,16 @@ package edu.harvard.iq.dataverse.util.testing.fixtures;
  * @param sequence deterministic sequence number for the fixture instance
  */
 public record BuildContext(
-        long sequence
+        long sequence,
+        Instant now
 ) {
+
+    Timestamp getTimestamp() {
+        return Timestamp.from(now);
+    }
+    
+    Date getDate() {
+        return Date.from(now);
+    }
+
 }
