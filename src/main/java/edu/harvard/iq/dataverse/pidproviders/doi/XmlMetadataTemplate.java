@@ -345,6 +345,7 @@ public class XmlMetadataTemplate {
             String keyword = null;
             String scheme = null;
             String schemeUri = null;
+            String valueUri = null;
 
             for (DatasetField subField : keywordFieldValue.getChildDatasetFields()) {
                 switch (subField.getDatasetFieldType().getName()) {
@@ -357,6 +358,9 @@ public class XmlMetadataTemplate {
                 case DatasetFieldConstant.keywordVocabURI:
                     schemeUri = subField.getValue();
                     break;
+                case DatasetFieldConstant.keywordTermURI:
+                    valueUri = subField.getValue();
+                    break;
                 }
             }
             if (StringUtils.isNotBlank(keyword)) {
@@ -366,6 +370,9 @@ public class XmlMetadataTemplate {
                 }
                 if (StringUtils.isNotBlank(schemeUri)) {
                     attributesMap.put("schemeURI", schemeUri);
+                }
+                if (StringUtils.isNotBlank(valueUri)) {
+                    attributesMap.put("valueURI", valueUri);
                 }
                 subjectsCreated = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "subjects", subjectsCreated);
                 XmlWriterUtil.writeFullElementWithAttributes(xmlw, "subject", attributesMap, StringEscapeUtils.escapeXml10(keyword));
