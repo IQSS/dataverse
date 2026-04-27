@@ -1276,7 +1276,9 @@ public class UtilIT {
 
     static Response downloadFilesUrlWithGuestbookResponse(Integer[] fileIds, String apiToken, String body) {
         RequestSpecification requestSpecification = given();
-        requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
         if (body != null) {
             requestSpecification.body(body);
         }
