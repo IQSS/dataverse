@@ -506,7 +506,7 @@ public class Access extends AbstractApiBean {
                 if (datasetId == null) {
                     datasetId = df.getOwner().getId();
                 } else {
-                    if (datasetId != df.getOwner().getId()) {
+                    if (!datasetId.equals(df.getOwner().getId())) {
                         // All files must be from the same Dataset
                         throw new BadRequestException(BundleUtil.getStringFromBundle("access.api.download.failure.multipleDatasets"));
                     }
