@@ -86,6 +86,9 @@ public class AuthFilter implements ContainerRequestFilter {
      * plus the authenticated session cookie, and do not require an existing CSRF header.
      */
     private boolean isCsrfTokenBootstrapEndpoint(ContainerRequestContext containerRequestContext) {
+        if (!"GET".equalsIgnoreCase(containerRequestContext.getMethod())) {
+            return false;
+        }
         String path = containerRequestContext.getUriInfo().getPath();
         if (path == null) {
             return false;
