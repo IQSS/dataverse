@@ -216,7 +216,7 @@ public class Users extends AbstractApiBean {
 
     @GET
     @AuthRequired
-    @Path(":csrf-token")
+    @Path(ApiConstants.CSRF_TOKEN_ENDPOINT_PATH)
     public Response getSessionCsrfToken(@Context ContainerRequestContext crc) {
         if (!FeatureFlags.API_SESSION_AUTH_HARDENING.enabled()) {
             return error(Response.Status.BAD_REQUEST, "Session-auth hardening is disabled.");

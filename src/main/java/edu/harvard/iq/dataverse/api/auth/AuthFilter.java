@@ -95,11 +95,10 @@ public class AuthFilter implements ContainerRequestFilter {
         }
         String normalizedPath = path.toLowerCase(Locale.ROOT);
 
-        // Support common variants such as "api/users/:csrf-token" or "users/:csrf-token".
-        if ("api/users/:csrf-token".equals(normalizedPath) || "users/:csrf-token".equals(normalizedPath)) {
-            return true;
-        }
-        return normalizedPath.endsWith("/api/users/:csrf-token") || normalizedPath.endsWith("/users/:csrf-token");
+        String suffix = "users/" + ApiConstants.CSRF_TOKEN_ENDPOINT_PATH;
+        return normalizedPath.equals(suffix)
+                || normalizedPath.equals("api/" + suffix)
+                || normalizedPath.endsWith("/" + suffix);
     }
 
     private boolean isOriginOrRefererAllowed(ContainerRequestContext containerRequestContext) {

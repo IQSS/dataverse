@@ -20,6 +20,7 @@ public final class ApiConstants {
     public static final String AUTH_MECHANISM_BEARER_TOKEN = "bearerToken";
     public static final String AUTH_MECHANISM_SESSION_COOKIE = "sessionCookie";
     public static final String CSRF_TOKEN_HEADER = "X-Dataverse-CSRF-Token";
+    public static final String CSRF_TOKEN_ENDPOINT_PATH = ":csrf-token";
 
     // Dataset
     public static final String DS_VERSION_LATEST = ":latest";
