@@ -85,7 +85,7 @@ public class SolrSearchServiceBean implements SearchService {
     PermissionServiceBean permissionService;
     @Inject
     ThumbnailServiceWrapper thumbnailServiceWrapper;
-    
+
 
     @Override
     public String getServiceName() {
@@ -154,7 +154,7 @@ public class SolrSearchServiceBean implements SearchService {
         solrQuery.setParam("fl", "*,score");
         solrQuery.setParam("qt", "/select");
         solrQuery.setParam("facet", "true");
-        
+
         /**
          * @todo: do we need facet.query?
          */
@@ -463,11 +463,11 @@ public class SolrSearchServiceBean implements SearchService {
             Boolean datasetValid = (Boolean) solrDocument.getFieldValue(SearchFields.DATASET_VALID);
             Long fileCount = (Long) solrDocument.getFieldValue(SearchFields.FILE_COUNT);
             Long datasetCount = (Long) solrDocument.getFieldValue(SearchFields.DATASET_COUNT);
-            
+
             List<String> matchedFields = new ArrayList<>();
-            
+
             SolrSearchResult solrSearchResult = new SolrSearchResult(query, name);
-            
+
             if (addHighlights) {
                 List<Highlight> highlights = new ArrayList<>();
                 Map<SolrField, Highlight> highlightsMap = new HashMap<>();
@@ -501,8 +501,8 @@ public class SolrSearchServiceBean implements SearchService {
                 solrSearchResult.setHighlightsMap(highlightsMap);
                 solrSearchResult.setHighlightsAsMap(highlightsMap3);
             }
-            
-            
+
+
             /**
              * @todo put all this in the constructor?
              */
@@ -529,7 +529,7 @@ public class SolrSearchServiceBean implements SearchService {
             solrSearchResult.setNameSort(nameSort);
             solrSearchResult.setReleaseOrCreateDate(release_or_create_date);
             solrSearchResult.setMatchedFields(matchedFields);
-            
+
             Map<String, String> parent = new HashMap<>();
             String description = (String) solrDocument.getFieldValue(SearchFields.DESCRIPTION);
             solrSearchResult.setDescriptionNoSnippet(description);
@@ -585,8 +585,12 @@ public class SolrSearchServiceBean implements SearchService {
                         solrSearchResult.setDescriptionNoSnippet(String.join(" ", datasetDescriptions));
                     }
                 }
-                solrSearchResult.setDatasetVersionId(datasetVersionId);
 
+                if (datasetVersionId != null) {
+                    solrSearchResult.setDatasetVersionId(datasetVersionId);
+                } else {
+                    logger.warning("DatasetVersion id is missing for dataset id " + entityid + ". This may be due to a race condition between asynchronous indexing and the transaction commit. To fix this, you can call the re-index API: http://localhost:8080/api/admin/index/dataset?persistentId=" + identifier);
+                }
                 solrSearchResult.setCitation(citation);
                 solrSearchResult.setCitationHtml(citationPlainHtml);
 
@@ -666,7 +670,13 @@ public class SolrSearchServiceBean implements SearchService {
                 }
 
                 solrSearchResult.setUnf((String) solrDocument.getFieldValue(SearchFields.UNF));
-                solrSearchResult.setDatasetVersionId(datasetVersionId);
+
+                if (datasetVersionId > 0) {
+                    solrSearchResult.setDatasetVersionId(datasetVersionId);
+                } else {
+                    logger.warning("DatasetVersion id is missing for file id " + entityid + ". This may be due to a race condition between asynchronous indexing and the transaction commit. To fix this, you can call the re-index API: http://localhost:8080/api/admin/index/dataset?persistentId=" + parentGlobalId);
+                }
+
                 List<String> fileCategories = (List) solrDocument.getFieldValues(SearchFields.FILE_TAG);
                 if (fileCategories != null) {
                     solrSearchResult.setFileCategories(fileCategories);
