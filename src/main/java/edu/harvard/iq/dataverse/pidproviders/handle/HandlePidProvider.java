@@ -185,7 +185,7 @@ public class HandlePidProvider extends AbstractPidProvider {
                 timestamp, null, true, true, true, false), new HandleValue(1, "URL".getBytes(StandardCharsets.UTF_8),
                 datasetUrl.getBytes(),
                 HandleValue.TTL_TYPE_RELATIVE, 86400,
-                timestamp, null, true, true, true, false)};
+                timestamp, null, true, true, false, false)};
 
             CreateHandleRequest req
                     = new CreateHandleRequest(handle.getBytes(StandardCharsets.UTF_8), val, auth);
