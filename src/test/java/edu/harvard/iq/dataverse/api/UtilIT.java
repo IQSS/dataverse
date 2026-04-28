@@ -1452,6 +1452,14 @@ public class UtilIT {
                 .get("/api/files/" + fileId + "/versions/" + datasetVersionId);
     }
 
+    static Response getFileCitationFormat(String dataFileId, String format, String apiToken) {
+        RequestSpecification request = given();
+        if (apiToken != null) {
+            request.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return request.get("/api/access/datafile/" + dataFileId +  "/citation/" + format);
+    }
+
     static Response getFileVersionDifferences(String fileId, String apiToken) {
         return getFileVersionDifferences(fileId, apiToken, null, null);
     }
