@@ -749,7 +749,6 @@ public class ImportServiceBean {
      */
     private boolean validateVersionMetadata(DatasetVersion version, boolean sanitize, PrintWriter cleanupLog) throws ImportException {
         boolean fixed = false;
-        boolean allowHarvestingMissingCVV =  version.getDataset().getHarvestedFrom() != null ? version.getDataset().getHarvestedFrom().getAllowHarvestingMissingCVV() : false;
         Set<ConstraintViolation> invalidViolations = version.validate();
         if (!invalidViolations.isEmpty()) {
             for (ConstraintViolation v : invalidViolations) {
@@ -760,12 +759,13 @@ public class ImportServiceBean {
 
                     msg += "Missing required field: " + f.getDatasetFieldType().getDisplayName() + ";";
                     if (sanitize) {
-                        if (allowHarvestingMissingCVV && f.getDatasetFieldType().isControlledVocabulary()) {
+                        if (f.getDatasetFieldType().isControlledVocabulary()) {
                             ControlledVocabularyValue ccv = new ControlledVocabularyValue(null, DatasetField.NA_VALUE, f.getDatasetFieldType());
                             f.setControlledVocabularyValues(List.of(ccv));
+                        } else {
+                            f.setSingleValue(DatasetField.NA_VALUE);
                         }
                         msg += " populated with '" + DatasetField.NA_VALUE + "'";
-                        f.setSingleValue(DatasetField.NA_VALUE);
                         fixed = true;
                     }
                 } else if (invalid instanceof DatasetFieldValue) {
