@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
@@ -27,6 +28,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.mydata.Pager;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.*;
@@ -129,6 +131,7 @@ public class Access extends AbstractApiBean {
     DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
     
     private static final String DEFAULT_BUNDLE_NAME = "dataverse_files.zip";
+    private static final int GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES = 1;
     //@EJB
     
     // TODO: 
@@ -422,7 +425,7 @@ public class Access extends AbstractApiBean {
 
         // Handle Guestbook Responses
         String displayName = "";
-        String gbrids = "";
+        String gbrids = null;
         Long datasetId = null;
         try {
             // since all files must be in the same Dataset we can generate a Guestbook Response once and just replace the DataFile for each file in the list
@@ -487,8 +490,15 @@ public class Access extends AbstractApiBean {
         if (user != null && user instanceof AuthenticatedUser) {
             AuthenticatedUser requestor = (AuthenticatedUser) user;
             userIdentifier = requestor.getUserIdentifier();
+            // Find the latest token: Use for signing
+            // Could be null if no token was generated: Generate one to be used for signing (expire in 1 minute to match timeout in signedUrl)
+            // Could be expired: The user was already authenticated (possible by bearer token). Only used for signing so we don't care
             ApiToken apiToken = authSvc.findApiTokenByUser(requestor);
-            if (apiToken != null && !apiToken.isExpired() && !apiToken.isDisabled()) {
+            if (apiToken == null) {
+                logger.fine("Generating temporary API token for user " + userIdentifier);
+                apiToken = authSvc.generateApiTokenForUser(requestor, AuthenticationServiceBean.INTERVAL.MINUTES, GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES);
+            }
+            if (apiToken != null) {
                 key = apiToken.getTokenString();
             }
         } else {
@@ -499,14 +509,16 @@ public class Access extends AbstractApiBean {
 
         UriBuilder builder = UriBuilder.fromUri(uriInfo.getRequestUri());
         builder.replaceQueryParam("gbrecs", true);
-        builder.replaceQueryParam("gbrids", gbrids);
+        if (gbrids != null && !gbrids.isEmpty()) {
+            builder.replaceQueryParam("gbrids", gbrids);
+        }
         builder.replaceQueryParam("persistentId", null); // remove this as a parm and add the id to the path
         crc.setProperty("gbrids", gbrids);
         String baseUrlEncoded = builder.build().toString();
         String baseUrl = URLDecoder.decode(baseUrlEncoded, StandardCharsets.UTF_8);
         baseUrl = baseUrl.replace(":persistentId", id);
         key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
-        String signedUrl = UrlSignerUtil.signUrl(baseUrl, 1, userIdentifier, "GET", key);
+        String signedUrl = UrlSignerUtil.signUrl(baseUrl, GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES, userIdentifier, "GET", key);
         return ok(Json.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
     }
 
@@ -1685,8 +1697,11 @@ public class Access extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/datafile/{id}/listRequests")
-    public Response listFileAccessRequests(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId, @Context HttpHeaders headers) {
-
+    public Response listFileAccessRequests(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId,
+                                           @QueryParam("includeHistory") boolean includeHistory,
+                                           @QueryParam("per_page") final int numResultsPerPageRequested,
+                                           @QueryParam("start") final int paginationStart,
+                                           @Context HttpHeaders headers) {
         DataverseRequest dataverseRequest;
 
         DataFile dataFile;
@@ -1707,7 +1722,8 @@ public class Access extends AbstractApiBean {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
 
-        List<FileAccessRequest> requests = dataFile.getFileAccessRequests(FileAccessRequest.RequestState.CREATED);
+        List<FileAccessRequest> requests = !includeHistory ? dataFile.getFileAccessRequests(FileAccessRequest.RequestState.CREATED) :
+                dataFile.getFileAccessRequests(numResultsPerPageRequested, paginationStart);
 
         if (requests == null || requests.isEmpty()) {
             List<String> args = Arrays.asList(dataFile.getDisplayName());
@@ -1717,7 +1733,21 @@ public class Access extends AbstractApiBean {
         JsonArrayBuilder userArray = Json.createArrayBuilder();
 
         for (FileAccessRequest fileAccessRequest : requests) {
-            userArray.add(json(fileAccessRequest.getRequester()));
+            userArray.add(json(fileAccessRequest));
+        }
+
+        // Check for pagination request
+        if (includeHistory && numResultsPerPageRequested > 0 && paginationStart > 0) {
+            JsonObjectBuilder builder = Json.createObjectBuilder()
+                    .add("status", ApiConstants.STATUS_OK)
+                    .add("data", userArray);
+
+            Pager pager = new Pager(dataFile.getFileAccessRequests().size(), numResultsPerPageRequested, paginationStart);
+            builder.add("pagination", pager.asJsonObjectBuilder());
+
+            return Response.ok( builder.build() )
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
         }
 
         return ok(userArray);
@@ -1975,7 +2005,7 @@ public class Access extends AbstractApiBean {
                         throw new NotFoundException("GuestbookResponse Not Found for id:" + gbrids);
                     }
                     Long delta = Instant.now().toEpochMilli() - gbr.getResponseTime().getTime();
-                    wasWrittenInPost = gbr.getDataset().getId().equals(df.getOwner().getId()) && delta < 10000;
+                    wasWrittenInPost = gbr.getDataset().getId().equals(df.getOwner().getId()) && delta <= (GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES * 60000L);
                 } catch (NumberFormatException | DateTimeParseException ex) {
                     throw new BadRequestException(ex.getMessage());
                 }
