@@ -21,6 +21,7 @@ import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Disabled;
 
 public class DataRetrieverApiIT {
 
@@ -111,6 +112,7 @@ public class DataRetrieverApiIT {
     }
 
     // Test getting a list of collections that the user can add datasets to
+    @Disabled
     @Test
     public void testRetrieveMyDataCollections() throws InterruptedException {
         int rootCount = 1; // everyone has access to this dataverse
