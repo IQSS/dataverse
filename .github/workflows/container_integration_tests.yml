@@ -238,7 +238,7 @@ jobs:
           path: |
             target/surefire-reports/
             target/failsafe-reports/
-            target/site/jacoco/
+            target/site/jacoco*/
           retention-days: 14
 
       # ---------------------------
