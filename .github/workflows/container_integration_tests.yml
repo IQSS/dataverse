@@ -41,6 +41,7 @@ jobs:
         shell: bash
 
     permissions:
+        contents: read
         checks: write
         pull-requests: write
 
