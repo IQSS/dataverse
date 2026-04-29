@@ -112,7 +112,7 @@ public class DataRetrieverApiIT {
     }
 
     // Test getting a list of collections that the user can add datasets to
-    @Disabled
+    @Disabled("Temporarily disabled because this integration test is not reliable in CI; re-enable once stabilized. All assertions return one extra dataset than expected.")
     @Test
     public void testRetrieveMyDataCollections() throws InterruptedException {
         int rootCount = 1; // everyone has access to this dataverse
