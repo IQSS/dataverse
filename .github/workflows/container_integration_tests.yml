@@ -22,7 +22,6 @@ on:
     paths-ignore:
       - "doc/**"
       - "**/*.md"
-      - "**/*.txt"
       - ".github/ISSUE_TEMPLATE/**"
       - ".github/*.md"
 
