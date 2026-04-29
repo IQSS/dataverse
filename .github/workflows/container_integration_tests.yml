@@ -2,12 +2,7 @@ name: Container Integration Tests Workflow
 
 on:
   workflow_dispatch:
-    inputs:
-      force_run:
-        description: 'Force run even if ENABLE_DOCKER_TESTS is false'
-        required: false
-        type: boolean
-        default: false
+    
   push:
     branches:
       - develop
