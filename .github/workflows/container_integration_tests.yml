@@ -172,7 +172,7 @@ jobs:
           # We run curl INSIDE the container so the source IP is 127.0.0.1
           for key in "${!settings[@]}"; do
             echo "Setting $key..."
-            docker exec dev_dataverse curl -s -X PUT -d "${settings[$key]}" "http://localhost:8080/api/admin/settings/$key"
+            docker exec dev_dataverse curl --fail-with-body -sS -X PUT -d "${settings[$key]}" "http://localhost:8080/api/admin/settings/$key"
             echo ""
           done
         
