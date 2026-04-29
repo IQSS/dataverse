@@ -14,7 +14,6 @@ on:
     paths-ignore:
       - "doc/**"
       - "**/*.md"
-      - "**/*.txt"
       - ".github/ISSUE_TEMPLATE/**"
       - ".github/*.md"
   pull_request:
@@ -28,7 +27,7 @@ on:
       - ".github/*.md"
 
 concurrency:
-  group: "container-integration-tests-group"
+  group: "container-integration-tests-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
