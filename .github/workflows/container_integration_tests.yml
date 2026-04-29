@@ -183,10 +183,7 @@ jobs:
         run: |
           set -euo pipefail
           # Fixes MakeDataCountApiIT
-          SUSHI_FILE="src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json"
-          test -f "$SUSHI_FILE"
-          docker cp "$SUSHI_FILE" dev_dataverse:/tmp/sushi_sample_logs.json
-          docker exec dev_dataverse sh -c 'head /tmp/sushi_sample_logs.json'
+          docker exec dev_dataverse sh -c 'curl https://raw.githubusercontent.com/IQSS/dataverse/develop/src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json > /tmp/sushi_sample_logs.json && head /tmp/sushi_sample_logs.json'
       
       # ---------------------------
       # RUN MAVEN TESTS
