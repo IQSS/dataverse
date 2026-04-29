@@ -254,6 +254,26 @@ Value           Description
 ID              Exports file with specific file metadata ``ID``.
 ==============  ===========
 
+
+.. _datafile-citation-formatted-access:
+
+Citation - Get Citation In Other Formats
+----------------------------------------
+
+Dataverse can generate datafile citations in "EndNote", "RIS", "BibTeX", and "CSL" formats.
+This API call sends the raw format with the appropriate content-type (EndNote is XML, RIS and BibTeX are plain text, and CSL is JSON). ("Internal" is also a valid value, returning the content as HTML).
+This API call requires a format in the API call which can be any of the values listed above.
+
+Usage example:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export DATAFILE_ID=99
+  export FORMAT=EndNote
+
+  curl "$SERVER_URL/api/access/datafile/$DATAFILE_ID/citation/$FORMAT"
+
 .. _data-variable-metadata-access:
 
 Data Variable Metadata Access
@@ -440,7 +460,22 @@ This method returns a list of Authenticated Users who have requested access to t
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X GET http://$SERVER/api/access/datafile/{id}/listRequests
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET $SERVER/api/access/datafile/{id}/listRequests
+
+Query parameters have been added to retrieve the historical list of "created", "granted", and "rejected" requests:
+
+* `includeHistory` When `true` this will force the return of all requests and not just the "created" ones.
+* `start` For pagination, use this to request a specific page.
+* `per_page` For pagination, use this to limit the number of items in each paged list.
+
+.. note:: Pagination is only available when `includeHistory` is `true`
+
+If requesting a page beyond the last page this API will return a 404 "There are no access requests for this file:..."
+If requesting a page before page 1 or requesting the number of items to be 0 or less this API will ignore these parameters and return the entire list.
+
+A curl example using an ``id``::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER/api/access/datafile/{id}/listRequests?includeHistory=true&start=1&per_page=20"
 
 User Has Requested Access to a File:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -451,7 +486,7 @@ This method returns true or false depending on whether or not the calling user h
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X GET "http://$SERVER/api/access/datafile/{id}/userFileAccessRequested"
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER/api/access/datafile/{id}/userFileAccessRequested"
 
 
 Get User Permissions on a File:

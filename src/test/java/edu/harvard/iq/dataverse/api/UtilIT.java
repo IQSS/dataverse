@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.google.api.client.auth.oauth2.BearerToken;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
@@ -1275,7 +1276,9 @@ public class UtilIT {
 
     static Response downloadFilesUrlWithGuestbookResponse(Integer[] fileIds, String apiToken, String body) {
         RequestSpecification requestSpecification = given();
-        requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
         if (body != null) {
             requestSpecification.body(body);
         }
@@ -1286,9 +1289,15 @@ public class UtilIT {
         return requestSpecification.post(getString);
     }
     static Response downloadFilesUrlWithGuestbookResponse(String persistentId, String apiToken, String body) {
+        return downloadFilesUrlWithGuestbookResponse(persistentId, apiToken, body, null);
+    }
+    static Response downloadFilesUrlWithGuestbookResponse(String persistentId, String apiToken, String body, String bearerToken) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (bearerToken != null) {
+            requestSpecification.header("Authorization", "Bearer " + bearerToken);
         }
         if (body != null) {
             requestSpecification.body(body);
@@ -1441,6 +1450,14 @@ public class UtilIT {
                 .queryParam("includeDeaccessioned", includeDeaccessioned)
                 .queryParam("returnDatasetVersion", returnDatasetVersion)
                 .get("/api/files/" + fileId + "/versions/" + datasetVersionId);
+    }
+
+    static Response getFileCitationFormat(String dataFileId, String format, String apiToken) {
+        RequestSpecification request = given();
+        if (apiToken != null) {
+            request.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return request.get("/api/access/datafile/" + dataFileId +  "/citation/" + format);
     }
 
     static Response getFileVersionDifferences(String fileId, String apiToken) {
@@ -2216,19 +2233,29 @@ public class UtilIT {
     }
 
     static Response getAccessRequestList(String fileIdOrPersistentId, String apiToken) {
+        return getAccessRequestList(fileIdOrPersistentId, apiToken, null);
+    }
+    static Response getAccessRequestList(String fileIdOrPersistentId, String apiToken, int pageStart, int pageNumItems) {
+        return getAccessRequestList(fileIdOrPersistentId, apiToken, Boolean.TRUE, pageStart, pageNumItems);
+    }
+    static Response getAccessRequestList(String fileIdOrPersistentId, String apiToken, Boolean includeHistory) {
+        return getAccessRequestList(fileIdOrPersistentId, apiToken, includeHistory, 0, 0);
+    }
+    static Response getAccessRequestList(String fileIdOrPersistentId, String apiToken, Boolean includeHistory, int pageStart, int pageNumItems) {
+        RequestSpecification requestSpecification = given();
+
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
-        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
-            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+            requestSpecification.queryParam("persistentId", fileIdOrPersistentId);
         }
-        String keySeparator = "&";
-        if (optionalQueryParam.isEmpty()) {
-            keySeparator = "?";
+        if (includeHistory != null) {
+            requestSpecification.queryParam("includeHistory", includeHistory);
+            requestSpecification.queryParam("start", pageStart);
+            requestSpecification.queryParam("per_page", pageNumItems);
         }
-        Response response = given()
-                .get("/api/access/datafile/" + idInPath + "/listRequests/" + optionalQueryParam + keySeparator + "key=" + apiToken);
-        return response;
+        requestSpecification.queryParam("key", apiToken);
+        return requestSpecification.get("/api/access/datafile/" + idInPath + "/listRequests");
     }
 
     static Response rejectFileAccessRequest(String fileIdOrPersistentId, String identifier, String apiToken) {
@@ -2729,12 +2756,19 @@ public class UtilIT {
                 .get(url);
     }
     
-    static Response updateDefaultContributorsRoleOnDataverse(String dataverseAliasOrId,String roleAlias, String apiToken) {
+    static Response updateDefaultContributorsRoleOnDataverse(String dataverseAliasOrId, String roleAlias, String apiToken) {
         String url = "/api/dataverses/" + dataverseAliasOrId + "/defaultContributorRole/" + roleAlias;
         System.out.println("URL: " + url);
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .put(url);
+    }
+
+    static Response getDefaultContributorsRoleOnDataverse(String dataverseAliasOrId, String apiToken) {
+        String url = "/api/dataverses/" + dataverseAliasOrId + "/defaultContributorRole";
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get(url);
     }
 
     static Response getRoleAssignmentsOnDataset(String datasetId, String persistentId, String apiToken) {
@@ -5283,6 +5317,31 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
                 .post("/api/dataverses/" + dataverseAlias + "/templates");
+    }
+    
+    public static Response updateTemplateMetadata(String templateId, String jsonString, String apiToken, Boolean replaceData) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .put("/api/dataverses/" + templateId + "/metadata?replace=" + replaceData);
+    }
+    
+    public static Response updateTemplateLicenseTerms(String templateId, String jsonString, String apiToken) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .put("/api/dataverses/" + templateId + "/licenseTerms");
+    }
+    
+        
+    public static Response updateTemplateAccessTerms(String templateId, String jsonString, String apiToken) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .put("/api/dataverses/" + templateId + "/access");
     }
     
     public static Response deleteTemplate(String id,  String apiToken) {
