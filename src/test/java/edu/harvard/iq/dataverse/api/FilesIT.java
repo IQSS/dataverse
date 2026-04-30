@@ -4057,7 +4057,7 @@ public class FilesIT {
         assertTrue(guestbookResponses.prettyPrint().contains("My Name," + user2Email + ",My Institution,My Position"));
 
         // Get Signed Download Url for guest with guestbook response using file's persistentId
-        // POST /api/access/dataset/:persistentId?persistentId=
+        // POST /api/access/datafile/:persistentId?persistentId=
         downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(filePersistentId, null, guestbookResponseForGuest);
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat()
@@ -4158,6 +4158,7 @@ public class FilesIT {
     @Disabled
     public void testDownloadFileWithGuestbookResponseUsingBearerToken() throws IOException, JsonParseException {
         msgt("testDownloadFileWithGuestbookResponseUsingBearerToken");
+        UtilIT.enableSetting(SettingsServiceBean.Key.FilePIDsEnabled);
         // Create superuser
         Response createUserResponse = UtilIT.createRandomUser();
         assertEquals(200, createUserResponse.getStatusCode());
@@ -4183,7 +4184,7 @@ public class FilesIT {
         JsonObjectBuilder json1 = Json.createObjectBuilder().add("description", "my description1").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
         Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/dataverseproject.png", json1.build(), ownerApiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
-        Integer fileId1 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        String filePersistentId = JsonPath.from(uploadResponse.body().asString()).getString("data.files[0].dataFile.persistentId");
 
         // Publish dataverse and dataset
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, ownerApiToken);
@@ -4237,7 +4238,7 @@ public class FilesIT {
         // POST with guestbook response
         String guestbookResponse = UtilIT.generateGuestbookResponse(guestbook).replace("\"guestbookResponse\": {",
                 "\"guestbookResponse\": { \"name\":\"My Name\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
-        Response downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(persistentId, null, guestbookResponse, userWithClaimsAccessToken);
+        Response downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(filePersistentId,null, guestbookResponse, userWithClaimsAccessToken);
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
