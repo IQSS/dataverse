@@ -4037,6 +4037,14 @@ public class FilesIT {
         downloadResponse = UtilIT.postDownloadDatafiles(jsonBody, apiToken);
         assertEquals(OK.getStatusCode(), downloadResponse.getStatusCode());
 
+        // Download all files in dataset with guestbook response using dataset persistentId
+        downloadResponse = UtilIT.downloadAllDatasetFilesWithGuestbookResponse(persistentId, apiToken, guestbookResponse);
+        downloadResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+        signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+        signedUrlResponse = get(signedUrl);
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+
         downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(new Integer[]{fileId1, fileId2, fileId3}, apiToken, guestbookResponse);
         signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
         signedUrlResponse = get(signedUrl);

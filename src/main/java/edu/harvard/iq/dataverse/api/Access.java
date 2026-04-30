@@ -454,9 +454,11 @@ public class Access extends AbstractApiBean {
         String displayName = "";
         String gbrids = null;
         List<String> fileIdList = new ArrayList<>();
+        String id = null;
         try {
             // since all files must be in the same Dataset we can generate a Guestbook Response once and just replace the DataFile for each file in the list
             DataFile firstDatafile = datafilesMap.values().size() > 0 ? (DataFile) Arrays.stream(datafilesMap.values().toArray()).findFirst().get() : null;
+            id = firstDatafile.getOwner().getId().toString();
             GuestbookResponse gbr = getGuestbookResponseFromBody(firstDatafile, GuestbookResponse.DOWNLOAD, jsonBody, user);
             boolean guestbookResponseRequired = checkGuestbookRequiredResponse(crc, uriInfo, firstDatafile, null);
             for (DataFile df : datafilesMap.values()) {
@@ -484,7 +486,11 @@ public class Access extends AbstractApiBean {
             List<String> args = Arrays.asList(displayName, ex.getLocalizedMessage());
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbook.commandError", args));
         }
-        return returnSignedUrl(crc, uriInfo, user, String.join(",", fileIdList), gbrids);
+        // Check if requesting datafile(s) or all files within dataset
+        if (!uriInfo.getPath().toLowerCase().contains("/dataset/")) {
+            id = String.join(",", fileIdList);
+        }
+        return returnSignedUrl(crc, uriInfo, user, id, gbrids);
     }
 
     private Map<Long, DataFile> getDatafilesMap(ContainerRequestContext crc, String fileIds) {
