@@ -8842,7 +8842,7 @@ A curl example using allowing access to a dataset's metadata
 
   curl -H "X-Dataverse-key:$API_KEY" -H 'Content-Type:application/json' -d "$JSON" "$SERVER_URL/api/admin/requestSignedUrl"
 
-Please see :ref:`dataverse.api.signature-secret` for the configuration option to add a shared secret, enabling extra
+Please see :ref:`dataverse.api.signing-secret` for the configuration option to add a shared secret, enabling extra
 security.
 
 .. _send-feedback-admin:
