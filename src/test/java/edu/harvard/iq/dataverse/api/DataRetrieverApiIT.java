@@ -139,6 +139,11 @@ public class DataRetrieverApiIT {
         String User3Username = UtilIT.getUsernameFromResponse(createUserResponse);
         String User3ApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
 
+        // Get the base number of collections since it's not always 1 for root.
+        // There may be others left from another test that everyone can access
+        retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(User1ApiToken, null);
+        rootCount = retrieveMyCollectionListResponse.getBody().jsonPath().getList("data.items").size();
+
         // User1 creates 15 Dataverses and adds a role to each allowing User2 access
         List<String> dataverses = new ArrayList<>();
         int user1DataverseCount = 15;
