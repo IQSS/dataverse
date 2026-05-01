@@ -4842,6 +4842,23 @@ Set whether a user will see the custom text when publishing all versions of a da
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:DatasetPublishPopupCustomTextOnAllVersions``
 
+.. _:DatasetPrePublishPopupCustomText:
+
+:DatasetPrePublishPopupCustomText
++++++++++++++++++++++++++++++++++
+
+Set custom text a user will view when submitting a dataset for review. Note that this text is exposed via the "Info" endpoint of the :doc:`/api/native-api`.
+
+``curl -X PUT -d "Deposit License Requirements" http://localhost:8080/api/admin/settings/:DatasetPrePublishPopupCustomText``
+
+If you have a long text string, you can upload it as a file as in the example below.
+
+``curl -X PUT --upload-file /tmp/long.txt http://localhost:8080/api/admin/settings/:DatasetPrePublishPopupCustomText``
+
+There is a related setting called :ref:`:PrePublishDatasetDisclaimerText` that also makes text appear on the popup when submitting for review, but it requires a checkbox to be clicked.
+
+See also :ref:`show-custom-popup-for-pre-publishing-datasets` in the API Guide.
+
 :SearchHighlightFragmentSize
 ++++++++++++++++++++++++++++
 

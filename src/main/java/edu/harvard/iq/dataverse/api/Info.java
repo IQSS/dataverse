@@ -45,6 +45,12 @@ public class Info extends AbstractApiBean {
     }
 
     @GET
+    @Path("settings/:DatasetPrePublishPopupCustomText")
+    public Response DatasetPrePublishPopupCustomText() {
+        return getSettingResponseByKey(SettingsServiceBean.Key.DatasetPrePublishPopupCustomText);
+    }
+
+    @GET
     @Path("settings/:PublishDatasetDisclaimerText")
     public Response getPublishDatasetDisclaimerText() {
         return getSettingResponseByKey(SettingsServiceBean.Key.PublishDatasetDisclaimerText);

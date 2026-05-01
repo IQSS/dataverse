@@ -325,6 +325,10 @@ public class SettingsServiceBean {
         Whether to display the publish text for every published version
         */
         DatasetPublishPopupCustomTextOnAllVersions,
+        /**
+         The message added to a popup upon dataset submit for review
+         */
+        DatasetPrePublishPopupCustomText,
         /*
         Publish Disclaimer text. If this setting exists user must acknowledge before a Dataset can be published
          */

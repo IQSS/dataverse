@@ -6605,6 +6605,28 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/info/settings/:DatasetPublishPopupCustomText"
 
+.. _show-custom-popup-for-pre-publishing-datasets:
+
+Show Custom Popup Text for Pre-Publishing Datasets (Submit for Review)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For now, only the value for the :ref:`:DatasetPrePublishPopupCustomText` setting from the Configuration section of the Installation Guide is exposed:
+
+.. note:: See :ref:`show-disclaimer-for-prepublishing-datasets` if you want the user to acknowledge before submitting for review.
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/info/settings/:DatasetPrePublishPopupCustomText"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/info/settings/:DatasetPrePublishPopupCustomText"
+
 .. _show-disclaimer-for-publishing-datasets:
 
 Show Disclaimer for Publishing Datasets

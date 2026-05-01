@@ -4870,6 +4870,18 @@ public class DatasetPage implements java.io.Serializable {
         return  settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomTextOnAllVersions, false);
     }
 
+    public boolean isDisplayPrePublishPopupCustomText() {
+        return !getDatasetPrePublishCustomText().isEmpty();
+    }
+
+    public String getDatasetPrePublishCustomText(){
+        String datasetPrePublishCustomText = settingsWrapper.getValueForKey(SettingsServiceBean.Key.DatasetPrePublishPopupCustomText);
+        if (datasetPrePublishCustomText != null && !datasetPrePublishCustomText.isEmpty()) {
+            return datasetPrePublishCustomText;
+        }
+        return "";
+    }
+
     public String getVariableMetadataURL(Long fileid) {
         String myHostURL = getDataverseSiteUrl();
         String metaURL = myHostURL + "/api/meta/datafile/" + fileid;
