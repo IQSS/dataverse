@@ -6627,6 +6627,27 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/info/settings/:PublishDatasetDisclaimerText"
 
+.. _show-disclaimer-for-prepublishing-datasets:
+
+Show Disclaimer for PrePublishing Datasets (Submit for Review)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The setting :ref:`:PrePublishDatasetDisclaimerText`, when set, will prevent a draft dataset from being submitted for review through the UI without the user acknowledging the disclaimer.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/info/settings/:PrePublishDatasetDisclaimerText"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/info/settings/:PrePublishDatasetDisclaimerText"
+
 .. _api-get-app-tou:
 
 Get Application Terms of Use (General Terms of Use)

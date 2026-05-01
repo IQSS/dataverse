@@ -5369,6 +5369,17 @@ There is a similar setting called :ref:`:DatasetPublishPopupCustomText` that als
 
 See also :ref:`show-disclaimer-for-publishing-datasets` in the API Guide.
 
+.. _:PrePublishDatasetDisclaimerText:
+
+:PrePublishDatasetDisclaimerText
+++++++++++++++++++++++++++++++++
+
+The text displayed to the user that must be acknowledged prior to submitting a Dataset for review. When not set the acknowledgment is not required nor displayed.
+
+``curl -sS -X PUT -d 'I agree to the following:<br/>1. My submission has been fully anonymized (required for all human subject'\''s datasets).<br/>2. My submission does not violate any known copyright laws.<br/>3. I understand that I am liable for any and all violations of the Harvard Repository <a href=https://support.dataverse.harvard.edu/harvard-dataverse-general-terms-use>Terms of Use.</a>' http://localhost:8080/api/admin/settings/:PrePublishDatasetDisclaimerText``
+
+See also :ref:`show-disclaimer-for-prepublishing-datasets` in the API Guide.
+
 .. _:BagItHandlerEnabled:
 
 :BagItHandlerEnabled
