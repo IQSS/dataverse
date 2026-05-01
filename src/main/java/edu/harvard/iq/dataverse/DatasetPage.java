@@ -6373,6 +6373,7 @@ public class DatasetPage implements java.io.Serializable {
     private String termsOfAccess;
     private boolean fileAccessRequest;
     private boolean publishDisclaimerAcknowledged;
+    private boolean prePublishDisclaimerAcknowledged;
 
     public String getTermsOfAccess() {
         return termsOfAccess;
@@ -6396,6 +6397,14 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setPublishDisclaimerAcknowledged(boolean publishDisclaimerAcknowledged) {
         this.publishDisclaimerAcknowledged = publishDisclaimerAcknowledged;
+    }
+
+    public boolean isPrePublishDisclaimerAcknowledged() {
+        return prePublishDisclaimerAcknowledged || !settingsWrapper.isHasPrePublishDatasetDisclaimerText();
+    }
+
+    public void setPrePublishDisclaimerAcknowledged(boolean prePublishDisclaimerAcknowledged) {
+        this.prePublishDisclaimerAcknowledged = prePublishDisclaimerAcknowledged;
     }
 
     // wrapper method to see if the file has been deleted (or replaced) in the current version

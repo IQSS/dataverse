@@ -330,6 +330,10 @@ public class SettingsServiceBean {
          */
         PublishDatasetDisclaimerText,
         /*
+        Submit for review Disclaimer text. If this setting exists user must acknowledge before a Dataset can be submitted for review
+         */
+        PrePublishDatasetDisclaimerText,
+        /*
         Whether Harvesting (OAI) service is enabled
         */
         OAIServerEnabled,

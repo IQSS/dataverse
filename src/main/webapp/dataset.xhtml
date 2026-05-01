@@ -1950,8 +1950,19 @@
                         <c:if test="#{showSubmitForReviewLink}">
                             <ui:include src="datasetLicenseInfoFragment.xhtml"/>
                         </c:if>
+                        <ui:fragment rendered="#{valid and settingsWrapper.isHasPrePublishDatasetDisclaimerText()}">
+                            <div class="form-group">
+                                <p:selectBooleanCheckbox class="text-danger" id="submitForReviewDisclaimer"
+                                                         itemLabel="#{MarkupChecker:sanitizeAdvancedHTML(settingsWrapper.getPrePublishDatasetDisclaimerText())}"
+                                                         escape="false"
+                                                         value="#{DatasetPage.prePublishDisclaimerAcknowledged}">
+                                    <p:ajax event="change" update="submitReviewDatasetButton"/>
+                                </p:selectBooleanCheckbox>
+                            </div>
+                        </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton rendered="#{DatasetPage.validOrCanReviewIncomplete}" styleClass="btn btn-default" value="#{bundle.submit}" 
+                            <p:commandButton id="submitReviewDatasetButton" rendered="#{DatasetPage.validOrCanReviewIncomplete}" styleClass="btn btn-default" value="#{bundle.submit}"
+                                             disabled="#{!DatasetPage.prePublishDisclaimerAcknowledged}"
                                              onclick="PF('inreview').hide();
                                                      PF('blockDatasetForm').hide();" action="#{DatasetPage.submitDataset}" immediate="true"/>
                             <button class="btn btn-link" onclick="PF('inreview').hide();PF('blockDatasetForm').hide();" type="button">
