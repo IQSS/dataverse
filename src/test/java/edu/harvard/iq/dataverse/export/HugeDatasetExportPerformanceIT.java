@@ -3,21 +3,17 @@ package edu.harvard.iq.dataverse.export;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.db.performance.JpaTestBootstrap;
-import edu.harvard.iq.dataverse.util.testing.Tags;
 import edu.harvard.iq.dataverse.util.testing.fixtures.DatasetFixtureBuilder;
+import edu.harvard.iq.dataverse.util.testing.performance.JpaEntityManagerService;
+import edu.harvard.iq.dataverse.util.testing.performance.JpaPerformanceTest;
 import edu.harvard.iq.dataverse.util.testing.recipes.DatasetRecipe;
 import edu.harvard.iq.dataverse.util.testing.recipes.DatasetTypeRecipe;
 import edu.harvard.iq.dataverse.util.testing.recipes.FileRecipe;
 import edu.harvard.iq.dataverse.util.testing.recipes.VersionRecipe;
 import net.ttddyy.dsproxy.QueryCount;
 import net.ttddyy.dsproxy.QueryCountHolder;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -25,20 +21,16 @@ import java.time.temporal.ChronoUnit;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-@Tag(Tags.USES_TESTCONTAINERS)
-@Tag(Tags.PERFORMANCE_TEST)
-@Testcontainers(disabledWithoutDocker = true)
+@JpaPerformanceTest
 class HugeDatasetExportPerformanceIT {
     
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16");
-    static JpaTestBootstrap jpa;
+    static JpaEntityManagerService jpa;
     
     static Dataset regularFilesDataset;
     
     @BeforeAll
     static void setUp() {
-        postgres.start();
-        jpa = new JpaTestBootstrap(postgres);
+        // The manual start is required here in case you need to configure any service features before starting...
         jpa.start();
         
         DatasetRecipe regularFiles = DatasetRecipe.of(
@@ -64,14 +56,6 @@ class HugeDatasetExportPerformanceIT {
             }
             em.persist(regularFilesDataset);
         });
-    }
-    
-    @AfterAll
-    static void tearDown() {
-        if (jpa != null) {
-            jpa.close();
-        }
-        postgres.stop();
     }
     
     @Test
