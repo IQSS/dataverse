@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
@@ -253,9 +254,38 @@ public class PermissionsWrapper implements java.io.Serializable {
     
     // PUBLISH DATASET
     public boolean canIssuePublishDatasetCommand(DvObject dvo){
+        User u = session.getUser();
+        if (u != null && u.isSuperuser()) {
+            return true;
+        }
+        // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
+        if (dvo.isInstanceofDataset()) {
+            Dataverse dv =((Dataset)dvo).getOwner();
+            if (dv != null) {
+                List<FileMetadata> metadataList = ((Dataset) dvo).getLatestVersion().getFileMetadatas();
+                if (metadataList.size() == 0 && dv.getEffectiveRequiresFilesToPublishDataset()) {
+                    return false;
+                }
+            }
+        }
         return canIssueCommand(dvo, PublishDatasetCommand.class);
     }
-    
+
+    // SUBMIT DATASET FOR REVIEW
+    public boolean canIssueSubmitDatasetForReviewCommand(DvObject dvo){
+        // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
+        if (dvo.isInstanceofDataset()) {
+            Dataverse dv =((Dataset)dvo).getOwner();
+            if (dv != null) {
+                List<FileMetadata> metadataList = ((Dataset) dvo).getLatestVersion().getFileMetadatas();
+                if (metadataList.size() == 0 && dv.getEffectiveRequiresFilesToPublishDataset()) {
+                    return false;
+                }
+            }
+        }
+        return canIssueCommand(dvo, SubmitDatasetForReviewCommand.class);
+    }
+
     // For the dataverse_header fragment (and therefore, most of the pages),
     // we need to know if authenticated users can add dataverses and datasets to the
     // root collection. For the "Add Data" menu further in the search include fragment
