@@ -3,12 +3,10 @@ package edu.harvard.iq.dataverse.api;
 import com.google.common.collect.Lists;
 import com.google.api.client.util.ArrayMap;
 import edu.harvard.iq.dataverse.*;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
 import edu.harvard.iq.dataverse.api.dto.*;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
-
 import edu.harvard.iq.dataverse.api.imports.ImportException;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -16,15 +14,14 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
@@ -42,6 +39,7 @@ import edu.harvard.iq.dataverse.util.json.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
@@ -75,6 +73,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import jakarta.ws.rs.core.StreamingOutput;
+
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -91,7 +90,6 @@ import javax.xml.stream.XMLStreamException;
 public class Dataverses extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Dataverses.class.getCanonicalName());
-    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
@@ -1332,97 +1330,6 @@ public class Dataverses extends AbstractApiBean {
         ), getRequestUser(crc));
     }
 
-    /**
-     * This code for setting a dataverse logo via API was started when initially
-     * investigating https://github.com/IQSS/dataverse/issues/3559 but it isn't
-     * finished so it's commented out. See also * "No functionality should be
-     * GUI-only. Make all functionality reachable via the API" at
-     * https://github.com/IQSS/dataverse/issues/3440
-     */
-//    File tempDir;
-//
-//    TODO: Code duplicate in ThemeWidgetFragment. Maybe extract, make static and put some place else?
-//          Important: at least use JvmSettings.DOCROOT_DIRECTORY and not the hardcoded location!
-//    private void createTempDir(Dataverse editDv) {
-//        try {
-//            File tempRoot = java.nio.file.Files.createDirectories(Paths.get("../docroot/logos/temp")).toFile();
-//            tempDir = java.nio.file.Files.createTempDirectory(tempRoot.toPath(), editDv.getId().toString()).toFile();
-//        } catch (IOException e) {
-//            throw new RuntimeException("Error creating temp directory", e); // improve error handling
-//        }
-//    }
-//
-//    private DataverseTheme initDataverseTheme(Dataverse editDv) {
-//        DataverseTheme dvt = new DataverseTheme();
-//        dvt.setLinkColor(DEFAULT_LINK_COLOR);
-//        dvt.setLogoBackgroundColor(DEFAULT_LOGO_BACKGROUND_COLOR);
-//        dvt.setBackgroundColor(DEFAULT_BACKGROUND_COLOR);
-//        dvt.setTextColor(DEFAULT_TEXT_COLOR);
-//        dvt.setDataverse(editDv);
-//        return dvt;
-//    }
-//
-//    @PUT
-//    @Path("{identifier}/logo")
-//    @Consumes(MediaType.MULTIPART_FORM_DATA)
-//    public Response setDataverseLogo(@PathParam("identifier") String dvIdtf,
-//            @FormDataParam("file") InputStream fileInputStream,
-//            @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-//            @QueryParam("key") String apiKey) {
-//        boolean disabled = true;
-//        if (disabled) {
-//            return error(Status.FORBIDDEN, "Setting the dataverse logo via API needs more work.");
-//        }
-//        try {
-//            final DataverseRequest req = createDataverseRequest(findUserOrDie());
-//            final Dataverse editDv = findDataverseOrDie(dvIdtf);
-//
-//            logger.finer("entering fileUpload");
-//            if (tempDir == null) {
-//                createTempDir(editDv);
-//                logger.finer("created tempDir");
-//            }
-//            File uploadedFile;
-//            try {
-//                String fileName = contentDispositionHeader.getFileName();
-//
-//                uploadedFile = new File(tempDir, fileName);
-//                if (!uploadedFile.exists()) {
-//                    uploadedFile.createNewFile();
-//                }
-//                logger.finer("created file");
-//                File file = null;
-//                file = FileUtil.inputStreamToFile(fileInputStream);
-//                if (file.length() > systemConfig.getUploadLogoSizeLimit()) {
-//                    return error(Response.Status.BAD_REQUEST, "File is larger than maximum size: " + systemConfig.getUploadLogoSizeLimit() + ".");
-//                }
-//                java.nio.file.Files.copy(fileInputStream, uploadedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-//                logger.finer("copied inputstream to file");
-//                editDv.setDataverseTheme(initDataverseTheme(editDv));
-//                editDv.getDataverseTheme().setLogo(fileName);
-//
-//            } catch (IOException e) {
-//                logger.finer("caught IOException");
-//                logger.throwing("ThemeWidgetFragment", "handleImageFileUpload", e);
-//                throw new RuntimeException("Error uploading logo file", e); // improve error handling
-//            }
-//            // If needed, set the default values for the logo
-//            if (editDv.getDataverseTheme().getLogoFormat() == null) {
-//                editDv.getDataverseTheme().setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
-//            }
-//            logger.finer("end handelImageFileUpload");
-//            UpdateDataverseThemeCommand cmd = new UpdateDataverseThemeCommand(editDv, uploadedFile, req);
-//            Dataverse saved = execCommand(cmd);
-//
-//            /**
-//             * @todo delete the temp file:
-//             * docroot/logos/temp/1148114212463761832421/cc0.png
-//             */
-//            return ok("logo uploaded: " + saved.getDataverseTheme().getLogo());
-//        } catch (WrappedResponse ex) {
-//            return error(Status.BAD_REQUEST, "problem uploading logo: " + ex);
-//        }
-//    }
     @POST
     @AuthRequired
     @Path("{identifier}/assignments")
@@ -2269,4 +2176,85 @@ public class Dataverses extends AbstractApiBean {
             return getRoleAssignmentHistoryResponse(dataverse, authenticatedUser, false, headers);
         }, getRequestUser(crc));
     }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/storageDriver")
+    public Response getStorageDriver(@Context ContainerRequestContext crc, @PathParam("identifier") String id,
+                                     @QueryParam("getEffective") Boolean getEffective) throws WrappedResponse {
+
+        Dataverse dataverse = findDataverseOrDie(id);
+        
+        return response(req -> {
+            String storageDriver = execCommand(new GetDataverseStorageDriverCommand(req, dataverse, getEffective));
+            return ok(JsonPrinter.jsonStorageDriver(storageDriver));
+        }, getRequestUser(crc));
+    }
+    
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/storageDriver")
+    public Response setStorageDriver(@Context ContainerRequestContext crc, 
+                                     @PathParam("identifier") String id, String label) throws WrappedResponse {
+        Dataverse dataverse = findDataverseOrDie(id);
+
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        for (Entry<String, String> store: DataAccess.getStorageDriverLabels().entrySet()) {
+            if(store.getKey().equals(label)) {
+                dataverse.setStorageDriverId(store.getValue());
+                return ok("Storage set to: " + store.getKey() + "/" + store.getValue());
+            }
+        }
+        return error(Response.Status.BAD_REQUEST,
+                "No Storage Driver found for : " + label);
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("{identifier}/storageDriver")
+    public Response resetStorageDriver(@Context ContainerRequestContext crc, @PathParam("identifier") String id) throws WrappedResponse {
+        
+        Dataverse dataverse = findDataverseOrDie(id);
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        dataverse.setStorageDriverId("");
+        return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+        
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/allowedStorageDrivers")
+    public Response listStorageDrivers(@Context ContainerRequestContext crc, @PathParam("identifier") String id) throws WrappedResponse {
+        
+        Dataverse dv = findDataverseOrDie(id);
+
+        /*
+         * TODO: This endpoint ad GetDataverseAllowedStorageDriverCommand needs to be completed implementing 
+         * the request from Jim Myers, which is to return the list of storage drivers that the dataverse can use. 
+         * Currently it will return the full list of drivers available.
+         */
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            DataverseRequest request = createDataverseRequest(user);
+            GetDataverseAllowedStorageDriverCommand getAllowedStorageDriversCommand = new GetDataverseAllowedStorageDriverCommand(request, dv);
+            return ok(execCommand(getAllowedStorageDriversCommand));
+        } catch (WrappedResponse wr) {
+            return handleWrappedResponse(wr);
+        } 
+    }
+
 }

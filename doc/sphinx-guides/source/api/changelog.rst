@@ -10,11 +10,14 @@ This API changelog is experimental and we would love feedback on its usefulness.
 v6.11
 -----
 
+- The endpoints GET, PUT AND DELETE for `/api/admin/dataverse/{alias}/storageDriver` have been moved to `/api/dataverses/{alias}/storageDriver`.
+- The endpoint `/api/admin/dataverse/storageDrivers` has been moved and renamed to `/api/dataverses/{alias}/allowedStorageDrivers`. Regarding the change of the name, this endpoint will in the future only display the storageDrivers that are allowed on the specified collection, as of now, it will display the entire list of available Drivers on the installation.
 - The following API will now return ``403`` if the ``requireFilesToPublishDataset`` flag is set and the dataset version contains 0 files.
 
   - **/api/datasets/{Id}/submitForReview**
 
 - The Croissant :ref:`metadata export format <metadata-export-formats>` has been updated from version 1.0 to 1.1, which is reflected in the ``conformsTo`` property. The unused ``wd`` property has been dropped.
+
 
 v6.10
 -----
@@ -37,7 +40,6 @@ v6.10
 - The following PUT APIs will now return ``400`` if a required Guestbook Response is not supplied. When JVM setting -Ddataverse.files.guestbook-at-request=true is set a Guestbook Response may be required to be passed to these APIs in the JSON body. See the note under Configuration :ref:`dataverse.files.guestbook-at-request` for details.
 
   - **/api/access/datafile/{id}/requestAccess**
-
 
 v6.9
 ----

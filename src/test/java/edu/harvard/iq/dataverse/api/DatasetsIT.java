@@ -6292,7 +6292,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
 
-        Response storageDrivers = UtilIT.listStorageDrivers(apiToken);
+        Response storageDrivers = UtilIT.listStorageDrivers(apiToken, dataverseAlias);
         storageDrivers.prettyPrint();
         JsonObject data = JsonUtil.getJsonObject(storageDrivers.getBody().asString());
         String first = data.getJsonObject("data").keySet().iterator().next();
