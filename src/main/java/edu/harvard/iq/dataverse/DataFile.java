@@ -80,7 +80,7 @@ import jakarta.validation.constraints.NotBlank;
 public class DataFile extends DvObject implements Comparable {
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
     private static final long serialVersionUID = 1L;
-    public static final String TARGET_URL = "/file.xhtml?persistentId=";
+    public static final String TARGET_URL = "/citation?persistentId=";
     public static final char INGEST_STATUS_NONE = 65;
     public static final char INGEST_STATUS_SCHEDULED = 66;
     public static final char INGEST_STATUS_INPROGRESS = 67;
@@ -247,11 +247,31 @@ public class DataFile extends DvObject implements Comparable {
     inverseJoinColumns = @JoinColumn(name = "authenticated_user_id"))
     private List<AuthenticatedUser> fileAccessRequesters;
 
-    
-    public List<FileAccessRequest> getFileAccessRequests(){
-        return fileAccessRequests;
+    public List<FileAccessRequest> getFileAccessRequests() {
+        return getFileAccessRequests(0, 0);
     }
-    
+
+    /**
+     * Get Requests with pagination option
+     * @param numResultsPerPageRequested
+     * @param paginationStart starts at 1
+     * @return
+     */
+    public List<FileAccessRequest> getFileAccessRequests(int numResultsPerPageRequested, int paginationStart) {
+        if (numResultsPerPageRequested < 1 || paginationStart < 1) {
+            return fileAccessRequests;
+        } else {
+            int startIndex = (paginationStart - 1) * numResultsPerPageRequested;
+            int endIndex = startIndex + numResultsPerPageRequested;
+            if (startIndex >= fileAccessRequests.size()) {
+                return List.of();
+            } else if (endIndex > fileAccessRequests.size()) {
+                endIndex = fileAccessRequests.size();
+            }
+            return fileAccessRequests.subList(startIndex, endIndex);
+        }
+    }
+
     public List<FileAccessRequest> getFileAccessRequests(FileAccessRequest.RequestState state){
         return fileAccessRequests.stream().filter(far -> far.getState() == state).collect(Collectors.toList());
     }
@@ -527,6 +547,11 @@ public class DataFile extends DvObject implements Comparable {
         return null;
     }
     
+    public String getFriendlyOriginalFileSize() {
+        Long size = (getOriginalFileSize()==null) ? filesize : getOriginalFileSize();
+        return getFriendlySize(size);
+    }
+    
     public String getOriginalFileName() {
         if (isTabularData()) {
             DataTable dataTable = getDataTable();
@@ -539,7 +564,7 @@ public class DataFile extends DvObject implements Comparable {
     }
 
     
-    private String getDerivedOriginalFileName() {
+    public String getDerivedOriginalFileName() {
         FileMetadata fm = getFileMetadata();
         String filename = fm.getLabel();
         String originalExtension = FileUtil.generateOriginalExtension(getOriginalFileFormat());
@@ -689,8 +714,12 @@ public class DataFile extends DvObject implements Comparable {
      * @return 
      */
     public String getFriendlySize() {
-        if (filesize != null) {
-            return FileSizeChecker.bytesToHumanReadable(filesize);
+        return getFriendlySize(filesize);
+    }
+    
+    private String getFriendlySize(Long size) {
+        if (size != null) {
+            return FileSizeChecker.bytesToHumanReadable(size);
         } else {
             return BundleUtil.getStringFromBundle("file.sizeNotAvailable");
         }
@@ -847,6 +876,15 @@ public class DataFile extends DvObject implements Comparable {
         }
 
         this.fileAccessRequests.add(request);
+    }
+
+    public List<FileAccessRequest> getAccessRequestsForAssignee(RoleAssignee roleAssignee) {
+        if (this.fileAccessRequests == null) {
+            return null;
+        }
+
+        return this.fileAccessRequests.stream()
+                .filter(fileAccessRequest -> fileAccessRequest.getRequester().equals(roleAssignee)).toList();
     }
 
     public FileAccessRequest getAccessRequestForAssignee(RoleAssignee roleAssignee) {
