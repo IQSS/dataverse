@@ -2708,7 +2708,7 @@ For these edits your JSON file need only include those dataset fields which you 
 
 This endpoint also allows removing fields, as long as they are not required by the dataset. To remove a field, send an empty value (``""``) for individual fields. For multiple fields, send an empty array (``[]``). A sample JSON file for removing fields may be downloaded here: :download:`dataset-edit-metadata-delete-fields-sample.json <../_static/api/dataset-edit-metadata-delete-fields-sample.json>`
 
-If another user updates the dataset version metadata before you send the update request, metadata inconsistencies may occur. To prevent this, you can use the optional ``sourceLastUpdateTime`` query parameter. This parameter must include the ``lastUpdateTime`` corresponding to the dataset version being updated. The date must be in the format ``yyyy-MM-dd'T'HH:mm:ss'Z'``.
+If another user updates the dataset version metadata before you send the update request, metadata inconsistencies may occur. To prevent this, you can use the optional ``sourceLastUpdateTime`` query parameter. The intended API workflow is for the client to send along the ``lastUpdateTime`` obtained from the last ``GET`` call on the version that is being modified. Dataverse APIs will always report these time stamps in UTC, ISO 8601-formatted (``yyyy-MM-dd'T'HH:mm:ss'Z'``; for example: ``2026-04-22T14:30:00Z``), regardless of the actual time zone used by the server. This is the only format this API will accept. 
 
 If this parameter is provided, the update will proceed only if the ``lastUpdateTime`` remains unchanged (meaning no one has updated the dataset metadata since you retrieved it). Otherwise, the request will fail with an error.
 
@@ -2758,6 +2758,9 @@ Update Dataset Terms of Access
 
 Updates the terms of access for the restricted files of a dataset by applying it to the draft version, or by creating a draft if none exists.
 
+If another user updates an already existing draft version before you send the update request, metadata inconsistencies may occur. To prevent this, you can use the optional ``sourceLastUpdateTime`` query parameter. The intended API workflow is for the client to send along the ``lastUpdateTime`` obtained from the last ``GET`` call on the version that is being modified. Dataverse APIs will always report these time stamps in UTC, ISO 8601-formatted (``yyyy-MM-dd'T'HH:mm:ss'Z'``; for example: ``2026-04-22T14:30:00Z``), regardless of the actual time zone used by the server. This is the only format this API will accept. 
+
+If this parameter is provided, the update will proceed only if the ``lastUpdateTime`` remains unchanged (meaning no one has updated the dataset metadata since you retrieved it). Otherwise, the request will fail with an error.
 
 To define custom terms of access, provide a JSON body with the following properties. All fields within ``customTermsOfAccess`` are optional, except if there are restricted files in your dataset then ``fileAccessRequest`` must be set to true or ``termsOfAccess`` must be provided:
 
@@ -4178,6 +4181,8 @@ Usage example:
   curl "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/citation/$FORMAT?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
 
 The type under CSL can vary based on the dataset type, with "dataset", "software", and "review" as supported values. See also :ref:`dataset-types`.
+
+.. note:: You can also get the Datafile Citation by using the Access Datafile API. See: :ref:`datafile-citation-formatted-access`.
 
 Get Citation by Preview URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -5606,7 +5611,8 @@ Updating File Metadata
 
 Updates the file metadata for an existing file where ``ID`` is the database id of the file to update or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the new metadata. No metadata from the previous version of this file will be persisted, so if you want to update a specific field first get the json with the above command and alter the fields you want.
 
-An optional parameter, sourceLastUpdateTime=datetime (in format: ``yyyy-MM-dd'T'HH:mm:ss'Z'``), can be used to verify that the file metadata being edited has not been changed since you last retrieved it, thereby avoiding potential lost metadata updates. The value for sourceLastUpdateTime can be taken from ``lastUpdateTime`` in the response to get $SERVER_URL/api/files/$ID API call.
+An optional parameter, ``sourceLastUpdateTime``, can be used to verify that the file metadata being edited has not been changed since you last retrieved it, thereby avoiding potential inconsistencies. In the intended API workflow this will be the time stamp in ``lastUpdateTime`` from the last ``GET /api/files/<id>`` API call. Dataverse APIs will always report these time stamps in UTC, ISO 8601-formatted (``yyyy-MM-dd'T'HH:mm:ss'Z'``; for example: ``2026-04-22T14:30:00Z``), regardless of the actual time zone used by the server. This is the only format this API will accept. 
+
 
 A curl example using an ``ID``
 

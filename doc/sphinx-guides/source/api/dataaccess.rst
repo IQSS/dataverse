@@ -254,6 +254,26 @@ Value           Description
 ID              Exports file with specific file metadata ``ID``.
 ==============  ===========
 
+
+.. _datafile-citation-formatted-access:
+
+Citation - Get Citation In Other Formats
+----------------------------------------
+
+Dataverse can generate datafile citations in "EndNote", "RIS", "BibTeX", and "CSL" formats.
+This API call sends the raw format with the appropriate content-type (EndNote is XML, RIS and BibTeX are plain text, and CSL is JSON). ("Internal" is also a valid value, returning the content as HTML).
+This API call requires a format in the API call which can be any of the values listed above.
+
+Usage example:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export DATAFILE_ID=99
+  export FORMAT=EndNote
+
+  curl "$SERVER_URL/api/access/datafile/$DATAFILE_ID/citation/$FORMAT"
+
 .. _data-variable-metadata-access:
 
 Data Variable Metadata Access
