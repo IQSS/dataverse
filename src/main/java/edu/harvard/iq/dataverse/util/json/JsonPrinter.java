@@ -75,17 +75,22 @@ public class JsonPrinter {
     @EJB
     static InAppNotificationsJsonPrinter inAppNotificationsJsonPrinter;
 
+    @EJB
+    static RoleAssigneeServiceBean roleAssigneeService;
+
     public static void injectSettingsService(SettingsServiceBean ssb,
                                              DatasetFieldServiceBean dfsb,
                                              DataverseFieldTypeInputLevelServiceBean dfils,
                                              DatasetServiceBean ds,
                                              MailServiceBean ms,
-                                             InAppNotificationsJsonPrinter njp) {
+                                             InAppNotificationsJsonPrinter njp,
+                                             RoleAssigneeServiceBean ras) {
             settingsService = ssb;
             datasetFieldService = dfsb;
             datasetService = ds;
             mailService = ms;
             inAppNotificationsJsonPrinter = njp;
+            roleAssigneeService = ras;
     }
 
     public JsonPrinter() {
@@ -132,6 +137,11 @@ public class JsonPrinter {
             .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
         return builder;
     }
+    public static JsonObjectBuilder json(FileAccessRequest fileAccessRequest) {
+        JsonObjectBuilder builder = json(fileAccessRequest.getRequester())
+                .add("requestState", fileAccessRequest.getStateLabel());
+        return builder;
+    }
 
     public static JsonArrayBuilder jsonRoleAssignments(List<RoleAssignment> roleAssignments) {
         JsonArrayBuilder bld = Json.createArrayBuilder();
@@ -140,14 +150,24 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(RoleAssignment ra) {
-        return jsonObjectBuilder()
-                .add("id", ra.getId())
-                .add("assignee", ra.getAssigneeIdentifier())
-                .add("roleId", ra.getRole().getId())
-                .add("roleName", ra.getRole().getName())
-                .add("_roleAlias", ra.getRole().getAlias())
-                .add("privateUrlToken", ra.getPrivateUrlToken())
-                .add("definitionPointId", ra.getDefinitionPoint().getId());
+        JsonObjectBuilder job = jsonObjectBuilder()
+                                    .add("id", ra.getId())
+                                    .add("assignee", ra.getAssigneeIdentifier())
+                                    .add("assigneeName", roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle())
+                                    .add("roleId", ra.getRole().getId())
+                                    .add("roleName", ra.getRole().getName())
+                                    .add("roleDescription", ra.getRole().getDescription())
+                                    .add("_roleAlias", ra.getRole().getAlias())
+                                    .add("privateUrlToken", ra.getPrivateUrlToken())
+                                    .add("definitionPointId", ra.getDefinitionPoint().getId())
+                                    .add("definitionPointName", ra.getDefinitionPoint().getDisplayName())
+                                    .add("definitionPointType", ra.getDefinitionPoint().getDtype());
+
+        if (ra.getDefinitionPoint().getGlobalId() != null) {
+            job.add("definitionPointGlobalId", ra.getDefinitionPoint().getGlobalId().toString());
+        }
+
+        return job;
     }
 
     public static JsonArrayBuilder json(Set<Permission> permissions) {
@@ -351,6 +371,7 @@ public class JsonPrinter {
             JsonArrayBuilder jab = Json.createArrayBuilder();
             for (DatasetType datasetType : allowedDatasetTypes) {
                 NullSafeJsonBuilder json = NullSafeJsonBuilder.jsonObjectBuilder()
+                    .add("id", datasetType.getId())
                     .add("name", datasetType.getName())
                     .add("displayName", datasetType.getDisplayName())
                     .add("description", datasetType.getDescription());

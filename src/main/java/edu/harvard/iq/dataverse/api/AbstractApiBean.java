@@ -243,6 +243,9 @@ public abstract class AbstractApiBean {
     @EJB 
     GuestbookResponseServiceBean gbRespSvc;
 
+    @EJB
+    TemplateServiceBean templateSvc;
+
     @Inject
     FailedPIDResolutionLoggingServiceBean fprLogService;
     
@@ -385,7 +388,17 @@ public abstract class AbstractApiBean {
         return dataverse;
     }
 
-    protected Template findTemplateOrDie(Long templateId, Dataverse dataverse) throws WrappedResponse {
+    protected Template findTemplateOrDie(Long templateId) throws WrappedResponse {
+
+        Template template = templateSvc.find(templateId);
+        if (template == null) {
+            throw new WrappedResponse(
+                    error(Response.Status.NOT_FOUND, "Can't find template with identifier='" + templateId + "'"));
+        }
+        return template;
+    }
+
+    protected Template findTemplateInDataverseOrParentsOrDie(Long templateId, Dataverse dataverse) throws WrappedResponse {
         
         List<Template> templates = new ArrayList<>();
         
@@ -518,7 +531,27 @@ public abstract class AbstractApiBean {
     }
 
     protected void validateInternalTimestampIsNotOutdated(DvObject dvObject, String sourceLastUpdateTime) throws WrappedResponse {
-        Date date = sourceLastUpdateTime != null ? DateUtil.parseDate(sourceLastUpdateTime, "yyyy-MM-dd'T'HH:mm:ss'Z'") : null;
+        // The timestamp string must always be in UTC, ISO 8601-formatted
+        // for example: 2026-04-22T14:30:00Z. This is explicitly specified in the
+        // API guide.
+        //
+        // In the intended workflow, the clients will be reusing the last update
+        // timestamps obtained from the output of other Dataverse APIs, such as
+        // /versions and /files, where they are always in that form, regardless
+        // of the actual time zone the server lives in.
+        //
+        // For consistency, we do not want to accept any other formats or timezones,
+        // and will reject anything that does not match "yyyy-MM-dd'T'HH:mm:ss'Z'".
+        // For that reason there is an explicit check added for .endsWith("Z").
+        // The "X" in the parsing format string will recognize literal 'Z' as "+0000",
+        // but it would also accept other ISO 8601 timezones, such as "+0400" for
+        // EDT, etc. In theory, we could accept all these other notations - in
+        // case the client decided to convert the UTC timestamp they received from
+        // Dataverse into that... but there is really no good reason to encourage
+        // that.
+        Date date = sourceLastUpdateTime != null && sourceLastUpdateTime.endsWith("Z")
+                ? DateUtil.parseDate(sourceLastUpdateTime, "yyyy-MM-dd'T'HH:mm:ssX")
+                : null;
         if (date == null) {
             throw new WrappedResponse(
                     badRequest(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date", Collections.singletonList(sourceLastUpdateTime)))
@@ -583,7 +616,7 @@ public abstract class AbstractApiBean {
         }
         return dataFile;
     }
-       
+
     protected DataverseRole findRoleOrDie(String id) throws WrappedResponse {
         DataverseRole role;
         if (id.equals(ALIAS_KEY)) {

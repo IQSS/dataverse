@@ -1613,7 +1613,7 @@ public class IndexServiceBean {
 
                     String filenameCompleteFinal = "";
                     if (fileMetadata != null) {
-                        String filenameComplete = fileMetadata.getLabel();
+                        String filenameComplete = fileMetadata.getLabelForOriginal();
                         if (filenameComplete != null) {
                             String filenameWithoutExtension = "";
                             // String extension = "";
