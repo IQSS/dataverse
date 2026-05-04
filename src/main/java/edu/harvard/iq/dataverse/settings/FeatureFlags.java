@@ -33,9 +33,13 @@ public enum FeatureFlags {
     /**
      * Enables the React-based file uploader in the JSF dataset file upload area.
      * This is an experimental replacement for the classic PrimeFaces upload UI.
+     * Requires {@link #API_SESSION_AUTH} to be enabled. The React bundle must
+     * also be reachable from the browser at
+     * <code>/dvwebloader/reusable-components/dv-uploader.js</code> (typically
+     * served by the same nginx proxy that fronts Dataverse).
      *
      * @apiNote Raise flag by setting "dataverse.feature.react-uploader"
-     * @since Dataverse @TODO:
+     * @since Dataverse 6.11
      */
     REACT_UPLOADER("react-uploader"),
     /**

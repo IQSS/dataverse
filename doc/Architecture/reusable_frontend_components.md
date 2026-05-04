@@ -161,6 +161,20 @@ The JSF fragment renders:
 
 The frontend build emits `dist-uploader/reusable-components/dv-uploader.js` plus shared chunks under `dist-uploader/reusable-components/chunks/`. This keeps the first component entry stable while allowing future reusable components to share React, i18n, vendor, and Dataverse shared UI/client chunks.
 
+### CSS isolation
+
+The bundle injects its CSS into `<head>` via `vite-plugin-css-injected-by-js`. To keep the host JSF page intact:
+
+- The React render is wrapped in `<div class="dv-uploader-root">`. Embedded styles are scoped to this class; no `html`/`body`/`#root` rules are bundled.
+- Page-level styling (background, font, viewport-fill) lives in `standalone-page.scss`, which ships only to the standalone demo HTML and is not part of the JSF-loaded bundle.
+- Design-system styles use CSS Modules with hashed class names, so they cannot collide with JSF/PrimeFaces classes.
+
+**Known limitation — Bootstrap globals.** The bundle imports `bootstrap/dist/css/bootstrap.min.css` (Bootstrap 5.2.3) because react-bootstrap relies on it. Dataverse JSF pages already load Bootstrap 3.x. Where the two collide on shared selectors (`.btn`, `.form-control`, the grid system), the later-loaded stylesheet wins. The React component is fine because it loads later, but classic JSF panels rendered alongside the React uploader on the same page may pick up Bootstrap 5 styling on those selectors. PrimeFaces (`ui-*` classes) and Dataverse's own `panel`/`glyphicon` classes are unaffected.
+
+Future work — pick one and document it before unflagging this feature in production:
+- PostCSS scope-prefix plugin to wrap every bundled CSS rule under `.dv-uploader-root`.
+- Mount the React tree into a Shadow DOM root so injected `<style>` stays inside the shadow boundary.
+
 ## Dev Environment
 
 The dev environment (`dataverse-frontend/dev-env/docker-compose-dev.yml`) is configured with:

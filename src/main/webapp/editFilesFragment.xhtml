@@ -131,6 +131,12 @@
                                     </h:outputFormat>
                                 </p>
                     
+                    <!--
+                        dropBoxUploadFinished is hoisted out of the legacy upload
+                        block below because the Dropbox panel renders independently
+                        of the HTTP upload widget and still needs this callback when
+                        the React uploader replaces the PrimeFaces upload UI.
+                    -->
                     <script>
                         //<![CDATA[
                         function dropBoxUploadFinished(fileupload) {
