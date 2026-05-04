@@ -1138,6 +1138,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             s3Presigner.close();
         }
 
+        final boolean taggingDisabled = JvmSettings.DISABLE_S3_TAGGING.lookupOptional(Boolean.class, this.driverId)
+                .orElse(false);
+        if (!taggingDisabled) {
+            response.add("tagging", "dv-state=temp");
+        }
+
         response.add("partSize", minPartSize);
 
         return response;
