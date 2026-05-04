@@ -408,20 +408,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         JsonObject jo = getExternalVocabularyValue(termUri);
 
         if (jo != null) {
-            JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
-            //Check for per-vocab filtering
-            JsonObject vocabs = cvocEntry.getJsonObject("vocabs");
-            for (String key : vocabs.keySet()) {
-                JsonObject vocab = vocabs.getJsonObject(key);
-                if (vocab.containsKey("uriSpace")) {
-                    if (termUri.startsWith(vocab.getString("uriSpace"))) {
-                        if(vocab.containsKey("retrieval-filtering")) {
-                            filtering = vocab.getJsonObject("retrieval-filtering");
-                        }
-                        break;
-                    }
-                }
-            }
+            JsonObject filtering = getRetrievalFilteringObject(cvocEntry, termUri);
             String termUriField = cvocEntry.getJsonString("term-uri-field").getString();
 
             try {
@@ -479,6 +466,24 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         }
         logger.fine("Returning " + String.join(",", strings) + " for " + termUri);
         return strings;
+    }
+
+    private JsonObject getRetrievalFilteringObject(JsonObject cvocEntry, String termUri) {
+        JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
+        //Check for per-vocab filtering
+        JsonObject vocabs = cvocEntry.getJsonObject("vocabs");
+        for (String key : vocabs.keySet()) {
+            JsonObject vocab = vocabs.getJsonObject(key);
+            if (vocab.containsKey("uriSpace")) {
+                if (termUri.startsWith(vocab.getString("uriSpace"))) {
+                    if (vocab.containsKey("retrieval-filtering")) {
+                        filtering = vocab.getJsonObject("retrieval-filtering");
+                    }
+                    break;
+                }
+            }
+        }
+        return filtering;
     }
 
     /**
@@ -672,94 +677,93 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     private JsonObject filterResponse(JsonObject cvocEntry, JsonObject readObject, String termUri) {
 
         JsonObjectBuilder job = Json.createObjectBuilder();
-        JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
-        logger.fine("RF: " + filtering.toString());
-        int nrOfNotFound = 0;
-        for (String filterKey : filtering.keySet()) {
-            if (!filterKey.equals("@context")) {
-                try {
-                    JsonObject filter = filtering.getJsonObject(filterKey);
-                    logger.fine("F: " + filter.toString());
-                    JsonArray params = filter.getJsonArray("params");
-                    if (params == null) {
-                        params = Json.createArrayBuilder().build();
-                    }
-                    logger.fine("Params: " + params.toString());
-                    List<Object> vals = new ArrayList<Object>();
-                    for (int i = 0; i < params.size(); i++) {
-                        String param = params.getString(i);
-                        if (param.startsWith("/")) {
-                            // Remove leading /
-                            param = param.substring(1);
-                            String[] pathParts = param.split("/");
-                            logger.fine("PP: " + String.join(", ", pathParts));
-                            var foundPart = processPathSegment(0, pathParts, readObject, termUri);
-                            if (foundPart == null) {
-                                nrOfNotFound ++ ;
-                                logger.warning("External Vocabulary: no value found for %s - %s".formatted(filterKey, param));
+        JsonObject filtering = getRetrievalFilteringObject(cvocEntry, termUri);
+        if(filtering != null) {
+            logger.fine("RF: " + filtering.toString());
+            int nrOfNotFound = 0;
+            for (String filterKey : filtering.keySet()) {
+                if (!filterKey.equals("@context")) {
+                    try {
+                        JsonObject filter = filtering.getJsonObject(filterKey);
+                        logger.fine("F: " + filter.toString());
+                        JsonArray params = filter.getJsonArray("params");
+                        if (params == null) {
+                            params = Json.createArrayBuilder().build();
+                        }
+                        logger.fine("Params: " + params.toString());
+                        List<Object> vals = new ArrayList<Object>();
+                        for (int i = 0; i < params.size(); i++) {
+                            String param = params.getString(i);
+                            if (param.startsWith("/")) {
+                                // Remove leading /
+                                param = param.substring(1);
+                                String[] pathParts = param.split("/");
+                                logger.fine("PP: " + String.join(", ", pathParts));
+                                var foundPart = processPathSegment(0, pathParts, readObject, termUri);
+                                if (foundPart == null) {
+                                    nrOfNotFound++;
+                                    logger.warning("External Vocabulary: no value found for %s - %s".formatted(filterKey, param));
+                                } else {
+                                    vals.add(i, foundPart);
+                                    logger.fine("Added param value: " + i + ": " + vals.get(i));
+                                }
                             } else {
-                                vals.add(i, foundPart);
-                                logger.fine("Added param value: " + i + ": " + vals.get(i));
+                                logger.fine("Param is: " + param);
+                                // param is not a path - either a reference to the term URI
+                                if (param.equals("@id")) {
+                                    logger.fine("Adding id param: " + termUri);
+                                    vals.add(i, termUri);
+                                } else {
+                                    // or a hardcoded value
+                                    logger.fine("Adding hardcoded param: " + param);
+                                    vals.add(i, param);
+                                }
+                            }
+                        }
+                        // Shortcut: nominally using a pattern of {0} and a param that is @id or
+                        // hardcoded value allows the same options as letting the pattern itself be @id
+                        // or a hardcoded value
+                        String pattern = filter.getString("pattern");
+                        logger.fine("Pattern: " + pattern);
+                        if (pattern.equals("@id")) {
+                            logger.fine("Added #id pattern: " + filterKey + ": " + termUri);
+                            job.add(filterKey, termUri);
+                        } else if (pattern.contains("{")) {
+                            if (vals.isEmpty()) {
+                                if (nrOfNotFound == 0) {
+                                    logger.warning("External Vocabulary: " + termUri + " - No value found for " + filterKey);
+                                }
+                            } else {
+                                if (pattern.equals("{0}")) {
+                                    if (vals.get(0) instanceof JsonArray) {
+                                        job.add(filterKey, (JsonArray) vals.get(0));
+                                    } else if (vals.get(0) instanceof JsonObject) {
+                                        job.add(filterKey, (JsonObject) vals.get(0));
+                                    } else {
+                                        job.add(filterKey, (String) vals.get(0));
+                                    }
+                                } else {
+                                    String result = MessageFormat.format(pattern, vals.toArray());
+                                    logger.fine("Result: " + result);
+                                    job.add(filterKey, result);
+                                    logger.fine("Added : " + filterKey + ": " + result);
+                                }
                             }
                         } else {
-                            logger.fine("Param is: " + param);
-                            // param is not a path - either a reference to the term URI
-                            if (param.equals("@id")) {
-                                logger.fine("Adding id param: " + termUri);
-                                vals.add(i, termUri);
-                            } else {
-                                // or a hardcoded value
-                                logger.fine("Adding hardcoded param: " + param);
-                                vals.add(i, param);
-                            }
+                            logger.fine("Added hardcoded pattern: " + filterKey + ": " + pattern);
+                            job.add(filterKey, pattern);
                         }
+                    } catch (Exception e) {
+                        logger.warning("External Vocabulary: " + termUri + " - Failed to find value for " + filterKey + ": "
+                                + e.getMessage());
+                        e.printStackTrace();
                     }
-                    // Shortcut: nominally using a pattern of {0} and a param that is @id or
-                    // hardcoded value allows the same options as letting the pattern itself be @id
-                    // or a hardcoded value
-                    String pattern = filter.getString("pattern");
-                    logger.fine("Pattern: " + pattern);
-                    if (pattern.equals("@id")) {
-                        logger.fine("Added #id pattern: " + filterKey + ": " + termUri);
-                        job.add(filterKey, termUri);
-                    } else if (pattern.contains("{")) {
-                        if (vals.isEmpty()) {
-                            if (nrOfNotFound == 0) {
-                                logger.warning("External Vocabulary: " + termUri + " - No value found for " + filterKey);
-                            }
-                        }
-                        else {
-                            if (pattern.equals("{0}")) {
-                                if (vals.get(0) instanceof JsonArray) {
-                                    job.add(filterKey, (JsonArray) vals.get(0));
-                                }
-                                else if (vals.get(0) instanceof JsonObject) {
-                                    job.add(filterKey, (JsonObject) vals.get(0));
-                                }
-                                else {
-                                    job.add(filterKey, (String) vals.get(0));
-                                }
-                            }
-                            else {
-                                String result = MessageFormat.format(pattern, vals.toArray());
-                                logger.fine("Result: " + result);
-                                job.add(filterKey, result);
-                                logger.fine("Added : " + filterKey + ": " + result);
-                            }
-                        }
-                    } else {
-                        logger.fine("Added hardcoded pattern: " + filterKey + ": " + pattern);
-                        job.add(filterKey, pattern);
-                    }
-                } catch (Exception e) {
-                    logger.warning("External Vocabulary: " + termUri + " - Failed to find value for " + filterKey + ": "
-                            + e.getMessage());
-                    e.printStackTrace();
                 }
             }
-        }
-        if(nrOfNotFound>0) {
-            logger.warning("External Vocabulary: " + termUri + " - Failed to find value(s) reported above in " +readObject);
+
+            if (nrOfNotFound > 0) {
+                logger.warning("External Vocabulary: " + termUri + " - Failed to find value(s) reported above in " + readObject);
+            }
         }
         JsonObject filteredResponse = job.build();
         if(filteredResponse.isEmpty()) {
