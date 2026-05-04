@@ -167,6 +167,7 @@
         
         <!-- NEW gdcc XOAI library implementation -->
         <gdcc.xoai.version>5.3.0</gdcc.xoai.version>
+        <gdcc.spi.version>2.2.0-SNAPSHOT</gdcc.spi.version>
     
         <!-- Testing dependencies -->
         <testcontainers.version>2.0.2</testcontainers.version>
