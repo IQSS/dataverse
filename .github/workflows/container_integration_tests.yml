@@ -184,11 +184,20 @@ jobs:
       - name: Put SUSHI config file in place
         run: |
           set -euo pipefail
-          # Copy the file from the checked-out repo directly into the container
-          # The path is relative to the root of the repository
-          docker cp src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json dev_dataverse:/tmp/sushi_sample_logs.json
           
-          # Verify it exists inside the container
+          SOURCE_FILE="${{ github.workspace }}/src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json"
+          
+          echo "Checking if source file exists at: $SOURCE_FILE"
+          if [ ! -f "$SOURCE_FILE" ]; then
+            echo "ERROR: Source file not found!"
+            find ${{ github.workspace }} -name "sushi_sample_logs.json"
+            exit 1
+          fi
+
+          # Copy to the container
+          docker cp "$SOURCE_FILE" dev_dataverse:/tmp/sushi_sample_logs.json
+          
+          # Verify it arrived
           docker exec dev_dataverse ls -l /tmp/sushi_sample_logs.json
       
       # ---------------------------
