@@ -222,12 +222,13 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dataverse.getName());
         solrInputDocument.addField(SearchFields.DATAVERSE_ALIAS, dataverse.getAlias());
         solrInputDocument.addField(SearchFields.DATAVERSE_CATEGORY, dataverse.getIndexableCategoryName());
+        boolean isLocallyFAIR = dataverse.isLocallyFAIR();
+        if(isLocallyFAIR) {
+            solrInputDocument.addField(SearchFields.LOCALLY_FAIR, isLocallyFAIR);
+        }
         if (dataverse.isReleased()) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
-            boolean isLocallyFAIR = dataverse.isLocallyFAIR();
-            if(isLocallyFAIR) {
-                solrInputDocument.addField(SearchFields.LOCALLY_FAIR, isLocallyFAIR);
-            }
+
             if (FeatureFlags.ADD_PUBLICOBJECT_SOLR_FIELD.enabled() && !isLocallyFAIR) {
                 solrInputDocument.addField(SearchFields.PUBLIC_OBJECT, true);
             }
@@ -1024,13 +1025,13 @@ public class IndexServiceBean {
             }
         }
         solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, datasetSortByDate);
-
+        boolean isLocallyFAIR = dataset.isLocallyFAIR();
+        if(isLocallyFAIR) {
+            solrInputDocument.addField(SearchFields.LOCALLY_FAIR, isLocallyFAIR);
+        }
         if (state.equals(DatasetState.PUBLISHED)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
-            boolean isLocallyFAIR = dataset.isLocallyFAIR();
-            if(isLocallyFAIR) {
-                solrInputDocument.addField(SearchFields.LOCALLY_FAIR, isLocallyFAIR);
-            }
+
             if (FeatureFlags.ADD_PUBLICOBJECT_SOLR_FIELD.enabled() && !isLocallyFAIR) {
                 solrInputDocument.addField(SearchFields.PUBLIC_OBJECT, true);
             }
@@ -1707,11 +1708,12 @@ public class IndexServiceBean {
 
                     String fileSolrDocId = solrDocIdentifierFile + fileEntityId;
                     indexableDataset.getDatasetState();
+                    // Use isLocallyFAIR for dataset (versus re-calc for each file)
+                    if(isLocallyFAIR) {
+                        datafileSolrInputDocument.addField(SearchFields.LOCALLY_FAIR, isLocallyFAIR);
+                    }
                     if (datasetPublicationStatuses.contains(PUBLISHED_STRING)) {
-                        boolean isLocallyFAIR = datafile.isLocallyFAIR();
-                        if(isLocallyFAIR) {
-                            datafileSolrInputDocument.addField(SearchFields.LOCALLY_FAIR, isLocallyFAIR);
-                        }
+
                         if (FeatureFlags.ADD_PUBLICOBJECT_SOLR_FIELD.enabled() && !isLocallyFAIR) {
                             datafileSolrInputDocument.addField(SearchFields.PUBLIC_OBJECT, true);
                         }
