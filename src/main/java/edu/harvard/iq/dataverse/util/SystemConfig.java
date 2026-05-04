@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
@@ -244,6 +245,10 @@ public class SystemConfig {
      */
     public String getDataverseSiteUrl() {
         return getDataverseSiteUrlStatic();
+    }
+
+    public boolean isReactUploaderEnabled() {
+        return FeatureFlags.REACT_UPLOADER.enabled();
     }
     
     /**

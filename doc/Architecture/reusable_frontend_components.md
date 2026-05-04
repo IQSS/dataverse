@@ -25,8 +25,8 @@ Changes are split across three repos in merge-order dependency:
 | Repo | PR | Purpose |
 |---|---|---|
 | `IQSS/dataverse-client-javascript` | #403 | Upload client changes (tagging fix, remove FilesConfig) |
-| `IQSS/dataverse-frontend` | #898 | Standalone uploader + shared component extraction + folder upload |
-| `gdcc/dvwebloader` | #44 | DVWebloader V2 — consumes #898 build output |
+| `IQSS/dataverse-frontend` | #898 | Standalone uploader + reusable component build + folder upload |
+| `gdcc/dvwebloader` | #44 | DVWebloader V2 — consumes #898 build output, if still needed for external packaging |
 
 The backend changes in this repo (`6691_reusable_components`) are a prerequisite for the client-js changes in #403.
 
@@ -134,11 +134,32 @@ Selection state is internal; iframe mode exposes state via `postMessage`. SPA mo
 
 ## JSF Mount Strategy
 
-Direct JavaScript mount in JSF (`#12179`) is out of scope for the uploader baseline but is the target integration model for the tree-view component. Key constraints:
+Direct JavaScript mount is now implemented for the uploader as a feature-flagged replacement path in JSF. The same pattern remains the target integration model for the tree-view component (`#12179`). Key constraints:
 
 - CSS/JS collision risk with JSF/PrimeFaces — components must be style-isolated.
-- Integration contract between JSF and the SPA component (config object, events) must be documented before mount is implemented.
+- Integration contract between JSF and the SPA component (config object, events) must stay documented and stable.
 - Session cookie auth is the only viable auth mechanism in direct-mount mode (no API key in URL, no iframe boundary).
+
+### Uploader mount
+
+Dataverse exposes a feature flag, `dataverse.feature.react-uploader` (`DATAVERSE_FEATURE_REACT_UPLOADER` in environment form), that replaces the classic PrimeFaces file upload widget with the React uploader for add-files flows. File replace remains on the existing JSF path.
+
+The JSF fragment renders:
+
+```html
+<div id="dv-uploader"></div>
+<script>
+  window.dvUploaderConfig = {
+    siteUrl: "...",
+    datasetPid: "...",
+    locale: "...",
+    rootElementId: "dv-uploader"
+  }
+</script>
+<script type="module" src="/dvwebloader/reusable-components/dv-uploader.js"></script>
+```
+
+The frontend build emits `dist-uploader/reusable-components/dv-uploader.js` plus shared chunks under `dist-uploader/reusable-components/chunks/`. This keeps the first component entry stable while allowing future reusable components to share React, i18n, vendor, and Dataverse shared UI/client chunks.
 
 ## Dev Environment
 
@@ -147,10 +168,11 @@ The dev environment (`dataverse-frontend/dev-env/docker-compose-dev.yml`) is con
 ```yaml
 DATAVERSE_FEATURE_API_SESSION_AUTH: 1
 DATAVERSE_FEATURE_API_SESSION_AUTH_HARDENING: 1
+DATAVERSE_FEATURE_REACT_UPLOADER: 1
 JVM_ARGS: -Ddataverse.siteUrl=http://localhost:8000 ...
 ```
 
-The nginx proxy (`dev_nginx`) forwards browser traffic through port 8000. The `dataverse.siteUrl` must match this so that Origin/Referer validation passes.
+The nginx proxy (`dev_nginx`) forwards browser traffic through port 8000. It also serves the reusable frontend build from `/dvwebloader/`, backed by `dataverse-frontend/dist-uploader`. The `dataverse.siteUrl` must match this so that Origin/Referer validation passes.
 
 ## Open Items
 
@@ -158,9 +180,9 @@ The nginx proxy (`dev_nginx`) forwards browser traffic through port 8000. The `d
 - Rebase `dataverse-client-javascript` #403 onto `develop` and publish a prerelease.
 - Replace the `file:../dataverse-client-javascript` local link in `dataverse-frontend` #898 with the published version.
 - Add folder upload to `dataverse-frontend` #898 (required by #468).
-- Add tests for `parseUrlConfig()` and session-cookie auth path in `dataverse-frontend`.
+- Add tests for direct-embed config and session-cookie auth path in `dataverse-frontend`.
 - Decide scope for cleanup storage (#431 open item) — baseline or follow-up.
-- Fix dvwebloader (#44) artifact path layout.
+- Decide whether `dvwebloader` #44 is still required as a separate external packaging step now that JSF can mount the frontend build directly.
 - Eventually rebase `6691_reusable_components` onto `develop` once `#12178` merges.
 
 **Tree view track:**

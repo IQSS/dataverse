@@ -29,6 +29,7 @@
     <ui:param name="maxFileUploadSize" value="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}"/>
     <ui:param name="maxNumberOfFiles" value="#{EditDatafilesPage.getMaxNumberOfFiles()}"/>
     <ui:param name="fileUploadsAvailable" value="#{EditDatafilesPage.getFileUploadsAvailable()}"/>
+    <ui:param name="useReactUploader" value="#{systemConfig.reactUploaderEnabled and useDirectUpload and !EditDatafilesPage.fileReplaceOperation}"/>
     
     <h:outputScript name='js/fileupload.js?version=#{systemConfig.getVersion()}' />
     <ui:fragment rendered = '#{useDirectUpload}'>
@@ -132,14 +133,35 @@
                     
                     <script>
                         //<![CDATA[
+                        function dropBoxUploadFinished(fileupload) {
+                            $('button[id$="dropBoxUploadFinished"]').trigger('click');
+                        }
+                        //]]>
+                    </script>
+
+                    <ui:fragment rendered="#{useReactUploader}">
+                        <div id="dv-uploader"></div>
+                        <script>
+                            //<![CDATA[
+                            window.dvUploaderConfig = {
+                                siteUrl: '#{systemConfig.dataverseSiteUrl}',
+                                datasetPid: '#{dataset.globalId.asString()}',
+                                locale: '#{dataverseSession.localeCode}',
+                                rootElementId: 'dv-uploader'
+                            };
+                            //]]>
+                        </script>
+                        <script type="module" src="#{systemConfig.dataverseSiteUrl}/dvwebloader/reusable-components/dv-uploader.js?version=#{systemConfig.getVersion()}"></script>
+                    </ui:fragment>
+
+                    <ui:fragment rendered="#{!useReactUploader}">
+                    <script>
+                        //<![CDATA[
                         function uploadWidgetDropMsg() {
                             var fileUpload = $('div[id$="fileUpload"] div.ui-fileupload-content');
                             if ($(fileUpload).children('#dragdropMsg').length === 0) {
                                 $(fileUpload).prepend('<div id="dragdropMsg">#{bundle['file.selectToAdd.dragdropMsg']}</div>');
                             }
-                        }
-                        function dropBoxUploadFinished(fileupload) {
-                            $('button[id$="dropBoxUploadFinished"]').trigger('click');
                         }
                         function uploadWidgetDropRemoveMsg() {
                             $('div[id$="fileUpload"] div.ui-fileupload-content div#dragdropMsg').remove();
@@ -198,8 +220,9 @@
                                   widgetVar="fileUploadWidget">
                         <f:passThroughAttribute name="aria-label" value="#{bundle['file.uploadFiles']}"/>
                     </p:fileUpload>
+                    </ui:fragment>
                               <ui:fragment rendered="#{!lockedFromEdits}">
-                                <div jsf:id="webloaderBlock" jsf:rendered="#{webloaderUploadSupported}"  class="ui-fileupload-buttonbar ui-widget-header ui-corner-top">
+                                <div jsf:id="webloaderBlock" jsf:rendered="#{webloaderUploadSupported and !useReactUploader}"  class="ui-fileupload-buttonbar ui-widget-header ui-corner-top">
                                     <p class="help-block" jsf:rendered="#{!createDataset}">#{bundle['file.fromWebloader.tip']}</p>
                                     <p class="help-block" jsf:rendered="#{createDataset}">#{bundle['file.fromWebloaderAfterCreate.tip']}</p>
                                     <p:button target="_blank" rendered="#{!createDataset}" onclick="cancelDatasetEdit();window.open('#{(datasetPage==true) ? DatasetPage.getWebloaderUrlForDataset(dataset):EditDatafilesPage.getWebloaderUrlForDataset(dataset)}');return false;" value="#{bundle['file.fromWebloader']}"  icon="ui-icon-plusthick" />
@@ -344,7 +367,7 @@
                         </div>
                     </div>
                     
-                    <p:message for="fileUpload" id="uploadMessage" display="text" escape="false"/>
+                    <p:message for="fileUpload" id="uploadMessage" display="text" escape="false" rendered="#{!useReactUploader}"/>
                     
                     <p:commandButton id="updateEditDataFilesButtonsForUpload" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:editDataFilesButtons" rendered="#{showFileButtonUpdate}" style="display:none"/>
                     <p:commandButton id="updateEditDataFilesButtonsForDelete" action="#{EditDatafilesPage.deleteFilesCompleted()}" update="datasetForm:editDataFilesButtons" rendered="#{showFileButtonUpdate}" style="display:none"/>

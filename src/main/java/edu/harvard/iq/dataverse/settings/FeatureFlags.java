@@ -31,6 +31,14 @@ public enum FeatureFlags {
      */
     API_SESSION_AUTH("api-session-auth"),
     /**
+     * Enables the React-based file uploader in the JSF dataset file upload area.
+     * This is an experimental replacement for the classic PrimeFaces upload UI.
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.react-uploader"
+     * @since Dataverse @TODO:
+     */
+    REACT_UPLOADER("react-uploader"),
+    /**
      * Enables API authentication via Bearer Token.
      * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth"
      * @since Dataverse 5.14:
