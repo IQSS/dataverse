@@ -179,13 +179,17 @@ jobs:
           done
         
       # ---------------------------
-      # PRE-TEST INJECTIONS (FROM YOUR ALTERNATE WORKFLOWS)
+      # PRE-TEST INJECTIONS
       # ---------------------------
       - name: Put SUSHI config file in place
         run: |
           set -euo pipefail
-          # Fixes MakeDataCountApiIT
-          docker exec dev_dataverse sh -c 'curl https://raw.githubusercontent.com/IQSS/dataverse/develop/src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json > /tmp/sushi_sample_logs.json && head /tmp/sushi_sample_logs.json'
+          # Copy the file from the checked-out repo directly into the container
+          # The path is relative to the root of the repository
+          docker cp src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json dev_dataverse:/tmp/sushi_sample_logs.json
+          
+          # Verify it exists inside the container
+          docker exec dev_dataverse ls -l /tmp/sushi_sample_logs.json
       
       # ---------------------------
       # RUN MAVEN TESTS
