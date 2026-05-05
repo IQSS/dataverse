@@ -250,7 +250,35 @@ public class SystemConfig {
     public boolean isReactUploaderEnabled() {
         return FeatureFlags.REACT_UPLOADER.enabled();
     }
-    
+
+    /**
+     * Returns the base URL from which the Dataverse reusable React component
+     * bundles (e.g. {@code dv-uploader.js}) are loaded. The default value
+     * {@code /dvwebloader} preserves backward compatibility with the
+     * {@code dataverse-frontend} dev-environment nginx alias and with
+     * operators who already host the bundle at that same-origin path.
+     *
+     * <p>Operators can override this with the JVM setting
+     * {@code dataverse.reusable-components.base-url} to point at any URL —
+     * for example {@code http://reusable-components} when running the
+     * {@code gdcc/dataverse-reusable-components} sidecar image, or a CDN
+     * URL such as
+     * {@code https://cdn.jsdelivr.net/npm/@iqss/dataverse-reusable-components@&lt;version&gt;}.
+     *
+     * <p>Trailing slashes are trimmed so the resulting JSF script source is
+     * well-formed regardless of the operator's input.
+     *
+     * @return The reusable-components base URL, without a trailing slash.
+     */
+    public String getReusableComponentsBaseUrl() {
+        String configured = JvmSettings.REUSABLE_COMPONENTS_BASE_URL.lookupOptional()
+                .orElse("/dvwebloader");
+        return configured.endsWith("/")
+                ? configured.substring(0, configured.length() - 1)
+                : configured;
+    }
+
+
     /**
      * Lookup (or construct) the designated URL of this instance from configuration.
      *
