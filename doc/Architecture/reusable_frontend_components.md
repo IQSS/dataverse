@@ -206,7 +206,7 @@ Greenfield case (no existing JSF widget to replace, but you want to add an SPA-d
 4. **Add the `ui:fragment`** on the JSF page. The pattern is identical to the replacement case; you just don't need the off-branch with a legacy widget.
 5. **Document and release-note** as above.
 
-The first greenfield case in flight is the **Tree View** (`#6691`). Backend and SDK already ship a paginated `GET /api/datasets/{id}/versions/{versionId}/tree` endpoint. The SPA component lives at `src/sections/dataset/dataset-files/files-tree/` in `dataverse-frontend`. The JSF mount is M3 in [`dataverse-context/tree_view_plan.md`](../../../dataverse-context/tree_view_plan.md).
+The first greenfield case is the **Tree View** (`#6691`), now shipped end-to-end. Backend and SDK ship a paginated `GET /api/datasets/{id}/versions/{versionId}/tree` endpoint; the SPA component lives at `src/sections/dataset/dataset-files/files-tree/` in `dataverse-frontend`; the JSF mount is feature-flagged on the dataset Files tab. M-stage tracking lives in [`dataverse-context/tree_view_plan.md`](../../../dataverse-context/tree_view_plan.md).
 
 ## Currently shipped components
 
@@ -220,12 +220,14 @@ The first greenfield case in flight is the **Tree View** (`#6691`). Backend and 
   - `dataverse.feature.api-session-auth` and the hardening flag must both be on for production use.
 - **Status**: shipped in dev environment; baseline PRs in flight (`IQSS/dataverse-client-javascript#403`, `IQSS/dataverse-frontend#898`, `gdcc/dvwebloader#44`).
 
-### Tree view (`#6691`, in development)
+### Tree view (`dataverse.feature.react-tree-view`, `#6691`)
 
-- **Bundle path**: `/dvwebloader/reusable-components/dv-tree-view.js` (planned).
-- **JSF mount**: planned for `dataset.xhtml` Files tab — M3 in the tree-view plan.
-- **Backend endpoint**: `GET /api/datasets/{id}/versions/{versionId}/tree`. See `Datasets.java#getVersionTree` and the Sphinx section *List a Folder of a Dataset Version (Tree View)*.
-- **Status**: M1 (backend + SDK) and M2 (SPA) implemented; M3 (JSF mount) and M4 (polish) pending.
+- **Bundle path**: `<base-url>/reusable-components/dv-tree-view.js` (where `<base-url>` is `dataverse.reusable-components.base-url`, default `/dvwebloader`).
+- **JSF mount**: `filesFragment.xhtml` — the React tree replaces the classic PrimeFaces tree on the dataset Files tab when the feature flag is on. The Table view is unchanged.
+- **Config**: `window.dvTreeViewConfig = { siteUrl, datasetPid, datasetVersionId?, locale?, localesPath?, rootElementId?, fileMetadataPath? }`.
+- **Backend endpoint**: `GET /api/datasets/{id}/versions/{versionId}/tree` with opaque keyset cursor pagination. `ETag` + `If-None-Match` for published versions. See `Datasets.java#getVersionTree` and the Sphinx section *List a Folder of a Dataset Version (Tree View)*.
+- **Capabilities**: lazy folder loading, tri-state path-keyed selection, full WAI-ARIA tree keyboard navigation, URL bookmarkability (`?view=tree&path=…`), and **client-side streaming-zip download** of the user's selection (per-file response bodies piped into one zip via `client-zip` — no server-side ZIP endpoint). Single-file downloads anchor-click `file.downloadUrl` directly.
+- **Status**: shipped (M1–M4). Remaining: backend keyset SQL paginator promotion (perf follow-up).
 
 ## Risks and trade-offs
 
