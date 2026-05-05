@@ -2668,6 +2668,19 @@ protocol, host, and port number and should not include a trailing slash.
 - We are absolutely aware that it's confusing to have both ``dataverse.fqdn`` and ``dataverse.siteUrl``.
   https://github.com/IQSS/dataverse/issues/6636 is about resolving this confusion.
 
+.. _dataverse.reusable-components.base-url:
+
+dataverse.reusable-components.base-url
+++++++++++++++++++++++++++++++++++++++
+
+Base URL from which the Dataverse :doc:`reusable React component bundles </container/running/reusable-components>` (e.g. ``dv-uploader.js``) are loaded by JSF pages. Trailing slashes are trimmed automatically.
+
+The default value, ``/dvwebloader``, preserves backward compatibility with the ``dataverse-frontend`` development environment nginx alias and with operators who already host the bundle at that same-origin path.
+
+To run a sidecar container that hosts the bundle (the recommended setup for institutions still on JSF), set this to the URL of that container — for example ``http://reusable-components`` if you add the ``gdcc/dataverse-reusable-components`` service to your Docker Compose file. To use a CDN, set this to e.g. ``https://cdn.jsdelivr.net/npm/@iqss/dataverse-reusable-components@1.4.0``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_REUSABLE_COMPONENTS_BASE_URL``.
+
 .. _dataverse.files.directory:
 
 dataverse.files.directory
@@ -3934,6 +3947,15 @@ dataverse.feature.api-session-auth
 ++++++++++++++++++++++++++++++++++
 
 Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and for the feature to be removed in the future.
+
+.. _dataverse.feature.react-uploader:
+
+dataverse.feature.react-uploader
+++++++++++++++++++++++++++++++++
+
+Replaces the classic PrimeFaces file upload widget on the JSF dataset edit page with the React file uploader (DVWebloader v2). Requires :ref:`dataverse.feature.api-session-auth` to be enabled and the JSF page to be able to reach the reusable component bundle (see :ref:`dataverse.reusable-components.base-url` and the :doc:`/container/running/reusable-components` guide).
+
+This flag has no effect on the file replace flow, which continues to use the classic JSF upload widget.
 
 .. _dataverse.feature.api-bearer-auth:
 
