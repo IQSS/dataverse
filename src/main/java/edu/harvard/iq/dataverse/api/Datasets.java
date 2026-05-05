@@ -71,6 +71,8 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
@@ -691,11 +693,11 @@ public class Datasets extends AbstractApiBean {
                 .append(originals).append(':')
                 .append(includeDeaccessioned);
         try {
-            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] hash = md.digest(sb.toString().getBytes(StandardCharsets.UTF_8));
             String b64 = Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
             return "\"" + b64.substring(0, 16) + "\"";
-        } catch (java.security.NoSuchAlgorithmException ex) {
+        } catch (NoSuchAlgorithmException ex) {
             return null;
         }
     }
