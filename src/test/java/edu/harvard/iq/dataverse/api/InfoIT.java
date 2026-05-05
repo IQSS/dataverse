@@ -35,8 +35,8 @@ public class InfoIT {
         UtilIT.deleteSetting(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
         UtilIT.deleteSetting(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
         UtilIT.deleteSetting(SettingsServiceBean.Key.PublishDatasetDisclaimerText);
-    //    UtilIT.deleteSetting(SettingsServiceBean.Key.DatasetSubmitForReviewPopupCustomText);
-    //    UtilIT.deleteSetting(SettingsServiceBean.Key.SubmitForReviewDatasetDisclaimerText);
+        UtilIT.deleteSetting(SettingsServiceBean.Key.DatasetSubmitForReviewPopupCustomText);
+        UtilIT.deleteSetting(SettingsServiceBean.Key.SubmitForReviewDatasetDisclaimerText);
     }
 
     @Test
