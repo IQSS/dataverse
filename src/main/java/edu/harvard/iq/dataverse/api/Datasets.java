@@ -28,6 +28,14 @@ import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
 import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.datasetversionsummaries.DatasetVersionSummary;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.FileItem;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.FolderItem;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.Include;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.InvalidQueryException;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.Order;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.TreeItem;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.TreePage;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -198,6 +206,9 @@ public class Datasets extends AbstractApiBean {
 
     @Inject
     DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
+
+    @Inject
+    DatasetVersionTreeService datasetVersionTreeService;
 
     @Inject
     DatasetTypeServiceBean datasetTypeSvc;
@@ -602,6 +613,83 @@ public class Datasets extends AbstractApiBean {
             jsonObjectBuilder.add("perAccessStatus", jsonFileCountPerAccessStatusMap(datasetVersionFilesServiceBean.getFileMetadataCountPerAccessStatus(datasetVersion, fileSearchCriteria)));
             return ok(jsonObjectBuilder);
         }, getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/tree")
+    public Response getVersionTree(@Context ContainerRequestContext crc,
+                                   @PathParam("id") String datasetId,
+                                   @PathParam("versionId") String versionId,
+                                   @QueryParam("path") String path,
+                                   @QueryParam("limit") Integer limit,
+                                   @QueryParam("cursor") String cursor,
+                                   @QueryParam("include") String includeParam,
+                                   @QueryParam("order") String orderParam,
+                                   @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                   @QueryParam("originals") boolean originals,
+                                   @Context UriInfo uriInfo,
+                                   @Context HttpHeaders headers) {
+        return response(req -> {
+            Include include;
+            Order order;
+            try {
+                include = Include.fromQuery(includeParam);
+                order = Order.fromQuery(orderParam);
+            } catch (InvalidQueryException ex) {
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.tree.invalid.query", List.of(ex.getMessage())));
+            }
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId, false), uriInfo, headers, includeDeaccessioned);
+            TreePage page;
+            try {
+                page = datasetVersionTreeService.listChildren(datasetVersion, path, limit, cursor, include, order, originals);
+            } catch (InvalidQueryException ex) {
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.tree.invalid.query", List.of(ex.getMessage())));
+            }
+            return ok(jsonTreePage(page));
+        }, getRequestUser(crc));
+    }
+
+    private static JsonObjectBuilder jsonTreePage(TreePage page) {
+        JsonArrayBuilder items = Json.createArrayBuilder();
+        for (TreeItem item : page.items) {
+            JsonObjectBuilder ob = Json.createObjectBuilder();
+            ob.add("type", item.type);
+            ob.add("name", item.name);
+            ob.add("path", item.path);
+            if (item instanceof FolderItem) {
+                FolderItem folder = (FolderItem) item;
+                ob.add("counts", Json.createObjectBuilder()
+                        .add("files", folder.fileCount)
+                        .add("folders", folder.folderCount));
+            } else if (item instanceof FileItem) {
+                FileItem file = (FileItem) item;
+                ob.add("id", file.id);
+                ob.add("size", file.size);
+                if (file.contentType != null) ob.add("contentType", file.contentType);
+                if (file.access != null) ob.add("access", file.access);
+                if (file.checksumType != null && file.checksumValue != null) {
+                    ob.add("checksum", Json.createObjectBuilder()
+                            .add("type", file.checksumType)
+                            .add("value", file.checksumValue));
+                }
+                ob.add("downloadUrl", file.downloadUrl);
+            }
+            items.add(ob);
+        }
+        JsonObjectBuilder result = Json.createObjectBuilder();
+        result.add("path", page.path);
+        result.add("items", items);
+        if (page.nextCursor != null) {
+            result.add("nextCursor", page.nextCursor);
+        } else {
+            result.addNull("nextCursor");
+        }
+        result.add("limit", page.limit);
+        result.add("order", page.order.wireValue());
+        result.add("include", page.include.name().toLowerCase(Locale.ROOT));
+        result.add("approximateCount", page.approximateCount);
+        return result;
     }
 
     @GET

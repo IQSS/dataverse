@@ -2327,6 +2327,54 @@ Usage example:
 
 .. note:: Keep in mind that you can combine all of the above query parameters depending on the results you are looking for.
 
+List a Folder of a Dataset Version (Tree View)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|CORS| Lists the immediate children (folders and files) inside a folder of a dataset version, with paging. This is intended for lazy tree-view UIs that fetch each folder's children on demand and that need stable cursor-based pagination across very large datasets:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export VERSION=1.0
+
+  curl "$SERVER_URL/api/datasets/$ID/versions/$VERSION/tree?limit=100"
+
+Folders are returned first, then files. Both are sorted by name (case-insensitive); files break ties on the data file id for stability.
+
+Query parameters:
+
+* ``path`` — folder within the dataset, forward-slash separated; root is ``""`` or omit. The server normalises repeated and trailing slashes.
+* ``limit`` — page size; default ``100``, clamped to ``1000``.
+* ``cursor`` — opaque server-issued token. Pass back the ``nextCursor`` from a previous response to fetch the next page. Invalid or stale cursors yield ``400``.
+* ``include`` — ``all`` (default), ``folders``, or ``files``.
+* ``order`` — ``NameAZ`` (default) or ``NameZA``.
+* ``includeDeaccessioned`` — same semantics as the ``files`` endpoint.
+* ``originals`` — when ``true``, the per-file ``downloadUrl`` requests the original-format download.
+
+Response shape:
+
+.. code-block:: json
+
+  {
+    "path": "data/raw",
+    "items": [
+      { "type": "folder", "name": "2024", "path": "data/raw/2024",
+        "counts": { "files": 12, "folders": 1 } },
+      { "type": "file", "id": 42, "name": "data.csv", "path": "data/raw/data.csv",
+        "size": 1024, "contentType": "text/csv", "access": "public",
+        "checksum": { "type": "MD5", "value": "abc" },
+        "downloadUrl": "/api/access/datafile/42" }
+    ],
+    "nextCursor": "b2Zmc2V0PTEwMA",
+    "limit": 100,
+    "order": "NameAZ",
+    "include": "all",
+    "approximateCount": 137
+  }
+
+Permissions and embargoes are honoured exactly as on ``GET /api/datasets/{id}/versions/{versionId}/files``.
+
 Get File Counts in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
