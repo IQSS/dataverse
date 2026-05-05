@@ -36,6 +36,8 @@ Response shape:
 
 Permissions and embargoes are honoured exactly as on `GET /api/datasets/{id}/versions/{versionId}/files` — the endpoint is a thin lazy projection of the same `DatasetVersion.fileMetadatas`.
 
+For published, non-deaccessioned versions the response carries `ETag` and `Cache-Control: public, immutable` headers; clients can pass the ETag back in `If-None-Match` to receive `304 Not Modified` without re-fetching the body. Drafts do not emit an ETag.
+
 This first cut groups files in memory; promotion to native keyset SQL is tracked as a follow-up. Behavior and wire format are stable.
 
 The `dataverse-client-javascript` SDK ships matching helpers in the same release wave: `listDatasetTreeNode` and `iterateDatasetTreeNode`.
