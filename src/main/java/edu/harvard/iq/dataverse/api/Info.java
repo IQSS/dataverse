@@ -45,9 +45,9 @@ public class Info extends AbstractApiBean {
     }
 
     @GET
-    @Path("settings/:DatasetPrePublishPopupCustomText")
-    public Response DatasetPrePublishPopupCustomText() {
-        return getSettingResponseByKey(SettingsServiceBean.Key.DatasetPrePublishPopupCustomText);
+    @Path("settings/:DatasetSubmitForReviewPopupCustomText")
+    public Response DatasetSubmitForReviewPopupCustomText() {
+        return getSettingResponseByKey(SettingsServiceBean.Key.DatasetSubmitForReviewPopupCustomText);
     }
 
     @GET
@@ -57,9 +57,9 @@ public class Info extends AbstractApiBean {
     }
 
     @GET
-    @Path("settings/:PrePublishDatasetDisclaimerText")
-    public Response getPrePublishDatasetDisclaimerText() {
-        return getSettingResponseByKey(SettingsServiceBean.Key.PrePublishDatasetDisclaimerText);
+    @Path("settings/:SubmitForReviewDatasetDisclaimerText")
+    public Response getSubmitForReviewDatasetDisclaimerText() {
+        return getSettingResponseByKey(SettingsServiceBean.Key.SubmitForReviewDatasetDisclaimerText);
     }
 
     @GET

@@ -328,7 +328,7 @@ public class SettingsServiceBean {
         /**
          The message added to a popup upon dataset submit for review
          */
-        DatasetPrePublishPopupCustomText,
+        DatasetSubmitForReviewPopupCustomText,
         /*
         Publish Disclaimer text. If this setting exists user must acknowledge before a Dataset can be published
          */
@@ -336,7 +336,7 @@ public class SettingsServiceBean {
         /*
         Submit for review Disclaimer text. If this setting exists user must acknowledge before a Dataset can be submitted for review
          */
-        PrePublishDatasetDisclaimerText,
+        SubmitForReviewDatasetDisclaimerText,
         /*
         Whether Harvesting (OAI) service is enabled
         */

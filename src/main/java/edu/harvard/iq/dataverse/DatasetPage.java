@@ -4870,14 +4870,14 @@ public class DatasetPage implements java.io.Serializable {
         return  settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomTextOnAllVersions, false);
     }
 
-    public boolean isDisplayPrePublishPopupCustomText() {
-        return !getDatasetPrePublishCustomText().isEmpty();
+    public boolean isDisplaySubmitForReviewPopupCustomText() {
+        return !getDatasetSubmitForReviewCustomText().isEmpty();
     }
 
-    public String getDatasetPrePublishCustomText(){
-        String datasetPrePublishCustomText = settingsWrapper.getValueForKey(SettingsServiceBean.Key.DatasetPrePublishPopupCustomText);
-        if (datasetPrePublishCustomText != null && !datasetPrePublishCustomText.isEmpty()) {
-            return datasetPrePublishCustomText;
+    public String getDatasetSubmitForReviewCustomText(){
+        String datasetSubmitForReviewCustomText = settingsWrapper.getValueForKey(SettingsServiceBean.Key.DatasetSubmitForReviewPopupCustomText);
+        if (datasetSubmitForReviewCustomText != null && !datasetSubmitForReviewCustomText.isEmpty()) {
+            return datasetSubmitForReviewCustomText;
         }
         return "";
     }
@@ -6385,7 +6385,7 @@ public class DatasetPage implements java.io.Serializable {
     private String termsOfAccess;
     private boolean fileAccessRequest;
     private boolean publishDisclaimerAcknowledged;
-    private boolean prePublishDisclaimerAcknowledged;
+    private boolean submitForReviewDisclaimerAcknowledged;
 
     public String getTermsOfAccess() {
         return termsOfAccess;
@@ -6411,12 +6411,12 @@ public class DatasetPage implements java.io.Serializable {
         this.publishDisclaimerAcknowledged = publishDisclaimerAcknowledged;
     }
 
-    public boolean isPrePublishDisclaimerAcknowledged() {
-        return prePublishDisclaimerAcknowledged || !settingsWrapper.isHasPrePublishDatasetDisclaimerText();
+    public boolean isSubmitForReviewDisclaimerAcknowledged() {
+        return submitForReviewDisclaimerAcknowledged || !settingsWrapper.isHasSubmitForReviewDatasetDisclaimerText();
     }
 
-    public void setPrePublishDisclaimerAcknowledged(boolean prePublishDisclaimerAcknowledged) {
-        this.prePublishDisclaimerAcknowledged = prePublishDisclaimerAcknowledged;
+    public void setSubmitForReviewDisclaimerAcknowledged(boolean submitForReviewDisclaimerAcknowledged) {
+        this.submitForReviewDisclaimerAcknowledged = submitForReviewDisclaimerAcknowledged;
     }
 
     // wrapper method to see if the file has been deleted (or replaced) in the current version
