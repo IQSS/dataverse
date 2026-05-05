@@ -4842,6 +4842,23 @@ Set whether a user will see the custom text when publishing all versions of a da
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:DatasetPublishPopupCustomTextOnAllVersions``
 
+.. _:DatasetSubmitForReviewPopupCustomText:
+
+:DatasetSubmitForReviewPopupCustomText
+++++++++++++++++++++++++++++++++++++++
+
+Set custom text a user will view when submitting a dataset for review. Note that this text is exposed via the "Info" endpoint of the :doc:`/api/native-api`.
+
+``curl -X PUT -d "Deposit License Requirements" http://localhost:8080/api/admin/settings/:DatasetSubmitForReviewPopupCustomText``
+
+If you have a long text string, you can upload it as a file as in the example below.
+
+``curl -X PUT --upload-file /tmp/long.txt http://localhost:8080/api/admin/settings/:DatasetSubmitForReviewPopupCustomText``
+
+There is a related setting called :ref:`:SubmitForReviewDatasetDisclaimerText` that also makes text appear on the popup when submitting for review, but it requires a checkbox to be clicked.
+
+See also :ref:`show-custom-popup-for-submitting-for-review-datasets` in the API Guide.
+
 :SearchHighlightFragmentSize
 ++++++++++++++++++++++++++++
 
@@ -5368,6 +5385,17 @@ The text displayed to the user that must be acknowledged prior to publishing a D
 There is a similar setting called :ref:`:DatasetPublishPopupCustomText` that also makes text appear on the popup when publishing, but it is only informational. There is no checkbox to click.
 
 See also :ref:`show-disclaimer-for-publishing-datasets` in the API Guide.
+
+.. _:SubmitForReviewDatasetDisclaimerText:
+
+:SubmitForReviewDatasetDisclaimerText
++++++++++++++++++++++++++++++++++++++
+
+The text displayed to the user that must be acknowledged prior to submitting a Dataset for review. When not set the acknowledgment is not required nor displayed.
+
+``curl -sS -X PUT -d 'I agree to the following:<br/>1. My submission has been fully anonymized (required for all human subject'\''s datasets).<br/>2. My submission does not violate any known copyright laws.<br/>3. I understand that I am liable for any and all violations of the Harvard Repository <a href=https://support.dataverse.harvard.edu/harvard-dataverse-general-terms-use>Terms of Use.</a>' http://localhost:8080/api/admin/settings/:SubmitForReviewDatasetDisclaimerText``
+
+See also :ref:`show-disclaimer-for-submit-for-review-datasets` in the API Guide.
 
 .. _:BagItHandlerEnabled:
 

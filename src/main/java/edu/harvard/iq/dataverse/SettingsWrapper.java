@@ -127,7 +127,9 @@ public class SettingsWrapper implements java.io.Serializable {
     private String metricsUrl = null;
 
     private String publishDatasetDisclaimerText = null;
-    
+
+    private String submitForReviewDatasetDisclaimerText = null;
+
     private Boolean dataFilePIDSequentialDependent = null;
     
     private Boolean customLicenseAllowed = null;
@@ -884,5 +886,16 @@ public class SettingsWrapper implements java.io.Serializable {
 
     public Boolean isHasPublishDatasetDisclaimerText() {
         return !StringUtil.isEmpty(getPublishDatasetDisclaimerText());
+    }
+
+    public String getSubmitForReviewDatasetDisclaimerText() {
+        if (submitForReviewDatasetDisclaimerText == null) {
+            submitForReviewDatasetDisclaimerText = getValueForKey(Key.SubmitForReviewDatasetDisclaimerText);
+        }
+        return submitForReviewDatasetDisclaimerText;
+    }
+
+    public Boolean isHasSubmitForReviewDatasetDisclaimerText() {
+        return !StringUtil.isEmpty(getSubmitForReviewDatasetDisclaimerText());
     }
 }
