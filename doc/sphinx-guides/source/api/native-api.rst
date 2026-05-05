@@ -2328,7 +2328,7 @@ Usage example:
 .. note:: Keep in mind that you can combine all of the above query parameters depending on the results you are looking for.
 
 List a Folder of a Dataset Version (Tree View)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 |CORS| Lists the immediate children (folders and files) inside a folder of a dataset version, with paging. This is intended for lazy tree-view UIs that fetch each folder's children on demand and that need stable cursor-based pagination across very large datasets:
 
