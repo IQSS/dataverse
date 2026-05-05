@@ -3308,9 +3308,9 @@ Can also be set via *MicroProfile Config API* sources, e.g. the environment vari
 
 **Note:** This setting was previously called `dataverse.personOrOrg.orgPhraseArray` and expected a JsonArray of strings. Please update both the name and value format if using the old setting.
 
-.. _dataverse.api.signature-secret:
+.. _dataverse.api.signing-secret:
 
-dataverse.api.signature-secret
+dataverse.api.signing-secret
 ++++++++++++++++++++++++++++++
 
 Context: Dataverse has the ability to create "Signed URLs" for it's API calls. Using a signed URLs is more secure than
@@ -3318,13 +3318,13 @@ providing API tokens, which are long-lived and give the holder all of the permis
 are time limited and only allow the action of the API call in the URL. See :ref:`api-exttools-auth` and
 :ref:`api-native-signed-url` for more details. 
 
-The key used to sign a URL is created from the API token of the creating user plus a signature-secret provided by an administrator.
-**Using a signature-secret is highly recommended.** This setting defaults to an empty string. Using a non-empty 
-signature-secret makes it impossible for someone who knows an API token from forging signed URLs and provides extra security by 
+The key used to sign a URL is created from the API token of the creating user plus a signing-secret provided by an administrator.
+**Using a signing-secret is highly recommended.** This setting defaults to an empty string. Using a non-empty 
+signing-secret makes it impossible for someone who knows an API token from forging signed URLs and provides extra security by 
 making the overall signing key longer.
 
 **WARNING**:
-*Since the signature-secret is sensitive, you should treat it like a password.*
+*Since the signing-secret is sensitive, you should treat it like a password.*
 *See* :ref:`secure-password-storage` *to learn about ways to safeguard it.*
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_SIGNATURE_SECRET`` (although you shouldn't use environment variables for passwords) .
