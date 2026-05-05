@@ -145,11 +145,11 @@ public class Access extends AbstractApiBean {
         if (format == null) {
             return badRequest(BundleUtil.getStringFromBundle("datasets.api.citation.invalidFormat"));
         }
-
-        DataFile df = findDataFileOrDieWrapper(fileId);
+        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+        DataFile df = findDataFileUserCanSeeOrDieWrapper(fileId, req);
 
         // This will throw a ForbiddenException if access isn't authorized:
-        checkAuthorization(crc, df);
+        checkAuthorization(req.getUser(), df);
 
         String dataCitationFormatted = (new DataCitation(df.getFileMetadata())).toString(format, true, false);
 
