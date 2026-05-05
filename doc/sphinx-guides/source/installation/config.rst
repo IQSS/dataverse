@@ -4696,7 +4696,7 @@ Whatever JSON you send will overwrite existing values. If you have any exiting `
 
 ``curl http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit | jq -r '.data.message'``
 
-The ``default`` key is optional and can be used to give limits to formats that are not specified in the JSON. If you omit the ``default`` key or set it to ``"-1"``, no limits are applied to formats not specified in the JSON. If you set it to ``"0"``, ingest will be disabled (but you can override this per-format).
+The ``default`` key is optional and can be used to give limits to formats that are not specified in the JSON. If you omit the ``default`` key or set it to ``"-1"``, no limits are applied to formats not specified in the JSON. If you set it to ``"0"``, ingest will be disabled (but you can override this per-format). If you wish to disable ingest for specific formats it may be preferable to instead set a value of ``"1"`` which will cause Dataverse to print a string such as ``rdata:disabled`` for the user's benefit.
 
 Add a format name (``csv``, ``dta``, etc., as listed above) to change the limit for that particular format.
 
@@ -4707,10 +4707,10 @@ Examples:
    ``curl -X PUT -d '{"Rdata":"1000000"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 2. If you want your Dataverse installation to not attempt to ingest XLSX files at all and apply a global limit of 512 MiB, use this setting:
 
-   ``curl -X PUT -d '{"default":"536870912", "XSLX":"0"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
+   ``curl -X PUT -d '{"default":"536870912", "XSLX":"1"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 3. If you want your Dataverse installation to not attempt to ingest files at all except for CSV files that are 256 MiB or smaller, use this setting:
 
-   ``curl -X PUT -d '{"default":"0", "CSV":"268435456"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
+   ``curl -X PUT -d '{"default":"1", "CSV":"268435456"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 
 .. _:HarvestingClientCallRateLimit:
 
