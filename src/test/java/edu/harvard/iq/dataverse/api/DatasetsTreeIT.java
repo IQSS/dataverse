@@ -293,6 +293,62 @@ public class DatasetsTreeIT {
     }
 
     @Test
+    public void draftVersionDoesNotEmitCacheableEtag() {
+        String apiToken = UtilIT.createRandomUserGetToken();
+        int datasetId = createDatasetWithTree(apiToken);
+
+        Response response = UtilIT.getVersionTree(datasetId, DRAFT_VERSION,
+                null, null, null, null, null, null, null, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+        // Drafts can change — no ETag, no immutable cache header.
+        assertNull(response.getHeader("ETag"),
+                "Draft versions must not emit a cacheable ETag");
+    }
+
+    @Test
+    public void publishedVersionEmitsEtagAndHonoursIfNoneMatch() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        UtilIT.makeSuperUser(UtilIT.getUsernameFromResponse(createUser));
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        upload(datasetId, "src/test/java/edu/harvard/iq/dataverse/util/irclog.tsv",
+                "etag.txt", null, apiToken);
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        Response first = UtilIT.getVersionTree(datasetId, LATEST,
+                null, null, null, null, null, null, null, apiToken);
+        first.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .header("Cache-Control", equalTo("public, immutable"));
+        String etag = first.getHeader("ETag");
+        assertNotNull(etag, "Published versions must emit an ETag");
+        assert etag.startsWith("\"") && etag.endsWith("\"") : "ETag must be quoted: " + etag;
+
+        Response cached = io.restassured.RestAssured.given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                .header("If-None-Match", etag)
+                .get("/api/datasets/" + datasetId + "/versions/" + LATEST + "/tree");
+        cached.then().assertThat()
+                .statusCode(jakarta.ws.rs.core.Response.Status.NOT_MODIFIED.getStatusCode())
+                .header("Cache-Control", equalTo("public, immutable"));
+
+        // Different query params must yield a different ETag.
+        Response differentQuery = UtilIT.getVersionTree(datasetId, LATEST,
+                null, null, null, "files", null, null, null, apiToken);
+        differentQuery.then().assertThat().statusCode(OK.getStatusCode());
+        assertEquals(false, etag.equals(differentQuery.getHeader("ETag")),
+                "ETag must change when include filter changes");
+    }
+
+    @Test
     public void publishedDatasetIsReadableViaLatest() {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());

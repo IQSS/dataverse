@@ -98,6 +98,7 @@ import software.amazon.awssdk.services.s3.model.CompletedPart;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -628,6 +629,7 @@ public class Datasets extends AbstractApiBean {
                                    @QueryParam("order") String orderParam,
                                    @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                    @QueryParam("originals") boolean originals,
+                                   @HeaderParam("If-None-Match") String ifNoneMatch,
                                    @Context UriInfo uriInfo,
                                    @Context HttpHeaders headers) {
         return response(req -> {
@@ -640,14 +642,62 @@ public class Datasets extends AbstractApiBean {
                 return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.tree.invalid.query", List.of(ex.getMessage())));
             }
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId, false), uriInfo, headers, includeDeaccessioned);
+            // Stable ETag for cacheable (released, non-deaccessioned) versions only.
+            // Drafts and deaccessioned versions can change in place, so we don't
+            // emit a cacheable ETag for them.
+            String etag = isCacheableVersion(datasetVersion)
+                    ? computeTreeEtag(datasetVersion, path, limit, cursor, include, order,
+                            originals, includeDeaccessioned)
+                    : null;
+            if (etag != null && etag.equals(ifNoneMatch)) {
+                return Response.notModified()
+                        .tag(etag)
+                        .header("Cache-Control", "public, immutable")
+                        .build();
+            }
             TreePage page;
             try {
                 page = datasetVersionTreeService.listChildren(datasetVersion, path, limit, cursor, include, order, originals);
             } catch (InvalidQueryException ex) {
                 return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.tree.invalid.query", List.of(ex.getMessage())));
             }
-            return ok(jsonTreePage(page));
+            Response.ResponseBuilder rb = Response.ok(Json.createObjectBuilder()
+                            .add("status", ApiConstants.STATUS_OK)
+                            .add("data", jsonTreePage(page))
+                            .build())
+                    .type(MediaType.APPLICATION_JSON);
+            if (etag != null) {
+                rb.tag(etag).header("Cache-Control", "public, immutable");
+            }
+            return rb.build();
         }, getRequestUser(crc));
+    }
+
+    private static boolean isCacheableVersion(DatasetVersion v) {
+        return v.isReleased() && !v.isDeaccessioned();
+    }
+
+    private static String computeTreeEtag(DatasetVersion version, String path, Integer limit,
+                                           String cursor, Include include, Order order,
+                                           boolean originals, boolean includeDeaccessioned) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(version.getId()).append(':')
+                .append(version.getVersionState() != null ? version.getVersionState().name() : "").append(':')
+                .append(path == null ? "" : path).append(':')
+                .append(limit == null ? "" : limit).append(':')
+                .append(cursor == null ? "" : cursor).append(':')
+                .append(include.name()).append(':')
+                .append(order.wireValue()).append(':')
+                .append(originals).append(':')
+                .append(includeDeaccessioned);
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(sb.toString().getBytes(StandardCharsets.UTF_8));
+            String b64 = Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
+            return "\"" + b64.substring(0, 16) + "\"";
+        } catch (java.security.NoSuchAlgorithmException ex) {
+            return null;
+        }
     }
 
     private static JsonObjectBuilder jsonTreePage(TreePage page) {
