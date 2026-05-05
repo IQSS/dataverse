@@ -1,206 +1,238 @@
-# Reusable Frontend Components — Architecture and Decisions
+# Reusable Frontend Components — Backend Integration Guide
 
-**Primary tracking issue:** [IQSS/dataverse-frontend#468](https://github.com/IQSS/dataverse-frontend/issues/468) — Reusing file upload page as dvwebloader
-**Feature completeness tracking:** [IQSS/dataverse-frontend#431](https://github.com/IQSS/dataverse-frontend/issues/431) — SPA file upload page missing features
-**Tree view frontend:** [IQSS/dataverse-frontend#622](https://github.com/IQSS/dataverse-frontend/issues/622) + [#117](https://github.com/IQSS/dataverse-frontend/issues/117)
-**Long-term goal:** [IQSS/dataverse#6691](https://github.com/IQSS/dataverse/issues/6691) — Tree view + download upgrade
-**Bookmarkability:** [IQSS/dataverse#8694](https://github.com/IQSS/dataverse/issues/8694)
-**Uploader branch:** `6691_reusable_components` (based on `12178_CSRF_session_cookie_CSRF_protections`)
-**Tree view plan:** `dataverse-context/plans/6691-tree-view-selection-and-download.md`
+This document is the **backend** half of the reusable frontend components contract: how Dataverse JSF pages mount React components built in [`dataverse-frontend`](https://github.com/IQSS/dataverse-frontend), how feature flags gate the swap, how nginx serves the bundles, and how to add a new JSF page that mounts an SPA component.
 
-## Goal
+The matching **frontend** half — the React contract, the build pipeline, CSS isolation, and how to make a component reusable in the first place — lives in [`docs/reusable-components.md`](https://github.com/IQSS/dataverse-frontend/blob/develop/docs/reusable-components.md) in the `dataverse-frontend` repo. Read both before changing the contract.
 
-Upgrade the classic JSF upload experience by reusing the SPA upload components (currently developed in `dvwebloader` and `dataverse-frontend`). This includes:
+Related issues:
 
-- **Folder upload** support in the classic UI path (new capability, required by #468).
-- Improved upload UX parity between JSF and SPA.
-- A direct JavaScript mount path to replace the current iframe-based dvwebloader integration.
+- [`IQSS/dataverse-frontend#468`](https://github.com/IQSS/dataverse-frontend/issues/468) — Reusing the file upload page (umbrella).
+- [`IQSS/dataverse#6691`](https://github.com/IQSS/dataverse/issues/6691) — Tree view selection and download (next reusable component).
+- [`IQSS/dataverse#12179`](https://github.com/IQSS/dataverse/issues/12179) — Direct JS mount in JSF for tree view.
+- [`IQSS/dataverse#12178`](https://github.com/IQSS/dataverse/issues/12178) — Session-cookie API hardening (CSRF).
 
-This is also the foundation for the tree-view component reuse (#6691): the same SPA-to-JSF integration pattern applies to the file list/tree view.
+## Why this matters
 
-## Cross-Repo PR Chain
+Dataverse is mid-migration from JSF/PrimeFaces to a React SPA. We don't want two implementations of every feature, but the SPA can't replace JSF in one go. The reusable-components pattern lets a single React component be embedded into a JSF page, behind a feature flag, with the legacy widget as the fallback. When the flag is off, JSF behaves exactly as before; when it's on, the React component renders in place of the JSF widget and talks to the same API.
 
-Changes are split across three repos in merge-order dependency:
+This document covers:
 
-| Repo | PR | Purpose |
+- [The integration pattern](#the-integration-pattern)
+- [Feature flags](#feature-flags)
+- [Authentication prerequisites](#authentication-prerequisites)
+- [Hosting reusable bundles](#hosting-reusable-bundles)
+- [Replacing a JSF widget with an SPA component](#replacing-a-jsf-widget-with-an-spa-component)
+- [Adding a new reusable component to a JSF page](#adding-a-new-reusable-component-to-a-jsf-page)
+- [Currently shipped components](#currently-shipped-components)
+- [Risks and trade-offs](#risks-and-trade-offs)
+
+## The integration pattern
+
+```
+┌──────────────────────── dataset.xhtml (JSF) ───────────────────────┐
+│                                                                    │
+│   ui:fragment rendered="#{!FeatureFlags.REACT_UPLOADER_ENABLED}"   │
+│   ┌────────────────────────────────────────────────────────────┐  │
+│   │  Existing PrimeFaces widget (unchanged)                    │  │
+│   └────────────────────────────────────────────────────────────┘  │
+│                                                                    │
+│   ui:fragment rendered="#{FeatureFlags.REACT_UPLOADER_ENABLED}"   │
+│   ┌────────────────────────────────────────────────────────────┐  │
+│   │  <div id="dv-uploader"></div>                              │  │
+│   │  <script>window.dvUploaderConfig = {…}</script>            │  │
+│   │  <script type="module"                                     │  │
+│   │          src="/dvwebloader/reusable-components/            │  │
+│   │               dv-uploader.js"></script>                    │  │
+│   └────────────────────────────────────────────────────────────┘  │
+│                                                                    │
+└────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    │ /dvwebloader/* (nginx)
+                                    ▼
+                          dataverse-frontend/dist-uploader/
+                          reusable-components/dv-uploader.js
+                          reusable-components/chunks/*.js
+```
+
+The backend's responsibility:
+
+1. Add a JVM feature flag.
+2. Conditionally render `<div>` + `<script>` instead of the legacy widget.
+3. Set `window.<componentConfig>` from JSF EL (server-rendered values).
+4. Make sure the bundle is reachable at a stable URL (nginx in dev, deployer choice in prod).
+5. Make sure session-cookie auth is enabled and `dataverse.siteUrl` matches the browser-facing origin.
+
+The bundle does the rest. There is no postMessage layer; no iframe; no token in URL.
+
+## Feature flags
+
+Reusable-component swaps are always feature-flagged. Pattern:
+
+1. **Add the flag.** In `edu.harvard.iq.dataverse.settings.FeatureFlags`, add an enum entry. Naming: `<COMPONENT>_<VERB>` — e.g. `REACT_UPLOADER`, `REACT_TREE_VIEW`. The system property name is `dataverse.feature.<kebab-case>` (e.g. `dataverse.feature.react-uploader`); the environment-variable form is `DATAVERSE_FEATURE_<KEBAB_CASE_UPPER>`.
+2. **Default to off.** Reusable swaps are opt-in until the component reaches feature parity in the host installation.
+3. **Document the flag.** Add a short paragraph in `doc/sphinx-guides/source/installation/config.rst` under the *Feature Flags* table, and a release-notes snippet under `doc/release-notes/` referencing the umbrella issue.
+4. **Reference the flag from the xhtml** via the existing `FeatureFlags` EL bean: `#{FeatureFlags.<flagEnum>Enabled}`.
+
+The flag should gate the **render** of the swap, not the load of the bundle. Don't conditionally include the `<script>` tag in some other way (header, prelude script, etc.) — keep all the swap logic in the `ui:fragment` so the off-state really is the legacy code path with no surprises.
+
+## Authentication prerequisites
+
+Reusable components authenticate by **session cookie (JSESSIONID)** only. API key in URL is no longer accepted. Bearer auth is for SPA developer flows.
+
+Set on every Dataverse instance that mounts a reusable component:
+
+| Setting | Required | Notes |
 |---|---|---|
-| `IQSS/dataverse-client-javascript` | #403 | Upload client changes (tagging fix, remove FilesConfig) |
-| `IQSS/dataverse-frontend` | #898 | Standalone uploader + reusable component build + folder upload |
-| `gdcc/dvwebloader` | #44 | DVWebloader V2 — consumes #898 build output, if still needed for external packaging |
+| `dataverse.feature.api-session-auth` | yes | Enables session-cookie auth on `/api/*` |
+| `dataverse.feature.api-session-auth-hardening` | recommended | Adds Origin/Referer + `X-Dataverse-CSRF-Token` checks |
+| `dataverse.siteUrl` | yes | Must match the URL the browser uses (e.g. `http://localhost:8000` in dev). Used for Origin/Referer validation. |
 
-The backend changes in this repo (`6691_reusable_components`) are a prerequisite for the client-js changes in #403.
+The hardening flag (`#12178`) is on a separate PR track from any individual reusable-component PR. Don't mix the two; reusable-component PRs assume the flag works as documented.
 
-## Authentication: Session Cookie
+In dev, the compose file (`dataverse-frontend/dev-env/docker-compose-dev.yml`) sets all three.
 
-The standalone uploader uses **session cookie (JSESSIONID)** authentication, not API key.
+When hardening is enabled, the bundle reads the CSRF token from `GET /api/users/:csrf-token` and includes it in subsequent calls. This is handled inside `@iqss/dataverse-client-javascript`; the JSF integration doesn't have to do anything beyond making sure the host site URL is correct.
 
-- `DATAVERSE_FEATURE_API_SESSION_AUTH=1` must be enabled on the Dataverse instance.
-- `DATAVERSE_FEATURE_API_SESSION_AUTH_HARDENING=1` enforces Origin/Referer validation and requires the `X-Dataverse-CSRF-Token` header for mutating requests.
-- `dataverse.siteUrl` must be set to the URL the browser uses (e.g. `http://localhost:8000` in dev, behind nginx). This value is used for Origin/Referer validation.
-- API key auth is removed from the standalone uploader scope. The `key` URL parameter is no longer accepted.
+## Hosting reusable bundles
 
-CSRF hardening (`#12178`) is a separate PR track and must not be mixed into the uploader PRs. This branch (`6691_reusable_components`) is based on the hardening branch to develop and test against the hardened behavior.
-
-## S3 Tagging: Server-Authoritative Design
-
-### Problem (old approach)
-
-The original `FilesConfig`/`useS3Tagging` client-side flag in `dataverse-client-javascript` duplicated the backend `dataverse.files.<driverId>.disable-tagging` JVM setting. The `x-amz-tagging` header is **part of the presigned URL signature** — when the server includes tagging in the signature, the header must be sent; when it omits tagging, the header must not be sent. A client-side boolean that has to stay in sync with a JVM setting will drift and cause silent upload failures.
-
-This resolves the open item in #431: "implement turning off tagging option for the file upload use case in DV-JS client" — but in the correct direction: the server tells the client, rather than the client being configured separately.
-
-### Correct design
-
-The server is authoritative. `S3AccessIO.generateTemporaryS3UploadUrls` now includes `"tagging": "dv-state=temp"` in the JSON response when tagging is enabled (i.e. when `DISABLE_S3_TAGGING` is false or unset). The field is absent when tagging is disabled.
-
-The JS client reads `destination.tagging` and, if present, sets `x-amz-tagging` to that value. No client-side configuration is needed.
-
-**Backend change:** `S3AccessIO.generateTemporaryS3UploadUrls` — adds `response.add("tagging", "dv-state=temp")` inside the existing `if (!taggingDisabled)` block. Non-breaking additive change (new optional field in existing response).
-
-**Client change:** `FileUploadDestination` gets `tagging?: string`. `DirectUploadClient.uploadSinglepartFile` uses it as the header value when present. `FilesConfig` and `useS3Tagging` are removed entirely.
-
-### Files changed
-
-| Repo | File | Change |
-|---|---|---|
-| `dataverse` | `src/main/java/edu/harvard/iq/dataverse/dataaccess/S3AccessIO.java` | Add `tagging` field to `generateTemporaryS3UploadUrls` response |
-| `dataverse-client-javascript` | `src/files/domain/models/FileUploadDestination.ts` | Add `tagging?: string` |
-| `dataverse-client-javascript` | `src/files/infra/repositories/transformers/fileUploadDestinationsTransformers.ts` | Map `tagging` through both singlepart and multipart paths |
-| `dataverse-client-javascript` | `src/files/infra/clients/DirectUploadClient.ts` | Use `destination.tagging` as header value; remove `useS3Tagging` |
-| `dataverse-client-javascript` | `src/files/index.ts` | Remove `FilesConfig` and lazy-init pattern |
-| `dataverse-frontend` | `src/standalone-uploader/config.ts` | Remove `useS3Tagging`, `maxRetries`, `uploadTimeoutMs`, `apiKey` |
-| `dataverse-frontend` | `src/standalone-uploader/index.tsx` | Switch to `SESSION_COOKIE` auth; remove `FilesConfig.init()` |
-
-## Cleanup Storage (Installations Without S3 Tagging)
-
-When S3 tagging is disabled, the `dv-state=temp` tag is never written to uploaded objects, so the normal cleanup mechanism (which looks for temp-tagged objects) does not fire. Orphaned temp files from failed or cancelled uploads will accumulate.
-
-The Dataverse API exposes `/api/datasets/{id}/cleanStorage` for this case. This is tracked as an open item in #431 and needs to be wired into the upload error/cancel path in `dataverse-client-javascript`. Scope decision (baseline vs follow-up PR) is pending.
-
-## Tree View Component
-
-The tree view work is tracked in detail in `dataverse-context/plans/6691-tree-view-selection-and-download.md`. Key architectural decisions summarised here.
-
-### Backend API (`6691-tree-view-download-api` branch)
-
-Paginated tree listing endpoint:
+The bundles are produced by `dataverse-frontend/vite.config.uploader.ts` into `dist-uploader/reusable-components/`. The path layout is stable:
 
 ```
-GET /api/datasets/{id}/versions/{versionId}/tree
+reusable-components/
+├── <component-name>.js          ← entry per component
+├── chunks/                      ← shared chunks (loaded once across components)
+│   ├── react-<hash>.js
+│   ├── i18n-<hash>.js
+│   ├── vendor-<hash>.js
+│   └── dataverse-shared-<hash>.js
+└── assets/
 ```
 
-Query params: `path`, `limit` (default 100, max 1000), `cursor` (opaque keyset token), `include` (`all|folders|files`), `order` (`NameAZ|NameZA`), `includeDeaccessioned`, `originals`.
+Dev environment serves this directory at `/dvwebloader/`:
 
-Response: `{ path, items[], nextCursor, limit, order, include, approximateCount }`. Folder items carry `type`, `name`, `path`, `counts`; file items add `id`, `size`, `contentType`, `access`, `checksum`, `downloadUrl`. Folders come first; stable keyset pagination prevents drift on concurrent writes. Invalid/stale cursors return `400`.
-
-Download model: `downloadUrl` points to the Dataverse Access API which redirects to a presigned S3 URL on S3-backed installs. The client performs HTTP Range chunked downloads directly against S3. For non-S3 installs, the client falls back to the standard download API without chunking.
-
-### SDK surfaces (`6691-tree-view-download-sdk` branch)
-
-Proposed additions to `dataverse-client-javascript`:
-
-```typescript
-listDatasetTreeNode({ datasetId, versionId, path, limit, cursor, include, order }): Promise<{ items, nextCursor }>
-iterateTreeNode({ ... }): AsyncGenerator<Item>  // handles pagination automatically
-```
-
-Downloader: accepts `{ id, downloadUrl, size?, name }[]`, streams a ZIP via web streams using HTTP Range when available, retries each chunk (exponential backoff), yields progress events, supports per-file failure manifest.
-
-### SPA component config (proposed)
-
-```typescript
-interface FileTreeConfig {
-  datasetPid: string;
-  siteUrl: string;
-  mode: 'view' | 'select' | 'manage';
-  allowDownload: boolean;
-  allowDelete: boolean;
-  expandedFolders?: string[];
-  selectedFileIds?: string[];
-  onSelect?: (fileIds: string[]) => void;
-  onDownload?: (fileIds: string[]) => void;
-  onDelete?: (fileIds: string[]) => void;
+```nginx
+# dataverse-frontend/dev-env/nginx.conf
+location /dvwebloader/ {
+    alias /usr/share/nginx/dvwebloader/;
 }
 ```
 
-Selection state is internal; iframe mode exposes state via `postMessage`. SPA mode can lift to shared context. `apiToken` is not in config — authentication is via session cookie.
+The compose file mounts `dataverse-frontend/dist-uploader` into the nginx container at `/usr/share/nginx/dvwebloader`. So the JSF page references `/dvwebloader/reusable-components/<component>.js` and gets the latest dev build.
 
-### Milestones
+Production deployers have two options:
 
-- **M1** — Backend endpoint + Flyway migrations + SDK chunked ZIP downloader (`6691-tree-view-download-api`, `6691-tree-view-download-sdk`)
-- **M2** — SPA: tree selection UI, bulk download action, bookmarkable URL state (`6691-tree-view-selection-download`), addresses #622, #117, #8694
-- **M3** — JSF: selection + download via SDK bundle; behavior aligned with SPA (`#12179` scope)
-- **M4** — Polish: partial-failure manifest, performance tuning, docs, release notes
+- **Same-origin hosting** (recommended): build `dist-uploader` and serve it from the same hostname Dataverse runs on, under `/dvwebloader/`. Session cookies and CSRF Origin/Referer all just work.
+- **CDN hosting**: serve `dist-uploader` from a CDN. Requires CORS configuration on the CDN and matches `dataverse.siteUrl`. Session cookies still need to be same-origin with the API, so the *bundle* can be cross-origin but the API host must be the host the browser is on.
 
-## JSF Mount Strategy
+Don't host the bundles on a different origin from the API. That breaks session-cookie auth.
 
-Direct JavaScript mount is now implemented for the uploader as a feature-flagged replacement path in JSF. The same pattern remains the target integration model for the tree-view component (`#12179`). Key constraints:
+## Replacing a JSF widget with an SPA component
 
-- CSS/JS collision risk with JSF/PrimeFaces — components must be style-isolated.
-- Integration contract between JSF and the SPA component (config object, events) must stay documented and stable.
-- Session cookie auth is the only viable auth mechanism in direct-mount mode (no API key in URL, no iframe boundary).
+Walkthrough using the file uploader as the worked example. Every replacement follows the same six steps.
 
-### Uploader mount
+### 1. Make the SPA component reusable
 
-Dataverse exposes a feature flag, `dataverse.feature.react-uploader` (`DATAVERSE_FEATURE_REACT_UPLOADER` in environment form), that replaces the classic PrimeFaces file upload widget with the React uploader for add-files flows. File replace remains on the existing JSF path.
+This happens in `dataverse-frontend`. See [`docs/reusable-components.md`](https://github.com/IQSS/dataverse-frontend/blob/develop/docs/reusable-components.md). The output we care about: a stable bundle path and a typed config interface.
 
-The JSF fragment renders:
+For the uploader:
 
-```html
-<div id="dv-uploader"></div>
-<script>
-  window.dvUploaderConfig = {
-    siteUrl: "...",
-    datasetPid: "...",
-    locale: "...",
-    rootElementId: "dv-uploader"
-  }
-</script>
-<script type="module" src="/dvwebloader/reusable-components/dv-uploader.js"></script>
+- Bundle: `/dvwebloader/reusable-components/dv-uploader.js`
+- Config: `window.dvUploaderConfig = { siteUrl, datasetPid, locale?, localesPath?, rootElementId? }`
+
+### 2. Add a JVM feature flag
+
+In `src/main/java/edu/harvard/iq/dataverse/settings/FeatureFlags.java`:
+
+```java
+REACT_UPLOADER("react-uploader",
+    "Replace the classic PrimeFaces upload widget with the React uploader on dataset edit pages."),
 ```
 
-The frontend build emits `dist-uploader/reusable-components/dv-uploader.js` plus shared chunks under `dist-uploader/reusable-components/chunks/`. This keeps the first component entry stable while allowing future reusable components to share React, i18n, vendor, and Dataverse shared UI/client chunks.
+This gives `dataverse.feature.react-uploader` (system property) and `DATAVERSE_FEATURE_REACT_UPLOADER` (environment variable).
 
-### CSS isolation
+### 3. Add a conditional `ui:fragment` in the xhtml
 
-The bundle injects its CSS into `<head>` via `vite-plugin-css-injected-by-js`. To keep the host JSF page intact:
+For the uploader, in `src/main/webapp/editFilesFragment.xhtml`:
 
-- The React render is wrapped in `<div class="dv-uploader-root">`. Embedded styles are scoped to this class; no `html`/`body`/`#root` rules are bundled.
-- Page-level styling (background, font, viewport-fill) lives in `standalone-page.scss`, which ships only to the standalone demo HTML and is not part of the JSF-loaded bundle.
-- Design-system styles use CSS Modules with hashed class names, so they cannot collide with JSF/PrimeFaces classes.
+```xml
+<ui:fragment rendered="#{useDirectUpload and FeatureFlags.REACT_UPLOADER_ENABLED and !showFileReplaceFragment}">
+    <div id="dv-uploader"></div>
+    <script>
+        window.dvUploaderConfig = {
+            siteUrl: '#{settingsWrapper.dataverseSiteUrl}',
+            datasetPid: '#{DatasetPage.dataset.globalId.asString()}',
+            locale: '#{dataverseLocaleBean.localeCode}',
+            rootElementId: 'dv-uploader'
+        };
+    </script>
+    <script type="module" src="/dvwebloader/reusable-components/dv-uploader.js"></script>
+</ui:fragment>
 
-**Known limitation — Bootstrap globals.** The bundle imports `bootstrap/dist/css/bootstrap.min.css` (Bootstrap 5.2.3) because react-bootstrap relies on it. Dataverse JSF pages already load Bootstrap 3.x. Where the two collide on shared selectors (`.btn`, `.form-control`, the grid system), the later-loaded stylesheet wins. The React component is fine because it loads later, but classic JSF panels rendered alongside the React uploader on the same page may pick up Bootstrap 5 styling on those selectors. PrimeFaces (`ui-*` classes) and Dataverse's own `panel`/`glyphicon` classes are unaffected.
-
-Future work — pick one and document it before unflagging this feature in production:
-- PostCSS scope-prefix plugin to wrap every bundled CSS rule under `.dv-uploader-root`.
-- Mount the React tree into a Shadow DOM root so injected `<style>` stays inside the shadow boundary.
-
-## Dev Environment
-
-The dev environment (`dataverse-frontend/dev-env/docker-compose-dev.yml`) is configured with:
-
-```yaml
-DATAVERSE_FEATURE_API_SESSION_AUTH: 1
-DATAVERSE_FEATURE_API_SESSION_AUTH_HARDENING: 1
-DATAVERSE_FEATURE_REACT_UPLOADER: 1
-JVM_ARGS: -Ddataverse.siteUrl=http://localhost:8000 ...
+<ui:fragment rendered="#{useDirectUpload and !FeatureFlags.REACT_UPLOADER_ENABLED}">
+    <!-- existing PrimeFaces widget — UNCHANGED -->
+</ui:fragment>
 ```
 
-The nginx proxy (`dev_nginx`) forwards browser traffic through port 8000. It also serves the reusable frontend build from `/dvwebloader/`, backed by `dataverse-frontend/dist-uploader`. The `dataverse.siteUrl` must match this so that Origin/Referer validation passes.
+Rules:
 
-## Open Items
+- Read every config value from JSF EL or a managed bean. Never hardcode.
+- Do not URL-encode values; React handles this.
+- The `<div>` and the `<script>` tags are siblings inside the fragment; placement matters because the script reads `window.<config>` at module evaluation time.
+- The `type="module"` attribute is mandatory — the bundle is an ESM module.
+- File replace, batch operations, and any other widget-specific edge case must be handled in the fragment guard, not in the React side.
 
-**Uploader baseline:**
-- Rebase `dataverse-client-javascript` #403 onto `develop` and publish a prerelease.
-- Replace the `file:../dataverse-client-javascript` local link in `dataverse-frontend` #898 with the published version.
-- Add folder upload to `dataverse-frontend` #898 (required by #468).
-- Add tests for direct-embed config and session-cookie auth path in `dataverse-frontend`.
-- Decide scope for cleanup storage (#431 open item) — baseline or follow-up.
-- Decide whether `dvwebloader` #44 is still required as a separate external packaging step now that JSF can mount the frontend build directly.
-- Eventually rebase `6691_reusable_components` onto `develop` once `#12178` merges.
+### 4. Add the nginx/serving glue
 
-**Tree view track:**
-- Create `6691-tree-view-download-api` branch; implement paginated tree endpoint and Flyway migrations (see `dataverse-context/plans/6691-tree-view-selection-and-download.md` for full spec and implementation notes).
-- Create `6691-tree-view-download-sdk` branch; implement `listDatasetTreeNode`, `iterateTreeNode`, ZIP streaming downloader.
-- Create `6691-tree-view-selection-download` branch; implement SPA selection UI, bulk download, bookmarkable URL state.
-- JSF mount (`#12179`): finalize integration contract before starting M3.
+In dev, edit `dataverse-frontend/dev-env/nginx.conf` and ensure `/dvwebloader/` aliases the build output. Production deployers see [Hosting reusable bundles](#hosting-reusable-bundles).
+
+### 5. Document
+
+- Sphinx: `doc/sphinx-guides/source/installation/config.rst`, *Feature Flags* table, one row per new flag.
+- Sphinx: a short note in the relevant section (e.g. *Uploading Files*) noting the feature flag and what changes when it's on.
+- Release notes: `doc/release-notes/<NNNN>-<flag-name>.md`, referencing the umbrella issue and listing the env-var form, the docker-compose example, and the cross-repo PR chain.
+
+### 6. Smoke test
+
+- Toggle the flag off → legacy JSF widget renders, behaves exactly as before.
+- Toggle the flag on → React component renders, talks to the API via session cookie, completes the user flow without DB-level differences.
+
+## Adding a new reusable component to a JSF page
+
+Greenfield case (no existing JSF widget to replace, but you want to add an SPA-driven feature on a JSF page):
+
+1. **Build the SPA section first** in `dataverse-frontend`. Run it in the SPA. Iterate on the design before any JSF integration.
+2. **Add a new entry to the reusable-components build.** See `dataverse-frontend/docs/reusable-components.md` § *Build pipeline*.
+3. **Add a new JVM feature flag** in `FeatureFlags.java`.
+4. **Add the `ui:fragment`** on the JSF page. The pattern is identical to the replacement case; you just don't need the off-branch with a legacy widget.
+5. **Document and release-note** as above.
+
+The first greenfield case in flight is the **Tree View** (`#6691`). Backend and SDK already ship a paginated `GET /api/datasets/{id}/versions/{versionId}/tree` endpoint. The SPA component lives at `src/sections/dataset/dataset-files/files-tree/` in `dataverse-frontend`. The JSF mount is M3 in [`dataverse-context/tree_view_plan.md`](../../../dataverse-context/tree_view_plan.md).
+
+## Currently shipped components
+
+### Uploader (`dataverse.feature.react-uploader`)
+
+- **Bundle path**: `/dvwebloader/reusable-components/dv-uploader.js`
+- **JSF mount**: `editFilesFragment.xhtml` (add files only; file replace stays on JSF)
+- **Config**: `window.dvUploaderConfig = { siteUrl, datasetPid, locale?, localesPath?, rootElementId?, disableMD5Checksum? }`
+- **Backend touch points**:
+  - `S3AccessIO.generateTemporaryS3UploadUrls` includes a `tagging` field in the response when S3 tagging is enabled (server-authoritative; client just forwards). See `S3AccessIO.java` and the architecture decisions in [`dataverse-context/tree_view_plan.md`](../../../dataverse-context/tree_view_plan.md).
+  - `dataverse.feature.api-session-auth` and the hardening flag must both be on for production use.
+- **Status**: shipped in dev environment; baseline PRs in flight (`IQSS/dataverse-client-javascript#403`, `IQSS/dataverse-frontend#898`, `gdcc/dvwebloader#44`).
+
+### Tree view (`#6691`, in development)
+
+- **Bundle path**: `/dvwebloader/reusable-components/dv-tree-view.js` (planned).
+- **JSF mount**: planned for `dataset.xhtml` Files tab — M3 in the tree-view plan.
+- **Backend endpoint**: `GET /api/datasets/{id}/versions/{versionId}/tree`. See `Datasets.java#getVersionTree` and the Sphinx section *List a Folder of a Dataset Version (Tree View)*.
+- **Status**: M1 (backend + SDK) and M2 (SPA) implemented; M3 (JSF mount) and M4 (polish) pending.
+
+## Risks and trade-offs
+
+These are documented so future PRs don't re-discover them in review.
+
+- **Bootstrap version collision.** The reusable bundle ships Bootstrap 5 (transitively via react-bootstrap); JSF pages already load Bootstrap 3. Where they share selectors (`.btn`, `.form-control`, the grid system), the later-loaded sheet wins. PrimeFaces (`ui-*`), Glyphicon, Dataverse-internal classes are unaffected. Long-term mitigation in `dataverse-frontend/docs/reusable-components.md` § *CSS isolation*.
+- **Session cookie required.** API-key auth in URL is not supported in reusable mounts and won't be re-introduced. Installations that haven't enabled `api-session-auth` cannot use reusable components.
+- **Same-origin assumption.** Hosting the bundles on a different origin from the API breaks session-cookie auth. Same-origin is the default.
+- **Feature-flag default is off.** Each replacement is opt-in until the host installation has decided to flip it; never flip it in code without an explicit migration discussion.
+- **No iframe fallback.** The previous iframe-based dvwebloader is being replaced; we are not maintaining both forever. Once a reusable mount is shipped, the iframe path for the same component is deprecated.
