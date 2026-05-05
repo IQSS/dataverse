@@ -131,8 +131,31 @@ public class Access extends AbstractApiBean {
     DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
     
     private static final String DEFAULT_BUNDLE_NAME = "dataverse_files.zip";
+    private static final int GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES = 1;
     //@EJB
-    
+
+    @GET
+    @AuthRequired
+    @Path("datafile/{fileId}/citation/{format}")
+    public Response datafileCitation(@Context ContainerRequestContext crc,
+                                     @PathParam("fileId") String fileId,
+                                     @PathParam("format") String formatString) {
+
+        DataCitation.Format format = DataCitation.getFormat(formatString);
+        if (format == null) {
+            return badRequest(BundleUtil.getStringFromBundle("datasets.api.citation.invalidFormat"));
+        }
+
+        DataFile df = findDataFileOrDieWrapper(fileId);
+
+        // This will throw a ForbiddenException if access isn't authorized:
+        checkAuthorization(crc, df);
+
+        String dataCitationFormatted = (new DataCitation(df.getFileMetadata())).toString(format, true, false);
+
+        return Response.ok().type(DataCitation.getCitationFormatMediaType(format, true)).entity(dataCitationFormatted).build();
+    }
+
     // TODO: 
     // versions? -- L.A. 4.0 beta 10
     @GET
@@ -495,7 +518,7 @@ public class Access extends AbstractApiBean {
             ApiToken apiToken = authSvc.findApiTokenByUser(requestor);
             if (apiToken == null) {
                 logger.fine("Generating temporary API token for user " + userIdentifier);
-                apiToken = authSvc.generateApiTokenForUser(requestor, AuthenticationServiceBean.INTERVAL.MINUTES, 1);
+                apiToken = authSvc.generateApiTokenForUser(requestor, AuthenticationServiceBean.INTERVAL.MINUTES, GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES);
             }
             if (apiToken != null) {
                 key = apiToken.getTokenString();
@@ -517,7 +540,7 @@ public class Access extends AbstractApiBean {
         String baseUrl = URLDecoder.decode(baseUrlEncoded, StandardCharsets.UTF_8);
         baseUrl = baseUrl.replace(":persistentId", id);
         key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
-        String signedUrl = UrlSignerUtil.signUrl(baseUrl, 1, userIdentifier, "GET", key);
+        String signedUrl = UrlSignerUtil.signUrl(baseUrl, GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES, userIdentifier, "GET", key);
         return ok(Json.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
     }
 
@@ -2004,7 +2027,7 @@ public class Access extends AbstractApiBean {
                         throw new NotFoundException("GuestbookResponse Not Found for id:" + gbrids);
                     }
                     Long delta = Instant.now().toEpochMilli() - gbr.getResponseTime().getTime();
-                    wasWrittenInPost = gbr.getDataset().getId().equals(df.getOwner().getId()) && delta < 10000;
+                    wasWrittenInPost = gbr.getDataset().getId().equals(df.getOwner().getId()) && delta <= (GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES * 60000L);
                 } catch (NumberFormatException | DateTimeParseException ex) {
                     throw new BadRequestException(ex.getMessage());
                 }

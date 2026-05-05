@@ -1276,7 +1276,9 @@ public class UtilIT {
 
     static Response downloadFilesUrlWithGuestbookResponse(Integer[] fileIds, String apiToken, String body) {
         RequestSpecification requestSpecification = given();
-        requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
         if (body != null) {
             requestSpecification.body(body);
         }
@@ -1448,6 +1450,14 @@ public class UtilIT {
                 .queryParam("includeDeaccessioned", includeDeaccessioned)
                 .queryParam("returnDatasetVersion", returnDatasetVersion)
                 .get("/api/files/" + fileId + "/versions/" + datasetVersionId);
+    }
+
+    static Response getFileCitationFormat(String dataFileId, String format, String apiToken) {
+        RequestSpecification request = given();
+        if (apiToken != null) {
+            request.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return request.get("/api/access/datafile/" + dataFileId +  "/citation/" + format);
     }
 
     static Response getFileVersionDifferences(String fileId, String apiToken) {
@@ -3049,10 +3059,10 @@ public class UtilIT {
                 .delete("/api/admin/storageSites/" + storageSiteId);
     }
 
-    static Response listStorageDrivers(String apiToken) {
+    static Response listStorageDrivers(String apiToken, String dataverseAlias) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/admin/dataverse/storageDrivers");
+                .get("/api/dataverses/" + dataverseAlias + "/allowedStorageDrivers");
     }
 
     static Response getStorageDriver(String dvAlias, String apiToken) {
@@ -3062,14 +3072,14 @@ public class UtilIT {
         String params = getEffective != null ? "?getEffective=" + getEffective : "";
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/admin/dataverse/" + dvAlias + "/storageDriver" + params);
+                .get("/api/dataverses/" + dvAlias + "/storageDriver" + params);
     }
 
     static Response setStorageDriver(String dvAlias, String label, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(label)
-                .put("/api/admin/dataverse/" + dvAlias + "/storageDriver");
+                .put("/api/dataverses/" + dvAlias + "/storageDriver");
     }
 
     static Response getUploadUrls(String idOrPersistentIdOfDataset, long sizeInBytes, String apiToken) {
@@ -5307,6 +5317,31 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
                 .post("/api/dataverses/" + dataverseAlias + "/templates");
+    }
+    
+    public static Response updateTemplateMetadata(String templateId, String jsonString, String apiToken, Boolean replaceData) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .put("/api/dataverses/" + templateId + "/metadata?replace=" + replaceData);
+    }
+    
+    public static Response updateTemplateLicenseTerms(String templateId, String jsonString, String apiToken) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .put("/api/dataverses/" + templateId + "/licenseTerms");
+    }
+    
+        
+    public static Response updateTemplateAccessTerms(String templateId, String jsonString, String apiToken) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .put("/api/dataverses/" + templateId + "/access");
     }
     
     public static Response deleteTemplate(String id,  String apiToken) {

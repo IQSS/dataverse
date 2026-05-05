@@ -1,13 +1,11 @@
 package edu.harvard.iq.dataverse.api;
 
 import java.util.logging.Logger;
-
 import edu.harvard.iq.dataverse.customization.CustomizationConstants;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
-
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -165,4 +163,5 @@ public class Info extends AbstractApiBean {
             return notFound("Setting " + key + " not found");
         }
     }
+    
 }

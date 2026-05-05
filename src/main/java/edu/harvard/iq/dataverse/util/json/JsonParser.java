@@ -749,6 +749,21 @@ public class JsonParser {
         }
         return fields;
     }
+    
+    public Map<String, String> parseRequestBodyInstructionsMap(JsonObject jsonObject) {
+        Map<String, String> instructionsMap = new HashMap<>();
+        JsonArray instructionsJsonArray = jsonObject.getJsonArray("instructions");
+        if (instructionsJsonArray == null) {
+            return null;
+        }
+        for (JsonObject instructionJsonObject : instructionsJsonArray.getValuesAs(JsonObject.class)) {
+            instructionsMap.put(
+                    instructionJsonObject.getString("instructionField"),
+                    instructionJsonObject.getString("instructionText")
+            );
+        }
+        return instructionsMap;
+    }
 
     public List<DatasetField> parseMultipleFields(JsonObject json) throws JsonParseException {
         return parseMultipleFields(json, false);
@@ -756,7 +771,10 @@ public class JsonParser {
 
     public List<DatasetField> parseMultipleFields(JsonObject json, boolean replaceData) throws JsonParseException {
         JsonArray fieldsJson = json.getJsonArray("fields");
-        List<DatasetField> fields = parseFieldsFromArray(fieldsJson, false, replaceData);
+        List<DatasetField> fields = new ArrayList();
+        if (fieldsJson != null) {
+            fields = parseFieldsFromArray(fieldsJson, false, replaceData);
+        }
         return fields;
     }
 
