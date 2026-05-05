@@ -108,7 +108,8 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
             parsed.username,
             OAuth2TokenData.from(accessToken),
             parsed.displayInfo,
-            parsed.emails);
+            parsed.emails,
+                null);
     }
     
     @Override

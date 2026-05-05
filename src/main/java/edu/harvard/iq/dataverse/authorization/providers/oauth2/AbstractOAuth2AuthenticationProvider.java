@@ -197,7 +197,9 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
             parsed.username,
             OAuth2TokenData.from(accessToken),
             parsed.displayInfo,
-            parsed.emails);
+            parsed.emails,
+                null
+        );
     }
 
     @Override

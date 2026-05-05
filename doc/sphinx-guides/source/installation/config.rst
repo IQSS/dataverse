@@ -100,9 +100,9 @@ Using X-Forwarded-Proto for Signed URLs
 +++++++++++++++++++++++++++++++++++++++
 
 If you use a proxy such as Apache or Nginx, or have a firewall such as Anubis, and they are configured to forward traffic to Dataverse over HTTP
-(i.e. your proxy receives user calls over HTTPS but forwards locally to Dataverse over HTTP), signed URLs, used by external tools and 
+(i.e. your proxy receives user calls over HTTPS but forwards locally to Dataverse over HTTP), signed URLs, used by external tools and
 upload apps (such as DVWebloader), are likely to fail unless you configure your proxy to send an X-Forwarded-Proto HTTP Header.
-This allows Dataverse to recognize that the communication from the user was over HTTPS and that validation of signed URLs should assume 
+This allows Dataverse to recognize that the communication from the user was over HTTPS and that validation of signed URLs should assume
 they started with https:// (rather than http:// as received from the proxy).
 
 .. _PrivacyConsiderations:
@@ -2259,19 +2259,19 @@ These archival Bags include all of the files and metadata in a given dataset ver
 
 The Dataverse Software offers an internal archive workflow which may be configured as a PostPublication workflow via an admin API call to manually submit previously published Datasets and prior versions to a configured archive such as Chronopolis. The workflow creates a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse Software web interface.
 
-The size of the zipped archival Bag can be limited, and files that don't fit within that limit can either be transferred separately (placed so that they are correctly positioned according to the BagIt specification when the zipped bag in unzipped in place) or just referenced for later download (using the BagIt concept of a 'holey' bag with a list of files in a ``fetch.txt`` file) can now be configured for all archivers. These settings allow for managing large datasets by excluding files over a certain size or total data size, which can be useful for archivers with size limitations or to reduce transfer times. See the :ref:`dataverse.bagit.zip.max-file-size`, :ref:`dataverse.bagit.zip.max-data-size`, and :ref:`dataverse.bagit.zip.holey` JVM options for more details.  
+The size of the zipped archival Bag can be limited, and files that don't fit within that limit can either be transferred separately (placed so that they are correctly positioned according to the BagIt specification when the zipped bag in unzipped in place) or just referenced for later download (using the BagIt concept of a 'holey' bag with a list of files in a ``fetch.txt`` file) can now be configured for all archivers. These settings allow for managing large datasets by excluding files over a certain size or total data size, which can be useful for archivers with size limitations or to reduce transfer times. See the :ref:`dataverse.bagit.zip.max-file-size`, :ref:`dataverse.bagit.zip.max-data-size`, and :ref:`dataverse.bagit.zip.holey` JVM options for more details.
 
-At present, archiving classes include the DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, GoogleCloudSubmitToArchive, and S3SubmitToArchiveCommand , which all extend the AbstractSubmitToArchiveCommand and use the configurable mechanisms discussed below. (A DRSSubmitToArchiveCommand, which works with Harvard's DRS also exists and, while specific to DRS, is a useful example of how Archivers can support single-version-only semantics and support archiving only from specified collections (with collection specific parameters)). 
+At present, archiving classes include the DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, GoogleCloudSubmitToArchive, and S3SubmitToArchiveCommand , which all extend the AbstractSubmitToArchiveCommand and use the configurable mechanisms discussed below. (A DRSSubmitToArchiveCommand, which works with Harvard's DRS also exists and, while specific to DRS, is a useful example of how Archivers can support single-version-only semantics and support archiving only from specified collections (with collection specific parameters)).
 
 All current options support the :ref:`Archival Status API` calls and the same status is available in the dataset page version table (for contributors/those who could view the unpublished dataset, with more detail available to superusers).
 
 Two settings that can be used with all current Archivers are:
 
 - \:BagGeneratorThreads - the number of threads to use when adding data files to the zipped bag. The default is 2. Values of 4 or more may increase performance on larger machines but may cause problems if file access is throttled
-- \:ArchiveOnlyIfEarlierVersionsAreArchived - when true, requires dataset versions to be archived in order by confirming that all prior versions have been successfully archived before allowing a new version to be archived. Default is false 
+- \:ArchiveOnlyIfEarlierVersionsAreArchived - when true, requires dataset versions to be archived in order by confirming that all prior versions have been successfully archived before allowing a new version to be archived. Default is false
 
 These must be included in the \:ArchiverSettings for the Archiver to work
- 
+
 Archival Bags are created per dataset version. By default, if a version is republished (via the superuser-only 'Update Current Version' publication option in the UI/API), a new archival bag is not created for the version.
 If the archiver used is capable of deleting existing bags (Google, S3, and File Archivers) superusers can trigger a manual update of the archival bag, and, if the :ref:`dataverse.bagit.archive-on-version-update` flag is set to true, this will be done automatically when 'Update Current Version' is used.
 
@@ -3740,7 +3740,7 @@ i.e via the Update-Current-Version publication option. Setting the flag true onl
 dataverse.files.globus-monitoring-server
 ++++++++++++++++++++++++++++++++++++++++
 
-This setting is required in conjunction with the :ref:`dataverse.feature.globus-use-experimental-async-framework` feature flag. Setting it to true designates the Dataverse instance to serve as the dedicated polling server. It is needed so that the new framework can be used in a multi-node installation. 
+This setting is required in conjunction with the :ref:`dataverse.feature.globus-use-experimental-async-framework` feature flag. Setting it to true designates the Dataverse instance to serve as the dedicated polling server. It is needed so that the new framework can be used in a multi-node installation.
 
 .. _dataverse.csl.common-styles:
 
@@ -3948,6 +3948,13 @@ dataverse.feature.api-bearer-auth-provide-missing-claims
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Enables sending missing user claims in the request JSON provided during OIDC user registration, when these claims are not returned by the identity provider and are required for registration. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this feature flag exposes the installation to potential user impersonation issues.**
+
+.. _dataverse.feature.oidc-user-property-sync:
+
+dataverse.feature.oidc-user-property-sync
++++++++++++++++++++++++++++++++++++++++++
+
+Enables synchronization of user properties from the OIDC identity provider to the Dataverse user during authentication. When enabled, first name, last name, email address, and email verification state are updated from OIDC claims on each authenticated request. Updates are only applied if values have changed. The email verification state is mapped from the optional ``email_verified`` claim to Dataverse's internal ``emailConfirmed`` timestamp.
 
 .. _dataverse.feature.api-bearer-auth-handle-tos-acceptance-in-idp:
 
@@ -4725,7 +4732,7 @@ In the following example, the harvester is instructed to sleep for 900 milliseco
 
 ``curl -X PUT -d "{\"harvarddv\": 0.9, \"default\": 0}" "http://localhost:8080/api/admin/settings/:HarvestingClientCallRateLimit"``
 
-Please note that the default in the example above is there for illustrative purposes and is otherwise redundant, since no sleep interval is the default behavior anyway. 
+Please note that the default in the example above is there for illustrative purposes and is otherwise redundant, since no sleep interval is the default behavior anyway.
 
 .. _:ZipUploadFilesLimit:
 
@@ -5417,7 +5424,7 @@ For examples, see the specific configuration above in :ref:`BagIt Export`.
 ++++++++++++++++++++++++++++++++++++++++
 
 This setting, if true, only allows creation of an archival Bag for a dataset version if all prior versions have been successfully archived. The default is false (any version can be archived independently as long as other settings allow it)
-         
+
 :ArchiverSettings
 +++++++++++++++++
 
