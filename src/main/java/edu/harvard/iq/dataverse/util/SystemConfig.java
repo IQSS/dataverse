@@ -251,6 +251,10 @@ public class SystemConfig {
         return FeatureFlags.REACT_UPLOADER.enabled();
     }
 
+    public boolean isReactTreeViewEnabled() {
+        return FeatureFlags.REACT_TREE_VIEW.enabled();
+    }
+
     /**
      * Returns the base URL from which the Dataverse reusable React component
      * bundles (e.g. {@code dv-uploader.js}) are loaded. The default value

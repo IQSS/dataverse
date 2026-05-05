@@ -3957,6 +3957,17 @@ Replaces the classic PrimeFaces file upload widget on the JSF dataset edit page 
 
 This flag has no effect on the file replace flow, which continues to use the classic JSF upload widget.
 
+.. _dataverse.feature.react-tree-view:
+
+dataverse.feature.react-tree-view
++++++++++++++++++++++++++++++++++
+
+Replaces the classic PrimeFaces tree component on the dataset Files tab (when the user selects "Tree" in the Table/Tree toggle) with the React lazy file tree. The same component the SPA uses is mounted directly into the JSF page.
+
+Requires :ref:`dataverse.feature.api-session-auth` and the React bundle to be reachable from the browser (see :ref:`dataverse.reusable-components.base-url` and :doc:`/container/running/reusable-components`).
+
+This flag has no effect on the table view of the Files tab, which continues to use the classic PrimeFaces datatable.
+
 .. _dataverse.feature.api-bearer-auth:
 
 dataverse.feature.api-bearer-auth

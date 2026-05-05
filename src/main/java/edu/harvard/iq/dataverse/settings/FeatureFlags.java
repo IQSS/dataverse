@@ -43,6 +43,19 @@ public enum FeatureFlags {
      */
     REACT_UPLOADER("react-uploader"),
     /**
+     * Enables the React-based file tree view in the JSF dataset Files tab.
+     * Renders the same lazy, paginated tree component the SPA uses, mounted
+     * directly into the JSF page. Requires {@link #API_SESSION_AUTH} to be
+     * enabled and the React bundle to be reachable from the browser at
+     * <code>/dvwebloader/reusable-components/dv-tree-view.js</code> by
+     * default — the base URL is overridable via
+     * <code>dataverse.reusable-components.base-url</code>.
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.react-tree-view"
+     * @since Dataverse 6.11
+     */
+    REACT_TREE_VIEW("react-tree-view"),
+    /**
      * Enables API authentication via Bearer Token.
      * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth"
      * @since Dataverse 5.14:

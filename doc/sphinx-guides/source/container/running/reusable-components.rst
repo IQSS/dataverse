@@ -14,10 +14,11 @@ single-page application (SPA) still benefit from new frontend work,
 component by component, without replacing the whole UI.
 
 The first component shipped this way is the React file uploader (DVWebloader
-v2), gated by the :ref:`dataverse.feature.react-uploader` feature flag.
-Future components (e.g. the file tree view tracked in
-`#6691 <https://github.com/IQSS/dataverse/issues/6691>`_) will follow the same
-pattern.
+v2), gated by the :ref:`dataverse.feature.react-uploader` feature flag. The
+second is the React lazy file tree on the dataset Files tab, gated by
+:ref:`dataverse.feature.react-tree-view` and tracked in
+`#6691 <https://github.com/IQSS/dataverse/issues/6691>`_. Both bundles are
+emitted by the same frontend build and share React, i18n, and vendor chunks.
 
 For the frontend-side contract — the config interface, build pipeline, CSS
 isolation, and how to make a new SPA component reusable — see
