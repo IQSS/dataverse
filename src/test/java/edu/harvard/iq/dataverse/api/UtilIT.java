@@ -4493,6 +4493,44 @@ public class UtilIT {
         return requestSpecification.get("/api/datasets/" + datasetId + "/versions/" + version + "/files");
     }
 
+    static Response getVersionTree(Integer datasetId,
+                                   String version,
+                                   String path,
+                                   Integer limit,
+                                   String cursor,
+                                   String include,
+                                   String order,
+                                   Boolean includeDeaccessioned,
+                                   Boolean originals,
+                                   String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (path != null) {
+            requestSpecification = requestSpecification.queryParam("path", path);
+        }
+        if (limit != null) {
+            requestSpecification = requestSpecification.queryParam("limit", limit);
+        }
+        if (cursor != null) {
+            requestSpecification = requestSpecification.queryParam("cursor", cursor);
+        }
+        if (include != null) {
+            requestSpecification = requestSpecification.queryParam("include", include);
+        }
+        if (order != null) {
+            requestSpecification = requestSpecification.queryParam("order", order);
+        }
+        if (includeDeaccessioned != null) {
+            requestSpecification = requestSpecification.queryParam("includeDeaccessioned", includeDeaccessioned);
+        }
+        if (originals != null) {
+            requestSpecification = requestSpecification.queryParam("originals", originals);
+        }
+        return requestSpecification.get("/api/datasets/" + datasetId + "/versions/" + version + "/tree");
+    }
+
     static Response createAndUploadTestFile(String persistentId, String testFileName, byte[] testFileContentInBytes, String apiToken) throws IOException {
         Path pathToTempDir = Paths.get(Files.createTempDirectory(null).toString());
         String pathToTestFile = pathToTempDir + File.separator + testFileName;
