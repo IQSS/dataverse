@@ -246,21 +246,17 @@ jobs:
             exit 0
           fi
 
-          echo "Preparing file list for merge..."
-          FILES=$(find target/all-execs -name "*.exec" -type f | tr '\n' ',' | sed 's/,$//')
+          echo "Downloading JaCoCo CLI..."
+          curl -Ls https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.11/org.jacoco.cli-0.8.11-nodeps.jar -o jacococli.jar
 
-          echo "Files to merge:"
-          echo "$FILES" | tr ',' '\n'
+          echo "Merging exec files..."
+          java -jar jacococli.jar merge target/all-execs/*.exec --destfile target/jacoco-merged.exec
 
-          echo "Merging JaCoCo exec files..."
-          mvn jacoco:merge \
-            -Djacoco.destFile=target/jacoco-merged.exec \
-            -Djacoco.dataFiles="$FILES"
-
-          echo "Generating JaCoCo report..."
-          mvn jacoco:report \
-            -Djacoco.dataFile=target/jacoco-merged.exec \
-            -Djacoco.outputDirectory=target/site/jacoco-merged-report
+          echo "Generating report..."
+          java -jar jacococli.jar report target/jacoco-merged.exec \
+            --classfiles target/classes \
+            --sourcefiles src/main/java \
+            --html target/site/jacoco-merged-report
 
           echo "JaCoCo merge + report complete."
         
