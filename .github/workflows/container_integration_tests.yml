@@ -151,14 +151,6 @@ jobs:
             -Dmaven.test.failure.ignore=true \
             -Ddataverse.test.baseurl=http://localhost:8080
 
-      # 🔴 STOP CONTAINERS FIRST (flush JaCoCo)
-      - name: Stop Dataverse stack
-        if: always()
-        run: |
-          set -euo pipefail
-          mvn -Pct docker:stop || true
-
-      # ✅ SCRAPE AFTER STOP (using docker cp)
       - name: Scrape and Merge JaCoCo Coverage
         if: always()
         run: |
@@ -207,6 +199,12 @@ jobs:
           if grep -q "<failure" target/surefire-reports/*.xml target/failsafe-reports/*.xml 2>/dev/null; then
             exit 1
           fi
+
+      - name: Stop Dataverse stack
+        if: always()
+        run: |
+          set -euo pipefail
+          mvn -Pct docker:stop || true
 
       - name: Final Docker cleanup
         if: always()
