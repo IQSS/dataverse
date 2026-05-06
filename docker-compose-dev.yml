@@ -9,6 +9,7 @@ services:
     restart: on-failure
     user: payara
     environment:
+      JAVA_TOOL_OPTIONS: "-javaagent:/jacoco/jacocoagent.jar=destfile=/tmp/jacoco-it.exec,append=true,output=file"
       DATAVERSE_DB_HOST: postgres
       DATAVERSE_DB_PASSWORD: secret
       DATAVERSE_DB_USER: ${DATAVERSE_DB_USER}
@@ -74,6 +75,7 @@ services:
       - dev_solr
       - dev_dv_initializer
     volumes:
+      - ./jacoco/jacocoagent.jar:/jacoco/jacocoagent.jar:ro
       - ./docker-dev-volumes/app/data:/dv
       - ./docker-dev-volumes/app/secrets:/secrets
       - ./target/dataverse:/opt/payara/deployments/dataverse:ro
