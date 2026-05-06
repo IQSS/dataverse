@@ -1,0 +1,23 @@
+-- #6691 — covering index for the dataset-version tree-listing endpoint.
+--
+-- Drives both queries in DatasetVersionTreeService:
+--
+--   * folder query at :path
+--     WHERE datasetversion_id = :v
+--       AND directorylabel LIKE :path || '/%'
+--     GROUP BY first segment of the prefix-stripped directorylabel
+--
+--   * file query at exact :path
+--     WHERE datasetversion_id = :v AND directorylabel = :path
+--     ORDER BY lower(label), datafile_id
+--
+-- Postgres uses btree LIKE-prefix optimisation on (datasetversion_id,
+-- directorylabel) for the folder query. The trailing
+-- (lower(label), datafile_id) carries the keyset order for the file
+-- query without a separate index. lower(label) is an expression
+-- index and matches the application-side case-insensitive ordering.
+--
+-- IF NOT EXISTS keeps the migration re-runnable on dev databases that
+-- already have an experimental copy of the index.
+CREATE INDEX IF NOT EXISTS ix_filemetadata_tree
+    ON filemetadata (datasetversion_id, directorylabel, lower(label), datafile_id);
