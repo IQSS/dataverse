@@ -246,38 +246,50 @@ public class DatasetVersionTreeService {
         // for a nested path we strip "<path>/". The substring offset is
         // 1-indexed in Postgres, so the +1 is for the index and the "/" is
         // implicit in the LIKE pattern below.
+        //
+        // We use positional ?N parameters (not :name) because EclipseLink's
+        // native-query parameter substitution requires the JPA positional
+        // form; named parameters reach Postgres unsubstituted and produce
+        // "syntax error at or near ':'". This matches the convention used
+        // by every other native query in the codebase.
         boolean root = path.isEmpty();
         int substringFrom = root ? 1 : path.length() + 2; // 1-indexed; +1 for index, +1 for '/'
 
         StringBuilder sql = new StringBuilder();
+        List<Object> params = new ArrayList<>();
         sql.append("SELECT split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1) AS folder_name, ");
         sql.append("       COUNT(*) AS files_under, ");
         sql.append("       COUNT(DISTINCT split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 2)) ");
         sql.append("           FILTER (WHERE position('/' IN substring(fm.directorylabel FROM ").append(substringFrom).append(")) > 0) AS subfolder_count ");
         sql.append("FROM filemetadata fm ");
-        sql.append("WHERE fm.datasetversion_id = :versionId ");
+        sql.append("WHERE fm.datasetversion_id = ?").append(params.size() + 1).append(" ");
+        params.add(versionId);
         if (root) {
             sql.append("  AND fm.directorylabel IS NOT NULL AND fm.directorylabel <> '' ");
         } else {
-            sql.append("  AND fm.directorylabel LIKE :pathPrefix ");
+            sql.append("  AND fm.directorylabel LIKE ?").append(params.size() + 1).append(" ");
+            params.add(path + "/%");
         }
         if (afterFolderName != null) {
             String cmp = order == Order.NAME_ZA ? "<" : ">";
-            sql.append("  AND lower(split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1)) ").append(cmp).append(" :afterFolder ");
+            sql.append("  AND lower(split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1)) ").append(cmp).append(" ?").append(params.size() + 1).append(" ");
+            params.add(afterFolderName.toLowerCase(Locale.ROOT));
         }
-        sql.append("GROUP BY folder_name ");
-        sql.append("ORDER BY lower(folder_name) ").append(order == Order.NAME_ZA ? "DESC" : "ASC").append(" ");
-        sql.append("LIMIT :lim");
+        // Repeat the expression in GROUP BY / ORDER BY rather than referring
+        // to the `folder_name` SELECT alias. PostgreSQL allows the bare
+        // alias in GROUP BY (extension) but does NOT allow it inside an
+        // expression in ORDER BY — `ORDER BY lower(folder_name)` errors
+        // with `column "folder_name" does not exist`. Repeating the
+        // expression is also SQL-spec-clean.
+        sql.append("GROUP BY split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1) ");
+        sql.append("ORDER BY lower(split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1)) ").append(order == Order.NAME_ZA ? "DESC" : "ASC").append(" ");
+        sql.append("LIMIT ?").append(params.size() + 1);
+        params.add(limit);
 
         Query q = em.createNativeQuery(sql.toString());
-        q.setParameter("versionId", versionId);
-        if (!root) {
-            q.setParameter("pathPrefix", path + "/%");
+        for (int i = 0; i < params.size(); i++) {
+            q.setParameter(i + 1, params.get(i));
         }
-        if (afterFolderName != null) {
-            q.setParameter("afterFolder", afterFolderName.toLowerCase(Locale.ROOT));
-        }
-        q.setParameter("lim", limit);
 
         List<Object[]> rows = q.getResultList();
         List<FolderItem> out = new ArrayList<>(rows.size());
@@ -299,35 +311,44 @@ public class DatasetVersionTreeService {
                                          Order order, boolean originals) {
         boolean root = path.isEmpty();
 
+        // Positional ?N parameters per the EclipseLink native-query convention;
+        // see the comment in `runFolderQuery` for why named parameters cannot
+        // be used here.
         StringBuilder sql = new StringBuilder();
+        List<Object> params = new ArrayList<>();
         sql.append("SELECT fm.label, df.id, df.filesize, df.contenttype, df.restricted, df.embargo_id, df.checksumtype, df.checksumvalue ");
         sql.append("FROM filemetadata fm JOIN datafile df ON fm.datafile_id = df.id ");
-        sql.append("WHERE fm.datasetversion_id = :versionId ");
+        sql.append("WHERE fm.datasetversion_id = ?").append(params.size() + 1).append(" ");
+        params.add(versionId);
         if (root) {
             sql.append("  AND (fm.directorylabel IS NULL OR fm.directorylabel = '') ");
         } else {
-            sql.append("  AND fm.directorylabel = :pathExact ");
+            sql.append("  AND fm.directorylabel = ?").append(params.size() + 1).append(" ");
+            params.add(path);
         }
         if (afterLabelLower != null && afterId != null) {
             String cmp = order == Order.NAME_ZA ? "<" : ">";
             // Standard tuple-keyset pattern: (lower(label), datafile_id) compared lexicographically.
-            sql.append("  AND (lower(fm.label) ").append(cmp).append(" :afterLabel ");
-            sql.append("       OR (lower(fm.label) = :afterLabel AND df.id ").append(cmp).append(" :afterId)) ");
+            // afterLabel needs two positional slots — the value is the same in both, but EclipseLink's
+            // native-query binding wants each occurrence as its own ?N.
+            int afterLabelLeft = params.size() + 1;
+            params.add(afterLabelLower);
+            int afterLabelRight = params.size() + 1;
+            params.add(afterLabelLower);
+            int afterIdSlot = params.size() + 1;
+            params.add(afterId);
+            sql.append("  AND (lower(fm.label) ").append(cmp).append(" ?").append(afterLabelLeft).append(" ");
+            sql.append("       OR (lower(fm.label) = ?").append(afterLabelRight).append(" AND df.id ").append(cmp).append(" ?").append(afterIdSlot).append(")) ");
         }
         sql.append("ORDER BY lower(fm.label) ").append(order == Order.NAME_ZA ? "DESC" : "ASC")
            .append(", df.id ").append(order == Order.NAME_ZA ? "DESC" : "ASC").append(" ");
-        sql.append("LIMIT :lim");
+        sql.append("LIMIT ?").append(params.size() + 1);
+        params.add(limit);
 
         Query q = em.createNativeQuery(sql.toString());
-        q.setParameter("versionId", versionId);
-        if (!root) {
-            q.setParameter("pathExact", path);
+        for (int i = 0; i < params.size(); i++) {
+            q.setParameter(i + 1, params.get(i));
         }
-        if (afterLabelLower != null && afterId != null) {
-            q.setParameter("afterLabel", afterLabelLower);
-            q.setParameter("afterId", afterId);
-        }
-        q.setParameter("lim", limit);
 
         List<Object[]> rows = q.getResultList();
         List<FileItem> out = new ArrayList<>(rows.size());
@@ -367,17 +388,17 @@ public class DatasetVersionTreeService {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT COUNT(DISTINCT split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1)) ");
         sql.append("FROM filemetadata fm ");
-        sql.append("WHERE fm.datasetversion_id = :versionId ");
+        sql.append("WHERE fm.datasetversion_id = ?1 ");
         if (root) {
             sql.append("  AND fm.directorylabel IS NOT NULL AND fm.directorylabel <> '' ");
         } else {
-            sql.append("  AND fm.directorylabel LIKE :pathPrefix ");
+            sql.append("  AND fm.directorylabel LIKE ?2 ");
         }
 
         Query q = em.createNativeQuery(sql.toString());
-        q.setParameter("versionId", versionId);
+        q.setParameter(1, versionId);
         if (!root) {
-            q.setParameter("pathPrefix", path + "/%");
+            q.setParameter(2, path + "/%");
         }
         Number n = (Number) q.getSingleResult();
         return n == null ? 0 : n.intValue();
@@ -388,17 +409,17 @@ public class DatasetVersionTreeService {
 
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT COUNT(*) FROM filemetadata fm ");
-        sql.append("WHERE fm.datasetversion_id = :versionId ");
+        sql.append("WHERE fm.datasetversion_id = ?1 ");
         if (root) {
             sql.append("  AND (fm.directorylabel IS NULL OR fm.directorylabel = '') ");
         } else {
-            sql.append("  AND fm.directorylabel = :pathExact ");
+            sql.append("  AND fm.directorylabel = ?2 ");
         }
 
         Query q = em.createNativeQuery(sql.toString());
-        q.setParameter("versionId", versionId);
+        q.setParameter(1, versionId);
         if (!root) {
-            q.setParameter("pathExact", path);
+            q.setParameter(2, path);
         }
         Number n = (Number) q.getSingleResult();
         return n == null ? 0 : n.intValue();
