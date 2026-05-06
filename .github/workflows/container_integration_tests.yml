@@ -85,10 +85,10 @@ jobs:
       - name: Build Dataverse containers via Maven
         run: |
           set -euo pipefail
-          # Force unit tests to run, generate coverage, and ignore failures so the build continues
-          mvn clean package -Pct -P all-unit-tests \
+          # Force unit tests to run, generate coßerage, and ignore failures so the build continues
+          mvn clean package -Pct \
+            jacoco:prepare-agent \
             -DskipUnitTests=false \
-            -Djacoco.skip=false \
             -Dmaven.test.failure.ignore=true
           
       # ---------------------------
@@ -199,10 +199,10 @@ jobs:
       # RUN MAVEN TESTS
       # ---------------------------
       - name: Run Maven Integration Tests
-        env:
-          DVAPIKEY: "burrito"
-          DV_APIKEY: "burrito"
-          DV_API_KEY: "burrito"
+        # env:
+        #   DVAPIKEY: "burrito"
+        #   DV_APIKEY: "burrito"
+        #   DV_API_KEY: "burrito"
         run: |
           set -euo pipefail
           TEST_SUITE=$(cat tests/integration-tests.txt)
@@ -211,28 +211,56 @@ jobs:
           
           # -Dmaven.test.failure.ignore=true forces the JVM to shut down cleanly
           # and write the jacoco.exec file, even when tests fail.
-          mvn test \
+          mvn jacoco:prepare-agent test \
             -Dtest="$TEST_SUITE" \
             -Dmaven.test.failure.ignore=true \
             -Ddataverse.test.baseurl=http://localhost:8080 \
             -DcompilerArgument=-Xlint:unchecked
-        
+
       # ---------------------------
-      # GENERATE REPORTS & DEPOSIT TO COVERALLS
+      # COLLECT, MERGE & GENERATE
       # ---------------------------
-      - name: Deposit to Coveralls
+      - name: Scrape and Merge All Coverage
         if: always()
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        continue-on-error: true 
         run: |
           set -euo pipefail
+          mkdir -p target/all-execs
           
-          # The pom.xml automatically merged the files and put them here:
-          mvn coveralls:report \
-            -P all-unit-tests \
-            -DrepoToken=$COVERALLS_REPO_TOKEN \
-            -DjacocoReports=target/site/jacoco-merged-test-coverage-report/jacoco.xml
+          # 1. Grab everything from the container (Server-side coverage)
+          echo "Scraping .exec files from container..."
+          # This finds any .exec file in the container and copies it out
+          FILES=$(docker exec dev_dataverse find / -name "*.exec" 2>/dev/null || true)
+          for f in $FILES; do
+            dest_name=$(echo "$f" | tr '/' '_')
+            docker cp "dev_dataverse:$f" "target/all-execs/$dest_name" || true
+          done
+
+          # 2. Collect everything from the runner (Unit test coverage)
+          echo "Collecting runner-side .exec files..."
+          find target -name "*.exec" -not -path "target/all-execs/*" -exec cp {} target/all-execs/ \; || true
+
+          # 3. Use Maven to merge them and generate the site
+          # We point JaCoCo to the folder where we dumped everything
+          mvn jacoco:merge jacoco:report \
+            -Djacoco.merge.dataFilesDir=target/all-execs/ \
+            -Djacoco.destFile=target/jacoco-merged.exec
+        
+      # # ---------------------------
+      # # GENERATE REPORTS & DEPOSIT TO COVERALLS
+      # # ---------------------------
+      # - name: Deposit to Coveralls
+      #   if: always()
+      #   env:
+      #     COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      #   continue-on-error: true 
+      #   run: |
+      #     set -euo pipefail
+          
+      #     # The pom.xml automatically merged the files and put them here:
+      #     mvn coveralls:report \
+      #       -P all-unit-tests \
+      #       -DrepoToken=$COVERALLS_REPO_TOKEN \
+      #       -DjacocoReports=target/site/jacoco-merged-test-coverage-report/jacoco.xml
         
       # ---------------------------
       # UPLOAD SUREFIRE/FAILSAFE REPORTS
