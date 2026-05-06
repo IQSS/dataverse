@@ -1,0 +1,253 @@
+{
+  "files": "Files",
+  "filesLoading": "Files loading spinner symbol",
+  "view": {
+    "toggle": {
+      "label": "Files view selector",
+      "table": "Table",
+      "tree": "Tree"
+    }
+  },
+  "tree": {
+    "label": "Dataset files",
+    "toolbar": {
+      "label": "Selection actions"
+    },
+    "head": {
+      "name": "Name",
+      "size": "Size",
+      "count": "Files",
+      "actions": "Actions"
+    },
+    "row": {
+      "expandFolder": "Expand {{name}}",
+      "collapseFolder": "Collapse {{name}}",
+      "selectFolder": "Select folder {{name}}",
+      "selectFile": "Select file {{name}}",
+      "downloadFolder": "Download folder {{name}}",
+      "downloadFile": "Download file {{name}}"
+    },
+    "selection": {
+      "none": "No files selected",
+      "fileCount_one": "file",
+      "fileCount_other": "files",
+      "includesFolders": "folders included",
+      "clear": "Clear"
+    },
+    "download": {
+      "button": "Download zip",
+      "enumerating": "Listing files…",
+      "preparing": "Preparing zip…",
+      "streaming": "Streaming…",
+      "tray": {
+        "label": "Zip download progress",
+        "preparing": "Preparing zip…",
+        "streaming": "Streaming files into zip…",
+        "paused": "Download paused — file failed",
+        "firstPass_one": "First pass complete — {{count}} file failed",
+        "firstPass_other": "First pass complete — {{count}} files failed",
+        "complete": "Download complete",
+        "completeWithSkipped_one": "Download complete — {{count}} skipped",
+        "completeWithSkipped_other": "Download complete — {{count}} skipped",
+        "error": "Download failed",
+        "cancelled": "Download cancelled",
+        "files": "files",
+        "pass2": "pass 2 of 2",
+        "now": {
+          "paused": "Paused",
+          "awaiting": "Awaiting retry decision",
+          "done": "Done",
+          "cancelled": "Cancelled"
+        },
+        "failed": "Failed to fetch file",
+        "retry": "Retry this file",
+        "skip": "Skip",
+        "deferToEnd": "Skip & retry at end",
+        "skipAll": "Skip all remaining failures",
+        "notIncluded_one": "{{count}} file was not included in the zip",
+        "notIncluded_other": "{{count}} files were not included in the zip",
+        "twopassHint": "First pass finished. The zip will be finalised after a second-pass retry of the failures.",
+        "retryFailed_one": "Download {{count}} missing file",
+        "retryFailed_other": "Download {{count}} missing files",
+        "done": "Done",
+        "skipped_one": "{{count}} file skipped",
+        "skipped_other": "{{count}} files skipped",
+        "skippedManifest": "A manifest.txt listing skipped files has been added to the root of the zip.",
+        "hint": "Streamed locally into one zip — no server-side ZIP.",
+        "cancel": "Cancel",
+        "close": "Close"
+      }
+    },
+    "state": {
+      "loading": "Loading file index…",
+      "loadingFolder": "Loading folder…",
+      "loadingMore": "Loading…",
+      "loadMore": "Load more",
+      "error": "Couldn't load file index",
+      "retry": "Retry",
+      "empty": "This dataset has no files",
+      "noMatches": "No files match \"{{query}}\""
+    }
+  },
+
+  "errorUnkownGetFilesFromDataset": "There was an error getting the files total download size",
+  "errorUnkownGetFilesCountInfo": "There was an error getting the files count info",
+  "errorUnkownGetFilesTotalDownloadSize": "There was an error getting the files total download size",
+  "table": {
+    "rowSelection": {
+      "filesSelected_one": "{{count}} file is currently selected.",
+      "filesSelected_other": "{{count}} files are currently selected.",
+      "selectAll": "Select all {{count}} files in this dataset.",
+      "clearSelection": "Clear selection."
+    },
+    "zipDownloadExceedsLimit": "The overall size of the files selected ({{selectionTotalSize}}) for download exceeds the zip limit of {{zipDownloadSizeLimit}}. Please unselect some files to continue.",
+    "tabularData": {
+      "name": "Tabular Data",
+      "variables": "Variables",
+      "observations": "Observations"
+    },
+    "embargoDate": {
+      "embargoedWillBeUntil": "Draft: will be embargoed until",
+      "embargoedUntil": "Embargoed until",
+      "embargoedWasThrough": "Was embargoed until"
+    },
+    "downloads": "Downloads",
+    "date": {
+      "metadataReleased": "Metadata Released",
+      "published": "Published",
+      "deposited": "Deposited"
+    },
+    "copyToClipboard": {
+      "clickToCopy": "Click to copy",
+      "correctlyCopiedIcon": "Correctly copied to clipboard icon",
+      "copyToClipboardIcon": "Copy to clipboard icon"
+    },
+    "noFiles": "There are no files in this dataset."
+  },
+  "criteria": {
+    "sortBy": {
+      "title": "Sort",
+      "icon": "Sort By Icon",
+      "options": {
+        "name_az": "Name (A-Z)",
+        "name_za": "Name (Z-A)",
+        "oldest": "Oldest",
+        "newest": "Newest",
+        "size": "Size",
+        "type": "Type"
+      }
+    },
+    "filters": {
+      "title": "Filter by"
+    },
+    "filterByType": {
+      "title": "File Type"
+    },
+    "filterByTag": {
+      "title": "File Tags"
+    },
+    "filterByAccess": {
+      "title": "Access",
+      "options": {
+        "all": "All",
+        "public": "Public",
+        "restricted": "Restricted",
+        "embargoed_public": "Embargoed then Public",
+        "embargoed_restricted": "Embargoed then Restricted"
+      }
+    },
+    "searchText": {
+      "placeholder": "Search this dataset...",
+      "label": "Search",
+      "submit": "Submit search"
+    }
+  },
+  "actions": {
+    "title": "File Actions",
+    "buttons": "File Action Buttons",
+    "optionsMenu": {
+      "title": "File Options",
+      "headers": {
+        "editOptions": "Edit Options"
+      },
+      "guestbookCollectModal": {
+        "title": "Dataset Guestbook",
+        "message": "A guestbook is assigned to this dataset. Users will be prompted to provide additional information when downloading files.",
+        "close": "Close",
+        "additionalQuestions": "Additional Questions",
+        "submitError": "Something went wrong submitting guestbook responses. Try again later.",
+        "downloadStarted": "Your download has started.",
+        "downloadError": "Something went wrong downloading the file. Try again later.",
+        "validation": {
+          "required": "This field is required.",
+          "invalidEmail": "Please enter a valid email address."
+        }
+      }
+    },
+    "alreadyDeletedAlert": {
+      "title": "Edit File",
+      "message": "This file has already been deleted (or replaced) in the current version. It may not be edited.",
+      "close": "Close"
+    },
+    "noSelectedFilesAlert": {
+      "title": "Select File(s)",
+      "message": "Please select one or more files.",
+      "close": "Close"
+    },
+    "accessFileMenu": {
+      "title": "Access File",
+      "headers": {
+        "fileAccess": "File Access"
+      },
+      "downloadOptions": {
+        "title": "Download Options",
+        "options": {
+          "original": "Original File Format",
+          "RData": "R Data",
+          "tabular": "Tab-Delimited"
+        }
+      }
+    },
+    "editFilesMenu": {
+      "title": "Edit Files",
+      "options": {
+        "metadata": "Metadata",
+        "unrestrict": "Unrestrict",
+        "restrict": "Restrict",
+        "replace": "Replace",
+        "embargo": "Embargo",
+        "provenance": "Provenance",
+        "delete": "Delete"
+      }
+    },
+    "downloadFiles": {
+      "title": "Download",
+      "options": {
+        "original": "Original Format",
+        "archival": "Archival Format (.tab)"
+      }
+    }
+  },
+  "requestAccess": {
+    "title": "Request Access",
+    "askToAcceptTerms": "Please confirm and/or complete the information needed below in order to request access to files in this dataset",
+    "terms": "Terms of Access for Restricted Files",
+    "confirmation": "Accept",
+    "cancel": "Cancel",
+    "close": "Close",
+    "embargoed": "Files are unavailable during the specified embargo",
+    "embargoedThenRestricted": "Files are unavailable during the specified embargo and restricted after that",
+    "requestNotAllowed": "Users may not request access to files",
+    "accessRequested": "Access Requested"
+  },
+  "ingest": {
+    "inProgress": "Ingest in progress...",
+    "error": {
+      "info": "File available in original format only",
+      "tabularIngest": "Tabular ingest",
+      "tabularIngestGuide": "Tabular Data Files - Dataverse User Guide",
+      "reportMessage": "was unsuccessful. {{reportMessage}}",
+      "reportMessageDefault": "was unsuccessful. Ingest failed. No further information is available."
+    }
+  }
+}

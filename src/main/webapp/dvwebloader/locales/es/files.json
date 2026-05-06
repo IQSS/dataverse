@@ -1,0 +1,164 @@
+{
+  "files": "Ficheros",
+  "filesLoading": "Símbolo de carga de ficheros",
+  "errorUnkownGetFilesFromDataset": "Hubo un error al obtener el tamaño total de descarga de los ficheros",
+  "errorUnkownGetFilesCountInfo": "Hubo un error al obtener la información del conteo de ficheros",
+  "errorUnkownGetFilesTotalDownloadSize": "Hubo un error al obtener el tamaño total de descarga de los ficheros",
+  "table": {
+    "rowSelection": {
+      "filesSelected_one": "{{count}} fichero seleccionado actualmente.",
+      "filesSelected_other": "{{count}} ficheros seleccionados actualmente.",
+      "selectAll": "Seleccionar todos los {{count}} ficheros en este dataset.",
+      "clearSelection": "Borrar selección."
+    },
+    "zipDownloadExceedsLimit": "El tamaño total de los ficheros seleccionados ({{selectionTotalSize}}) para descargar excede el límite del zip de {{zipDownloadSizeLimit}}. Por favor, deselecciona algunos ficheros para continuar.",
+    "tabularData": {
+      "name": "Datos tabulares",
+      "variables": "Variables",
+      "observations": "Observaciones"
+    },
+    "embargoDate": {
+      "embargoedWillBeUntil": "Borrador: estará embargado hasta",
+      "embargoedUntil": "Embargado hasta",
+      "embargoedWasThrough": "Estuvo embargado hasta"
+    },
+    "downloads": "Descargas",
+    "date": {
+      "metadataReleased": "Metadatos publicados",
+      "published": "Publicado",
+      "deposited": "Depositado"
+    },
+    "copyToClipboard": {
+      "clickToCopy": "Haz clic para copiar",
+      "correctlyCopiedIcon": "Copiado correctamente al portapapeles",
+      "copyToClipboardIcon": "Ícono de copiar al portapapeles"
+    },
+    "noFiles": "No hay ficheros en este dataset."
+  },
+  "criteria": {
+    "sortBy": {
+      "title": "Ordenar",
+      "icon": "Ícono de ordenar",
+      "options": {
+        "name_az": "Nombre (A-Z)",
+        "name_za": "Nombre (Z-A)",
+        "oldest": "Más antiguos",
+        "newest": "Más recientes",
+        "size": "Tamaño",
+        "type": "Tipo"
+      }
+    },
+    "filters": {
+      "title": "Filtrar por"
+    },
+    "filterByType": {
+      "title": "Tipo de archivo"
+    },
+    "filterByTag": {
+      "title": "Etiquetas de archivo"
+    },
+    "filterByAccess": {
+      "title": "Acceso",
+      "options": {
+        "all": "Todos",
+        "public": "Público",
+        "restricted": "Restringido",
+        "embargoed_public": "Embargado y luego público",
+        "embargoed_restricted": "Embargado y luego restringido"
+      }
+    },
+    "searchText": {
+      "placeholder": "Buscar en este dataset...",
+      "label": "Buscar",
+      "submit": "Enviar búsqueda"
+    }
+  },
+  "actions": {
+    "title": "Acciones de archivo",
+    "buttons": "Botones de acción de archivo",
+    "optionsMenu": {
+      "title": "Opciones de archivo",
+      "headers": {
+        "editOptions": "Opciones de edición"
+      },
+      "guestbookCollectModal": {
+        "title": "Libro de visitas del dataset",
+        "message": "Hay un libro de visitas asignado a este dataset. Se pedirá a los usuarios que proporcionen información adicional al descargar archivos.",
+        "close": "Cerrar",
+        "additionalQuestions": "Preguntas adicionales",
+        "submitError": "Algo salió mal al enviar las respuestas del libro de visitas. Inténtalo de nuevo más tarde.",
+        "downloadStarted": "Tu descarga ha comenzado.",
+        "downloadError": "Algo salió mal al descargar el archivo. Inténtalo de nuevo más tarde.",
+        "validation": {
+          "required": "Este campo es obligatorio.",
+          "invalidEmail": "Por favor, ingresa un correo electrónico válido."
+        }
+      }
+    },
+    "alreadyDeletedAlert": {
+      "title": "Editar archivo",
+      "message": "Este fichero ya ha sido eliminado (o reemplazado) en la versión actual. No puede ser editado.",
+      "close": "Cerrar"
+    },
+    "noSelectedFilesAlert": {
+      "title": "Seleccionar archivo(s)",
+      "message": "Por favor selecciona uno o más ficheros.",
+      "close": "Cerrar"
+    },
+    "accessFileMenu": {
+      "title": "Acceder al archivo",
+      "headers": {
+        "fileAccess": "Acceso al archivo"
+      },
+      "downloadOptions": {
+        "title": "Opciones de descarga",
+        "options": {
+          "original": "Formato de fichero original",
+          "RData": "R Data",
+          "tabular": "Delimitado por tabulaciones"
+        }
+      }
+    },
+    "editFilesMenu": {
+      "title": "Editar ficheros",
+      "options": {
+        "metadata": "Metadatos",
+        "unrestrict": "Quitar restricción",
+        "restrict": "Restringir",
+        "replace": "Reemplazar",
+        "embargo": "Embargo",
+        "provenance": "Procedencia",
+        "delete": "Eliminar"
+      }
+    },
+    "downloadFiles": {
+      "title": "Descargar",
+      "options": {
+        "original": "Formato original",
+        "archival": "Formato de fichero (.tab)"
+      }
+    }
+  },
+  "requestAccess": {
+    "title": "Solicitar acceso",
+    "askToAcceptTerms": "Por favor confirma y/o completa la información necesaria a continuación para solicitar acceso a los ficheros en este dataset",
+    "terms": "Términos de acceso para ficheros restringidos",
+    "confirmation": "Aceptar",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "embargoed": "Los ficheros no están disponibles durante el embargo especificado",
+    "embargoedThenRestricted": "Los ficheros no están disponibles durante el embargo especificado y luego estarán restringidos",
+    "requestNotAllowed": "Los usuarios no pueden solicitar acceso a los ficheros",
+    "accessRequested": "Acceso solicitado"
+  },
+  "ingest": {
+    "inProgress": "Ingesta en progreso...",
+    "error": {
+      "info": "Fichero disponible solo en formato original",
+      "tabularIngest": "Ingesta tabular",
+      "tabularIngestGuide": "Ficheros de datos tabulares - Guía del usuario de Dataverse",
+      "reportMessage": "no fue exitosa. {{reportMessage}}",
+      "reportMessageDefault": "no fue exitosa. La ingesta falló. No hay más información disponible."
+    }
+  }
+}

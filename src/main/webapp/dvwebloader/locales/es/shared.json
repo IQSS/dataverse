@@ -1,0 +1,325 @@
+{
+  "collection": "Colección",
+  "collections": "Colecciones",
+  "dataset": "Dataset",
+  "datasets": "Datasets",
+  "file": "Fichero",
+  "files": "Ficheros",
+  "page": "Página",
+  "asterisksIndicateRequiredFields": "Los asteriscos indican los campos obligatorios",
+  "remove": "Eliminar",
+  "add": "Agregar",
+  "yes": "Sí",
+  "no": "No",
+  "cancel": "Cancelar",
+  "close": "Cerrar",
+  "continue": "Continuar",
+  "more": "Más...",
+  "less": "Menos...",
+  "share": "Compartir",
+  "delete": "Eliminar",
+  "saveChanges": "Guardar cambios",
+  "saving": "Guardando",
+  "search": "Buscar",
+  "searchSubmitButtonLabel": "Enviar búsqueda",
+  "clearSearch": "Limpiar búsqueda",
+  "submitSearch": "Enviar búsqueda",
+  "dragHandleLabel": "presiona espacio para seleccionar y teclas para arrastrar",
+  "unknown": "Desconocido",
+  "find": "Buscar",
+  "link": "Enlace",
+  "allowPopups": "Debes habilitar las ventanas emergentes en tu navegador para abrir herramientas externas en una nueva ventana o pestaña.",
+  "externalToolOpeningFailed": "Hubo un problema al abrir la herramienta externa. Por favor, inténtalo de nuevo.",
+  "exportMetadata": "Exportar metadatos",
+  "pageNumberNotFound": {
+    "heading": "Número de página no encontrado",
+    "message": "El número de página solicitado no existe. Intenta con un número diferente."
+  },
+  "pagination": {
+    "results_one": "1 {{item}}",
+    "results_other": "{{start}} a {{end}} de {{formattedCount}} {{item}}s",
+    "accumulated": {
+      "one": "{{formattedCount}} {{item}}",
+      "lessThanPageSize": "{{formattedCount}} {{item}}s",
+      "moreThanPageSize": "{{accumulated}} de {{formattedCount}} {{item}}s mostrados"
+    },
+    "pageSize": "{{item}}s por página"
+  },
+  "citationBlock": {
+    "learnAbout": "Aprender sobre",
+    "standards": "Estándares de citación de datos"
+  },
+  "datasetMetadataForm": {
+    "metadataTip": {
+      "title": "Consejo de metadatos",
+      "content": "Después de agregar el datasets, haz clic en el botón Editar datasets para agregar más metadatos."
+    },
+    "validationAlert": {
+      "title": "Error de validación",
+      "content": "Faltan campos obligatorios o hay un error de validación. Desplázate hacia abajo para ver los detalles."
+    },
+    "requiredFields": "Los asteriscos indican los campos obligatorios",
+    "mayBecomeRequired": "Uno o más de estos campos pueden volverse obligatorios si agregas a uno o más de estos campos opcionales.",
+    "field": {
+      "required": "{{displayName}} es obligatorio",
+      "invalid": {
+        "url": "{{displayName}} {{value}} no es una URL válida.",
+        "email": "{{displayName}} {{value}} no es un correo electrónico válido.",
+        "int": "{{displayName}} no es un número entero válido.",
+        "float": "{{displayName}} no es un número decimal válido.",
+        "date": {
+          "base": "{{displayName}} no es una fecha válida.",
+          "empty": "La fecha está vacía.",
+          "adDigits": "El año d.C. debe ser numérico.",
+          "adRange": "El año d.C. no puede ser mayor que 9999.",
+          "bracketNotNumeric": "El año entre corchetes debe ser numérico.",
+          "bracketNegative": "El año entre corchetes no puede ser negativo.",
+          "bracketRange": "El año entre corchetes está fuera de rango.",
+          "invalidMonth": "El mes está fuera de rango.",
+          "invalidDay": "El día está fuera de rango.",
+          "invalidTime": "La hora está fuera de rango.",
+          "unrecognized": "El formato de fecha no es reconocido."
+        }
+      }
+    },
+    "status": {
+      "submitting": "Enviando...",
+      "success": "¡Formulario enviado con éxito!",
+      "failed": "Error: el envío falló."
+    },
+    "states": {
+      "submitting": "Formulario enviándose",
+      "submissionSuccess": "Envío del formulario exitoso"
+    },
+    "saveDataset": "Guardar dataset"
+  },
+  "collectionForm": {
+    "fields": {
+      "hostCollection": {
+        "label": "Colección contenedora",
+        "description": "La colección que contiene estos datos.",
+        "required": "La colección contenedora es obligatoria"
+      },
+      "name": {
+        "label": "Nombre de la colección",
+        "description": "El proyecto, departamento, universidad, profesor o revista para los cuales esta colección contendrá datos.",
+        "required": "El nombre de la colección es obligatorio",
+        "invalid": {
+          "maxLength": "El nombre de la colección debe tener como máximo {{maxLength}} caracteres."
+        }
+      },
+      "affiliation": {
+        "label": "Afiliación",
+        "description": "La organización con la cual esta colección está afiliada.",
+        "invalid": {
+          "maxLength": "La afiliación debe tener como máximo {{maxLength}} caracteres."
+        }
+      },
+      "alias": {
+        "label": "Identificador",
+        "description": "Nombre corto usado para la URL de esta colección.",
+        "required": "El identificador es obligatorio",
+        "invalid": {
+          "format": "El identificador no es válido. Los caracteres válidos son a-Z, 0-9, '_', y '-'.",
+          "numberOnly": "El identificador no debe ser solo numérico.",
+          "maxLength": "El identificador debe tener como máximo {{maxLength}} caracteres."
+        },
+        "suggestion": "Psst... prueba esto"
+      },
+      "storage": {
+        "label": "Almacenamiento",
+        "description": "Un servicio de almacenamiento que se usará para los conjuntos de datos en esta colección."
+      },
+      "type": {
+        "label": "Categoría",
+        "description": "El tipo que mejor refleja esta colección.",
+        "required": "La categoría es obligatoria"
+      },
+      "description": {
+        "label": "Descripción",
+        "description": "Un resumen que describe el propósito, la naturaleza o el alcance de esta colección.",
+        "subLabel": "Este campo solo admite ciertas <htmlTooltip>etiquetas HTML</htmlTooltip>.",
+        "htmlAllowedTags": "<a>, <b>, <blockquote>, <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, <strong>, <strike>, <u>, <ul>"
+      },
+      "contacts": {
+        "label": "Correo electrónico",
+        "description": "La(s) dirección(es) de correo electrónico del(los) contacto(s) de la colección.",
+        "required": "El correo electrónico es obligatorio",
+        "invalid": "El correo electrónico no es válido"
+      },
+      "metadataFields": {
+        "sectionLabel": "Campos de metadatos",
+        "helperText": "Elige los campos de metadatos para usar en las plantillas de datasets y al agregar un datasets a esta colección.",
+        "useMetadataFieldsFrom": "Usar campos de metadatos de",
+        "inputLevelsTable": {
+          "hideTableAriaLabel": "Ocultar tabla de niveles de entrada",
+          "requiredByDataverse": "Requerido por Dataverse",
+          "hidden": "Oculto",
+          "optional": "Opcional",
+          "required": "Obligatorio",
+          "conditionallyRequired": "Condicionalmente obligatorio"
+        }
+      },
+      "browseSearchFacets": {
+        "label": "Facetas de navegación/búsqueda",
+        "helperText": "Elige y ordena los campos de metadatos para usar como facetas al navegar esta colección.",
+        "useBrowseSearchFacetsFrom": "Usar facetas de navegación/búsqueda de",
+        "selectedFacets": "Seleccionadas",
+        "invalid": {
+          "minLength": "Debe seleccionarse al menos una faceta."
+        }
+      }
+    },
+    "confirmResetModal": {
+      "title": "Restablecer modificaciones",
+      "warning": "¿Estás seguro de que deseas restablecer los campos de metadatos seleccionados? Si haces esto, cualquier personalización (oculto, obligatorio, opcional) que hayas realizado dejará de aparecer.",
+      "continue": "Continuar",
+      "cancel": "Cancelar"
+    },
+    "submitStatus": {
+      "createSuccess": "Colección creada con éxito.",
+      "editSuccess": "Colección actualizada con éxito."
+    },
+    "createCollection": "Crear colección"
+  },
+  "fileMetadataForm": {
+    "fields": {
+      "fileName": {
+        "label": "Nombre del archivo",
+        "description": "El nombre del fichero.",
+        "required": "El nombre del fichero es obligatorio",
+        "invalid": {
+          "duplicateCombination": "El nombre del archivo, la ruta o la combinación de ruta + nombre deben ser únicos.",
+          "maxLength": "El nombre del fichero debe tener como máximo {{maxLength}} caracteres.",
+          "characters": "El nombre del fichero contiene caracteres no válidos. Los siguientes caracteres no están permitidos: : < > ; # / \" * | ? \\"
+        }
+      },
+      "filePath": {
+        "label": "Ruta del archivo",
+        "description": "Ruta de estructura de directorios jerárquica utilizada para mostrar la organización de ficheros y respaldar la reproducibilidad.",
+        "invalid": {
+          "duplicateCombination": "El nombre del archivo, la ruta o la combinación de ruta + nombre deben ser únicos.",
+          "maxLength": "La ruta del fichero debe tener como máximo {{maxLength}} caracteres.",
+          "characters": "La ruta del fichero contiene caracteres no válidos. Solo se permiten letras, números, espacios, guiones, puntos, barras diagonales y barras invertidas."
+        }
+      },
+      "description": {
+        "label": "Descripción",
+        "invalid": {
+          "maxLength": "La descripción debe tener como máximo {{maxLength}} caracteres."
+        }
+      }
+    },
+    "saveChanges": "Guardar cambios",
+    "cancelChanges": "Cancelar cambios"
+  },
+  "fileUploader": {
+    "supportedFiles": "Todos los tipos de ficheros son compatibles para cargar y descargar en su formato original. Si estás cargando ficheros Excel, CSV, TSV, RData, Stata o SPSS, <anchor>consulta las guías</anchor> para soporte tabular y limitaciones.",
+    "accordionTitle": "Cargar con HTTP a través de tu navegador",
+    "selectFileSingle": "Seleccionar fichero para agregar",
+    "selectFileMultiple": "Seleccionar ficheros para agregar",
+    "dragDropSingle": "Arrastra y suelta el fichero aquí.",
+    "dragDropMultiple": "Arrastra y suelta ficheros y/o directorios aquí.",
+    "uploadWidgetHelp": "Selecciona ficheros o arrástralos y suéltalos en el widget de carga. Máximo de {{maxFilesPerUpload}} ficheros por carga.",
+    "uploadWidgetMaxFilesHelp": "Máximo de {{maxFilesAvailableToUpload}} ficheros disponibles para cargar.",
+    "uploadWidgetStorageQuotaHelp": "Cuota de almacenamiento: {{storageQuotaRemaining}} restantes.",
+    "cancelUpload": "Cancelar carga",
+    "uploadFailed": "Ocurrió un error al cargar este fichero.",
+    "loadingConfiguration": "Cargando configuración",
+    "replaceFileMultipleError": "Solo puedes soltar un fichero para reemplazar.",
+    "replaceFileAlreadyOneFileError": "Ya tienes un fichero para reemplazar. Por favor, elimínalo primero.",
+    "fileReplacedSuccessfully": "El fichero se reemplazó con éxito.",
+    "defaultFileReplaceError": "Algo salió mal al reemplazar el fichero. Inténtalo nuevamente más tarde.",
+    "defaultAddUploadedFilesToDatasetError": "Algo salió mal al agregar los ficheros cargados al datasets. Inténtalo nuevamente más tarde.",
+    "filesAddedToDatasetSuccessfully": "Ficheros agregados al datasets con éxito.",
+    "fileUploadSkipped": {
+      "dsStore": "Carga de fichero omitida: no se permiten ficheros .DS_Store.",
+      "alreadyUploaded": "El fichero {{fileName}} se omitió porque ya fue cargado."
+    },
+    "fileTypeDifferentModal": {
+      "title": "Tipo de fichero diferente",
+      "message": "El fichero original ({{originalFileType}}) y el fichero de reemplazo ({{replacementFileType}}) son de tipos diferentes. ¿Deseas continuar?"
+    },
+    "confirmLeaveModal": {
+      "title": "¿Descartar ficheros cargados?",
+      "message": "Los ficheros cargados no se han guardado. Si sales ahora, se perderán.",
+      "stay": "Permanecer en esta página",
+      "leave": "Salir sin guardar"
+    },
+    "uploadedFilesList": {
+      "removeFile": "Eliminar archivo",
+      "editSelectedFiles": "Editar ficheros seleccionados",
+      "removeSelectedFiles": "Eliminar ficheros seleccionados",
+      "uploadedFile": "Fichero cargado",
+      "uploadedFiles": "Ficheros cargados",
+      "selectAllFiles": "Seleccionar todos los ficheros",
+      "deselectAllFiles": "Deseleccionar todos los ficheros"
+    }
+  },
+  "contact": {
+    "message": "Mensaje",
+    "subject": "Asunto",
+    "title": {
+      "collection": "Contacto",
+      "dataset": "Contactar al propietario"
+    },
+    "contactCollection": "Enviar correo al contacto de la colección",
+    "contactDataset": "Enviar correo al contacto del datasets",
+    "helpText": "Envía un correo al contacto de esta colección.",
+    "verificationText": "Completa esto para demostrar que no eres un robot.",
+    "contactSuccess": "Mensaje enviado.",
+    "validation": {
+      "captchaInput": {
+        "required": "La validación es obligatoria.",
+        "invalid": "Respuesta incorrecta.",
+        "onlyNumber": "Solo se permiten números.",
+        "maxLength": "La respuesta no puede exceder {{maxLength}}."
+      },
+      "email": {
+        "invalid": "Formato de correo electrónico no válido.",
+        "required": "El correo electrónico es obligatorio.",
+        "maxLength": "El correo electrónico no puede exceder {{maxLength}}."
+      },
+      "subject": {
+        "required": "El asunto es obligatorio.",
+        "maxLength": "El asunto no puede exceder {{maxLength}}."
+      },
+      "message": {
+        "required": "El mensaje es obligatorio.",
+        "maxLength": "El mensaje no puede exceder {{maxLength}}."
+      }
+    },
+    "defaultFeedbackSubmitError": "Ocurrió un error al enviar tus comentarios. Por favor, inténtalo de nuevo más tarde."
+  },
+  "downloadCitation": {
+    "title": "Descargar cita",
+    "viewStyledCitation": "Ver cita con estilo",
+    "downloadEndNoteXML": "Descargar EndNote XML",
+    "downloadRIS": "Descargar RIS",
+    "downloadBibTeX": "Descargar BibTeX",
+    "selectCSLStyle": "Seleccionar un estilo CSL",
+    "citationInStyle": "Cita en estilo {{styleName}}",
+    "downloadError": "Ocurrió un error al descargar la cita",
+    "styledCitation": "Cita con estilo"
+  },
+  "expandableContent": {
+    "truncateMoreBtn": "Leer todo el {{contentName}}",
+    "truncateLessBtn": "Contraer {{contentName}}",
+    "truncateMoreTip": "Haz clic para leer todo el {{contentName}}",
+    "truncateLessTip": "Haz clic para contraer el {{contentName}}"
+  },
+  "collectionLinkSelect": {
+    "label": "Tu colección",
+    "select": "Seleccionar una colección",
+    "placeholder": "Ingresa el nombre de la colección",
+    "noOptions": "No se encontraron colecciones",
+    "onlyOneCollectionToLink": "Tienes una colección que puedes vincular a este {{linkingObjectType}}.",
+    "onlyOneCollectionToUnlink": "Tienes una colección que puedes desvincular de este {{linkingObjectType}}.",
+    "noCollectionsToLink": "No aparecen colecciones para vincular. Puede que ya estén vinculadas o que aún no tengas ninguna. Crea una nueva colección para continuar.",
+    "noCollectionsToUnlink": "No aparecen colecciones para desvincular."
+  },
+  "exploreOptions": "Explorar opciones",
+  "queryOptions": "Opciones de consulta",
+  "configureOptions": "Configurar opciones",
+  "language": "Idioma"
+}
