@@ -90,6 +90,12 @@ jobs:
             -Djacoco.append=true \
             -DskipUnitTests=false \
             -Dmaven.test.failure.ignore=true
+
+      - name: Download JaCoCo agent
+        run: |
+          mkdir -p jacoco
+          curl -Ls https://repo1.maven.org/maven2/org/jacoco/org.jacoco.agent/0.8.11/org.jacoco.agent-0.8.11-runtime.jar \
+            -o jacoco/jacocoagent.jar
           
       # ---------------------------
       # START CONTAINERS (BACKGROUND)
@@ -218,6 +224,12 @@ jobs:
             -Ddataverse.test.baseurl=http://localhost:8080 \
             -DcompilerArgument=-Xlint:unchecked
 
+      - name: Stop Dataverse stack
+        if: always()
+        run: |
+          set -euo pipefail
+          mvn -Pct docker:stop || true
+
       # ---------------------------
       # Scrape and Merge JaCoCo Coverage
       # ---------------------------
@@ -256,7 +268,8 @@ jobs:
           java -jar jacococli.jar report target/jacoco-merged.exec \
             --classfiles target/classes \
             --sourcefiles src/main/java \
-            --html target/site/jacoco-merged-report
+            --html target/site/jacoco-merged-report \
+            --xml target/site/jacoco-merged-report/jacoco.xml
 
           echo "JaCoCo merge + report complete."
         
@@ -367,11 +380,6 @@ jobs:
       # ---------------------------
       # SHUTDOWN STACK
       # ---------------------------
-      - name: Stop Dataverse stack
-        if: always()
-        run: |
-          set -euo pipefail
-          mvn -Pct docker:stop || true
           
       - name: Final Docker cleanup
         if: always()
