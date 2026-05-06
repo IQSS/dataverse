@@ -86,8 +86,8 @@ jobs:
         run: |
           set -euo pipefail
           # Force unit tests to run, generate coßerage, and ignore failures so the build continues
-          mvn clean package -Pct \
-            jacoco:prepare-agent \
+          mvn jacoco:prepare-agent clean package -Pct \
+            -Djacoco.append=true \
             -DskipUnitTests=false \
             -Dmaven.test.failure.ignore=true
           
@@ -212,6 +212,7 @@ jobs:
           # -Dmaven.test.failure.ignore=true forces the JVM to shut down cleanly
           # and write the jacoco.exec file, even when tests fail.
           mvn jacoco:prepare-agent test \
+            -Djacoco.append=true \
             -Dtest="$TEST_SUITE" \
             -Dmaven.test.failure.ignore=true \
             -Ddataverse.test.baseurl=http://localhost:8080 \
