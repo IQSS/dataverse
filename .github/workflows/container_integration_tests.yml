@@ -141,7 +141,7 @@ jobs:
 
       - name: Run Maven Integration Tests
         env:
-          DVAPIKEY: "burrito"
+          DV_API_KEY: "burrito"
         run: |
           set -euo pipefail
           TEST_SUITE=$(cat tests/integration-tests.txt)
@@ -155,27 +155,29 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
-
           mkdir -p target/all-execs
-
-          echo "Copying JaCoCo exec from container..."
-          docker cp dev_dataverse:/tmp/jacoco-it.exec target/all-execs/jacoco-it.exec || true
-
+          
+          echo "Downloading JaCoCo CLI..."
+          curl -Ls https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.11/org.jacoco.cli-0.8.11-nodeps.jar \
+            -o jacococli.jar
+          
+          echo "Dumping JaCoCo exec from running container via TCP..."
+          # This connects to the container on port 6300 and writes the data to the runner
+          java -jar jacococli.jar dump --address 127.0.0.1 --port 6300 --destfile target/all-execs/jacoco-it.exec || echo "Failed to dump from container"
+          
           echo "Collecting runner-side exec files..."
           find target -name "jacoco*.exec" -not -path "target/all-execs/*" \
             -exec cp {} target/all-execs/ \; || true
-
+            
           if ! compgen -G "target/all-execs/*.exec" > /dev/null; then
             echo "No exec files found"
             exit 0
           fi
-
-          curl -Ls https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.11/org.jacoco.cli-0.8.11-nodeps.jar \
-            -o jacococli.jar
-
+          
+          echo "Merging and Reporting..."
           java -jar jacococli.jar merge target/all-execs/*.exec \
             --destfile target/jacoco-merged.exec
-
+          
           java -jar jacococli.jar report target/jacoco-merged.exec \
             --classfiles target/classes \
             --sourcefiles src/main/java \
