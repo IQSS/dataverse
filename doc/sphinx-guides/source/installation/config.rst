@@ -3321,9 +3321,9 @@ Can also be set via *MicroProfile Config API* sources, e.g. the environment vari
 
 **Note:** This setting was previously called `dataverse.personOrOrg.orgPhraseArray` and expected a JsonArray of strings. Please update both the name and value format if using the old setting.
 
-.. _dataverse.api.signature-secret:
+.. _dataverse.api.signing-secret:
 
-dataverse.api.signature-secret
+dataverse.api.signing-secret
 ++++++++++++++++++++++++++++++
 
 Context: Dataverse has the ability to create "Signed URLs" for it's API calls. Using a signed URLs is more secure than
@@ -3331,13 +3331,13 @@ providing API tokens, which are long-lived and give the holder all of the permis
 are time limited and only allow the action of the API call in the URL. See :ref:`api-exttools-auth` and
 :ref:`api-native-signed-url` for more details. 
 
-The key used to sign a URL is created from the API token of the creating user plus a signature-secret provided by an administrator.
-**Using a signature-secret is highly recommended.** This setting defaults to an empty string. Using a non-empty 
-signature-secret makes it impossible for someone who knows an API token from forging signed URLs and provides extra security by 
+The key used to sign a URL is created from the API token of the creating user plus a signing-secret provided by an administrator.
+**Using a signing-secret is highly recommended.** This setting defaults to an empty string. Using a non-empty 
+signing-secret makes it impossible for someone who knows an API token from forging signed URLs and provides extra security by 
 making the overall signing key longer.
 
 **WARNING**:
-*Since the signature-secret is sensitive, you should treat it like a password.*
+*Since the signing-secret is sensitive, you should treat it like a password.*
 *See* :ref:`secure-password-storage` *to learn about ways to safeguard it.*
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_SIGNATURE_SECRET`` (although you shouldn't use environment variables for passwords) .
@@ -4729,7 +4729,7 @@ Whatever JSON you send will overwrite existing values. If you have any exiting `
 
 ``curl http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit | jq -r '.data.message'``
 
-The ``default`` key is optional and can be used to give limits to formats that are not specified in the JSON. If you omit the ``default`` key or set it to ``"-1"``, no limits are applied to formats not specified in the JSON. If you set it to ``"0"``, ingest will be disabled (but you can override this per-format).
+The ``default`` key is optional and can be used to give limits to formats that are not specified in the JSON. If you omit the ``default`` key or set it to ``"-1"``, no limits are applied to formats not specified in the JSON. If you set it to ``"0"``, ingest will be disabled (but you can override this per-format). If you wish to disable ingest for specific formats it may be preferable to instead set a value of ``"1"`` which will cause Dataverse to print a string such as ``rdata:disabled`` for the user's benefit.
 
 Add a format name (``csv``, ``dta``, etc., as listed above) to change the limit for that particular format.
 
@@ -4740,10 +4740,10 @@ Examples:
    ``curl -X PUT -d '{"Rdata":"1000000"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 2. If you want your Dataverse installation to not attempt to ingest XLSX files at all and apply a global limit of 512 MiB, use this setting:
 
-   ``curl -X PUT -d '{"default":"536870912", "XSLX":"0"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
+   ``curl -X PUT -d '{"default":"536870912", "XSLX":"1"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 3. If you want your Dataverse installation to not attempt to ingest files at all except for CSV files that are 256 MiB or smaller, use this setting:
 
-   ``curl -X PUT -d '{"default":"0", "CSV":"268435456"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
+   ``curl -X PUT -d '{"default":"1", "CSV":"268435456"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 
 .. _:HarvestingClientCallRateLimit:
 
@@ -4874,6 +4874,23 @@ See also :ref:`show-custom-popup-for-publishing-datasets` in the API Guide.
 Set whether a user will see the custom text when publishing all versions of a dataset
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:DatasetPublishPopupCustomTextOnAllVersions``
+
+.. _:DatasetSubmitForReviewPopupCustomText:
+
+:DatasetSubmitForReviewPopupCustomText
+++++++++++++++++++++++++++++++++++++++
+
+Set custom text a user will view when submitting a dataset for review. Note that this text is exposed via the "Info" endpoint of the :doc:`/api/native-api`.
+
+``curl -X PUT -d "Deposit License Requirements" http://localhost:8080/api/admin/settings/:DatasetSubmitForReviewPopupCustomText``
+
+If you have a long text string, you can upload it as a file as in the example below.
+
+``curl -X PUT --upload-file /tmp/long.txt http://localhost:8080/api/admin/settings/:DatasetSubmitForReviewPopupCustomText``
+
+There is a related setting called :ref:`:SubmitForReviewDatasetDisclaimerText` that also makes text appear on the popup when submitting for review, but it requires a checkbox to be clicked.
+
+See also :ref:`show-custom-popup-for-submitting-for-review-datasets` in the API Guide.
 
 :SearchHighlightFragmentSize
 ++++++++++++++++++++++++++++
@@ -5401,6 +5418,17 @@ The text displayed to the user that must be acknowledged prior to publishing a D
 There is a similar setting called :ref:`:DatasetPublishPopupCustomText` that also makes text appear on the popup when publishing, but it is only informational. There is no checkbox to click.
 
 See also :ref:`show-disclaimer-for-publishing-datasets` in the API Guide.
+
+.. _:SubmitForReviewDatasetDisclaimerText:
+
+:SubmitForReviewDatasetDisclaimerText
++++++++++++++++++++++++++++++++++++++
+
+The text displayed to the user that must be acknowledged prior to submitting a Dataset for review. When not set the acknowledgment is not required nor displayed.
+
+``curl -sS -X PUT -d 'I agree to the following:<br/>1. My submission has been fully anonymized (required for all human subject'\''s datasets).<br/>2. My submission does not violate any known copyright laws.<br/>3. I understand that I am liable for any and all violations of the Harvard Repository <a href=https://support.dataverse.harvard.edu/harvard-dataverse-general-terms-use>Terms of Use.</a>' http://localhost:8080/api/admin/settings/:SubmitForReviewDatasetDisclaimerText``
+
+See also :ref:`show-disclaimer-for-submit-for-review-datasets` in the API Guide.
 
 .. _:BagItHandlerEnabled:
 
