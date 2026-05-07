@@ -191,7 +191,7 @@ Usage example:
 
 .. code-block:: bash
 
-  curl "https://demo.dataverse.org/api/dataverses/root?ignoreSettingExcludeEmailFromExport=true"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root?ignoreSettingExcludeEmailFromExport=true"
 
 To view an unpublished Dataverse collection:
 
