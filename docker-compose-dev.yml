@@ -253,7 +253,16 @@ services:
       # preflight from the React uploader gets blocked when the
       # browser PUTs to the presigned MinIO URL.
       MINIO_API_CORS_ALLOW_ORIGIN: "*"
-    command: server /data --console-address ":9001"
+    # Use the YAML list form for `command` so each token is passed as a
+    # separate argv entry; the previous `command: server /data
+    # --console-address ":9001"` string form left literal double quotes
+    # embedded in the value, which MinIO then rejected with `Unable to
+    # split host port ":9001": invalid port number` and crash-looped.
+    command:
+      - server
+      - /data
+      - --console-address
+      - :9001
 
   # One-shot bucket bootstrap. Without this MinIO has no `mybucket`
   # and the first upload fails with NoSuchBucket. The companion uses
@@ -266,15 +275,19 @@ services:
       - dev_minio
     networks:
       - dataverse
-    entrypoint: >
-      /bin/sh -c "
-      until /usr/bin/mc alias set local http://minio:9000 4cc355_k3y s3cr3t_4cc355_k3y >/dev/null 2>&1; do
-        echo 'waiting for minio...'; sleep 2;
-      done;
-      /usr/bin/mc mb --ignore-existing local/mybucket;
-      echo 'mybucket ready';
-      exit 0;
-      "
+    # List-form entrypoint to avoid the YAML folded-scalar quoting
+    # trap that broke the previous `entrypoint: >` form (the embedded
+    # double quotes around `sh -c "..."` confused the shell parser).
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        until /usr/bin/mc alias set local http://minio:9000 4cc355_k3y s3cr3t_4cc355_k3y >/dev/null 2>&1; do
+          echo 'waiting for minio...'
+          sleep 2
+        done
+        /usr/bin/mc mb --ignore-existing local/mybucket
+        echo 'mybucket ready'
     restart: "no"
 
   previewers-provider:
