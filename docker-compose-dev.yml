@@ -247,27 +247,18 @@ services:
     environment:
       MINIO_ROOT_USER: 4cc355_k3y
       MINIO_ROOT_PASSWORD: s3cr3t_4cc355_k3y
-      # Permit browser-direct upload/download from any origin in dev.
-      # Mirrors the LocalStack bucket CORS rule we put on `mybucket`
-      # (see conf/localstack/buckets.sh) — without this the OPTIONS
-      # preflight from the React uploader gets blocked when the
-      # browser PUTs to the presigned MinIO URL.
-      MINIO_API_CORS_ALLOW_ORIGIN: "*"
-    # Use the YAML list form for `command` so each token is passed as a
-    # separate argv entry; the previous `command: server /data
-    # --console-address ":9001"` string form left literal double quotes
-    # embedded in the value, which MinIO then rejected with `Unable to
-    # split host port ":9001": invalid port number` and crash-looped.
-    command:
-      - server
-      - /data
-      - --console-address
-      - :9001
+    # MinIO's default CORS policy is permissive enough for the
+    # browser-direct PUT/GET path the React uploader uses (verified
+    # via curl OPTIONS preflight returning 204 with the expected
+    # Allow-* headers). No `MINIO_API_CORS_ALLOW_ORIGIN` override
+    # required, unlike LocalStack which needs an explicit bucket-level
+    # CORS rule (see conf/localstack/buckets.sh).
+    command: server /data
 
-  # One-shot bucket bootstrap. Without this MinIO has no `mybucket`
-  # and the first upload fails with NoSuchBucket. The companion uses
-  # the official `mc` client and exits when done; restart policy is
-  # "no" so the container doesn't loop.
+  # One-shot bucket bootstrap. MinIO does not auto-create buckets the
+  # way LocalStack's init scripts do, so a fresh clone has no
+  # `mybucket` and the first upload fails with NoSuchBucket. This
+  # companion runs `mc mb` once and exits.
   dev_minio_init:
     container_name: "dev_minio_init"
     image: minio/mc
@@ -275,9 +266,6 @@ services:
       - dev_minio
     networks:
       - dataverse
-    # List-form entrypoint to avoid the YAML folded-scalar quoting
-    # trap that broke the previous `entrypoint: >` form (the embedded
-    # double quotes around `sh -c "..."` confused the shell parser).
     entrypoint:
       - /bin/sh
       - -c
