@@ -17,6 +17,7 @@ import org.passay.CharacterRule;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -24,6 +25,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
+import java.io.File;
 import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -277,9 +279,38 @@ public class SystemConfig {
     public String getReusableComponentsBaseUrl() {
         String configured = JvmSettings.REUSABLE_COMPONENTS_BASE_URL.lookupOptional()
                 .orElse("/dvwebloader");
+        // Defensive sanity check: an operator-supplied URL is rendered
+        // verbatim into a JSF <script src=> attribute, so anything
+        // containing whitespace or quote characters could break the
+        // page out of the attribute. Allow only a same-origin path
+        // (starts with "/") or an absolute http(s) URL. Anything else
+        // falls back to the default; logged at FINE so misconfigurations
+        // surface during admin debugging without spamming the log.
+        if (!isSafeReusableComponentsBaseUrl(configured)) {
+            logger.fine("REUSABLE_COMPONENTS_BASE_URL value rejected as unsafe: " + configured
+                    + " — falling back to /dvwebloader");
+            configured = "/dvwebloader";
+        }
         return configured.endsWith("/")
                 ? configured.substring(0, configured.length() - 1)
                 : configured;
+    }
+
+    private static boolean isSafeReusableComponentsBaseUrl(String value) {
+        if (value == null || value.isEmpty()) return false;
+        // No control characters or HTML-attribute-breaking chars.
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c <= 0x20 || c == '"' || c == '\'' || c == '<' || c == '>') return false;
+        }
+        if (value.startsWith("/")) return true;
+        try {
+            java.net.URI uri = java.net.URI.create(value);
+            String scheme = uri.getScheme();
+            return "http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme);
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
     }
 
     /**
@@ -303,18 +334,18 @@ public class SystemConfig {
     public String getReusableComponentsVersion() {
         String base = getVersion();
         try {
-            jakarta.faces.context.FacesContext fc = jakarta.faces.context.FacesContext.getCurrentInstance();
+            FacesContext fc = FacesContext.getCurrentInstance();
             if (fc != null) {
                 String real = fc.getExternalContext()
                         .getRealPath("/dvwebloader/reusable-components/dv-tree-view.js");
                 if (real != null) {
-                    java.io.File bundle = new java.io.File(real);
+                    File bundle = new File(real);
                     if (bundle.isFile()) {
                         return base + "-" + bundle.lastModified();
                     }
                 }
             }
-        } catch (Throwable ignore) {
+        } catch (Exception ignore) {
             // Defensive: any hiccup falls back to the version-only token.
         }
         return base;

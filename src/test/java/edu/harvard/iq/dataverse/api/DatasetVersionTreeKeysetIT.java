@@ -185,8 +185,9 @@ public class DatasetVersionTreeKeysetIT {
 
     private static List<Item> singleShot(int datasetId, String path, String include,
                                           String order, String token) {
-        // limit=10000 is well above the fixture size; the endpoint clamps to
-        // MAX_LIMIT=1000 internally, but our fixture stays within that.
+        // limit=1000 hits the endpoint's MAX_LIMIT clamp ceiling and is
+        // well above this fixture's total node count, so the response
+        // must fit on a single page (asserted just below).
         Response response = UtilIT.getVersionTree(datasetId, DRAFT, path, 1000, null,
                 include, order, null, null, token);
         response.then().assertThat().statusCode(OK.getStatusCode());

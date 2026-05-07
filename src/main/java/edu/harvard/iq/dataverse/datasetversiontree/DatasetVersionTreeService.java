@@ -4,6 +4,9 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import jakarta.ejb.Stateless;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
+import jakarta.json.JsonException;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
@@ -454,12 +457,19 @@ public class DatasetVersionTreeService {
     // they only echo it back. Round-trip stability is asserted by the
     // keyset IT.
 
+    // Wire-format markers for the cursor's phase. Spelled out in full so a
+    // proxy that case-folds query strings (or someone hand-editing a cursor
+    // for debugging) can't silently swap one phase for the other; an
+    // unrecognised value falls through to the generic "invalid cursor" path.
+    private static final String CURSOR_PHASE_FOLDERS = "FOLDERS";
+    private static final String CURSOR_PHASE_FILES = "FILES";
+
     private static String encodeCursor(TreeCursor cursor) {
-        // Tiny hand-rolled JSON; pulling javax.json or Jackson here would be
-        // overkill for two strings + a long.
+        // Tiny hand-rolled JSON; pulling Jackson here would be overkill
+        // for two strings + a long.
         StringBuilder json = new StringBuilder();
         json.append("{\"p\":\"");
-        json.append(cursor.phase() == TreeCursor.Phase.FOLDERS ? "F" : "f");
+        json.append(cursor.phase() == TreeCursor.Phase.FOLDERS ? CURSOR_PHASE_FOLDERS : CURSOR_PHASE_FILES);
         json.append("\",\"k\":[");
         if (cursor.phase() == TreeCursor.Phase.FOLDERS) {
             json.append('"').append(escapeJson(cursor.lastFolderName())).append('"');
@@ -479,25 +489,25 @@ public class DatasetVersionTreeService {
         try {
             String decoded = new String(Base64.getUrlDecoder().decode(raw), StandardCharsets.UTF_8);
             try (JsonReader reader = Json.createReader(new StringReader(decoded))) {
-                jakarta.json.JsonObject obj = reader.readObject();
+                JsonObject obj = reader.readObject();
                 String phaseStr = obj.getString("p", null);
                 JsonArray keys = obj.getJsonArray("k");
                 if (phaseStr == null || keys == null) {
                     throw new InvalidQueryException("invalid cursor");
                 }
-                if ("F".equals(phaseStr) && keys.size() == 1) {
+                if (CURSOR_PHASE_FOLDERS.equals(phaseStr) && keys.size() == 1) {
                     return TreeCursor.folders(((JsonString) keys.get(0)).getString());
                 }
-                if ("f".equals(phaseStr) && keys.size() == 2) {
+                if (CURSOR_PHASE_FILES.equals(phaseStr) && keys.size() == 2) {
                     String label = ((JsonString) keys.get(0)).getString();
-                    long id = ((JsonValue) keys.get(1)) instanceof jakarta.json.JsonNumber n
+                    long id = ((JsonValue) keys.get(1)) instanceof JsonNumber n
                             ? n.longValueExact()
                             : Long.parseLong(keys.get(1).toString());
                     return TreeCursor.files(label, id);
                 }
                 throw new InvalidQueryException("invalid cursor");
             }
-        } catch (IllegalArgumentException | jakarta.json.JsonException ex) {
+        } catch (IllegalArgumentException | JsonException ex) {
             throw new InvalidQueryException("invalid cursor");
         }
     }

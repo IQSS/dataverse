@@ -18,6 +18,21 @@ This release introduces the first reusable React component built in `dataverse-f
 - **`let cite` redeclaration in `dataset.xhtml`.** The inline citation-js bootstrap used `let`/`const` at top level. PrimeFaces partial updates re-execute the script tag, causing a `SyntaxError: redeclaration of let cite` that aborted the partial-response pipeline and prevented dependent UI (e.g. the React tree mount) from rendering. Switched to `var` so re-execution is idempotent.
 - **Concurrent-poll race in `useCheckPublishCompleted` (frontend).** The poll loop could fire a second `getDatasetLocks` request while the first was still awaiting, pushing extra calls onto the wire and (in the worst case) double-running the success callback. Added a `cancelled` latch and an `inFlight` guard so each poll cycle is atomic.
 
+### Operator note: covering index migration
+
+This release ships a new Flyway migration (`V6.10.1.2__6691-tree-listing-index.sql`) that creates `ix_filemetadata_tree` over `(dataset_version_id, lower(directory_label), lower(label), id)` to keep the new tree endpoint's keyset paginator fast.
+
+On large production deployments (multi-million-row `filemetadata`), plain `CREATE INDEX` takes an `ACCESS EXCLUSIVE` lock and stalls all writes for the duration of the build (potentially several minutes). Flyway runs migrations inside a transaction, which prevents using `CREATE INDEX CONCURRENTLY` in the migration file itself.
+
+Recommended for large installs: pre-create the index out-of-band before deploying the new release:
+
+```sql
+CREATE INDEX CONCURRENTLY IF NOT EXISTS ix_filemetadata_tree
+    ON filemetadata (dataset_version_id, lower(directory_label), lower(label), id);
+```
+
+The migration uses `CREATE INDEX IF NOT EXISTS`, so a pre-created index is a no-op when Flyway runs.
+
 ### LocalStack dev-stack notes
 
 The `dev_localstack` storage profile in `docker-compose-dev.yml` ships with `upload-redirect=true` / `download-redirect=true`, so the browser PUTs/GETs to S3 directly. Two operator-side things had to be set up explicitly to make that path work in dev:
