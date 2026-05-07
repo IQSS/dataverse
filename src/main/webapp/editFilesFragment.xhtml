@@ -151,7 +151,9 @@
                             //<![CDATA[
                             // Values are JSON-encoded server-side via
                             // systemConfig.jsString to prevent JS-literal
-                            // breakout. See SystemConfig#jsString.
+                            // breakout via quotes, backslashes, newlines,
+                            // or closing-script sequences. See
+                            // SystemConfig#jsString for the contract.
                             window.dvUploaderConfig = {
                                 siteUrl: #{systemConfig.jsString(systemConfig.dataverseSiteUrl)},
                                 datasetPid: #{systemConfig.jsString(dataset.globalId.asString())},

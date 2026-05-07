@@ -666,9 +666,9 @@
         <script>
             //<![CDATA[
             // Each value is JSON-encoded server-side via systemConfig.jsString
-            // so quotes, backslashes, newlines, and stray `</script>` in any
-            // input cannot break out of the JS string literal. See
-            // SystemConfig#jsString for the escaping contract.
+            // so quotes, backslashes, newlines, and stray closing-script
+            // sequences in user input cannot break out of the JS string
+            // literal. See SystemConfig#jsString for the escaping contract.
             window.dvTreeViewConfig = {
                 siteUrl: #{systemConfig.jsString(systemConfig.dataverseSiteUrl)},
                 datasetPid: #{systemConfig.jsString(DatasetPage.dataset.globalId.asString())},
