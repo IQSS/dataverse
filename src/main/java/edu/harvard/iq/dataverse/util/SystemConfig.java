@@ -282,6 +282,44 @@ public class SystemConfig {
                 : configured;
     }
 
+    /**
+     * Cache-busting token for the reusable-components bundle URLs.
+     *
+     * Returns Dataverse's app version concatenated with the modification
+     * timestamp of the entry-point bundle on disk, when that file is
+     * available (the WAR's bundled copy under
+     * {@code webapp/dvwebloader/reusable-components/dv-tree-view.js}).
+     * Falls back to the plain app version when the file can't be
+     * located — avoids breaking pages on installs that override
+     * {@code REUSABLE_COMPONENTS_BASE_URL} to point at a CDN.
+     *
+     * Why not just {@link #getVersion()}: that string is pinned per
+     * release (e.g. {@code "6.10.1"}) and never changes between local
+     * dev rebuilds, so browsers happily serve the cached bundle for
+     * the lifetime of the deployment. Cache invalidation needs a token
+     * that changes whenever the bundle does — file mtime is the
+     * cheapest such signal that does not require a build-time hook.
+     */
+    public String getReusableComponentsVersion() {
+        String base = getVersion();
+        try {
+            jakarta.faces.context.FacesContext fc = jakarta.faces.context.FacesContext.getCurrentInstance();
+            if (fc != null) {
+                String real = fc.getExternalContext()
+                        .getRealPath("/dvwebloader/reusable-components/dv-tree-view.js");
+                if (real != null) {
+                    java.io.File bundle = new java.io.File(real);
+                    if (bundle.isFile()) {
+                        return base + "-" + bundle.lastModified();
+                    }
+                }
+            }
+        } catch (Throwable ignore) {
+            // Defensive: any hiccup falls back to the version-only token.
+        }
+        return base;
+    }
+
 
     /**
      * Lookup (or construct) the designated URL of this instance from configuration.
