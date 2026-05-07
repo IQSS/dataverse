@@ -103,4 +103,10 @@ public class UriInfoTestFake implements UriInfo {
     public URI relativize(URI uri) {
         return null;
     }
+
+    @Override
+    public String getMatchedResourceTemplate() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

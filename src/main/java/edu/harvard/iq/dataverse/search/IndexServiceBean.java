@@ -165,6 +165,9 @@ public class IndexServiceBean {
     @EJB
     DatasetFieldServiceBean datasetFieldService;
 
+    @EJB
+    IndexServiceBean self;
+    
     @Inject
     DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
 
@@ -502,7 +505,7 @@ public class IndexServiceBean {
 
     public void indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         doIndexDataset(dataset, doNormalSolrDocCleanUp);
-        updateLastIndexedTime(dataset.getId());
+        self.updateLastIndexedTime(dataset.getId());
     }
     
     private void doIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
@@ -1608,7 +1611,7 @@ public class IndexServiceBean {
 
                     String filenameCompleteFinal = "";
                     if (fileMetadata != null) {
-                        String filenameComplete = fileMetadata.getLabel();
+                        String filenameComplete = fileMetadata.getLabelForOriginal();
                         if (filenameComplete != null) {
                             String filenameWithoutExtension = "";
                             // String extension = "";
@@ -1863,15 +1866,15 @@ public class IndexServiceBean {
     }
 
     @Asynchronous
-    private void updateLastIndexedTime(Long id) {
+    public void updateLastIndexedTime(Long id) {
         // indexing is often in a transaction with update statements
         // if we flush on query (flush-mode auto), we want to prevent locking
         // -> update the dataset asynchronously in a new transaction
-        updateLastIndexedTimeInNewTransaction(id);
+        self.updateLastIndexedTimeInNewTransaction(id);
     }
 
     @TransactionAttribute(REQUIRES_NEW)
-    private void updateLastIndexedTimeInNewTransaction(Long id) {
+    public void updateLastIndexedTimeInNewTransaction(Long id) {
         /// Dataset updatedDataset =
         /// (Dataset)dvObjectService.updateContentIndexTime(dataset);
         /// updatedDataset = null;

@@ -1023,7 +1023,7 @@ This way, the database connection can be automatically recovered after a failure
 File Storage
 ------------
 
-By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara6/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
+By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara7/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
 
 A Dataverse installation can alternately store files in a Swift or S3-compatible object store, or on a Globus endpoint, and can now be configured to support multiple stores at once.
 A Dataverse installation may also be configured to reference some files (e.g. large and/or sensitive data) stored in a web or Globus accessible trusted remote store.
@@ -1598,7 +1598,7 @@ All of these processes are triggered after finishing transfers over the wire and
 Before being moved there,
 
 - JSF Web UI uploads are stored at :ref:`${dataverse.files.uploads} <dataverse.files.uploads>`, defaulting to
-  ``/usr/local/payara6/glassfish/domains/domain1/uploads`` folder in a standard installation. This place is
+  ``/usr/local/payara7/glassfish/domains/domain1/uploads`` folder in a standard installation. This place is
   configurable and might be set to a separate disk volume where stale uploads are purged periodically.
 - API uploads are stored at the system's temporary files location indicated by the Java system property
   ``java.io.tmpdir``, defaulting to ``/tmp`` on Linux. If this location is backed by a `tmpfs <https://www.kernel.org/doc/html/latest/filesystems/tmpfs.html>`_
@@ -1703,7 +1703,7 @@ Custom Navbar Logo
 
 The Dataverse Software allows you to replace the default Dataverse Project icon and name branding in the navbar with your own custom logo. Note that this logo is separate from the logo used in the theme of the root Dataverse collection (see :ref:`theme`).
 
-The custom logo image file is expected to be small enough to fit comfortably in the navbar, no more than 50 pixels in height and 160 pixels in width. Create a ``navbar`` directory in your Payara ``logos`` directory and place your custom logo there. By default, your logo image file will be located at ``/usr/local/payara6/glassfish/domains/domain1/docroot/logos/navbar/logo.png``.
+The custom logo image file is expected to be small enough to fit comfortably in the navbar, no more than 50 pixels in height and 160 pixels in width. Create a ``navbar`` directory in your Payara ``logos`` directory and place your custom logo there. By default, your logo image file will be located at ``/usr/local/payara7/glassfish/domains/domain1/docroot/logos/navbar/logo.png``.
 
 Given this location for the custom logo image file, run this curl command to add it to your settings:
 
@@ -2259,9 +2259,21 @@ These archival Bags include all of the files and metadata in a given dataset ver
 
 The Dataverse Software offers an internal archive workflow which may be configured as a PostPublication workflow via an admin API call to manually submit previously published Datasets and prior versions to a configured archive such as Chronopolis. The workflow creates a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse Software web interface.
 
+The size of the zipped archival Bag can be limited, and files that don't fit within that limit can either be transferred separately (placed so that they are correctly positioned according to the BagIt specification when the zipped bag in unzipped in place) or just referenced for later download (using the BagIt concept of a 'holey' bag with a list of files in a ``fetch.txt`` file) can now be configured for all archivers. These settings allow for managing large datasets by excluding files over a certain size or total data size, which can be useful for archivers with size limitations or to reduce transfer times. See the :ref:`dataverse.bagit.zip.max-file-size`, :ref:`dataverse.bagit.zip.max-data-size`, and :ref:`dataverse.bagit.zip.holey` JVM options for more details.  
+
 At present, archiving classes include the DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, GoogleCloudSubmitToArchive, and S3SubmitToArchiveCommand , which all extend the AbstractSubmitToArchiveCommand and use the configurable mechanisms discussed below. (A DRSSubmitToArchiveCommand, which works with Harvard's DRS also exists and, while specific to DRS, is a useful example of how Archivers can support single-version-only semantics and support archiving only from specified collections (with collection specific parameters)). 
 
 All current options support the :ref:`Archival Status API` calls and the same status is available in the dataset page version table (for contributors/those who could view the unpublished dataset, with more detail available to superusers).
+
+Two settings that can be used with all current Archivers are:
+
+- \:BagGeneratorThreads - the number of threads to use when adding data files to the zipped bag. The default is 2. Values of 4 or more may increase performance on larger machines but may cause problems if file access is throttled
+- \:ArchiveOnlyIfEarlierVersionsAreArchived - when true, requires dataset versions to be archived in order by confirming that all prior versions have been successfully archived before allowing a new version to be archived. Default is false 
+
+These must be included in the \:ArchiverSettings for the Archiver to work
+ 
+Archival Bags are created per dataset version. By default, if a version is republished (via the superuser-only 'Update Current Version' publication option in the UI/API), a new archival bag is not created for the version.
+If the archiver used is capable of deleting existing bags (Google, S3, and File Archivers) superusers can trigger a manual update of the archival bag, and, if the :ref:`dataverse.bagit.archive-on-version-update` flag is set to true, this will be done automatically when 'Update Current Version' is used.
 
 .. _Duracloud Configuration:
 
@@ -2346,7 +2358,7 @@ The Google Cloud Archiver also requires a key file that must be renamed to 'goog
 
 For example:
 
-``cp <your key file> /usr/local/payara6/glassfish/domains/domain1/files/googlecloudkey.json``
+``cp <your key file> /usr/local/payara7/glassfish/domains/domain1/files/googlecloudkey.json``
 
 .. _S3 Archiver Configuration:
 
@@ -2484,7 +2496,7 @@ You have a couple of options for putting an updated robots.txt file into product
 
 For more of an explanation of ``ProxyPassMatch`` see the :doc:`shibboleth` section.
 
-If you are not fronting Payara with Apache you'll need to prevent Payara from serving the robots.txt file embedded in the war file by overwriting robots.txt after the war file has been deployed. The downside of this technique is that you will have to remember to overwrite robots.txt in the "exploded" war file each time you deploy the war file, which probably means each time you upgrade to a new version of the Dataverse Software. Furthermore, since the version of the Dataverse Software is always incrementing and the version can be part of the file path, you will need to be conscious of where on disk you need to replace the file. For example, for Dataverse Software 4.6.1 the path to robots.txt may be ``/usr/local/payara6/glassfish/domains/domain1/applications/dataverse-4.6.1/robots.txt`` with the version number ``4.6.1`` as part of the path.
+If you are not fronting Payara with Apache you'll need to prevent Payara from serving the robots.txt file embedded in the war file by overwriting robots.txt after the war file has been deployed. The downside of this technique is that you will have to remember to overwrite robots.txt in the "exploded" war file each time you deploy the war file, which probably means each time you upgrade to a new version of the Dataverse Software. Furthermore, since the version of the Dataverse Software is always incrementing and the version can be part of the file path, you will need to be conscious of where on disk you need to replace the file. For example, for Dataverse Software 4.6.1 the path to robots.txt may be ``/usr/local/payara7/glassfish/domains/domain1/applications/dataverse-4.6.1/robots.txt`` with the version number ``4.6.1`` as part of the path.
 
 Creating a Sitemap and Submitting it to Search Engines
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2507,7 +2519,7 @@ Single Sitemap File
 
 If you have 50,000 items or fewer, a single sitemap will be generated in the following location (unless you have customized your installation directory for Payara):
 
-``/usr/local/payara6/glassfish/domains/domain1/docroot/sitemap/sitemap.xml``
+``/usr/local/payara7/glassfish/domains/domain1/docroot/sitemap/sitemap.xml``
 
 Once the sitemap has been generated in the location above, it will be served at ``/sitemap.xml`` like this: https://demo.dataverse.org/sitemap.xml
 
@@ -2518,7 +2530,7 @@ According to the `Sitemaps.org protocol <https://www.sitemaps.org/protocol.html#
 
 If you have over 50,000 items, a sitemap index file will be generated in the following location (unless you have customized your installation directory for Payara):
 
-``/usr/local/payara6/glassfish/domains/domain1/docroot/sitemap/sitemap_index.xml``
+``/usr/local/payara7/glassfish/domains/domain1/docroot/sitemap/sitemap_index.xml``
 
 Once the sitemap has been generated in the location above, it will be served at ``/sitemap_index.xml`` like this: https://demo.dataverse.org/sitemap_index.xml
 
@@ -2587,7 +2599,7 @@ When changing values these values with ``asadmin``, you'll need to delete the ol
 
 ``./asadmin create-jvm-options "-Ddataverse.fqdn=dataverse.example.com"``
 
-It's also possible to change these values by stopping Payara, editing ``payara6/glassfish/domains/domain1/config/domain.xml``, and restarting Payara.
+It's also possible to change these values by stopping Payara, editing ``payara7/glassfish/domains/domain1/config/domain.xml``, and restarting Payara.
 
 In addition, JVM options enabled for "MicroProfile Config" (see docs of any option), can be used with any
 `supported MicroProfile Config API source`_ to provide their values. The most notable source are environment variables;
@@ -2711,7 +2723,7 @@ Notes:
 
 - Please provide an absolute path to a directory backed by some mounted file system.
 - Defaults to ``${com.sun.aas.instanceRoot}/uploads`` in a :doc:`default installation <installation-main>`
-  (resolving to ``/usr/local/payara6/glassfish/domains/domain1/uploads``).
+  (resolving to ``/usr/local/payara7/glassfish/domains/domain1/uploads``).
 - Defaults to ``${STORAGE_DIR}/uploads`` using our :ref:`Dataverse container <app-locations>` (resolving to ``/dv/uploads``).
 - Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_UPLOADS``.
 - During startup, this directory will be checked for existence and write access. It will be created for you
@@ -2729,7 +2741,7 @@ See also logo customization above.
 Notes:
 
 - Defaults to ``${com.sun.aas.instanceRoot}/docroot`` in a :doc:`default installation <installation-main>`
-  (resolves to ``/usr/local/payara6/glassfish/domains/domain1/docroot``).
+  (resolves to ``/usr/local/payara7/glassfish/domains/domain1/docroot``).
 - Defaults to ``${STORAGE_DIR}/docroot`` using our :ref:`Dataverse container <app-locations>` (resolving to ``/dv/docroot``).
 - Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_DOCROOT``.
 - During startup, this directory will be checked for existence and write access. It will be created for you
@@ -3296,9 +3308,9 @@ Can also be set via *MicroProfile Config API* sources, e.g. the environment vari
 
 **Note:** This setting was previously called `dataverse.personOrOrg.orgPhraseArray` and expected a JsonArray of strings. Please update both the name and value format if using the old setting.
 
-.. _dataverse.api.signature-secret:
+.. _dataverse.api.signing-secret:
 
-dataverse.api.signature-secret
+dataverse.api.signing-secret
 ++++++++++++++++++++++++++++++
 
 Context: Dataverse has the ability to create "Signed URLs" for it's API calls. Using a signed URLs is more secure than
@@ -3306,13 +3318,13 @@ providing API tokens, which are long-lived and give the holder all of the permis
 are time limited and only allow the action of the API call in the URL. See :ref:`api-exttools-auth` and
 :ref:`api-native-signed-url` for more details. 
 
-The key used to sign a URL is created from the API token of the creating user plus a signature-secret provided by an administrator.
-**Using a signature-secret is highly recommended.** This setting defaults to an empty string. Using a non-empty 
-signature-secret makes it impossible for someone who knows an API token from forging signed URLs and provides extra security by 
+The key used to sign a URL is created from the API token of the creating user plus a signing-secret provided by an administrator.
+**Using a signing-secret is highly recommended.** This setting defaults to an empty string. Using a non-empty 
+signing-secret makes it impossible for someone who knows an API token from forging signed URLs and provides extra security by 
 making the overall signing key longer.
 
 **WARNING**:
-*Since the signature-secret is sensitive, you should treat it like a password.*
+*Since the signing-secret is sensitive, you should treat it like a password.*
 *See* :ref:`secure-password-storage` *to learn about ways to safeguard it.*
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_SIGNATURE_SECRET`` (although you shouldn't use environment variables for passwords) .
@@ -3715,6 +3727,14 @@ The email for your institution that you'd like to appear in bag-info.txt. See :r
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_BAGIT_SOURCEORG_EMAIL``.
 
+.. _dataverse.bagit.archive-on-version-update:
+
+dataverse.bagit.archive-on-version-update
++++++++++++++++++++++++++++++++++++++++++
+
+Indicates whether archival bag creation should be triggered (if configured) when a version is updated and was already successfully archived,
+i.e via the Update-Current-Version publication option. Setting the flag true only works if the archiver being used supports deleting existing archival bags.
+
 .. _dataverse.files.globus-monitoring-server:
 
 dataverse.files.globus-monitoring-server
@@ -3876,6 +3896,21 @@ When Dataverse receives an LDN message conforming to the COAR Notify Relationshi
 This can instead be restricted to only superusers who can publish the dataset using this option.
 
 Example: ``dataverse.coar-notify.relationship-announcement.notify-superusers-only=true``
+
+.. _dataverse.bagit.zip.holey:
+
+``dataverse.bagit.zip.holey``
+  A boolean that, if true, will cause the BagIt archiver to create a "holey" bag. In a holey bag, files that are not included in the bag are listed in the ``fetch.txt`` file with a URL from which they can be downloaded. This is used in conjunction with ``dataverse.bagit.zip.max-file-size`` and/or ``dataverse.bagit.zip.max-data-size``. Default: false.
+
+.. _dataverse.bagit.zip.max-data-size:
+
+``dataverse.bagit.zip.max-data-size``
+  The maximum total (uncompressed) size of data files (in bytes) to include in a BagIt zip archive. If the total size of the dataset files exceeds this limit, files will be excluded from the zipped bag (starting from the largest) until the total size is under the limit. Excluded files will be handled as defined by ``dataverse.bagit.zip.holey`` - just listed if that setting is true or being transferred separately and placed next to the zipped bag. When not set, there is no limit.
+
+.. _dataverse.bagit.zip.max-file-size:
+
+``dataverse.bagit.zip.max-file-size``
+  The maximum (uncompressed) size of a single file (in bytes) to include in a BagIt zip archive. Any file larger than this will be excluded. Excluded files will be handled as defined by ``dataverse.bagit.zip.holey`` - just listed if that setting is true or being transferred separately and placed next to the zipped bag. When not set, there is no limit.
 
 .. _feature-flags:
 
@@ -4040,7 +4075,12 @@ dataverse.feature.only-update-datacite-when-needed
 
 Only contact DataCite to update a DOI after checking to see if DataCite has outdated information (for efficiency, lighter load on DataCite, especially when using file DOIs).
 
+.. _dataverse.feature.require-embargo-reason:
 
+dataverse.feature.require-embargo-reason
+++++++++++++++++++++++++++++++++++++++++
+
+Require an embargo reason when a user creates an embargo on one or more files. See :ref:`embargoes`.
 
 .. _:ApplicationServerSettings:
 
@@ -4656,7 +4696,7 @@ Whatever JSON you send will overwrite existing values. If you have any exiting `
 
 ``curl http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit | jq -r '.data.message'``
 
-The ``default`` key is optional and can be used to give limits to formats that are not specified in the JSON. If you omit the ``default`` key or set it to ``"-1"``, no limits are applied to formats not specified in the JSON. If you set it to ``"0"``, ingest will be disabled (but you can override this per-format).
+The ``default`` key is optional and can be used to give limits to formats that are not specified in the JSON. If you omit the ``default`` key or set it to ``"-1"``, no limits are applied to formats not specified in the JSON. If you set it to ``"0"``, ingest will be disabled (but you can override this per-format). If you wish to disable ingest for specific formats it may be preferable to instead set a value of ``"1"`` which will cause Dataverse to print a string such as ``rdata:disabled`` for the user's benefit.
 
 Add a format name (``csv``, ``dta``, etc., as listed above) to change the limit for that particular format.
 
@@ -4667,10 +4707,10 @@ Examples:
    ``curl -X PUT -d '{"Rdata":"1000000"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 2. If you want your Dataverse installation to not attempt to ingest XLSX files at all and apply a global limit of 512 MiB, use this setting:
 
-   ``curl -X PUT -d '{"default":"536870912", "XSLX":"0"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
+   ``curl -X PUT -d '{"default":"536870912", "XSLX":"1"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 3. If you want your Dataverse installation to not attempt to ingest files at all except for CSV files that are 256 MiB or smaller, use this setting:
 
-   ``curl -X PUT -d '{"default":"0", "CSV":"268435456"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
+   ``curl -X PUT -d '{"default":"1", "CSV":"268435456"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 
 .. _:HarvestingClientCallRateLimit:
 
@@ -4791,12 +4831,33 @@ If you have a long text string, you can upload it as a file as in the example be
 
 ``curl -X PUT --upload-file /tmp/long.txt http://localhost:8080/api/admin/settings/:DatasetPublishPopupCustomText``
 
+There is a related setting called :ref:`:PublishDatasetDisclaimerText` that also makes text appear on the popup when publishing, but it requires a checkbox to be clicked.
+
+See also :ref:`show-custom-popup-for-publishing-datasets` in the API Guide.
+
 :DatasetPublishPopupCustomTextOnAllVersions
 +++++++++++++++++++++++++++++++++++++++++++
 
 Set whether a user will see the custom text when publishing all versions of a dataset
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:DatasetPublishPopupCustomTextOnAllVersions``
+
+.. _:DatasetSubmitForReviewPopupCustomText:
+
+:DatasetSubmitForReviewPopupCustomText
+++++++++++++++++++++++++++++++++++++++
+
+Set custom text a user will view when submitting a dataset for review. Note that this text is exposed via the "Info" endpoint of the :doc:`/api/native-api`.
+
+``curl -X PUT -d "Deposit License Requirements" http://localhost:8080/api/admin/settings/:DatasetSubmitForReviewPopupCustomText``
+
+If you have a long text string, you can upload it as a file as in the example below.
+
+``curl -X PUT --upload-file /tmp/long.txt http://localhost:8080/api/admin/settings/:DatasetSubmitForReviewPopupCustomText``
+
+There is a related setting called :ref:`:SubmitForReviewDatasetDisclaimerText` that also makes text appear on the popup when submitting for review, but it requires a checkbox to be clicked.
+
+See also :ref:`show-custom-popup-for-submitting-for-review-datasets` in the API Guide.
 
 :SearchHighlightFragmentSize
 ++++++++++++++++++++++++++++
@@ -5181,7 +5242,7 @@ Sets how long a cached metrics result is used before re-running the query for a 
 
 Sets the path where the raw Make Data Count logs are stored before being processed. If not set, no logs will be created for Make Data Count. See also the :doc:`/admin/make-data-count` section of the Admin Guide.
 
-``curl -X PUT -d '/usr/local/payara6/glassfish/domains/domain1/logs' http://localhost:8080/api/admin/settings/:MDCLogPath``
+``curl -X PUT -d '/usr/local/payara7/glassfish/domains/domain1/logs' http://localhost:8080/api/admin/settings/:MDCLogPath``
 
 .. _:DisplayMDCMetrics:
 
@@ -5321,6 +5382,21 @@ The text displayed to the user that must be acknowledged prior to publishing a D
 
 ``curl -X PUT -d "By publishing this dataset, I fully accept all legal responsibility for ensuring that the deposited content is: anonymized, free of copyright violations, and contains data that is computationally reusable. I understand and agree that any violation of these conditions may result in the immediate removal of the dataset by the repository without prior notice." http://localhost:8080/api/admin/settings/:PublishDatasetDisclaimerText``
 
+There is a similar setting called :ref:`:DatasetPublishPopupCustomText` that also makes text appear on the popup when publishing, but it is only informational. There is no checkbox to click.
+
+See also :ref:`show-disclaimer-for-publishing-datasets` in the API Guide.
+
+.. _:SubmitForReviewDatasetDisclaimerText:
+
+:SubmitForReviewDatasetDisclaimerText
++++++++++++++++++++++++++++++++++++++
+
+The text displayed to the user that must be acknowledged prior to submitting a Dataset for review. When not set the acknowledgment is not required nor displayed.
+
+``curl -sS -X PUT -d 'I agree to the following:<br/>1. My submission has been fully anonymized (required for all human subject'\''s datasets).<br/>2. My submission does not violate any known copyright laws.<br/>3. I understand that I am liable for any and all violations of the Harvard Repository <a href=https://support.dataverse.harvard.edu/harvard-dataverse-general-terms-use>Terms of Use.</a>' http://localhost:8080/api/admin/settings/:SubmitForReviewDatasetDisclaimerText``
+
+See also :ref:`show-disclaimer-for-submit-for-review-datasets` in the API Guide.
+
 .. _:BagItHandlerEnabled:
 
 :BagItHandlerEnabled
@@ -5365,6 +5441,11 @@ This setting specifies which storage system to use by identifying the particular
 
 For examples, see the specific configuration above in :ref:`BagIt Export`.
  
+:ArchiveOnlyIfEarlierVersionsAreArchived
+++++++++++++++++++++++++++++++++++++++++
+
+This setting, if true, only allows creation of an archival Bag for a dataset version if all prior versions have been successfully archived. The default is false (any version can be archived independently as long as other settings allow it)
+         
 :ArchiverSettings
 +++++++++++++++++
 

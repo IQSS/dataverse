@@ -7,9 +7,44 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.11
+-----
+
+- The endpoints GET, PUT AND DELETE for `/api/admin/dataverse/{alias}/storageDriver` have been moved to `/api/dataverses/{alias}/storageDriver`.
+- The endpoint `/api/admin/dataverse/storageDrivers` has been moved and renamed to `/api/dataverses/{alias}/allowedStorageDrivers`. Regarding the change of the name, this endpoint will in the future only display the storageDrivers that are allowed on the specified collection, as of now, it will display the entire list of available Drivers on the installation.
+- The following API will now return ``403`` if the ``requireFilesToPublishDataset`` flag is set and the dataset version contains 0 files.
+
+  - **/api/datasets/{Id}/submitForReview**
+
+- The Croissant :ref:`metadata export format <metadata-export-formats>` has been updated from version 1.0 to 1.1, which is reflected in the ``conformsTo`` property. The unused ``wd`` property has been dropped.
+
+
+v6.10
+-----
+- The following GET APIs will now return ``400`` if a required Guestbook Response is not supplied. A Guestbook Response can be passed to these APIs in the JSON body using a POST call. See the notes under :ref:`basic-file-access` and :ref:`download-by-dataset-by-version` for details.
+
+  - **/api/access/datafile/{fileId:.+}**
+
+  - **/api/access/datafiles/{fileIds}**
+
+  - **/api/access/dataset/{id}**
+
+  - **/api/access/dataset/{id}/versions/{versionId}**
+
+- The following POST APIs will now return ``400`` if a required Guestbook Response is not supplied. A Guestbook Response can be passed to these APIs in the JSON body. See the note under :ref:`basic-download-by-dataset` for details.
+
+  - **/api/access/datafiles**
+
+  - **/api/access/datafile/bundle/{fileId}**
+
+- The following PUT APIs will now return ``400`` if a required Guestbook Response is not supplied. When JVM setting -Ddataverse.files.guestbook-at-request=true is set a Guestbook Response may be required to be passed to these APIs in the JSON body. See the note under Configuration :ref:`dataverse.files.guestbook-at-request` for details.
+
+  - **/api/access/datafile/{id}/requestAccess**
+
 v6.9
 ----
 
+- When creating datasets that contain a datasetType, that datasetType must be allowed at the collection level. This can be accomplished by passing ``allowedDatasetTypes`` to the :ref:`collection-attributes-api` API.
 - The POST /api/admin/makeDataCount/{id}/updateCitationsForDataset processing is now asynchronous and the response no longer includes the number of citations. The response can be OK if the request is queued or 503 if the queue is full (default queue size is 1000).
 - The way to set per-format size limits for tabular ingest has changed. JSON input is now used. See :ref:`:TabularIngestSizeLimit`.
 - In the past, the settings API would accept any key and value. This is no longer the case because validation has been added. See :ref:`settings_put_single`, for example.

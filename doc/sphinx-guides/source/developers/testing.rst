@@ -344,7 +344,7 @@ Notes:
 Measuring Coverage of API Tests
 -------------------------------
 
-Measuring the code coverage of API tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/payara6" as the Payara directory and "dataverse" as the Payara Unix user.
+Measuring the code coverage of API tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/payara7" as the Payara directory and "dataverse" as the Payara Unix user.
 
 Please note that this was tested under Glassfish 4 but it is hoped that the same steps will work with Payara.
 
@@ -365,9 +365,9 @@ Note that we are running the following commands as the user "dataverse". In shor
   cd local/jacoco-0.8.1
   wget https://github.com/jacoco/jacoco/releases/download/v0.8.1/jacoco-0.8.1.zip
   unzip jacoco-0.8.1.zip
-  /usr/local/payara6/bin/asadmin stop-domain
-  cp /home/dataverse/local/jacoco-0.8.1/lib/jacocoagent.jar /usr/local/payara6/glassfish/lib
-  /usr/local/payara6/bin/asadmin start-domain
+  /usr/local/payara7/bin/asadmin stop-domain
+  cp /home/dataverse/local/jacoco-0.8.1/lib/jacocoagent.jar /usr/local/payara7/glassfish/lib
+  /usr/local/payara7/bin/asadmin start-domain
 
 Add jacococli.jar to the WAR File
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -390,21 +390,21 @@ Run this as the "dataverse" user.
 
 .. code-block:: bash
 
-  /usr/local/payara6/bin/asadmin deploy dataverse-jacoco.war
+  /usr/local/payara7/bin/asadmin deploy dataverse-jacoco.war
 
-Note that after deployment the file "/usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec" exists and is empty.
+Note that after deployment the file "/usr/local/payara7/glassfish/domains/domain1/config/jacoco.exec" exists and is empty.
 
 Run API Tests to Determine Code Coverage
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Note that if you are looking for how to run API tests generally, you should refer to :ref:`integration-tests`.
 
-Note that "/usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec" will become non-empty after you stop and start Payara. You must stop and start Payara before every run of the integration test suite.
+Note that "/usr/local/payara7/glassfish/domains/domain1/config/jacoco.exec" will become non-empty after you stop and start Payara. You must stop and start Payara before every run of the integration test suite.
 
 .. code-block:: bash
 
-  /usr/local/payara6/bin/asadmin stop-domain
-  /usr/local/payara6/bin/asadmin start-domain
+  /usr/local/payara7/bin/asadmin stop-domain
+  /usr/local/payara7/bin/asadmin start-domain
   git clone https://github.com/IQSS/dataverse.git
   cd dataverse
   TESTS=$(<tests/integration-tests.txt)
@@ -420,7 +420,7 @@ Run these commands as the "dataverse" user. The ``cd dataverse`` means that you 
 .. code-block:: bash
 
   cd dataverse
-  java -jar /home/dataverse/local/jacoco-0.8.1/lib/jacococli.jar report --classfiles target/classes --sourcefiles src/main/java --html target/coverage-it/ /usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec
+  java -jar /home/dataverse/local/jacoco-0.8.1/lib/jacococli.jar report --classfiles target/classes --sourcefiles src/main/java --html target/coverage-it/ /usr/local/payara7/glassfish/domains/domain1/config/jacoco.exec
 
 Read Code Coverage Report
 ~~~~~~~~~~~~~~~~~~~~~~~~~

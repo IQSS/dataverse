@@ -39,6 +39,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
+import jakarta.persistence.PostLoad;
 import jakarta.persistence.SqlResultSetMapping;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
@@ -57,7 +58,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
-import org.hibernate.validator.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 
@@ -153,6 +154,18 @@ public class FileMetadata implements Serializable {
     @OneToMany (mappedBy="fileMetadata", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
     private Collection<VariableMetadata> variableMetadatas;
         
+    // A transient field is needed for JSF UI - validation errors on label do not get routed directly to the input for labelNoExtension, causing rollback.
+    // With a separate transient field kept in sync with label, the validation can be done on the labelNoExtension field, which avoids the issue and allows proper validation.
+    @Transient
+    @ValidateDataFileLabel(message = "{filename.illegalCharacters}")
+    String labelNoExtension;
+    
+    // Initialize the labelNoExtension from label after loading the entity
+    @PostLoad
+    public void postLoad() {
+        getLabelNoExtension();
+    }
+
     /**
      * Creates a copy of {@code this}, with identical business logic fields, making the bi-drectional connections to the specified version.
      * 
@@ -173,13 +186,46 @@ public class FileMetadata implements Serializable {
     }
     
     public String getLabel() {
+        getLabelNoExtension();
         return label;
     }
     
     public void setLabel(String label) {
         this.label = label;
+        getLabelNoExtension();
     }
 
+
+    public String getLabelNoExtension() {
+        int last = label.lastIndexOf(".");
+        labelNoExtension = (last == -1) ? label : label.substring(0, last);
+        return labelNoExtension;
+    }
+
+    public String getOriginalExtension() {
+        String origFilename = getLabelForOriginal();
+        int last = origFilename.lastIndexOf(".");
+        return (last == -1) ? "" : origFilename.substring(last);
+    }
+
+    public void setLabelNoExtension(String name) {
+        labelNoExtension = name;
+        int last = this.label.lastIndexOf(".");
+        if (last == -1) {
+            this.label = name;
+        } else {
+            this.label = name + this.label.substring(last);
+        }
+    }
+    
+    public String getLabelForOriginal() {
+        if(dataFile.isTabularData()) {
+            return dataFile.getDerivedOriginalFileName();
+        } else {
+            return label;
+        }
+    }
+    
     public FileMetadata() {
         variableMetadatas = new ArrayList<VariableMetadata>();
         varGroups = new ArrayList<VarGroup>();
