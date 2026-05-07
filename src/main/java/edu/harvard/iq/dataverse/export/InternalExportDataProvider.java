@@ -101,11 +101,12 @@ public class InternalExportDataProvider implements ExportDataProvider {
     @Override
     public Document getDataCiteXml(DatasetExportQuery datasetExportQuery) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder;
         try
         {
-            builder = factory.newDocumentBuilder();
-            return builder.parse( new InputSource( new StringReader(getDataCiteXml())));
+            String dataCiteXml = getDataCiteXml();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            return builder.parse(new InputSource(new StringReader(dataCiteXml)));
+        // TODO: remove this anti-pattern of catcha-all
         } catch (Exception e) {
             e.printStackTrace();
         }
