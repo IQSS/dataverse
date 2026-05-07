@@ -119,6 +119,7 @@ public class SearchIT {
                 .body("data.total_count", CoreMatchers.is(1))
                 .body("data.count_in_response", CoreMatchers.is(1))
                 .body("data.items[0].name", CoreMatchers.is("Darwin's Finches"))
+                // Note that "Unpublished" and "Draft" are in English. That's how they are indexed.
                 .body("data.items[0].publicationStatuses", CoreMatchers.hasItems("Unpublished", "Draft"))
                 .statusCode(OK.getStatusCode());
 
@@ -2219,7 +2220,7 @@ public class SearchIT {
         search.prettyPrint();
         search.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.items[0].name", is("data.tab"))
+                .body("data.items[0].name", is("data.csv")) // as of 6.11, we are indexing the original names of ingested tab. files
                 .body("data.items[0].variables", is(4))
                 .body("data.items[0].observations", is(3));
     }

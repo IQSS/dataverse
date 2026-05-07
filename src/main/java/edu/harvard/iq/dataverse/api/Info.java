@@ -1,13 +1,11 @@
 package edu.harvard.iq.dataverse.api;
 
 import java.util.logging.Logger;
-
 import edu.harvard.iq.dataverse.customization.CustomizationConstants;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
-
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -44,6 +42,24 @@ public class Info extends AbstractApiBean {
     @Path("settings/:DatasetPublishPopupCustomText")
     public Response getDatasetPublishPopupCustomText() {
         return getSettingResponseByKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
+    }
+
+    @GET
+    @Path("settings/:DatasetSubmitForReviewPopupCustomText")
+    public Response DatasetSubmitForReviewPopupCustomText() {
+        return getSettingResponseByKey(SettingsServiceBean.Key.DatasetSubmitForReviewPopupCustomText);
+    }
+
+    @GET
+    @Path("settings/:PublishDatasetDisclaimerText")
+    public Response getPublishDatasetDisclaimerText() {
+        return getSettingResponseByKey(SettingsServiceBean.Key.PublishDatasetDisclaimerText);
+    }
+
+    @GET
+    @Path("settings/:SubmitForReviewDatasetDisclaimerText")
+    public Response getSubmitForReviewDatasetDisclaimerText() {
+        return getSettingResponseByKey(SettingsServiceBean.Key.SubmitForReviewDatasetDisclaimerText);
     }
 
     @GET
@@ -159,4 +175,5 @@ public class Info extends AbstractApiBean {
             return notFound("Setting " + key + " not found");
         }
     }
+    
 }

@@ -1,0 +1,82 @@
+{
+    "@context": {
+        "@language": "en",
+        "@vocab": "https://schema.org/",
+        "citeAs": "cr:citeAs",
+        "column": "cr:column",
+        "conformsTo": "dct:conformsTo",
+        "cr": "http://mlcommons.org/croissant/",
+        "rai": "http://mlcommons.org/croissant/RAI/",
+        "data": {
+            "@id": "cr:data",
+            "@type": "@json"
+        },
+        "dataType": {
+            "@id": "cr:dataType",
+            "@type": "@vocab"
+        },
+        "dct": "http://purl.org/dc/terms/",
+        "ddi-stats": "http://rdf-vocabulary.ddialliance.org/cv/SummaryStatisticType/2.1.2/",
+        "examples": {
+            "@id": "cr:examples",
+            "@type": "@json"
+        },
+        "extract": "cr:extract",
+        "field": "cr:field",
+        "fileProperty": "cr:fileProperty",
+        "fileObject": "cr:fileObject",
+        "fileSet": "cr:fileSet",
+        "format": "cr:format",
+        "includes": "cr:includes",
+        "isLiveDataset": "cr:isLiveDataset",
+        "jsonPath": "cr:jsonPath",
+        "key": "cr:key",
+        "md5": "cr:md5",
+        "parentField": "cr:parentField",
+        "path": "cr:path",
+        "recordSet": "cr:recordSet",
+        "references": "cr:references",
+        "regex": "cr:regex",
+        "repeated": "cr:repeated",
+        "replace": "cr:replace",
+        "samplingRate": "cr:samplingRate",
+        "sc": "https://schema.org/",
+        "separator": "cr:separator",
+        "source": "cr:source",
+        "subField": "cr:subField",
+        "transform": "cr:transform"
+    },
+    "@type": "sc:Dataset",
+    "conformsTo": "http://mlcommons.org/croissant/1.1",
+    "name": "Draft Dataset",
+    "url": "https://doi.org/10.5072/FK2/OO7TEP",
+    "creator": [
+        {
+            "@type": "Person",
+            "givenName": "Draft",
+            "familyName": "Punk",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "French house"
+            },
+            "name": "Punk, Draft"
+        }
+    ],
+    "description": "This dataset hasn't been published yet.",
+    "keywords": [
+        "Other"
+    ],
+    "license": "http://creativecommons.org/publicdomain/zero/1.0",
+    "dateModified": "",
+    "includedInDataCatalog": {
+        "@type": "DataCatalog",
+        "name": "Root",
+        "url": "http://localhost:8080"
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "Root"
+    },
+    "version": "DRAFT",
+    "citeAs": "@data{FK2/OO7TEP,author = {Punk, Draft},publisher = {Root},title = {Draft Dataset},url = {https://doi.org/10.5072/FK2/OO7TEP}}"
+}

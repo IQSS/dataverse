@@ -12,7 +12,10 @@ import edu.harvard.iq.dataverse.datavariable.VariableMetadataDDIParser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.*;
+import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlUtil;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -20,12 +23,7 @@ import io.restassured.parsing.Parser;
 import io.restassured.path.json.JsonPath;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.Response;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonValue;
-import jakarta.json.JsonArrayBuilder;
+import jakarta.json.*;
 import jakarta.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -45,6 +43,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Logger;
@@ -57,7 +56,6 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.path.json.JsonPath.with;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
-import java.time.Year;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.*;
@@ -299,7 +297,7 @@ public class DatasetsIT {
         grantRole.prettyPrint();
         grantRole.then().assertThat()
                 .body("message", containsString(BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.has.role.error")))
-                .statusCode(FORBIDDEN.getStatusCode());
+                .statusCode(CONFLICT.getStatusCode());
 
         // Create another random user: 
         
@@ -2354,7 +2352,7 @@ public class DatasetsIT {
         failedGrantPermission.prettyPrint();
         failedGrantPermission.then().assertThat()
                 .body("message", containsString(BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.has.role.error")))
-                .statusCode(FORBIDDEN.getStatusCode());
+                .statusCode(CONFLICT.getStatusCode());
     }
 
     @Test
@@ -3077,13 +3075,20 @@ public class DatasetsIT {
                 .statusCode(200);
         
         // Check again: 
-        // This should return an empty list, as the dataset should have no locks just yet:
+        // This should no longer return an empty list, as the dataset now has a lock:
         checkDatasetLocks = UtilIT.checkDatasetLocks(datasetId.longValue(), "Ingest", apiToken);
         checkDatasetLocks.prettyPrint();
         checkDatasetLocks.then().assertThat()
                 .body("data[0].lockType", equalTo("Ingest"))
                 .statusCode(200);
-        
+
+        // Confirm that when getting the dataset, the lock is also listed
+        Response getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat()
+                .body("data.locks[0]", equalTo("Ingest"))
+                .statusCode(200);
+
         // Try to lock the dataset with the same type lock, AGAIN 
         // (this should fail, of course!)
         lockDatasetResponse = UtilIT.lockDataset(datasetId.longValue(), "Ingest", apiToken);
@@ -3196,6 +3201,13 @@ public class DatasetsIT {
         checkDatasetLocks.prettyPrint();
         checkDatasetLocks.then().assertThat()
                 .body("data", equalTo(emptyArray))
+                .statusCode(200);
+
+        // Confirm that when getting the dataset, the lock is also no longer listed
+        getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat()
+                .body("data.locks", equalTo(emptyArray))
                 .statusCode(200);
     }
     
@@ -6280,7 +6292,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
 
-        Response storageDrivers = UtilIT.listStorageDrivers(apiToken);
+        Response storageDrivers = UtilIT.listStorageDrivers(apiToken, dataverseAlias);
         storageDrivers.prettyPrint();
         JsonObject data = JsonUtil.getJsonObject(storageDrivers.getBody().asString());
         String first = data.getJsonObject("data").keySet().iterator().next();
@@ -6856,10 +6868,22 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(id), pathToFile, apiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId = UtilIT.getDataFileIdFromResponse(uploadResponse);
 
         publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(String.valueOf(id), "major", apiToken);
         publishDatasetResponse.prettyPrint();
         publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Remove the file and try to publish again. Dataset still has a file but the new version has none
+        Response deleteResponse = UtilIT.deleteFileInDataset(fileId, apiToken);
+        deleteResponse.prettyPrint();
+        deleteResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(String.valueOf(id), "major", apiToken);
+        publishDatasetResponse.prettyPrint();
+        publishDatasetResponse.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", containsString( BundleUtil.getStringFromBundle("dataset.mayNotPublish.FilesRequired")));
     }
     
     @Test
@@ -7411,6 +7435,109 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         json = response.prettyPrint();
         assertTrue(json.contains("datasetContactName"));
         assertTrue(!json.contains("datasetContactEmail"));
+    }
+
+    @Test
+    public void testGetDatasetWithTermsOfUseAndGuestbook() throws IOException, JsonParseException {
+        String apiToken = getSuperuserToken();
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String ownerAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(ownerAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        String persistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        // Create a Guestbook
+        Guestbook guestbook = UtilIT.createRandomGuestbook(ownerAlias, persistentId, apiToken);
+
+        // Create a license for Terms of Use
+        String jsonString = """
+            {
+               "customTerms": {
+                 "termsOfUse": "testTermsOfUse"
+                }
+            }
+            """;
+        Response updateLicenseResponse = UtilIT.updateLicense(datasetId.toString(), jsonString, apiToken);
+        updateLicenseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(BundleUtil.getStringFromBundle("datasets.api.updateLicense.success")));
+
+        // Enable the Guestbook with invalid enable flag
+        Response guestbookEnableResponse = UtilIT.enableGuestbook(ownerAlias, guestbook.getId(), apiToken, "x");
+        guestbookEnableResponse.prettyPrint();
+        guestbookEnableResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", startsWith("Illegal value"));
+
+        Response getDataset = UtilIT.getDatasetVersions(persistentId, apiToken);
+        getDataset.prettyPrint();
+        getDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].termsOfUse", equalTo("testTermsOfUse"))
+                .body("data[0].guestbookId", equalTo(guestbook.getId().intValue()));
+
+        getDataset = UtilIT.nativeGet(datasetId, apiToken);
+        getDataset.prettyPrint();
+        getDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.guestbookId", equalTo(guestbook.getId().intValue()));
+
+        Response getGuestbook = UtilIT.getGuestbook(guestbook.getId(), apiToken);
+        getGuestbook.prettyPrint();
+        getGuestbook.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.id", equalTo(guestbook.getId().intValue()));
+
+        getGuestbook = UtilIT.getGuestbook(-1L, apiToken);
+        getGuestbook.prettyPrint();
+        getGuestbook.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // remove the guestbook from the dataset
+        Response removeGuestbook = UtilIT.updateDatasetGuestbook(persistentId, null, apiToken);
+        removeGuestbook.prettyPrint();
+        removeGuestbook.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", startsWith("Guestbook removed"));
+        // remove the already removed guestbook from the dataset
+        removeGuestbook = UtilIT.updateDatasetGuestbook(persistentId, null, apiToken);
+        removeGuestbook.prettyPrint();
+        removeGuestbook.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", startsWith("No Guestbook to remove"));
+
+        // Get the dataset to show that the guestbook was removed
+        getDataset = UtilIT.nativeGet(datasetId, apiToken);
+        getDataset.prettyPrint();
+        getDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.guestbookId", equalTo(null));
+
+        // Disable the Guestbook
+        guestbookEnableResponse = UtilIT.enableGuestbook(ownerAlias, guestbook.getId(), apiToken, Boolean.FALSE.toString());
+        guestbookEnableResponse.prettyPrint();
+        guestbookEnableResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", startsWith("Guestbook"));
+
+        // Fail to add a disabled Guestbook to the Dataset
+        Response setGuestbook = UtilIT.updateDatasetGuestbook(persistentId, guestbook.getId(), apiToken);
+        setGuestbook.prettyPrint();
+        setGuestbook.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", startsWith("Failed to update dataset guestbook"));
+
+        // Enable the Guestbook. Add it to the Dataset. Then disable it.
+        // Show that the guestbook is still returned in the dataset Json even if it's disabled
+        UtilIT.enableGuestbook(ownerAlias, guestbook.getId(), apiToken, Boolean.TRUE.toString()).prettyPrint();
+        UtilIT.updateDatasetGuestbook(persistentId, guestbook.getId(), apiToken).prettyPrint();
+        UtilIT.enableGuestbook(ownerAlias, guestbook.getId(), apiToken, Boolean.FALSE.toString()).prettyPrint();
+        getDataset = UtilIT.nativeGet(datasetId, apiToken);
+        getDataset.prettyPrint();
+        getDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.guestbookId", equalTo(guestbook.getId().intValue()));
     }
 
     @Test

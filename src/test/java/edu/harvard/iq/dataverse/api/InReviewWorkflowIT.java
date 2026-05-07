@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.path.xml.XmlPath;
@@ -119,6 +120,13 @@ public class InReviewWorkflowIT {
         submitForReviewAlreadySubmitted.then().assertThat()
                 .body("message", equalTo("You cannot submit this dataset for review because it is already in review."))
                 .statusCode(FORBIDDEN.getStatusCode());
+
+        // Confirm that when getting the dataset, the "InReview" lock is listed
+        Response getDatasetJson = UtilIT.nativeGet(datasetId, authorApiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat()
+                .body("data.locks[0]", equalTo("InReview"))
+                .statusCode(200);
 
         Response authorsChecksForCommentsPrematurely = UtilIT.getNotifications(authorApiToken);
         authorsChecksForCommentsPrematurely.prettyPrint();
@@ -429,10 +437,101 @@ public class InReviewWorkflowIT {
                 //   .body("data[3].reasonsForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
+        // The author realizes she wants to add another file and creates a new draft version.
+        Response authorAddsNewFileCreatingNewDraft = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, authorApiToken);
+        authorAddsNewFileCreatingNewDraft.prettyPrint();
+        authorAddsNewFileCreatingNewDraft.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // The author re-submits.
+        Response submit4 = UtilIT.submitDatasetForReview(datasetPersistentId, authorApiToken);
+        submit4.prettyPrint();
+        submit4.then().assertThat()
+                .body("data.inReview", equalTo(true))
+                .statusCode(OK.getStatusCode());
+
+        // The curator checks notifications and sees that the dataset has been re-submitted after it was published.
+        Response curatorChecksForNotificationsPostPublication = UtilIT.getNotifications(curatorApiToken);
+        curatorChecksForNotificationsPostPublication.prettyPrint();
+        curatorChecksForNotificationsPostPublication.then().assertThat()
+                .body("data[0].type", equalTo(SUBMITTEDDS.toString()))
+                .body("data[1].type", equalTo(PUBLISHEDDS.toString()))
+                .statusCode(OK.getStatusCode());
+
+        // The curator checks again, this time in app notification format.
+        Response curatorChecksForNotificationsPostPublicationInAppFormat = UtilIT.getNotifications(curatorApiToken, true, null, null, null);
+        curatorChecksForNotificationsPostPublicationInAppFormat.prettyPrint();
+        curatorChecksForNotificationsPostPublicationInAppFormat.then().assertThat()
+                .body("data[0].type", equalTo(SUBMITTEDDS.toString()))
+                .body("data[0].objectDeleted", equalTo(null))
+                .body("data[0].datasetPersistentIdentifier", equalTo(datasetPersistentId))
+                .body("data[0].ownerAlias", equalTo(dataverseAlias))
+                .body("data[1].type", equalTo(PUBLISHEDDS.toString()))
+                .body("data[1].objectDeleted", equalTo(null))
+                .body("data[1].datasetPersistentIdentifier", equalTo(datasetPersistentId))
+                .body("data[1].ownerAlias", equalTo(dataverseAlias))
+                .statusCode(OK.getStatusCode());
+
         // These println's are here in case you want to log into the GUI to see what notifications look like.
         System.out.println("Curator username/password: " + curatorUsername);
         System.out.println("Author username/password: " + authorUsername);
 
     }
 
+    @Test
+    public void testRequireFilesToSubmitDatasetForReview() {
+        // create dataverse owner and dataset creator
+        Response superUser = UtilIT.createRandomUser();
+        superUser.prettyPrint();
+        superUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(superUser);
+        String superUserApiToken = UtilIT.getApiTokenFromResponse(superUser);
+        Response makeSuperUserResponse = UtilIT.setSuperuserStatus(username, true);
+        makeSuperUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response createCurator = UtilIT.createRandomUser();
+        createCurator.prettyPrint();
+        createCurator.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String authorUsername = UtilIT.getUsernameFromResponse(createCurator);
+        String apiToken = UtilIT.getApiTokenFromResponse(createCurator);
+
+        // Create the dataverse and set it to require files to publish and submit for review
+        Response createDataverseResponse = UtilIT.createRandomDataverse(superUserApiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response setDataverseAttributeResponse = UtilIT.setCollectionAttribute(dataverseAlias, "requireFilesToPublishDataset", "true", superUserApiToken);
+        setDataverseAttributeResponse.prettyPrint();
+        setDataverseAttributeResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // grant role to dataset creator to be able to create a dataset in the dataverse
+        Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR.toString(), "@" + authorUsername, superUserApiToken);
+        grantAuthorAddDataset.prettyPrint();
+        grantAuthorAddDataset.then().assertThat()
+                .body("data.assignee", equalTo("@" + authorUsername))
+                .body("data._roleAlias", equalTo("dsContributor"))
+                .statusCode(OK.getStatusCode());
+
+        // Create a dataset with no files
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+
+        // Submit for review with no data files
+        Response submitForReview = UtilIT.submitDatasetForReview(datasetPersistentId, apiToken);
+        submitForReview.prettyPrint();
+        submitForReview.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataset.mayNotSubmitForReview.FilesRequired")));
+    }
 }

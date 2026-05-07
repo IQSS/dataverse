@@ -325,6 +325,18 @@ public class SettingsServiceBean {
         Whether to display the publish text for every published version
         */
         DatasetPublishPopupCustomTextOnAllVersions,
+        /**
+         The message added to a popup upon dataset submit for review
+         */
+        DatasetSubmitForReviewPopupCustomText,
+        /*
+        Publish Disclaimer text. If this setting exists user must acknowledge before a Dataset can be published
+         */
+        PublishDatasetDisclaimerText,
+        /*
+        Submit for review Disclaimer text. If this setting exists user must acknowledge before a Dataset can be submitted for review
+         */
+        SubmitForReviewDatasetDisclaimerText,
         /*
         Whether Harvesting (OAI) service is enabled
         */
@@ -485,6 +497,12 @@ public class SettingsServiceBean {
          */
         
         ArchiverClassName,
+        /*
+         * Only create an archival Bag for a dataset version if all prior versions have
+         * been successfully archived
+         */
+        ArchiveOnlyIfEarlierVersionsAreArchived,
+        
         /**
          * Custom settings for each archiver. See list below.
          */
@@ -761,7 +779,7 @@ public class SettingsServiceBean {
         FileCategories,
         CreateDataFilesMaxErrorsToDisplay,
 
-        ContactFeedbackMessageSizeLimit,
+        ContactFeedbackMessageSizeLimit,        
         //Experimental setting to allow connecting to a GET external search service expecting a GET request with query parameter mirroring the search API query parameters (without search_service) 
         GetExternalSearchUrl,
         //Experimental setting to provide a display name for the GET external search service
@@ -775,6 +793,8 @@ public class SettingsServiceBean {
         COARNotifyRelationshipAnnouncementTriggerFields,
         // JSON specification of the targets to send announcements to
         COARNotifyRelationshipAnnouncementTargets,
+        // Configurable delay between harvesting calls, when required to avoid triggering rate limits
+        HarvestingClientCallRateLimit
         ;
 
         @Override
@@ -802,16 +822,13 @@ public class SettingsServiceBean {
             // Cut off the ":" we verified is present before
             String normalizedKey = key.substring(1);
             
-            // Iterate through all the known keys and return on match (case sensitive!)
             // We are case sensitive here because Dataverse implicitely uses case sensitive keys everywhere!
-            for (SettingsServiceBean.Key k : SettingsServiceBean.Key.values()) {
-                if (k.name().equals(normalizedKey)) {
-                    return k;
-                }
+            try {
+                return SettingsServiceBean.Key.valueOf(normalizedKey);
+            } catch (IllegalArgumentException e) {
+                // Fall through on no match - return null for invalid keys
+                return null;
             }
-            
-            // Fall through on no match
-            return null;
         }
     }
     
