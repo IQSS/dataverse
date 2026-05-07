@@ -331,10 +331,9 @@ public class DataversesIT {
                 .getJsonObject("data.dataverseContacts");
         assertNull(dataverseEmailNotAllowed);
 
+        // Test "ignoreSettingExcludeEmailFromExport" with user who has required permissions
         Response getDataverseWithIgnoreExcludeEmail = UtilIT.getDataverseWithIgnoreExcludeEmail(dataverseAlias, apiToken, true);
         getDataverseWithIgnoreExcludeEmail.prettyPrint();
-        getDataverseWithIgnoreExcludeEmail.then().assertThat()
-                .statusCode(OK.getStatusCode());
 
         getDataverseWithIgnoreExcludeEmail.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -349,7 +348,29 @@ public class DataversesIT {
         List dataverseEmailAllowed = with(getDataverseWithIgnoreExcludeEmail.body().asString())
                 .getJsonObject("data.dataverseContacts");
         assertNotNull(dataverseEmailAllowed);
-        
+
+        // Test "ignoreSettingExcludeEmailFromExport" with user who does not have required permissions
+        Response createUser2 = UtilIT.createRandomUser();
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+
+        Response getDataverseWithIgnoreExcludeEmailNoPermission = UtilIT.getDataverseWithIgnoreExcludeEmail(dataverseAlias, apiToken2, true);
+        getDataverseWithIgnoreExcludeEmailNoPermission.prettyPrint();
+
+        getDataverseWithIgnoreExcludeEmailNoPermission.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.alias", equalTo(dataverseAlias))
+                .body("data.name", equalTo(dataverseAlias))
+                .body("data.dataverseContacts", equalTo(null))
+                .body("data.permissionRoot", equalTo(true))
+                .body("data.dataverseType", equalTo("UNCATEGORIZED"));
+
+        List dataverseEmailUserHasNoPermissions = with(getDataverseWithIgnoreExcludeEmailNoPermission.body().asString())
+                .getJsonObject("data.dataverseContacts");
+        assertNull(dataverseEmailUserHasNoPermissions);
+
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
         removeExcludeEmail.then().assertThat()
                 .statusCode(200);
