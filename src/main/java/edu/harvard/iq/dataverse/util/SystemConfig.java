@@ -331,6 +331,36 @@ public class SystemConfig {
      * that changes whenever the bundle does — file mtime is the
      * cheapest such signal that does not require a build-time hook.
      */
+    /**
+     * JSON-encode a single string value (with surrounding quotes), suitable
+     * for inlining into a JavaScript object literal in a JSF page. Use:
+     *
+     * <pre>{@code
+     *   window.dvTreeViewConfig = {
+     *     siteUrl: #{systemConfig.jsString(systemConfig.dataverseSiteUrl)},
+     *     ...
+     *   };
+     * }</pre>
+     *
+     * Wraps {@link Json#createValue(String)} which escapes everything that
+     * would otherwise let a hostile (or just unusual) string break out of
+     * the JS literal — backslashes, double quotes, control characters, and
+     * the {@code </} sequence that would prematurely close a {@code <script>}
+     * tag are all handled in one place. Cheaper than passing the values
+     * through a backing bean, and keeps the surface inside {@link SystemConfig}
+     * so the same helper can be reused by other JSF/React mount points.
+     */
+    public String jsString(String raw) {
+        if (raw == null) {
+            return "null";
+        }
+        // The default JSON serialiser handles backslash/quote/control-char
+        // escaping. We additionally rewrite "</" to "<\\/" so the JS literal
+        // can't be terminated early by a stray `</script>` in user input.
+        String json = Json.createValue(raw).toString();
+        return json.replace("</", "<\\/");
+    }
+
     public String getReusableComponentsVersion() {
         String base = getVersion();
         try {

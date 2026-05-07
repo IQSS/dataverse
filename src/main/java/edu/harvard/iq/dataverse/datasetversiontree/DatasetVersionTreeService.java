@@ -270,13 +270,29 @@ public class DatasetVersionTreeService {
         if (root) {
             sql.append("  AND fm.directorylabel IS NOT NULL AND fm.directorylabel <> '' ");
         } else {
-            sql.append("  AND fm.directorylabel LIKE ?").append(params.size() + 1).append(" ");
-            params.add(path + "/%");
+            // LIKE with the user-provided path needs to escape SQL wildcard
+            // characters, otherwise a folder named `a_b` would also match
+            // `axb/...`, and `%foo` would match arbitrary prefixes — both
+            // crossing into sibling subtrees. Escape `\`, `%`, `_` and add
+            // an explicit ESCAPE clause; PostgreSQL's default escape char is
+            // already `\`, but stating it makes the contract local.
+            sql.append("  AND fm.directorylabel LIKE ?").append(params.size() + 1).append(" ESCAPE '\\' ");
+            params.add(escapeLikePattern(path) + "/%");
         }
         if (afterFolderName != null) {
+            // Two-key keyset comparison. Folder names are aggregations, so
+            // there's no per-row id to break ties on; siblings whose names
+            // differ only in case (`Data/` vs `data/`) collide on the
+            // primary `lower(name)` ordering. We add the case-sensitive
+            // name as a deterministic secondary key. The matching ORDER BY
+            // below carries the same `(lower, cs)` tuple so the keyset
+            // walk is stable.
             String cmp = order == Order.NAME_ZA ? "<" : ">";
-            sql.append("  AND lower(split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1)) ").append(cmp).append(" ?").append(params.size() + 1).append(" ");
+            sql.append("  AND (lower(split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1)) ").append(cmp).append(" ?").append(params.size() + 1)
+                    .append("       OR (lower(split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1)) = ?").append(params.size() + 1)
+                    .append("           AND split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1) ").append(cmp).append(" ?").append(params.size() + 2).append(")) ");
             params.add(afterFolderName.toLowerCase(Locale.ROOT));
+            params.add(afterFolderName);
         }
         // Repeat the expression in GROUP BY / ORDER BY rather than referring
         // to the `folder_name` SELECT alias. PostgreSQL allows the bare
@@ -285,7 +301,9 @@ public class DatasetVersionTreeService {
         // with `column "folder_name" does not exist`. Repeating the
         // expression is also SQL-spec-clean.
         sql.append("GROUP BY split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1) ");
-        sql.append("ORDER BY lower(split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1)) ").append(order == Order.NAME_ZA ? "DESC" : "ASC").append(" ");
+        String dir = order == Order.NAME_ZA ? "DESC" : "ASC";
+        sql.append("ORDER BY lower(split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1)) ").append(dir).append(", ");
+        sql.append("         split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1) ").append(dir).append(" ");
         sql.append("LIMIT ?").append(params.size() + 1);
         params.add(limit);
 
@@ -319,8 +337,17 @@ public class DatasetVersionTreeService {
         // be used here.
         StringBuilder sql = new StringBuilder();
         List<Object> params = new ArrayList<>();
-        sql.append("SELECT fm.label, df.id, df.filesize, df.contenttype, df.restricted, df.embargo_id, df.checksumtype, df.checksumvalue ");
+        // The `actively_embargoed` boolean mirrors `FileUtil.isActivelyEmbargoed`:
+        // an embargo row whose `dateavailable` is strictly after today still
+        // restricts access; a row whose date has already passed does not.
+        // Without this comparison the tree would mark files as `embargoed`
+        // forever once an embargo row is attached, contradicting how the
+        // rest of Dataverse renders the same files.
+        sql.append("SELECT fm.label, df.id, df.filesize, df.contenttype, df.restricted, ");
+        sql.append("       (df.embargo_id IS NOT NULL AND e.dateavailable > current_date) AS actively_embargoed, ");
+        sql.append("       df.checksumtype, df.checksumvalue ");
         sql.append("FROM filemetadata fm JOIN datafile df ON fm.datafile_id = df.id ");
+        sql.append("                     LEFT JOIN embargo e ON df.embargo_id = e.id ");
         sql.append("WHERE fm.datasetversion_id = ?").append(params.size() + 1).append(" ");
         params.add(versionId);
         if (root) {
@@ -361,14 +388,14 @@ public class DatasetVersionTreeService {
             long size = row[2] == null ? 0L : ((Number) row[2]).longValue();
             String contentType = (String) row[3];
             Boolean restricted = (Boolean) row[4];
-            Object embargoId = row[5];
+            Boolean activelyEmbargoed = (Boolean) row[5];
             String checksumTypeRaw = (String) row[6];
             String checksumValue = (String) row[7];
 
             String access;
             if (Boolean.TRUE.equals(restricted)) {
                 access = "restricted";
-            } else if (embargoId != null) {
+            } else if (Boolean.TRUE.equals(activelyEmbargoed)) {
                 access = "embargoed";
             } else {
                 access = "public";
@@ -395,16 +422,41 @@ public class DatasetVersionTreeService {
         if (root) {
             sql.append("  AND fm.directorylabel IS NOT NULL AND fm.directorylabel <> '' ");
         } else {
-            sql.append("  AND fm.directorylabel LIKE ?2 ");
+            // See `runFolderQuery` — LIKE wildcards in the path must be escaped
+            // or `a_b` cross-matches sibling `axb/...` etc.
+            sql.append("  AND fm.directorylabel LIKE ?2 ESCAPE '\\' ");
         }
 
         Query q = em.createNativeQuery(sql.toString());
         q.setParameter(1, versionId);
         if (!root) {
-            q.setParameter(2, path + "/%");
+            q.setParameter(2, escapeLikePattern(path) + "/%");
         }
         Number n = (Number) q.getSingleResult();
         return n == null ? 0 : n.intValue();
+    }
+
+    /**
+     * Escapes the three characters PostgreSQL's `LIKE` operator treats
+     * specially when the default escape character (`\`) is in effect: `\`,
+     * `%`, `_`. Folder names in `directorylabel` are user-controlled,
+     * and we use them as the literal prefix of a `LIKE ? + '/%'` pattern,
+     * so any of those characters would otherwise expand the matched
+     * subtree past what the cursor describes.
+     */
+    static String escapeLikePattern(String s) {
+        if (s == null || s.isEmpty()) {
+            return s;
+        }
+        StringBuilder out = new StringBuilder(s.length() + 4);
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '\\' || c == '%' || c == '_') {
+                out.append('\\');
+            }
+            out.append(c);
+        }
+        return out.toString();
     }
 
     private int countFiles(long versionId, String path) {

@@ -149,10 +149,13 @@
                         <div id="dv-uploader"></div>
                         <script>
                             //<![CDATA[
+                            // Values are JSON-encoded server-side via
+                            // systemConfig.jsString to prevent JS-literal
+                            // breakout. See SystemConfig#jsString.
                             window.dvUploaderConfig = {
-                                siteUrl: '#{systemConfig.dataverseSiteUrl}',
-                                datasetPid: '#{dataset.globalId.asString()}',
-                                locale: '#{dataverseSession.localeCode}',
+                                siteUrl: #{systemConfig.jsString(systemConfig.dataverseSiteUrl)},
+                                datasetPid: #{systemConfig.jsString(dataset.globalId.asString())},
+                                locale: #{systemConfig.jsString(dataverseSession.localeCode)},
                                 rootElementId: 'dv-uploader'
                             };
                             //]]>
