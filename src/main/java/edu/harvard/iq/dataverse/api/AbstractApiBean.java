@@ -77,7 +77,7 @@ public abstract class AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(AbstractApiBean.class.getName());
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
-    private static final String PERSISTENT_ID_KEY=":persistentId";
+    protected static final String PERSISTENT_ID_KEY=":persistentId";
     private static final String ALIAS_KEY=":alias";
     public static final String STATUS_WF_IN_PROGRESS = "WORKFLOW_IN_PROGRESS";
     public static final String DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME = "X-Dataverse-invocationID";

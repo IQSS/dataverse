@@ -1302,8 +1302,19 @@ public class UtilIT {
         if (body != null) {
             requestSpecification.body(body);
         }
-        String getString = "/api/access/dataset/:persistentId?persistentId=" + persistentId;
-        return requestSpecification.post(getString);
+        String postString = "/api/access/datafile/:persistentId?persistentId=" + persistentId;
+        return requestSpecification.post(postString);
+    }
+    static Response downloadAllDatasetFilesWithGuestbookResponse(String persistentId, String apiToken, String body) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (body != null) {
+            requestSpecification.body(body);
+        }
+        String postString = "/api/access/dataset/:persistentId?persistentId=" + persistentId;
+        return requestSpecification.post(postString);
     }
 
     static Response postDownloadDatafiles(String body, String apiToken) {
@@ -1999,6 +2010,14 @@ public class UtilIT {
                 .get("/api/dataverses/"
                         + alias
                         + (returnChildCount ? "/?returnChildCount=true" : ""));
+    }
+
+    static Response getDataverseWithIgnoreExcludeEmail(String alias,  String apiToken, boolean ignoreSettingExcludeEmailFromExport) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/"
+                        + alias
+                        + (ignoreSettingExcludeEmailFromExport ? "/?ignoreSettingExcludeEmailFromExport=true" : ""));
     }
 
     static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {

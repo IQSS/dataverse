@@ -45,9 +45,21 @@ public class Info extends AbstractApiBean {
     }
 
     @GET
+    @Path("settings/:DatasetSubmitForReviewPopupCustomText")
+    public Response DatasetSubmitForReviewPopupCustomText() {
+        return getSettingResponseByKey(SettingsServiceBean.Key.DatasetSubmitForReviewPopupCustomText);
+    }
+
+    @GET
     @Path("settings/:PublishDatasetDisclaimerText")
     public Response getPublishDatasetDisclaimerText() {
         return getSettingResponseByKey(SettingsServiceBean.Key.PublishDatasetDisclaimerText);
+    }
+
+    @GET
+    @Path("settings/:SubmitForReviewDatasetDisclaimerText")
+    public Response getSubmitForReviewDatasetDisclaimerText() {
+        return getSettingResponseByKey(SettingsServiceBean.Key.SubmitForReviewDatasetDisclaimerText);
     }
 
     @GET
