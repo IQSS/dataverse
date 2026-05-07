@@ -54,8 +54,8 @@ services:
         -Ddataverse.files.minio1.custom-endpoint-region=us-east-1
         -Ddataverse.files.minio1.bucket-name=mybucket
         -Ddataverse.files.minio1.path-style-access=true
-        -Ddataverse.files.minio1.upload-redirect=false
-        -Ddataverse.files.minio1.download-redirect=false
+        -Ddataverse.files.minio1.upload-redirect=true
+        -Ddataverse.files.minio1.download-redirect=true
         -Ddataverse.files.minio1.access-key=4cc355_k3y
         -Ddataverse.files.minio1.secret-key=s3cr3t_4cc355_k3y
         -Ddataverse.pid.providers=fake
@@ -247,7 +247,35 @@ services:
     environment:
       MINIO_ROOT_USER: 4cc355_k3y
       MINIO_ROOT_PASSWORD: s3cr3t_4cc355_k3y
-    command: server /data
+      # Permit browser-direct upload/download from any origin in dev.
+      # Mirrors the LocalStack bucket CORS rule we put on `mybucket`
+      # (see conf/localstack/buckets.sh) — without this the OPTIONS
+      # preflight from the React uploader gets blocked when the
+      # browser PUTs to the presigned MinIO URL.
+      MINIO_API_CORS_ALLOW_ORIGIN: "*"
+    command: server /data --console-address ":9001"
+
+  # One-shot bucket bootstrap. Without this MinIO has no `mybucket`
+  # and the first upload fails with NoSuchBucket. The companion uses
+  # the official `mc` client and exits when done; restart policy is
+  # "no" so the container doesn't loop.
+  dev_minio_init:
+    container_name: "dev_minio_init"
+    image: minio/mc
+    depends_on:
+      - dev_minio
+    networks:
+      - dataverse
+    entrypoint: >
+      /bin/sh -c "
+      until /usr/bin/mc alias set local http://minio:9000 4cc355_k3y s3cr3t_4cc355_k3y >/dev/null 2>&1; do
+        echo 'waiting for minio...'; sleep 2;
+      done;
+      /usr/bin/mc mb --ignore-existing local/mybucket;
+      echo 'mybucket ready';
+      exit 0;
+      "
+    restart: "no"
 
   previewers-provider:
     container_name: previewers-provider
