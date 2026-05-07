@@ -96,9 +96,19 @@
                                     <p:commandButton styleClass="btn btn-link" id="cancelbutton" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form"/>
                                 </div>
                                 <div jsf:rendered="#{empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment())}">
-                                    <button id="doneFilesButtonnop" class="btn btn-default" value="#{bundle.done}" onclick="cancelDatasetEdit();return false;">#{bundle.done}</button>
-                                    <p:remoteCommand name="cancelEditCommand" process="@this" partialSubmit="true" async="true" update="" action="#{EditDatafilesPage.cancel}"/>     
- 
+                                    <!--
+                                        Hide the legacy "Done" button when the React uploader
+                                        is wired and visible. The React uploader exposes its
+                                        own finish action, and a second Done button below the
+                                        component confused testers. Falls back to the
+                                        previous behaviour whenever the React uploader is
+                                        not in play (legacy upload widget, file-replace
+                                        flow, non-direct-upload storage).
+                                    -->
+                                    <button id="doneFilesButtonnop" class="btn btn-default" value="#{bundle.done}" onclick="cancelDatasetEdit();return false;"
+                                            jsf:rendered="#{!(systemConfig.reactUploaderEnabled and systemConfig.directUploadEnabled(EditDatafilesPage.dataset) and !EditDatafilesPage.fileReplaceOperation)}">#{bundle.done}</button>
+                                    <p:remoteCommand name="cancelEditCommand" process="@this" partialSubmit="true" async="true" update="" action="#{EditDatafilesPage.cancel}"/>
+
                                 </div>
                             </p:outputPanel>
                         </div>
