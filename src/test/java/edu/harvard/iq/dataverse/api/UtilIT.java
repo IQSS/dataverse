@@ -2012,6 +2012,14 @@ public class UtilIT {
                         + (returnChildCount ? "/?returnChildCount=true" : ""));
     }
 
+    static Response getDataverseWithIgnoreExcludeEmail(String alias,  String apiToken, boolean ignoreSettingExcludeEmailFromExport) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/"
+                        + alias
+                        + (ignoreSettingExcludeEmailFromExport ? "/?ignoreSettingExcludeEmailFromExport=true" : ""));
+    }
+
     static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
