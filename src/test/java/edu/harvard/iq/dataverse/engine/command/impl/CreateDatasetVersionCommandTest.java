@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.*;
+import edu.harvard.iq.dataverse.engine.NoOpTestEntityManager;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -54,6 +55,7 @@ public class CreateDatasetVersionCommandTest {
         final MockDatasetServiceBean serviceBean = new MockDatasetServiceBean();
         TestDataverseEngine testEngine = new TestDataverseEngine( new TestCommandContext(){
             @Override public DatasetServiceBean datasets() { return serviceBean; }
+            @Override public jakarta.persistence.EntityManager em() { return new NoOpTestEntityManager(); }
         } );
         
         testEngine.submit(sut);
@@ -86,7 +88,10 @@ public class CreateDatasetVersionCommandTest {
             public DatasetServiceBean datasets() {
                 return dsb;
             }
-            
+            @Override
+            public jakarta.persistence.EntityManager em() {
+                return new NoOpTestEntityManager();
+            }
         });
         
         assertThrows(IllegalCommandException.class, () -> testEngine.submit(sut));
