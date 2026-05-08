@@ -647,6 +647,15 @@ public class Datasets extends AbstractApiBean {
             // Stable ETag for cacheable (released, non-deaccessioned) versions only.
             // Drafts and deaccessioned versions can change in place, so we don't
             // emit a cacheable ETag for them.
+            //
+            // Cache-Control is `private` rather than `public` because the route
+            // is `@AuthRequired` — even though today the response body does not
+            // vary by user (restricted files are returned with their `access`
+            // marker, the metadata itself is not filtered), `private` keeps a
+            // future user-dependent SQL filter from leaking through a shared
+            // proxy. `immutable` is still safe: released non-deaccessioned
+            // versions are content-immutable, so the browser's own cache can
+            // skip revalidation.
             String etag = isCacheableVersion(datasetVersion)
                     ? computeTreeEtag(datasetVersion, path, limit, cursor, include, order,
                             originals, includeDeaccessioned)
@@ -654,7 +663,7 @@ public class Datasets extends AbstractApiBean {
             if (etag != null && etag.equals(ifNoneMatch)) {
                 return Response.notModified()
                         .tag(etag)
-                        .header("Cache-Control", "public, immutable")
+                        .header("Cache-Control", "private, immutable")
                         .build();
             }
             TreePage page;
@@ -669,7 +678,7 @@ public class Datasets extends AbstractApiBean {
                             .build())
                     .type(MediaType.APPLICATION_JSON);
             if (etag != null) {
-                rb.tag(etag).header("Cache-Control", "public, immutable");
+                rb.tag(etag).header("Cache-Control", "private, immutable");
             }
             return rb.build();
         }, getRequestUser(crc));
