@@ -327,7 +327,7 @@ public class DatasetsTreeIT {
                 null, null, null, null, null, null, null, apiToken);
         first.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .header("Cache-Control", equalTo("public, immutable"));
+                .header("Cache-Control", equalTo("private, immutable"));
         String etag = first.getHeader("ETag");
         assertNotNull(etag, "Published versions must emit an ETag");
         assert etag.startsWith("\"") && etag.endsWith("\"") : "ETag must be quoted: " + etag;
@@ -338,7 +338,7 @@ public class DatasetsTreeIT {
                 .get("/api/datasets/" + datasetId + "/versions/" + LATEST + "/tree");
         cached.then().assertThat()
                 .statusCode(jakarta.ws.rs.core.Response.Status.NOT_MODIFIED.getStatusCode())
-                .header("Cache-Control", equalTo("public, immutable"));
+                .header("Cache-Control", equalTo("private, immutable"));
 
         // Different query params must yield a different ETag.
         Response differentQuery = UtilIT.getVersionTree(datasetId, LATEST,

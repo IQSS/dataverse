@@ -36,7 +36,7 @@ Response shape:
 
 Permissions and embargoes are honoured exactly as on `GET /api/datasets/{id}/versions/{versionId}/files` — the endpoint is a thin lazy projection of the same `DatasetVersion.fileMetadatas`.
 
-For published, non-deaccessioned versions the response carries `ETag` and `Cache-Control: public, immutable` headers; clients can pass the ETag back in `If-None-Match` to receive `304 Not Modified` without re-fetching the body. Drafts do not emit an ETag.
+For published, non-deaccessioned versions the response carries `ETag` and `Cache-Control: private, immutable` headers; clients can pass the ETag back in `If-None-Match` to receive `304 Not Modified` without re-fetching the body. `private` keeps responses out of shared proxies because the endpoint is auth-required; the browser's own cache still benefits from `immutable`. Drafts do not emit an ETag.
 
 ## Performance
 

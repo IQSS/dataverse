@@ -2382,7 +2382,7 @@ Response shape:
 
 Permissions and embargoes are honoured exactly as on ``GET /api/datasets/{id}/versions/{versionId}/files``.
 
-Caching: for published, non-deaccessioned versions the response carries an ``ETag`` header derived from the request inputs and a ``Cache-Control: public, immutable`` header. Clients can use the ETag in a subsequent ``If-None-Match`` request header to receive a ``304 Not Modified`` response without re-fetching the body. Drafts and deaccessioned versions do not emit an ETag because their content can change in place.
+Caching: for published, non-deaccessioned versions the response carries an ``ETag`` header derived from the request inputs and a ``Cache-Control: private, immutable`` header. Clients can use the ETag in a subsequent ``If-None-Match`` request header to receive a ``304 Not Modified`` response without re-fetching the body. ``private`` keeps the response out of shared caches because the route is auth-required; the browser's own cache still benefits from ``immutable``. Drafts and deaccessioned versions do not emit an ETag because their content can change in place.
 
 Get File Counts in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -20,7 +20,7 @@ This release introduces the first reusable React component built in `dataverse-f
 
 ### Operator note: covering index migration
 
-This release ships a new Flyway migration (`V6.10.1.2__6691-tree-listing-index.sql`) that creates `ix_filemetadata_tree` over `(dataset_version_id, lower(directory_label), lower(label), id)` to keep the new tree endpoint's keyset paginator fast.
+This release ships a new Flyway migration (`V6.10.1.2.sql`) that creates `ix_filemetadata_tree` over `(datasetversion_id, directorylabel, lower(label), datafile_id)` to keep the new tree endpoint's keyset paginator fast.
 
 On large production deployments (multi-million-row `filemetadata`), plain `CREATE INDEX` takes an `ACCESS EXCLUSIVE` lock and stalls all writes for the duration of the build (potentially several minutes). Flyway runs migrations inside a transaction, which prevents using `CREATE INDEX CONCURRENTLY` in the migration file itself.
 
@@ -28,7 +28,7 @@ Recommended for large installs: pre-create the index out-of-band before deployin
 
 ```sql
 CREATE INDEX CONCURRENTLY IF NOT EXISTS ix_filemetadata_tree
-    ON filemetadata (dataset_version_id, lower(directory_label), lower(label), id);
+    ON filemetadata (datasetversion_id, directorylabel, lower(label), datafile_id);
 ```
 
 The migration uses `CREATE INDEX IF NOT EXISTS`, so a pre-created index is a no-op when Flyway runs.
