@@ -42,7 +42,7 @@ The `dev_localstack` storage profile in `docker-compose-dev.yml` ships with `upl
 
 ### Prerequisites for using the React uploader
 
-1. `dataverse.feature.api-session-auth=true` so the bundle can call the API with the user's session cookie. **For production, also enable session-cookie API hardening** to mitigate CSRF risk (a separate feature track adds this).
+1. `dataverse.feature.api-session-auth=true` so the bundle can call the API with the user's session cookie. **For production, also enable `dataverse.feature.api-session-auth-hardening`** to mitigate CSRF risk via Origin/Referer + `X-Dataverse-CSRF-Token` enforcement.
 2. The reusable component bundle must be reachable from the user's browser. The simplest setup is to run the `gdcc/dataverse-reusable-components` container alongside Dataverse and set `dataverse.reusable-components.base-url=http://<host>:<port>` to point at it.
 3. `dataverse.siteUrl` must match the URL the browser actually uses, so that Origin/Referer checks pass when session-auth hardening is enabled.
 

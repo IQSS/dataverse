@@ -84,14 +84,10 @@ Set on every Dataverse instance that mounts a reusable component:
 | Setting | Required | Notes |
 |---|---|---|
 | `dataverse.feature.api-session-auth` | yes | Enables session-cookie auth on `/api/*` |
-| `dataverse.feature.api-session-auth-hardening` | forward-compat | Pre-set in dev compose; **not yet enforced by the server.** Lands as part of `IQSS/dataverse#12188`. |
-| `dataverse.siteUrl` | yes | Must match the URL the browser uses (e.g. `http://localhost:8000` in dev). Used for Origin/Referer validation once `#12188` lands. |
+| `dataverse.feature.api-session-auth-hardening` | recommended for production | Adds Origin/Referer + `X-Dataverse-CSRF-Token` enforcement on session-cookie API requests. Delivered alongside the reusable-components track by [`IQSS/dataverse#12188`](https://github.com/IQSS/dataverse/pull/12188). |
+| `dataverse.siteUrl` | yes | Must match the URL the browser uses (e.g. `http://localhost:8000` in dev). Used for Origin/Referer validation when hardening is on. |
 
-The hardening flag, the Origin/Referer checks, the `X-Dataverse-CSRF-Token` header, and `GET /api/users/:csrf-token` are **described here for forward compatibility but not implemented in the reusable-component PRs**. They land separately with [`IQSS/dataverse#12188`](https://github.com/IQSS/dataverse/pull/12188). Reusable-component PRs do not depend on the hardening being live; they require only `api-session-auth`. Setting `DATAVERSE_FEATURE_API_SESSION_AUTH_HARDENING=1` today is a no-op at the server (Dataverse silently ignores unknown env vars); the dev compose pre-sets it so operators don't have to flip a separate switch when `#12188` ships.
-
-In dev, the compose file (`dataverse-frontend/dev-env/docker-compose-dev.yml`) sets `api-session-auth` (enforced) and `api-session-auth-hardening` (forward-compat).
-
-Once `#12188` lands and hardening is enabled, the bundle will read the CSRF token from `GET /api/users/:csrf-token` and include it in subsequent calls. That handling will live inside `@iqss/dataverse-client-javascript`; JSF integrations won't need additional changes beyond a correct host site URL.
+When hardening is enabled, the bundle's HTTP client (in `@iqss/dataverse-client-javascript`) reads the CSRF token from `GET /api/users/:csrf-token` and attaches it as the `X-Dataverse-CSRF-Token` header on every subsequent request; the JSF integration needs no extra wiring beyond a correct `dataverse.siteUrl`.
 
 ## Hosting reusable bundles
 
