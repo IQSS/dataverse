@@ -4,6 +4,7 @@
   "view": {
     "toggle": {
       "label": "Files view selector",
+      "changeView": "Change View",
       "table": "Table",
       "tree": "Tree"
     }

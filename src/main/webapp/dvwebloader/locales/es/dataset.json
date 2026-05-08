@@ -1,0 +1,391 @@
+{
+  "filesTabTitle": "Ficheros",
+  "metadataTabTitle": "Metadatos",
+  "termsTabTitle": "Términos y libros de visitas",
+  "termsTabTitleReadOnly": "Términos",
+  "anonymizedFieldValue": "retirado",
+  "customTerms": {
+    "title": "Términos personalizados del dataset",
+    "description": "Los siguientes términos personalizados han sido definidos para este dataset."
+  },
+  "license": {
+    "title": "Licencia/Acuerdo de uso de datos",
+    "altTextPrefix": "Imagen de licencia para ",
+    "description": "Este dataset se publicará bajo los términos especificados a continuación. Nuestras Normas de la comunidad, así como las buenas prácticas científicas, esperan que se otorgue el crédito adecuado mediante la cita."
+  },
+  "citation": {
+    "status": {
+      "draft": {
+        "description": "DRAFT VERSION será reemplazada en la cita por la versión seleccionada una vez que el dataset haya sido publicado."
+      },
+      "deaccessioned": {
+        "description": "DEACCESSIONED VERSION se ha agregado a la cita para esta versión ya que ya no está disponible."
+      }
+    }
+  },
+  "deaccessionReason": "Motivo de despublicación",
+  "datasetActionButtons": {
+    "title": "Botones de acción del dataset",
+    "submitForReview": {
+      "enabled": "Enviar para revisión",
+      "disabled": "Enviado para revisión"
+    },
+    "publish": {
+      "title": "Publicar dataset",
+      "publish": "Publicar",
+      "returnToAuthor": "Devolver al autor",
+      "changeCurationStatus": "Cambiar estado de curación",
+      "removeCurrentStatus": "Eliminar estado actual"
+    },
+    "linkDataset": {
+      "title": "Vincular dataset",
+      "helper": "Elige a cuál de tus colecciones te gustaría vincular este dataset.",
+      "linkedCollections": "Nota: Este dataset ya está vinculado a las siguientes colecciones:",
+      "save": "Vincular",
+      "success": "<wrapper>Dataset de {{parentCollection}} se ha vinculado correctamente a <a>{{linkingCollectionName}}</a></wrapper>"
+    },
+    "unlinkDataset": {
+      "title": "Desvincular dataset",
+      "helper": "Elige de cuál de tus colecciones te gustaría desvincular este dataset.",
+      "save": "Desvincular",
+      "success": "<wrapper>Dataset desvinculado de <a>{{unlinkingCollectionName}}</a></wrapper>"
+    },
+    "editDataset": {
+      "title": "Editar dataset",
+      "filesUpload": "Ficheros (Cargar)",
+      "metadata": "Metadatos",
+      "tags": "Etiquetas",
+      "terms": "Términos",
+      "privateUrl": "URL privada",
+      "thumbnailsPlusWidgets": "Miniaturas + Widgets",
+      "delete": {
+        "draft": "Eliminar versión borrador",
+        "released": "Eliminar dataset"
+      },
+      "deaccession": "Despublicar dataset",
+      "permissions": {
+        "title": "Permisos",
+        "dataset": "Dataset",
+        "file": "Fichero"
+      },
+      "deleteDatasetModal": {
+        "title": "Eliminar dataset",
+        "messageDraft": "¿Seguro que quieres eliminar esta versión borrador? No podrás recuperar este borrador.",
+        "messageDataset": "¿Seguro que quieres eliminar este dataset? Esta acción no se puede deshacer.",
+        "defaultDatasetDeleteError": "Ocurrió un error al eliminar el dataset."
+      }
+    },
+    "accessDataset": {
+      "title": "Acceder al dataset",
+      "downloadOptions": {
+        "header": "Opciones de descarga",
+        "zip": "Descargar ZIP",
+        "originalZip": "ZIP en formato original",
+        "archivalZip": "ZIP en formato de fichero (.tab)"
+      }
+    },
+    "uploadFiles": "Subir ficheros",
+    "share": {
+      "shareDataset": "Compartir dataset",
+      "helpText": "Comparte este dataset en tus redes sociales favoritas."
+    },
+    "contactOwner": "Contactar al propietario"
+  },
+  "alerts": {
+    "publishInProgress": {
+      "heading": "Publicación en progreso",
+      "alertText": "El dataset está bloqueado mientras se registran o actualizan los identificadores persistentes y/o se validan los ficheros físicos."
+    },
+    "filesUpdated": {
+      "heading": "¡Éxito!",
+      "alertText": "Uno o más ficheros han sido actualizados."
+    },
+    "termsUpdated": {
+      "heading": "¡Éxito!",
+      "alertText": "Los términos de este dataset han sido actualizados."
+    },
+    "licenseUpdated": {
+      "heading": "¡Éxito!",
+      "alertText": "La licencia de este dataset ha sido actualizada."
+    },
+    "thumbnailUpdated": {
+      "heading": "¡Éxito!",
+      "alertText": "Miniatura del dataset actualizada."
+    },
+    "datasetDeleted": {
+      "heading": "¡Éxito!",
+      "alertText": "Este borrador de dataset ha sido eliminado."
+    },
+    "datasetCreated": {
+      "heading": "¡Éxito!",
+      "alertText": "Dataset creado correctamente."
+    },
+    "metadataUpdated": {
+      "heading": "¡Éxito!",
+      "alertText": "Los metadatos de este dataset se han actualizado correctamente."
+    },
+    "draftVersion": {
+      "heading": "Esta versión borrador necesita ser publicada",
+      "alertText": "Cuando esté lista para compartir, por favor <b>publícala</b> para que otros puedan ver estos cambios"
+    },
+    "requestedVersionNotFound": {
+      "heading": "Información",
+      "alertText": "No se encontró la versión {{requestedVersion}}. Esta es la versión {{returnedVersion}}."
+    },
+    "requestedVersionNotFoundShowDraft": {
+      "heading": "Información",
+      "alertText": "No se encontró la versión {{requestedVersion}}. Esta es la versión DRAFT."
+    },
+    "shareUnpublishedDataset": {
+      "heading": "URL privada de dataset no publicado",
+      "alertText": "Comparte de forma privada este dataset antes de publicarlo: {{privateUrl}}"
+    },
+    "unpublishedDataset": {
+      "heading": "URL privada de dataset no publicado",
+      "alertText": "Este dataset no publicado se está compartiendo de forma privada."
+    },
+    "datasetDeletedSuccessDraft": "El borrador del dataset ha sido eliminado.",
+    "datasetDeletedSuccessDataset": "El dataset ha sido eliminado."
+  },
+  "termsTab": {
+    "editTermsButton": "Editar requisitos de términos",
+    "licenseTitle": "Términos del dataset",
+    "termsTitle": "Ficheros restringidos + Términos de acceso",
+    "licenseHelpText": "Nuestras <anchor>Normas de la comunidad</anchor> y las buenas prácticas científicas esperan que se den los créditos adecuados mediante la cita. Utiliza la cita de datos que se muestra en la página del dataset.",
+    "restrictedFiles": "Ficheros restringidos",
+    "termsOfAccess": "Términos de acceso para ficheros restringidos",
+    "termsOfAccessInfo": "Restringir limita el acceso a los ficheros publicados. Las personas que quieran usar los ficheros restringidos pueden solicitar acceso de forma predeterminada. Si desactivas la solicitud de acceso, debes añadir información sobre el acceso en el campo Términos de acceso. Consulta la Guía del usuario para obtener más información sobre la restricción de ficheros y el acceso a datasets.",
+    "termsOfAccessRequiredWhenRequestDisabled": "Añade información sobre los términos de acceso para los ficheros restringidos cuando la solicitud de acceso esté desactivada.",
+    "requestAccess": "Solicitar acceso",
+    "enableAccessRequest": "Habilitar solicitud de acceso",
+    "dataAccessPlace": "Lugar de acceso a los datos",
+    "originalArchive": "Fichero original",
+    "availabilityStatus": "Estado de disponibilidad",
+    "contactForAccess": "Contacto para acceso",
+    "sizeOfCollection": "Tamaño de la colección",
+    "studyCompletion": "Finalización del estudio",
+    "termsOfUse": "Términos de uso",
+    "termsOfUseTip": "Los términos de uso de este dataset.",
+    "confidentialityDeclaration": "Declaración de confidencialidad",
+    "specialPermissions": "Permisos especiales",
+    "restrictions": "Restricciones",
+    "citationRequirements": "Requisitos de citación",
+    "depositorRequirements": "Requisitos del depositante",
+    "conditions": "Condiciones",
+    "disclaimer": "Descargo de responsabilidad",
+    "confidentialityDeclarationTip": "Indica si se requiere firmar una declaración de confidencialidad para acceder a un recurso.",
+    "specialPermissionsTip": "Determina si se requieren permisos especiales para acceder a un recurso (por ejemplo, si se necesita un formulario y dónde acceder a él).",
+    "restrictionsTip": "Cualquier restricción de acceso o uso de la colección, como certificación de privacidad o restricciones de distribución, debe indicarse aquí. Pueden ser restricciones aplicadas por el autor, productor o difusor de la colección de datos. Si los datos están restringidos a solo una cierta clase de usuario, especifica cuál.",
+    "citationRequirementsTip": "Incluye requisitos especiales/ explícitos de citación para que los datos sean citados correctamente en artículos u otras publicaciones basadas en el análisis de los datos. Para los requisitos estándar de citación consulta nuestras Normas de la comunidad.",
+    "depositorRequirementsTip": "Información sobre la responsabilidad del usuario de informar a los depositantes del dataset, autores o curadores sobre su uso de los datos proporcionando citas a la obra publicada o copias de los manuscritos.",
+    "conditionsTip": "Cualquier información adicional que ayude al usuario a comprender las condiciones de acceso y uso del dataset.",
+    "disclaimerTip": "Información sobre la responsabilidad por los usos del dataset.",
+    "restrictedFilesOne": "Hay 1 fichero restringido en este dataset.",
+    "restrictedFilesMany": "Hay {{count}} ficheros restringidos en este dataset.",
+    "termsOfAccessTip": "Información sobre cómo y si los usuarios pueden acceder a los ficheros restringidos en este dataset",
+    "requestAccessTip": "Si está marcado, los usuarios pueden solicitar acceso a los ficheros restringidos en este dataset.",
+    "requestAccessTrue": "Los usuarios pueden solicitar acceso a los ficheros.",
+    "requestAccessFalse": "Los usuarios no pueden solicitar acceso a los ficheros.",
+    "guestbookTitle": "Libro de visitas",
+    "guestbookTip": "La información del usuario (por ejemplo, nombre, correo electrónico, institución y cargo) se recopilará cuando se descarguen los ficheros.",
+    "guestbookDescription": "El siguiente libro de visitas solicitará al usuario información adicional al descargar un fichero.",
+    "noGuestbookAssigned": "No hay un libro de visitas asignado a este dataset, por lo que no se pedirá a los usuarios que proporcionen información al descargar archivos. Para obtener más información sobre libros de visitas, visita la sección <anchor>Dataset Guestbook</anchor> de la Guía del usuario.",
+    "guestbookPreviewButton": "Vista previa del libro de visitas",
+    "restrictedFilesTip": "El número de ficheros restringidos en este dataset.",
+    "dataAccessPlaceTip": "Si los datos no están solo en Dataverse, enumera la(s) ubicación(es) donde los datos están actualmente almacenados.",
+    "originalArchiveTip": "Fichero del cual se obtuvieron los datos.",
+    "availabilityStatusTip": "Declaración de disponibilidad del dataset. Un depositante puede necesitar indicar que un dataset no está disponible porque está embargado por un período de tiempo, porque ha sido reemplazado, porque una nueva edición es inminente, etc.",
+    "contactForAccessTip": "Si es diferente del contacto del dataset, esta es la persona u organización de contacto (incluye correo electrónico o dirección completa, y número de teléfono si está disponible) que controla el acceso a una colección.",
+    "sizeOfCollectionTip": "Resumen del número de ficheros físicos que existen en un dataset, registrando el número de ficheros que contienen datos y señalando si la colección contiene documentación legible por máquina y/u otros ficheros e información complementaria, como código, diccionarios de datos, declaraciones de definición de datos o instrumentos de recolección de datos.",
+    "studyCompletionTip": "Relación de los datos recolectados con la cantidad de datos codificados y almacenados en el dataset. Debe proporcionarse información sobre por qué ciertos elementos de la información recolectada no fueron incluidos en el dataset o en un fichero de datos específico."
+  },
+  "publish": {
+    "title": "Publicar dataset",
+    "draftQuestion": "¿Seguro que quieres publicar este dataset? Una vez que lo hagas, debe permanecer publicado.",
+    "draftSubtext": "Esta versión del dataset se publicará con los siguientes términos:",
+    "previouslyReleasedQuestion": "¿Seguro que quieres volver a publicar este dataset?",
+    "previouslyReleasedSubtext": "Selecciona si esta es una actualización de versión menor o mayor.",
+    "releaseCollectionQuestion": "Este dataset no puede publicarse hasta que <a>{{parentCollectionName}}</a> sea publicado. ¿Te gustaría publicar ambos ahora?  ",
+    "releaseCollectionSubtext": "Una vez que publiques este dataset, debe permanecer publicado.",
+    "requiresMajorReleaseSubtext": "Debido a la naturaleza de los cambios del borrador actual, esta será una versión mayor ({{versionNumber}})",
+    "termsText": "Para cambiar los términos de esta versión, haz clic en el botón Cancelar y ve a la pestaña Términos de este dataset.",
+    "selectVersion": "Selecciona si esta es una actualización de versión menor o mayor.",
+    "continueButton": "Continuar",
+    "cancelButton": "Cancelar",
+    "minorVersion": "Versión menor",
+    "majorVersion": "Versión mayor",
+    "updateCurrentVersion": "Actualizar versión actual (sobrescribirá permanentemente la última versión publicada)",
+    "error": "Ocurrió un error al publicar el dataset."
+  },
+  "deaccession": {
+    "warning": "Este dataset ya no será público y una lápida mostrará el motivo de la despublicación. Por favor, lee la <anchor>documentación</anchor> si tienes preguntas.",
+    "version": {
+      "label": "¿Qué versión(es) quieres despublicar?",
+      "validation": "Selecciona al menos una versión para despublicar."
+    },
+    "reason": {
+      "label": "¿Cuál es el motivo de la despublicación?",
+      "validation": "Selecciona un motivo para despublicar este dataset.",
+      "options": {
+        "identifiable": "Hay datos identificables en uno o más ficheros.",
+        "retracted": "El artículo de investigación ha sido retractado.",
+        "transferred": "El dataset ha sido transferido a otro repositorio.",
+        "irb": "Solicitud del IRB.",
+        "legalIssue": "Cuestión legal o acuerdo de uso de datos.",
+        "invalid": "No es un dataset válido."
+      }
+    },
+    "reasonOther": {
+      "label": "Ingresa información adicional sobre el motivo de la despublicación."
+    },
+    "forwardUrl": {
+      "label": "Si corresponde, proporciona la URL donde se puede acceder a este dataset después de despublicarlo.",
+      "validation": "Ingresa una URL válida."
+    }
+  },
+  "confirmDeaccession": {
+    "title": "Confirmar despublicación",
+    "message": "¿Seguro que quieres despublicar? Esto es permanente y la(s) versión(es) seleccionada(s) ya no serán visibles para el público.",
+    "reason": "Motivo de despublicación:",
+    "reasonOther": "Información adicional sobre el motivo de la despublicación:",
+    "forwardUrl": "URL donde se podrá acceder a este dataset después de la despublicación:",
+    "cancelButton": "Cancelar",
+    "deaccessionButton": "Despublicar"
+  },
+  "versions": {
+    "select": "Seleccionar",
+    "viewDifferences": "Ver diferencias",
+    "viewDifferencesDetail": "Detalles de diferencias entre versiones",
+    "selectTwo": "Selecciona dos versiones para ver las diferencias.",
+    "datasetVersions": "Versión del dataset",
+    "summary": "Resumen",
+    "versionNote": "Nota de versión",
+    "contributors": "Colaboradores",
+    "publishedOn": "Publicado en",
+    "version": "Versión",
+    "lastUpdated": "Última actualización",
+    "files": "Ficheros",
+    "citationMetadata": "Metadatos de citación",
+    "additionalCitationMetadata": "Metadatos de citación adicionales",
+    "termsAccess": "Términos de uso y acceso",
+    "fileID": "ID de archivo",
+    "MD5": "MD5",
+    "name": "Nombre",
+    "type": "Tipo",
+    "description": "Descripción",
+    "access": "Acceso",
+    "needTwoVersions": "Selecciona dos versiones para ver las diferencias.",
+    "viewDetails": "Ver detalles",
+    "fileReplaced": "Fichero reemplazado",
+    "termsOfUseandAccess": "Términos de uso/acceso",
+    "deaccessionedReason": "Motivo de despublicación",
+    "error": "Error al cargar las versiones del dataset"
+  },
+  "getDatasetVersionDiffError": "Error al obtener las diferencias de versiones del dataset",
+  "datasetVersionSummary": {
+    "firstPublished": "Esta es la primera versión publicada.",
+    "firstDraft": "Esta es una versión borrador.",
+    "thisIsADraftVersion": "Esta es una versión borrador.",
+    "noVersionDifferences": "No hay diferencias entre versiones disponibles para esta versión.",
+    "versionDeaccessioned": "Motivo de despublicación: El artículo de investigación ha sido retractado.",
+    "previousVersionDeaccessioned": "Debido a que la versión anterior fue despublicada, no hay notas de diferencias disponibles para esta versión publicada.",
+    "citationMetadata": {
+      "changed": "Cambiado",
+      "added": "{{count}} agregado(s)"
+    },
+    "additionalCitationMetadata": {
+      "added": "{{count}} agregado(s)",
+      "removed": "{{count}} eliminado(s)",
+      "changed": "{{count}} cambiado(s)"
+    },
+    "files": {
+      "added": "Agregado(s): {{count}}",
+      "removed": "Eliminado(s): {{count}}",
+      "replaced": "Reemplazado(s): {{count}}",
+      "fileMetadataChanged": "Metadatos de fichero cambiados: {{count}}",
+      "variableMetadataChanged": "Metadatos de variables cambiados: {{count}}"
+    },
+    "termsAccessChanged": "Cambiado"
+  },
+  "metrics": {
+    "title": "Métricas del dataset",
+    "tip": {
+      "default": "Métricas agregadas para este dataset.",
+      "makeDataCount": "Métricas recolectadas usando los estándares de Make Data Count."
+    },
+    "makeDataCount": {
+      "title": "Métricas de Make Data Count (MDC)",
+      "since": "desde"
+    },
+    "downloads": {
+      "count": {
+        "default_zero": "{{count}} descargas",
+        "default_one": "{{count}} descarga",
+        "default_other": "{{count}} descargas",
+        "preMDC_zero": "{{count}} descargas pre-MDC",
+        "preMDC_one": "{{count}} descarga pre-MDC",
+        "preMDC_other": "{{count}} descargas pre-MDC"
+      },
+      "defaultTip": "Total de descargas agregadas de ficheros en este dataset.",
+      "preMakeDataCountTip": "Descargas previas a habilitar MDC. Los conteos no tienen el mismo filtrado y detalle que las métricas MDC.",
+      "makeDataCountTip": "Cada fichero descargado cuenta como 1 y se suma al total de descargas."
+    },
+    "defaultGetDownloadCountError": "Algo salió mal al obtener el conteo de descargas del dataset. Intenta nuevamente más tarde."
+  },
+  "persistentId": {
+    "name": "Identificador persistente",
+    "description": "El identificador persistente único del Dataset, ya sea un DOI o Handle"
+  },
+  "publicationDate": {
+    "name": "Fecha de publicación",
+    "description": "La fecha de publicación de un Dataset."
+  },
+  "alternativePersistentId": {
+    "name": "ID persistente de dataset anterior",
+    "description": "Un identificador persistente usado anteriormente para el Dataset, ya sea un DOI o Handle"
+  },
+  "contact": {
+    "tip": "Usa el botón de correo electrónico de arriba para contactar."
+  },
+  "editTerms": {
+    "pageTitle": "Editar términos del dataset",
+    "breadcrumbActionItem": "Editar términos del dataset y libro de visitas",
+    "infoAlert": {
+      "heading": "Editar términos del dataset",
+      "text": "Añade los términos de uso para este dataset para explicar cómo acceder y utilizar tus datos."
+    },
+    "tabs": {
+      "datasetTerms": "Términos del dataset",
+      "restrictedFilesTerms": "Ficheros restringidos + Términos de acceso",
+      "guestbook": "Libro de visitas"
+    },
+    "datasetTerms": {
+      "title": "Términos del dataset",
+      "description": "Configura la licencia y los términos personalizados para este dataset.",
+      "licenseRequired": "Selecciona una licencia para este dataset",
+      "customTermsRequired": "Los términos de uso son obligatorios.",
+      "customTermsLabel": "Términos personalizados del dataset",
+      "licenseDescription": "Este dataset se publicará bajo los términos especificados a continuación. Nuestras Normas de la comunidad, así como las buenas prácticas científicas, esperan que se otorgue el crédito adecuado mediante la cita."
+    },
+    "restrictedFilesTerms": {
+      "title": "Ficheros restringidos + Términos de acceso",
+      "description": "Configura las restricciones de acceso y los términos para los ficheros restringidos de este dataset."
+    },
+    "guestbook": {
+      "title": "Libro de visitas",
+      "description": "Selecciona un libro de visitas para que el usuario proporcione información adicional al descargar un fichero. Para obtener más información sobre libros de visitas, visita la sección <anchor>Dataset Guestbook</anchor> de la Guía del usuario.",
+      "clearSelection": "Borrar selección",
+      "noGuestbooksEnabled": "No hay libros de visitas habilitados en {{collectionName}}. Para crear uno, vuelve a {{collectionName}}, haz clic en el botón \"Editar\" y selecciona la opción \"Dataset Guestbooks\".",
+      "previewButton": "Vista previa del libro de visitas"
+    },
+    "unsavedChangesModal": {
+      "title": "Cambios sin guardar",
+      "message": "Tienes cambios sin guardar en esta pestaña. Si sales ahora, no se guardarán.",
+      "stay": "Permanecer en esta página",
+      "leave": "Salir sin guardar"
+    },
+    "defaultGuestbookUpdateError": "Ocurrió un error al actualizar el libro de visitas del dataset. Inténtalo de nuevo.",
+    "defaultLicenseUpdateError": "Ocurrió un error al actualizar la licencia del dataset. Inténtalo de nuevo.",
+    "defaultTermsOfAccessUpdateError": "Ocurrió un error al actualizar los términos de acceso del dataset. Inténtalo de nuevo."
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "title": "Dataset Guestbooks",
+  "errors": {
+    "getGuestbook": "Something went wrong getting the guestbook. Try again later."
+  },
+  "preview": {
+    "title": "Preview Guestbook",
+    "description": "Upon downloading files the guestbook asks for the following information.",
+    "guestbookNameLabel": "Guestbook Name",
+    "guestbookDataLabel": "Collected Data",
+    "guestbookDataTip": "User data collected by the guestbook.",
+    "accountInformation": "Account Information",
+    "customQuestionsLabel": "Custom Questions",
+    "required": "Required",
+    "optional": "Optional"
+  },
+  "create": {
+    "fields": {
+      "dataCollected": {
+        "label": "Data Collected",
+        "help": "Dataverse account information that will be collected when a user downloads a file. Check the ones that will be required.",
+        "options": {
+          "name": "Name",
+          "email": "Email",
+          "institution": "Institution",
+          "position": "Position"
+        }
+      }
+    }
+  }
+}

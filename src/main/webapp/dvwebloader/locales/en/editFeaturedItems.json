@@ -1,0 +1,75 @@
+{
+  "pageTitle": "Featured Items",
+  "featuredItem": "Featured Item",
+  "infoMessage": "Add Featured Items to highlight key content in your collection. These items will be displayed as cards on the collection page, allowing users to browse them and access each one for more details.",
+  "previewCarouselHeader": "Live preview of your custom featured items",
+  "deleteAll": {
+    "action": "Delete all featured items",
+    "confirmation": "Are you sure you want to delete all featured items from this collection?",
+    "success": "All featured items have been deleted successfully."
+  },
+  "backToTypeSelectionButton": {
+    "label": "Back to featured item type selection",
+    "dialogText": "If you go back, your changes will be discarded."
+  },
+  "deleteSingleFeaturedItem": {
+    "dialog": {
+      "title": "Delete Featured Item",
+      "text": "Are you sure you want to delete this featured item?"
+    },
+    "success": "Featured item has been deleted successfully.",
+    "defaultError": "An error occurred while deleting the featured item. Please try again later."
+  },
+  "removeConfirmation": "If you continue, your changes will be discarded.",
+  "order": "Order",
+  "enableEditing": "Enable editing",
+  "disableEditing": "Disable editing",
+  "removeFeaturedItem": "Remove Featured Item",
+  "addFeaturedItem": "Add Featured Item",
+  "deleteFeaturedItem": "Delete Featured Item",
+  "type": "Type",
+  "identifier": "Identifier",
+  "baseItem": {
+    "label": "Select a type of featured item",
+    "required": "Please select a type of featured item or remove the item.",
+    "custom": {
+      "label": "Custom",
+      "description": "This type of featured item allows you to create blog posts, news, or any other type of content you want to feature in the collection. It can include rich content and an optional image as a banner."
+    },
+    "dvObject": {
+      "label": "Dataverse Object",
+      "description": "This type of featured item allows you to feature a <bold>Collection</bold>, <bold>Dataset</bold>, or <bold>File</bold>."
+    }
+  },
+  "form": {
+    "image": {
+      "label": "Image",
+      "description": "Upload an image that will be used as the blog banner and thumbnail. Supported formats: PNG, JPG, JPEG, WEBP. Max file size: {{maxImageSize}}.",
+      "invalid": {
+        "size": "The file is too large. The maximum file size is {{maxImageSize}}"
+      },
+      "restoreInitial": "Restore initial image",
+      "changeImage": "Change image",
+      "removeImage": "Remove image",
+      "helperText": "For best results, use a landscape image (16:9, 4:3, or 5:3). Check the preview at the top of the page to see how it will look.",
+      "aspectRatioWarning": "Your image has approximately a {{aspectRatio}} aspect ratio and may not display well in the landscape banner.\nFor best results, use a landscape image (16:9, 4:3, or 5:3). You can still use it, but check the preview at the top of the page to see how it will look."
+    },
+    "content": {
+      "label": "Content",
+      "required": "Content is required",
+      "invalid": {
+        "maxLength": "Content must be {{maxLength}} characters or less."
+      }
+    },
+    "dvObjectUrl": {
+      "label": "Dataverse Object URL",
+      "helperText": "Paste the Collection, Dataset or File URL you want to feature. You can also paste a Dataset DOI URL directly.",
+      "required": "Dataverse Object URL is required",
+      "invalid": "The URL must have the correct format for a Dataverse Collection, Dataset, File, or Dataset DOI URL."
+    },
+    "submitStatus": {
+      "success": "Featured items have been updated successfully."
+    },
+    "maxItemsReached": "You can add up to {{maxFeaturedItems}} featured items."
+  }
+}

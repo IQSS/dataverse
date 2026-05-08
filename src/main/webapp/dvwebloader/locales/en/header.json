@@ -1,0 +1,16 @@
+{
+  "signUp": "Sign Up",
+  "logIn": "Log In",
+  "logOut": "Log Out",
+  "brandTitle": "Dataverse",
+  "brandLogoImage": "Dataverse brand logo",
+  "navigation": {
+    "addData": "Add Data",
+    "notifications": "Notifications",
+    "newCollection": "New Collection",
+    "newDataset": "New Dataset",
+    "accountInfo": "Account Information",
+    "apiToken": "API Token",
+    "myData": "My Data"
+  }
+}

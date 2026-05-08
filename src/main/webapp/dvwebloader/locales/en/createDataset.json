@@ -1,0 +1,15 @@
+{
+  "pageTitle": "Create Dataset",
+  "hostCollection": {
+    "label": "Host Collection",
+    "description": "The collection which contains this data.",
+    "helpText": "Changing the host collection will clear any fields you may have entered data into.",
+    "buttonLabel": "Edit Host Collection"
+  },
+  "notAllowedToCreateDataset": "You do not have permissions to create a dataset within this collection.",
+  "template": {
+    "label": "Dataset Template",
+    "description": "The dataset template which prepopulates info into the form automatically.",
+    "helpText": "Changing the template will clear any fields you may have entered data into."
+  }
+}

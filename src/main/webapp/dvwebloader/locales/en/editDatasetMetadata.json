@@ -1,0 +1,12 @@
+{
+  "breadcrumbActionItem": "Edit Dataset Metadata",
+  "infoAlert": {
+    "heading": "Edit Dataset Metadata",
+    "text": "Add more metadata about this dataset to help others easily find it."
+  },
+  "hostCollection": {
+    "label": "Host Collection",
+    "description": "The collection which contains this data."
+  },
+  "metadata": "Metadata"
+}

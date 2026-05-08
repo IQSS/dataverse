@@ -50,24 +50,53 @@
         </ul>
         <div class="ui-tabs-panels">
             <div aria-hidden="false" role="tabpanel" class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="datasetForm:tabView:dataFilesTab">
-                <!-- Create dataset workflow info msg + user guide link -->
-                <ui:fragment>
+                <!-- Create dataset workflow info msg + user guide link.
+                     Hidden when the React uploader is active because the
+                     dv-uploader bundle renders its own intro/help text and
+                     showing both produces duplicated copy. -->
+                <ui:fragment rendered="#{!useReactUploader}">
                     <p class="help-block">
                         <h:outputFormat value="#{bundle['dataset.message.uploadFilesSingle.message']}" escape="false"
                                         rendered="#{settingsWrapper.uploadMethodsCount == 1}">
                             <f:param value="#{systemConfig.guidesBaseUrl}"/>
                             <f:param value="#{systemConfig.guidesVersion}"/>
                         </h:outputFormat>
-                        
+
                         <h:outputText value="#{bundle['dataset.message.uploadFilesMultiple.message']}" escape="false"
                                         rendered="#{settingsWrapper.uploadMethodsCount > 1}"/>
                     </p>
                 </ui:fragment>
+
+                <!--
+                    React uploader mount, hoisted above the panel-group so
+                    it REPLACES the JSF HTTP upload accordion (rather than
+                    nesting inside its panel-body, which produced a
+                    JSF-chrome + React-chrome double UI).
+                    Values are JSON-encoded server-side via
+                    systemConfig.jsString to prevent JS-literal breakout via
+                    quotes, backslashes, newlines, or closing-script
+                    sequences. See SystemConfig#jsString for the contract.
+                -->
+                <ui:fragment rendered="#{useReactUploader}">
+                    <div id="dv-uploader"></div>
+                    <script>
+                        //<![CDATA[
+                        window.dvUploaderConfig = {
+                            siteUrl: #{systemConfig.jsString(systemConfig.dataverseSiteUrl)},
+                            datasetPid: #{systemConfig.jsString(dataset.globalId.asString())},
+                            locale: #{systemConfig.jsString(dataverseSession.localeCode)},
+                            rootElementId: 'dv-uploader'
+                        };
+                        //]]>
+                    </script>
+                    <script type="module" src="#{systemConfig.reusableComponentsBaseUrl}/reusable-components/dv-uploader.js?version=#{systemConfig.reusableComponentsVersion}"></script>
+                </ui:fragment>
+
                 <!-- Upload -->
                 <div class="panel-group" role="tablist" aria-multiselectable="true"
                       id="fileUploadFragment" jsf:rendered="#{showFileUploadFragment}">
-                    
-                    <div jsf:id="httpPanel" jsf:rendered="#{settingsWrapper.HTTPUpload}" class="panel panel-default">
+
+                    <div jsf:id="httpPanel" jsf:rendered="#{settingsWrapper.HTTPUpload and !useReactUploader}" class="panel panel-default">
                         <div role="tab" id="headingHTTP" data-toggle="collapse" data-target="#panelCollapseHTTP" class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseHTTP">
                             #{bundle['file.fromHTTP']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
                         </div>
@@ -145,26 +174,6 @@
                         //]]>
                     </script>
 
-                    <ui:fragment rendered="#{useReactUploader}">
-                        <div id="dv-uploader"></div>
-                        <script>
-                            //<![CDATA[
-                            // Values are JSON-encoded server-side via
-                            // systemConfig.jsString to prevent JS-literal
-                            // breakout via quotes, backslashes, newlines,
-                            // or closing-script sequences. See
-                            // SystemConfig#jsString for the contract.
-                            window.dvUploaderConfig = {
-                                siteUrl: #{systemConfig.jsString(systemConfig.dataverseSiteUrl)},
-                                datasetPid: #{systemConfig.jsString(dataset.globalId.asString())},
-                                locale: #{systemConfig.jsString(dataverseSession.localeCode)},
-                                rootElementId: 'dv-uploader'
-                            };
-                            //]]>
-                        </script>
-                        <script type="module" src="#{systemConfig.reusableComponentsBaseUrl}/reusable-components/dv-uploader.js?version=#{systemConfig.reusableComponentsVersion}"></script>
-                    </ui:fragment>
-
                     <ui:fragment rendered="#{!useReactUploader}">
                     <script>
                         //<![CDATA[
@@ -232,31 +241,63 @@
                         <f:passThroughAttribute name="aria-label" value="#{bundle['file.uploadFiles']}"/>
                     </p:fileUpload>
                     </ui:fragment>
-                              <ui:fragment rendered="#{!lockedFromEdits}">
-                                <div jsf:id="webloaderBlock" jsf:rendered="#{webloaderUploadSupported and !useReactUploader}"  class="ui-fileupload-buttonbar ui-widget-header ui-corner-top">
-                                    <p class="help-block" jsf:rendered="#{!createDataset}">#{bundle['file.fromWebloader.tip']}</p>
-                                    <p class="help-block" jsf:rendered="#{createDataset}">#{bundle['file.fromWebloaderAfterCreate.tip']}</p>
-                                    <p:button target="_blank" rendered="#{!createDataset}" onclick="cancelDatasetEdit();window.open('#{(datasetPage==true) ? DatasetPage.getWebloaderUrlForDataset(dataset):EditDatafilesPage.getWebloaderUrlForDataset(dataset)}');return false;" value="#{bundle['file.fromWebloader']}"  icon="ui-icon-plusthick" />
-                                </div>
-                                <div jsf:id="dropboxBlock" jsf:rendered="#{settingsWrapper.isHasDropBoxKey()}"  class="margin-top">
-                                    <!-- Dropbox upload widget -->
-                                    <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
-                                    <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
-                                    <p:commandButton id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" oncomplete="javascript:dropBoxUploadFinished();" update="@none" style="display:none;" />
-                                    <p:commandButton id="dropBoxUserButton" disabled="#{!(showFileUploadComponent)}" value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
-                                    <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" redisplay="false" />
-                                </div>
-                                <div jsf:id="globusBlock" jsf:rendered="#{globusUploadSupported}"  class="margin-top">
-                                    <p class="help-block" jsf:rendered="#{!createDataset}">#{bundle['file.fromGlobus.tip']}</p>
-                                    <p class="help-block" jsf:rendered="#{createDataset}">#{bundle['file.fromGlobusAfterCreate.tip']}</p>
-                                    <p:button target="_blank" rendered="#{!createDataset}" onclick="cancelDatasetEdit();window.open('#{GlobusServiceBean.getGlobusAppUrlForDataset(dataset)}');return false;" value="#{bundle['file.fromGlobus']}"  icon="globus-btn" />
-                                </div>
-                              </ui:fragment>
                             </div>
                         </div>
-                    
+
                     </div>
-                    
+
+                    <!--
+                        Non-HTTP upload methods. Originally nested inside
+                        httpPanel.panel-body (next to the legacy PrimeFaces
+                        upload widget), which made them invisible whenever
+                        httpPanel was suppressed (e.g. when the React
+                        uploader replaces it) and conceptually grouped them
+                        under "HTTP" even though Dropbox/Globus/Webloader
+                        are independent transport methods. Hoisted here as
+                        sibling panels so each renders based purely on its
+                        own enable flag, parallel to httpPanel and rsyncPanel.
+                    -->
+                    <div jsf:id="webloaderPanel" jsf:rendered="#{webloaderUploadSupported and !lockedFromEdits}" class="panel panel-default">
+                        <div role="tab" id="headingWebloader" data-toggle="collapse" data-target="#panelCollapseWebloader" class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseWebloader">
+                            #{bundle['file.fromWebloader']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
+                        </div>
+                        <div id="panelCollapseWebloader" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingWebloader">
+                            <div class="panel-body">
+                                <p class="help-block" jsf:rendered="#{!createDataset}">#{bundle['file.fromWebloader.tip']}</p>
+                                <p class="help-block" jsf:rendered="#{createDataset}">#{bundle['file.fromWebloaderAfterCreate.tip']}</p>
+                                <p:button target="_blank" rendered="#{!createDataset}" onclick="cancelDatasetEdit();window.open('#{(datasetPage==true) ? DatasetPage.getWebloaderUrlForDataset(dataset):EditDatafilesPage.getWebloaderUrlForDataset(dataset)}');return false;" value="#{bundle['file.fromWebloader']}" icon="ui-icon-plusthick" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div jsf:id="dropboxPanel" jsf:rendered="#{settingsWrapper.isHasDropBoxKey() and !lockedFromEdits}" class="panel panel-default">
+                        <div role="tab" id="headingDropbox" data-toggle="collapse" data-target="#panelCollapseDropbox" class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseDropbox">
+                            #{bundle['file.fromDropbox']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
+                        </div>
+                        <div id="panelCollapseDropbox" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingDropbox">
+                            <div class="panel-body">
+                                <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
+                                <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
+                                <p:commandButton id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" oncomplete="javascript:dropBoxUploadFinished();" update="@none" style="display:none;" />
+                                <p:commandButton id="dropBoxUserButton" disabled="#{!(showFileUploadComponent)}" value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
+                                <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" redisplay="false" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div jsf:id="globusPanel" jsf:rendered="#{globusUploadSupported and !lockedFromEdits}" class="panel panel-default">
+                        <div role="tab" id="headingGlobus" data-toggle="collapse" data-target="#panelCollapseGlobus" class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseGlobus">
+                            #{bundle['file.fromGlobus']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
+                        </div>
+                        <div id="panelCollapseGlobus" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingGlobus">
+                            <div class="panel-body">
+                                <p class="help-block" jsf:rendered="#{!createDataset}">#{bundle['file.fromGlobus.tip']}</p>
+                                <p class="help-block" jsf:rendered="#{createDataset}">#{bundle['file.fromGlobusAfterCreate.tip']}</p>
+                                <p:button target="_blank" rendered="#{!createDataset}" onclick="cancelDatasetEdit();window.open('#{GlobusServiceBean.getGlobusAppUrlForDataset(dataset)}');return false;" value="#{bundle['file.fromGlobus']}" icon="globus-btn" />
+                            </div>
+                        </div>
+                    </div>
+
                     <div jsf:id="rsyncPanel" jsf:rendered="#{rsyncSupported and !EditDatafilesPage.fileReplaceOperation}" class="panel panel-default">
                         <!-- NOTE: conditional logic for 'glyphicon-chevron-up' icon in rsync header if HTTP is off, but isn't scalable when a third upload mode is added -->
                         <div role="tab" id="headingRsync" data-toggle="collapse" data-target="#panelCollapseRsync" class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseRsync">

@@ -1,0 +1,51 @@
+{
+  "pageTitle": "Cuenta",
+  "tabs": {
+    "myData": "Mis datos",
+    "notifications": "Notificaciones",
+    "accountInformation": "Información de la cuenta",
+    "apiToken": "Token de API"
+  },
+  "apiToken": {
+    "helperText": "Tu Token de API es válido por un año. Consulta nuestra <anchor>Guía de API</anchor> para obtener más información sobre cómo usar tu Token de API con las APIs de Dataverse.",
+    "notCreatedApiToken": "El Token de API para el administrador de Dataverse no ha sido creado.",
+    "expirationDate": "Fecha de vencimiento",
+    "copyToClipboard": "Copiar al portapapeles",
+    "recreateToken": "Recrear token",
+    "revokeToken": "Revocar token",
+    "createToken": "Crear token",
+    "copiedToClipboard": "Token de API copiado al portapapeles."
+  },
+  "info": {
+    "username": "Nombre de usuario",
+    "givenName": "Nombre",
+    "familyName": "Apellido",
+    "email": "Correo electrónico",
+    "affiliation": "Afiliación",
+    "position": "Cargo"
+  },
+  "myData": {
+    "title": "Mis datos",
+    "description": "Aquí están todas las colecciones, datasets y ficheros a los que tienes acceso. Puedes filtrarlos por estado de publicación y roles.",
+    "descriptionNote": "Nota: Si ves colecciones o datasets inesperados en los resultados de Mis datos, puede ser porque alguien asignó a tu cuenta un rol en esas colecciones o datasets. Por ejemplo, algunas instituciones asignan automáticamente el rol \"File Downloader\" en sus datasets a todas las cuentas que usan su inicio de sesión institucional. Para eliminar estos datos de la lista, <action>desmarca</action> el rol File Downloader en el filtro.",
+    "noData": "Aún no has creado ni contribuido a ningún dataset.",
+    "roleFilterTitle": "Roles",
+    "publicationStatusFilterTitle": "Estados de publicación",
+    "searchThisCollectionPlaceholder": "Buscar en mis datos...",
+    "userNameSearchPlaceholder": "Buscar por nombre de usuario...",
+    "userNameSearchLabel": "Buscar por nombre de usuario",
+    "noItemsMessage": {
+      "otherUser": "No se encontraron resultados para el usuario {{otherUserName}}.",
+      "authenticated": "No has creado ni contribuido a ningún {{typeOfEmptyItems}}. Puedes crear datos usando la opción del menú Agregar datos en esta página.",
+      "itemTypeMessage": {
+        "all": "colecciones, datasets o ficheros",
+        "collection": "colecciones",
+        "dataset": "datasets",
+        "file": "ficheros",
+        "collectionAndDataset": "colecciones o datasets",
+        "collectionAndFile": "colecciones o ficheros",
+        "datasetAndFile": "datasets o ficheros"
+      }
+    }
+  }
+}

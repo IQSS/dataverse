@@ -1,0 +1,6 @@
+{
+  "pageTitle": "Editar metadatos del archivo",
+  "errorAlert": {
+    "notAllowedToEditFileMetadata": "No tienes permitido editar los metadatos del fichero."
+  }
+}

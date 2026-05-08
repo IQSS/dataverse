@@ -1,0 +1,96 @@
+{
+  "pageTitle": "Account",
+  "tabs": {
+    "myData": "My Data",
+    "notifications": "Notifications",
+    "accountInformation": "Account Information",
+    "apiToken": "API Token"
+  },
+  "apiToken": {
+    "helperText": "Your API Token is valid for a year. Check out our <anchor>API Guide</anchor> for more information on using your API Token with the Dataverse APIs.",
+    "notCreatedApiToken": "API Token for Dataverse Admin has not been created.",
+    "expirationDate": "Expiration date",
+    "copyToClipboard": "Copy to Clipboard",
+    "recreateToken": "Recreate Token",
+    "revokeToken": "Revoke Token",
+    "createToken": "Create Token",
+    "copiedToClipboard": "API token copied to clipboard."
+  },
+  "info": {
+    "username": "Username",
+    "givenName": "Given Name",
+    "familyName": "Family Name",
+    "email": "Email",
+    "affiliation": "Affiliation",
+    "position": "Position"
+  },
+  "myData": {
+    "title": "My Data",
+    "description": "Here are all the collections, datasets, and files you have access to. You can filter through them by publication status and roles.",
+    "descriptionNote": "Note: If you see unexpected dataverses or datasets in your My Data results, it might be because someone has assigned your account a role on those dataverses or datasets. For example, some institutions automatically assign the \"File Downloader\" role on their datasets to all accounts using their institutional login. To remove this data from the list, <action>uncheck</action> the File Downloader role in the filter.",
+    "noData": "You have not created or contributed to any datasets yet.",
+    "roleFilterTitle": "Roles",
+    "publicationStatusFilterTitle": "Publication Statuses",
+    "searchThisCollectionPlaceholder": "Search my data...",
+    "userNameSearchPlaceholder": "Search by username...",
+    "userNameSearchLabel": "Search by username",
+    "noItemsMessage": {
+      "otherUser": "No results found for user {{otherUserName}}.",
+      "authenticated": "You have not created or contributed to any {{typeOfEmptyItems}}. You can create data by using the Add Data menu option on this page.",
+      "itemTypeMessage": {
+        "all": "collections, datasets or files",
+        "collection": "collections",
+        "dataset": "datasets",
+        "file": "files",
+        "collectionAndDataset": "collections or datasets",
+        "collectionAndFile": "collections or files",
+        "datasetAndFile": "datasets or files"
+      }
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "userGuideLinkText": "User Guide",
+    "demoServerLinkText": "Demo Site",
+    "clearAllNotifications": "Clear All Notifications",
+    "clearAllOnThisPage": "Clear All Notifications on this Page",
+    "displayingNotifications": "Displaying {{start}} - {{end}} of {{total}} Notifications",
+    "dismiss": "Dismiss",
+    "noNotifications": "No notifications available.",
+    "notification": {
+      "createAcc": "Welcome to {{installationBrandName}}! Get started by adding or finding data. Have questions? Check out the <userGuideLink>{{userGuideLinkText}}</userGuideLink>. Want to test out Dataverse features? Use our <demoLink>{{demoServerLinkText}}</demoLink>. Also, check for your welcome email to verify your address.",
+      "ingestCompleted": "Dataset <datasetLink>{{- datasetDisplayName}}</datasetLink> has one or more tabular files that completed the <userGuideLink>tabular ingest process</userGuideLink> and are available in archival formats.",
+      "ingestCompletedWithErrors": "Dataset <datasetLink>{{- datasetDisplayName}}</datasetLink> has one or more tabular files that are available but are not supported for <b>tabular ingest</b>.",
+      "genericObjectDeleted": "The dataverse, dataset, or file for this notification has been deleted.",
+      "assignRole": "You have been granted the {{roleName}} role for <objectLink>{{- objectName}}</objectLink>.",
+      "assignRoleFileDownloader": "You now have access to all published restricted and unrestricted files in <objectLink>{{- objectName}}</objectLink>.",
+      "revokeRole": "You have been removed from a role in <objectLink>{{- objectName}}</objectLink>.",
+      "createCollection": "<collectionLink>{{- collectionDisplayName}}</collectionLink> was created in <ownerLink>{{- ownerDisplayName}}</ownerLink> . To learn more about what you can do with your collection, check out the <userGuideLink>{{userGuideLinkText}}</userGuideLink>.",
+      "createDataset": "<datasetLink>{{- datasetDisplayName}}</datasetLink> was created in <ownerLink>{{- ownerDisplayName}}</ownerLink>. To learn more about what you can do with your dataset, check out the  <userGuideLink>{{userGuideLinkText}}</userGuideLink>.",
+      "requestFileAccess": "File access requested for dataset: <datasetLink>{{- datasetDisplayName}}</datasetLink> was made by {{requestorFirstName}} {{requestorLastName}} ({{requestorEmail}}).",
+      "requestedFileAccess": "You have requested access to files in dataset: <datasetLink>{{- datasetDisplayName}}</datasetLink>.",
+      "grantFileAccess": "Access granted for files in dataset: <datasetLink>{{- datasetDisplayName}}</datasetLink>.",
+      "rejectFileAccess": "Access rejected for requested files in dataset: <datasetLink>{{- datasetDisplayName}}</datasetLink>.",
+      "datasetCreated": "<datasetLink>{{- datasetDisplayName}}</datasetLink> was created in <ownerLink>{{- ownerDisplayName}}</ownerLink> by {{requestorFirstName}} {{requestorLastName}}.",
+      "submittedDataset": "<datasetLink>{{- datasetDisplayName}}</datasetLink> was submitted for review to be published in <ownerLink>{{- ownerDisplayName}}</ownerLink>. Don''t forget to publish it or send it back to the contributor, {{requestorFirstName}} {{requestorLastName}} ({{requestorEmail}})!",
+      "returnedDataset": "<datasetLink>{{- datasetDisplayName}}</datasetLink> was returned by the curator of <ownerLink>{{- ownerDisplayName}}</ownerLink>.",
+      "publishedDataset": "<datasetLink>{{- datasetDisplayName}}</datasetLink> was published in <ownerLink>{{- ownerDisplayName}}</ownerLink>.",
+      "publishFailedPidReg": "<datasetLink>{{- datasetDisplayName}}</datasetLink> in <ownerLink>{{- ownerDisplayName}}</ownerLink> could not be published due to a failure to register, or update the Global Identifier for the dataset or one of the files in it. Contact support if this continues to happen.",
+      "workflowFailure": "An external workflow run on <datasetLink>{{- datasetDisplayName}}</datasetLink> in <ownerLink>{{- ownerDisplayName}}</ownerLink> has failed. Check your email and/or view the Dataset page which may have additional details. Contact support if this continues to happen.",
+      "workflowSuccess": "An external workflow run on <datasetLink>{{- datasetDisplayName}}</datasetLink> in <ownerLink>{{- ownerDisplayName}}</ownerLink> has succeeded. Check your email and/or view the Dataset page which may have additional details.",
+      "statusUpdated": "The status of dataset <datasetLink>{{- datasetDisplayName}}</datasetLink> has been updated to {{currentCurationStatus}}.",
+      "pidreconciled": "The persistent identifier of dataset <datasetLink>{{- datasetDisplayName}}</datasetLink> has been updated to {{datasetPersistentId}}.",
+      "datasetMentioned": "Announcement Received: Newly released {{type}} <relatedLink>{{- name}}</relatedLink> {{relationship}} dataset <datasetLink>{{- datasetDisplayName}}</datasetLink>.",
+      "datasetMentionedGeneric": "Announcement received for dataset <datasetLink>{{- datasetDisplayName}}</datasetLink>, additional info: {{- additionalInfo}}.",
+      "checksumFail": "One or more files in your upload failed checksum validation for dataset <datasetLink>{{- datasetDisplayName}}</datasetLink>. Please re-run the upload script. If the problem persists, please contact support.",
+      "importFilesystem": "Dataset <datasetLink>{{- datasetDisplayName}}</datasetLink> has been successfully uploaded and verified.",
+      "globusUploadCompleted": "Globus transfer to Dataset <datasetLink>{{- datasetDisplayName}}</datasetLink> was successful. File(s) have been uploaded and verified.",
+      "globusDownloadCompleted": "Globus transfer from the dataset <datasetLink>{{- datasetDisplayName}}</datasetLink> was successful.",
+      "globusUploadCompletedWithErrors": "Globus transfer to Dataset <datasetLink>{{- datasetDisplayName}}</datasetLink> is complete with errors.",
+      "globusUploadFailedRemotely": "Remote data transfer between Globus collections for Dataset <datasetLink>{{- datasetDisplayName}}</datasetLink> failed, reported via Globus API.",
+      "globusUploadFailedLocally": "Dataverse received a confirmation of a successful Globus data transfer for Dataset <datasetLink>{{- datasetDisplayName}}</datasetLink>, but failed to add the files to the dataset locally.",
+      "globusDownloadCompletedWithErrors": "Globus transfer from the dataset <datasetLink>{{- datasetDisplayName}}</datasetLink> is complete with errors.",
+      "importChecksum": "<datasetLink>{{datasetDisplayName}}</datasetLink>, dataset had file checksums added via a batch job."
+    }
+  }
+}
