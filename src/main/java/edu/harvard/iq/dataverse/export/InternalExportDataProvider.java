@@ -152,6 +152,17 @@ public class InternalExportDataProvider implements ExportDataProvider {
     }
     
     @Override
+    /**
+     * This new (as of dataverse-spi 2.1.0) method will attempt to retrieve
+     * the requested tabular metadata more efficiently, by calling the
+     * DatasetVersionFilesServiceBean method directly. Which, among other things, 
+     * allows to retrieve this information in batches. If for whatever reason
+     * that fails - if, for example, the EJB is not available in this context,
+     * we will throw an ExportException, giving the exporter a chance to try and
+     * retrieve this information using the traditional all-at-once method via
+     * getDatasetFileDetails();
+     * 
+     */
     public Stream<JsonObject> getDatasetFileDetails(FileExportQuery query, PageRequest pageRequest) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
 
@@ -167,74 +178,34 @@ public class InternalExportDataProvider implements ExportDataProvider {
             throw new ExportException("EJB DatasetVersionFilesService is not available");
         }
 
-        /* 
-         * Defaulting to retrieving tabular/DataVariable-level metadata, for now;
-         * we will want to honor the related predicates in the long run. 
-        */
-        fileMetadatas = datasetVersionFilesService.getTabularDataFileMetadatas(dv, 
-                pageRequest.getOffset(), 
-                pageRequest.getOffset(),
-                isOnlyPublicMetadataRequested(query));
-        
-        for (FileMetadata fileMetadata : fileMetadatas) {
-            DataFile dataFile = fileMetadata.getDataFile();
-            jab.add(JsonPrinter.jsonDatafileWithDatatableForExport(dataFile, fileMetadata));
+        if (isOnlyTabularMetadataRequested(query) && isDataVariableMetadataRequested(query)) {
+
+            fileMetadatas = datasetVersionFilesService.getTabularDataFileMetadatas(dv,
+                    pageRequest.getLimit(),
+                    pageRequest.getOffset(),
+                    isOnlyPublicMetadataRequested(query));
+
+            for (FileMetadata fileMetadata : fileMetadatas) {
+                DataFile dataFile = fileMetadata.getDataFile();
+                jab.add(JsonPrinter.jsonDatafileWithDatatableForExport(dataFile, fileMetadata));
+            }
+
+            return jab.build().stream().map(jsonValue -> jsonValue.asJsonObject());
+        } else {
+            throw new ExportException("This implementation of getDatasetFileDetails() (paginated version) "
+            + "only supports request for detailed DataVariable metadata, for tabular DataFiles only");
         }
-        
-        return jab.build().stream().map(jsonValue -> jsonValue.asJsonObject());
     }
-    
-    //@Override
-    // This method, specifically for tabular files only, was in my initial 
-    // implementation of 2.1.0, but later dropped in favor of a more flexible 
-    // getDatasetFileDetails(...) method
-    /**
-     * This new (as of dataverse-spi 2.1.0) method will attempt to retrieve
-     * the requested tabular metadata more efficiently, by calling the
-     * DatasetVersionFilesServiceBean method directly. Which, among other things, 
-     * allows to retrieve this information in batches. If for whatever reason
-     * that fails - if, for example, the EJB is not available in this context,
-     * we will throw an ExportException, giving the exporter a chance to try and
-     * retrieve this information using the traditional all-at-once method via
-     * getDatasetFileDetails();
-     * 
-     */
-    /*public JsonArray getTabularDataDetails(ExportDataContext... context) throws ExportException {
-        JsonArrayBuilder jab = Json.createArrayBuilder();
 
-        List<FileMetadata> fileMetadatas;
-        DatasetVersionFilesServiceBean datasetVersionFilesService = null;
-        try {
-            datasetVersionFilesService = CDI.current().select(DatasetVersionFilesServiceBean.class).get();
-        } catch (java.lang.IllegalArgumentException | IllegalStateException ie) {
-            throw new ExportException("EJB DatasetVersionFilesService is not available; " + ie.getMessage());
-        }
-
-        if (datasetVersionFilesService == null) {
-            throw new ExportException("EJB DatasetVersionFilesService is not available");
-        }
-
-        fileMetadatas = datasetVersionFilesService.getTabularDataFileMetadatas(dv, 
-                getLength(context), 
-                getOffset(context),
-                isOnlyPublicMetadataRequested(context));
-        
-        for (FileMetadata fileMetadata : fileMetadatas) {
-            DataFile dataFile = fileMetadata.getDataFile();
-            jab.add(JsonPrinter.jsonDatafileWithDatatableForExport(dataFile, fileMetadata));
-        }
-        return jab.build();
-    }*/
-    
     @Override
     public Optional<InputStream> getPrerequisiteInputStream(DatasetExportQuery query) {
         return Optional.ofNullable(is);
     }
-    
+
     public void setPrerequisiteInputStream(InputStream prereqStream) {
         this.is=prereqStream;
     }
-    
+
     /**
      * Only one context object is supported 
      * @param DatasetExportQuery
@@ -256,17 +227,50 @@ public class InternalExportDataProvider implements ExportDataProvider {
     }
     
     /**
-     * Are we skipping non-public, restricted and/or embargoed files?
+     * Are we skipping non-public, restricted and embargoed files?
      *
      * @param FileExportQuery
      * @return yes or no
      */
     private boolean isOnlyPublicMetadataRequested(FileExportQuery query) {
+        return checkForPredicate(query, FileMetadataPredicates.ONLY_PUBLIC_FILES);
+    }
 
+    /**
+     * Is this metadata request only for ingested tabular files (i.e., files 
+     * with linked DataTable objects)
+     *
+     * @param FileExportQuery
+     * @return yes or no
+     */
+    private boolean isOnlyTabularMetadataRequested(FileExportQuery query) {
+        return checkForPredicate(query, FileMetadataPredicates.ONLY_TABULAR_FILES);
+    }
+
+    /**
+     * Is detailed information about DataVariable objects associated with the 
+     * tabular DataTable requested? 
+     *
+     * @param FileExportQuery
+     * @return yes or no
+     */
+    private boolean isDataVariableMetadataRequested(FileExportQuery query) {
+        return checkForPredicate(query, FileMetadataPredicates.INCLUDE_TABULAR_DATA_VARIABLES);
+    }
+    
+    /**
+     * Service method for checking a FileExportQuery for a specific predicate specified.
+     * 
+     * @param query
+     * @param predicate
+     * @return 
+     */
+    private boolean checkForPredicate(FileExportQuery query, FileMetadataPredicates predicate) {
+        
         Set<FileMetadataPredicates> predicates = query.getFilePredicates();
         
         for (FileMetadataPredicates p : predicates) {
-            if (p.equals(FileMetadataPredicates.ONLY_PUBLIC_FILES)) return true;
+            if (p.equals(predicate)) return true;
         }
 
         return false;

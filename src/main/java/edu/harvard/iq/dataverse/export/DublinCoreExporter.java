@@ -5,7 +5,7 @@ import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.export.dublincore.DublinCoreExportUtil;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
-import io.gdcc.spi.export.ExportDataContext;
+//import io.gdcc.spi.export.ExportDataContext;
 import io.gdcc.spi.export.Exporter;
 import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -39,7 +39,7 @@ public class DublinCoreExporter implements XMLExporter {
     @Override
     public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
         try {
-            DublinCoreExportUtil.datasetJson2dublincore(dataProvider.getDatasetJson(ExportDataContext.context().withDatasetMetadataOnly()), outputStream,
+            DublinCoreExportUtil.datasetJson2dublincore(dataProvider.getDatasetJson(/*ExportDataContext.context().withDatasetMetadataOnly()*/), outputStream,
                     DublinCoreExportUtil.DC_FLAVOR_OAI);
         } catch (XMLStreamException xse) {
             throw new ExportException("Caught XMLStreamException performing DC export", xse);

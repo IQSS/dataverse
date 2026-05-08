@@ -8,7 +8,7 @@ import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import io.gdcc.spi.export.ExportDataContext;
+//import io.gdcc.spi.export.ExportDataContext;
 import java.io.OutputStream;
 import java.util.Locale;
 import java.util.Optional;
@@ -39,7 +39,8 @@ public class DCTermsExporter implements XMLExporter {
     @Override
     public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
         try {
-            DublinCoreExportUtil.datasetJson2dublincore(dataProvider.getDatasetJson(ExportDataContext.context().withDatasetMetadataOnly()), outputStream, DublinCoreExportUtil.DC_FLAVOR_DCTERMS);
+            // @todo add 
+            DublinCoreExportUtil.datasetJson2dublincore(dataProvider.getDatasetJson(/*ExportDataContext.context().withDatasetMetadataOnly()*/), outputStream, DublinCoreExportUtil.DC_FLAVOR_DCTERMS);
         } catch (XMLStreamException xse) {
             throw new ExportException("Caught XMLStreamException performing DCTERMS export", xse);
         }

@@ -32,9 +32,12 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import edu.harvard.iq.dataverse.util.xml.XmlUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlWriterUtil;
-import io.gdcc.spi.export.ExportDataContext;
+//import io.gdcc.spi.export.ExportDataContext;
+import io.gdcc.spi.export.PageRequest;
+import io.gdcc.spi.export.FileExportQuery;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.FileMetadataPredicates;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -68,6 +71,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.InputStream;
+import java.util.stream.Stream;
 
 public class DdiExportUtil {
 
@@ -85,8 +89,9 @@ public class DdiExportUtil {
     public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
     public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
     public static final String CITATION_BLOCK_NAME = "citation";
-    public static final int DATATABLES_BATCH_SIZE = 50;
-    public static final int DATAVARIABLES_BATCH_SIZE = 10000; // todo: review
+    //public static final int DATATABLES_BATCH_SIZE = 50;
+    //public static final int DATAVARIABLES_BATCH_SIZE = 10000; // todo: review
+    public static final int DATAVARIABLES_BATCH_SIZE = 50;
 
     //Some tests don't send real PIDs that can be parsed
     //Use constant empty PID in these cases
@@ -1702,14 +1707,25 @@ public class DdiExportUtil {
                 dataTablesThisBatch++; 
                 
                 if (varQuantityThisBatch >= DATAVARIABLES_BATCH_SIZE || dataTableCurrent == varQuantityMap.size() - 1) {
-                    JsonArray tabularFileDetails = exportDataProvider.getTabularDataDetails(ExportDataContext.context().withOffset(dataTableStart).withLength(dataTablesThisBatch));
-                    logger.fine("requested: " + dataTablesThisBatch + " tabular file data entries; retrieved: " + tabularFileDetails.size());
+                    //JsonArray tabularFileDetails = exportDataProvider.getTabularDataDetails(ExportDataContext.context().withOffset(dataTableStart).withLength(dataTablesThisBatch));
+                    FileExportQuery exportQuery = FileExportQuery.builder()
+                            .addFilePredicate(FileMetadataPredicates.ONLY_PUBLIC_FILES)
+                            .addFilePredicate(FileMetadataPredicates.ONLY_TABULAR_FILES)
+                            .addFilePredicate(FileMetadataPredicates.INCLUDE_TABULAR_DATA_VARIABLES)
+                            .build();
+                    PageRequest paginationRequest = PageRequest.of(dataTableStart, dataTablesThisBatch);
+                    Stream<JsonObject> tabularFileDetails = exportDataProvider.getDatasetFileDetails(exportQuery, paginationRequest);
                     logger.fine("total number of variables in this batch: " + varQuantityThisBatch);
 
-                    for (int i = 0; i < tabularFileDetails.size(); i++) {
-                        JsonObject fileJson = tabularFileDetails.getJsonObject(i);
+                    int i = 0;
+                    //for (int i = 0; i < tabularFileDetails.size(); i++) {
+                    Iterator<JsonObject> it = tabularFileDetails.iterator();
+                    while (it.hasNext()) {
+                        JsonObject fileJson = it.next();
 
                         if (isFileRestricted(fileJson)) {
+                            // This should not really happen - since we are explicitly
+                            // requesting public files only; but, better safe ...
                             continue;
                         }
 
@@ -1720,8 +1736,17 @@ public class DdiExportUtil {
                             }
 
                             createVariablesForDataFile(xmlw, fileJson);
+                            // @todo let's confirm here that the number of variables
+                            // we got is what we expected; a mismatch here would 
+                            // indicate that the dataset and/or files in it have 
+                            // somehow changed since the initial lookup, and therefore 
+                            // the export should be aborted. 
                         }
+                        i++;
                     }
+                    
+                    logger.fine("requested: " + dataTablesThisBatch + " tabular file data entries; retrieved: " + i);
+
 
                     dataTableStart += dataTablesThisBatch; 
                     dataTablesThisBatch = 0; 
