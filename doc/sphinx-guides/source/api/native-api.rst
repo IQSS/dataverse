@@ -185,6 +185,13 @@ Usage example:
 
   curl "https://demo.dataverse.org/api/dataverses/root?returnChildCount=true"
 
+If a user with EditDataverse permissions wants to ignore the setting ``ExcludeEmailFromExport`` in order to see the contact emails, they must include the ``ignoreSettingExcludeEmailFromExport`` query parameter.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root?ignoreSettingExcludeEmailFromExport=true"
 
 To view an unpublished Dataverse collection:
 
@@ -6635,6 +6642,28 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/info/settings/:DatasetPublishPopupCustomText"
 
+.. _show-custom-popup-for-submitting-for-review-datasets:
+
+Show Custom Popup Text for Submitting Datasets For Review
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For now, only the value for the :ref:`:DatasetSubmitForReviewPopupCustomText` setting from the Configuration section of the Installation Guide is exposed:
+
+.. note:: See :ref:`show-disclaimer-for-submit-for-review-datasets` if you want the user to acknowledge before submitting for review.
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/info/settings/:DatasetSubmitForReviewPopupCustomText"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/info/settings/:DatasetSubmitForReviewPopupCustomText"
+
 .. _show-disclaimer-for-publishing-datasets:
 
 Show Disclaimer for Publishing Datasets
@@ -6656,6 +6685,27 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/info/settings/:PublishDatasetDisclaimerText"
+
+.. _show-disclaimer-for-submit-for-review-datasets:
+
+Show Disclaimer for Submitting For Review Datasets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The setting :ref:`:SubmitForReviewDatasetDisclaimerText`, when set, will prevent a draft dataset from being submitted for review through the UI without the user acknowledging the disclaimer.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/info/settings/:SubmitForReviewDatasetDisclaimerText"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/info/settings/:SubmitForReviewDatasetDisclaimerText"
 
 .. _api-get-app-tou:
 
@@ -8872,7 +8922,7 @@ A curl example using allowing access to a dataset's metadata
 
   curl -H "X-Dataverse-key:$API_KEY" -H 'Content-Type:application/json' -d "$JSON" "$SERVER_URL/api/admin/requestSignedUrl"
 
-Please see :ref:`dataverse.api.signature-secret` for the configuration option to add a shared secret, enabling extra
+Please see :ref:`dataverse.api.signing-secret` for the configuration option to add a shared secret, enabling extra
 security.
 
 .. _send-feedback-admin:
