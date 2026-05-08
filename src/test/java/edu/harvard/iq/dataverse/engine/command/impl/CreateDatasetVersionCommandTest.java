@@ -55,7 +55,9 @@ public class CreateDatasetVersionCommandTest {
         final MockDatasetServiceBean serviceBean = new MockDatasetServiceBean();
         TestDataverseEngine testEngine = new TestDataverseEngine( new TestCommandContext(){
             @Override public DatasetServiceBean datasets() { return serviceBean; }
-            @Override public jakarta.persistence.EntityManager em() { return new NoOpTestEntityManager(); }
+            @Override public jakarta.persistence.EntityManager em() {
+                return new NoOpTestEntityManager();
+            }
         } );
         
         testEngine.submit(sut);
