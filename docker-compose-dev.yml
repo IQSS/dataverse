@@ -21,7 +21,6 @@ services:
       DATAVERSE_FEATURE_API_BEARER_AUTH_PROVIDE_MISSING_CLAIMS: "1"
       DATAVERSE_FEATURE_REACT_TREE_VIEW: "1"
       DATAVERSE_FEATURE_REACT_UPLOADER: "1"
-      DATAVERSE_FEATURE_API_SESSION_AUTH: "1"
       DATAVERSE_MAIL_SYSTEM_EMAIL: "dataverse@localhost"
       DATAVERSE_MAIL_MTA_HOST: "smtp"
       DATAVERSE_AUTH_OIDC_ENABLED: "1"
@@ -53,8 +52,8 @@ services:
         -Ddataverse.files.minio1.custom-endpoint-region=us-east-1
         -Ddataverse.files.minio1.bucket-name=mybucket
         -Ddataverse.files.minio1.path-style-access=true
-        -Ddataverse.files.minio1.upload-redirect=true
-        -Ddataverse.files.minio1.download-redirect=true
+        -Ddataverse.files.minio1.upload-redirect=false
+        -Ddataverse.files.minio1.download-redirect=false
         -Ddataverse.files.minio1.access-key=4cc355_k3y
         -Ddataverse.files.minio1.secret-key=s3cr3t_4cc355_k3y
         -Ddataverse.pid.providers=fake
@@ -83,7 +82,7 @@ services:
     tmpfs:
       - /dumps:mode=770,size=2052M,uid=1000,gid=1000
       - /tmp:mode=770,size=2052M,uid=1000,gid=1000
-    mem_limit: 2147483648 # 2 GiB
+    mem_limit: 2684354560 # 2.5 GiB
     mem_reservation: 1024m
     privileged: false
 
@@ -136,6 +135,26 @@ services:
     volumes:
       - ./docker-dev-volumes/solr/data:/var/solr
       - ./docker-dev-volumes/solr/conf:/solr-template
+
+  # This is optional. Uncomment to try and experiment with schema sidecar.
+  # dev_solr_schema_sidecar:
+  #   container_name: "dev_solr_schema_sidecar"
+  #   hostname: "solr-schema"
+  #   image: gdcc/configbaker:unstable
+  #   depends_on:
+  #     - dev_dv_initializer
+  #     - dev_solr
+  #   restart: on-failure
+  #   networks:
+  #     - dataverse
+  #   # Note: no quotes here - they will become part of the arguments passed to the script!
+  #   command: >-
+  #     solr-driver.sh --mode watch --startup-check wait
+  #     --dataverse-url http://dataverse:8080
+  #     --solr-url http://solr:8983
+  #     --core collection1
+  #   volumes:
+  #     - ./docker-dev-volumes/solr/data:/var/solr
 
   dev_solr:
     container_name: "dev_solr"
@@ -246,36 +265,7 @@ services:
     environment:
       MINIO_ROOT_USER: 4cc355_k3y
       MINIO_ROOT_PASSWORD: s3cr3t_4cc355_k3y
-    # MinIO's default CORS policy is permissive enough for the
-    # browser-direct PUT/GET path the React uploader uses (verified
-    # via curl OPTIONS preflight returning 204 with the expected
-    # Allow-* headers). No `MINIO_API_CORS_ALLOW_ORIGIN` override
-    # required, unlike LocalStack which needs an explicit bucket-level
-    # CORS rule (see conf/localstack/buckets.sh).
     command: server /data
-
-  # One-shot bucket bootstrap. MinIO does not auto-create buckets the
-  # way LocalStack's init scripts do, so a fresh clone has no
-  # `mybucket` and the first upload fails with NoSuchBucket. This
-  # companion runs `mc mb` once and exits.
-  dev_minio_init:
-    container_name: "dev_minio_init"
-    image: minio/mc
-    depends_on:
-      - dev_minio
-    networks:
-      - dataverse
-    entrypoint:
-      - /bin/sh
-      - -c
-      - |
-        until /usr/bin/mc alias set local http://minio:9000 4cc355_k3y s3cr3t_4cc355_k3y >/dev/null 2>&1; do
-          echo 'waiting for minio...'
-          sleep 2
-        done
-        /usr/bin/mc mb --ignore-existing local/mybucket
-        echo 'mybucket ready'
-    restart: "no"
 
   previewers-provider:
     container_name: previewers-provider
