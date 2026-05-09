@@ -3957,6 +3957,8 @@ Replaces the classic PrimeFaces file upload widget on the JSF dataset edit page 
 
 This flag has no effect on the file replace flow, which continues to use the classic JSF upload widget.
 
+**Create-dataset flow change.** Enabling this flag also changes the create-dataset page: the file-upload section is no longer rendered there. The React uploader is API-driven and needs the dataset to exist (PID assigned) before it can request upload URLs or register files, so it cannot run on a transient (not-yet-saved) dataset. Users save the dataset metadata first, then add files on the persisted dataset's edit-files page. This matches the SPA's flow. Installations that have not enabled this flag keep the legacy "create + upload in one step" UX unchanged.
+
 .. _dataverse.feature.react-tree-view:
 
 dataverse.feature.react-tree-view

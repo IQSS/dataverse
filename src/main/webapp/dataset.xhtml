@@ -952,17 +952,31 @@
                             </script>
                         </p:fragment>
                         <ui:fragment id="uploadFilesOnCreateTab" rendered="#{!deaccessioned and (DatasetPage.editMode == 'CREATE')}">
-                            <ui:include src="editFilesFragment.xhtml">
-                                <ui:param name="datasetPage" value="true"/>
-                                <ui:param name="editDatafilesPage" value="false"/>
-                                <ui:param name="rsyncSupported" value="#{DatasetPage.rsyncUploadSupported()}"/>
-                                <ui:param name="globusUploadSupported" value="#{DatasetPage.globusUploadSupported()}"/>
-                                <ui:param name="webloaderUploadSupported" value="#{DatasetPage.webloaderUploadSupported()}"/>
-                                <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
-                                <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
-                                <ui:param name="version" value="#{version}"/>
-                                <ui:param name="createDataset" value="true"/>
-                            </ui:include>
+                            <!-- React uploader is API-driven and needs the dataset to
+                                 exist (PID assigned). On create-dataset the dataset is
+                                 still transient, so we don't render any upload UI here
+                                 when the React uploader is the active one — saving the
+                                 metadata first, then uploading on the persisted
+                                 dataset, matches the SPA's flow and avoids a dual-
+                                 uploader UX (legacy on create, React after). The
+                                 legacy JSF flow remains unchanged on instances that
+                                 haven't enabled the react-uploader feature flag. -->
+                            <ui:fragment rendered="#{systemConfig.reactUploaderEnabled and systemConfig.directUploadEnabled(DatasetPage.dataset)}">
+                                <p class="help-block">#{bundle['dataset.create.uploadFilesAfterSave']}</p>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{!(systemConfig.reactUploaderEnabled and systemConfig.directUploadEnabled(DatasetPage.dataset))}">
+                                <ui:include src="editFilesFragment.xhtml">
+                                    <ui:param name="datasetPage" value="true"/>
+                                    <ui:param name="editDatafilesPage" value="false"/>
+                                    <ui:param name="rsyncSupported" value="#{DatasetPage.rsyncUploadSupported()}"/>
+                                    <ui:param name="globusUploadSupported" value="#{DatasetPage.globusUploadSupported()}"/>
+                                    <ui:param name="webloaderUploadSupported" value="#{DatasetPage.webloaderUploadSupported()}"/>
+                                    <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
+                                    <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
+                                    <ui:param name="version" value="#{version}"/>
+                                    <ui:param name="createDataset" value="true"/>
+                                </ui:include>
+                            </ui:fragment>
                         </ui:fragment>
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
                                    rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE')}">
