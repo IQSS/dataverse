@@ -2484,9 +2484,16 @@ public class DatasetPage implements java.io.Serializable {
     private Boolean fileTreeViewRequired = null;
 
     public boolean isFileTreeViewRequired() {
+        // The Tree view's value is no longer just the folder hierarchy:
+        // its checkbox selection + client-side streaming-zip download is
+        // an upgrade over the legacy server-zipped bulk download for
+        // flat datasets too (no :ZipDownloadLimit cap, per-file resume,
+        // graceful failure recovery). So we only suppress the toggle on
+        // datasets where it would be a no-op (zero or one file). The
+        // `isFoldersMetadataPresentInVersion` check is intentionally
+        // dropped.
         if (fileTreeViewRequired == null) {
-            fileTreeViewRequired = workingVersion.getFileMetadatas().size() > 1
-                    && datafileService.isFoldersMetadataPresentInVersion(workingVersion);
+            fileTreeViewRequired = workingVersion.getFileMetadatas().size() > 1;
         }
         return fileTreeViewRequired;
     }
