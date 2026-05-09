@@ -106,9 +106,6 @@ Scripts
   * - ``update-fields.sh``
     - Update a Solr ``schema.xml`` with a given list of metadata fields. See ``update-fields.sh -h`` for usage details
       and example use cases at :ref:`update-solr-schema` and :ref:`update-solr-schema-dev`.
-  * - ``solr-driver.sh``
-    - Automate updates to a ``schema.xml`` in a Solr Core. Either run in watch mode or as a oneshot script.
-      See ``solr-driver.sh -h`` for usage details. Best used as a sidecar or a one-off job.
 
 Solr Template
 ^^^^^^^^^^^^^

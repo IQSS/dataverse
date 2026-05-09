@@ -54,7 +54,7 @@ RUN true && \
   rm -rf "~/.local" && \
 
   # Cleanup apt cache
-  rm -rf "/var/lib/apt/lists/*" "/var/cache/apt/archives/*"
+  rm -rf "/var/lib/apt/lists/*"
 
 # New step (and shell) as this is a different manager and we need pipx around as command
 RUN true && \
@@ -75,7 +75,7 @@ RUN true && \
   pipx install --global ${PYTHON_PKGS}
 
 # Get in the scripts 
-COPY maven/scripts maven/solr/*.sh ${SCRIPT_DIR}/
+COPY maven/scripts maven/solr/update-fields.sh ${SCRIPT_DIR}/
 # Copy the data from scripts/api that provide the common base setup you'd get from the installer.
 # ".dockerignore" will take care of taking only the bare necessities
 COPY maven/setup ${SCRIPT_DIR}/bootstrap/base/
