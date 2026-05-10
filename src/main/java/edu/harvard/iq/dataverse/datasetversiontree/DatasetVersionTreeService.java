@@ -337,6 +337,12 @@ public class DatasetVersionTreeService {
         // be used here.
         StringBuilder sql = new StringBuilder();
         List<Object> params = new ArrayList<>();
+        // The `originals` flag is bound first so the CASE expression in the
+        // SELECT clause can refer to it as ?1 without depending on the rest of
+        // the parameter assembly. We use it twice to gate both checksum
+        // columns symmetrically — see the comment on the CASE expressions.
+        int originalsSlot = params.size() + 1;
+        params.add(originals);
         // The `actively_embargoed` boolean mirrors `FileUtil.isActivelyEmbargoed`:
         // an embargo row whose `dateavailable` is strictly after today still
         // restricts access; a row whose date has already passed does not.
@@ -345,9 +351,24 @@ public class DatasetVersionTreeService {
         // rest of Dataverse renders the same files.
         sql.append("SELECT fm.label, df.id, df.filesize, df.contenttype, df.restricted, ");
         sql.append("       (df.embargo_id IS NOT NULL AND e.dateavailable > current_date) AS actively_embargoed, ");
-        sql.append("       df.checksumtype, df.checksumvalue ");
+        // For ingested tabular files (those with an associated `datatable` row),
+        // `df.checksumvalue` is the digest of the *original upload* — Dataverse
+        // never persists a digest of the converted TSV that the default
+        // `downloadUrl` actually serves. Returning that digest as `checksum`
+        // would silently lie to clients that try to verify the bytes they
+        // receive. To keep the contract honest, both checksum fields are
+        // NULLed for ingested-tabular rows whose `downloadUrl` resolves to
+        // the converted form. When `originals=true` the URL switches to
+        // `?format=original`, which serves the saved-original auxiliary blob;
+        // that file's bytes match `df.checksumvalue` so we keep the digest.
+        sql.append("       CASE WHEN dt.id IS NOT NULL AND NOT ?").append(originalsSlot).append(" THEN NULL ELSE df.checksumtype  END, ");
+        sql.append("       CASE WHEN dt.id IS NOT NULL AND NOT ?").append(originalsSlot).append(" THEN NULL ELSE df.checksumvalue END ");
         sql.append("FROM filemetadata fm JOIN datafile df ON fm.datafile_id = df.id ");
         sql.append("                     LEFT JOIN embargo e ON df.embargo_id = e.id ");
+        // Single LEFT JOIN on `datatable.datafile_id` (already FK-indexed).
+        // The join exists on the file's row regardless of cursor / ordering,
+        // so it does not break the keyset's index plan.
+        sql.append("                     LEFT JOIN datatable dt ON dt.datafile_id = df.id ");
         sql.append("WHERE fm.datasetversion_id = ?").append(params.size() + 1).append(" ");
         params.add(versionId);
         if (root) {

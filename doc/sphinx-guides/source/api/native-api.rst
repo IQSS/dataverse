@@ -2382,6 +2382,8 @@ Response shape:
 
 Permissions and embargoes are honoured exactly as on ``GET /api/datasets/{id}/versions/{versionId}/files``.
 
+Checksum semantics: ``checksum`` is present on a file row only when it is the digest of the bytes a client would receive by following ``downloadUrl``. For ingested tabular files the default ``downloadUrl`` resolves to the converted TSV — bytes whose digest Dataverse does not store — so the ``checksum`` field is omitted; requesting the same listing with ``originals=true`` flips ``downloadUrl`` to ``?format=original`` (the saved-original auxiliary blob) and the matching digest is reported again. Clients can therefore treat "``checksum`` present" as an unconditional commitment that the value matches what ``downloadUrl`` will serve.
+
 Caching: for published, non-deaccessioned versions the response carries an ``ETag`` header derived from the request inputs and a ``Cache-Control: private, immutable`` header. Clients can use the ETag in a subsequent ``If-None-Match`` request header to receive a ``304 Not Modified`` response without re-fetching the body. ``private`` keeps the response out of shared caches because the route is auth-required; the browser's own cache still benefits from ``immutable``. Drafts and deaccessioned versions do not emit an ETag because their content can change in place.
 
 Get File Counts in a Dataset

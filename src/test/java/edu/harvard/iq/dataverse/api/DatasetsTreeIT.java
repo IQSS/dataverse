@@ -16,6 +16,7 @@ import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.startsWith;
@@ -244,6 +245,85 @@ public class DatasetsTreeIT {
                 .body("data.items[0].downloadUrl", equalTo(
                         "/api/access/datafile/" + JsonPath.from(withOriginals.asString())
                                 .getInt("data.items[0].id") + "?format=original"));
+    }
+
+    @Test
+    public void ingestedTabularFileOmitsChecksumUnlessOriginalsRequested() {
+        // `df.checksumvalue` is computed at upload time from the bytes the
+        // user submitted. For tabular files that go through ingest, the bytes
+        // served by the default `downloadUrl` are the converted TSV — a
+        // different file with a different (unstored) digest. The tree must
+        // therefore NOT advertise `df.checksumvalue` as the digest of the
+        // default-form download for those files; that would set up clients
+        // (and their users) to chase phantom integrity failures. When the
+        // caller asks for `originals=true`, the URL switches to
+        // `?format=original` whose bytes DO match `df.checksumvalue`, and the
+        // checksum is reported normally.
+        String apiToken = UtilIT.createRandomUserGetToken();
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+
+        // 50by1000.dta is a Stata file used by other ITs to exercise ingest;
+        // after ingest the file is renamed to 50by1000.tab and content-type
+        // becomes text/tab-separated-values.
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(),
+                "scripts/search/data/tabular/50by1000.dta", apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        org.junit.jupiter.api.Assertions.assertTrue(
+                UtilIT.sleepForLock(datasetId, "Ingest", apiToken,
+                        UtilIT.MAXIMUM_INGEST_LOCK_DURATION),
+                "Ingest lock did not clear within the maximum duration");
+
+        // Default form: no checksum block — server doesn't store the digest
+        // of the converted TSV, and we refuse to lie about the original's
+        // digest matching it.
+        Response withoutOriginals = UtilIT.getVersionTree(datasetId, DRAFT_VERSION,
+                null, null, null, "files", null, null, false, apiToken);
+        withoutOriginals.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].name", equalTo("50by1000.tab"))
+                .body("data.items[0].contentType", equalTo("text/tab-separated-values"))
+                .body("data.items[0].checksum", nullValue());
+
+        // originals=true: downloadUrl resolves to ?format=original whose
+        // bytes match the upload, so the checksum block is populated again.
+        Response withOriginals = UtilIT.getVersionTree(datasetId, DRAFT_VERSION,
+                null, null, null, "files", null, null, true, apiToken);
+        withOriginals.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].name", equalTo("50by1000.tab"))
+                .body("data.items[0].downloadUrl", endsWith("?format=original"))
+                .body("data.items[0].checksum", notNullValue())
+                .body("data.items[0].checksum.type", notNullValue())
+                .body("data.items[0].checksum.value", notNullValue());
+    }
+
+    @Test
+    public void nonTabularFileExposesChecksumInBothForms() {
+        // Sanity check that the CASE expression doesn't NULL the checksum for
+        // files without a `datatable` row — i.e. anything that didn't go
+        // through tabular ingest. For these the bytes served by the default
+        // `downloadUrl` are the same bytes the digest was computed over.
+        String apiToken = UtilIT.createRandomUserGetToken();
+        int datasetId = createDatasetWithTree(apiToken);
+
+        Response withoutOriginals = UtilIT.getVersionTree(datasetId, DRAFT_VERSION,
+                null, null, null, "files", null, null, false, apiToken);
+        withoutOriginals.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].checksum", notNullValue())
+                .body("data.items[0].checksum.value", notNullValue());
+
+        Response withOriginals = UtilIT.getVersionTree(datasetId, DRAFT_VERSION,
+                null, null, null, "files", null, null, true, apiToken);
+        withOriginals.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].checksum", notNullValue())
+                .body("data.items[0].checksum.value", notNullValue());
     }
 
     @Test
