@@ -138,12 +138,31 @@ public class DatasetVersionTreeService {
          * UX hint; not authoritative under {@code originals=true}.
          */
         public final long bytes;
+        /**
+         * Files in the subtree marked {@code df.restricted = true}.
+         * Mutually exclusive with {@link #embargoedCount} — a row hits
+         * the restricted bucket first, mirroring the per-file
+         * {@code access} string.
+         */
+        public final long restrictedCount;
+        /**
+         * Files in the subtree that are NOT restricted but carry an
+         * embargo whose {@code dateavailable} is still in the future
+         * (the same active-embargo predicate the per-file query uses).
+         * "Public" count is implied: {@code fileCount - restrictedCount
+         * - embargoedCount}.
+         */
+        public final long embargoedCount;
 
-        public FolderItem(String name, String path, long fileCount, long folderCount, long bytes) {
+        public FolderItem(String name, String path,
+                          long fileCount, long folderCount, long bytes,
+                          long restrictedCount, long embargoedCount) {
             super("folder", name, path);
             this.fileCount = fileCount;
             this.folderCount = folderCount;
             this.bytes = bytes;
+            this.restrictedCount = restrictedCount;
+            this.embargoedCount = embargoedCount;
         }
     }
 
@@ -281,8 +300,19 @@ public class DatasetVersionTreeService {
         // perf issue surfaces on very large versions, consider an
         // INCLUDE(filesize) index on `datafile(id)` so the join becomes
         // index-only.
-        sql.append("       COALESCE(SUM(df.filesize), 0) AS bytes_under ");
+        sql.append("       COALESCE(SUM(df.filesize), 0) AS bytes_under, ");
+        // Per-access counts mirror the per-file `access` resolution: a
+        // restricted file always counts as restricted (even if it also
+        // carries an active embargo), and only non-restricted files with
+        // an active embargo count as embargoed. The "public" count is
+        // implied: files_under - restricted_count - embargoed_count.
+        sql.append("       SUM(CASE WHEN df.restricted THEN 1 ELSE 0 END) AS restricted_count, ");
+        sql.append("       SUM(CASE WHEN NOT df.restricted ");
+        sql.append("                 AND df.embargo_id IS NOT NULL ");
+        sql.append("                 AND e.dateavailable > current_date THEN 1 ELSE 0 END) AS embargoed_count ");
         sql.append("FROM filemetadata fm JOIN datafile df ON df.id = fm.datafile_id ");
+        // Small, FK-indexed; hash join in practice.
+        sql.append("                     LEFT JOIN embargo e ON df.embargo_id = e.id ");
         sql.append("WHERE fm.datasetversion_id = ?").append(params.size() + 1).append(" ");
         params.add(versionId);
         if (root) {
@@ -340,8 +370,12 @@ public class DatasetVersionTreeService {
             // null-safe read keeps us robust if a driver ever surfaces 0
             // rows in a way that bypasses the COALESCE.
             long bytesUnder = row[3] == null ? 0L : ((Number) row[3]).longValue();
+            long restrictedUnder = row[4] == null ? 0L : ((Number) row[4]).longValue();
+            long embargoedUnder = row[5] == null ? 0L : ((Number) row[5]).longValue();
             String folderPath = root ? folderName : path + "/" + folderName;
-            out.add(new FolderItem(folderName, folderPath, filesUnder, subfolderCount, bytesUnder));
+            out.add(new FolderItem(folderName, folderPath,
+                    filesUnder, subfolderCount, bytesUnder,
+                    restrictedUnder, embargoedUnder));
         }
         return out;
     }

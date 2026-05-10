@@ -2367,7 +2367,8 @@ Response shape:
     "path": "data/raw",
     "items": [
       { "type": "folder", "name": "2024", "path": "data/raw/2024",
-        "counts": { "files": 12, "folders": 1, "bytes": 4194304 } },
+        "counts": { "files": 12, "folders": 1, "bytes": 4194304,
+                    "restricted": 0, "embargoed": 0 } },
       { "type": "file", "id": 42, "name": "data.csv", "path": "data/raw/data.csv",
         "size": 1024, "contentType": "text/csv", "access": "public",
         "checksum": { "type": "MD5", "value": "abc" },
@@ -2382,7 +2383,7 @@ Response shape:
 
 Permissions and embargoes are honoured exactly as on ``GET /api/datasets/{id}/versions/{versionId}/files``.
 
-Folder counts are recursive: ``counts.files`` is the total number of files anywhere in the folder's subtree, ``counts.folders`` is the count of immediate subfolders, and ``counts.bytes`` is the total size of all files in the subtree. ``counts.bytes`` uses ``df.filesize`` — the size of the bytes the default ``downloadUrl`` would serve, which for ingested tabular files is the converted TSV rather than the original upload — so it is intended as a "downloading this folder = N GB" UX hint, not an authoritative original-bytes total.
+Folder counts are recursive: ``counts.files`` is the total number of files anywhere in the folder's subtree, ``counts.folders`` is the count of immediate subfolders, and ``counts.bytes`` is the total size of all files in the subtree. ``counts.bytes`` uses ``df.filesize`` — the size of the bytes the default ``downloadUrl`` would serve, which for ingested tabular files is the converted TSV rather than the original upload — so it is intended as a "downloading this folder = N GB" UX hint, not an authoritative original-bytes total. ``counts.restricted`` and ``counts.embargoed`` mirror the per-file ``access`` resolution: a restricted file is counted as restricted even if it also carries an embargo, and only non-restricted files with an active embargo are counted as embargoed. Public files are implied as ``files - restricted - embargoed``.
 
 Checksum semantics: ``checksum`` is present on a file row only when it is the digest of the bytes a client would receive by following ``downloadUrl``. For ingested tabular files the default ``downloadUrl`` resolves to the converted TSV — bytes whose digest Dataverse does not store — so the ``checksum`` field is omitted; requesting the same listing with ``originals=true`` flips ``downloadUrl`` to ``?format=original`` (the saved-original auxiliary blob) and the matching digest is reported again. Clients can therefore treat "``checksum`` present" as an unconditional commitment that the value matches what ``downloadUrl`` will serve.
 

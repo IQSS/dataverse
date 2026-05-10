@@ -110,9 +110,14 @@ public class DatasetsTreeIT {
                 // (size of one). Loose `> 0` check here keeps the test
                 // independent of the fixture's exact byte count.
                 .body("data.items[0].counts.bytes", greaterThan(0))
+                // Fixture has no restricted or embargoed files.
+                .body("data.items[0].counts.restricted", equalTo(0))
+                .body("data.items[0].counts.embargoed", equalTo(0))
                 .body("data.items[1].type", equalTo("folder"))
                 .body("data.items[1].name", equalTo("docs"))
                 .body("data.items[1].counts.bytes", greaterThan(0))
+                .body("data.items[1].counts.restricted", equalTo(0))
+                .body("data.items[1].counts.embargoed", equalTo(0))
                 .body("data.items[2].type", equalTo("file"))
                 .body("data.items[2].name", equalTo("root.txt"))
                 .body("data.items[2].downloadUrl", startsWith("/api/access/datafile/"))
