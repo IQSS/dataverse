@@ -722,7 +722,8 @@ public class Datasets extends AbstractApiBean {
                 FolderItem folder = (FolderItem) item;
                 ob.add("counts", Json.createObjectBuilder()
                         .add("files", folder.fileCount)
-                        .add("folders", folder.folderCount));
+                        .add("folders", folder.folderCount)
+                        .add("bytes", folder.bytes));
             } else if (item instanceof FileItem) {
                 FileItem file = (FileItem) item;
                 ob.add("id", file.id);

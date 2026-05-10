@@ -129,11 +129,21 @@ public class DatasetVersionTreeService {
     public static class FolderItem extends TreeItem {
         public final long fileCount;
         public final long folderCount;
+        /**
+         * Total bytes of all files in this folder's subtree (recursive,
+         * matching {@link #fileCount}). Computed from {@code df.filesize},
+         * i.e. the size of the bytes the default {@code downloadUrl} would
+         * serve — for ingested tabular files that's the converted TSV, not
+         * the original upload. Useful as a "downloading this folder = N GB"
+         * UX hint; not authoritative under {@code originals=true}.
+         */
+        public final long bytes;
 
-        public FolderItem(String name, String path, long fileCount, long folderCount) {
+        public FolderItem(String name, String path, long fileCount, long folderCount, long bytes) {
             super("folder", name, path);
             this.fileCount = fileCount;
             this.folderCount = folderCount;
+            this.bytes = bytes;
         }
     }
 
@@ -263,8 +273,16 @@ public class DatasetVersionTreeService {
         sql.append("SELECT split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1) AS folder_name, ");
         sql.append("       COUNT(*) AS files_under, ");
         sql.append("       COUNT(DISTINCT split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 2)) ");
-        sql.append("           FILTER (WHERE position('/' IN substring(fm.directorylabel FROM ").append(substringFrom).append(")) > 0) AS subfolder_count ");
-        sql.append("FROM filemetadata fm ");
+        sql.append("           FILTER (WHERE position('/' IN substring(fm.directorylabel FROM ").append(substringFrom).append(")) > 0) AS subfolder_count, ");
+        // SUM forces a heap visit on `datafile` for `filesize` (the covering
+        // index `ix_filemetadata_tree` carries `datafile_id` but not
+        // `filesize`). For typical version sizes this is sub-second; the
+        // planner usually picks a hash join on `datafile_id`. If a future
+        // perf issue surfaces on very large versions, consider an
+        // INCLUDE(filesize) index on `datafile(id)` so the join becomes
+        // index-only.
+        sql.append("       COALESCE(SUM(df.filesize), 0) AS bytes_under ");
+        sql.append("FROM filemetadata fm JOIN datafile df ON df.id = fm.datafile_id ");
         sql.append("WHERE fm.datasetversion_id = ?").append(params.size() + 1).append(" ");
         params.add(versionId);
         if (root) {
@@ -318,8 +336,12 @@ public class DatasetVersionTreeService {
             String folderName = (String) row[0];
             long filesUnder = ((Number) row[1]).longValue();
             long subfolderCount = ((Number) row[2]).longValue();
+            // COALESCE in the SUM guarantees this is non-null, but the
+            // null-safe read keeps us robust if a driver ever surfaces 0
+            // rows in a way that bypasses the COALESCE.
+            long bytesUnder = row[3] == null ? 0L : ((Number) row[3]).longValue();
             String folderPath = root ? folderName : path + "/" + folderName;
-            out.add(new FolderItem(folderName, folderPath, filesUnder, subfolderCount));
+            out.add(new FolderItem(folderName, folderPath, filesUnder, subfolderCount, bytesUnder));
         }
         return out;
     }

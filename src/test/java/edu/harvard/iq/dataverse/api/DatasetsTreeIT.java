@@ -17,6 +17,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.startsWith;
@@ -104,8 +105,14 @@ public class DatasetsTreeIT {
                 .body("data.items[0].name", equalTo("data"))
                 .body("data.items[0].counts.files", equalTo(3))
                 .body("data.items[0].counts.folders", equalTo(1))
+                // Recursive byte total over the subtree. Same fixture
+                // file backs every upload, so 3 files in `data/` ⇒ 3×
+                // (size of one). Loose `> 0` check here keeps the test
+                // independent of the fixture's exact byte count.
+                .body("data.items[0].counts.bytes", greaterThan(0))
                 .body("data.items[1].type", equalTo("folder"))
                 .body("data.items[1].name", equalTo("docs"))
+                .body("data.items[1].counts.bytes", greaterThan(0))
                 .body("data.items[2].type", equalTo("file"))
                 .body("data.items[2].name", equalTo("root.txt"))
                 .body("data.items[2].downloadUrl", startsWith("/api/access/datafile/"))
