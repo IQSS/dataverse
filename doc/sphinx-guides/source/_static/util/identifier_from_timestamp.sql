@@ -43,4 +43,4 @@ BEGIN
     identifier := base36_encode(curr_time_msec);
     RETURN identifier;
 END;
-$$ LANGUAGE plpgsql IMMUTABLE;
+$$ LANGUAGE plpgsql VOLATILE;
