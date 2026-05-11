@@ -71,14 +71,6 @@ jobs:
           mvn -version
           
       # ---------------------------
-      # CLEAN PREVIOUS VOLUMES
-      # ---------------------------
-      - name: Clean docker-dev-volumes
-        run: |
-          set -euo pipefail
-          rm -rf docker-dev-volumes || true
-          
-      # ---------------------------
       # BUILD IMAGES (Dataverse-native)
       # ---------------------------
       - name: Build Dataverse containers via Maven
@@ -294,18 +286,4 @@ jobs:
         with:
           name: docker-logs
           path: docker-logs/
-          retention-days: 7
-
-      # ---------------------------
-      # SHUTDOWN STACK
-      # ---------------------------
-      - name: Stop Dataverse stack
-        if: always()
-        run: |
-          set -euo pipefail
-          mvn -Pct docker:stop || true
-          
-      - name: Final Docker cleanup
-        if: always()
-        run: |
-          docker system prune -af || true
+          retention-days: 14
