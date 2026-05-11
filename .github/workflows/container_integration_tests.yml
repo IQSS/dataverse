@@ -84,7 +84,7 @@ jobs:
       - name: Build Dataverse containers via Maven
         run: |
           set -euo pipefail
-          mvn clean package -Pct
+          mvn -Pct -T 1C package
           
       # ---------------------------
       # START CONTAINERS (BACKGROUND)
