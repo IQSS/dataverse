@@ -207,7 +207,7 @@ jobs:
       # ---------------------------
       - name: Upload Test Failure Reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: maven-test-reports
           path: |
@@ -282,7 +282,7 @@ jobs:
       # ---------------------------
       - name: Upload Docker logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docker-logs
           path: docker-logs/
