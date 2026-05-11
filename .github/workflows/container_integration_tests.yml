@@ -2,6 +2,7 @@ name: Container Integration Tests Workflow
 
 on:
   workflow_dispatch:
+    
   push:
     branches:
       - develop
@@ -84,7 +85,11 @@ jobs:
       - name: Build Dataverse containers via Maven
         run: |
           set -euo pipefail
-          mvn clean package -Pct
+          # Force unit tests to run, generate coverage, and ignore failures so the build continues
+          mvn clean package -Pct -P all-unit-tests \
+            -DskipUnitTests=false \
+            -Djacoco.skip=false \
+            -Dmaven.test.failure.ignore=true
           
       # ---------------------------
       # START CONTAINERS (BACKGROUND)
@@ -191,7 +196,7 @@ jobs:
           docker exec dev_dataverse head -n 5 /tmp/sushi_sample_logs.json
       
       # ---------------------------
-      # RUN MAVEN INTEGRATION TESTS
+      # RUN MAVEN TESTS
       # ---------------------------
       - name: Run Maven Integration Tests
         env:
@@ -204,11 +209,30 @@ jobs:
           
           echo "Running suite: $TEST_SUITE"
           
+          # -Dmaven.test.failure.ignore=true forces the JVM to shut down cleanly
+          # and write the jacoco.exec file, even when tests fail.
           mvn test \
             -Dtest="$TEST_SUITE" \
             -Dmaven.test.failure.ignore=true \
             -Ddataverse.test.baseurl=http://localhost:8080 \
             -DcompilerArgument=-Xlint:unchecked
+        
+      # ---------------------------
+      # GENERATE REPORTS & DEPOSIT TO COVERALLS
+      # ---------------------------
+      - name: Deposit to Coveralls
+        if: always()
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        continue-on-error: true 
+        run: |
+          set -euo pipefail
+          
+          # The pom.xml automatically merged the files and put them here:
+          mvn coveralls:report \
+            -P all-unit-tests \
+            -DrepoToken=$COVERALLS_REPO_TOKEN \
+            -DjacocoReports=target/site/jacoco-merged-test-coverage-report/jacoco.xml
         
       # ---------------------------
       # UPLOAD SUREFIRE/FAILSAFE REPORTS
@@ -221,10 +245,11 @@ jobs:
           path: |
             target/surefire-reports/
             target/failsafe-reports/
+            target/site/jacoco*/
           retention-days: 14
 
       # ---------------------------
-      # PUBLISH TEST DASHBOARD IN GITHUB PR
+      # 2. PUBLISH TEST DASHBOARD IN GITHUB PR (Optional but highly recommended)
       # ---------------------------
       - name: Publish Test Results Dashboard
         uses: EnricoMi/publish-unit-test-result-action@v2
@@ -246,7 +271,6 @@ jobs:
             exit 1
           fi
           echo "All tests passed."
-
       # ---------------------------
       # COLLECT DOCKER LOGS (ALWAYS, WITH MAPPING)
       # ---------------------------
