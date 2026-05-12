@@ -4007,6 +4007,7 @@ public class FilesIT {
                 .statusCode(BAD_REQUEST.getStatusCode());
         String guestbookResponseForGuest = guestbookResponse.replace("\"guestbookResponse\": {",
                 "\"guestbookResponse\": { \"name\":\"My Name\", \"email\":\"myemail@example.com\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
+
         // With GuestbookResponse. Guest user doesn't have the required Name, etc. So we will add those to the Guestbook Response
         downloadResponse = UtilIT.postDownloadFile(fileId4, guestbookResponseForGuest);
         downloadResponse.prettyPrint();
@@ -4031,6 +4032,12 @@ public class FilesIT {
         downloadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+
+        // Verify that the Guestbook Response is persisted
+        Response guestbookResponseResponse = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), ownerApiToken);
+        guestbookResponseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(guestbookResponseResponse.prettyPrint().contains("What color car do you drive,Yellow"));
 
         // Download the file using the signed url
         signedUrlResponse = get(signedUrl);
@@ -4090,6 +4097,14 @@ public class FilesIT {
         // verify that the signed url is good
         signedUrlResponse = get(signedUrl);
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+
+        // Verify that the guestbook has proper stats
+        Response guestbookListResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, true);
+        guestbookListResponse.prettyPrint();
+        guestbookListResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].usageCount", is(1))
+                .body("data[0].responseCount", is(16));
     }
 
     @Test

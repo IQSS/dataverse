@@ -1251,6 +1251,9 @@ To include the inherited Guestbooks of the Dataverse Collection add the query pa
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/root/list?includeInherited=true"
 
+.. note:: By adding the query param "includeStats=true" `usageCount` and `responseCount` values can be added to the response.
+
+
 Get a Guestbook for a Dataverse Collection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

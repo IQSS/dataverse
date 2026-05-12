@@ -612,17 +612,19 @@ public class UtilIT {
     }
 
     static Response getGuestbooks(String dataverseAlias, String apiToken) {
-        return getGuestbooks(dataverseAlias, apiToken, null);
+        return getGuestbooks(dataverseAlias, apiToken, false,null);
     }
-    static Response getGuestbooks(String dataverseAlias, String apiToken, Boolean includeInherited) {
+
+    static Response getGuestbooks(String dataverseAlias, String apiToken, boolean includeStats, Boolean includeInherited) {
         RequestSpecification requestSpec = given();
+        requestSpec.queryParam("includeStats", includeStats);
         if (apiToken != null) {
             requestSpec.header(API_TOKEN_HTTP_HEADER, apiToken);
         }
         if (includeInherited != null) {
             requestSpec.queryParam("includeInherited", includeInherited);
         }
-        return requestSpec.get("/api/guestbooks/" + dataverseAlias + "/list" );
+        return requestSpec.get("/api/guestbooks/" + dataverseAlias + "/list");
     }
 
     static Response enableGuestbook(String dataverseAlias, Long guestbookId, String apiToken, String enable) {
@@ -1275,7 +1277,9 @@ public class UtilIT {
 
     static Response getDownloadFileUrlWithGuestbookResponse(Integer fileId, String apiToken, String body) {
         RequestSpecification requestSpecification = given();
-        requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
         if (body != null) {
             requestSpecification.body(body);
         }
