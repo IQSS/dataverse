@@ -3928,7 +3928,7 @@ public class FilesIT {
         getGuestbooksResponse.then().assertThat().statusCode(200);
         assertEquals(1, getGuestbooksResponse.getBody().jsonPath().getList("data").size());
         // Get the list of Guestbooks including Parent Guestbook
-        getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, Boolean.TRUE);
+        getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, false, Boolean.TRUE);
         getGuestbooksResponse.then().assertThat().statusCode(200);
         assertEquals(2, getGuestbooksResponse.getBody().jsonPath().getList("data").size());
 
@@ -4099,7 +4099,7 @@ public class FilesIT {
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
 
         // Verify that the guestbook has proper stats
-        Response guestbookListResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, true);
+        Response guestbookListResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, true, null);
         guestbookListResponse.prettyPrint();
         guestbookListResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
