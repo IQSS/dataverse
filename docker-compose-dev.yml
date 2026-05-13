@@ -27,10 +27,6 @@ services:
       DATAVERSE_AUTH_OIDC_CLIENT_SECRET: 94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8
       DATAVERSE_AUTH_OIDC_AUTH_SERVER_URL: http://keycloak.mydomain.com:8090/realms/test
       DATAVERSE_SPI_EXPORTERS_DIRECTORY: "/dv/exporters"
-      DATAVERSE_CORS_METHODS: ${DATAVERSE_CORS_METHODS}
-      DATAVERSE_CORS_ORIGIN: ${DATAVERSE_CORS_ORIGIN}
-      DATAVERSE_CORS_HEADERS_ALLOW: ${DATAVERSE_CORS_HEADERS_ALLOW}
-      DATAVERSE_CORS_HEADERS_EXPOSE: ${DATAVERSE_CORS_HEADERS_EXPOSE}
       # These two oai settings are here to get HarvestingServerIT to pass
       dataverse_oai_server_maxidentifiers: "2"
       dataverse_oai_server_maxrecords: "2"
@@ -64,6 +60,10 @@ services:
         -Ddataverse.pid.fake.label=FakeDOIProvider
         -Ddataverse.pid.fake.authority=10.5072
         -Ddataverse.pid.fake.shoulder=FK2/
+        -Ddataverse.cors.origin=* \
+        -Ddataverse.cors.methods=GET,POST,PUT,DELETE,OPTIONS \
+        -Ddataverse.cors.headers.allow=range,content-type,x-dataverse-key,accept \
+        -Ddataverse.cors.headers.expose=content-encoding,content-range,accept-ranges \
         #-Ddataverse.files.guestbook-at-request=true
         #-Ddataverse.lang.directory=/dv/lang
     ports:

@@ -88,11 +88,6 @@ jobs:
             -Ddataverse.feature.index-harvested-metadata-source=true \
             -Ddataverse.oai.server.maxidentifiers=2 \
             -Ddataverse.oai.server.maxrecords=2
-        env:
-          DATAVERSE_CORS_METHODS: "GET,POST,PUT,DELETE,OPTIONS"
-          DATAVERSE_CORS_ORIGIN: "*"
-          DATAVERSE_CORS_HEADERS_ALLOW: "range,content-type,x-dataverse-key,accept"
-          DATAVERSE_CORS_HEADERS_EXPOSE: "content-encoding,content-range,accept-ranges"
           
       # ---------------------------
       # WAIT FOR API READINESS
