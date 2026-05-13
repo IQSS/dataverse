@@ -54,6 +54,7 @@ public class S3AccessIT {
     private static final Logger logger = Logger.getLogger(S3AccessIT.class.getCanonicalName());
 
     static final String BUCKET_NAME = "mybucket";
+    static final String BUCKET_NAME_NOREDIRECT = "mybucket-noredirect";
     static S3Client s3localstack = null;
 
     @BeforeAll
@@ -165,13 +166,13 @@ public class S3AccessIT {
 
         String storageIdentifier = JsonPath.from(addFileResponse.body().asString()).getString("data.files[0].dataFile.storageIdentifier");
         String keyInDataverse = storageIdentifier.split(":")[2];
-        Assertions.assertEquals(driverId + "://" + BUCKET_NAME + ":" + keyInDataverse, storageIdentifier);
+        Assertions.assertEquals(driverId + "://" + BUCKET_NAME_NOREDIRECT + ":" + keyInDataverse, storageIdentifier);
 
         String keyInS3 = datasetStorageIdentifier + "/" + keyInDataverse;
         String s3Object = null;
         try {
             ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3localstack.getObject(GetObjectRequest.builder()
-                    .bucket(BUCKET_NAME)
+                    .bucket(BUCKET_NAME_NOREDIRECT)
                     .key(keyInS3)
                     .build());
             // Read the content of the object into a string
@@ -203,7 +204,7 @@ public class S3AccessIT {
         S3Exception expectedException = null;
         try {
             ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3localstack.getObject(GetObjectRequest.builder()
-                    .bucket(BUCKET_NAME)
+                    .bucket(BUCKET_NAME_NOREDIRECT)
                     .key(keyInS3)
                     .build());
             // Read the content of the object into a string

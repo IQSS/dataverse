@@ -57,7 +57,7 @@ services:
         -Ddataverse.files.localstack_noredirect.label=LocalStackNoRedirect
         -Ddataverse.files.localstack_noredirect.custom-endpoint-url=http://localstack:4566
         -Ddataverse.files.localstack_noredirect.custom-endpoint-region=us-east-2
-        -Ddataverse.files.localstack_noredirect.bucket-name=mybucket
+        -Ddataverse.files.localstack_noredirect.bucket-name=mybucket-noredirect
         -Ddataverse.files.localstack_noredirect.path-style-access=true
         -Ddataverse.files.localstack_noredirect.upload-redirect=false
         -Ddataverse.files.localstack_noredirect.download-redirect=false
