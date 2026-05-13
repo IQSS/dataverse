@@ -217,6 +217,36 @@ Dataverse installations are explicity set to "Lax" out of the box by the install
 
 To inspect cookie attributes like SameSite, you can use ``curl -s -I http://localhost:8080 | grep JSESSIONID``, for example, looking for the "Set-Cookie" header.
 
+
+.. _dataverse.cors:
+
+Cross-Origin Resource Sharing (CORS)
+++++++++++++++++++++++++++++++++++++
+
+For any Dataverse installation using or planning to use advanced features like :doc:`big data support </installation/big-data-support>` or :ref:`file previewers <file-previews>`, CORS must be configured.
+
+To understand what CORS is all about and how it works, the following are recommended reads:
+
+- https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS
+- https://corsfix.com/cors-headers
+- https://www.caduh.com/blog/understanding-cors
+- https://medium.com/@roelljr/demystifying-cors-its-just-http-headers-i-promise-4a02caf460fa
+
+To learn how to configure the Dataverse application to send CORS headers to browsers, these JVM options are relevant:
+
+- :ref:`dataverse.cors.origin`
+- :ref:`dataverse.cors.methods`
+- :ref:`dataverse.cors.headers.allow`
+- :ref:`dataverse.cors.headers.expose`
+
+Dataverse will only emit the necessary ``Access-Control-*`` headers to browsers when CORS has been explicitly enabled via the JVM option :ref:`dataverse.cors.origin <dataverse.cors.origin>`.
+
+For any resources to be integrated with Dataverse, find documentation how to set up CORS rules on their end at:
+
+- :ref:`Big Data: CORS for S3 buckets <cors-s3-bucket>`
+- `GDCC/dataverse-previewers <https://github.com/gdcc/dataverse-previewers/wiki/Using-Previewers-with-download-redirects-from-S3>`_
+
+
 .. _ongoing-security:
 
 Ongoing Security of Your Installation
@@ -1514,7 +1544,7 @@ In addition to having the type "remote" and requiring a label, Trusted Remote St
 These and other available options are described in the table below.
 
 Trusted remote stores can range from being a static trusted website to a sophisticated service managing access requests and logging activity
-and/or managing access to a secure enclave.  See :doc:`/admin/big-data-administration` (specifically :ref:`remote-stores`) and :doc:`/developers/big-data-support` for additional information on how to use a trusted remote store. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
+and/or managing access to a secure enclave.  See :doc:`/admin/big-data-administration` (specifically :ref:`remote-stores`) and :doc:`/installation/big-data-support` for additional information on how to use a trusted remote store. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
 
 Note that in the current implementation, activities where Dataverse needs access to data bytes, e.g. to create thumbnails or validate hash values at publication will fail if a remote store does not allow Dataverse access. Implementers of such trusted remote stores should consider using Dataverse's settings to disable ingest, validation of files at publication, etc. as needed.
 
@@ -1548,7 +1578,7 @@ Globus Storage
 ++++++++++++++
 
 Globus stores allow Dataverse to manage files stored in Globus endpoints or to reference files in remote Globus endpoints, with users leveraging Globus to transfer files to/from Dataverse (rather than using HTTP/HTTPS).
-See :doc:`/developers/big-data-support` for additional information on how to use a globus store. Consult the `Globus documentation <https://docs.globus.org/>`_ for information about using Globus and configuring Globus endpoints.
+See :doc:`/installation/big-data-support` for additional information on how to use a globus store. Consult the `Globus documentation <https://docs.globus.org/>`_ for information about using Globus and configuring Globus endpoints.
 
 In addition to having the type "globus" and requiring a label, Globus Stores share many options with Trusted Remote Stores and options to specify and access a Globus endpoint(s). As with Remote Stores, Globus Stores also use a baseStore - a file, s3, or swift store that can be used to store additional ancillary dataset files (e.g. metadata exports, thumbnails, auxiliary files, etc.).
 These and other available options are described in the table below.
@@ -2682,7 +2712,7 @@ to avoid filled up disks, aid in performance, etc. This directory is used for a 
    to final storage location and/or ingest.
 3. ``<dataverse.files.directory>/googlecloudkey.json`` used with :ref:`Google Cloud Configuration` for BagIt exports.
    This location is deprecated and might be refactored into a distinct setting in the future.
-4. The experimental DCM feature for :doc:`../developers/big-data-support` is able to trigger imports for externally
+4. The experimental DCM feature for :doc:`/installation/big-data-support` is able to trigger imports for externally
    uploaded files in a directory tree at ``<dataverse.files.directory>/<PID Authority>/<PID Identifier>``
    under certain conditions. This directory may also be used by file stores for :ref:`permanent file storage <storage-files-dir>`,
    but this is controlled by other, store-specific settings.
@@ -3786,21 +3816,38 @@ dataverse.search.default-service
 
 Experimental. See :doc:`/developers/search-services`.
 
-.. _dataverse.cors:
-
-CORS Settings
-+++++++++++++
-
-The following settings control Cross-Origin Resource Sharing (CORS) for your Dataverse installation.
-
 .. _dataverse.cors.origin:
 
 dataverse.cors.origin
 +++++++++++++++++++++
 
-Allowed origins for CORS requests. If this setting is not defined, CORS headers are not added. Set to ``*`` to allow all origins (note that browsers will not allow credentialed requests with ``*``) or provide a comma-separated list of explicit origins.
+Allowed origins for CORS requests. See also :ref:`dataverse.cors`.
 
-Multiple origins can be specified as a comma-separated list (whitespace is ignored):
+Default: *not configured*
+
+.. warning:: | If this setting is not explicitly configured, no CORS headers at all are added to responses.
+             | The default policy (see all CORS related settings) is still being enforced!
+
+.. list-table::
+    :align: left
+    :widths: 10 10 80
+    :header-rows: 1
+    :stub-columns: 1
+
+    * - Type
+      - Value/Example
+      - Description
+    * - Wildcard
+      - ``*``
+      - - Allow access from all origins.
+        - Response header echoes ``Access-Control-Allow-Origin: *``
+        - Browsers will not allow credentialed requests with this setting.
+    * - List of Origins
+      - ``https://example.org, https://example.com``
+      - - Comma separated, white space ignored.
+        - Single matching request ``Origin`` header echoed as response header ``Access-Control-Allow-Origin``.
+        - ``Vary: Origin`` header added to support correct proxy/CDN caching.
+        - Use ``${dataverse.siteurl}`` to dynamically add the installation's URL to the list.
 
 Example:
 
@@ -3808,18 +3855,14 @@ Example:
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_CORS_ORIGIN``.
 
-Behavior:
-
-* When a list of origins is configured, Dataverse echoes the single matching request ``Origin`` value in ``Access-Control-Allow-Origin`` and adds ``Vary: Origin`` to support correct proxy/CDN caching.
-* When ``*`` is configured, ``Access-Control-Allow-Origin: *`` is sent and ``Vary`` is not modified.
-
 .. _dataverse.cors.methods:
 
 dataverse.cors.methods
 ++++++++++++++++++++++
 
-Allowed HTTP methods for CORS requests. The default when this setting is missing is "GET,POST,OPTIONS,PUT,DELETE".
-Multiple methods can be specified as a comma-separated list.
+Allowed HTTP methods for CORS requests as a comma separated list. Whitespace is ignored.
+
+Default: ``GET,POST,OPTIONS,PUT,DELETE``
 
 Example:
 
@@ -3832,8 +3875,9 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 dataverse.cors.headers.allow
 ++++++++++++++++++++++++++++
 
-Allowed headers for CORS requests. The default when this setting is missing is "Accept,Content-Type,X-Dataverse-key,Range".
-Multiple headers can be specified as a comma-separated list.
+Allowed headers for CORS requests as a comma separated list. Whitespace is ignored.
+
+Default: ``Accept, Content-Type, X-Dataverse-key, Range``
 
 Example:
 
@@ -3846,8 +3890,9 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 dataverse.cors.headers.expose
 +++++++++++++++++++++++++++++
 
-Headers to expose in CORS responses. The default when this setting is missing is "Accept-Ranges,Content-Range,Content-Encoding".
-Multiple headers can be specified as a comma-separated list.
+Headers to expose in CORS responses as a comma separated list. Whitespace is ignored.
+
+Default: ``Accept-Ranges, Content-Range, Content-Encoding``
 
 Example:
 
