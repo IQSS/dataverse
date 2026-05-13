@@ -240,6 +240,7 @@ public class S3AccessIT {
     "status": "OK",
     "data": {
         "LocalStack": "localstack1",
+        "LocalStackNoRedirect": "localstack_noredirect",
         "Local": "local",
         "Filesystem": "file1"
     }
@@ -457,6 +458,7 @@ public class S3AccessIT {
     "status": "OK",
     "data": {
         "LocalStack": "localstack1",
+        "LocalStackNoRedirect": "localstack_noredirect",
         "Local": "local",
         "Filesystem": "file1"
     }
@@ -643,6 +645,7 @@ public class S3AccessIT {
     "status": "OK",
     "data": {
         "LocalStack": "localstack1",
+        "LocalStackNoRedirect": "localstack_noredirect",
         "Local": "local",
         "Filesystem": "file1"
     }
