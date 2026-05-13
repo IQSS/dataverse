@@ -4092,7 +4092,7 @@ public class FilesIT {
         guestbookListResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].usageCount", is(1))
-                .body("data[0].responseCount", is(16));
+                .body("data[0].responseCount", is(17));
     }
 
     @Test
