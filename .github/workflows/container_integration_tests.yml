@@ -85,10 +85,10 @@ jobs:
         run: |
           set -euo pipefail
           mvn -Pct docker:start \
-            -Ddataverse.cors.origin=* \
-            -Ddataverse.cors.methods=GET,POST,PUT,DELETE,OPTIONS \
-            -Ddataverse.cors.headers.allow=range,content-type,x-dataverse-key,accept \
-            -Ddataverse.cors.headers.expose=content-encoding,content-range,accept-ranges \
+            -Ddocker.env.DATAVERSE_CORS_METHODS="GET,POST,PUT,DELETE,OPTIONS" \
+            -Ddocker.env.DATAVERSE_CORS_ORIGIN="*" \
+            -Ddocker.env.DATAVERSE_CORS_HEADERS_ALLOW="range,content-type,x-dataverse-key,accept" \
+            -Ddocker.env.DATAVERSE_CORS_HEADERS_EXPOSE="content-encoding,content-range,accept-ranges" \
             -Ddataverse.feature.index-harvested-metadata-source=true \
             -Ddataverse.oai.server.maxidentifiers=2 \
             -Ddataverse.oai.server.maxrecords=2 \
