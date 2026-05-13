@@ -46,7 +46,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
- * This test requires LocalStack and Minio to be running. Developers can use our
+ * This test requires LocalStack to be running. Developers can use our
  * docker-compose file, which has all the necessary configuration.
  */
 public class S3AccessIT {
@@ -55,7 +55,6 @@ public class S3AccessIT {
 
     static final String BUCKET_NAME = "mybucket";
     static S3Client s3localstack = null;
-    static S3Client s3minio = null;
 
     @BeforeAll
     public static void setUp() {
@@ -71,45 +70,21 @@ public class S3AccessIT {
                 .region(Region.US_EAST_2)
                 .build();
 
-        String accessKeyMinio = "4cc355_k3y";
-        String secretKeyMinio = "s3cr3t_4cc355_k3y";
-        s3minio = S3Client.builder()
-                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKeyMinio, secretKeyMinio)))
-                .endpointOverride(URI.create("http://localhost:9000"))
-                .region(Region.US_EAST_1)
-                .forcePathStyle(true)
-                .build();
-
         // create bucket if it doesn't exist
         try {
             s3localstack.headBucket(HeadBucketRequest.builder().bucket(BUCKET_NAME).build());
         } catch (NoSuchBucketException ex) {
             s3localstack.createBucket(CreateBucketRequest.builder().bucket(BUCKET_NAME).build());
         }
-
-        try {
-            s3minio.headBucket(HeadBucketRequest.builder().bucket(BUCKET_NAME).build());
-        } catch (NoSuchBucketException ex) {
-            try {
-                CreateBucketResponse createBucketResponse = s3minio.createBucket(CreateBucketRequest.builder().bucket(BUCKET_NAME).build());
-                if (createBucketResponse.sdkHttpResponse().isSuccessful()) {
-                    System.out.println("Bucket created successfully");
-                } else {
-                    System.err.println("Failed to create bucket: " + createBucketResponse.sdkHttpResponse().statusCode());
-                }
-            } catch (S3Exception e) {
-                System.err.println("Error creating bucket: " + e.getMessage());
-            }
-        }
     }
 
     /**
-     * We're using MinIO for testing non-direct upload.
+     * We're using Localstack for testing non-direct upload.
      */
     @Test
     public void testNonDirectUpload() {
-        String driverId = "minio1";
-        String driverLabel = "MinIO";
+        String driverId = "localstack1";
+        String driverLabel = "LocalStack";
 
         Response createSuperuser = UtilIT.createRandomUser();
         createSuperuser.then().assertThat().statusCode(200);
@@ -124,7 +99,6 @@ public class S3AccessIT {
     "status": "OK",
     "data": {
         "LocalStack": "localstack1",
-        "MinIO": "minio1",
         "Local": "local",
         "Filesystem": "file1"
     }
@@ -191,7 +165,7 @@ public class S3AccessIT {
         String keyInS3 = datasetStorageIdentifier + "/" + keyInDataverse;
         String s3Object = null;
         try {
-            ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3minio.getObject(GetObjectRequest.builder()
+            ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3localstack.getObject(GetObjectRequest.builder()
                     .bucket(BUCKET_NAME)
                     .key(keyInS3)
                     .build());
@@ -220,7 +194,7 @@ public class S3AccessIT {
 
         S3Exception expectedException = null;
         try {
-            ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3minio.getObject(GetObjectRequest.builder()
+            ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3localstack.getObject(GetObjectRequest.builder()
                     .bucket(BUCKET_NAME)
                     .key(keyInS3)
                     .build());
@@ -258,7 +232,6 @@ public class S3AccessIT {
     "status": "OK",
     "data": {
         "LocalStack": "localstack1",
-        "MinIO": "minio1",
         "Local": "local",
         "Filesystem": "file1"
     }
@@ -441,7 +414,7 @@ public class S3AccessIT {
 
         S3Exception expectedException = null;
         try {
-            ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3minio.getObject(GetObjectRequest.builder()
+            ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3localstack.getObject(GetObjectRequest.builder()
                     .bucket(BUCKET_NAME)
                     .key(keyInS3)
                     .build());
@@ -476,7 +449,6 @@ public class S3AccessIT {
     "status": "OK",
     "data": {
         "LocalStack": "localstack1",
-        "MinIO": "minio1",
         "Local": "local",
         "Filesystem": "file1"
     }
@@ -663,7 +635,6 @@ public class S3AccessIT {
     "status": "OK",
     "data": {
         "LocalStack": "localstack1",
-        "MinIO": "minio1",
         "Local": "local",
         "Filesystem": "file1"
     }
