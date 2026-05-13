@@ -79,12 +79,16 @@ public class S3AccessIT {
     }
 
     /**
-     * We're using Localstack for testing non-direct upload.
+     * We're using LocalStack (with redirects disabled) for testing non-direct
+     * upload. Using localstack_noredirect ensures the non-redirect
+     * (proxy-through-Dataverse) code path is actually exercised. If localstack1
+     * (redirect-enabled) were used, RestAssured would silently follow the 303
+     * redirect and the proxy path would never be tested.
      */
     @Test
     public void testNonDirectUpload() {
-        String driverId = "localstack1";
-        String driverLabel = "LocalStack";
+        String driverId = "localstack_noredirect";
+        String driverLabel = "LocalStackNoRedirect";
 
         Response createSuperuser = UtilIT.createRandomUser();
         createSuperuser.then().assertThat().statusCode(200);
@@ -99,6 +103,7 @@ public class S3AccessIT {
     "status": "OK",
     "data": {
         "LocalStack": "localstack1",
+        "LocalStackNoRedirect": "localstack_noredirect",
         "Local": "local",
         "Filesystem": "file1"
     }
@@ -181,8 +186,11 @@ public class S3AccessIT {
             fail("Failed to read S3 object content: " + ex.getMessage());
         }
 
+        // Use downloadFileNoRedirect to verify Dataverse serves the content directly
+        // (status 200). If the driver were misconfigured with download-redirect=true,
+        // this would return 303 instead, causing the test to fail explicitly.
         System.out.println("non-direct download...");
-        Response downloadFile = UtilIT.downloadFile(Integer.valueOf(fileId), apiToken);
+        Response downloadFile = UtilIT.downloadFileNoRedirect(Integer.valueOf(fileId), apiToken);
         downloadFile.then().assertThat().statusCode(200);
 
         String contentsOfDownloadedFile = downloadFile.getBody().asString();
