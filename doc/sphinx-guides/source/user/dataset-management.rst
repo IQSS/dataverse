@@ -1,4 +1,4 @@
-Dataset + File Management
+fDataset + File Management
 +++++++++++++++++++++++++
 
 A dataset in a Dataverse installation is a container for your data, documentation, code, and the metadata describing this Dataset.
@@ -439,6 +439,7 @@ Go to the dataset you would like to edit, where you will see the listing of file
 - Restrict the selected files
 - Unrestrict the selected files (only if the selected files are restricted)
 - Add tags to the selected files
+- Embargo the selected files
 
 You will not have to leave the dataset page to complete these action, except for editing file metadata, which will bring you to the Edit Files page. There you will have to click the "Save Changes" button to apply your edits and return to the dataset page.
 
