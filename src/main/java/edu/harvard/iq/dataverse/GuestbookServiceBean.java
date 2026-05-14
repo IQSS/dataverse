@@ -11,6 +11,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -66,6 +68,8 @@ public class GuestbookServiceBean implements java.io.Serializable {
     }
 
     public Guestbook save(Guestbook guestbook) {
+        guestbook.setCreateTime(new Timestamp(new Date().getTime()));
+        guestbook.setUsageCount(0L);
         if (guestbook.getId() == null) {
             em.persist(guestbook);
             return guestbook;
