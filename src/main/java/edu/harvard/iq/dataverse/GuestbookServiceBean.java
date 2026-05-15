@@ -20,7 +20,7 @@ import java.util.List;
 @Stateless
 @Named
 public class GuestbookServiceBean implements java.io.Serializable {
-
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -48,7 +48,7 @@ public class GuestbookServiceBean implements java.io.Serializable {
             return new Long(0);
         }
     }
-
+    
     public Long findCountResponsesForGivenDataset(Long guestbookId, Long datasetId) {
         String queryString = "";
         if (guestbookId != null && datasetId != null) {
@@ -59,9 +59,9 @@ public class GuestbookServiceBean implements java.io.Serializable {
             return new Long(0);
         }
     }
-
-
-    public Guestbook find(Object pk) {
+    
+            
+   public Guestbook find(Object pk) {
         return em.find(Guestbook.class, pk);
     }
 
@@ -73,5 +73,5 @@ public class GuestbookServiceBean implements java.io.Serializable {
             return em.merge(guestbook);
         }
     }
-
+    
 }
