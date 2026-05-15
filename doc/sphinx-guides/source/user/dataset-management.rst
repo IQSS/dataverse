@@ -1,4 +1,4 @@
-fDataset + File Management
+Dataset + File Management
 +++++++++++++++++++++++++
 
 A dataset in a Dataverse installation is a container for your data, documentation, code, and the metadata describing this Dataset.
