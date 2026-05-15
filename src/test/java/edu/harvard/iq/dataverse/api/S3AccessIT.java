@@ -319,18 +319,6 @@ public class S3AccessIT {
         InputStream inputStream = new ByteArrayInputStream(contentsOfFile.getBytes(StandardCharsets.UTF_8));
         Response uploadFileDirect = UtilIT.uploadFileDirect(localhostUrl, inputStream);
         uploadFileDirect.prettyPrint();
-        /*
-        Direct upload to MinIO is failing with errors like this:
-        <Error>
-          <Code>SignatureDoesNotMatch</Code>
-          <Message>The request signature we calculated does not match the signature you provided. Check your key and signing method.</Message>
-          <Key>10.5072/FK2/KGFCEJ/18b8c06688c-21b8320a3ee5</Key>
-          <BucketName>mybucket</BucketName>
-          <Resource>/mybucket/10.5072/FK2/KGFCEJ/18b8c06688c-21b8320a3ee5</Resource>
-          <RequestId>1793915CCC5BC95C</RequestId>
-          <HostId>dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8</HostId>
-        </Error>
-         */
         uploadFileDirect.then().assertThat().statusCode(200);
 
         // TODO: Use MD5 or whatever Dataverse is configured for and
@@ -533,18 +521,6 @@ public class S3AccessIT {
         }
         Response uploadFileDirect = UtilIT.uploadFileDirect(localhostUrl, inputStream);
         uploadFileDirect.prettyPrint();
-        /*
-        Direct upload to MinIO is failing with errors like this:
-        <Error>
-          <Code>SignatureDoesNotMatch</Code>
-          <Message>The request signature we calculated does not match the signature you provided. Check your key and signing method.</Message>
-          <Key>10.5072/FK2/KGFCEJ/18b8c06688c-21b8320a3ee5</Key>
-          <BucketName>mybucket</BucketName>
-          <Resource>/mybucket/10.5072/FK2/KGFCEJ/18b8c06688c-21b8320a3ee5</Resource>
-          <RequestId>1793915CCC5BC95C</RequestId>
-          <HostId>dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8</HostId>
-        </Error>
-         */
         uploadFileDirect.then().assertThat().statusCode(200);
 
         // TODO: Use MD5 or whatever Dataverse is configured for and
