@@ -235,8 +235,7 @@ public class DataversePage implements java.io.Serializable {
         linkingDVSelectItems = new ArrayList<>();
 
 
-        Permission permToCheck = (this.linkMode.equals(LinkMode.SAVEDSEARCH)) ? Permission.PublishDataverse : Permission.LinkDataverse;
-        List<Dataverse> dvsWithLinkPermission = permissionService.findPermittedCollections(dvRequestService.getDataverseRequest(), getAuthenticatedUser(), permToCheck, "");
+        List<Dataverse> dvsWithLinkPermission = permissionService.findPermittedCollections(dvRequestService.getDataverseRequest(), getAuthenticatedUser(), Permission.LinkDataverse, "");
 
         if (dvsWithLinkPermission != null && !dvsWithLinkPermission.isEmpty()) {
             // for linking - make sure the link hasn't occurred and it's not in the tree
