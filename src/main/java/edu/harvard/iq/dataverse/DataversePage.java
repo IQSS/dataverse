@@ -233,35 +233,19 @@ public class DataversePage implements java.io.Serializable {
     public void updateLinkableDataverses() {
         dataversesForLinking = new ArrayList<>();
         linkingDVSelectItems = new ArrayList<>();
-        
-        //Since only a super user function add all dvs
-        dataversesForLinking = dataverseService.findAll();// permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.PublishDataverse);
-        
-        /*
-        List<DataverseRole> roles = dataverseRoleServiceBean.getDataverseRolesByPermission(Permission.PublishDataverse, dataverse.getId());
-        List<String> types = new ArrayList();
-        types.add("Dataverse");
-        for (Long dvIdAsInt : permissionService.getDvObjectIdsUserHasRoleOn(session.getUser(), roles, types, false)) {
-            dataversesForLinking.add(dataverseService.find(dvIdAsInt));
-        }*/
-        
-        //for linking - make sure the link hasn't occurred and its not int the tree
-        if (this.linkMode.equals(LinkMode.LINKDATAVERSE)) {
-        
-            // remove this and it's parent tree
-            dataversesForLinking.remove(dataverse);
-            Dataverse testDV = dataverse;
-            while(testDV.getOwner() != null){
-                dataversesForLinking.remove(testDV.getOwner());
-                testDV = testDV.getOwner();
-            }                
-            
-            for (Dataverse removeLinked : linkingService.findLinkingDataverses(dataverse.getId())) {
-                dataversesForLinking.remove(removeLinked);
-            }
-        } else{
-            //for saved search add all
 
+
+        Permission permToCheck = (this.linkMode.equals(LinkMode.SAVEDSEARCH)) ? Permission.PublishDataverse : Permission.LinkDataverse;
+        List<Dataverse> dvsWithLinkPermission = permissionService.findPermittedCollections(dvRequestService.getDataverseRequest(), getAuthenticatedUser(), permToCheck, "");
+
+        if (dvsWithLinkPermission != null && !dvsWithLinkPermission.isEmpty()) {
+            // for linking - make sure the link hasn't occurred and it's not in the tree
+            if (this.linkMode.equals(LinkMode.LINKDATAVERSE)) {
+                dataversesForLinking = dataverseService.removeUnlinkableDataverses(dvsWithLinkPermission, dataverse);
+            } else {
+                // for saved search, add all
+                dataversesForLinking = dvsWithLinkPermission;
+            }
         }
 
         for (Dataverse selectDV : dataversesForLinking) {
