@@ -37,8 +37,8 @@ import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
+
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -2422,4 +2422,50 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode());
     }
 
+    @Test
+    public void testWithThumbnailAutoSelect() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+
+        uploadFile(datasetId, "src/test/resources/tab/test.tab", apiToken);
+        long dataFileId1 = uploadFile(datasetId, "src/main/webapp/resources/images/dataverse-icon-1200.png", apiToken);
+        uploadFile(datasetId, "src/main/webapp/resources/images/dataverseproject.png", apiToken);
+        Response publishResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishResponse.prettyPrint();
+        publishResponse.then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.sleepForReindex(datasetId.toString(), apiToken, 4);
+
+        Response search1 = UtilIT.search("id:dataset_" + datasetId, apiToken);
+        search1.prettyPrint();
+        search1.then().assertThat()
+                .body("data.items[0].name", equalTo("Darwin's Finches"))
+                .body("data.items[0].image_url", notNullValue())
+                .statusCode(200);
+    }
+
+    private long uploadFile(Integer datasetId, String pathToFile, String apiToken) {
+        JsonObjectBuilder json = Json.createObjectBuilder()
+                .add("description", "Test Data")
+                .add("directoryLabel", "data/subdir1")
+                .add("categories", Json.createArrayBuilder()
+                        .add("Data")
+                );
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, json.build(), apiToken);
+        addResponse.prettyPrint();
+        addResponse.then().assertThat().statusCode(200);
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
+        return UtilIT.getDataFileIdFromResponse(addResponse);
+    }
 }

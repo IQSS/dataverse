@@ -1,13 +1,18 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import com.rometools.utils.Lists;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
@@ -165,6 +170,15 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 lock.setInfo(info);
                 ctxt.datasets().addDatasetLock(theDataset, lock);
             }
+
+            // Populate thumbnail if needed (Only look for DataFiles)
+            if (theDataset.getThumbnailFile() == null && !FeatureFlags.DISABLE_DATASET_THUMBNAIL_AUTOSELECT.enabled()) {
+                List<DatasetThumbnail> candidatesList = DatasetUtil.getThumbnailCandidates(theDataset, false, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                if (Lists.isNotEmpty(candidatesList)) {
+                    theDataset.setThumbnailFile(candidatesList.get(0).getDataFile());
+                }
+            }
+
             try {
                 theDataset = ctxt.em().merge(theDataset);
             } catch (OptimisticLockException e) {
