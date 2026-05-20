@@ -625,7 +625,7 @@
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.description.label']}
                                                         </th>
-                                                        <td><h:outputFormat value="#{MarkupChecker:sanitizeAdvancedHTML(FilePage.fileMetadata.description)}" escape="false"></h:outputFormat></td>
+                                                        <td><h:outputFormat value="#{MarkupChecker:sanitizeBasicHTML(FilePage.fileMetadata.description)}" escape="false"></h:outputFormat></td>
                                                     </tr>
                                                 </tbody>
                                             </table>
