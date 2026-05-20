@@ -2426,21 +2426,22 @@ public class SearchIT {
     public void testWithThumbnailAutoSelect() {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
-        String username = UtilIT.getUsernameFromResponse(createUser);
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
-        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
 
         uploadFile(datasetId, "src/test/resources/tab/test.tab", apiToken);
-        long dataFileId1 = uploadFile(datasetId, "src/main/webapp/resources/images/dataverse-icon-1200.png", apiToken);
+        uploadFile(datasetId, "src/main/webapp/resources/images/dataverse-icon-1200.png", apiToken);
         uploadFile(datasetId, "src/main/webapp/resources/images/dataverseproject.png", apiToken);
         Response publishResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         publishResponse.prettyPrint();
@@ -2452,7 +2453,7 @@ public class SearchIT {
         search1.then().assertThat()
                 .body("data.items[0].name", equalTo("Darwin's Finches"))
                 .body("data.items[0].image_url", notNullValue())
-                .statusCode(200);
+                .statusCode(OK.getStatusCode());
     }
 
     private long uploadFile(Integer datasetId, String pathToFile, String apiToken) {
@@ -2464,7 +2465,7 @@ public class SearchIT {
                 );
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, json.build(), apiToken);
         addResponse.prettyPrint();
-        addResponse.then().assertThat().statusCode(200);
+        addResponse.then().assertThat().statusCode(OK.getStatusCode());
         assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
         return UtilIT.getDataFileIdFromResponse(addResponse);
     }
