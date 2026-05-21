@@ -3893,7 +3893,6 @@ public class FilesIT {
         Response createDataverseResponse = UtilIT.createRandomDataverse(ownerApiToken);
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-        String dataverseAlias = createDataverseGetAlias(ownerApiToken);
         UtilIT.moveDataverse(dataverseAlias, parentDataverseAlias, null, ownerApiToken);
 
         // Create user with no permission
