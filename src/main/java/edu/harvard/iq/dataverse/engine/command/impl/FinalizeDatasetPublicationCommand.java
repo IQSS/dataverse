@@ -176,12 +176,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         //Use dataset pub date (which may not be the current date for migrated datasets)
         updateFiles(new Timestamp(version.getReleaseTime().getTime()), ctxt);
 
-        // Populate thumbnail if needed and allowed (Only look for DataFiles)
-        if (theDataset.getThumbnailFile() == null && !theDataset.isUseGenericThumbnail() && !FeatureFlags.DISABLE_DATASET_THUMBNAIL_AUTOSELECT.enabled()) {
-            List<DatasetThumbnail> candidatesList = DatasetUtil.getThumbnailCandidates(theDataset, false, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-            if (Lists.isNotEmpty(candidatesList)) {
-                theDataset.setThumbnailFile(candidatesList.get(0).getDataFile());
-            }
+        // Populate thumbnail if needed and allowed
+        if (theDataset.getThumbnailFile() == null && !theDataset.isUseGenericThumbnail()) {
+            ctxt.datasetVersion().getThumbnailByVersionId(version.getId());
         }
 
         // 
