@@ -3882,10 +3882,19 @@ public class FilesIT {
         String superusername = UtilIT.getUsernameFromResponse(createUserResponse);
         UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
 
+        // Create Parent Dataverse
+        String parentDataverseAlias = createDataverseGetAlias(ownerApiToken);
+        Response publishResponse = UtilIT.publishDataverseViaNativeApi(parentDataverseAlias, ownerApiToken);
+        assertEquals(200, publishResponse.getStatusCode());
+        // Create a Parent Guestbook
+        Guestbook parentGuestbook = UtilIT.createRandomGuestbook(parentDataverseAlias, null, ownerApiToken);
+
         // Create Dataverse
         Response createDataverseResponse = UtilIT.createRandomDataverse(ownerApiToken);
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        String dataverseAlias = createDataverseGetAlias(ownerApiToken);
+        UtilIT.moveDataverse(dataverseAlias, parentDataverseAlias, null, ownerApiToken);
 
         // Create user with no permission
         createUserResponse = UtilIT.createRandomUser();
@@ -4089,7 +4098,7 @@ public class FilesIT {
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
 
         // Verify that the guestbook has proper stats
-        Response guestbookListResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, true);
+        Response guestbookListResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, true, null);
         guestbookListResponse.prettyPrint();
         guestbookListResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
