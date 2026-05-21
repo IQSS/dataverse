@@ -2437,8 +2437,9 @@ public class SearchIT {
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
-        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String persistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
 
         uploadFile(datasetId, "src/test/resources/tab/test.tab", apiToken);
         uploadFile(datasetId, "src/main/webapp/resources/images/dataverse-icon-1200.png", apiToken);
@@ -2453,6 +2454,12 @@ public class SearchIT {
         search1.then().assertThat()
                 .body("data.items[0].name", equalTo("Darwin's Finches"))
                 .body("data.items[0].image_url", notNullValue())
+                .statusCode(OK.getStatusCode());
+
+        Response getDatasetResponse = UtilIT.getDatasetWithOwners(persistentId, apiToken, false);
+        getDatasetResponse.prettyPrint();
+        getDatasetResponse.then().assertThat()
+                .body("data.image_url", notNullValue())
                 .statusCode(OK.getStatusCode());
     }
 

@@ -212,7 +212,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
                 return null;
             }
         }
-        String url = SystemConfig.getDataverseSiteUrlStatic() + "/api/datasets/" + dataset.getId() + "/logo";
+        String url = dataset.getThumbnailUrl();
         logger.fine("getDatasetCardImageAsUrl: " + url);
         this.dvobjectThumbnailsMap.put(datasetId,url);
         return url;

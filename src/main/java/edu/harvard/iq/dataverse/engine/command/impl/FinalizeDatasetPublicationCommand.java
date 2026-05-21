@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import com.rometools.utils.Lists;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.CurationStatus;
 import edu.harvard.iq.dataverse.DataFile;
@@ -17,6 +18,8 @@ import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -24,6 +27,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
@@ -171,7 +175,15 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         //Use dataset pub date (which may not be the current date for migrated datasets)
         updateFiles(new Timestamp(version.getReleaseTime().getTime()), ctxt);
-        
+
+        // Populate thumbnail if needed and allowed (Only look for DataFiles)
+        if (theDataset.getThumbnailFile() == null && !theDataset.isUseGenericThumbnail() && !FeatureFlags.DISABLE_DATASET_THUMBNAIL_AUTOSELECT.enabled()) {
+            List<DatasetThumbnail> candidatesList = DatasetUtil.getThumbnailCandidates(theDataset, false, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+            if (Lists.isNotEmpty(candidatesList)) {
+                theDataset.setThumbnailFile(candidatesList.get(0).getDataFile());
+            }
+        }
+
         // 
         // TODO: Not sure if this .merge() is necessary here - ? 
         // I'm moving a bunch of code from PublishDatasetCommand here; and this .merge()
