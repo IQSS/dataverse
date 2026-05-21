@@ -3929,6 +3929,10 @@ public class FilesIT {
         getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken);
         getGuestbooksResponse.then().assertThat().statusCode(200);
         assertEquals(1, getGuestbooksResponse.getBody().jsonPath().getList("data").size());
+        // Get the list of Guestbooks including Parent Guestbook
+        getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, false, Boolean.TRUE);
+        getGuestbooksResponse.then().assertThat().statusCode(200);
+        assertEquals(2, getGuestbooksResponse.getBody().jsonPath().getList("data").size());
 
         // Upload files
         JsonObjectBuilder json1 = Json.createObjectBuilder().add("description", "my description1").add("directoryLabel", directoryLabel).add("categories", Json.createArrayBuilder().add("Data"));
