@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Guestbook;
+import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -38,6 +39,8 @@ public class Guestbooks extends AbstractApiBean {
 
     @EJB
     GuestbookServiceBean guestbookService;
+    @EJB
+    GuestbookResponseServiceBean guestbookResponseService;
 
     @GET
     @AuthRequired
@@ -57,16 +60,24 @@ public class Guestbooks extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/list")
-    public Response getGuestbooks(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) {
+    public Response getGuestbooks(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, @QueryParam("includeInherited") boolean includeInherited, @QueryParam("includeStats") boolean includeStats) {
         return response( req -> {
             Dataverse dataverse = findDataverseOrDie(identifier);
+            final Long dataverseId = dataverse.getId();
             if (!permissionSvc.request(req).on(dataverse).has(Permission.EditDataverse)) {
                 return error(Response.Status.FORBIDDEN, "Not authorized");
             }
-            List<Guestbook> guestbooks = guestbookService.findGuestbooksForGivenDataverse(dataverse);
+            List<Guestbook> guestbooks = (includeInherited) ?
+                    guestbookService.findEffectiveGuestbooksForGivenDataverse(dataverse):
+                    guestbookService.findGuestbooksForGivenDataverse(dataverse);
+
             JsonArrayBuilder guestbookArray = Json.createArrayBuilder();
             JsonPrinter jsonPrinter = new JsonPrinter();
             for (Guestbook gb : guestbooks) {
+                if (includeStats) {
+                    gb.setUsageCount(guestbookService.findCountUsages(gb.getId(), dataverseId));
+                    gb.setResponseCount(guestbookResponseService.findCountByGuestbookId(gb.getId(), dataverseId));
+                }
                 guestbookArray.add(jsonPrinter.json(gb));
             }
             return ok(guestbookArray);
