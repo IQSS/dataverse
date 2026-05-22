@@ -603,6 +603,9 @@ public class JsonPrinter {
         if (ds.getGuestbook() != null) {
             bld.add("guestbookId", ds.getGuestbook().getId());
         }
+        if (ds.getTemplate() != null) {
+            bld.add("templateId", ds.getTemplate().getId());
+        }
         addDatasetFileCountLimit(ds, bld);
 
         if (DvObjectContainer.isMetadataLanguageSet(ds.getMetadataLanguage())) {
