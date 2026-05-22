@@ -49,6 +49,7 @@ public class JsonParser {
     SettingsServiceBean settingsService;
     LicenseServiceBean licenseService;
     DatasetTypeServiceBean datasetTypeService;
+    TemplateServiceBean templateService;
     HarvestingClient harvestingClient = null;
     boolean allowHarvestingMissingCVV = false;
 
@@ -64,17 +65,18 @@ public class JsonParser {
         this.settingsService = settingsService;
     }
 
-    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, DatasetTypeServiceBean datasetTypeService) {
-        this(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, null);
+    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, DatasetTypeServiceBean datasetTypeService, TemplateServiceBean templateService) {
+        this(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, null, templateService);
     }
 
-    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, DatasetTypeServiceBean datasetTypeService, HarvestingClient harvestingClient) {
+    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, DatasetTypeServiceBean datasetTypeService, HarvestingClient harvestingClient, TemplateServiceBean templateService) {
         this.datasetFieldSvc = datasetFieldSvc;
         this.blockService = blockService;
         this.settingsService = settingsService;
         this.licenseService = licenseService;
         this.datasetTypeService = datasetTypeService;
         this.harvestingClient = harvestingClient;
+        this.templateService = templateService;
         this.allowHarvestingMissingCVV = harvestingClient != null && harvestingClient.getAllowHarvestingMissingCVV();
     }
 
@@ -419,6 +421,11 @@ public class JsonParser {
             dataset.setDatasetType(datasetType);
         } else {
             throw new JsonParseException("Invalid dataset type: " + datasetTypeIn);
+        }
+        int templateId = obj.getInt("templateId",0);
+        if (templateId > 0) {
+            Template template = templateService.find(Long.valueOf(templateId));
+            dataset.setTemplate(template);
         }
 
         DatasetVersion dsv = new DatasetVersion();

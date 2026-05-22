@@ -59,6 +59,7 @@ public class JsonParserTest {
     MockSettingsSvc settingsSvc = null;
     LicenseServiceBean licenseService = Mockito.mock(LicenseServiceBean.class);
     DatasetTypeServiceBean datasetTypeService = Mockito.mock(DatasetTypeServiceBean.class);
+    TemplateServiceBean templateService = Mockito.mock(TemplateServiceBean.class);
     DatasetFieldType keywordType;
     DatasetFieldType descriptionType;
     DatasetFieldType subjectType;
@@ -174,7 +175,7 @@ public class JsonParserTest {
         datasetType.setName(DatasetType.DEFAULT_DATASET_TYPE);
         datasetType.setId(1l);
         Mockito.when(datasetTypeService.getByName(DatasetType.DEFAULT_DATASET_TYPE)).thenReturn(datasetType);
-        sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService);
+        sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService, templateService);
     }
     
     @Test 
