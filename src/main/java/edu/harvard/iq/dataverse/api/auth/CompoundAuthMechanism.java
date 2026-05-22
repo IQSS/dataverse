@@ -42,7 +42,7 @@ public class CompoundAuthMechanism implements AuthMechanism {
             User userFromRequest = authMechanism.findUserFromRequest(containerRequestContext);
             if (userFromRequest != null) {
                 user = userFromRequest;
-                containerRequestContext.setProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM, getAuthMechanismTag(authMechanism));
+                containerRequestContext.setProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM, authMechanism.mechanismTag());
                 break;
             }
         }
@@ -52,22 +52,8 @@ public class CompoundAuthMechanism implements AuthMechanism {
         return user;
     }
 
-    private String getAuthMechanismTag(AuthMechanism authMechanism) {
-        if (authMechanism instanceof ApiKeyAuthMechanism) {
-            return ApiConstants.AUTH_MECHANISM_API_KEY;
-        }
-        if (authMechanism instanceof WorkflowKeyAuthMechanism) {
-            return ApiConstants.AUTH_MECHANISM_WORKFLOW_KEY;
-        }
-        if (authMechanism instanceof SignedUrlAuthMechanism) {
-            return ApiConstants.AUTH_MECHANISM_SIGNED_URL;
-        }
-        if (authMechanism instanceof BearerTokenAuthMechanism) {
-            return ApiConstants.AUTH_MECHANISM_BEARER_TOKEN;
-        }
-        if (authMechanism instanceof SessionCookieAuthMechanism) {
-            return ApiConstants.AUTH_MECHANISM_SESSION_COOKIE;
-        }
+    @Override
+    public String mechanismTag() {
         return ApiConstants.AUTH_MECHANISM_NONE;
     }
 }

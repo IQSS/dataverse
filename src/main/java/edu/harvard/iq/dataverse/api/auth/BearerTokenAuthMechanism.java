@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api.auth;
 
 import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationException;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -51,6 +52,11 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
         }
 
         return userSvc.updateLastApiUseTime(authUser);
+    }
+
+    @Override
+    public String mechanismTag() {
+        return ApiConstants.AUTH_MECHANISM_BEARER_TOKEN;
     }
 
     /**

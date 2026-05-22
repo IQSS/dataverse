@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api.auth;
 
+import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -31,6 +32,11 @@ public class WorkflowKeyAuthMechanism implements AuthMechanism {
             return authUser;
         }
         throw new WrappedUnauthorizedAuthErrorResponse(RESPONSE_MESSAGE_BAD_WORKFLOW_KEY);
+    }
+
+    @Override
+    public String mechanismTag() {
+        return ApiConstants.AUTH_MECHANISM_WORKFLOW_KEY;
     }
 
     private String getRequestWorkflowKey(ContainerRequestContext containerRequestContext) {

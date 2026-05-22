@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api.auth;
 
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 
@@ -18,5 +19,10 @@ public class SessionCookieAuthMechanism implements AuthMechanism {
             return user != null && user.isAuthenticated() ? user : null;
         }
         return null;
+    }
+
+    @Override
+    public String mechanismTag() {
+        return ApiConstants.AUTH_MECHANISM_SESSION_COOKIE;
     }
 }

@@ -14,6 +14,8 @@ import edu.harvard.iq.dataverse.util.SessionUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -136,7 +138,12 @@ public class DataverseSession implements Serializable{
     }
 
     public synchronized boolean matchesApiCsrfToken(String token) {
-        return token != null && apiCsrfToken != null && apiCsrfToken.equals(token);
+        if (token == null || apiCsrfToken == null) {
+            return false;
+        }
+        return MessageDigest.isEqual(
+                token.getBytes(StandardCharsets.UTF_8),
+                apiCsrfToken.getBytes(StandardCharsets.UTF_8));
     }
 
     public synchronized void clearApiCsrfToken() {

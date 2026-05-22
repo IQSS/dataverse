@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.MailServiceBean;
+import edu.harvard.iq.dataverse.api.auth.AuthFilter;
 import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.MailSessionProducer;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.DependsOn;
 import jakarta.ejb.Singleton;
@@ -47,9 +49,29 @@ public class ConfigCheckService {
         if (!checkSystemDirectories() || !checkPidProviders()) {
             throw new ConfigurationError("Not all configuration checks passed successfully. See logs above.");
         }
-        
+
         // Only checks resulting in warnings, nothing critical that needs to stop deployment
         checkSystemMailSetup();
+        checkSessionAuthHardening();
+    }
+
+    /**
+     * If session-cookie API auth hardening is enabled, the site URL must be parseable so that
+     * {@code AuthFilter} can perform Origin/Referer validation. A missing or malformed value
+     * causes every hardened request to be rejected at runtime; log a SEVERE message at startup
+     * so operators don't chase silent 403s.
+     */
+    void checkSessionAuthHardening() {
+        if (!FeatureFlags.API_SESSION_AUTH_HARDENING.enabled()) {
+            return;
+        }
+        String siteUrl = SystemConfig.getDataverseSiteUrlStatic();
+        if (AuthFilter.toOrigin(siteUrl) == null) {
+            logger.log(Level.SEVERE, () -> "Feature flag " + FeatureFlags.API_SESSION_AUTH_HARDENING.name()
+                    + " is enabled, but the configured dataverse site URL (" + siteUrl
+                    + ") is missing or unparseable. All session-cookie API requests will be rejected with 403"
+                    + " until this is fixed.");
+        }
     }
 
     /**

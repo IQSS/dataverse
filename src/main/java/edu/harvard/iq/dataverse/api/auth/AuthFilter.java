@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api.auth;
 
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.api.ApiConstants;
+import edu.harvard.iq.dataverse.api.Users;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -11,8 +12,11 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.ResourceInfo;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.ext.Provider;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Locale;
 import java.util.logging.Logger;
@@ -36,6 +40,9 @@ public class AuthFilter implements ContainerRequestFilter {
 
     @Inject
     private SystemConfig systemConfig;
+
+    @Context
+    private ResourceInfo resourceInfo;
 
     @Override
     public void filter(ContainerRequestContext containerRequestContext) throws IOException {
@@ -64,7 +71,7 @@ public class AuthFilter implements ContainerRequestFilter {
 
         // Allow the CSRF-token-issuing endpoint to be called without an existing CSRF header.
         // This endpoint is used to bootstrap the CSRF token for the current authenticated session.
-        if (isCsrfTokenBootstrapEndpoint(containerRequestContext)) {
+        if (isCsrfTokenBootstrapEndpoint()) {
             return;
         }
 
@@ -81,24 +88,20 @@ public class AuthFilter implements ContainerRequestFilter {
     }
 
     /**
-     * Returns {@code true} if the current request targets the CSRF-token-issuing endpoint
-     * (e.g. GET /api/users/:csrf-token). For this endpoint we rely on same-origin checks
-     * plus the authenticated session cookie, and do not require an existing CSRF header.
+     * Returns {@code true} if JAX-RS resolved the request to {@link Users#getSessionCsrfToken}.
+     * For this single endpoint we rely on the authenticated session cookie plus same-origin
+     * checks and do not require an existing CSRF header; that's how clients bootstrap the token.
+     * Matching on the resolved resource method (rather than a path string) keeps the exemption
+     * scoped to exactly the intended endpoint.
      */
-    private boolean isCsrfTokenBootstrapEndpoint(ContainerRequestContext containerRequestContext) {
-        if (!"GET".equalsIgnoreCase(containerRequestContext.getMethod())) {
+    private boolean isCsrfTokenBootstrapEndpoint() {
+        if (resourceInfo == null) {
             return false;
         }
-        String path = containerRequestContext.getUriInfo().getPath();
-        if (path == null) {
-            return false;
-        }
-        String normalizedPath = path.toLowerCase(Locale.ROOT);
-
-        String suffix = "users/" + ApiConstants.CSRF_TOKEN_ENDPOINT_PATH;
-        return normalizedPath.equals(suffix)
-                || normalizedPath.equals("api/" + suffix)
-                || normalizedPath.endsWith("/" + suffix);
+        Method method = resourceInfo.getResourceMethod();
+        return method != null
+                && Users.class.equals(method.getDeclaringClass())
+                && "getSessionCsrfToken".equals(method.getName());
     }
 
     private boolean isOriginOrRefererAllowed(ContainerRequestContext containerRequestContext) {
@@ -129,7 +132,12 @@ public class AuthFilter implements ContainerRequestFilter {
         return requestToken != null && !requestToken.isBlank() && session.matchesApiCsrfToken(requestToken);
     }
 
-    private String toOrigin(String url) {
+    /**
+     * Normalizes {@code url} to its origin form ({@code scheme://host[:port]}), lowercasing scheme and host
+     * and omitting default ports. Returns {@code null} if the input is missing scheme or host, or is unparseable.
+     * Exposed for shared use by startup configuration checks.
+     */
+    public static String toOrigin(String url) {
         if (url == null || url.isBlank()) {
             return null;
         }
@@ -150,7 +158,7 @@ public class AuthFilter implements ContainerRequestFilter {
         }
     }
 
-    private int defaultPort(String scheme) {
+    private static int defaultPort(String scheme) {
         if ("http".equals(scheme)) {
             return 80;
         }

@@ -43,7 +43,6 @@ public enum FeatureFlags {
      * This feature only works when the feature flag {@link #API_SESSION_AUTH} is also enabled.
      *
      * @apiNote Raise flag by setting "dataverse.feature.api-session-auth-hardening"
-     * @since Dataverse 6.10
      */
     API_SESSION_AUTH_HARDENING("api-session-auth-hardening"),
     /**

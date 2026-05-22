@@ -4007,6 +4007,8 @@ The simplicity is intentional: session-cookie API auth
 is only used by same-origin front-end clients that always have the CSRF token available.
 Some ``GET`` endpoints in the codebase have side effects, so exempting reads would leave gaps.
 
+The CSRF token is **session-lifetime**: it is minted on first request to the bootstrap endpoint, reused for the duration of the session, and only invalidated when the session user changes (login/logout). There is no per-request rotation. Treat the token like other session-scoped secrets — do not log it, and refresh it (by logging in again) if you suspect it has leaked.
+
 Clients not on the same origin should use bearer-token authentication instead.
 
 .. _session-cookie-hardening-guidance:
