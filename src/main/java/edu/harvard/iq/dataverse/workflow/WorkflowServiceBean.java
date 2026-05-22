@@ -42,6 +42,7 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
 /**
@@ -53,7 +54,6 @@ import jakarta.persistence.TypedQuery;
 public class WorkflowServiceBean {
 
     private static final Logger logger = Logger.getLogger(WorkflowServiceBean.class.getName());
-    private static final String WORKFLOW_ID_KEY = "WorkflowServiceBean.WorkflowId:";
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
@@ -134,7 +134,6 @@ public class WorkflowServiceBean {
          * (e.g. if this method is not asynchronous)
          * 
          */
-
         if (!findDataset) {
             /*
              * Sleep here briefly to make sure the database update from the callers
@@ -151,13 +150,12 @@ public class WorkflowServiceBean {
                 logger.warning("Failed to sleep for a second.");
             }
         }
-        //Refresh will only em.find the dataset if findDataset is true. (otherwise the dataset is em.merged)
+        
         ctxt = refresh(ctxt, retrieveRequestedSettings( wf.getRequiredSettings()), getCurrentApiToken(ctxt.getRequest().getAuthenticatedUser()), findDataset);
         lockDataset(ctxt, new DatasetLock(DatasetLock.Reason.Workflow, ctxt.getRequest().getAuthenticatedUser()));
         forward(wf, ctxt);
     }
     
-
     private ApiToken getCurrentApiToken(AuthenticatedUser au) {
         if (au != null) {
             CommandContext ctxt = engine.getContext();
@@ -181,12 +179,12 @@ public class WorkflowServiceBean {
                 break;
             }
             case "boolean": {
-                retrievedSettings.put(setting, settings.isTrue(settingType, false));
+                retrievedSettings.put(setting, settings.isTrue(setting, false));
                 break;
             }
             case "long": {
                 retrievedSettings.put(setting,
-                        settings.getValueForKeyAsLong(SettingsServiceBean.Key.valueOf(setting)));
+                        settings.getValueForKeyAsLong(SettingsServiceBean.Key.parse(setting)));
                 break;
             }
             }
@@ -212,7 +210,6 @@ public class WorkflowServiceBean {
     }
     
     
-    @Asynchronous
     private void forward(Workflow wf, WorkflowContext ctxt) {
         executeSteps(wf, ctxt, 0);
     }
@@ -246,7 +243,6 @@ public class WorkflowServiceBean {
         }
     }
 
-    @Asynchronous
     private void rollback(Workflow wf, WorkflowContext ctxt, Failure failure, int lastCompletedStepIdx) {
         ctxt = refresh(ctxt);
         final List<WorkflowStepData> steps = wf.getSteps();
@@ -291,7 +287,7 @@ public class WorkflowServiceBean {
             try {
                 if (res == WorkflowStepResult.OK) {
                     logger.log(Level.INFO, "Workflow {0} step {1}: OK", new Object[]{ctxt.getInvocationId(), stepIdx});
-                    em.merge(ctxt.getDataset());
+                    // The dataset is merged in refresh(ctxt)
                     ctxt = refresh(ctxt);
                 } else if (res instanceof Failure) {
                     logger.log(Level.WARNING, "Workflow {0} failed: {1}", new Object[]{ctxt.getInvocationId(), ((Failure) res).getReason()});
@@ -310,7 +306,6 @@ public class WorkflowServiceBean {
                 return;
             }
         }
-        
         workflowCompleted(wf, ctxt);
         
     }
@@ -319,22 +314,18 @@ public class WorkflowServiceBean {
     // Internal methods to run each step in its own transaction.
     //
     
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     WorkflowStepResult runStep( WorkflowStep step, WorkflowContext ctxt ) {
         return step.run(ctxt);
     }
     
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     WorkflowStepResult resumeStep( WorkflowStep step, WorkflowContext ctxt, Map<String,String> localData, String externalData ) {
         return step.resume(ctxt, localData, externalData);
     }
     
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     void rollbackStep( WorkflowStep step, WorkflowContext ctxt, Failure reason ) {
         step.rollback(ctxt, reason);
     }
     
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     void lockDataset(WorkflowContext ctxt, DatasetLock datasetLock) throws CommandException {
         /*
          * Note that this method directly adds a lock to the database rather than adding
@@ -352,7 +343,6 @@ public class WorkflowServiceBean {
         ctxt.setLockId(datasetLock.getId());
     }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     void unlockDataset(WorkflowContext ctxt) throws CommandException {
         /*
          * Since the lockDataset command above directly persists a lock to the database,
@@ -385,42 +375,48 @@ public class WorkflowServiceBean {
 
     private void workflowCompleted(Workflow wf, WorkflowContext ctxt) {
         logger.log(Level.INFO, "Workflow {0} completed.", ctxt.getInvocationId());
+
+        // Read fresh timestamps from DB - parallel index/exports may have occurred while the workflow ran
+        // (Nominally the workflow lock should have stopped other changes).
+        Dataset dataset = ctxt.getDataset();
+
+        datasets.updateIndexingAndExportTimes(dataset);
+
         
-            try {
-        if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
+        try {
+            if (ctxt.getType() == TriggerType.PrePublishDataset) {
                 ctxt = refresh(ctxt);
-                //Now lock for FinalizePublication - this block mirrors that in PublishDatasetCommand
+                dataset = ctxt.getDataset();
+                // Now lock for FinalizePublication - this block mirrors that in PublishDatasetCommand
                 AuthenticatedUser user = ctxt.getRequest().getAuthenticatedUser();
                 DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
-                Dataset dataset = ctxt.getDataset();
                 lock.setDataset(dataset);
-                boolean registerGlobalIdsForFiles = 
-                        systemConfig.isFilePIDsEnabledForCollection(ctxt.getDataset().getOwner()) &&
-                                dvObjects.getEffectivePidGenerator(dataset).canCreatePidsLike(dataset.getGlobalId());
-                
+                boolean registerGlobalIdsForFiles = systemConfig.isFilePIDsEnabledForCollection(ctxt.getDataset().getOwner()) &&
+                        dvObjects.getEffectivePidGenerator(dataset).canCreatePidsLike(dataset.getGlobalId());
+
                 boolean validatePhysicalFiles = systemConfig.isDatafileValidationOnPublishEnabled();
-                String info = "Publishing the dataset; "; 
+                String info = "Publishing the dataset; ";
                 info += registerGlobalIdsForFiles ? "Registering PIDs for Datafiles; " : "";
                 info += validatePhysicalFiles ? "Validating Datafiles Asynchronously" : "";
                 lock.setInfo(info);
                 lockDataset(ctxt, lock);
                 ctxt.getDataset().addLock(lock);
-                
+
                 unlockDataset(ctxt);
-                ctxt.setLockId(null); //the workflow lock
-                //Refreshing merges the dataset
+                ctxt.setLockId(null); // the workflow lock
+                // Refreshing merges the dataset
                 ctxt = refresh(ctxt);
-                //Then call Finalize
+                // Then call Finalize
                 engine.submit(new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest(), ctxt.getDatasetExternallyReleased()));
             } else {
                 logger.fine("Removing workflow lock");
                 unlockDataset(ctxt);
             }
-            } catch (CommandException ex) {
-                logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() +": " + ex.getMessage(), ex);
-                rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size()-1);
-            }
-        
+        } catch (CommandException ex) {
+            logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() + ": " + ex.getMessage(), ex);
+            rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size() - 1);
+        }
+
     }
 
     public List<Workflow> listWorkflows() {
@@ -452,7 +448,7 @@ public class WorkflowServiceBean {
         if (doomedOpt.isPresent()) {
             // validate that this is not the default workflow
             for ( WorkflowContext.TriggerType tp : WorkflowContext.TriggerType.values() ) {
-                String defaultWorkflowId = settings.get(workflowSettingKey(tp));
+                String defaultWorkflowId = settings.getValueForKey(tp.getKey());
                 if (defaultWorkflowId != null
                         && Long.parseLong(defaultWorkflowId) == doomedOpt.get().getId()) {
                     throw new IllegalArgumentException("Workflow " + workflowId + " cannot be deleted as it is the default workflow for trigger " + tp.name() );
@@ -476,7 +472,7 @@ public class WorkflowServiceBean {
     }
 
     public Optional<Workflow> getDefaultWorkflow( WorkflowContext.TriggerType type ) {
-        String defaultWorkflowId = settings.get(workflowSettingKey(type));
+        String defaultWorkflowId = settings.getValueForKey(type.getKey());
         if (defaultWorkflowId == null) {
             return Optional.empty();
         }
@@ -491,16 +487,11 @@ public class WorkflowServiceBean {
      * @param type type of the workflow.
      */
     public void setDefaultWorkflowId(WorkflowContext.TriggerType type, Long id) {
-        String workflowKey = workflowSettingKey(type);
         if (id == null) {
-            settings.delete(workflowKey);
+            settings.deleteValueForKey(type.getKey());
         } else {
-            settings.set(workflowKey, id.toString());
+            settings.setValueForKey(type.getKey(), id.toString());
         }
-    }
-
-    private String workflowSettingKey(WorkflowContext.TriggerType type) {
-        return WORKFLOW_ID_KEY+type.name();
     }
 
     private WorkflowStep createStep(WorkflowStepData wsd) {

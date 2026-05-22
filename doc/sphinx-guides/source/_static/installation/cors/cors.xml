@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CORSConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+    <CORSRule>
+        <AllowedOrigin>*</AllowedOrigin>
+        <AllowedHeader>*</AllowedHeader>
+        <AllowedMethod>PUT</AllowedMethod>
+        <AllowedMethod>GET</AllowedMethod>
+        <ExposeHeader>ETag</ExposeHeader>
+        <ExposeHeader>Accept-Ranges</ExposeHeader>
+        <ExposeHeader>Content-Encoding</ExposeHeader>
+        <ExposeHeader>Content-Range</ExposeHeader>
+    </CORSRule>
+</CORSConfiguration>

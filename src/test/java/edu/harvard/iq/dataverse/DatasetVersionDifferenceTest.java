@@ -57,6 +57,10 @@ public class DatasetVersionDifferenceTest {
                 "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.",
                 URI.create("http://creativecommons.org/publicdomain/zero/1.0"), URI.create("/resources/images/cc0.png"),
                 true, 1l);
+        License license2 = new License("CC BY 4.0",
+                "Share — copy and redistribute the material in any medium or format for any purpose, even commercially.",
+                URI.create("https://creativecommons.org/licenses/by/4.0/"), URI.create("/resources/images/cc0.png"),
+                true, 2l);
         license.setDefault(true);
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
@@ -66,10 +70,14 @@ public class DatasetVersionDifferenceTest {
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         datasetVersion.setVersionNumber(1L);
         datasetVersion.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+        datasetVersion.getTermsOfUseAndAccess().setLicense(license);
         DatasetVersion datasetVersion2 = new DatasetVersion();
         datasetVersion2.setDataset(dataset);
         datasetVersion2.setVersionState(DatasetVersion.VersionState.DRAFT);
-
+        datasetVersion2.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+        datasetVersion2.getTermsOfUseAndAccess().setLicense(license);
+        datasetVersion.setFileMetadatas(new ArrayList<>());
+        
         // Published version's two files
         DataFile dataFile = new DataFile();
         dataFile.setId(1L);
@@ -81,18 +89,16 @@ public class DatasetVersionDifferenceTest {
 
         FileMetadata fileMetadata2 = createFileMetadata(20L, datasetVersion, dataFile2, "file2.txt");
 
-        // Draft version - same two files with one label change
-        FileMetadata fileMetadata3 = fileMetadata1.createCopy();
-        fileMetadata3.setId(30L);
-
-        FileMetadata fileMetadata4 = fileMetadata2.createCopy();
-        fileMetadata4.setLabel("file3.txt");
-        fileMetadata4.setId(40L);
-
         List<FileMetadata> fileMetadatas = new ArrayList<>(Arrays.asList(fileMetadata1, fileMetadata2));
         datasetVersion.setFileMetadatas(fileMetadatas);
-        List<FileMetadata> fileMetadatas2 = new ArrayList<>(Arrays.asList(fileMetadata3, fileMetadata4));
-        datasetVersion2.setFileMetadatas(fileMetadatas2);
+        
+        // Draft version - same two files with one label change
+        FileMetadata fileMetadata3 = fileMetadata1.createCopyInVersion(datasetVersion2);
+        fileMetadata3.setId(30L);
+
+        FileMetadata fileMetadata4 = fileMetadata2.createCopyInVersion(datasetVersion2);
+        fileMetadata4.setLabel("file3.txt");
+        fileMetadata4.setId(40L);
 
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
         Date publicationDate;
@@ -163,6 +169,7 @@ public class DatasetVersionDifferenceTest {
         // Set the published version's TermsOfUseAndAccess to a non-null value
         TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
         datasetVersion.setTermsOfUseAndAccess(termsOfUseAndAccess);
+        datasetVersion.getTermsOfUseAndAccess().setLicense(license);
 
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
                 expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
@@ -170,6 +177,7 @@ public class DatasetVersionDifferenceTest {
         // Set the draft version's TermsOfUseAndAccess to a non-null value
 
         datasetVersion2.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+        datasetVersion2.getTermsOfUseAndAccess().setLicense(license);
 
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
                 expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
@@ -192,6 +200,21 @@ public class DatasetVersionDifferenceTest {
                 "Not our fault", "" };
         changedTerms.add(termField2);
 
+        compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
+                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
+        
+        // Change License in Draft version
+
+        datasetVersion2.getTermsOfUseAndAccess().setLicense(license2);
+        datasetVersion2.getTermsOfUseAndAccess().setTermsOfUse("");
+        datasetVersion.getTermsOfUseAndAccess().setDisclaimer("");
+        
+        String[] termField3 = new String[] {
+                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.license"),
+                "CC0 1.0", "CC BY 4.0" };
+        changedTerms = new ArrayList<>();
+        changedTerms.add(termField3);
+        
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
                 expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
 
@@ -447,7 +470,7 @@ public class DatasetVersionDifferenceTest {
         JsonPath dataFile = JsonPath.from(JsonUtil.prettyPrint(obj));
                 
         assertTrue("true".equalsIgnoreCase(dataFile.getString("termsAccessChanged")));
-        assertEquals(2,(Long.parseLong(dataFile.getString("files.changedFileMetaData"))));
+        assertEquals(1,(Long.parseLong(dataFile.getString("files.changedFileMetaData"))));
         assertEquals(0,(Long.parseLong(dataFile.getString("testMetadataBlock.deleted"))));
         assertEquals(1, (int) (Long.parseLong(dataFile.getString("testMetadataBlock.added"))));
         assertEquals(1,(Long.parseLong(dataFile.getString("files.added"))));

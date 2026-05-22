@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -60,10 +61,10 @@ public abstract class AbstractPidProvider implements PidProvider {
         this.identifierGenerationStyle = identifierGenerationStyle;
         this.datafilePidFormat = datafilePidFormat;
         if(!managedList.isEmpty()) {
-            this.managedSet.addAll(Arrays.asList(managedList.split(",\\s")));
+            this.managedSet.addAll(ListSplitUtil.split(managedList));
         }
         if(!excludedList.isEmpty()) {
-            this.excludedSet.addAll(Arrays.asList(excludedList.split(",\\s")));
+            this.excludedSet.addAll(ListSplitUtil.split(excludedList));
         }
         if (logger.isLoggable(Level.FINE)) {
             Iterator<String> iter = managedSet.iterator();
