@@ -12,6 +12,7 @@ import static io.restassured.path.json.JsonPath.with;
 
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
+
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -328,7 +330,47 @@ public class DataversesIT {
         List dataverseEmailNotAllowed = with(exportDataverseAsJson.body().asString())
                 .getJsonObject("data.dataverseContacts");
         assertNull(dataverseEmailNotAllowed);
-        
+
+        // Test "ignoreSettingExcludeEmailFromExport" with user who has required permissions
+        Response getDataverseWithIgnoreExcludeEmail = UtilIT.getDataverseWithIgnoreExcludeEmail(dataverseAlias, apiToken, true);
+        getDataverseWithIgnoreExcludeEmail.prettyPrint();
+
+        getDataverseWithIgnoreExcludeEmail.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.alias", equalTo(dataverseAlias))
+                .body("data.name", equalTo(dataverseAlias))
+                .body("data.dataverseContacts[0].displayOrder", equalTo(0))
+                .body("data.dataverseContacts[0].contactEmail", equalTo(emailAddressOfFirstDataverseContact))
+                .body("data.permissionRoot", equalTo(true))
+                .body("data.dataverseType", equalTo("UNCATEGORIZED"));
+
+        RestAssured.unregisterParser("text/plain");
+        List dataverseEmailAllowed = with(getDataverseWithIgnoreExcludeEmail.body().asString())
+                .getJsonObject("data.dataverseContacts");
+        assertNotNull(dataverseEmailAllowed);
+
+        // Test "ignoreSettingExcludeEmailFromExport" with user who does not have required permissions
+        Response createUser2 = UtilIT.createRandomUser();
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+
+        Response getDataverseWithIgnoreExcludeEmailNoPermission = UtilIT.getDataverseWithIgnoreExcludeEmail(dataverseAlias, apiToken2, true);
+        getDataverseWithIgnoreExcludeEmailNoPermission.prettyPrint();
+
+        getDataverseWithIgnoreExcludeEmailNoPermission.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.alias", equalTo(dataverseAlias))
+                .body("data.name", equalTo(dataverseAlias))
+                .body("data.dataverseContacts", equalTo(null))
+                .body("data.permissionRoot", equalTo(true))
+                .body("data.dataverseType", equalTo("UNCATEGORIZED"));
+
+        List dataverseEmailUserHasNoPermissions = with(getDataverseWithIgnoreExcludeEmailNoPermission.body().asString())
+                .getJsonObject("data.dataverseContacts");
+        assertNull(dataverseEmailUserHasNoPermissions);
+
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
         removeExcludeEmail.then().assertThat()
                 .statusCode(200);
@@ -347,9 +389,9 @@ public class DataversesIT {
                 .body("data.dataverseType", equalTo("UNCATEGORIZED"));
         
         RestAssured.unregisterParser("text/plain");
-        List dataverseEmailAllowed = with(exportDataverseAsJson2.body().asString())
+        List dataverseEmailAllowed2 = with(exportDataverseAsJson2.body().asString())
                 .getJsonObject("data.dataverseContacts");
-        assertNotNull(dataverseEmailAllowed);
+        assertNotNull(dataverseEmailAllowed2);
         
         Response deleteDataverse2 = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteDataverse2.prettyPrint();
@@ -544,12 +586,26 @@ public class DataversesIT {
         updateDataverseDefaultRole.then().assertThat()
                 .body("data.message", equalTo("Default contributor role for Dataverse " + dataverseAlias + " has been set to Curator."))
                 .statusCode(200);
+
+        // test GET API for retrieving the role that was just set
+        Response getDataverseDefaultRole = UtilIT.getDefaultContributorsRoleOnDataverse(dataverseAlias, apiToken);
+        getDataverseDefaultRole.prettyPrint();
+        getDataverseDefaultRole.then().assertThat()
+                .body("data.alias", equalTo("curator"))
+                .statusCode(200);
         
         //for test use an existing role. In practice this likely will be a custom role
         Response updateDataverseDefaultRoleNone = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "none", apiToken);
         updateDataverseDefaultRoleNone.prettyPrint();
         updateDataverseDefaultRoleNone.then().assertThat()
                 .body("data.message", equalTo("Default contributor role for Dataverse " + dataverseAlias + " has been set to None."))
+                .statusCode(200);
+
+        // test GET API for retrieving the role that was just set
+        Response getDataverseDefaultRoleNone = UtilIT.getDefaultContributorsRoleOnDataverse(dataverseAlias, apiToken);
+        getDataverseDefaultRoleNone.prettyPrint();
+        getDataverseDefaultRoleNone.then().assertThat()
+                .body("data", equalTo(Collections.emptyMap()))
                 .statusCode(200);
 
         // try bad role alias
@@ -2617,9 +2673,9 @@ public class DataversesIT {
         String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
         String username = UtilIT.getUsernameFromResponse(createUserResponse);
 
-            Response createSecondUserResponse = UtilIT.createRandomUser();
-            String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
-            String secondUsername = UtilIT.getUsernameFromResponse(createSecondUserResponse);
+        Response createSecondUserResponse = UtilIT.createRandomUser();
+        String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
+        String secondUsername = UtilIT.getUsernameFromResponse(createSecondUserResponse);
 
         
         /*
@@ -2630,9 +2686,7 @@ public class DataversesIT {
         createDataverseResponse.prettyPrint();
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
-        
-        System.out.print("dataverseId: " + dataverseId);
+
         
         String newName = "New Test Dataverse Name";
         String newAffiliation = "New Test Dataverse Affiliation";
@@ -2682,6 +2736,19 @@ public class DataversesIT {
                               ]
                             }
                             """;
+        
+                String jsonStringWithoutFields = """
+                            {
+                              "name": "Dataverse template - No Fields",
+                              "isDefault": true,
+                              "instructions": [
+                                {
+                                    "instructionField": "author",
+                                    "instructionText": "The author data"
+                                }
+                              ]
+                            }
+                            """;
 
         Response createTemplateResponse = UtilIT.createTemplate(
                 dataverseAlias,
@@ -2701,6 +2768,8 @@ public class DataversesIT {
 
         Long templateId = createTemplateResponse.body().jsonPath().getLong("data.id");
 
+
+        
         //Check for failure due unauthorized user.
         Response setDefaultResp = UtilIT.setDefaultTemplate(dataverseAlias, templateId, secondApiToken);
         setDefaultResp.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
@@ -2729,11 +2798,7 @@ public class DataversesIT {
                 .body("data[0].instructions[0].instructionField", equalTo("author"))
                 .body("data[0].instructions[0].instructionText", equalTo("The author data"))
                 .body("data[0].dataverseAlias", equalTo(dataverseAlias));
-        
-                
-            // Remove default template
-            System.out.print("***************: " + dataverseAlias );
-            
+
             Response removeDefaultResp = UtilIT.removeDefaultTemplate(dataverseAlias, apiToken);
             removeDefaultResp.prettyPrint();
             removeDefaultResp.then().assertThat().statusCode(OK.getStatusCode());       
@@ -2744,7 +2809,7 @@ public class DataversesIT {
                             .body("data.size()", equalTo(1))
                             .body("data[0].isDefault", equalTo(false));
 
-
+        
             // Templates retrieval should fail if a secondary user lacks dataset creation
             // permissions
 
@@ -2788,6 +2853,31 @@ public class DataversesIT {
         deleteTemplateResponse = UtilIT.deleteTemplate(templateId.toString(), apiToken);
         deleteTemplateResponse.prettyPrint();
         deleteTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        
+        //make sure you can create a template with no dataset fields
+        Response createTemplateResponseNoFields = UtilIT.createTemplate(
+                dataverseAlias,
+                jsonStringWithoutFields,
+                apiToken);
+
+        createTemplateResponseNoFields.then().assertThat().statusCode(CREATED.getStatusCode())
+                .body("data.name", equalTo("Dataverse template - No Fields"))
+                .body("data.isDefault", equalTo(true))
+                .body("data.usageCount", equalTo(0))
+                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.instructions.size()", equalTo(1))
+                .body("data.instructions[0].instructionField", equalTo("author"))
+                .body("data.instructions[0].instructionText", equalTo("The author data"))
+                .body("data.dataverseAlias", equalTo(dataverseAlias));
+
+        Long templateIdNoFields = createTemplateResponseNoFields.body().jsonPath().getLong("data.id");        
+
+        deleteTemplateResponse = UtilIT.deleteTemplate(templateIdNoFields.toString(), apiToken);
+        deleteTemplateResponse.prettyPrint();
+        deleteTemplateResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        
         // back to super for cleanup
         
         UtilIT.setSuperuserStatus(username, true);
@@ -2804,6 +2894,350 @@ public class DataversesIT {
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
         
+
+    }
+    
+    
+    @Test
+    public void testUpdateTemplates() throws JsonParseException  {
+        /*
+          Also Terms of Use/access
+        */
+        
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String username = UtilIT.getUsernameFromResponse(createUserResponse);
+
+        /*
+        We need to make this a non-inherited metadatablocks so the get template will only get templates from current dv
+         */
+        
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+        String newName = "New Test Dataverse Name";
+        String newAffiliation = "New Test Dataverse Affiliation";
+        String newDataverseType = Dataverse.DataverseType.TEACHING_COURSES.toString();
+        String[] newContactEmails = new String[]{"new_email@dataverse.com"};
+        String[] newInputLevelNames = new String[]{"geographicCoverage"};
+        String[] newFacetIds = new String[]{"contributorName"};
+        String[] newMetadataBlockNames = new String[]{"citation", "geospatial", "biomedical"};
+
+        // Giving the new Dataverse updated metadatablocks so that it will not inherit
+        // templates
+        Response updateDataverseResponse = UtilIT.updateDataverse(
+                dataverseAlias, dataverseAlias, newName, newAffiliation, newDataverseType, newContactEmails,
+                newInputLevelNames,
+                null, newMetadataBlockNames, apiToken,
+                Boolean.FALSE, Boolean.FALSE, null);
+
+        updateDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String jsonString = """
+                            {
+                              "name": "Dataverse template",
+                              "isDefault": true,
+                              "fields": [
+                                {
+                                  "typeName": "author",
+                                  "value": [
+                                    {
+                                      "authorName": {
+                                        "typeName": "authorName",
+                                        "value": "Belicheck, Bill"
+                                      },
+                                      "authorAffiliation": {
+                                        "typeName": "authorIdentifierScheme",
+                                        "value": "ORCID"
+                                      }
+                                    }
+                                  ]
+                                }
+                              ],
+                              "instructions": [
+                                {
+                                    "instructionField": "author",
+                                    "instructionText": "The author data"
+                                }
+                              ]
+                            }
+                            """;
+        
+        String jsonStringForUpdateNotReplace = """
+                            {
+                              "fields": [
+                                {
+                                  "typeName": "author",
+                                  "value": [
+                                    {
+                                        "authorName": {
+                                            "typeName": "authorName",
+                                            "value": "Brady, Tom"
+                                        },
+                                        "authorAffiliation": {
+                                            "typeName": "authorIdentifierScheme",
+                                            "value": "ORCID"
+                                        }
+                                    }
+                                  ]
+                                }
+                              ],
+                              "instructions": [
+                                {
+                                    "instructionField": "author",
+                                    "instructionText": "The author data, edited"
+                                },
+                                {
+                                    "instructionField": "subtitle",
+                                    "instructionText": "Info on subtitle"
+                                }
+                              ]
+                            }
+                            """;
+        
+                String jsonStringForFieldsOnly = """
+                            {
+                              "fields": [
+                                {
+                                  "typeName": "author",
+                                  "value": [
+                                    {
+                                        "authorName": {
+                                            "typeName": "authorName",
+                                            "value": "Brady, Tom"
+                                        },
+                                        "authorAffiliation": {
+                                            "typeName": "authorIdentifierScheme",
+                                            "value": "ORCID"
+                                        }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                            """;
+                
+        String jsonStringForUpdateReplaceData = """
+                            {
+                              "name": "Dataverse template - edited",
+                              "fields": [
+                                {
+                                  "typeName": "author",
+                                  "value": [
+                                    {
+                                        "authorName": {
+                                            "typeName": "authorName",
+                                            "value": "Vrabel, Mike"
+                                        },
+                                        "authorAffiliation": {
+                                            "typeName": "authorIdentifierScheme",
+                                            "value": "ORCID"
+                                        }
+                                    }
+                                  ]
+                                }
+                              ],
+                              "instructions": [
+                                {
+                                    "instructionField": "title",
+                                    "instructionText": "A title for, you know, your thing"
+                                }
+                              ]
+                            }
+                            """;
+
+        String jsonStringJustInstructions = """
+                            {
+                              "instructions": [
+                                {
+                                    "instructionField": "title",
+                                    "instructionText": "A title for this little beauty"
+                                },
+                                {
+                                    "instructionField": "subtitle",
+                                    "instructionText": "You know, like 'Electric Boogaloo'"
+                                }
+                              ]
+                            }
+                            """;        
+                String jsonStringJustName = """
+                            {
+                              "name": "Template - Just Name"
+                            }
+                            """;  
+                String jsonStringForUpdateTerms = """
+            {
+                   "customTerms": {
+                     "termsOfUse": "testTermsOfUse",
+                     "confidentialityDeclaration": "testConfidentialityDeclaration",
+                     "specialPermissions": "testSpecialPermissions",
+                     "restrictions": "testRestrictions",
+                     "citationRequirements": "testCitationRequirements",
+                     "depositorRequirements": "testDepositorRequirements",
+                     "conditions": "testConditions",
+                     "disclaimer": "testDisclaimer"
+                   }
+                 }
+                            """;
+                
+                String jsonStringForUpdateAccess = """
+            {
+                   "customTermsOfAccess": {
+                     "fileAccessRequest": false,                              
+                     "termsOfAccess": "Here are the terms...",
+                     "dataAccessPlace": "dataAccessPlace",
+                     "originalArchive": "originalArchive",
+                     "availabilityStatus": "availabilityStatus",
+                     "contactForAccess": "contactForAccess",
+                     "sizeOfCollection": "sizeOfCollection",
+                     "studyCompletion": "studyCompletion",
+                     "confidentialityDeclaration": "confidentialityDeclaration"
+                   }
+                 }
+                            """;
+
+
+        Response createTemplateResponse = UtilIT.createTemplate(
+                dataverseAlias,
+                jsonString,
+                apiToken);
+        
+        createTemplateResponse.prettyPrint();
+
+        createTemplateResponse.then().assertThat().statusCode(CREATED.getStatusCode())
+                .body("data.name", equalTo("Dataverse template"))
+                .body("data.isDefault", equalTo(true))
+                .body("data.usageCount", equalTo(0))
+                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.datasetFields.citation.fields.size()", equalTo(1))
+                .body("data.instructions.size()", equalTo(1))
+                .body("data.instructions[0].instructionField", equalTo("author"))
+                .body("data.instructions[0].instructionText", equalTo("The author data"))
+                .body("data.dataverseAlias", equalTo(dataverseAlias));
+
+        Long templateId = createTemplateResponse.body().jsonPath().getLong("data.id");
+        
+        
+        Response updateTemplateResponse = UtilIT.updateTemplateMetadata(templateId.toString(), jsonStringForUpdateNotReplace, apiToken, false);
+        
+        updateTemplateResponse.prettyPrint();
+
+        updateTemplateResponse.then().assertThat().statusCode(CREATED.getStatusCode())
+                .body("data.name", equalTo("Dataverse template"))
+                .body("data.usageCount", equalTo(0))
+                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.datasetFields.citation.fields.size()", equalTo(1))
+                .body("data.instructions.size()", equalTo(2))
+                .body("data.dataverseAlias", equalTo(dataverseAlias));
+        
+        Response updateTemplateReplaceResponse = UtilIT.updateTemplateMetadata(templateId.toString(), jsonStringForUpdateReplaceData, apiToken, true);
+        
+        updateTemplateReplaceResponse.prettyPrint();
+
+        updateTemplateReplaceResponse.then().assertThat().statusCode(CREATED.getStatusCode())
+                .body("data.name", equalTo("Dataverse template - edited"))
+                .body("data.usageCount", equalTo(0))
+                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.datasetFields.citation.fields.size()", equalTo(1))
+                .body("data.instructions.size()", equalTo(1))
+                .body("data.dataverseAlias", equalTo(dataverseAlias));
+        
+        Response updateTemplateUpdateInstructionsOnly = UtilIT.updateTemplateMetadata(templateId.toString(), jsonStringJustInstructions, apiToken, false);
+        
+        updateTemplateUpdateInstructionsOnly.prettyPrint();
+
+        updateTemplateUpdateInstructionsOnly.then().log().body().assertThat().statusCode(CREATED.getStatusCode())
+                .body("data.name", equalTo("Dataverse template - edited"))
+                .body("data.usageCount", equalTo(0))
+                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.datasetFields.size()", equalTo(0))
+                .body("data.instructions.flatten().size()", equalTo(2))
+                .body("data.dataverseAlias", equalTo(dataverseAlias));
+        
+        Response updateTemplateUpdateNameOnly = UtilIT.updateTemplateMetadata(templateId.toString(), jsonStringJustName, apiToken, false);
+        
+        updateTemplateUpdateNameOnly.prettyPrint();
+
+        updateTemplateUpdateNameOnly.then().assertThat().statusCode(CREATED.getStatusCode())
+                .body("data.name", equalTo("Template - Just Name"))
+                .body("data.usageCount", equalTo(0))
+                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.datasetFields.size()", equalTo(0))
+                .body("data.instructions.flatten().size()", equalTo(2))
+                .body("data.dataverseAlias", equalTo(dataverseAlias));
+        
+        Response updateTemplateUpdateFieldsOnly = UtilIT.updateTemplateMetadata(templateId.toString(), jsonStringForFieldsOnly, apiToken, true);
+        
+        updateTemplateUpdateFieldsOnly.prettyPrint();
+
+        updateTemplateUpdateFieldsOnly.then().assertThat().statusCode(CREATED.getStatusCode())
+                .body("data.name", equalTo("Template - Just Name"))
+                .body("data.usageCount", equalTo(0))
+                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.datasetFields.size()", equalTo(1))
+                .body("data.instructions.flatten().size()", equalTo(2))
+                .body("data.dataverseAlias", equalTo(dataverseAlias));        
+        
+        //Update Template License
+                // Test case 1: Update to a valid, predefined license (CC BY 4.0).
+        Response updateLicenseResponse = UtilIT.updateTemplateLicenseTerms(templateId.toString(), "{ \"name\": \"CC BY 4.0\" }", apiToken);
+        updateLicenseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(BundleUtil.getStringFromBundle("dataverses.api.update.template.license.success")));
+
+        Response getTemplate  = UtilIT.getTemplate(templateId.toString(),  apiToken);
+        getTemplate.prettyPrint();
+        getTemplate.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.termsOfUseAndAccess.license.name", equalTo("CC BY 4.0"));
+        
+        Response updateTermsResponse = UtilIT.updateTemplateLicenseTerms(templateId.toString(), jsonStringForUpdateTerms, apiToken);
+        updateTermsResponse.prettyPrint();
+        
+        getTemplate  = UtilIT.getTemplate(templateId.toString(),  apiToken);
+        getTemplate.prettyPrint();
+        getTemplate.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.termsOfUseAndAccess", Matchers.not(Matchers.hasKey("license")));
+
+        updateTermsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(BundleUtil.getStringFromBundle("dataverses.api.update.template.license.success")));
+
+        getTemplate  = UtilIT.getTemplate(templateId.toString(),  apiToken);
+        getTemplate.prettyPrint();
+                getTemplate.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.termsOfUseAndAccess.termsOfUse", equalTo("testTermsOfUse"));
+                
+        Response updateAccessResponse = UtilIT.updateTemplateAccessTerms(templateId.toString(), jsonStringForUpdateAccess, apiToken);
+
+        updateAccessResponse.prettyPrint();
+                updateAccessResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(BundleUtil.getStringFromBundle("dataverses.api.update.template.access.success")));
+
+                
+        getTemplate  = UtilIT.getTemplate(templateId.toString(),  apiToken);
+        getTemplate.prettyPrint();
+                getTemplate.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.termsOfUseAndAccess.termsOfAccess", equalTo("Here are the terms..."));        
+        // back to super for cleanup
+        
+        UtilIT.setSuperuserStatus(username, true);
+        
+        Response deleteDataverse1Response = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverse1Response.prettyPrint();
+        assertEquals(200, deleteDataverse1Response.getStatusCode());
+        
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode()); 
+
 
     }
 

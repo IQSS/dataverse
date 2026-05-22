@@ -4870,6 +4870,18 @@ public class DatasetPage implements java.io.Serializable {
         return  settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomTextOnAllVersions, false);
     }
 
+    public boolean isDisplaySubmitForReviewPopupCustomText() {
+        return !getDatasetSubmitForReviewCustomText().isEmpty();
+    }
+
+    public String getDatasetSubmitForReviewCustomText(){
+        String datasetSubmitForReviewCustomText = settingsWrapper.getValueForKey(SettingsServiceBean.Key.DatasetSubmitForReviewPopupCustomText);
+        if (datasetSubmitForReviewCustomText != null && !datasetSubmitForReviewCustomText.isEmpty()) {
+            return datasetSubmitForReviewCustomText;
+        }
+        return "";
+    }
+
     public String getVariableMetadataURL(Long fileid) {
         String myHostURL = getDataverseSiteUrl();
         String metaURL = myHostURL + "/api/meta/datafile/" + fileid;
@@ -6373,6 +6385,7 @@ public class DatasetPage implements java.io.Serializable {
     private String termsOfAccess;
     private boolean fileAccessRequest;
     private boolean publishDisclaimerAcknowledged;
+    private boolean submitForReviewDisclaimerAcknowledged;
 
     public String getTermsOfAccess() {
         return termsOfAccess;
@@ -6396,6 +6409,14 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setPublishDisclaimerAcknowledged(boolean publishDisclaimerAcknowledged) {
         this.publishDisclaimerAcknowledged = publishDisclaimerAcknowledged;
+    }
+
+    public boolean isSubmitForReviewDisclaimerAcknowledged() {
+        return submitForReviewDisclaimerAcknowledged || !settingsWrapper.isHasSubmitForReviewDatasetDisclaimerText();
+    }
+
+    public void setSubmitForReviewDisclaimerAcknowledged(boolean submitForReviewDisclaimerAcknowledged) {
+        this.submitForReviewDisclaimerAcknowledged = submitForReviewDisclaimerAcknowledged;
     }
 
     // wrapper method to see if the file has been deleted (or replaced) in the current version
