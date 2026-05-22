@@ -2,23 +2,17 @@
 
 Three new shell scripts in `scripts/dev/` enable fast iterative development for Dataverse contributors working with the container-based development environment:
 
-- **`dev-start-frd.sh`**: One-time setup to build and deploy an exploded WAR in the dev stack
-- **`dev-frd.sh`**: Incremental recompile + redeploy (~12s vs. ~54s for full rebuilds, 4.5x faster)
-- **`dev-down-frd.sh`**: Stop and remove dev containers
-
-This command-line workflow provides a fast feedback loop for developers who prefer CLI-based development or use lightweight editors like VS Code or Vim, complementing the existing IDE-based hot reload options (IntelliJ Ultimate, NetBeans).
-
-# New Scripts
-
-- **`dev-start-frd.sh`**: Initial setup (full build → exploded WAR → start containers)
+- **`dev-start-frd.sh`**: One-time setup (full build → exploded WAR → start containers)
 - **`dev-frd.sh`**: Incremental recompile + redeploy (~12s vs. ~54s for traditional full rebuild workflow, 4.5x faster)
 - **`dev-down-frd.sh`**: Clean shutdown of dev environment
 
-# New Files
+This command-line workflow provides a fast feedback loop for developers who prefer CLI-based development or use lightweight editors like VS Code or Vim, complementing the existing IDE-based hot reload options (IntelliJ Ultimate, NetBeans).
+
+### New Files
 
 - **`docker-compose.override.yml`**: Increases memory limits to 8GB (from the 2GB limit set for GitHub Actions CI) for local development. Automatically used by the fast-redeploy scripts.
 
-# Key Features
+### Key Features
 
 - No infrastructure changes (works with existing docker-compose-dev.yml)
 - Optional workflow (doesn't affect other development approaches)

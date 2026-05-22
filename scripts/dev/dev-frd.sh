@@ -19,9 +19,7 @@ if [ ! -d "target/classes" ]; then
 fi
 
 echo "Syncing compiled classes..."
-# WARNING: The --delete flag will remove files from target/dataverse/WEB-INF/classes/
-# that do not exist in target/classes/. Any files manually added for debugging
-# purposes will be deleted. Consider this before adding files to the destination.
+# --delete removes files in dest not present in source
 rsync -a --delete --exclude 'META-INF/persistence.xml' \
     target/classes/ target/dataverse/WEB-INF/classes/
 
@@ -29,7 +27,7 @@ if [ -d "src/main/webapp" ]; then
     echo "Syncing webapp resources..."
     rsync -a --delete \
         --exclude 'WEB-INF/classes' \
-        --exclude 'WEB-INF/lib' --exclude 'WEB-INF/lib/**' \
+        --exclude 'WEB-INF/lib' \
         src/main/webapp/ target/dataverse/
 fi
 
