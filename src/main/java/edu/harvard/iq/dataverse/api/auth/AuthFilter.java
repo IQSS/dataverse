@@ -49,18 +49,23 @@ public class AuthFilter implements ContainerRequestFilter {
         try {
             User user = compoundAuthMechanism.findUserFromRequest(containerRequestContext);
             containerRequestContext.setProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_USER, user);
-            applySessionAuthHardening(containerRequestContext);
+            applySessionAuthHardening(containerRequestContext, user);
         } catch (WrappedAuthErrorResponse e) {
             containerRequestContext.abortWith(e.getResponse());
         }
     }
 
-    private void applySessionAuthHardening(ContainerRequestContext containerRequestContext)
+    private void applySessionAuthHardening(ContainerRequestContext containerRequestContext, User user)
             throws WrappedAuthErrorResponse {
         if (!FeatureFlags.API_SESSION_AUTH_HARDENING.enabled()) {
             return;
         }
         if (!isSessionCookieRequest(containerRequestContext)) {
+            return;
+        }
+        // CSRF/origin protections guard authenticated session state; guests carry no privileges
+        // worth forging, so the hardening checks would only add friction without security benefit.
+        if (user == null || !user.isAuthenticated()) {
             return;
         }
 

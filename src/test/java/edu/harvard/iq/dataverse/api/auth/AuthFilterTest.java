@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.api.Users;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -305,6 +306,37 @@ class AuthFilterTest {
         sut.filter(requestContext);
 
         verify(requestContext, never()).abortWith(any(Response.class));
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    void testFilter_HardeningEnabled_GuestSessionCookieRequestSkipsHardening() throws Exception {
+        AuthFilter sut = new AuthFilter();
+        ContainerRequestContext requestContext = mockRequestContext("POST", "datasets/1/add");
+        CompoundAuthMechanism compound = Mockito.mock(CompoundAuthMechanism.class);
+        DataverseSession session = Mockito.mock(DataverseSession.class);
+        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
+
+        when(compound.findUserFromRequest(requestContext)).thenAnswer(invocation -> {
+            ContainerRequestContext crc = invocation.getArgument(0);
+            crc.setProperty(
+                    ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM,
+                    ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
+            return GuestUser.get();
+        });
+        when(requestContext.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
+                .thenReturn(ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
+        // No Origin/Referer and no CSRF token — would block an authenticated session, but a guest
+        // has no privileges to forge, so hardening must short-circuit before these checks.
+
+        inject(sut, "compoundAuthMechanism", compound);
+        inject(sut, "session", session);
+        inject(sut, "systemConfig", systemConfig);
+
+        sut.filter(requestContext);
+
+        verify(requestContext, never()).abortWith(any(Response.class));
+        verify(requestContext).setProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_USER, GuestUser.get());
     }
 
     @Test

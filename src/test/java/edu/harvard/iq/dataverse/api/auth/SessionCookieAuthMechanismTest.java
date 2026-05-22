@@ -50,13 +50,13 @@ class SessionCookieAuthMechanismTest {
 
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth")
-    void testFindUserFromRequest_FeatureFlagEnabled_GuestSessionUserReturnsNull() throws WrappedAuthErrorResponse {
+    void testFindUserFromRequest_FeatureFlagEnabled_GuestSessionUserReturnedAsIs() throws WrappedAuthErrorResponse {
         DataverseSession dataverseSessionStub = Mockito.mock(DataverseSession.class);
         Mockito.when(dataverseSessionStub.getUser()).thenReturn(GuestUser.get());
         sut.session = dataverseSessionStub;
 
         User actual = sut.findUserFromRequest(new ContainerRequestTestFake());
 
-        assertNull(actual);
+        assertEquals(GuestUser.get(), actual);
     }
 }
