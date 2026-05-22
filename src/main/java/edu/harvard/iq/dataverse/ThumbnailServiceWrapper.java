@@ -208,7 +208,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
             // If no other logo we attempt to auto-select via the optimized, native
             // query-based method
             // from the DatasetVersionService:
-            if (!hasDatasetLogo && datasetVersionService.getThumbnailByVersionId(versionId) == null) {
+            if (!hasDatasetLogo && (!autoselect || datasetVersionService.getThumbnailByVersionId(versionId) == null)) {
                 return null;
             }
         }
