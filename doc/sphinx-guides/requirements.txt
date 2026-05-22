@@ -14,3 +14,5 @@ sphinxcontrib-jquery
 
 Sphinx-Substitution-Extensions==2025.1.2
 semver>=3,<4
+
+sphinx-reredirects==1.1.0

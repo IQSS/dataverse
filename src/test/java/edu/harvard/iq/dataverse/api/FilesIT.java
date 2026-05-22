@@ -3882,8 +3882,16 @@ public class FilesIT {
         String superusername = UtilIT.getUsernameFromResponse(createUserResponse);
         UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
 
+        // Create Parent Dataverse
+        String parentDataverseAlias = createDataverseGetAlias(ownerApiToken);
+        Response publishResponse = UtilIT.publishDataverseViaNativeApi(parentDataverseAlias, ownerApiToken);
+        assertEquals(200, publishResponse.getStatusCode());
+        // Create a Parent Guestbook
+        Guestbook parentGuestbook = UtilIT.createRandomGuestbook(parentDataverseAlias, null, ownerApiToken);
+
         // Create Dataverse
         String dataverseAlias = createDataverseGetAlias(ownerApiToken);
+        UtilIT.moveDataverse(dataverseAlias, parentDataverseAlias, null, ownerApiToken);
 
         // Create user with no permission
         createUserResponse = UtilIT.createRandomUser();
@@ -3919,6 +3927,10 @@ public class FilesIT {
         getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken);
         getGuestbooksResponse.then().assertThat().statusCode(200);
         assertEquals(1, getGuestbooksResponse.getBody().jsonPath().getList("data").size());
+        // Get the list of Guestbooks including Parent Guestbook
+        getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, false, Boolean.TRUE);
+        getGuestbooksResponse.then().assertThat().statusCode(200);
+        assertEquals(2, getGuestbooksResponse.getBody().jsonPath().getList("data").size());
 
         // Upload files
         JsonObjectBuilder json1 = Json.createObjectBuilder().add("description", "my description1").add("directoryLabel", directoryLabel).add("categories", Json.createArrayBuilder().add("Data"));
@@ -3995,6 +4007,7 @@ public class FilesIT {
                 .statusCode(BAD_REQUEST.getStatusCode());
         String guestbookResponseForGuest = guestbookResponse.replace("\"guestbookResponse\": {",
                 "\"guestbookResponse\": { \"name\":\"My Name\", \"email\":\"myemail@example.com\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
+
         // With GuestbookResponse. Guest user doesn't have the required Name, etc. So we will add those to the Guestbook Response
         downloadResponse = UtilIT.postDownloadFile(fileId4, guestbookResponseForGuest);
         downloadResponse.prettyPrint();
@@ -4019,6 +4032,12 @@ public class FilesIT {
         downloadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+
+        // Verify that the Guestbook Response is persisted
+        Response guestbookResponseResponse = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), ownerApiToken);
+        guestbookResponseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(guestbookResponseResponse.prettyPrint().contains("What color car do you drive,Yellow"));
 
         // Download the file using the signed url
         signedUrlResponse = get(signedUrl);
@@ -4078,6 +4097,14 @@ public class FilesIT {
         // verify that the signed url is good
         signedUrlResponse = get(signedUrl);
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+
+        // Verify that the guestbook has proper stats
+        Response guestbookListResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, true, null);
+        guestbookListResponse.prettyPrint();
+        guestbookListResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].usageCount", is(1))
+                .body("data[0].responseCount", is(17));
     }
 
     @Test
