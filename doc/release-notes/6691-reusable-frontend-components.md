@@ -6,7 +6,7 @@ This release introduces the first reusable React component built in `dataverse-f
 
 - **New feature flag** `dataverse.feature.react-uploader` (off by default). When enabled, the classic PrimeFaces upload widget on the dataset edit page is replaced with the React uploader. The file *replace* flow keeps using the JSF widget.
 - **New feature flag** `dataverse.feature.react-tree-view` (off by default). When enabled, the dataset Files tab's "Tree" view (selectable via the existing Table/Tree toggle) is rendered by the same React lazy tree the SPA uses, instead of the classic PrimeFaces tree. The table view is unchanged. The tree supports lazy folder loading, tri-state selection (per-row checkboxes plus a header select-all), full keyboard navigation (WAI-ARIA tree pattern), URL-bookmarkable folder paths (`?view=tree&path=…`), and **client-side streaming-zip download** of the user's selection — the bundle pipes per-file response bodies into a single zip without any server-side ZIP endpoint.
-- **New JVM setting** `dataverse.reusable-components.base-url` (default `/dvwebloader`) tells the JSF page where to load the reusable component bundle from. The default value points at the bundle files baked into the WAR; operators who want to host the bundle elsewhere can copy those files out and override the setting.
+- **New JVM setting** `dataverse.reusable-components.base-url` (default `/reusable-components`) tells the JSF page where to load the reusable component bundle from. The default value points at the bundle files baked into the WAR; operators who want to host the bundle elsewhere can copy those files out and override the setting.
 - **Server-authoritative S3 tagging.** `S3AccessIO.generateTemporaryS3UploadUrls` now includes a `tagging` field in its JSON response when `dataverse.files.<driverId>.disable-tagging` is unset. The dataverse-client-javascript SDK reads this and decides whether to send the `x-amz-tagging` header — there is no more client-side flag to keep in sync. Non-breaking additive change.
 - **Bundle cache-busting that actually changes per build.** The script tags now use a token derived from the bundle file's mtime, not the pinned `getVersion()` string — so browsers pick up new builds automatically without a hard-refresh. Falls back to `getVersion()` if the bundle file isn't reachable on the local filesystem (e.g. when the operator has rehosted the bundle off the WAR).
 - **JSF partial-update survival.** PrimeFaces re-inserts the host `<div>` for the React mount on certain partial responses (e.g. when toggling between Table and Tree views). The standalone bundles now use a `MutationObserver` to detect when the host element is replaced and remount cleanly, so toggling no longer leaves the React tree orphaned on a removed div.
@@ -45,13 +45,13 @@ The `dev_localstack` storage profile in `docker-compose-dev.yml` ships with `upl
 ### Prerequisites for using the React uploader
 
 1. `dataverse.feature.api-session-auth=true` so the bundle can call the API with the user's session cookie. **For production, also enable `dataverse.feature.api-session-auth-hardening`** to mitigate CSRF risk via Origin/Referer + `X-Dataverse-CSRF-Token` enforcement.
-2. The reusable component bundle must be reachable from the user's browser. The default setup (`dataverse.reusable-components.base-url=/dvwebloader`) serves the bundle files baked into the WAR same-origin and needs no extra setup. Operators who want to host the bundle off the WAR (separate static-file server, CDN, etc.) can copy `webapp/dvwebloader/reusable-components/` to their host of choice and point the setting at that URL.
+2. The reusable component bundle must be reachable from the user's browser. The default setup (`dataverse.reusable-components.base-url=/reusable-components`) serves the bundle files baked into the WAR same-origin and needs no extra setup. Operators who want to host the bundle off the WAR (separate static-file server, CDN, etc.) can copy `webapp/reusable-components/` to their host of choice and point the setting at that URL.
 3. `dataverse.siteUrl` must match the URL the browser actually uses, so that Origin/Referer checks pass when session-auth hardening is enabled.
 
 ### What didn't change
 
 - File replace, batch operations, and any classic JSF panels render exactly as before when the flag is off.
-- No new Java / Maven dependency on npm or Node tooling. The bundle ships as pre-built JS inside the WAR (`webapp/dvwebloader/reusable-components/`).
+- No new Java / Maven dependency on npm or Node tooling. The bundle ships as pre-built JS inside the WAR (`webapp/reusable-components/`).
 
 ### Cross-repo
 

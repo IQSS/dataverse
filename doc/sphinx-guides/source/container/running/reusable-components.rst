@@ -55,17 +55,17 @@ Hosting the Bundle
 ------------------
 
 The pre-built bundle ships inside the Dataverse WAR at
-``webapp/dvwebloader/reusable-components/`` and is served same-origin via
-the default :ref:`dataverse.reusable-components.base-url` of
-``/dvwebloader``. Out of the box no extra setup is required to enable the
-feature flags above.
+``webapp/reusable-components/`` and is served same-origin via the default
+:ref:`dataverse.reusable-components.base-url` of ``/reusable-components``.
+Out of the box no extra setup is required to enable the feature flags
+above.
 
 Operators who prefer to host the bundle off the WAR — for example behind
 a separate static-file server, an existing nginx, or a CDN — can copy the
-contents of ``webapp/dvwebloader/reusable-components/`` to that location
-and override :ref:`dataverse.reusable-components.base-url` to point at it.
-There is no published artifact (npm package, Docker image, etc.) for the
-bundle today; rehosting it is the operator's responsibility.
+contents of ``webapp/reusable-components/`` to that location and override
+:ref:`dataverse.reusable-components.base-url` to point at it. There is no
+published artifact (npm package, Docker image, etc.) for the bundle
+today; rehosting it is the operator's responsibility.
 
 Configuration
 -------------

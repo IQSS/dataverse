@@ -655,8 +655,8 @@
             React-based reusable file tree component. Replaces the
             PrimeFaces p:tree below when dataverse.feature.react-tree-view
             is enabled. The bundle is loaded from
-            #{systemConfig.reusableComponentsBaseUrl}/reusable-components/dv-tree-view.js
-            (default `/dvwebloader/...`); operators can override via
+            #{systemConfig.reusableComponentsBaseUrl}/dv-tree-view.js
+            (default `/reusable-components/...`); operators can override via
             dataverse.reusable-components.base-url.
 
             Authentication is via the user's JSESSIONID. The
@@ -679,7 +679,7 @@
             };
             //]]>
         </script>
-        <script type="module" src="#{systemConfig.reusableComponentsBaseUrl}/reusable-components/dv-tree-view.js?version=#{systemConfig.reusableComponentsVersion}"></script>
+        <script type="module" src="#{systemConfig.reusableComponentsBaseUrl}/dv-tree-view.js?version=#{systemConfig.reusableComponentsVersion}"></script>
     </ui:fragment>
 
     <p:tree id="filesTree" style="width:100%;"

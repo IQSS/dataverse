@@ -2705,9 +2705,9 @@ dataverse.reusable-components.base-url
 
 Base URL from which the Dataverse :doc:`reusable React component bundles </container/running/reusable-components>` (e.g. ``dv-uploader.js``) are loaded by JSF pages. Trailing slashes are trimmed automatically.
 
-The default value, ``/dvwebloader``, serves the pre-built bundle that ships inside the Dataverse WAR (under ``webapp/dvwebloader/reusable-components/``), same-origin. Out of the box no further configuration is required.
+The default value, ``/reusable-components``, serves the pre-built bundle that ships inside the Dataverse WAR (under ``webapp/reusable-components/``), same-origin. Out of the box no further configuration is required.
 
-Operators who want to host the bundle off the WAR — for example behind a separate static-file server, a CDN, or any other URL of their choosing — can copy the contents of ``webapp/dvwebloader/reusable-components/`` to that location and set ``dataverse.reusable-components.base-url`` to the URL where the files are served. There is no published artifact (npm package, Docker image, etc.) today; rehosting is the operator's responsibility.
+Operators who want to host the bundle off the WAR — for example behind a separate static-file server, a CDN, or any other URL of their choosing — can copy the contents of ``webapp/reusable-components/`` to that location and set ``dataverse.reusable-components.base-url`` to the URL where the files are served. There is no published artifact (npm package, Docker image, etc.) today; rehosting is the operator's responsibility.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_REUSABLE_COMPONENTS_BASE_URL``.
 

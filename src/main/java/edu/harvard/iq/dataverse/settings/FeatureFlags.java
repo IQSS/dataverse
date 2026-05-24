@@ -35,8 +35,8 @@ public enum FeatureFlags {
      * This is an experimental replacement for the classic PrimeFaces upload UI.
      * Requires {@link #API_SESSION_AUTH} to be enabled. The React bundle must
      * also be reachable from the browser at
-     * <code>/dvwebloader/reusable-components/dv-uploader.js</code> (typically
-     * served by the same nginx proxy that fronts Dataverse).
+     * <code>/reusable-components/dv-uploader.js</code> (by default, the
+     * pre-built bundle baked into the WAR is served same-origin).
      *
      * @apiNote Raise flag by setting "dataverse.feature.react-uploader"
      * @since Dataverse 6.11
@@ -47,8 +47,8 @@ public enum FeatureFlags {
      * Renders the same lazy, paginated tree component the SPA uses, mounted
      * directly into the JSF page. Requires {@link #API_SESSION_AUTH} to be
      * enabled and the React bundle to be reachable from the browser at
-     * <code>/dvwebloader/reusable-components/dv-tree-view.js</code> by
-     * default — the base URL is overridable via
+     * <code>/reusable-components/dv-tree-view.js</code> by default — the
+     * base URL is overridable via
      * <code>dataverse.reusable-components.base-url</code>.
      *
      * @apiNote Raise flag by setting "dataverse.feature.react-tree-view"

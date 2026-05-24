@@ -260,16 +260,14 @@ public class SystemConfig {
     /**
      * Returns the base URL from which the Dataverse reusable React component
      * bundles (e.g. {@code dv-uploader.js}) are loaded. The default value
-     * {@code /dvwebloader} preserves backward compatibility with the
-     * {@code dataverse-frontend} dev-environment nginx alias and with
-     * operators who already host the bundle at that same-origin path.
+     * {@code /reusable-components} serves the pre-built bundle that ships
+     * inside the Dataverse WAR (under
+     * {@code webapp/reusable-components/}), same-origin.
      *
      * <p>Operators can override this with the JVM setting
-     * {@code dataverse.reusable-components.base-url} to point at any URL —
-     * for example {@code http://reusable-components} when running the
-     * {@code gdcc/dataverse-reusable-components} sidecar image, or a CDN
-     * URL such as
-     * {@code https://cdn.jsdelivr.net/npm/@iqss/dataverse-reusable-components@&lt;version&gt;}.
+     * {@code dataverse.reusable-components.base-url} to point at any URL
+     * where they have re-hosted the bundle files (separate static-file
+     * server, CDN, etc.).
      *
      * <p>Trailing slashes are trimmed so the resulting JSF script source is
      * well-formed regardless of the operator's input.
@@ -278,7 +276,7 @@ public class SystemConfig {
      */
     public String getReusableComponentsBaseUrl() {
         String configured = JvmSettings.REUSABLE_COMPONENTS_BASE_URL.lookupOptional()
-                .orElse("/dvwebloader");
+                .orElse("/reusable-components");
         // Defensive sanity check: an operator-supplied URL is rendered
         // verbatim into a JSF <script src=> attribute, so anything
         // containing whitespace or quote characters could break the
@@ -288,8 +286,8 @@ public class SystemConfig {
         // surface during admin debugging without spamming the log.
         if (!isSafeReusableComponentsBaseUrl(configured)) {
             logger.fine("REUSABLE_COMPONENTS_BASE_URL value rejected as unsafe: " + configured
-                    + " — falling back to /dvwebloader");
-            configured = "/dvwebloader";
+                    + " — falling back to /reusable-components");
+            configured = "/reusable-components";
         }
         return configured.endsWith("/")
                 ? configured.substring(0, configured.length() - 1)
@@ -319,7 +317,7 @@ public class SystemConfig {
      * Returns Dataverse's app version concatenated with the modification
      * timestamp of the entry-point bundle on disk, when that file is
      * available (the WAR's bundled copy under
-     * {@code webapp/dvwebloader/reusable-components/dv-tree-view.js}).
+     * {@code webapp/reusable-components/dv-tree-view.js}).
      * Falls back to the plain app version when the file can't be
      * located — avoids breaking pages on installs that override
      * {@code REUSABLE_COMPONENTS_BASE_URL} to point at a CDN.
@@ -367,7 +365,7 @@ public class SystemConfig {
             FacesContext fc = FacesContext.getCurrentInstance();
             if (fc != null) {
                 String real = fc.getExternalContext()
-                        .getRealPath("/dvwebloader/reusable-components/dv-tree-view.js");
+                        .getRealPath("/reusable-components/dv-tree-view.js");
                 if (real != null) {
                     File bundle = new File(real);
                     if (bundle.isFile()) {
