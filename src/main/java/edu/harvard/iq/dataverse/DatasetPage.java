@@ -2484,16 +2484,17 @@ public class DatasetPage implements java.io.Serializable {
     private Boolean fileTreeViewRequired = null;
 
     public boolean isFileTreeViewRequired() {
-        // The Tree view's value is no longer just the folder hierarchy:
-        // its checkbox selection + client-side streaming-zip download is
-        // an upgrade over the legacy server-zipped bulk download for
-        // flat datasets too (no :ZipDownloadLimit cap, per-file resume,
-        // graceful failure recovery). So we only suppress the toggle on
-        // datasets where it would be a no-op (zero or one file). The
-        // `isFoldersMetadataPresentInVersion` check is intentionally
-        // dropped.
+        // With the React tree view feature flag on, the Tree view delivers a
+        // strict UX upgrade over the Table view even on flat datasets
+        // (checkbox selection + client-side streaming-zip download — no
+        // :ZipDownloadLimit cap, per-file resume, graceful failure recovery),
+        // so we expose the toggle whenever there's more than one file.
+        // With the flag off, the legacy PrimeFaces tree adds no value on a
+        // flat list, so we keep the original "folders present" gate.
         if (fileTreeViewRequired == null) {
-            fileTreeViewRequired = workingVersion.getFileMetadatas().size() > 1;
+            fileTreeViewRequired = workingVersion.getFileMetadatas().size() > 1
+                    && (systemConfig.isReactTreeViewEnabled()
+                        || datafileService.isFoldersMetadataPresentInVersion(workingVersion));
         }
         return fileTreeViewRequired;
     }
