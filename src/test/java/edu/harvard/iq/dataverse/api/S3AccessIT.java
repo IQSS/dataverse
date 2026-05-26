@@ -71,11 +71,21 @@ public class S3AccessIT {
                 .region(Region.US_EAST_2)
                 .build();
 
-        // create bucket if it doesn't exist
+        ensureBucketExists(BUCKET_NAME);
+        ensureBucketExists(BUCKET_NAME_NOREDIRECT);
+    }
+
+    private static void ensureBucketExists(String bucketName) {
         try {
-            s3localstack.headBucket(HeadBucketRequest.builder().bucket(BUCKET_NAME).build());
+            s3localstack.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
         } catch (NoSuchBucketException ex) {
-            s3localstack.createBucket(CreateBucketRequest.builder().bucket(BUCKET_NAME).build());
+            s3localstack.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
+        } catch (S3Exception ex) {
+            if (ex.statusCode() == 404) {
+                s3localstack.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
+            } else {
+                throw ex;
+            }
         }
     }
 
