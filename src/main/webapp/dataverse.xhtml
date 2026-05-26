@@ -823,7 +823,7 @@
                                     </div>
                                 </div>
                                 <div class="button-block">
-                                    <p:commandButton styleClass="btn btn-default" value="#{bundle['dataverse.link.save']}" onclick="PF('linkDataverseForm').hide()" actionListener="#{DataversePage.saveLinkedDataverse()}"/>
+                                    <p:commandButton styleClass="btn btn-default" value="#{bundle['dataverse.link.save']}" action="#{DataversePage.saveLinkedDataverse}"/>
                                     <button class="btn btn-link" onclick="PF('linkDataverseForm').hide();" type="button">                              
                                     #{bundle.cancel}
                                     </button>
