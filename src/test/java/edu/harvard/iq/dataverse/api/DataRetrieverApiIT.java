@@ -112,10 +112,8 @@ public class DataRetrieverApiIT {
     }
 
     // Test getting a list of collections that the user can add datasets to
-    @Disabled("Temporarily disabled because this integration test is not reliable in CI; re-enable once stabilized. All assertions return one extra dataset than expected.")
     @Test
     public void testRetrieveMyDataCollections() throws InterruptedException {
-        int rootCount = 1; // everyone has access to this dataverse
         List<Map<String, String>> items;
         Response createDataverseResponse;
         Response retrieveMyCollectionListResponse;
@@ -138,6 +136,11 @@ public class DataRetrieverApiIT {
         createUserResponse = UtilIT.createRandomUser();
         String User3Username = UtilIT.getUsernameFromResponse(createUserResponse);
         String User3ApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        // Get the base number of collections since it's not always 1 for root.
+        // There may be others left from another test that everyone can access
+        retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(User1ApiToken, null);
+        int rootCount = retrieveMyCollectionListResponse.getBody().jsonPath().getList("data.items").size();
 
         // User1 creates 15 Dataverses and adds a role to each allowing User2 access
         List<String> dataverses = new ArrayList<>();
