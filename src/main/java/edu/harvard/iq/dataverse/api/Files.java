@@ -512,8 +512,10 @@ public class Files extends AbstractApiBean {
                     }
                 }
                 
-                if (IngestUtil.conflictsWithExistingFilenames(pathPlusFilename, fmdListMinusCurrentFile)) {
-                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile", Arrays.asList(pathPlusFilename)));
+                var conflictingPart = IngestUtil.findConflictingPathPart(pathPlusFilename, fmdListMinusCurrentFile);
+                if (conflictingPart.isPresent()) {
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile",
+                        conflictingPart.stream().toList()));
                 }
 
                 optionalFileParams.addOptionalParams(upFmd);

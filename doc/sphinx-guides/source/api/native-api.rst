@@ -3245,7 +3245,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/:persistentId/files/metadata?:persistentId=doi:10.5072/FK2/J8SJZB" --upload-file file-metadata-update.json
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/:persistentId/files/metadata?persistentId=doi:10.5072/FK2/J8SJZB" --upload-file file-metadata-update.json
 
 The ``file-metadata-update.json`` file should contain a JSON array of objects, each representing a file to be updated. Here's an example structure:
 
