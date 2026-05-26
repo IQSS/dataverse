@@ -89,9 +89,8 @@ public class DdiExportUtil {
     public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
     public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
     public static final String CITATION_BLOCK_NAME = "citation";
-    //public static final int DATATABLES_BATCH_SIZE = 50;
     //public static final int DATAVARIABLES_BATCH_SIZE = 10000; // todo: review
-    public static final int DATAVARIABLES_BATCH_SIZE = 50;
+    public static final int DATAVARIABLES_BATCH_SIZE = 100;
 
     //Some tests don't send real PIDs that can be parsed
     //Use constant empty PID in these cases
@@ -1735,12 +1734,19 @@ public class DdiExportUtil {
                                 dataDscrWritten = true;
                             }
 
-                            createVariablesForDataFile(xmlw, fileJson);
-                            // @todo let's confirm here that the number of variables
+                            int howmany = createVariablesForDataFile(xmlw, fileJson);
+                            // let's confirm here that the number of variables
                             // we got is what we expected; a mismatch here would 
                             // indicate that the dataset and/or files in it have 
                             // somehow changed since the initial lookup, and therefore 
                             // the export should be aborted. 
+                            int howmanyExpected = varQuantityMap.get(dataTableStart + i);
+                            if (howmanyExpected != howmany) {
+                                throw new XMLStreamException("Number of variables mismatch. Expected: "
+                                        + howmanyExpected
+                                        + "; processed from datatable: "
+                                        + howmany); 
+                            }
                         }
                         i++;
                     }
@@ -1768,7 +1774,7 @@ public class DdiExportUtil {
         }
     }
 
-    private static void createVariablesForDataFile(XMLStreamWriter xmlw, JsonObject fileJson) throws XMLStreamException {
+    private static int createVariablesForDataFile(XMLStreamWriter xmlw, JsonObject fileJson) throws XMLStreamException {
         if (fileJson.containsKey("varGroups")) {
             JsonArray varGroups = fileJson.getJsonArray("varGroups");
             for (int j = 0; j < varGroups.size(); j++) {
@@ -1784,6 +1790,7 @@ public class DdiExportUtil {
                         fileJson.getJsonNumber("fileMetadataId").toString());
             }
         }
+        return vars.size();
     }
    
     private static void createVarGroupDDI(XMLStreamWriter xmlw, JsonObject varGrp) throws XMLStreamException {
