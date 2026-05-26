@@ -346,7 +346,6 @@
     <field name="dsDescriptionDate" type="date_range" multiValued="true" stored="true" indexed="true"/>
     <field name="dsDescriptionValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="eastLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="expandedGeospatialMetadata" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="frequencyOfDataCollection" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="geographicBoundingBox" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="geographicCoverage" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -356,7 +355,6 @@
     <field name="grantNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="grantNumberAgency" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="grantNumberValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="gridSpatialRepresentation" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="journalArticleType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="journalIssue" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="journalPubDate" type="date_range" multiValued="true" stored="true" indexed="true"/>
@@ -463,7 +461,6 @@
     <field name="topicClassVocabURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="unitOfAnalysis" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="universe" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="vectorSpatialRepresentation" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="weighting" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="westLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <!-- SCHEMA-FIELDS::END -->
@@ -635,7 +632,6 @@
     <copyField source="dsDescriptionDate" dest="_text_" maxChars="3000"/>
     <copyField source="dsDescriptionValue" dest="_text_" maxChars="3000"/>
     <copyField source="eastLongitude" dest="_text_" maxChars="3000"/>
-    <copyField source="expandedGeospatialMetadata" dest="_text_" maxChars="3000"/>
     <copyField source="frequencyOfDataCollection" dest="_text_" maxChars="3000"/>
     <copyField source="geographicBoundingBox" dest="_text_" maxChars="3000"/>
     <copyField source="geographicCoverage" dest="_text_" maxChars="3000"/>
@@ -645,7 +641,6 @@
     <copyField source="grantNumber" dest="_text_" maxChars="3000"/>
     <copyField source="grantNumberAgency" dest="_text_" maxChars="3000"/>
     <copyField source="grantNumberValue" dest="_text_" maxChars="3000"/>
-    <copyField source="gridSpatialRepresentation" dest="_text_" maxChars="3000"/>
     <copyField source="journalArticleType" dest="_text_" maxChars="3000"/>
     <copyField source="journalIssue" dest="_text_" maxChars="3000"/>
     <copyField source="journalPubDate" dest="_text_" maxChars="3000"/>
@@ -753,7 +748,6 @@
     <copyField source="unitOfAnalysis" dest="_text_" maxChars="3000"/>
     <copyField source="universe" dest="_text_" maxChars="3000"/>
     <copyField source="weighting" dest="_text_" maxChars="3000"/>
-    <copyField source="vectorSpatialRepresentation" dest="_text_" maxChars="3000"/>
     <copyField source="westLongitude" dest="_text_" maxChars="3000"/>
     <!-- SCHEMA-COPY-FIELDS::END -->
     
