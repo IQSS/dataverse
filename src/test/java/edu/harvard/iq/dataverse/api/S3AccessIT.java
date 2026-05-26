@@ -78,10 +78,8 @@ public class S3AccessIT {
     private static void ensureBucketExists(String bucketName) {
         try {
             s3localstack.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
-        } catch (NoSuchBucketException ex) {
-            s3localstack.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
         } catch (S3Exception ex) {
-            if (ex.statusCode() == 404) {
+            if (ex.statusCode() == 404 || "NoSuchBucket".equals(ex.awsErrorDetails().errorCode())) {
                 s3localstack.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
             } else {
                 throw ex;
