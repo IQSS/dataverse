@@ -563,4 +563,48 @@ public class CroissantExportUtil {
             default -> "sc:Text";
         };
     }
+
+    public static JsonObjectBuilder getReviews(JsonObjectBuilder reviewsIn) {
+        JsonObjectBuilder reviewsOut = Json.createObjectBuilder();
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArray reviews = reviewsIn.build().getJsonArray("reviews");
+        // TODO Stop hard coding positive notes. Get them from the rubrics, the blocks with fields for reviews.
+        JsonArrayBuilder positiveNotes = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder()
+                        .add("name", "The dataset is well-documented and easy to understand.")
+                        .add("value", 10)
+                    );
+        for (JsonValue jsonValue : reviews) {
+            JsonObject jsonObject = (JsonObject) jsonValue;
+            String title = jsonObject.getString("title");
+            JsonArray authors = jsonObject.getJsonArray("authors");
+            JsonArrayBuilder creators = Json.createArrayBuilder();
+            for (JsonValue author : authors) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                // TODO add @type for "Person" or "Organization"
+                job.add("name", author);
+                creators.add(job);
+            }
+            String datePublished = jsonObject.getString("datePublished");
+            jab.add(
+                    Json.createObjectBuilder()
+                            .add("@context", "https://schema.org/")
+                            .add("@type", "CriticReview")
+                            .add(
+                                    "itemReviewed",
+                                    Json.createObjectBuilder()
+                                            // TODO don't hard code this to "Dataset"
+                                            .add("@type", "Dataset")
+                                            .add("name", title))
+                            // We use "creator" instead of "author" here for consistency with Croissant.
+                            .add("creator", creators)
+                            .add("positiveNotes", positiveNotes)
+                            // TODO Instead of "" consider not emitting datePublished when we don't have a date to show.
+                            .add("datePublished", datePublished != null && datePublished != "" ? datePublished : "")
+                            .add("reviewBody", jsonObject.getString("description"))
+                            .add("id", jsonObject.getJsonNumber("id")));
+        }
+        reviewsOut.add("reviews", jab);
+        return reviewsOut;
+    }
 }

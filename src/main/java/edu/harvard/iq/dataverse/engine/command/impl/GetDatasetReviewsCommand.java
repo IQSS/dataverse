@@ -19,7 +19,9 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
@@ -60,21 +62,38 @@ public class GetDatasetReviewsCommand extends AbstractCommand<JsonObjectBuilder>
                 // solrSearchResult. This "get reviews" command may be powered by a
                 // database query in the future and we'll want to preserve the contract
                 // we're establishing here if we make the switch from Solr.
-                JsonObjectBuilder searchResultBuilder = solrSearchResult.json(false, true, false);
+                List<String> metadataFields = new ArrayList<>();
+                // TODO query only the blocks that are rubrics, that have fields for reviews
+                metadataFields.add("citation:*");
+                // JsonObjectBuilder searchResultBuilder = solrSearchResult.json(false, true, false);
+                JsonObjectBuilder searchResultBuilder = solrSearchResult.json(false, true, false, metadataFields);
                 JsonObject searchResultObject = searchResultBuilder.build();
+                // TODO remove this debugging
+                System.out.println("BEGIN");
+                System.out.println(JsonUtil.prettyPrint(searchResultObject));
+                System.out.println("END");
                 String title = searchResultObject.getString("name");
+                JsonArray authors = searchResultObject.getJsonArray("authors");
                 String citation = searchResultObject.getString("citation");
                 String citationHtml = searchResultObject.getString("citationHtml");
                 String pid = searchResultObject.getString("global_id");
                 String pidUrl = searchResultObject.getString("url");
                 long id = searchResultObject.getJsonNumber("entity_id").longValue();
+                // Drafts don't have a published timestamp
+                String datePublished = searchResultObject.getString("published_at", "");
+                String description = searchResultObject.getString("description");
                 JsonObjectBuilder review = Json.createObjectBuilder()
                         .add("title", title)
+                        .add("authors", authors)
                         .add("persistentId", pid)
                         .add("persistentIdUrl", pidUrl)
                         .add("id", id)
                         .add("citation", citation)
-                        .add("citationHtml", citationHtml);
+                        .add("citationHtml", citationHtml)
+                        .add("datePublished", datePublished)
+                        .add("description", description)
+                        // TODO Do we want all of this detail from the blocks?
+                        .add("metadataBlocks", searchResultObject.getJsonObject("metadataBlocks"));
                 itemsArrayBuilder.add(review);
             }
             reviews.add("reviews", itemsArrayBuilder);
