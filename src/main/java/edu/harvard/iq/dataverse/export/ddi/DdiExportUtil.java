@@ -1716,7 +1716,7 @@ public class DdiExportUtil {
                     Stream<JsonObject> tabularFileDetails = exportDataProvider.getDatasetFileDetails(exportQuery, paginationRequest);
                     logger.fine("total number of variables in this batch: " + varQuantityThisBatch);
 
-                    int i = 0;
+                    int count = 0;
                     //for (int i = 0; i < tabularFileDetails.size(); i++) {
                     Iterator<JsonObject> it = tabularFileDetails.iterator();
                     while (it.hasNext()) {
@@ -1740,7 +1740,7 @@ public class DdiExportUtil {
                             // indicate that the dataset and/or files in it have 
                             // somehow changed since the initial lookup, and therefore 
                             // the export should be aborted. 
-                            int howmanyExpected = varQuantityMap.get(dataTableStart + i);
+                            int howmanyExpected = varQuantityMap.get(dataTableStart + count);
                             if (howmanyExpected != howmany) {
                                 throw new XMLStreamException("Number of variables mismatch. Expected: "
                                         + howmanyExpected
@@ -1748,10 +1748,10 @@ public class DdiExportUtil {
                                         + howmany); 
                             }
                         }
-                        i++;
+                        count++;
                     }
                     
-                    logger.fine("requested: " + dataTablesThisBatch + " tabular file data entries; retrieved: " + i);
+                    logger.fine("requested: " + dataTablesThisBatch + " tabular file data entries; retrieved: " + count);
 
 
                     dataTableStart += dataTablesThisBatch; 

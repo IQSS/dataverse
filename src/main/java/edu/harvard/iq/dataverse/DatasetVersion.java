@@ -167,7 +167,7 @@ public class DatasetVersion implements Serializable {
     private Dataset dataset;
 
     @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    @OrderBy("label") // this is not our preferred ordering, which is with the AlphaNumericComparator, but does allow the files to be grouped by category
+    @OrderBy("label, id") // this is not our preferred ordering, which is with the AlphaNumericComparator, but does allow the files to be grouped by category; adding id, to avoid ambiguity when there are duplicate filenames. (L.A., 05-2026)
     private List<FileMetadata> fileMetadatas = new ArrayList();
     
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true)

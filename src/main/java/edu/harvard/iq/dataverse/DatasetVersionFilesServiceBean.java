@@ -214,10 +214,16 @@ public class DatasetVersionFilesServiceBean implements Serializable {
                             fileMetadataRoot));
         }
         
+        List<Order> orderList = new ArrayList<>();
+        
+        // Ordering the resulting fileMetadatas by label AND id, to avoid any ambiguity when there are duplicate filenames in the version
+        orderList.add(criteriaBuilder.asc(fileMetadataRoot.get("label")));
+        orderList.add(criteriaBuilder.asc(fileMetadataRoot.get("id")));
+        
         criteriaQuery
                 .select(fileMetadataRoot)
                 .where(combinedPredicate)
-                .orderBy(criteriaBuilder.asc(fileMetadataRoot.get("label")));
+                .orderBy(orderList);
         
         TypedQuery<FileMetadata> typedQuery = em.createQuery(criteriaQuery);
         if (limit != null) {
