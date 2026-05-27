@@ -460,7 +460,7 @@ public class JsonParser {
             if (versionStateStr != null) {
                 dsv.setVersionState(DatasetVersion.VersionState.valueOf(versionStateStr));
             }
-            dsv.setReleaseTime(parseDate(obj.getString("releaseDate", null)));
+            dsv.setReleaseTime(parseTime(obj.getString("releaseTime", null)));
             dsv.setLastUpdateTime(parseTime(obj.getString("lastUpdateTime", null)));
             dsv.setCreateTime(parseTime(obj.getString("createTime", null)));
             dsv.setArchiveTime(parseTime(obj.getString("archiveTime", null)));
