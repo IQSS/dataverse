@@ -207,18 +207,31 @@ public class DataversePage implements java.io.Serializable {
     }
     
     public boolean showLinkingPopup() {
-        String testquery = "";
-        if (session.getUser() == null) {
+        // Must be logged in
+        AuthenticatedUser au = getAuthenticatedUser();
+        if (au == null) {
             return false;
         }
         if (dataverse == null) {
             return false;
         }
-        if (query != null) {
-            testquery = query;
+
+        // If there is an active search query, that's all that matters (plus having permission on ANY collection)
+        if (query != null && !query.isEmpty()) {
+            List<Dataverse> permitted = permissionService.findPermittedCollections(dvRequestService.getDataverseRequest(), au, Permission.LinkDataverse);
+            return permitted != null && !permitted.isEmpty();
         }
 
-        return (dataverse.getOwner() != null || !testquery.isEmpty());
+        // Otherwise (no active search), check if there is at least one OTHER eligible collection
+        // Eligible means: not the current collection and not in the parent tree
+        // Technically, eligible also means "not already linked", but in that case, we show the Link button anyway and have the Link dialog display a message about all eligible collections already being linked
+        List<Dataverse> dvsWithLinkPermission = permissionService.findPermittedCollections(dvRequestService.getDataverseRequest(), au, Permission.LinkDataverse);
+        if (dvsWithLinkPermission != null && !dvsWithLinkPermission.isEmpty()) {
+            List<Dataverse> eligibleDataverses = dataverseService.removeUnlinkableDataverses(dvsWithLinkPermission, dataverse, false);
+            return !eligibleDataverses.isEmpty();
+        }
+
+        return false;
     }
     
     public void setupLinkingPopup (String popupSetting){

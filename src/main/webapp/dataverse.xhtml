@@ -501,7 +501,8 @@
                                     <!-- Edit/Publish Button Group -->
                                     <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated and
                                                              (permissionsWrapper.canIssueUpdateDataverseCommand(DataversePage.dataverse)
-                                                             or permissionsWrapper.canIssuePublishDataverseCommand(DataversePage.dataverse))}">
+                                                             or permissionsWrapper.canIssuePublishDataverseCommand(DataversePage.dataverse)
+                                                             or DataversePage.showLinkingPopup())}">
                                             <!-- Publish Button -->
                                             <ui:fragment rendered="#{permissionsWrapper.canIssuePublishDataverseCommand(DataversePage.dataverse)}">
                                                 <button type="button" class="btn btn-default btn-access" onclick="PF('confirmation').show()"
