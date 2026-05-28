@@ -175,8 +175,10 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         // Populate thumbnail if needed and allowed
         if (theDataset.getThumbnailFile() == null && !theDataset.isUseGenericThumbnail()) {
             Long thumbnailFileId = ctxt.datasetVersion().getThumbnailByVersionId(version.getId());
-            theDataset.setThumbnailFile(ctxt.datasetVersion().getDataFileById(thumbnailFileId));
-            logger.info("Setting default thumbnail " + theDataset.getThumbnailUrl());
+            if (thumbnailFileId != null) {
+                theDataset.setThumbnailFile(ctxt.datasetVersion().getDataFileById(thumbnailFileId));
+                logger.info("Setting default thumbnail " + theDataset.getThumbnailUrl());
+            }
         }
 
         // 
