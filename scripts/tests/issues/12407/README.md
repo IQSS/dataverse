@@ -5,8 +5,11 @@ This is a semi-automated test to check the API endpoints that changed by this [p
 
 Adjust the configuration variables at the start of the script. 
 * Run the _python3_ script before deploying the pull request.
-* Remove the resulting draft version of the dataset.
+* Download all files from the dataset, the resulting zip will not extract.
+* Try to add a non-conflicting file to the dataset, saving the changes succeeds.
 * Deploy the pull request.
+* Again try to add a non-conflicting file to the dataset, saving the changes now fails.
+* Remove the resulting draft version of the dataset.
 * Run the script again.
 
 Result before deploy
