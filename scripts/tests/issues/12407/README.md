@@ -15,15 +15,34 @@ Result before deploy
 All requests to the API endpoints return 200-OK status code.
 As a result the dataset will contain conflicting file/directorry paths for foo and foo/bar.
 
-Running `scripts/issues/12407/find_duplicates.py` should show the conflicting dataset and file metadata. Note that a draft dataset has no version number. Currently `foo.tab` is a false detection.
+Running `scripts/issues/12407/find_duplicates.py` should show the conflicting dataset and file metadata. Note that a draft dataset has no version number.
 
 ### Example of results
 
-|datasetversion_id|path|protocol|authority|dataset_id|versionnumber|minorversionnumber|
-|---|---|---|---|---|---|---|
-|4|foo|doi|10.5072|DAR/HBGPN5		
-|4|foo/bar|doi|10.5072|DAR/HBGPN5		
-|4|foo.tab|doi|10.5072|DAR/HBGPN5
+| datasetversion_id | path    | protocol  | authority  | dataset_id  | versionnumber | minorversionnumber |
+|-------------------|---------|-----------|------------|-------------|---------------|--------------------|
+| 4                 | foo     | doi       | 10.5072    | DAR/HBGPN5  |               |                    |
+| 4                 | foo/bar | doi       | 10.5072    | DAR/HBGPN5  |               |                    |
+| 4                 | foo.tab | doi       | 10.5072    | DAR/HBGPN5  |               |                    |
+
+`select directorylabel,label,datasetversion_id from filemetadata;`
+
+| directorylabel   | label                       | datasetversion_id |
+|------------------|-----------------------------|-------------------|
+|                  | original-metadata.zip       | 4                 |
+|  foo             | bar                         | 4                 |
+|  accessibilities | anonymous.txt               | 4                 |
+|  accessibilities | request.txt                 | 4                 |
+|  foo.tab         | bar                         | 4                 |
+|                  | foo                         | 4                 |
+|                  | foo.tab                     | 4                 |
+|  foo/bar         | datasets-api.txt            | 4                 |
+|                  | x                           | 4                 |
+|  foo/bar         | dir-conflicts-with-file.txt | 4                 |
+|  foo             | beer                        | 4                 |
+|  foo             | Beer                        | 4                 |
+
+
 
 ![](before-deploy.png)
 

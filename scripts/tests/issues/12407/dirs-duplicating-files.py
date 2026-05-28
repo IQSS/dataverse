@@ -6,7 +6,7 @@ import json
 ########################## configuration for a draft dataset without files
 
 dataverse_server = 'https://dev.archaeology.datastations.nl'
-api_key = 'change-me'
+api_key = '5623d6e3-bc94-40a5-8de0-8ebdf9f58cbc'
 persistentId = 'doi:10.5072/DAR/HBGPN5' # an existing dataset without any files
 verify_cert=False # set to False for testing on DANS VM with self-signed cert; not recommended for production use
 
