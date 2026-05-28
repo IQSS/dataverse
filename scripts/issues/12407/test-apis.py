@@ -6,7 +6,7 @@ import json
 ########################## configuration for a draft dataset without files
 
 dataverse_server = 'https://dev.archaeology.datastations.nl'
-api_key = '5623d6e3-bc94-40a5-8de0-8ebdf9f58cbc'
+api_key = 'change-me'
 persistentId = 'doi:10.5072/DAR/HBGPN5'
 
 ####################
