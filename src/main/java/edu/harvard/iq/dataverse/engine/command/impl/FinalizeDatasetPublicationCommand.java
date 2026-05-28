@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import com.rometools.utils.Lists;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.CurationStatus;
 import edu.harvard.iq.dataverse.DataFile;
@@ -18,8 +17,6 @@ import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -27,7 +24,6 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
-import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
@@ -178,7 +174,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
         // Populate thumbnail if needed and allowed
         if (theDataset.getThumbnailFile() == null && !theDataset.isUseGenericThumbnail()) {
-            ctxt.datasetVersion().getThumbnailByVersionId(version.getId());
+            Long thumbnailFileId = ctxt.datasetVersion().getThumbnailByVersionId(version.getId());
+            theDataset.setThumbnailFile(ctxt.datasetVersion().getDataFileById(thumbnailFileId));
+            logger.info("Setting default thumbnail " + theDataset.getThumbnailUrl());
         }
 
         // 
