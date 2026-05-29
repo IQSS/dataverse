@@ -68,7 +68,7 @@
                          styleClass="btn-download"
                          process="@this"
                          disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
-                         actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'GlobusTransfer')}">
+                         actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'GlobusTransfer', null)}">
                 <!-- non-tabular data file: -->
                 <!-- no guest book/terms of use/etc. - straight to the download API url: -->
                 <span class="globus-btn ui-icon" title="#{bundle['file.globus.transfer']}"/> #{bundle['file.globus.of']} #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
@@ -118,7 +118,7 @@
                          styleClass="btn-download"
                          process="@this"
                          disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
-                         actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'Download')}">
+                         actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'Download', null)}">
                 <!-- non-tabular data file: -->
                 <!-- no guest book/terms of use/etc. - straight to the download API url: -->
                 #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
@@ -142,7 +142,7 @@
             <li>
                 <p:commandLink styleClass="highlightBold btn-download" rendered="#{!(guestbookAndTermsPopupRequired)}"
                                process="@this"
-                               actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'bundle')}">
+                               actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'bundle', null)}">
                     #{bundle['file.downloadBtn.format.all']}
                 </p:commandLink>
                 <p:commandLink styleClass="highlightBold btn-download" rendered="#{guestbookAndTermsPopupRequired}"
@@ -160,7 +160,7 @@
                 <p:commandLink styleClass="btn-download" rendered="#{!guestbookAndTermsPopupRequired and !(fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
-                               actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'original')}">
+                               actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'original', null)}">
                     <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
                         <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
                     </h:outputFormat>
@@ -182,7 +182,7 @@
                 <p:commandLink styleClass="btn-download" rendered="#{!guestbookAndTermsPopupRequired}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
-                               actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'tab')}">
+                               actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'tab', null)}">
                     #{bundle['file.downloadBtn.format.tab']}
                 </p:commandLink>
                 <p:commandLink styleClass="btn-download" rendered="#{guestbookAndTermsPopupRequired}"
@@ -200,7 +200,7 @@
                     <p:commandLink styleClass="btn-download" rendered="#{!guestbookAndTermsPopupRequired}"
                                    process="@this"
                                    disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
-                                   actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'RData')}">
+                                   actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'RData', null)}">
                         #{bundle['file.downloadBtn.format.rdata']}
                     </p:commandLink>
                     <p:commandLink styleClass="btn-download" rendered="#{guestbookAndTermsPopupRequired}"
@@ -228,7 +228,7 @@
             <p:commandLink styleClass="btn-download" rendered="#{!guestbookAndTermsPopupRequired}"
                            process="@this"
                            disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
-                           actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'var')}">
+                           actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'var', null)}">
                 #{bundle['file.downloadBtn.format.var']}
             </p:commandLink>
             <p:commandLink styleClass="btn-download" rendered="#{guestbookAndTermsPopupRequired}"

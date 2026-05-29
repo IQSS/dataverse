@@ -28,7 +28,7 @@ Supported Metadata Export Formats
 
 Once a dataset has been published, its metadata can be exported in a variety of other metadata standards and formats, which help make datasets more :doc:`discoverable </admin/discoverability>` and usable in other systems, such as other data repositories. On each dataset page's metadata tab, the following exports are available:
 
-- Croissant
+- Croissant (example: :download:`max-croissant.json <../../../../src/test/resources/croissant/max/expected/max-croissant.json>`)
 - Dublin Core
 - DDI (Data Documentation Initiative Codebook 2.5)
 - DDI HTML Codebook (A more human-readable, HTML version of the DDI Codebook 2.5 metadata export)
@@ -439,6 +439,7 @@ Go to the dataset you would like to edit, where you will see the listing of file
 - Restrict the selected files
 - Unrestrict the selected files (only if the selected files are restricted)
 - Add tags to the selected files
+- Embargo the selected files
 
 You will not have to leave the dataset page to complete these action, except for editing file metadata, which will bring you to the Edit Files page. There you will have to click the "Save Changes" button to apply your edits and return to the dataset page.
 

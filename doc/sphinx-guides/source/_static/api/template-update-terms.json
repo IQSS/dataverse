@@ -1,0 +1,12 @@
+{
+    "customTerms": {
+        "termsOfUse": "testTermsOfUse",
+        "confidentialityDeclaration": "testConfidentialityDeclaration",
+        "specialPermissions": "testSpecialPermissions",
+        "restrictions": "testRestrictions",
+        "citationRequirements": "testCitationRequirements",
+        "depositorRequirements": "testDepositorRequirements",
+        "conditions": "testConditions",
+        "disclaimer": "testDisclaimer"
+    }
+}
