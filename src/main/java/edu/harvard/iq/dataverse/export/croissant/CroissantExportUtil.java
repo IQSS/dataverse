@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
 // Validate with src/test/resources/croissant/validate.sh
@@ -564,16 +566,42 @@ public class CroissantExportUtil {
         };
     }
 
+    // This "reviews" object is modeled off slide 10 of
+    // https://docs.google.com/presentation/d/1dQinlXazxq3XLtzUNpG2-l0MAXQQArQU9PQ20uhRYVU/edit?slide=id.g3dfc9e1fbe0_0_127#slide=id.g3dfc9e1fbe0_0_127
+    // which looks like this:
+    // "reviews": [{
+    //         "@context": "https://schema.org/",
+    //         "@type": "CriticReview",
+    //         "itemReviewed": {
+    //             "@type": "Dataset",
+    //             "name": "Dataset"
+    //         },
+    //         "author": {
+    //             "@type": "Organization",
+    //             "name": "Association of Data Reusers"
+    //         },
+    //         "positiveNotes":
+    //         {
+    //             "@type": "ItemList",
+    //             "itemListElement": [
+    //                 {
+    //                     "@type": "StructuredValue",
+    //                     "position": 1,
+    //                     "name": "The dataset is well-documented and easy to understand.",
+    //                     "value":{
+    //                         "@type": "QuantitativeValue",
+    //                         "value": 10,
+    //                         "minValue": 0,
+    //                         "maxValue": 10
+    //                     }
+    //                 },
+	// 	     ]
+    //     }]
     public static JsonObjectBuilder getReviews(JsonObjectBuilder reviewsIn) {
         JsonObjectBuilder reviewsOut = Json.createObjectBuilder();
         JsonArrayBuilder jab = Json.createArrayBuilder();
         JsonArray reviews = reviewsIn.build().getJsonArray("reviews");
-        // TODO Stop hard coding positive notes. Get them from the rubrics, the blocks with fields for reviews.
-        JsonArrayBuilder positiveNotes = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder()
-                        .add("name", "The dataset is well-documented and easy to understand.")
-                        .add("value", 10)
-                    );
+
         for (JsonValue jsonValue : reviews) {
             JsonObject jsonObject = (JsonObject) jsonValue;
             String title = jsonObject.getString("title");
@@ -586,6 +614,29 @@ public class CroissantExportUtil {
                 creators.add(job);
             }
             String datePublished = jsonObject.getString("datePublished");
+            JsonObjectBuilder positiveNotesObj = Json.createObjectBuilder();
+            positiveNotesObj.add("@type", "ItemList");
+            JsonArrayBuilder positiveNotesArray = Json.createArrayBuilder();
+            JsonArray rubricMetadataBlocks = jsonObject.getJsonArray("rubricMetadataBlocks");
+            for (JsonValue rmb : rubricMetadataBlocks) {
+                JsonObject rubricMetadataBlock = rmb.asJsonObject();
+                JsonArray fields = rubricMetadataBlock.getJsonArray("fields");
+                for (JsonValue fieldJsonValue : fields) {
+                    JsonObject field = fieldJsonValue.asJsonObject();
+                    String typeName = field.getString("typeName");
+                    String value = field.getString("value");
+                    // Flatten all positive notes into a single array, regardless of which block
+                    // they came from.
+                    positiveNotesArray.add(Json.createObjectBuilder()
+                            .add("@type", "StructuredValue")
+                            .add("name", typeName)
+                            .add("value", Json.createObjectBuilder()
+                                    .add("@type", StringUtils.isNumeric(value) ? "QuantitativeValue" : "QualitativeValue")
+                                    // We are aware that the value might be "Low", which is a bit strange for a positive note! We are constrained by what's allowed by https://schema.org/CriticReview
+                                    .add("value", value)));
+                }
+            }
+            positiveNotesObj.add("itemListElement", positiveNotesArray);
             jab.add(
                     Json.createObjectBuilder()
                             .add("@context", "https://schema.org/")
@@ -598,7 +649,7 @@ public class CroissantExportUtil {
                                             .add("name", title))
                             // We use "creator" instead of "author" here for consistency with Croissant.
                             .add("creator", creators)
-                            .add("positiveNotes", positiveNotes)
+                            .add("positiveNotes", positiveNotesObj)
                             // TODO Instead of "" consider not emitting datePublished when we don't have a date to show.
                             .add("datePublished", datePublished != null && datePublished != "" ? datePublished : "")
                             .add("reviewBody", jsonObject.getString("description"))

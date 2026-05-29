@@ -69,6 +69,21 @@ public class Reviews2IT {
             response.then().assertThat().statusCode(OK.getStatusCode());
         }
 
+        byte[] rubric1Tsv = null;
+        try {
+            rubric1Tsv = Files.readAllBytes(Paths.get("scripts/api/data/metadatablocks/rubric_trusteddatadimensionsintensities.tsv"));
+        } catch (IOException e) {
+        }
+
+        // See warnings above. If you enable this, don't forget to update Solr.
+        boolean loadRubric1Tsv = false;
+        if (loadRubric1Tsv) {
+            Response response = UtilIT.loadMetadataBlock(apiTokenSuperuser, rubric1Tsv);
+            response.prettyPrint();
+            assertEquals(200, response.getStatusCode());
+            response.then().assertThat().statusCode(OK.getStatusCode());
+        }
+
         String datasetDescription = "A study, experiment, set of observations, or publication that is uploaded by a user. A dataset can comprise a single file or multiple files.";
         ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_DATASET, "Dataset", datasetDescription, apiTokenSuperuser);
 
@@ -454,6 +469,10 @@ public class Reviews2IT {
                 .body("data.allowedDatasetTypes[0].description",
                         is("A review of a dataset compiled by the expert community."));
 
+        Response setMetadataBlocks = UtilIT.setMetadataBlocks(collectionAliasReviews, Json.createArrayBuilder().add("citation").add("rubric_trusteddatadimensionsintensities"), apiTokenReviewer);
+        setMetadataBlocks.prettyPrint();
+        setMetadataBlocks.then().assertThat().statusCode(OK.getStatusCode());
+
         String itemReviewedTitle = datasetTitle;
         String itemReviewedUrl = datasetPersistentUrl;
         String itemReviewedCitation = datasetCitationHtml;
@@ -548,7 +567,39 @@ public class Reviews2IT {
                                                                                         "itemReviewedCitation")))
                                                         .add("typeClass", "compound")
                                                         .add("multiple", false)
-                                                        .add("typeName", "itemReviewed"))))));
+                                                        .add("typeName", "itemReviewed"))))
+                                .add("rubric_trusteddatadimensionsintensities", Json.createObjectBuilder()
+                                        .add("fields", Json.createArrayBuilder()
+                                                .add(Json.createObjectBuilder()
+                                                        .add("typeName", "authorAndProvenance")
+                                                        .add("value", "Medium")
+                                                        .add("typeClass", "controlledVocabulary")
+                                                        .add("multiple", false))
+                                                .add(Json.createObjectBuilder()
+                                                        .add("typeName", "integrityAndUsability")
+                                                        .add("value", "High")
+                                                        .add("typeClass", "controlledVocabulary")
+                                                        .add("multiple", false))
+                                                .add(Json.createObjectBuilder()
+                                                        .add("typeName", "fitnessForScopeAndContextualRelevance")
+                                                        .add("value", "Medium")
+                                                        .add("typeClass", "controlledVocabulary")
+                                                        .add("multiple", false))
+                                                .add(Json.createObjectBuilder()
+                                                        .add("typeName", "licensingAndLegalClarity")
+                                                        .add("value", "High")
+                                                        .add("typeClass", "controlledVocabulary")
+                                                        .add("multiple", false))
+                                                .add(Json.createObjectBuilder()
+                                                        .add("typeName", "transparencyOfMethodsAndDocumentation")
+                                                        .add("value", "Low")
+                                                        .add("typeClass", "controlledVocabulary")
+                                                        .add("multiple", false))
+                                                .add(Json.createObjectBuilder()
+                                                        .add("typeName", "biasEquityAndRepresentativeness")
+                                                        .add("value", "Low")
+                                                        .add("typeClass", "controlledVocabulary")
+                                                        .add("multiple", false))))));
 
         Response createReview = UtilIT.createDataset(collectionAliasReviews, jsonForCreatingReview, apiTokenReviewer);
         createReview.prettyPrint();
@@ -621,8 +672,12 @@ public class Reviews2IT {
                 .body("reviews[0].itemReviewed.name", is("Review of Pediatric Asthma"))
                 // .body("reviews[0].author.@type", is("Person"))
                 .body("reviews[0].creator[0].name", is("Wazowski, Mike"))
-                .body("reviews[0].positiveNotes[0].name", is("The dataset is well-documented and easy to understand."))
-                .body("reviews[0].positiveNotes[0].value", is(10))
+                // TODO look up biasEquityAndRepresentativeness by name instead of assuming 0
+                .body("reviews[0].positiveNotes.@type", is("ItemList"))
+                .body("reviews[0].positiveNotes.itemListElement[0].@type", is("StructuredValue"))
+                .body("reviews[0].positiveNotes.itemListElement[0].name", is("biasEquityAndRepresentativeness"))
+                .body("reviews[0].positiveNotes.itemListElement[0].value.@type", is("QualitativeValue"))
+                .body("reviews[0].positiveNotes.itemListElement[0].value.value", is("Low"))
                 .body("reviews[0].reviewBody", is("This is a review of a dataset."))
                 // starting with 2 for 2026, for example
                 .body("reviews[0].datePublished", startsWith("2"))
