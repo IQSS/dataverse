@@ -1948,11 +1948,25 @@
                         <p jsf:rendered="#{!valid}" class="text-warning">
                             <span class="glyphicon glyphicon-warning-sign"/><b style="color:red;"> #{bundle['dataset.message.incomplete.warning']}</b>
                         </p>
+                        <div class="well terms-agreement-block" jsf:rendered="#{DatasetPage.displaySubmitForReviewPopupCustomText}">
+                            <h:outputText value="#{DatasetPage.datasetSubmitForReviewCustomText}" escape="false"/>
+                        </div>
                         <c:if test="#{showSubmitForReviewLink}">
                             <ui:include src="datasetLicenseInfoFragment.xhtml"/>
                         </c:if>
+                        <ui:fragment rendered="#{valid and settingsWrapper.isHasSubmitForReviewDatasetDisclaimerText()}">
+                            <div class="form-group">
+                                <p:selectBooleanCheckbox class="text-danger" id="submitForReviewDisclaimer"
+                                                         itemLabel="#{MarkupChecker:sanitizeAdvancedHTML(settingsWrapper.getSubmitForReviewDatasetDisclaimerText())}"
+                                                         escape="false"
+                                                         value="#{DatasetPage.submitForReviewDisclaimerAcknowledged}">
+                                    <p:ajax event="change" update="submitReviewDatasetButton"/>
+                                </p:selectBooleanCheckbox>
+                            </div>
+                        </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton rendered="#{DatasetPage.validOrCanReviewIncomplete}" styleClass="btn btn-default" value="#{bundle.submit}" 
+                            <p:commandButton id="submitReviewDatasetButton" rendered="#{DatasetPage.validOrCanReviewIncomplete}" styleClass="btn btn-default" value="#{bundle.submit}"
+                                             disabled="#{!DatasetPage.submitForReviewDisclaimerAcknowledged}"
                                              onclick="PF('inreview').hide();
                                                      PF('blockDatasetForm').hide();" action="#{DatasetPage.submitDataset}" immediate="true"/>
                             <button class="btn btn-link" onclick="PF('inreview').hide();PF('blockDatasetForm').hide();" type="button">

@@ -1,0 +1,1066 @@
+#!/bin/bash
+
+# [INFO]: Watch Dataverse Metadata Fields and update Solr Schema on changes
+
+set -euo pipefail
+
+#### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### ####
+# This script has two modes: watching and one-shot.
+#
+# In watching mode, it will:
+# 1. Watch for changes to the Dataverse Metadata Fields by polling the REST API
+# 2. Download the field definitions and apply them using update-fields.sh
+# 3. Make sure there are actually changes between the current and the new schema.xml
+# 4. Create a backup copy of the live schema.xml before replacing it
+# 5. Call the Solr RELOAD API to update the index
+# 6. In case something goes wrong, it will restore the known working configuration
+#
+# In one-shot mode, it (usually) only executes steps 2 to 4.
+#
+# Upgrade Mode (oneshot only):
+# - Use --upgrade (-U) flag to apply downloaded metadata fields to a template schema
+# - By default uses template from $SOLR_TEMPLATE/conf/schema.xml
+# - Template location can be overridden with --schema-source-path or UPGRADE_SOURCE_PATH
+#
+#### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### ####
+
+# Default configuration variables
+DEFAULT_VERBOSE="false"
+DEFAULT_DATAVERSE_URL="http://localhost:8080"
+DEFAULT_SOLR_URL="http://localhost:8983"
+DEFAULT_SOLR_CORE="collection1"
+DEFAULT_SCHEMA_PATH="/var/solr/data/collection1/conf/schema.xml"
+DEFAULT_UPDATE_FIELDS_SCRIPT="$(dirname "$0")/update-fields.sh"
+DEFAULT_POLL_INTERVAL="60"
+DEFAULT_WORK_DIR="/tmp/dataverse-schema-watcher"
+DEFAULT_MODE="oneshot"
+DEFAULT_STARTUP_CHECK="fail"
+DEFAULT_LOCK_TIMEOUT="300"
+DEFAULT_WAIT_RETRY_PERIOD="5"
+DEFAULT_WAIT_MAX_RETRIES="60"
+DEFAULT_UPGRADE_MODE="false"
+# Note: this is specific to the configbaker container use case. Override with -P!
+DEFAULT_UPGRADE_SOURCE_PATH="${SOLR_TEMPLATE:-/opt/solr/template}/conf/schema.xml"
+
+# Initialize from environment or defaults
+VERBOSE="${VERBOSE:-${DEFAULT_VERBOSE}}"
+DATAVERSE_URL="${DATAVERSE_URL:-${DEFAULT_DATAVERSE_URL}}"
+SOLR_URL="${SOLR_URL:-${DEFAULT_SOLR_URL}}"
+SOLR_CORE="${SOLR_CORE:-${DEFAULT_SOLR_CORE}}"
+SCHEMA_TARGET_PATH="${SCHEMA_TARGET_PATH:-${DEFAULT_SCHEMA_PATH}}"
+SCHEMA_SOURCE_PATH="${SCHEMA_SOURCE_PATH:-${DEFAULT_SCHEMA_PATH}}"
+UPDATE_FIELDS_SCRIPT="${UPDATE_FIELDS_SCRIPT:-${DEFAULT_UPDATE_FIELDS_SCRIPT}}"
+POLL_INTERVAL="${POLL_INTERVAL:-${DEFAULT_POLL_INTERVAL}}"
+WORK_DIR="${WORK_DIR:-${DEFAULT_WORK_DIR}}"
+MODE="${MODE:-${DEFAULT_MODE}}"
+STARTUP_CHECK="${STARTUP_CHECK:-${DEFAULT_STARTUP_CHECK}}"
+LOCK_TIMEOUT="${LOCK_TIMEOUT:-${DEFAULT_LOCK_TIMEOUT}}"
+WAIT_RETRY_PERIOD="${WAIT_RETRY_PERIOD:-${DEFAULT_WAIT_RETRY_PERIOD}}"
+WAIT_MAX_RETRIES="${WAIT_MAX_RETRIES:-${DEFAULT_WAIT_MAX_RETRIES}}"
+UPGRADE_MODE="${UPGRADE_MODE:-${DEFAULT_UPGRADE_MODE}}"
+UPGRADE_SOURCE_PATH="${UPGRADE_SOURCE_PATH:-${DEFAULT_UPGRADE_SOURCE_PATH}}"
+
+METADATA_ENDPOINT=""
+LOCK_FD=""
+SOLR_AUTH_HEADER=""
+DATAVERSE_AUTH_HEADER=""
+SCHEMA_SOURCE_PATH_SET_BY_USER="false"
+
+# Logging functions
+log_info() {
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] [INFO] $*"
+}
+
+log_error() {
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] [ERROR] $*" >&2
+}
+
+log_warn() {
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] [WARN] $*"
+}
+
+# Log info only when verbose mode is enabled
+log_verbose() {
+    if [[ "${MODE}" == "oneshot" || "${VERBOSE}" == "true" ]]; then
+        echo "[$(date +'%Y-%m-%d %H:%M:%S')] [INFO] $*"
+    fi
+}
+
+# Usage information
+usage() {
+    cat << EOF
+Usage: $0 [OPTIONS]
+
+Options:
+    -m, --mode MODE                Mode: 'watch' (default) or 'oneshot'
+    -i, --interval SECONDS         Polling interval in seconds (watch mode)
+
+    -d, --dataverse-url URL        Dataverse API base URL
+    -s, --solr-url URL             Solr base URL
+    -c, --core NAME                Solr core name
+
+    -p, --schema-target-path PATH  Path to target schema.xml (where to write)
+    -P, --schema-source-path PATH  Path to source schema.xml (base for updates)
+    -t, --lock-timeout SECONDS     Schema file lock timeout in seconds
+    -U, --upgrade                  Enable upgrade mode (oneshot only)
+                                   Apply metadata to template schema instead of current and reload the core.
+
+    -k, --startup-check MODE       Startup check mode: 'fail', 'warn', or 'wait'
+                                   (fail: exit on error, warn: continue with warning, wait: block until ready)
+    --wait-retry-period SECONDS    Retry period in seconds for 'wait' startup mode
+    --wait-max-retries NUMBER      Maximum number of retries for 'wait' startup mode
+
+    -u, --update-script PATH       Path to update-fields.sh script
+    -w, --work-dir PATH            Working directory path
+    -v, --verbose                  Enable verbose logging (Note: oneshot mode is always verbose!)
+    -h, --help                     Show this help message
+
+Environment Variables (used as defaults if command-line options not provided):
+    DATAVERSE_URL           Dataverse base URL (default: ${DEFAULT_DATAVERSE_URL})
+    SOLR_URL                Solr base URL (default: ${DEFAULT_SOLR_URL})
+    SOLR_CORE               Solr core name (default: ${DEFAULT_SOLR_CORE})
+    SCHEMA_TARGET_PATH      Path to target schema.xml (default: ${DEFAULT_SCHEMA_PATH})
+    SCHEMA_SOURCE_PATH      Path to source schema.xml (default: ${DEFAULT_SCHEMA_PATH})
+    UPDATE_FIELDS_SCRIPT    Path to update-fields.sh script (default: ${DEFAULT_UPDATE_FIELDS_SCRIPT})
+    POLL_INTERVAL           Polling interval in seconds (default: ${DEFAULT_POLL_INTERVAL})
+    WORK_DIR                Working directory (default: ${DEFAULT_WORK_DIR})
+    MODE                    Execution mode: 'watch' or 'oneshot' (default: ${DEFAULT_MODE})
+    UPGRADE_MODE            Enable upgrade mode: 'true' or 'false' (default: ${DEFAULT_UPGRADE_MODE})
+    STARTUP_CHECK           Startup check mode: 'fail', 'warn', or 'wait' (default: ${DEFAULT_STARTUP_CHECK})
+    LOCK_TIMEOUT            File lock timeout in seconds (default: ${DEFAULT_LOCK_TIMEOUT})
+    WAIT_RETRY_PERIOD       Retry period (in seconds) for 'wait' startup check mode (default: ${DEFAULT_WAIT_RETRY_PERIOD})
+    WAIT_MAX_RETRIES        Max retries for 'wait' startup check mode (default: ${DEFAULT_WAIT_MAX_RETRIES})
+    VERBOSE                 Enable verbose logging for watch mode: 'true' or 'false' (default: ${DEFAULT_VERBOSE})
+
+Secret Configuration (only via environment variable or file):
+    SOLR_USERNAME                 Solr HTTP Basic Auth username (optional)
+    SOLR_PASSWORD                 Solr HTTP Basic Auth password (optional)
+    SOLR_USERNAME_FILE            File containing Solr username (alternative to SOLR_USERNAME)
+    SOLR_PASSWORD_FILE            File containing Solr password (alternative to SOLR_PASSWORD)
+    DATAVERSE_BEARER_TOKEN        Bearer token for Dataverse API (optional)
+    DATAVERSE_BEARER_TOKEN_FILE   File containing bearer token (alternative)
+    DATAVERSE_UNBLOCK_KEY         Unblock key for Dataverse API (optional)
+    DATAVERSE_UNBLOCK_KEY_FILE    File containing unblock key (alternative)
+
+Schema Path Behavior:
+    By default, source and target paths are the same (${DEFAULT_SCHEMA_PATH}).
+    In upgrade mode (-U), if source path is not explicitly set via -P:
+      - Source automatically defaults to template: ${DEFAULT_UPGRADE_SOURCE_PATH}
+      - Target remains as specified (or default)
+    Use -P to explicitly override source path in any mode.
+
+Examples:
+    # Watch mode with defaults
+    $0
+
+    # One-shot mode with custom paths
+    $0 --mode oneshot --schema-target-path /opt/solr/schema.xml
+
+    # Upgrade mode: apply metadata to template schema
+    $0 --mode oneshot --upgrade
+
+    # Upgrade mode with custom template location
+    $0 --mode oneshot --upgrade --schema-source-path /custom/template/schema.xml
+
+    # Upgrade mode with custom template via environment
+    SCHEMA_SOURCE_PATH=/custom/template.xml $0 --mode oneshot --upgrade
+
+    # Watch mode that waits for services to be ready with custom retry settings
+    $0 --startup-check wait --wait-retry-period 10 --wait-max-retries 30
+
+    # Using environment variables
+    MODE=oneshot SOLR_CORE=mycore $0
+
+    # With Solr authentication from environment
+    SOLR_USERNAME=admin SOLR_PASSWORD=secret $0
+
+    # With secrets from files
+    SOLR_USERNAME_FILE=/run/secrets/solr_user SOLR_PASSWORD_FILE=/run/secrets/solr_pass $0
+
+    # With Dataverse bearer token
+    DATAVERSE_BEARER_TOKEN=\$(cat /run/secrets/dv_token) $0
+EOF
+    exit 0
+}
+
+# Check for required commands
+check_cli_utils() {
+    local missing=()
+
+    if ! command -v sha256sum >/dev/null 2>&1; then
+        missing+=("sha256sum")
+    fi
+
+    if ! command -v curl >/dev/null 2>&1; then
+        missing+=("curl")
+    fi
+
+    if ! command -v diff >/dev/null 2>&1; then
+        missing+=("diff")
+    fi
+
+    if ! command -v flock >/dev/null 2>&1; then
+        missing+=("flock")
+    fi
+
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        log_error "Missing required commands: ${missing[*]}"
+        log_error "Please install the missing CLI utilities"
+        return 1
+    fi
+
+    log_info "All required CLI utilities are available"
+    return 0
+}
+
+# Check if update-fields.sh script exists and is executable
+check_update_script() {
+    if [[ ! -f "${UPDATE_FIELDS_SCRIPT}" ]]; then
+        log_error "Update fields script not found: ${UPDATE_FIELDS_SCRIPT}"
+        return 1
+    fi
+
+    if [[ ! -x "${UPDATE_FIELDS_SCRIPT}" ]]; then
+        log_error "Update fields script is not executable: ${UPDATE_FIELDS_SCRIPT}"
+        log_error "Run: chmod +x ${UPDATE_FIELDS_SCRIPT}"
+        return 1
+    fi
+
+    log_info "Update fields script found and executable: ${UPDATE_FIELDS_SCRIPT}"
+    return 0
+}
+
+# Check read/write permissions
+check_permissions() {
+    local schema_dir
+
+    # Validate that source schema exists (if given by user)
+    if [[ "${SCHEMA_SOURCE_PATH}" != "${SCHEMA_TARGET_PATH}" ]]; then
+        if [[ ! -f "${SCHEMA_SOURCE_PATH}" ]]; then
+            log_error "Source Schema not found: ${SCHEMA_SOURCE_PATH}"
+            log_error "Please ensure the template schema exists or use -P to specify a different location"
+            return 1
+        fi
+        if [[ ! -r "${SCHEMA_SOURCE_PATH}" ]]; then
+            log_error "Source Schema is not readable: ${SCHEMA_SOURCE_PATH}"
+            return 1
+        fi
+    fi
+
+    # Check schema directory is writable (for creating backups and updating schema)
+    schema_dir="$(dirname "${SCHEMA_TARGET_PATH}")"
+    if [[ ! -d "${schema_dir}" ]]; then
+        log_error "Target Schema directory does not exist: ${schema_dir}"
+        return 1
+    fi
+    if [[ ! -w "${schema_dir}" ]]; then
+        log_error "Target Schema directory is not writable: ${schema_dir}"
+        return 1
+    fi
+    log_info "Target Schema directory exists and is writable: ${schema_dir}"
+
+    # If schema file exists, check if it's readable and writable
+    if [[ -f "${SCHEMA_TARGET_PATH}" ]]; then
+        if [[ ! -r "${SCHEMA_TARGET_PATH}" ]]; then
+            log_error "Target Schema file is not readable: ${SCHEMA_TARGET_PATH}"
+            return 1
+        fi
+        if [[ ! -w "${SCHEMA_TARGET_PATH}" ]]; then
+            log_error "Target Schema file is not writable: ${SCHEMA_TARGET_PATH}"
+            return 1
+        fi
+        log_info "Target Schema file is readable and writable: ${SCHEMA_TARGET_PATH}"
+
+    # We already checked for the source to exist, so we will copy it later on
+    elif [[ "${SCHEMA_SOURCE_PATH}" != "${SCHEMA_TARGET_PATH}" ]]; then
+        log_warn "Target Schema file does not exist yet: ${SCHEMA_TARGET_PATH}"
+        log_info "Will be created on first update."
+
+    else
+        log_warn "Target Schema file does not exist: ${SCHEMA_TARGET_PATH}"
+        return 1
+    fi
+
+    return 0
+}
+
+# Acquire exclusive lock on schema file operations
+acquire_schema_lock() {
+    local lock_file="${WORK_DIR}/schema.lock"
+
+    log_info "Acquiring lock on schema operations (timeout: ${LOCK_TIMEOUT}s)"
+
+    # Open file descriptor for lock file
+    exec {LOCK_FD}>"${lock_file}" || {
+        log_error "Failed to open lock file: ${lock_file}"
+        return 1
+    }
+
+    # Try to acquire exclusive lock with timeout
+    if ! flock -x -w "${LOCK_TIMEOUT}" "${LOCK_FD}"; then
+        log_error "Failed to acquire lock within ${LOCK_TIMEOUT} seconds"
+        exec {LOCK_FD}>&- 2>/dev/null || true
+        unset LOCK_FD
+        return 1
+    fi
+
+    log_info "Lock acquired successfully"
+    return 0
+}
+
+# Release schema lock
+release_schema_lock() {
+    if [[ -n "${LOCK_FD}" ]]; then
+        log_info "Releasing schema lock"
+        exec {LOCK_FD}>&- 2>/dev/null || true
+        LOCK_FD=""
+    fi
+}
+
+# Cleanup function
+cleanup() {
+    log_info "Shutting down..."
+    release_schema_lock
+    exit 0
+}
+
+# Set up signal handlers (all necessary functions have been setup beforehand)
+trap cleanup SIGTERM SIGINT SIGQUIT
+
+# Initialize working directory
+init_work_dir() {
+    if ! mkdir -p "${WORK_DIR}"; then
+        log_error "Failed to create working directory: ${WORK_DIR}"
+        return 1
+    fi
+
+    if [[ ! -w "${WORK_DIR}" ]]; then
+        log_error "Working directory is not writable: ${WORK_DIR}"
+        return 1
+    fi
+
+    log_info "Working directory ready: ${WORK_DIR}"
+    return 0
+}
+
+# Check if an endpoint is reachable
+check_endpoint() {
+    local url="$1"
+    local name="$2"
+    local auth_header="${3:-}"
+
+    local curl_opts=(-sf --max-time 5)
+
+    if [[ -n "${auth_header}" ]]; then
+        curl_opts+=(-H "${auth_header}")
+    fi
+
+    if curl "${curl_opts[@]}" "${url}" >/dev/null 2>&1; then
+        log_info "${name} is reachable: ${url}"
+        return 0
+    else
+        log_error "${name} is not reachable: ${url}"
+        return 1
+    fi
+}
+
+# Check Solr status endpoint
+check_solr_status() {
+    local status_url="${SOLR_URL}/solr/${SOLR_CORE}/admin/ping"
+    check_endpoint "${status_url}" "Solr core (${SOLR_CORE})" "${SOLR_AUTH_HEADER}"
+}
+
+# Check Dataverse API status
+check_dataverse_status() {
+    local status_url="${DATAVERSE_URL}/api/admin/settings"
+    check_endpoint "${status_url}" "Dataverse API" "${DATAVERSE_AUTH_HEADER}"
+}
+
+# Perform startup checks with configured behavior
+perform_startup_checks() {
+    local all_ok=true
+
+    log_info "Performing startup checks (mode: ${STARTUP_CHECK})"
+
+    case "${STARTUP_CHECK}" in
+        wait)
+            log_info "Waiting for services to be ready..."
+
+            # Check once with output to show URLs (always check both)
+            check_solr_status
+            local solr_ok=$?
+            check_dataverse_status
+            local dataverse_ok=$?
+
+            if [[ ${solr_ok} -eq 0 && ${dataverse_ok} -eq 0 ]]; then
+                log_info "All services are ready"
+                return 0
+            fi
+
+            # Services not ready, enter retry loop
+            local retry_count=1
+            while [[ ${retry_count} -lt ${WAIT_MAX_RETRIES} ]]; do
+                all_ok=true
+
+                local status_msg=""
+                if ! check_solr_status >/dev/null 2>&1; then
+                    all_ok=false
+                    status_msg="Solr: not ready"
+                else
+                    status_msg="Solr: ready"
+                fi
+
+                if ! check_dataverse_status >/dev/null 2>&1; then
+                    all_ok=false
+                    status_msg="${status_msg}, Dataverse: not ready"
+                else
+                    status_msg="${status_msg}, Dataverse: ready"
+                fi
+
+                if [[ "${all_ok}" == "true" ]]; then
+                    log_info "All services are ready"
+                    return 0
+                fi
+
+                retry_count=$((retry_count + 1))
+                log_info "${status_msg} (attempt ${retry_count}/${WAIT_MAX_RETRIES})"
+                sleep "${WAIT_RETRY_PERIOD}"
+            done
+
+            log_error "Services did not become ready after ${WAIT_MAX_RETRIES} attempts"
+            return 1
+            ;;
+
+        warn)
+            if ! check_solr_status; then
+                log_warn "Solr status check failed, but continuing due to startup-check=warn"
+                all_ok=false
+            fi
+
+            if ! check_dataverse_status; then
+                log_warn "Dataverse status check failed, but continuing due to startup-check=warn"
+                all_ok=false
+            fi
+
+            if [[ "${all_ok}" == "false" ]]; then
+                log_warn "Some startup checks failed, continuing anyway"
+            fi
+            return 0
+            ;;
+
+        fail)
+            if ! check_solr_status; then
+                return 1
+            fi
+
+            if ! check_dataverse_status; then
+                return 1
+            fi
+
+            log_info "All startup checks passed"
+            return 0
+            ;;
+
+        *)
+            log_error "Invalid startup check mode: ${STARTUP_CHECK}"
+            return 1
+            ;;
+    esac
+}
+
+# Fetch metadata fields from Dataverse API
+fetch_metadata_fields() {
+    local output_file="$1"
+    local url="${METADATA_ENDPOINT}"
+
+    log_verbose "Fetching metadata fields from ${METADATA_ENDPOINT}"
+
+    local curl_opts=(-sf -o "${output_file}")
+
+    # Add authentication header if configured
+    if [[ -n "${DATAVERSE_AUTH_HEADER}" ]]; then
+        curl_opts+=(-H "${DATAVERSE_AUTH_HEADER}")
+    fi
+
+    if ! curl "${curl_opts[@]}" "${url}"; then
+        log_error "Failed to fetch metadata fields from Dataverse API"
+        return 1
+    fi
+
+    # Verify we got XML content
+    if ! grep -q "<?xml" "${output_file}" 2>/dev/null && ! grep -q "<field" "${output_file}" 2>/dev/null; then
+        log_error "Response does not appear to be valid XML"
+        return 1
+    fi
+
+    log_verbose "Metadata fields saved to ${output_file}"
+    return 0
+}
+
+# Calculate checksum of metadata
+calculate_metadata_checksum() {
+    local file="$1"
+    sha256sum "${file}" | awk '{print $1}'
+}
+
+# Apply field definitions using update-fields.sh
+apply_field_definitions() {
+    local metadata_file="$1"
+    local target_schema="$2"
+
+    log_info "Applying field definitions using ${UPDATE_FIELDS_SCRIPT}"
+
+    # Use source schema as base for updates
+    # NOTE: By default, SCHEMA_SOURCE_PATH == SCHEMA_TARGET_PATH
+    # NOTE: target_schema != SCHEMA_TARGET_PATH, as we want to work on a copy!
+    if [[ -f "${SCHEMA_SOURCE_PATH}" ]]; then
+        log_info "Using base schema file from ${SCHEMA_SOURCE_PATH}"
+        cp "${SCHEMA_SOURCE_PATH}" "${target_schema}"
+    else
+        log_error "No base schema file ${SCHEMA_SOURCE_PATH} found"
+        return 1
+    fi
+
+    # Run the update script
+    if ! "${UPDATE_FIELDS_SCRIPT}" "${target_schema}" "${metadata_file}"; then
+        log_error "Failed to apply field definitions"
+        return 1
+    fi
+
+    log_info "Field definitions applied successfully"
+    return 0
+}
+
+# Check if schema has changes
+schema_has_changes() {
+    local current_schema="$1"
+    local new_schema="$2"
+
+    if [[ ! -f "${current_schema}" ]]; then
+        log_warn "Current schema not found, treating as changed"
+        return 0
+    fi
+
+    if diff -q "${current_schema}" "${new_schema}" > /dev/null 2>&1; then
+        log_info "No changes detected in schema"
+        return 1
+    fi
+
+    log_info "Schema changes detected"
+    return 0
+}
+
+generate_backup_filename() {
+    local schema_file="$1"
+    # shellcheck disable=2155
+    local timestamp="$(date +'%Y%m%d_%H%M%S')"
+    local backup_file="${schema_file}.backup.${timestamp}"
+    echo "$backup_file"
+}
+
+# Backup current schema
+backup_schema() {
+    local schema_file="$1"
+    local backup_file="$2"
+
+    if [[ ! -f "${schema_file}" ]]; then
+        log_warn "No existing schema to backup"
+        return 0
+    fi
+
+    log_info "Backing up schema ${schema_file} to ${backup_file}"
+    if ! cp "${schema_file}" "${backup_file}"; then
+        log_error "Failed to backup schema"
+        return 1
+    fi
+
+    return 0
+}
+
+# Replace schema file (must be called with lock held)
+replace_schema() {
+    local new_schema="$1"
+    local target_schema="$2"
+
+    log_info "Replacing schema file"
+    if ! cp "${new_schema}" "${target_schema}"; then
+        log_error "Failed to replace schema file"
+        return 1
+    fi
+
+    log_info "Schema file replaced successfully"
+    return 0
+}
+
+# Reload Solr core using v2 API
+reload_solr_core() {
+    # Using Solr API v2 style here!
+    local reload_url="${SOLR_URL}/api/cores/${SOLR_CORE}/reload"
+    local response_file="${WORK_DIR}/solr_reload_response.json"
+    local http_code
+
+    log_info "Reloading Solr core: ${SOLR_CORE}"
+    log_info "Using Solr v2 API: ${reload_url}"
+
+    local curl_opts=(-sf -w "%{http_code}" -o "${response_file}" -X POST -H 'Content-type: application/json')
+
+    # Add authentication if configured
+    if [[ -n "${SOLR_AUTH_HEADER}" ]]; then
+        curl_opts+=(-H "${SOLR_AUTH_HEADER}")
+    fi
+
+    http_code=$(curl "${curl_opts[@]}" "${reload_url}" 2>/dev/null || echo "000")
+
+    if [[ "${http_code}" != "200" ]]; then
+        log_error "Failed to reload Solr core (HTTP ${http_code})"
+
+        # Try to extract error details from response
+        if [[ -f "${response_file}" && -s "${response_file}" ]]; then
+            log_error "Solr response:"
+
+            # Try to pretty-print JSON if possible, otherwise dump raw
+            if command -v jq >/dev/null 2>&1; then
+                jq '.' "${response_file}" 2>/dev/null | while IFS= read -r line; do
+                    log_error "  ${line}"
+                done
+            else
+                while IFS= read -r line; do
+                    log_error "  ${line}"
+                done < "${response_file}"
+            fi
+
+            # Try to extract specific error message
+            if command -v grep >/dev/null 2>&1; then
+                local error_msg
+                error_msg=$(grep -o '"msg":"[^"]*"' "${response_file}" 2>/dev/null | sed 's/"msg":"\(.*\)"/\1/' || true)
+                if [[ -n "${error_msg}" ]]; then
+                    log_error "Error message: ${error_msg}"
+                fi
+            fi
+        else
+            log_error "No response received from Solr"
+        fi
+
+        return 1
+    fi
+
+    # Check response status
+    if [[ -f "${response_file}" ]]; then
+        local status
+        status=$(grep -o '"status":[0-9]*' "${response_file}" 2>/dev/null | cut -d':' -f2 || echo "")
+
+        if [[ -n "${status}" && "${status}" != "0" ]]; then
+            log_error "Solr returned non-zero status: ${status}"
+            log_error "Full response:"
+            while IFS= read -r line; do
+                log_error "  ${line}"
+            done < "${response_file}"
+            return 1
+        fi
+    fi
+
+    log_info "Solr core reloaded successfully"
+    return 0
+}
+
+# Restore schema from backup (must be called with lock held)
+restore_schema() {
+    local backup_file="$1"
+    local target_schema="$2"
+
+    log_warn "Restoring schema from backup: ${backup_file}"
+
+    if [[ ! -f "${backup_file}" ]]; then
+        log_error "Backup file not found: ${backup_file}"
+        return 1
+    fi
+
+    if ! cp "${backup_file}" "${target_schema}"; then
+        log_error "Failed to restore schema from backup"
+        return 1
+    fi
+
+    log_info "Schema restored successfully"
+    reload_solr_core || log_error "Failed to reload Solr after restoration"
+    return 0
+}
+
+# Process schema update (steps 2-4, optionally 5)
+process_schema_update() {
+    local metadata_file="${1:-${WORK_DIR}/metadata_fields.xml}"
+    local reload_solr="${2:-ignore}"
+    local new_schema="${WORK_DIR}/schema.xml.new"
+    local backup_file=""
+    local update_success=false
+
+    # Step 2b: Apply downloaded field definitions to a schema file
+    if ! apply_field_definitions "${metadata_file}" "${new_schema}"; then
+        return 1
+    fi
+
+    # Step 3: Check for changes
+    if ! schema_has_changes "${SCHEMA_TARGET_PATH}" "${new_schema}"; then
+        log_info "No update needed"
+        return 0
+    fi
+
+    # Acquire lock for critical section (backup, replace, reload)
+    if ! acquire_schema_lock; then
+        log_error "Failed to acquire schema lock"
+        return 1
+    fi
+
+    # Critical section begins here
+    {
+        backup_file=$(generate_backup_filename "${SCHEMA_TARGET_PATH}")
+        # Step 4: Backup current schema
+        if ! backup_schema "${SCHEMA_TARGET_PATH}" "${backup_file}"; then
+            release_schema_lock
+            return 1
+        fi
+
+        # Replace schema
+        if ! replace_schema "${new_schema}" "${SCHEMA_TARGET_PATH}"; then
+            release_schema_lock
+            return 1
+        fi
+
+        # Step 5: Reload Solr (only in watch or upgrade mode)
+        if [[ "${reload_solr}" == "reload" ]]; then
+            if ! reload_solr_core; then
+                log_error "Solr reload failed, attempting to restore backup"
+                if [[ -n "${backup_file}" ]]; then
+                    restore_schema "${backup_file}" "${SCHEMA_TARGET_PATH}"
+                fi
+                release_schema_lock
+                return 1
+            fi
+        fi
+
+        update_success=true
+    }
+    # Critical section ends here
+
+    release_schema_lock
+
+    if [[ "${update_success}" == "true" ]]; then
+        log_info "Schema update completed successfully"
+        return 0
+    else
+        return 1
+    fi
+}
+
+# One-shot mode
+run_oneshot() {
+    log_info "Running in oneshot mode"
+
+    # In oneshot, default to not reload Solr. But if upgrading, we want to reload.
+    local reload_solr="ignore"
+    if [[ "${UPGRADE_MODE}" == "true" ]]; then
+      log_info "Will attempt to RELOAD Solr after upgrading the schema."
+      reload_solr="reload"
+    fi
+
+    # Step 2a: Download field definitions
+    local metadata_file="${WORK_DIR}/metadata_fields.xml"
+    if ! fetch_metadata_fields "${metadata_file}"; then
+        log_error "Oneshot execution failed"
+        return 1
+    fi
+
+    # Steps 2b, 3, 4 and 5
+    if process_schema_update "${metadata_file}" "$reload_solr"; then
+        log_info "Oneshot execution completed successfully"
+        return 0
+    else
+        log_error "Oneshot execution failed"
+        return 1
+    fi
+}
+
+# Watch mode
+run_watch() {
+    log_info "Running in watch mode with ${POLL_INTERVAL}s polling interval"
+
+    local last_checksum=""
+    local needs_update="false"
+    local pending_metadata_file=""
+    local pending_checksum=""
+
+    while true; do
+        # Only fetch metadata if we don't have a pending update
+        if [[ "${needs_update}" == "false" ]]; then
+            local metadata_file="${WORK_DIR}/metadata_fields_check.xml"
+
+            if fetch_metadata_fields "${metadata_file}"; then
+                pending_checksum=$(calculate_metadata_checksum "${metadata_file}")
+
+                if [[ -z "${last_checksum}" ]]; then
+                    log_info "Initial metadata fetch, setting baseline"
+                    needs_update="true"
+                    pending_metadata_file="${metadata_file}"
+                elif [[ "${pending_checksum}" != "${last_checksum}" ]]; then
+                    log_info "Metadata change detected, processing schema update"
+                    needs_update="true"
+                    pending_metadata_file="${metadata_file}"
+                else
+                    log_verbose "No metadata changes detected"
+                fi
+            else
+                log_error "Failed to fetch metadata fields, will retry"
+            fi
+        else
+            log_info "Pending update not yet applied, retrying without re-fetching metadata"
+        fi
+
+        # Process pending update if needed
+        if [[ "${needs_update}" == "true" && -n "${pending_metadata_file}" ]]; then
+            if process_schema_update "${pending_metadata_file}" "reload"; then
+                # Update successful - use the stored checksum
+                last_checksum="${pending_checksum}"
+                needs_update="false"
+                pending_metadata_file=""
+                pending_checksum=""
+            else
+                log_error "Schema update failed, will retry on next cycle"
+                # Keep needs_update="true", pending_metadata_file, and pending_checksum intact for retry
+            fi
+        fi
+
+        # Sleep until next check is due
+        sleep "${POLL_INTERVAL}"
+    done
+}
+
+# Main
+main() {
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -m|--mode)
+                MODE="$2"
+                shift 2
+                ;;
+            -d|--dataverse-url)
+                DATAVERSE_URL="$2"
+                shift 2
+                ;;
+            -s|--solr-url)
+                SOLR_URL="$2"
+                shift 2
+                ;;
+            -c|--core)
+                SOLR_CORE="$2"
+                shift 2
+                ;;
+            -p|--schema-target-path)
+                SCHEMA_TARGET_PATH="$2"
+                shift 2
+                ;;
+            -P|--schema-source-path)
+                SCHEMA_SOURCE_PATH="$2"
+                SCHEMA_SOURCE_PATH_SET_BY_USER="true"
+                shift 2
+                ;;
+            -u|--update-script)
+                UPDATE_FIELDS_SCRIPT="$2"
+                shift 2
+                ;;
+            -i|--interval)
+                POLL_INTERVAL="$2"
+                shift 2
+                ;;
+            -w|--work-dir)
+                WORK_DIR="$2"
+                shift 2
+                ;;
+            -U|--upgrade)
+                UPGRADE_MODE="true"
+                shift
+                ;;
+            -k|--startup-check)
+                STARTUP_CHECK="$2"
+                shift 2
+                ;;
+            -t|--lock-timeout)
+                LOCK_TIMEOUT="$2"
+                shift 2
+                ;;
+            --wait-retry-period)
+                WAIT_RETRY_PERIOD="$2"
+                shift 2
+                ;;
+            --wait-max-retries)
+                WAIT_MAX_RETRIES="$2"
+                shift 2
+                ;;
+            -v|--verbose)
+                VERBOSE="true"
+                shift
+                ;;
+            -h|--help)
+                usage
+                ;;
+            *)
+                log_error "Unknown option: $1"
+                usage
+                ;;
+        esac
+    done
+
+    # Validate startup check mode
+    case "${STARTUP_CHECK}" in
+        fail|warn|wait)
+            ;;
+        *)
+            log_error "Invalid startup check mode: ${STARTUP_CHECK}. Must be 'fail', 'warn', or 'wait'"
+            exit 1
+            ;;
+    esac
+
+    # Validate mode
+    case "${MODE}" in
+        watch|oneshot)
+            ;;
+        *)
+            log_error "Invalid mode: ${MODE}. Must be 'watch' or 'oneshot'"
+            exit 1
+            ;;
+    esac
+
+    # Set metadata endpoint based on Dataverse URL
+    METADATA_ENDPOINT="${DATAVERSE_URL}/api/admin/index/solr/schema"
+
+    # Load secrets from files or environment variables
+
+    # Dataverse authentication
+    # Priority 1: Bearer token (env var or file)
+    if [[ -n "${DATAVERSE_BEARER_TOKEN:-}" ]]; then
+        # Bearer token already set, use it
+        DATAVERSE_AUTH_HEADER="Authorization: Bearer ${DATAVERSE_BEARER_TOKEN}"
+        log_info "Dataverse authentication configured (Bearer Token)"
+    elif [[ -n "${DATAVERSE_BEARER_TOKEN_FILE:-}" ]]; then
+        # Bearer token file specified, try to read it
+        if [[ -f "${DATAVERSE_BEARER_TOKEN_FILE}" ]]; then
+            DATAVERSE_BEARER_TOKEN=$(cat "${DATAVERSE_BEARER_TOKEN_FILE}")
+            DATAVERSE_AUTH_HEADER="Authorization: Bearer ${DATAVERSE_BEARER_TOKEN}"
+            log_info "Dataverse authentication configured (Bearer Token from file)"
+        else
+            log_error "DATAVERSE_BEARER_TOKEN_FILE specified but file not found: ${DATAVERSE_BEARER_TOKEN_FILE}"
+            exit 1
+        fi
+    # Priority 2: Unblock key (only if no bearer token)
+    elif [[ -n "${DATAVERSE_UNBLOCK_KEY:-}" ]]; then
+        # Unblock key already set, use it
+        DATAVERSE_AUTH_HEADER="X-Dataverse-unblock-key: ${DATAVERSE_UNBLOCK_KEY}"
+        log_info "Dataverse authentication configured (Unblock Key)"
+    elif [[ -n "${DATAVERSE_UNBLOCK_KEY_FILE:-}" ]]; then
+        # Unblock key file specified, try to read it
+        if [[ -f "${DATAVERSE_UNBLOCK_KEY_FILE}" ]]; then
+            DATAVERSE_UNBLOCK_KEY=$(cat "${DATAVERSE_UNBLOCK_KEY_FILE}")
+            DATAVERSE_AUTH_HEADER="X-Dataverse-unblock-key: ${DATAVERSE_UNBLOCK_KEY}"
+            log_info "Dataverse authentication configured (Unblock Key from file)"
+        else
+            log_error "DATAVERSE_UNBLOCK_KEY_FILE specified but file not found: ${DATAVERSE_UNBLOCK_KEY_FILE}"
+            exit 1
+        fi
+    fi
+
+    # Solr authentication
+    if [[ -n "${SOLR_USERNAME_FILE:-}" && -f "${SOLR_USERNAME_FILE}" ]]; then
+        SOLR_USERNAME=$(cat "${SOLR_USERNAME_FILE}")
+    fi
+    if [[ -n "${SOLR_PASSWORD_FILE:-}" && -f "${SOLR_PASSWORD_FILE}" ]]; then
+        SOLR_PASSWORD=$(cat "${SOLR_PASSWORD_FILE}")
+    fi
+
+    if [[ -n "${SOLR_USERNAME:-}" && -n "${SOLR_PASSWORD:-}" ]]; then
+        SOLR_AUTH_HEADER="Authorization: Basic $(echo -n "${SOLR_USERNAME}:${SOLR_PASSWORD}" | base64 | tr -d '\n')"
+        log_info "Solr authentication configured (HTTP Basic)"
+    fi
+
+    # Handle schema source and upgrade mode
+
+    # If the schema source has not been explicitly set by the user (independent of any mode),
+    # but the target path has been, make sure to make them the same!
+    if [[ "${SCHEMA_SOURCE_PATH_SET_BY_USER}" == "false" && "${SCHEMA_TARGET_PATH}" != "${DEFAULT_SCHEMA_PATH}" ]]; then
+      SCHEMA_SOURCE_PATH="${SCHEMA_TARGET_PATH}"
+    fi
+
+    # Validate upgrade mode restrictions
+    if [[ "${UPGRADE_MODE}" == "true" && "${MODE}" == "watch" ]]; then
+        log_error "Upgrade mode (-U|--upgrade) is only allowed in oneshot mode"
+        log_error "Please use: --mode oneshot --upgrade"
+        exit 1
+    fi
+
+    # Handle upgrade mode: override source path if not explicitly set by user
+    if [[ "${UPGRADE_MODE}" == "true" && "${SCHEMA_SOURCE_PATH_SET_BY_USER}" == "false" ]]; then
+        log_info "Upgrade mode enabled: using template schema as source"
+        SCHEMA_SOURCE_PATH="${DEFAULT_UPGRADE_SOURCE_PATH}"
+    fi
+
+    # Log config info, then run preflight checks
+
+    log_info "Starting Solr Driver for Dataverse Metadata Schemas"
+    log_info "Mode: ${MODE}"
+    if [[ "${UPGRADE_MODE}" == "true" ]]; then
+        log_info "Upgrade Mode: ENABLED"
+        log_info "Schema Source Path: ${SCHEMA_SOURCE_PATH}"
+    fi
+    log_info "Dataverse API: ${METADATA_ENDPOINT}"
+    log_info "Solr URL: ${SOLR_URL}"
+    log_info "Solr Core: ${SOLR_CORE}"
+    log_info "Schema Target Path: ${SCHEMA_TARGET_PATH}"
+    if [[ "${UPGRADE_MODE}" != "true" && "${SCHEMA_SOURCE_PATH}" != "${SCHEMA_TARGET_PATH}" ]]; then
+        log_info "Schema Source Path: ${SCHEMA_SOURCE_PATH}"
+    fi
+    log_info "Update Script: ${UPDATE_FIELDS_SCRIPT}"
+    log_info "Work Directory: ${WORK_DIR}"
+    log_info "Startup Check Mode: ${STARTUP_CHECK}"
+    log_info "Lock Timeout: ${LOCK_TIMEOUT}s"
+    if [[ "${STARTUP_CHECK}" == "wait" ]]; then
+        log_info "Wait Retry Period: ${WAIT_RETRY_PERIOD}s"
+        log_info "Wait Max Retries: ${WAIT_MAX_RETRIES}"
+    fi
+
+    # Pre-flight checks
+    log_info "Running pre-flight checks..."
+
+    if ! check_cli_utils; then
+        exit 1
+    fi
+
+    if ! check_update_script; then
+        exit 1
+    fi
+
+    if ! check_permissions; then
+        exit 1
+    fi
+
+    if ! init_work_dir; then
+        exit 1
+    fi
+
+    if ! perform_startup_checks; then
+        exit 1
+    fi
+
+    log_info "All pre-flight checks passed"
+
+    # Run appropriate mode
+    case "${MODE}" in
+        watch)
+            run_watch
+            exit $?
+            ;;
+        oneshot)
+            run_oneshot
+            exit $?
+            ;;
+    esac
+}
+
+main "$@"

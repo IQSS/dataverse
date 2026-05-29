@@ -717,10 +717,21 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}")
-    public Response getDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf, @QueryParam("returnOwners") boolean returnOwners, @QueryParam("returnChildCount") boolean returnChildCount) {
+    public Response getDataverse(@Context ContainerRequestContext crc,
+                                 @PathParam("identifier") String idtf,
+                                 @QueryParam("returnOwners") boolean returnOwners,
+                                 @QueryParam("returnChildCount") boolean returnChildCount,
+                                 @QueryParam("ignoreSettingExcludeEmailFromExport") Boolean ignoreSettingToExcludeEmailFromExport) {
         return response(req -> {
             Dataverse dataverse = execCommand(new GetDataverseCommand(req, findDataverseUserCanSeeOrDie(idtf, req)));
             boolean hideEmail = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false);
+
+            // Check to see if the caller wants to ignore the ExcludeEmailFromExport setting and that they have permission to do so
+            boolean ignoreSettingExcludeEmailFromExport = ignoreSettingToExcludeEmailFromExport != null ? ignoreSettingToExcludeEmailFromExport : false;
+            if (hideEmail && ignoreSettingExcludeEmailFromExport && permissionService.userOn(getRequestUser(crc), dataverse).has(Permission.EditDataverse)) {
+                hideEmail = false;
+            }
+
             return ok(json(dataverse, hideEmail, returnOwners, false, returnChildCount ? dataverseService.getChildCount(dataverse) : null));
         }, getRequestUser(crc));
     }
@@ -1979,8 +1990,8 @@ public class Dataverses extends AbstractApiBean {
             }
 
             List<DatasetField> updatedFields = new ArrayList<>();
-            //if it doesn't contain fields, instructions or name it better have a single dataset field
-            //to be updated
+            // if it doesn't contain fields, instructions or name it better have a single dataset field
+            // to be updated
             if (json.getJsonArray("fields") == null) {
                 if (!json.containsKey("instructions") && !json.containsKey("name")) {
                     updatedFields.add(jsonParser().parseField(json, Boolean.FALSE, replaceData));
@@ -1991,7 +2002,7 @@ public class Dataverses extends AbstractApiBean {
 
             Map<String, String> instructionsMap = jsonParser().parseRequestBodyInstructionsMap(json);
 
-            //if we're only updating the name then return the metadata and instructions to previous
+            // if we're only updating the name then return the metadata and instructions to previous
             nameOnly = nameOnly && updatedFields.isEmpty() && instructionsMap == null;
 
             if (nameOnly) {

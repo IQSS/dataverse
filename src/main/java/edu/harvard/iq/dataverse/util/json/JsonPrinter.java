@@ -423,6 +423,12 @@ public class JsonPrinter {
             guestbookObject.add("nameRequired", guestbook.isNameRequired());
             guestbookObject.add("institutionRequired", guestbook.isInstitutionRequired());
             guestbookObject.add("positionRequired", guestbook.isPositionRequired());
+            if (guestbook.getUsageCount() != null) {
+                guestbookObject.add("usageCount", guestbook.getUsageCount());
+            }
+            if (guestbook.getResponseCount() != null) {
+                guestbookObject.add("responseCount", guestbook.getResponseCount());
+            }
             JsonArrayBuilder customQuestions = Json.createArrayBuilder();
             if (guestbook.getCustomQuestions() != null) {
                 for (CustomQuestion cq : guestbook.getCustomQuestions()) {

@@ -618,9 +618,19 @@ public class UtilIT {
     }
 
     static Response getGuestbooks(String dataverseAlias, String apiToken) {
-        RequestSpecification requestSpec = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken);
-        return requestSpec.get("/api/guestbooks/" + dataverseAlias + "/list" );
+        return getGuestbooks(dataverseAlias, apiToken, false,null);
+    }
+
+    static Response getGuestbooks(String dataverseAlias, String apiToken, boolean includeStats, Boolean includeInherited) {
+        RequestSpecification requestSpec = given();
+        requestSpec.queryParam("includeStats", includeStats);
+        if (apiToken != null) {
+            requestSpec.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (includeInherited != null) {
+            requestSpec.queryParam("includeInherited", includeInherited);
+        }
+        return requestSpec.get("/api/guestbooks/" + dataverseAlias + "/list");
     }
 
     static Response enableGuestbook(String dataverseAlias, Long guestbookId, String apiToken, String enable) {
@@ -1273,7 +1283,9 @@ public class UtilIT {
 
     static Response getDownloadFileUrlWithGuestbookResponse(Integer fileId, String apiToken, String body) {
         RequestSpecification requestSpecification = given();
-        requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
         if (body != null) {
             requestSpecification.body(body);
         }
@@ -1308,8 +1320,19 @@ public class UtilIT {
         if (body != null) {
             requestSpecification.body(body);
         }
-        String getString = "/api/access/dataset/:persistentId?persistentId=" + persistentId;
-        return requestSpecification.post(getString);
+        String postString = "/api/access/datafile/:persistentId?persistentId=" + persistentId;
+        return requestSpecification.post(postString);
+    }
+    static Response downloadAllDatasetFilesWithGuestbookResponse(String persistentId, String apiToken, String body) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (body != null) {
+            requestSpecification.body(body);
+        }
+        String postString = "/api/access/dataset/:persistentId?persistentId=" + persistentId;
+        return requestSpecification.post(postString);
     }
 
     static Response postDownloadDatafiles(String body, String apiToken) {
@@ -2009,6 +2032,14 @@ public class UtilIT {
                         + (returnChildCount ? "/?returnChildCount=true" : ""));
     }
 
+    static Response getDataverseWithIgnoreExcludeEmail(String alias,  String apiToken, boolean ignoreSettingExcludeEmailFromExport) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/"
+                        + alias
+                        + (ignoreSettingExcludeEmailFromExport ? "/?ignoreSettingExcludeEmailFromExport=true" : ""));
+    }
+
     static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -2283,10 +2314,15 @@ public class UtilIT {
     }
 
     static Response moveDataverse(String movedDataverseAlias, String targetDataverseAlias, Boolean force, String apiToken) {
-        Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .post("api/dataverses/" + movedDataverseAlias + "/move/" + targetDataverseAlias + "?forceMove=" + force + "&key=" + apiToken);
-        return response;
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+            requestSpecification.queryParam("key", apiToken);
+        }
+        if (force != null) {
+            requestSpecification.queryParam("forceMove", force);
+        }
+        return requestSpecification.post("api/dataverses/" + movedDataverseAlias + "/move/" + targetDataverseAlias);
     }
 
     static Response moveDataset(String idOrPersistentIdOfDatasetToMove, String destinationDataverseAlias, String apiToken) {
@@ -5553,8 +5589,10 @@ public class UtilIT {
         gb.getCustomQuestions().get(2).setId(jsonPath.getLong("data.customQuestions[2].id"));
 
         // Add the Guestbook to the Dataset
-        Response setGuestbook = UtilIT.updateDatasetGuestbook(persistentId, guestbookId, apiToken);
-        setGuestbook.prettyPrint();
+        if (persistentId != null) {
+            Response setGuestbook = UtilIT.updateDatasetGuestbook(persistentId, guestbookId, apiToken);
+            setGuestbook.prettyPrint();
+        }
         return gb;
     }
 
