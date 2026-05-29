@@ -165,7 +165,6 @@ public class Access extends AbstractApiBean {
     public BundleDownloadInstance datafileBundle(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId,
                                                  @QueryParam("gbrecs") boolean gbrecs, @QueryParam("gbrids") String gbrids,
                                                  @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        GuestbookResponse gbr = null;
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         DataFile df = findDataFileUserCanSeeOrDieWrapper(fileId, req);
         
@@ -177,7 +176,7 @@ public class Access extends AbstractApiBean {
         
         if (gbrecs != true && df.isReleased()) {
             // Write Guestbook record if not done previously and file is released
-            gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, getRequestor(req.getUser()));
+            GuestbookResponse gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, getRequestor(req.getUser()));
             guestbookResponseService.save(gbr);
             MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
             mdcLogService.logEntry(entry);
@@ -227,7 +226,6 @@ public class Access extends AbstractApiBean {
     public BundleDownloadInstance datafileBundleWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("gbrids") String gbrids,
                                                                       @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, String jsonBody) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-        User user = req.getUser();
         processDatafileWithGuestbookResponse(crc, req, headers, fileId, uriInfo, gbrecs, jsonBody);
         // JSF UI passes the guestbook response id(s) in thus this qp can be removed when JSF is removed
         if (gbrids == null || gbrids.isEmpty()) {
