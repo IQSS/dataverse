@@ -551,6 +551,7 @@ public class JsonPrinter {
                 .add("separator", ds.getSeparator())
                 .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
+                .add("image_url", ds.getThumbnailUrl())
                 .add("storageIdentifier", ds.getStorageIdentifier());
         if (ds.getGuestbook() != null) {
             bld.add("guestbookId", ds.getGuestbook().getId());
