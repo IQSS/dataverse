@@ -2024,7 +2024,7 @@ public class SearchIT {
                 .body("data.items[0].url", CoreMatchers.containsString("/dataverse/"))
                 .body("data.items[0]", CoreMatchers.not(CoreMatchers.hasItem("image_url")));
 
-        searchResp = UtilIT.search(datasetPid, apiToken);
+        searchResp = UtilIT.search("id:dataset_" + datasetId, apiToken);
         searchResp.prettyPrint();
         searchResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
