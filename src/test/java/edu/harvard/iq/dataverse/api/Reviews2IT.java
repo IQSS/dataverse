@@ -664,6 +664,7 @@ public class Reviews2IT {
         System.out.println("exportDatasetHasReviews");
         Response exportDatasetHasReviews = UtilIT.exportDataset(datasetPid, "croissant");
         exportDatasetHasReviews.prettyPrint();
+        String noteBias = "reviews[0].positiveNotes.itemListElement.find { it.name == 'biasEquityAndRepresentativeness' }";
         exportDatasetHasReviews.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("reviews[0].@context", is("https://schema.org/"))
@@ -672,12 +673,10 @@ public class Reviews2IT {
                 .body("reviews[0].itemReviewed.name", is("Review of Pediatric Asthma"))
                 // .body("reviews[0].author.@type", is("Person"))
                 .body("reviews[0].creator[0].name", is("Wazowski, Mike"))
-                // TODO look up biasEquityAndRepresentativeness by name instead of assuming 0
                 .body("reviews[0].positiveNotes.@type", is("ItemList"))
-                .body("reviews[0].positiveNotes.itemListElement[0].@type", is("StructuredValue"))
-                .body("reviews[0].positiveNotes.itemListElement[0].name", is("biasEquityAndRepresentativeness"))
-                .body("reviews[0].positiveNotes.itemListElement[0].value.@type", is("QualitativeValue"))
-                .body("reviews[0].positiveNotes.itemListElement[0].value.value", is("Low"))
+                .body(noteBias + ".@type", is("StructuredValue"))
+                .body(noteBias + ".value.@type", is("QualitativeValue"))
+                .body(noteBias + ".value.value", is("Low"))
                 .body("reviews[0].reviewBody", is("This is a review of a dataset."))
                 // starting with 2 for 2026, for example
                 .body("reviews[0].datePublished", startsWith("2"))
