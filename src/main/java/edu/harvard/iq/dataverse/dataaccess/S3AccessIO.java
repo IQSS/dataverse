@@ -105,6 +105,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     static final String PATH_STYLE_ACCESS = "path-style-access";
     static final String CHUNKED_ENCODING = "chunked-encoding";
     static final String PROFILE = "profile";
+    static final String DISABLE_MULTIPART_DOWNLOAD_FOR_INDIRECT_DOWNLOAD = "disable-multipart-download-for-indirect-download";
 
     private boolean mainDriver = true;
 
@@ -122,8 +123,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             bucketName = getBucketName(driverId);
             minPartSize = getMinPartSize(driverId);
             credentialsProvider = getCredentialsProvider(driverId);
-            s3ReadClient = getReadClient(driverId);
             s3WriteClient = getWriteClient(driverId);
+            boolean disabledMultiPartDownload = Boolean.parseBoolean(getConfigParam(DISABLE_MULTIPART_DOWNLOAD_FOR_INDIRECT_DOWNLOAD, "false"));
+            s3ReadClient = disabledMultiPartDownload? getReadClient(driverId) : s3WriteClient;
             tm = getTransferManager(driverId);
             s3Presigner = getPresigner(driverId);
             endpoint = getConfigParam(CUSTOM_ENDPOINT_URL, "");
