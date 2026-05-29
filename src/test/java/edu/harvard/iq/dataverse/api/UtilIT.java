@@ -2674,15 +2674,16 @@ public class UtilIT {
         return requestSpecification.get("/api/search?q=" + query + parameterString);
     }
 
-    private static void sleepForDatasetIndex(String query, String apiToken) {
+    static void sleepForDatasetIndex(String query, String apiToken) {
+        String id = query;
         if (query.contains("id:dataset") || query.contains("id:datafile")) {
             String[] splitted = query.split("_");
             if (splitted.length >= 2) {
-                boolean ok = UtilIT.sleepForReindex(String.valueOf(splitted[1]), apiToken, 5);
-                if (!ok) {
-                    logger.info("Still indexing after 5 seconds");
-                }
+                id = splitted[1];
             }
+        }
+        if (!UtilIT.sleepForReindex(id, apiToken, 10)) {
+            logger.warning("Still indexing after 10 seconds");
         }
     }
 
