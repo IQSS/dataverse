@@ -405,7 +405,14 @@ public class DatasetVersionTreeService {
         // Without this comparison the tree would mark files as `embargoed`
         // forever once an embargo row is attached, contradicting how the
         // rest of Dataverse renders the same files.
-        sql.append("SELECT fm.label, df.id, df.filesize, df.contenttype, df.restricted, ");
+        // size: served-form (df.filesize) by default. For ingested tabular files
+        // under originals=true, return the saved-original's size (dt.originalfilesize)
+        // so the reported size matches the bytes the ?format=original downloadUrl
+        // serves — clients (e.g. rclone) verify transfer size against this.
+        sql.append("SELECT fm.label, df.id, ");
+        sql.append("       CASE WHEN dt.id IS NOT NULL AND ?").append(originalsSlot)
+           .append(" THEN COALESCE(dt.originalfilesize, df.filesize) ELSE df.filesize END, ");
+        sql.append("       df.contenttype, df.restricted, ");
         sql.append("       (df.embargo_id IS NOT NULL AND e.dateavailable > current_date) AS actively_embargoed, ");
         // For ingested tabular files (those with an associated `datatable` row),
         // `df.checksumvalue` is the digest of the *original upload* — Dataverse

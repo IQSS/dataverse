@@ -12,7 +12,7 @@ Query parameters:
 - `include` — `all` (default), `folders`, or `files`.
 - `order` — `NameAZ` (default) or `NameZA`. Folders sort first regardless.
 - `includeDeaccessioned` — same semantics as `/files`.
-- `originals` — when `true`, the returned `downloadUrl` requests the original-format download.
+- `originals` — when `true`, ingested tabular files are reported in their original-upload form: `downloadUrl` requests `?format=original`, and both `checksum` and the per-file `size` reflect the saved original rather than the converted TSV.
 
 Response shape:
 
@@ -38,7 +38,7 @@ Response shape:
 
 Folder rows carry recursive aggregates over their subtree: `counts.files` is the total file count, `counts.folders` is the immediate-subfolder count, `counts.bytes` is the total size of files in the subtree (using `df.filesize` — the served-form size, intended as a "downloading this folder = N GB" UX hint, not authoritative under `originals=true`). `counts.restricted` and `counts.embargoed` mirror the per-file `access` resolution: a restricted file is counted as restricted even if it also carries an embargo, and only non-restricted files with an active embargo are counted as embargoed. Public files are implied as `files - restricted - embargoed`.
 
-The per-file `checksum` object is present only when the digest matches the bytes the corresponding `downloadUrl` would serve. For ingested tabular files the default `downloadUrl` resolves to a converted TSV whose digest Dataverse does not store, so `checksum` is omitted on those rows; passing `originals=true` flips both the URL (`?format=original`) and the checksum back on, since the saved-original aux blob's bytes match `df.checksumvalue`. Clients can therefore treat "checksum present" as an unconditional commitment that the value matches the bytes they would receive.
+The per-file `checksum` object is present only when the digest matches the bytes the corresponding `downloadUrl` would serve. For ingested tabular files the default `downloadUrl` resolves to a converted TSV whose digest Dataverse does not store, so `checksum` is omitted on those rows; passing `originals=true` flips both the URL (`?format=original`) and the checksum back on, since the saved-original aux blob's bytes match `df.checksumvalue`. The per-file `size` follows the same rule: under `originals=true` it reports the saved original's size (`dt.originalfilesize`) so it matches the original bytes, while the folder `counts.bytes` rollup stays the served-form total. Clients can therefore treat "checksum present" as an unconditional commitment that the value matches the bytes they would receive — and, under `originals=true`, that the reported `size` matches them too.
 
 Permissions and embargoes are honoured exactly as on `GET /api/datasets/{id}/versions/{versionId}/files` — the endpoint is a thin lazy projection of the same `DatasetVersion.fileMetadatas`.
 

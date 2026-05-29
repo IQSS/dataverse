@@ -312,6 +312,20 @@ public class DatasetsTreeIT {
                 .body("data.items[0].checksum", notNullValue())
                 .body("data.items[0].checksum.type", notNullValue())
                 .body("data.items[0].checksum.value", notNullValue());
+
+        // size follows the same rule as checksum/downloadUrl: the default
+        // (archival) form reports the converted .tab size, while
+        // originals=true reports the saved original (.dta) size. The two
+        // forms are different files, so the reported sizes must differ.
+        long archivalSize = JsonPath.from(withoutOriginals.asString())
+                .getLong("data.items[0].size");
+        long originalSize = JsonPath.from(withOriginals.asString())
+                .getLong("data.items[0].size");
+        org.junit.jupiter.api.Assertions.assertTrue(archivalSize > 0 && originalSize > 0,
+                "tree must report a positive size in both forms (archival=" + archivalSize
+                        + ", original=" + originalSize + ")");
+        org.junit.jupiter.api.Assertions.assertNotEquals(archivalSize, originalSize,
+                "originals=true must report the original upload (.dta) size, not the archival .tab size");
     }
 
     @Test
