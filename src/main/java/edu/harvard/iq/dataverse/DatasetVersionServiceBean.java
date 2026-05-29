@@ -35,7 +35,6 @@ import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
-import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
@@ -892,7 +891,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
                 if (thumbnailFileId != null) {
                     logger.fine("obtained file id: " + thumbnailFileId);
-                    DataFile thumbnailFile = datafileService.find(thumbnailFileId);
+                    DataFile thumbnailFile = getDataFileById(thumbnailFileId);
                     if (thumbnailFile != null) {
                         if (datafileService.isThumbnailAvailable(thumbnailFile)) {
                             assignDatasetThumbnailByNativeQuery(versionId, thumbnailFileId);
@@ -925,7 +924,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 }
 
                 if (thumbnailFileId != null) {
-                    DataFile thumbnailFile = datafileService.find(thumbnailFileId);
+                    DataFile thumbnailFile = getDataFileById(thumbnailFileId);
                     if (thumbnailFile != null) {
                         if (datafileService.isThumbnailAvailable(thumbnailFile)) {
                             assignDatasetThumbnailByNativeQuery(versionId, thumbnailFileId);
@@ -937,7 +936,11 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         }
         return null;
     }
-    
+
+    public DataFile getDataFileById(Long id) {
+        return datafileService.find(id);
+    }
+
     private void assignDatasetThumbnailByNativeQuery(Long versionId, Long dataFileId) {
         try {
             em.createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFileId + " WHERE id in (SELECT dataset_id FROM datasetversion WHERE id=" + versionId + ")").executeUpdate();
