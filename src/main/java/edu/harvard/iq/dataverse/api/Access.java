@@ -226,8 +226,9 @@ public class Access extends AbstractApiBean {
     @Produces({"application/zip"})
     public BundleDownloadInstance datafileBundleWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("gbrids") String gbrids,
                                                                       @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, String jsonBody) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-
-        processDatafileWithGuestbookResponse(crc, headers, fileId, uriInfo, gbrecs, jsonBody);
+        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+        User user = req.getUser();
+        processDatafileWithGuestbookResponse(crc, req, headers, fileId, uriInfo, gbrecs, jsonBody);
         // JSF UI passes the guestbook response id(s) in thus this qp can be removed when JSF is removed
         if (gbrids == null || gbrids.isEmpty()) {
             gbrids = (String) crc.getProperty("gbrids");
@@ -262,9 +263,10 @@ public class Access extends AbstractApiBean {
     public Response datafile(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("gbrids") String gbrids,
                              @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
 
-        fileId = normalizeFileId(fileId);
-
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+        fileId = normalizeFileId(fileId, req);
+
+
         DataFile df = findDataFileUserCanSeeOrDieWrapper(fileId, req);
         GuestbookResponse gbr = null;
         
@@ -409,11 +411,12 @@ public class Access extends AbstractApiBean {
     public Response datafileWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId,
                                                   @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, String jsonBody) {
 
-        fileId = normalizeFileId(fileId);
-        return processDatafileWithGuestbookResponse(crc, headers, fileId, uriInfo, gbrecs, jsonBody);
+        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+        fileId = normalizeFileId(fileId, req);
+        return processDatafileWithGuestbookResponse(crc, req, headers, fileId, uriInfo, gbrecs, jsonBody);
     }
 
-    private String normalizeFileId(String fileId) {
+    private String normalizeFileId(String fileId, DataverseRequest req) {
         String fId = fileId;
         // check first if there's a trailing slash, and chop it:
         while (fId.lastIndexOf('/') == fId.length() - 1) {
@@ -421,7 +424,7 @@ public class Access extends AbstractApiBean {
         }
         // Handle persistentId by converting it back to ID
         if (fileId.equals(PERSISTENT_ID_KEY)) {
-            DataFile file = findDataFileOrDieWrapper(fileId);
+            DataFile file = findDataFileUserCanSeeOrDieWrapper(fileId, req);
             fId = String.valueOf(file.getId());
         }
 
@@ -443,12 +446,12 @@ public class Access extends AbstractApiBean {
     }
 
     // Process the guestbook response from JSON and return a signedUrl to the matching GET call
-    private Response processDatafileWithGuestbookResponse(ContainerRequestContext crc, HttpHeaders headers, String fileIds, UriInfo uriInfo, boolean gbrecs, String jsonBody) {
+    private Response processDatafileWithGuestbookResponse(ContainerRequestContext crc, DataverseRequest req, HttpHeaders headers, String fileIds, UriInfo uriInfo, boolean gbrecs, String jsonBody) {
 
-        User user = getRequestUser(crc);
+        User user = req.getUser();
 
         // Get and validate all the DataFiles first
-        Map<Long, DataFile> datafilesMap = getDatafilesMap(crc, fileIds);
+        Map<Long, DataFile> datafilesMap = getDatafilesMap(req, fileIds);
 
         // Handle Guestbook Responses
         String displayName = "";
@@ -493,8 +496,7 @@ public class Access extends AbstractApiBean {
         return returnSignedUrl(crc, uriInfo, user, id, gbrids);
     }
 
-    private Map<Long, DataFile> getDatafilesMap(ContainerRequestContext crc, String fileIds) {
-        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+    private Map<Long, DataFile> getDatafilesMap(DataverseRequest req, String fileIds) {
         String fileIdParams[] = getFileIdsCSV(fileIds);
         Map<Long, DataFile> datafilesMap = new HashMap<>();
         Long datasetId = null;
@@ -804,7 +806,8 @@ public class Access extends AbstractApiBean {
     @Produces({ "application/zip" })
     public Response postDownloadDatafiles(@Context ContainerRequestContext crc, String body, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("gbrids") String gbrids, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
 
-        processDatafileWithGuestbookResponse(crc, headers, body, uriInfo, gbrecs, body);
+        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+        processDatafileWithGuestbookResponse(crc, req, headers, body, uriInfo, gbrecs, body);
         // JSF UI passes the guestbook response id(s) in thus this qp can be removed when JSF is removed
         if (gbrids == null || gbrids.isEmpty()) {
             gbrids = (String) crc.getProperty("gbrids");
@@ -885,7 +888,7 @@ public class Access extends AbstractApiBean {
                 fileIds = getFileIdsAsCommaSeparated(latest.getFileMetadatas());
                 version = latest.getFriendlyVersionNumber();
             }
-            return processDatafileWithGuestbookResponse(crc, headers, fileIds, uriInfo, gbrecs, jsonBody);
+            return processDatafileWithGuestbookResponse(crc, req, headers, fileIds, uriInfo, gbrecs, jsonBody);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -928,9 +931,10 @@ public class Access extends AbstractApiBean {
                                                                 @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, String jsonBody,
                                                                 @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
         try {
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             DatasetVersion dsv = getDatasetVersionFromVersion(crc, datasetIdOrPersistentId, versionId);
             String fileIds = getFileIdsAsCommaSeparated(dsv.getFileMetadatas());
-            return processDatafileWithGuestbookResponse(crc, headers, fileIds, uriInfo, gbrecs, jsonBody);
+            return processDatafileWithGuestbookResponse(crc, req, headers, fileIds, uriInfo, gbrecs, jsonBody);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -1010,7 +1014,8 @@ public class Access extends AbstractApiBean {
     public Response datafilesWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("fileIds") String fileIds, @QueryParam("gbrecs") boolean gbrecs,
                                                    @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, String jsonBody) throws WebApplicationException {
 
-        return processDatafileWithGuestbookResponse(crc, headers, fileIds, uriInfo, gbrecs, jsonBody);
+        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+        return processDatafileWithGuestbookResponse(crc, req, headers, fileIds, uriInfo, gbrecs, jsonBody);
     }
 
     private String[] getFileIdsCSV(String body) {
