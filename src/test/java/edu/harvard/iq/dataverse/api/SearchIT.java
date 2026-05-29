@@ -2024,7 +2024,7 @@ public class SearchIT {
                 .body("data.items[0].url", CoreMatchers.containsString("/dataverse/"))
                 .body("data.items[0]", CoreMatchers.not(CoreMatchers.hasItem("image_url")));
 
-        searchResp = UtilIT.search(datasetPid, apiToken);
+        searchResp = UtilIT.search("id:dataset_" + datasetId, apiToken);
         searchResp.prettyPrint();
         searchResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -2220,7 +2220,7 @@ public class SearchIT {
         search.prettyPrint();
         search.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.items[0].name", is("data.tab"))
+                .body("data.items[0].name", is("data.csv")) // as of 6.11, we are indexing the original names of ingested tab. files
                 .body("data.items[0].variables", is(4))
                 .body("data.items[0].observations", is(3));
     }

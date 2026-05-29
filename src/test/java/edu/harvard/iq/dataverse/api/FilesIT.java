@@ -24,10 +24,7 @@ import org.assertj.core.util.Lists;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -42,10 +39,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.time.Year;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
@@ -67,6 +61,11 @@ public class FilesIT {
 
         Response removePublicInstall = UtilIT.deleteSetting(SettingsServiceBean.Key.PublicInstall);
         removePublicInstall.then().assertThat().statusCode(200);
+    }
+
+    @AfterEach
+    public void resetClass() {
+        UtilIT.deleteSetting(SettingsServiceBean.Key.FilePIDsEnabled);
     }
 
     @AfterAll
@@ -3875,6 +3874,7 @@ public class FilesIT {
     @Test
     public void testDownloadFileWithGuestbookResponse() throws IOException, JsonParseException {
         msgt("testDownloadFileWithGuestbookResponse");
+        UtilIT.enableSetting(SettingsServiceBean.Key.FilePIDsEnabled);
         // Create superuser
         Response createUserResponse = UtilIT.createRandomUser();
         assertEquals(200, createUserResponse.getStatusCode());
@@ -3882,8 +3882,16 @@ public class FilesIT {
         String superusername = UtilIT.getUsernameFromResponse(createUserResponse);
         UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
 
+        // Create Parent Dataverse
+        String parentDataverseAlias = createDataverseGetAlias(ownerApiToken);
+        Response publishResponse = UtilIT.publishDataverseViaNativeApi(parentDataverseAlias, ownerApiToken);
+        assertEquals(200, publishResponse.getStatusCode());
+        // Create a Parent Guestbook
+        Guestbook parentGuestbook = UtilIT.createRandomGuestbook(parentDataverseAlias, null, ownerApiToken);
+
         // Create Dataverse
         String dataverseAlias = createDataverseGetAlias(ownerApiToken);
+        UtilIT.moveDataverse(dataverseAlias, parentDataverseAlias, null, ownerApiToken);
 
         // Create user with no permission
         createUserResponse = UtilIT.createRandomUser();
@@ -3904,6 +3912,7 @@ public class FilesIT {
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
         String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        String directoryLabel = "data/store/" + persistentId.substring(4);
         Response getDatasetMetadata = UtilIT.nativeGet(datasetId, ownerApiToken);
         getDatasetMetadata.then().assertThat().statusCode(200);
 
@@ -3918,24 +3927,33 @@ public class FilesIT {
         getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken);
         getGuestbooksResponse.then().assertThat().statusCode(200);
         assertEquals(1, getGuestbooksResponse.getBody().jsonPath().getList("data").size());
+        // Get the list of Guestbooks including Parent Guestbook
+        getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, false, Boolean.TRUE);
+        getGuestbooksResponse.then().assertThat().statusCode(200);
+        assertEquals(2, getGuestbooksResponse.getBody().jsonPath().getList("data").size());
 
         // Upload files
-        JsonObjectBuilder json1 = Json.createObjectBuilder().add("description", "my description1").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
+        JsonObjectBuilder json1 = Json.createObjectBuilder().add("description", "my description1").add("directoryLabel", directoryLabel).add("categories", Json.createArrayBuilder().add("Data"));
         Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/dataverseproject.png", json1.build(), ownerApiToken);
+        uploadResponse.prettyPrint();
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
         Integer fileId1 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        JsonObjectBuilder json2 = Json.createObjectBuilder().add("description", "my description2").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
-        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/orcid_16x16.png", json1.build(), ownerApiToken);
+        JsonObjectBuilder json2 = Json.createObjectBuilder().add("description", "my description2").add("directoryLabel", directoryLabel).add("categories", Json.createArrayBuilder().add("Data"));
+        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/orcid_16x16.png", json2.build(), ownerApiToken);
+        uploadResponse.prettyPrint();
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
         Integer fileId2 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        JsonObjectBuilder json3 = Json.createObjectBuilder().add("description", "my description3").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
-        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/cc0.png", json1.build(), ownerApiToken);
+        JsonObjectBuilder json3 = Json.createObjectBuilder().add("description", "my description3").add("directoryLabel", directoryLabel).add("categories", Json.createArrayBuilder().add("Data"));
+        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/cc0.png", json3.build(), ownerApiToken);
+        uploadResponse.prettyPrint();
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
         Integer fileId3 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        JsonObjectBuilder json4 = Json.createObjectBuilder().add("description", "my description4").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
-        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/Robot-Icon_2.png", json1.build(), ownerApiToken);
+        JsonObjectBuilder json4 = Json.createObjectBuilder().add("description", "my description4").add("directoryLabel", directoryLabel).add("categories", Json.createArrayBuilder().add("Data"));
+        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/Robot-Icon_2.png", json4.build(), ownerApiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        uploadResponse.prettyPrint();
         Integer fileId4 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        String filePersistentId = JsonPath.from(uploadResponse.body().asString()).getString("data.files[0].dataFile.persistentId");
 
         // Restrict files
         Response restrictResponse = UtilIT.restrictFile(fileId1.toString(), true, ownerApiToken);
@@ -3989,6 +4007,7 @@ public class FilesIT {
                 .statusCode(BAD_REQUEST.getStatusCode());
         String guestbookResponseForGuest = guestbookResponse.replace("\"guestbookResponse\": {",
                 "\"guestbookResponse\": { \"name\":\"My Name\", \"email\":\"myemail@example.com\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
+
         // With GuestbookResponse. Guest user doesn't have the required Name, etc. So we will add those to the Guestbook Response
         downloadResponse = UtilIT.postDownloadFile(fileId4, guestbookResponseForGuest);
         downloadResponse.prettyPrint();
@@ -4014,6 +4033,12 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
         signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
 
+        // Verify that the Guestbook Response is persisted
+        Response guestbookResponseResponse = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), ownerApiToken);
+        guestbookResponseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(guestbookResponseResponse.prettyPrint().contains("What color car do you drive,Yellow"));
+
         // Download the file using the signed url
         signedUrlResponse = get(signedUrl);
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
@@ -4030,6 +4055,14 @@ public class FilesIT {
         String jsonBody = "{\"fileIds\":[" + fileId1 + "," + fileId2+ "," + fileId3 +"], " + guestbookResponse.substring(1);
         downloadResponse = UtilIT.postDownloadDatafiles(jsonBody, apiToken);
         assertEquals(OK.getStatusCode(), downloadResponse.getStatusCode());
+
+        // Download all files in dataset with guestbook response using dataset persistentId
+        downloadResponse = UtilIT.downloadAllDatasetFilesWithGuestbookResponse(persistentId, apiToken, guestbookResponse);
+        downloadResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+        signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+        signedUrlResponse = get(signedUrl);
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
 
         downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(new Integer[]{fileId1, fileId2, fileId3}, apiToken, guestbookResponse);
         signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
@@ -4050,14 +4083,205 @@ public class FilesIT {
         Response guestbookResponses = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), ownerApiToken);
         assertTrue(guestbookResponses.prettyPrint().contains("My Name," + user2Email + ",My Institution,My Position"));
 
-        // Get Signed Download Url with guestbook response using persistentId
-        // POST /api/access/dataset/:persistentId?persistentId=doi:10.xxxx/FK2/ABC
-        downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(persistentId, apiToken, guestbookResponse);
+        // Get Signed Download Url for guest with guestbook response using file's persistentId
+        // POST /api/access/datafile/:persistentId?persistentId=
+        downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(filePersistentId, null, guestbookResponseForGuest);
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+        // verify that the fileId is correct
+        assertTrue(signedUrl.contains("/access/datafile/" + fileId4 + "?"));
+        // verify that the persistentId is no longer in the url
+        assertFalse(signedUrl.contains("persistentId"));
+        // verify that the signed url is good
         signedUrlResponse = get(signedUrl);
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+
+        // Verify that the guestbook has proper stats
+        Response guestbookListResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, true, null);
+        guestbookListResponse.prettyPrint();
+        guestbookListResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].usageCount", is(1))
+                .body("data[0].responseCount", is(17));
+    }
+
+    @Test
+    public void testGetFileCitationFormatted() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadFile.then().assertThat().statusCode(OK.getStatusCode());
+
+        String fileId = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        // Test good formats
+        Response response = UtilIT.getFileCitationFormat(fileId,"EndNote", apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(response.prettyPrint().contains("<custom1>coffeeshop.png</custom1>"));
+
+        response = UtilIT.getFileCitationFormat(fileId,"RIS", apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(response.prettyPrint().contains("C1  - coffeeshop.png"));
+
+        response = UtilIT.getFileCitationFormat(fileId,"BibTeX", apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(response.prettyPrint().contains("author = {Finch, Fiona},"));
+
+        response = UtilIT.getFileCitationFormat(fileId,"CSL", apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(response.prettyPrint().contains("\"title\": \"Darwin's Finches\","));
+
+        response = UtilIT.getFileCitationFormat(fileId,"Internal", apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(response.prettyPrint().contains("coffeeshop.png [fileName]"));
+
+        // Test an unknown format
+        response = UtilIT.getFileCitationFormat(fileId,"bad", apiToken);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.citation.invalidFormat")));
+        // Test an NULL format
+        response = UtilIT.getFileCitationFormat(fileId,null, apiToken);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.citation.invalidFormat")));
+
+        // Test a user that doesn't have permission to get the citation
+        Response createUser2 = UtilIT.createRandomUser();
+        createUser2.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+        response = UtilIT.getFileCitationFormat(fileId,"EndNote", apiToken2);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode());
+
+        // Test a guest user after publishing
+        response = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        response = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        response = UtilIT.getFileCitationFormat(fileId,"EndNote", null);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
+
+    // This test is disabled because it is only compatible with the containerized development environment and would cause the Jenkins job to fail.
+    @Test
+    @Disabled
+    public void testDownloadFileWithGuestbookResponseUsingBearerToken() throws IOException, JsonParseException {
+        msgt("testDownloadFileWithGuestbookResponseUsingBearerToken");
+        UtilIT.enableSetting(SettingsServiceBean.Key.FilePIDsEnabled);
+        // Create superuser
+        Response createUserResponse = UtilIT.createRandomUser();
+        assertEquals(200, createUserResponse.getStatusCode());
+        String ownerApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String superusername = UtilIT.getUsernameFromResponse(createUserResponse);
+        UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(ownerApiToken);
+
+        // Create Dataset
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, ownerApiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        Response getDatasetMetadata = UtilIT.nativeGet(datasetId, ownerApiToken);
+        getDatasetMetadata.then().assertThat().statusCode(200);
+
+        // Create a Guestbook
+        Guestbook guestbook = UtilIT.createRandomGuestbook(dataverseAlias, persistentId, ownerApiToken);
+
+        // Upload files
+        JsonObjectBuilder json1 = Json.createObjectBuilder().add("description", "my description1").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/dataverseproject.png", json1.build(), ownerApiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String filePersistentId = JsonPath.from(uploadResponse.body().asString()).getString("data.files[0].dataFile.persistentId");
+
+        // Publish dataverse and dataset
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, ownerApiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", ownerApiToken);
+        assertEquals(200, publishDataset.getStatusCode());
+
+        // Set Up - Get the admin access token from the OIDC provider
+        Response adminOidcLoginResponse = UtilIT.performKeycloakROPCLogin("admin", "admin");
+        adminOidcLoginResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("access_token", notNullValue());
+        String adminOidcAccessToken = adminOidcLoginResponse.jsonPath().getString("access_token");
+
+        // Create user with bearer token and no api token
+        String randomUsername = UUID.randomUUID().toString().substring(0, 8);
+        String email = randomUsername + "@dataverse.org";
+        String firstName = "John";
+        String lastName = "Doe";
+
+        String newKeycloakUserWithClaimsJson = "{"
+                + "\"username\":\"" + randomUsername + "\","
+                + "\"enabled\":true,"
+                + "\"email\":\"" + email + "\","
+                + "\"firstName\":\"" + firstName + "\","
+                + "\"lastName\":\"" + lastName + "\","
+                + "\"credentials\":["
+                + "  {"
+                + "    \"type\":\"password\","
+                + "    \"value\":\"password\","
+                + "    \"temporary\":false"
+                + "  }"
+                + "]"
+                + "}";
+        Response createKeycloakOidcUserResponse = UtilIT.createKeycloakUser(adminOidcAccessToken, newKeycloakUserWithClaimsJson);
+        createKeycloakOidcUserResponse.prettyPrint();
+        createKeycloakOidcUserResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Response newUserOidcLoginResponse = UtilIT.performKeycloakROPCLogin(randomUsername, "password");
+        newUserOidcLoginResponse.prettyPrint();
+        String userWithClaimsAccessToken = newUserOidcLoginResponse.jsonPath().getString("access_token");
+        Response registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{"
+                        + "\"termsAccepted\":true"
+                        + "}",
+                "Bearer " + userWithClaimsAccessToken
+        );
+        registerOidcUserResponse.prettyPrint();
+        assertEquals(200, registerOidcUserResponse.getStatusCode());
+
+        // Download using Bearer Token
+        // POST with guestbook response
+        String guestbookResponse = UtilIT.generateGuestbookResponse(guestbook).replace("\"guestbookResponse\": {",
+                "\"guestbookResponse\": { \"name\":\"My Name\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
+        Response downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(filePersistentId,null, guestbookResponse, userWithClaimsAccessToken);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+        // verify that the username is correct
+        assertTrue(signedUrl.contains("&user=" + randomUsername + "&"));
+        // Download using the signed URL
+        Response signedUrlResponse = get(signedUrl);
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
     }
 }

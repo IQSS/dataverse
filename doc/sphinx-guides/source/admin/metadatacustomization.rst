@@ -549,8 +549,9 @@ You will need to reload your Solr schema via an HTTP-API call, targeting your So
 
 ``curl "http://localhost:8983/solr/admin/cores?action=RELOAD&core=collection1"``
 
-You can easily roll your own little script to automate the process (which might involve fetching the schema bits
-from some place else than your Dataverse installation).
+You can easily roll your own little script to automate the process
+(which might involve fetching the schema bits from some place else than your Dataverse installation).
+For your convenience, an example script :download:`solr-driver.sh <../../../../conf/solr/solr-driver.sh>` has been added.
 
 Please note that reconfigurations of your Solr index might require a re-index. Usually release notes indicate
 a necessary re-index, but for your custom metadata you will need to keep track on your own.

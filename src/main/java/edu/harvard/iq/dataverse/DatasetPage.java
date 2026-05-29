@@ -111,7 +111,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
-import jakarta.validation.ConstraintViolation;
 import java.util.Arrays;
 import java.util.HashSet;
 import jakarta.faces.model.SelectItem;
@@ -4039,8 +4038,8 @@ public class DatasetPage implements java.io.Serializable {
             dataset.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
         }
         // Validate
-        Set<ConstraintViolation> constraintViolations = workingVersion.validate();
-        if (!constraintViolations.isEmpty()) {
+        workingVersion.validate(); // add validation messages to dataset fields
+        if (!workingVersion.isValid()) {
             FacesContext.getCurrentInstance().validationFailed();
             return "";
         }
@@ -4868,6 +4867,18 @@ public class DatasetPage implements java.io.Serializable {
 
     public Boolean isDatasetPublishPopupCustomTextOnAllVersions(){
         return  settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomTextOnAllVersions, false);
+    }
+
+    public boolean isDisplaySubmitForReviewPopupCustomText() {
+        return !getDatasetSubmitForReviewCustomText().isEmpty();
+    }
+
+    public String getDatasetSubmitForReviewCustomText(){
+        String datasetSubmitForReviewCustomText = settingsWrapper.getValueForKey(SettingsServiceBean.Key.DatasetSubmitForReviewPopupCustomText);
+        if (datasetSubmitForReviewCustomText != null && !datasetSubmitForReviewCustomText.isEmpty()) {
+            return datasetSubmitForReviewCustomText;
+        }
+        return "";
     }
 
     public String getVariableMetadataURL(Long fileid) {
@@ -6373,6 +6384,7 @@ public class DatasetPage implements java.io.Serializable {
     private String termsOfAccess;
     private boolean fileAccessRequest;
     private boolean publishDisclaimerAcknowledged;
+    private boolean submitForReviewDisclaimerAcknowledged;
 
     public String getTermsOfAccess() {
         return termsOfAccess;
@@ -6396,6 +6408,14 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setPublishDisclaimerAcknowledged(boolean publishDisclaimerAcknowledged) {
         this.publishDisclaimerAcknowledged = publishDisclaimerAcknowledged;
+    }
+
+    public boolean isSubmitForReviewDisclaimerAcknowledged() {
+        return submitForReviewDisclaimerAcknowledged || !settingsWrapper.isHasSubmitForReviewDatasetDisclaimerText();
+    }
+
+    public void setSubmitForReviewDisclaimerAcknowledged(boolean submitForReviewDisclaimerAcknowledged) {
+        this.submitForReviewDisclaimerAcknowledged = submitForReviewDisclaimerAcknowledged;
     }
 
     // wrapper method to see if the file has been deleted (or replaced) in the current version
