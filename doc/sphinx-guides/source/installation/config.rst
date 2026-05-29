@@ -1420,7 +1420,7 @@ List of S3 Storage Options
     dataverse.files.<id>.chunked-encoding                                  ``true``/``false``  Disable chunked encoding. Optional                                                   ``true``
     dataverse.files.<id>.connection-pool-size                              <?>                 The maximum number of open connections to the S3 server                              ``256``
     dataverse.files.<id>.disable-tagging                                   ``true``/``false``  Do not place the ``temp`` tag when redirecting the upload to the S3 server.          ``false``
-    dataverse.files.<id>.disable-multipart-download-for-indirect-download  ``true``/``false``  Disable multipart download for indirect downloads from S3.             ``false``
+    dataverse.files.<id>.disable-multipart-download-for-indirect-download  ``true``/``false``  Disable multipart download for indirect downloads from S3.                           ``false``
     =====================================================================  ==================  ===================================================================================  =============
 
 .. table::
