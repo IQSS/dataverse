@@ -168,7 +168,9 @@
                                                         <!-- Cvoc for others fields -->
                                                         <h:outputText value="#{cvPart.key.value}"
                                                                       escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"
-                                                                      rendered="#{(cvocOnDsfApplies or cvocOnCvPart) and not (
+                                                                      rendered="#{(cvocOnDsfApplies or cvocOnCvPart)
+                                                                            and cvPart.key.datasetFieldType.displayFormat ne '#EMAIL'
+                                                                            and not (
                                                                             cvPart.key.datasetFieldType.name.equals(cvocConf.get(cvPart.key.datasetFieldType.id).getString('term-uri-field'))
                                                                             or cvPart.key.datasetFieldType.name.equals(cvocConf.get(dsf.datasetFieldType.id).getString('term-uri-field')))}"
                                                                       styleClass="hidden">
