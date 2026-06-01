@@ -209,7 +209,6 @@
                                           value="#{bean.selectionRetention.dateUnavailable}"
                                           locale="#{dataverseSession.localeCode}"
                                           mindate="#{settingsWrapper.minRetentionDate}" pattern="yyyy-MM-dd"
-                                          maxdate="#{settingsWrapper.maxRetentionDate}"
                                           disabled="#{bean.removeRetention}"
                                           validator="#{settingsWrapper.validateRetentionDate}" >
                                 <p:ajax process="#{updateRetentionElements}"

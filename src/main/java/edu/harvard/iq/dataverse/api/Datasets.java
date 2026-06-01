@@ -1824,7 +1824,7 @@ public class Datasets extends AbstractApiBean {
 
         // dateAvailable is within limits
         if (minRetentionDateTime != null){
-            if (dateUnavailable.isBefore(minRetentionDateTime)){
+            if (dateUnavailable.isBefore(minRetentionDateTime.minusDays(1))){
                 return error(Status.BAD_REQUEST, "Date unavailable can not be earlier than MinRetentionDurationInMonths: "+minRetentionDurationInMonths + " from now");
             }
         }
