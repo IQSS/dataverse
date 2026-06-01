@@ -278,8 +278,9 @@ public class Datasets extends AbstractApiBean {
             ExportService instance = ExportService.getInstance();
 
             InputStream is = instance.getExport(datasetVersion, exporter);
-            if (exporter.equals("croissant") || exporter.equals("croissantSlim")) {
-                // Rewrite the export on the fly and insert reviews.
+            if (FeatureFlags.CROISSANT_WITH_LOCAL_REVIEWS.enabled()
+                    && (exporter.equals("croissant") || exporter.equals("croissantSlim"))) {
+                // Rewrite the export on the fly and insert local reviews.
                 JsonObjectBuilder reviews = CroissantExportUtil
                         .getReviews(commandEngine.submit(new GetDatasetReviewsCommand(req, dataset)));
                 String content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
