@@ -221,7 +221,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}")
     public Response getDataset(@Context ContainerRequestContext crc, @PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,  @QueryParam("returnOwners") boolean returnOwners) {
         return response( req -> {
-            final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(id, true)));
+            final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(id, false)));
             final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
             final JsonObjectBuilder jsonbuilder = json(retrieved, returnOwners);
             //Report MDC if this is a released version (could be draft if user has access, or user may not have access at all and is not getting metadata beyond the minimum)
@@ -459,16 +459,17 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions")
-    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("excludeFiles") Boolean excludeFiles,@QueryParam("excludeMetadataBlocks") Boolean excludeMetadataBlocks, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
+    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("excludeFiles") Boolean excludeFiles, @QueryParam("excludeMetadataBlocks") Boolean excludeMetadataBlocks, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
 
         return response( req -> {
             Dataset dataset = findDatasetOrDie(id);
-            Boolean deepLookup = excludeFiles == null ? true : !excludeFiles;
+            //6.6patchBoolean deepLookup = excludeFiles == null ? true : !excludeFiles;
+            Boolean includeFiles = excludeFiles == null ? true : !excludeFiles;
             Boolean includeMetadataBlocks = excludeMetadataBlocks == null ? true : !excludeMetadataBlocks;
-
-            return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, deepLookup) )
+            
+            return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, false) )
                                 .stream()
-                                .map( d -> json(d, deepLookup, includeMetadataBlocks) )
+                                .map( d -> json(d, includeFiles, includeMetadataBlocks) )
                                 .collect(toJsonArray()));
         }, getRequestUser(crc));
     }
@@ -506,9 +507,12 @@ public class Datasets extends AbstractApiBean {
             if (requestedDatasetVersion == null || requestedDatasetVersion.getId() == null) {
                 return notFound("Dataset version not found");
             }
-            if (includeFiles) {
+
+            /* patch6.7 if (excludeFiles == null ? true : !excludeFiles) {
                 requestedDatasetVersion = datasetversionService.findDeep(requestedDatasetVersion.getId());
-            }
+            }*/ 
+            
+            Boolean includeMetadataBlocks = excludeMetadataBlocks == null ? true : !excludeMetadataBlocks;
 
             // Check to see if the caller wants to ignore the ExcludeEmailFromExport setting in the metadata block and that they have permission to do so
             // Let the JsonPrinter know to ignore the ExcludeEmailFromExport setting so the emails will show for this API call by permitted user

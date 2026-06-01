@@ -2087,7 +2087,8 @@ public class DatasetPage implements java.io.Serializable {
             // ... And now the "real" working version lookup: 
             
             if (versionId != null) {
-                this.workingVersion = datasetVersionService.findDeep(versionId);
+                //6.6patch this.workingVersion = datasetVersionService.findDeep(versionId);
+                this.workingVersion = datasetVersionService.find(versionId);
                 dataset = workingVersion.getDataset();
             }
             
@@ -3092,7 +3093,8 @@ public class DatasetPage implements java.io.Serializable {
             // versionId must have been set by now (see null check above), in the init()
             // method, regardless of how the page was originally called - by the dataset
             // database id, by the persistent identifier, or by the db id of the version.
-            this.workingVersion = datasetVersionService.findDeep(versionId);
+            //6.6patch this.workingVersion = datasetVersionService.findDeep(versionId);
+            this.workingVersion = datasetVersionService.find(versionId);
             dataset = workingVersion.getDataset();
         } 
         
