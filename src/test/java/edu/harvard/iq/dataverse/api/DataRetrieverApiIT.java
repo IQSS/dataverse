@@ -21,7 +21,6 @@ import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.Disabled;
 
 public class DataRetrieverApiIT {
 
@@ -78,7 +77,7 @@ public class DataRetrieverApiIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, normalUserApiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
-        UtilIT.sleepForReindex(datasetId.toString(), normalUserApiToken, 4);
+        UtilIT.sleepForDatasetIndex(datasetId.toString(), normalUserApiToken);
         Response oneDatasetResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(6L)));
         assertEquals(OK.getStatusCode(), oneDatasetResponse.getStatusCode());
         JsonPath jsonPathOneDataset = oneDatasetResponse.getBody().jsonPath();
@@ -277,13 +276,13 @@ public class DataRetrieverApiIT {
         createDatasetOneResponse.prettyPrint();
         Integer datasetOneId = UtilIT.getDatasetIdFromResponse(createDatasetOneResponse);
         String datasetOnePid = UtilIT.getDatasetPersistentIdFromResponse(createDatasetOneResponse);
-        UtilIT.sleepForReindex(datasetOneId.toString(), userApiToken, 4);
+        UtilIT.sleepForDatasetIndex(datasetOneId.toString(), userApiToken);
 
         Response createDatasetTwoResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, userApiToken);
         createDatasetTwoResponse.prettyPrint();
         Integer datasetTwoId = UtilIT.getDatasetIdFromResponse(createDatasetTwoResponse);
         String datasetTwoPid = UtilIT.getDatasetPersistentIdFromResponse(createDatasetTwoResponse);
-        UtilIT.sleepForReindex(datasetTwoId.toString(), userApiToken, 4);
+        UtilIT.sleepForDatasetIndex(datasetTwoId.toString(), userApiToken);
 
         // Request datasets belonging to user
         Response twoDatasetsInReviewResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
@@ -301,13 +300,13 @@ public class DataRetrieverApiIT {
         Response publishDatasetOne = UtilIT.publishDatasetViaNativeApi(datasetOneId, "major", superUserApiToken);
         publishDatasetOne.prettyPrint();
         publishDatasetOne.then().assertThat().statusCode(OK.getStatusCode());
-        UtilIT.sleepForReindex(datasetOneId.toString(), userApiToken, 4);
+        UtilIT.sleepForDatasetIndex(datasetOneId.toString(), userApiToken);
 
         // Publish dataset 2
         Response publishDatasetTwo = UtilIT.publishDatasetViaNativeApi(datasetTwoId, "major", superUserApiToken);
         publishDatasetTwo.prettyPrint();
         publishDatasetTwo.then().assertThat().statusCode(OK.getStatusCode());
-        UtilIT.sleepForReindex(datasetTwoId.toString(), userApiToken, 4);
+        UtilIT.sleepForDatasetIndex(datasetTwoId.toString(), userApiToken);
 
         // Request datasets belonging to user
         Response twoPublishedDatasetsResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
@@ -326,7 +325,7 @@ public class DataRetrieverApiIT {
         Response addDataToPublishedVersion = UtilIT.addDatasetMetadataViaNative(datasetOnePid, pathToJsonFilePostPub, userApiToken);
         addDataToPublishedVersion.prettyPrint();
         addDataToPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
-        UtilIT.sleepForReindex(datasetOneId.toString(), userApiToken, 4);
+        UtilIT.sleepForDatasetIndex(datasetOneId.toString(), userApiToken);
 
         // Request datasets belonging to user
         Response twoPublishedDatasetsOneDraftResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
@@ -350,7 +349,7 @@ public class DataRetrieverApiIT {
         Response uploadImage = UtilIT.uploadFileViaNative(datasetTwoId.toString(), pathToFile, userApiToken);
         uploadImage.prettyPrint();
         uploadImage.then().assertThat().statusCode(OK.getStatusCode());
-        UtilIT.sleepForReindex(datasetTwoId.toString(), userApiToken, 4);
+        UtilIT.sleepForDatasetIndex(datasetTwoId.toString(), userApiToken);
 
         // Request datasets belonging to user
         Response twoPublishedDatasetsTwoDraftsResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
@@ -373,7 +372,7 @@ public class DataRetrieverApiIT {
         Response publishDatasetOneMinor = UtilIT.publishDatasetViaNativeApi(datasetOneId, "minor", superUserApiToken);
         publishDatasetOneMinor.prettyPrint();
         publishDatasetOneMinor.then().assertThat().statusCode(OK.getStatusCode());
-        UtilIT.sleepForReindex(datasetOneId.toString(), userApiToken, 4);
+        UtilIT.sleepForDatasetIndex(datasetOneId.toString(), userApiToken);
 
         // Request datasets belonging to user
         Response oneMinorOneMajorOneDraftDatasetResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
@@ -429,7 +428,7 @@ public class DataRetrieverApiIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         String datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse).toString();
         
-        UtilIT.sleepForReindex(datasetId, apiToken, 5);
+        UtilIT.sleepForDatasetIndex(datasetId, apiToken);
         
         Response myDataWithAuthor = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&metadata_fields=citation:author");
         myDataWithAuthor.prettyPrint();
@@ -482,7 +481,7 @@ public class DataRetrieverApiIT {
 
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
 
-        UtilIT.sleepForReindex(datasetPid, apiToken, 5);
+        UtilIT.sleepForDatasetIndex(datasetPid, apiToken);
         
         // Test that the Dataverse collection that the dataset was created in is returned
         Response myDataResponse = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&show_collections=true");
@@ -506,7 +505,7 @@ public class DataRetrieverApiIT {
 
         UtilIT.linkDataset(datasetPid, dataverse2Alias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
 
-        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
+        UtilIT.sleepForDatasetIndex(String.valueOf(datasetId), apiToken);
 
         // Test that the Dataverse collection that the dataset was linked to is also returned
         myDataResponse = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&show_collections=true");
