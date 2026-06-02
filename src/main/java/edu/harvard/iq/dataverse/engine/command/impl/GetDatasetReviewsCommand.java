@@ -8,6 +8,7 @@ import java.util.Set;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -20,9 +21,11 @@ import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 // No annotations here since permissions are dynamically decided
 public class GetDatasetReviewsCommand extends AbstractCommand<JsonObjectBuilder> {
@@ -60,21 +63,58 @@ public class GetDatasetReviewsCommand extends AbstractCommand<JsonObjectBuilder>
                 // solrSearchResult. This "get reviews" command may be powered by a
                 // database query in the future and we'll want to preserve the contract
                 // we're establishing here if we make the switch from Solr.
-                JsonObjectBuilder searchResultBuilder = solrSearchResult.json(false, true, false);
+                List<String> metadataFields = new ArrayList<>();
+                // Retrieve only the blocks that are rubrics, that have fields for reviews
+                for (MetadataBlock mdb : ctxt.metadataBlocks().listMetadataBlocks()) {
+                    String name = mdb.getName();
+                    if (name.startsWith("rubric_")) {
+                        metadataFields.add(name + ":*");
+                    }
+                }
+                JsonObjectBuilder searchResultBuilder = solrSearchResult.json(false, true, false, metadataFields);
                 JsonObject searchResultObject = searchResultBuilder.build();
                 String title = searchResultObject.getString("name");
+                JsonArray authors = searchResultObject.getJsonArray("authors");
                 String citation = searchResultObject.getString("citation");
                 String citationHtml = searchResultObject.getString("citationHtml");
                 String pid = searchResultObject.getString("global_id");
                 String pidUrl = searchResultObject.getString("url");
                 long id = searchResultObject.getJsonNumber("entity_id").longValue();
+                // Drafts don't have a published timestamp
+                String datePublished = searchResultObject.getString("published_at", "");
+                String description = searchResultObject.getString("description");
+                JsonObject rubricMetadataBlocksFromSolr = searchResultObject.getJsonObject("metadataBlocks");
+                JsonArrayBuilder rubricMetadataBlocks = Json.createArrayBuilder();
+                for (String key : rubricMetadataBlocksFromSolr.keySet()) {
+                    String displayName = rubricMetadataBlocksFromSolr.getJsonObject(key).getString("displayName");
+                    JsonArray fieldsFromJson = rubricMetadataBlocksFromSolr.getJsonObject(key).getJsonArray("fields");
+                    JsonObjectBuilder block = Json.createObjectBuilder();
+                    block.add("name", key);
+                    block.add("displayName", displayName);
+                    JsonArrayBuilder fieldAccumulator = Json.createArrayBuilder();
+                    for (JsonValue fieldJsonValue : fieldsFromJson) {
+                        JsonObject fieldObject = fieldJsonValue.asJsonObject();
+                        String typeName = fieldObject.getString("typeName");
+                        String value = fieldObject.getString("value");
+                        JsonObjectBuilder fieldToAdd = Json.createObjectBuilder();
+                        fieldToAdd.add("typeName", typeName);
+                        fieldToAdd.add("value", value);
+                        fieldAccumulator.add(fieldToAdd);
+                    }
+                    block.add("fields", fieldAccumulator);
+                    rubricMetadataBlocks.add(block);
+                }
                 JsonObjectBuilder review = Json.createObjectBuilder()
                         .add("title", title)
+                        .add("authors", authors)
                         .add("persistentId", pid)
                         .add("persistentIdUrl", pidUrl)
                         .add("id", id)
                         .add("citation", citation)
-                        .add("citationHtml", citationHtml);
+                        .add("citationHtml", citationHtml)
+                        .add("datePublished", datePublished)
+                        .add("description", description)
+                        .add("rubricMetadataBlocks", rubricMetadataBlocks);
                 itemsArrayBuilder.add(review);
             }
             reviews.add("reviews", itemsArrayBuilder);

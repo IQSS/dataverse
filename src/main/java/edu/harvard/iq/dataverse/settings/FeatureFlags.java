@@ -254,6 +254,12 @@ public enum FeatureFlags {
      * flag makes a reason required, both in the UI and API.
      */
     REQUIRE_EMBARGO_REASON("require-embargo-reason"),
+
+    /**
+     * The croissant and croissantSlim metadata export formats can include an extra
+     * "reviews" array if local reviews exist.
+     */
+    CROISSANT_WITH_LOCAL_REVIEWS("croissant-with-local-reviews"),
     ;
     
     final String flag;

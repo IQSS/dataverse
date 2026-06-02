@@ -1,5 +1,13 @@
 ### Local Reviews
 
-Datasets can have reviews. Specifically, if a review dataset points at (using the itemReviewedUrl field) the URL form of a persistent ID of a dataset (e.g. https://doi.org/10.5072/FK2/ABCDEF) that is in the same Dataverse installation as the review dataset, the review dataset will be included in the list of reviews for the dataset. It is considered a local review.
+Datasets can have local reviews, listable via API. A local review is a review dataset ("review" for short) that points at the URL form of a persistent ID of a dataset (e.g. itemReviewedUrl:https://doi.org/10.5072/FK2/ABCDEF) that is in the same Dataverse installation. Local reviews of a dataset can be listed via API (and we plan to build a UI for it some day).
 
-See [the guides](https://dataverse-guide--12327.org.readthedocs.build/en/12327/api/native-api.html#list-reviews), #12313 and #12327.
+A new metadata block called "Trusted Data Dimensions and Intensities" has been added for testing. This is described in the setup instructions for review datasets.
+
+If you set `dataverse.feature.croissant-with-local-reviews` to true, local reviews will appear in the croissant and croissantSlim metadata export formats for any dataset that has local reviews. This feature is experiemental, which is why it is hidden behind a feature flag.
+
+See the guides for the new [list reviews](https://preview.guides.gdcc.io/en/develop/api/native-api.html#list-reviews) API endpoint, #12313, and #12314.
+
+## New Settings
+
+- dataverse.feature.croissant-with-local-reviews
