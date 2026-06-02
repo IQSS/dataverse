@@ -37,6 +37,11 @@ import jakarta.json.stream.JsonParsingException;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
  *
@@ -44,6 +49,7 @@ import jakarta.ws.rs.core.*;
  */
 @Stateless
 @Path("users")
+@Tag(name = "Users", description = "User account and authenticated user operations.")
 public class Users extends AbstractApiBean {
     
     private static final Logger logger = Logger.getLogger(Users.class.getName());
@@ -51,7 +57,14 @@ public class Users extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{consumedIdentifier}/mergeIntoUser/{baseIdentifier}")
-    public Response mergeInAuthenticatedUser(@Context ContainerRequestContext crc, @PathParam("consumedIdentifier") String consumedIdentifier, @PathParam("baseIdentifier") String baseIdentifier) {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Merges one user account into another",
+            description = "Moves account data from one authenticated user into another when the requester is a superuser.")
+    public Response mergeInAuthenticatedUser(@Context ContainerRequestContext crc,
+            @Parameter(description = "Identifier of the authenticated user account whose data is merged into another account.", required = true)
+            @PathParam("consumedIdentifier") String consumedIdentifier,
+            @Parameter(description = "Identifier of the authenticated user account that receives the merged account data.", required = true)
+            @PathParam("baseIdentifier") String baseIdentifier) {
         User u;
         try {
             u = getRequestUser(crc);
@@ -90,7 +103,14 @@ public class Users extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/changeIdentifier/{newIdentifier}")
-    public Response changeAuthenticatedUserIdentifier(@Context ContainerRequestContext crc, @PathParam("identifier") String oldIdentifier, @PathParam("newIdentifier")  String newIdentifier) {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Changes a user identifier",
+            description = "Changes an authenticated user's identifier when the requester is a superuser.")
+    public Response changeAuthenticatedUserIdentifier(@Context ContainerRequestContext crc,
+            @Parameter(description = "Current authenticated user identifier.", required = true)
+            @PathParam("identifier") String oldIdentifier,
+            @Parameter(description = "New authenticated user identifier to assign.", required = true)
+            @PathParam("newIdentifier") String newIdentifier) {
         User u;
         try {
             u = getRequestUser(crc);
@@ -124,6 +144,9 @@ public class Users extends AbstractApiBean {
     @Path("token")
     @AuthRequired
     @DELETE
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Deletes the current user's API token",
+            description = "Removes the API token for the authenticated user.")
     public Response deleteToken(@Context ContainerRequestContext crc) {
         User u = getRequestUser(crc);
         AuthenticatedUser au;
@@ -143,6 +166,9 @@ public class Users extends AbstractApiBean {
     @Path("token")
     @AuthRequired
     @GET
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Returns the current user's API token expiration",
+            description = "Returns the authenticated user's API token string and expiration time.")
     public Response getTokenExpirationDate(@Context ContainerRequestContext crc) {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
@@ -162,7 +188,12 @@ public class Users extends AbstractApiBean {
     @Path("token/recreate")
     @AuthRequired
     @POST
-    public Response recreateToken(@Context ContainerRequestContext crc, @QueryParam("returnExpiration") boolean returnExpiration) {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Recreates the current user's API token",
+            description = "Deletes the authenticated user's existing API token, creates a new token, and optionally includes its expiration time in the response.")
+    public Response recreateToken(@Context ContainerRequestContext crc,
+            @Parameter(description = "Include the new token expiration time in the response.")
+            @QueryParam("returnExpiration") boolean returnExpiration) {
         User u = getRequestUser(crc);
 
         AuthenticatedUser au;        
@@ -190,6 +221,9 @@ public class Users extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path(":me")
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Returns the authenticated user",
+            description = "Returns the authenticated user associated with the supplied API token or active API session.")
     public Response getAuthenticatedUserByToken(@Context ContainerRequestContext crc) {
 
         String tokenFromRequestAPI = getRequestApiKey();
@@ -211,7 +245,12 @@ public class Users extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/removeRoles")
-    public Response removeUserRoles(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Removes all roles from a user",
+            description = "Revokes all role assignments for the specified authenticated user.")
+    public Response removeUserRoles(@Context ContainerRequestContext crc,
+            @Parameter(description = "Authenticated user identifier whose role assignments are removed.", required = true)
+            @PathParam("identifier") String identifier) {
         try {
             AuthenticatedUser userToModify = authSvc.getAuthenticatedUser(identifier);
             if (userToModify == null) {
@@ -227,7 +266,12 @@ public class Users extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/traces")
-    public Response getTraces(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Returns user traces",
+            description = "Returns trace information showing where the specified authenticated user appears across role assignments, groups, datasets, files, guestbooks, and saved searches.")
+    public Response getTraces(@Context ContainerRequestContext crc,
+            @Parameter(description = "Authenticated user identifier whose traces are returned.", required = true)
+            @PathParam("identifier") String identifier) {
         try {
             AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
             JsonObjectBuilder jsonObj = execCommand(new GetUserTracesCommand(createDataverseRequest(getRequestUser(crc)), userToQuery, null));
@@ -243,7 +287,14 @@ public class Users extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/traces/{element}")
     @Produces("text/csv, application/json")
-    public Response getTracesElement(@Context ContainerRequestContext crc, @Context Request req, @PathParam("identifier") String identifier, @PathParam("element") String element) {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Returns a user trace element",
+            description = "Returns one category of trace information for the specified authenticated user as JSON or CSV.")
+    public Response getTracesElement(@Context ContainerRequestContext crc, @Context Request req,
+            @Parameter(description = "Authenticated user identifier whose trace element is returned.", required = true)
+            @PathParam("identifier") String identifier,
+            @Parameter(description = "Trace category to return, such as roleAssignments, explicitGroups, guestbookEntries, or savedSearches.", required = true)
+            @PathParam("element") String element) {
         try {
             AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
             if(!elements.contains(element)) {
@@ -276,7 +327,14 @@ public class Users extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/allowedCollections/{permission}")
     @Produces("application/json")
-    public Response getUserPermittedCollections(@Context ContainerRequestContext crc, @Context Request req, @PathParam("identifier") String identifier, @PathParam("permission") String permission) {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Lists collections permitted for a user",
+            description = "Returns collections where the specified user has the requested permission when the requester is that user or a superuser.")
+    public Response getUserPermittedCollections(@Context ContainerRequestContext crc, @Context Request req,
+            @Parameter(description = "Authenticated user identifier whose permitted collections are returned.", required = true)
+            @PathParam("identifier") String identifier,
+            @Parameter(description = "Permission name used to select permitted collections.", required = true)
+            @PathParam("permission") String permission) {
         AuthenticatedUser authenticatedUser = null;
         try {
             authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
@@ -297,7 +355,11 @@ public class Users extends AbstractApiBean {
 
     @POST
     @Path("register")
-    public Response registerOIDCUser(String body) {
+    @Operation(summary = "Registers an OIDC user",
+            description = "Registers an OIDC user from the supplied user JSON when API bearer authentication is enabled and a bearer token is present.")
+    public Response registerOIDCUser(
+            @RequestBody(description = "User JSON parsed into a new authenticated OIDC user registration.")
+            String body) {
         if (!FeatureFlags.API_BEARER_AUTH.enabled()) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, BundleUtil.getStringFromBundle("users.api.errors.bearerAuthFeatureFlagDisabled"));
         }

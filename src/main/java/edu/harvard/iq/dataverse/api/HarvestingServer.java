@@ -35,6 +35,11 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
  *
@@ -42,6 +47,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 @Stateless
 @Path("harvest/server/oaisets")
+@Tag(name = "Admin", description = "Administrative Dataverse operations.")
 public class HarvestingServer extends AbstractApiBean {
     @EJB
     OAISetServiceBean oaiSetService;
@@ -53,7 +59,11 @@ public class HarvestingServer extends AbstractApiBean {
     // Create, Modify, and Delete we should also add them here.
     
     @GET
-    public Response oaiSets(@QueryParam("key") String apiKey) throws IOException {
+    @Operation(summary = "Lists OAI sets",
+            description = "Returns all configured OAI sets with name, spec, description, definition, and version.")
+    public Response oaiSets(
+            @Parameter(description = "Legacy key value accepted by the endpoint.")
+            @QueryParam("key") String apiKey) throws IOException {
     
         List<OAISet> oaiSets = null;
         try {
@@ -78,7 +88,13 @@ public class HarvestingServer extends AbstractApiBean {
     
     @GET
     @Path("{specname}")
-    public Response oaiSet(@PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException {
+    @Operation(summary = "Returns an OAI set",
+            description = "Returns the OAI set with the specified set specification name.")
+    public Response oaiSet(
+            @Parameter(description = "OAI set specification name to return.", required = true)
+            @PathParam("specname") String spec,
+            @Parameter(description = "Legacy key value accepted by the endpoint.")
+            @QueryParam("key") String apiKey) throws IOException {
         
         OAISet set = null;  
         try {
@@ -109,7 +125,14 @@ public class HarvestingServer extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("/add")
-    public Response createOaiSet(@Context ContainerRequestContext crc, String jsonBody, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Creates an OAI set",
+            description = "Creates an OAI set from name, definition, and optional description JSON when the authenticated user is a superuser.")
+    public Response createOaiSet(@Context ContainerRequestContext crc,
+            @RequestBody(description = "OAI set JSON containing name, definition, and optional description.")
+            String jsonBody,
+            @Parameter(hidden = true)
+            @QueryParam("key") String apiKey) throws IOException, JsonParseException {
         /*
 	     * authorization modeled after the UI (aka HarvestingSetsPage)
          */
@@ -179,7 +202,16 @@ public class HarvestingServer extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{specname}")
-    public Response modifyOaiSet(@Context ContainerRequestContext crc, String jsonBody, @PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Updates an OAI set",
+            description = "Updates the definition or description of an OAI set when the authenticated user is a superuser.")
+    public Response modifyOaiSet(@Context ContainerRequestContext crc,
+            @RequestBody(description = "OAI set update JSON containing definition, description, or both.")
+            String jsonBody,
+            @Parameter(description = "OAI set specification name to update.", required = true)
+            @PathParam("specname") String spec,
+            @Parameter(hidden = true)
+            @QueryParam("key") String apiKey) throws IOException, JsonParseException {
 
         AuthenticatedUser dvUser;
         try {
@@ -232,7 +264,14 @@ public class HarvestingServer extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{specname}")
-    public Response deleteOaiSet(@Context ContainerRequestContext crc, @PathParam("specname") String spec, @QueryParam("key") String apiKey) {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Deletes an OAI set",
+            description = "Marks an OAI set for deletion and removes it when the authenticated user is a superuser.")
+    public Response deleteOaiSet(@Context ContainerRequestContext crc,
+            @Parameter(description = "OAI set specification name to delete.", required = true)
+            @PathParam("specname") String spec,
+            @Parameter(hidden = true)
+            @QueryParam("key") String apiKey) {
         
         AuthenticatedUser dvUser;
         try {
@@ -269,7 +308,13 @@ public class HarvestingServer extends AbstractApiBean {
     
     @GET
     @Path("{specname}/datasets")
-    public Response oaiSetListDatasets(@PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException {
+    @Operation(summary = "Lists datasets in an OAI set",
+            description = "Validates that the specified OAI set exists and returns the current placeholder response for dataset listing.")
+    public Response oaiSetListDatasets(
+            @Parameter(description = "OAI set specification name whose datasets are requested.", required = true)
+            @PathParam("specname") String spec,
+            @Parameter(description = "Legacy key value accepted by the endpoint.")
+            @QueryParam("key") String apiKey) throws IOException {
         OAISet set = null;  
         try {
             set = oaiSetService.findBySpec(spec);

@@ -22,6 +22,11 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
  * Where the licenses API calls live.
@@ -30,12 +35,15 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
  */
 @Stateless
 @Path("licenses")
+@Tag(name = "Licenses", description = "License lookup and administration operations.")
 public class Licenses extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Licenses.class.getName());
 
     @GET
     @Path("/")
+    @Operation(summary = "Lists licenses",
+            description = "Returns all configured licenses as JSON.")
     public Response getLicenses() {
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
         for (License license : licenseSvc.listAll()) {
@@ -46,7 +54,11 @@ public class Licenses extends AbstractApiBean {
 
     @GET
     @Path("/{id}")
-    public Response getLicenseById(@PathParam("id") long id) {
+    @Operation(summary = "Returns a license",
+            description = "Returns the configured license with the specified numeric id.")
+    public Response getLicenseById(
+            @Parameter(description = "Numeric id of the license to return.", required = true)
+            @PathParam("id") long id) {
         License license = licenseSvc.getById(id);
         if (license == null)
             return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
@@ -56,7 +68,12 @@ public class Licenses extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("/")
-    public Response addLicense(@Context ContainerRequestContext crc, License license) {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Creates a license",
+            description = "Creates a license when the authenticated user is a superuser and returns the created license location.")
+    public Response addLicense(@Context ContainerRequestContext crc,
+            @RequestBody(description = "License definition to persist, including name, URI, active state, and sort order.")
+            License license) {
         User authenticatedUser;
         try {
             authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
@@ -85,6 +102,8 @@ public class Licenses extends AbstractApiBean {
 
     @GET
     @Path("/default")
+    @Operation(summary = "Returns the default license",
+            description = "Returns the numeric id of the configured default license.")
     public Response getDefault() {
         return ok("Default license ID is " + licenseSvc.getDefault().getId());
     }
@@ -92,7 +111,12 @@ public class Licenses extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("/default/{id}")
-    public Response setDefault(@Context ContainerRequestContext crc, @PathParam("id") long id) {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Sets the default license",
+            description = "Sets the specified license as the default when the authenticated user is a superuser.")
+    public Response setDefault(@Context ContainerRequestContext crc,
+            @Parameter(description = "Numeric id of the license to make default.", required = true)
+            @PathParam("id") long id) {
         User authenticatedUser;
         try {
             authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
@@ -124,7 +148,14 @@ public class Licenses extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("/{id}/:active/{activeState}")
-    public Response setActiveState(@Context ContainerRequestContext crc, @PathParam("id") long id, @PathParam("activeState") boolean active) {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Sets license active state",
+            description = "Updates whether the specified license is active when the authenticated user is a superuser.")
+    public Response setActiveState(@Context ContainerRequestContext crc,
+            @Parameter(description = "Numeric id of the license to update.", required = true)
+            @PathParam("id") long id,
+            @Parameter(description = "New active state for the license.", required = true)
+            @PathParam("activeState") boolean active) {
         User authenticatedUser;
         try {
             authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
@@ -155,7 +186,14 @@ public class Licenses extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("/{id}/:sortOrder/{sortOrder}")
-    public Response setSortOrder(@Context ContainerRequestContext crc, @PathParam("id") long id, @PathParam("sortOrder") long sortOrder) {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Sets license sort order",
+            description = "Updates the sort order for the specified license when the authenticated user is a superuser.")
+    public Response setSortOrder(@Context ContainerRequestContext crc,
+            @Parameter(description = "Numeric id of the license to update.", required = true)
+            @PathParam("id") long id,
+            @Parameter(description = "New sort order value for the license.", required = true)
+            @PathParam("sortOrder") long sortOrder) {
         User authenticatedUser;
         try {
             authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
@@ -187,7 +225,12 @@ public class Licenses extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("/{id}")
-    public Response deleteLicenseById(@Context ContainerRequestContext crc, @PathParam("id") long id) {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Deletes a license",
+            description = "Deletes a non-default license when the authenticated user is a superuser.")
+    public Response deleteLicenseById(@Context ContainerRequestContext crc,
+            @Parameter(description = "Numeric id of the license to delete.", required = true)
+            @PathParam("id") long id) {
         User authenticatedUser;
         try {
             authenticatedUser = getRequestAuthenticatedUserOrDie(crc);

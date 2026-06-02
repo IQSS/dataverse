@@ -24,8 +24,13 @@ import jakarta.ws.rs.core.Response;
 
 import java.text.MessageFormat;
 import java.util.logging.Logger;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("sendfeedback")
+@Tag(name = "Users", description = "User account and authenticated user operations.")
 public class SendFeedbackAPI extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(SendFeedbackAPI.class.getCanonicalName());
     @EJB
@@ -36,10 +41,15 @@ public class SendFeedbackAPI extends AbstractApiBean {
      * This method mimics the contact form and sends an email to the contacts of the
      * specified Collection/Dataset/DataFile, optionally ccing the support email
      * address, or to the support email address when there is no target object.
-     **/
+    **/
     @POST
     @AuthRequired
-    public Response submitFeedback(@Context ContainerRequestContext crc, String jsonString) {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Submits feedback",
+            description = "Sends a feedback email to contacts for a target object or to the support address after validating the sender and message body.")
+    public Response submitFeedback(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Feedback JSON with subject, body, optional sender email, and an optional target id or identifier.")
+            String jsonString) {
         try {
             JsonObject jsonObject = JsonUtil.getJsonObject(jsonString);
             if (!jsonObject.containsKey("subject") || !jsonObject.containsKey("body")) {

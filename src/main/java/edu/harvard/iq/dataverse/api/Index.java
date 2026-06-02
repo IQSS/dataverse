@@ -67,8 +67,12 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("admin/index")
+@Tag(name = "Admin", description = "Administrative Dataverse operations.")
 public class Index extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Index.class.getCanonicalName());
@@ -104,13 +108,29 @@ public class Index extends AbstractApiBean {
     public static String permsIndexed = "permsIndexed";
 
     @GET
-    public Response indexAllOrSubset(@QueryParam("numPartitions") Long numPartitionsSelected, @QueryParam("partitionIdToProcess") Long partitionIdToProcess, @QueryParam("previewOnly") boolean previewOnly) {
+    @Operation(summary = "Starts indexing all content",
+            description = "Starts indexing all dataverses and datasets or one selected partition, with an option to preview the selected workload.")
+    public Response indexAllOrSubset(
+            @Parameter(description = "Number of index partitions to divide the workload into.")
+            @QueryParam("numPartitions") Long numPartitionsSelected,
+            @Parameter(description = "Partition id to process when the workload is divided into partitions.")
+            @QueryParam("partitionIdToProcess") Long partitionIdToProcess,
+            @Parameter(description = "Preview the selected indexing workload without starting indexing.")
+            @QueryParam("previewOnly") boolean previewOnly) {
         return indexAllOrSubset(numPartitionsSelected, partitionIdToProcess, false, previewOnly);
     }
 
     @GET
     @Path("continue")
-    public Response indexAllOrSubsetContinue(@QueryParam("numPartitions") Long numPartitionsSelected, @QueryParam("partitionIdToProcess") Long partitionIdToProcess, @QueryParam("previewOnly") boolean previewOnly) {
+    @Operation(summary = "Continues indexing unindexed content",
+            description = "Starts indexing one selected partition while skipping content that has already been indexed, with an option to preview the selected workload.")
+    public Response indexAllOrSubsetContinue(
+            @Parameter(description = "Number of index partitions to divide the workload into.")
+            @QueryParam("numPartitions") Long numPartitionsSelected,
+            @Parameter(description = "Partition id to process when the workload is divided into partitions.")
+            @QueryParam("partitionIdToProcess") Long partitionIdToProcess,
+            @Parameter(description = "Preview the selected indexing workload without starting indexing.")
+            @QueryParam("previewOnly") boolean previewOnly) {
         return indexAllOrSubset(numPartitionsSelected, partitionIdToProcess, true, previewOnly);
     }
 
@@ -208,6 +228,8 @@ public class Index extends AbstractApiBean {
 
     @GET
     @Path("clear")
+    @Operation(summary = "Clears the Solr index",
+            description = "Clears all Solr documents and resets stored index timestamps.")
     public Response clearSolrIndex() {
         try {
             JsonObjectBuilder response = SolrIndexService.deleteAllFromSolrAndResetIndexTimes();
@@ -219,7 +241,13 @@ public class Index extends AbstractApiBean {
     
     @GET
     @Path("{type}/{id}")
-    public Response indexTypeById(@PathParam("type") String type, @PathParam("id") Long id) {
+    @Operation(summary = "Starts indexing one object",
+            description = "Starts reindexing a dataverse, dataset, or file by numeric id, or removes a stale Solr document when the object is missing.")
+    public Response indexTypeById(
+            @Parameter(description = "Object type to index: dataverses, datasets, or files.", required = true)
+            @PathParam("type") String type,
+            @Parameter(description = "Numeric id of the object to index.", required = true)
+            @PathParam("id") Long id) {
         try {
             if (type.equals("dataverses")) {
                 Dataverse dataverse = dataverseService.find(id);
@@ -296,7 +324,11 @@ public class Index extends AbstractApiBean {
 
     @GET
     @Path("dataset")
-    public Response indexDatasetByPersistentId(@QueryParam("persistentId") String persistentId) {
+    @Operation(summary = "Starts indexing a dataset by PID",
+            description = "Looks up a dataset by persistent identifier, starts dataset indexing, and returns version identifiers for the dataset.")
+    public Response indexDatasetByPersistentId(
+            @Parameter(description = "Persistent identifier of the dataset to index.", required = true)
+            @QueryParam("persistentId") String persistentId) {
         if (persistentId == null) {
             return error(Status.BAD_REQUEST, "No persistent id given.");
         }
@@ -337,7 +369,11 @@ public class Index extends AbstractApiBean {
      */
     @DELETE
     @Path("datasets/{id}")
-    public Response clearDatasetFromIndex(@PathParam("id") Long id) {
+    @Operation(summary = "Clears a dataset from the Solr index",
+            description = "Removes the Solr document for the specified dataset id, even when the dataset no longer exists in the database.")
+    public Response clearDatasetFromIndex(
+            @Parameter(description = "Numeric id of the dataset to remove from Solr.", required = true)
+            @PathParam("id") Long id) {
         Dataset dataset = datasetService.find(id);
         // We'll attempt to delete the Solr document regardless of whether the 
         // dataset exists in the database: 

@@ -45,9 +45,11 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -88,6 +90,7 @@ import edu.harvard.iq.dataverse.api.exceptions.AuthorizationRequiredException;
  */
 
 @Path("access")
+@Tag(name = "Access", description = "Download files, bundles, citations, metadata, and access-related file assets.")
 public class Access extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Access.class.getCanonicalName());
         
@@ -162,8 +165,18 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafile/bundle/{fileId}")
     @Produces({"application/zip"})
-    public BundleDownloadInstance datafileBundle(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId,
-                                                 @QueryParam("gbrecs") boolean gbrecs, @QueryParam("gbrids") String gbrids,
+    @Operation(summary = "Build a file bundle",
+            description = "Streams a ZIP bundle for a data file, including citation exports and optional tabular metadata when available.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public BundleDownloadInstance datafileBundle(@Context ContainerRequestContext crc,
+                                                 @Parameter(description = "Data file id or persistent identifier for the bundle.", required = true)
+                                                 @PathParam("fileId") String fileId,
+                                                 @Parameter(description = "File metadata id used to select a specific file metadata record.")
+                                                 @QueryParam("fileMetadataId") Long fileMetadataId,
+                                                 @Parameter(description = "Whether guestbook records have already been written for this download.")
+                                                 @QueryParam("gbrecs") boolean gbrecs,
+                                                 @Parameter(description = "Guestbook response id list supplied by the user interface.")
+                                                 @QueryParam("gbrids") String gbrids,
                                                  @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
 
         DataFile df = findDataFileOrDieWrapper(fileId);
@@ -224,8 +237,21 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafile/bundle/{fileId}")
     @Produces({"application/zip"})
-    public BundleDownloadInstance datafileBundleWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("gbrids") String gbrids,
-                                                                      @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, String jsonBody) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    @Operation(summary = "Submit guestbook response for a file bundle",
+            description = "Records the supplied guestbook response and then streams the ZIP bundle for a data file.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public BundleDownloadInstance datafileBundleWithGuestbookResponse(@Context ContainerRequestContext crc,
+                                                                      @Parameter(description = "Data file id or persistent identifier for the bundle.", required = true)
+                                                                      @PathParam("fileId") String fileId,
+                                                                      @Parameter(description = "File metadata id used to select a specific file metadata record.")
+                                                                      @QueryParam("fileMetadataId") Long fileMetadataId,
+                                                                      @Parameter(description = "Whether guestbook records have already been written for this download.")
+                                                                      @QueryParam("gbrecs") boolean gbrecs,
+                                                                      @Parameter(description = "Guestbook response id list supplied by the user interface.")
+                                                                      @QueryParam("gbrids") String gbrids,
+                                                                      @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,
+                                                                      @RequestBody(description = "Guestbook response JSON for the requested data file.")
+                                                                      String jsonBody) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
 
         processDatafileWithGuestbookResponse(crc, headers, fileId, uriInfo, gbrecs, jsonBody);
         // JSF UI passes the guestbook response id(s) in thus this qp can be removed when JSF is removed
@@ -406,8 +432,17 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafile/{fileId:.+}")
     @Produces({"application/json"})
-    public Response datafileWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId,
-                                                  @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, String jsonBody) {
+    @Operation(summary = "Submit guestbook response for a data file",
+            description = "Records the supplied guestbook response and returns access details for a data file download.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response datafileWithGuestbookResponse(@Context ContainerRequestContext crc,
+                                                  @Parameter(description = "Data file id, persistent identifier, or path-style file reference.", required = true)
+                                                  @PathParam("fileId") String fileId,
+                                                  @Parameter(description = "Whether guestbook records have already been written for this download.")
+                                                  @QueryParam("gbrecs") boolean gbrecs,
+                                                  @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,
+                                                  @RequestBody(description = "Guestbook response JSON for the requested data file.")
+                                                  String jsonBody) {
 
         fileId = normalizeFileId(fileId);
         return processDatafileWithGuestbookResponse(crc, headers, fileId, uriInfo, gbrecs, jsonBody);
@@ -579,7 +614,19 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafile/{fileId}/metadata")
     @Produces({"text/xml"})
-    public String tabularDatafileMetadata(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
+    @Operation(summary = "Export tabular file metadata",
+            description = "Streams tabular data file metadata in the default DDI XML format.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public String tabularDatafileMetadata(@Context ContainerRequestContext crc,
+                                          @Parameter(description = "Data file id or persistent identifier for the tabular file.", required = true)
+                                          @PathParam("fileId") String fileId,
+                                          @Parameter(description = "File metadata id used to select a specific file metadata record.")
+                                          @QueryParam("fileMetadataId") Long fileMetadataId,
+                                          @Parameter(description = "Comma-separated metadata sections to exclude from the export.")
+                                          @QueryParam("exclude") String exclude,
+                                          @Parameter(description = "Comma-separated metadata sections to include in the export.")
+                                          @QueryParam("include") String include,
+                                          @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
         return tabularDatafileMetadataDDI(crc, fileId, fileMetadataId, exclude, include, header, response);
     }
     
@@ -591,7 +638,19 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @GET
     @Produces({"text/xml"})
-    public String tabularDatafileMetadataDDI(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
+    @Operation(summary = "Export tabular file metadata as DDI",
+            description = "Streams DDI XML metadata for a tabular data file.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public String tabularDatafileMetadataDDI(@Context ContainerRequestContext crc,
+                                             @Parameter(description = "Data file id or persistent identifier for the tabular file.", required = true)
+                                             @PathParam("fileId") String fileId,
+                                             @Parameter(description = "File metadata id used to select a specific file metadata record.")
+                                             @QueryParam("fileMetadataId") Long fileMetadataId,
+                                             @Parameter(description = "Comma-separated metadata sections to exclude from the export.")
+                                             @QueryParam("exclude") String exclude,
+                                             @Parameter(description = "Comma-separated metadata sections to include in the export.")
+                                             @QueryParam("include") String include,
+                                             @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
 
         DataFile dataFile = null; 
@@ -799,7 +858,17 @@ public class Access extends AbstractApiBean {
     @Path("datafiles")
     @Consumes("text/plain")
     @Produces({ "application/zip" })
-    public Response postDownloadDatafiles(@Context ContainerRequestContext crc, String body, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("gbrids") String gbrids, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+    @Operation(summary = "Stream a ZIP for selected files",
+            description = "Accepts a text list of data file ids and streams the selected files as a ZIP archive.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response postDownloadDatafiles(@Context ContainerRequestContext crc,
+                                          @RequestBody(description = "Text list of data file ids to include in the ZIP archive.")
+                                          String body,
+                                          @Parameter(description = "Whether guestbook records have already been written for this download.")
+                                          @QueryParam("gbrecs") boolean gbrecs,
+                                          @Parameter(description = "Guestbook response id list supplied by the user interface.")
+                                          @QueryParam("gbrids") String gbrids,
+                                          @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
 
         processDatafileWithGuestbookResponse(crc, headers, body, uriInfo, gbrecs, body);
         // JSF UI passes the guestbook response id(s) in thus this qp can be removed when JSF is removed
@@ -861,7 +930,17 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("dataset/{id}")
     @Produces({"application/zip"})
-    public Response downloadAllFromLatestWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("id") String datasetIdOrPersistentId, @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, String jsonBody) throws WebApplicationException {
+    @Operation(summary = "Submit guestbook response for latest dataset files",
+            description = "Records a guestbook response and prepares a ZIP download for files in the latest accessible dataset version.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response downloadAllFromLatestWithGuestbookResponse(@Context ContainerRequestContext crc,
+                                                               @Parameter(description = "Dataset id or persistent identifier.", required = true)
+                                                               @PathParam("id") String datasetIdOrPersistentId,
+                                                               @Parameter(description = "Whether guestbook records have already been written for this download.")
+                                                               @QueryParam("gbrecs") boolean gbrecs,
+                                                               @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,
+                                                               @RequestBody(description = "Guestbook response JSON for the dataset file download.")
+                                                               String jsonBody) throws WebApplicationException {
         try {
             User user = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(user);
@@ -1290,7 +1369,9 @@ public class Access extends AbstractApiBean {
     @Path("dsCardImage/{versionId}")
     @GET
     @Produces({ "image/png" })
-    public InputStream dsCardImage(@PathParam("versionId") Long versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
+    public InputStream dsCardImage(@Parameter(description = "Dataset version id used to locate the card image.", required = true)
+                                   @PathParam("versionId") Long versionId,
+                                   @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         
         
         DatasetVersion datasetVersion = versionService.find(versionId);

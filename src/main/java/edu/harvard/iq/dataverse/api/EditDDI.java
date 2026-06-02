@@ -40,6 +40,11 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.PathParam;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
@@ -58,6 +63,7 @@ import jakarta.validation.ConstraintViolationException;
 
 @Stateless
 @Path("edit")
+@Tag(name = "Files", description = "Data file metadata, upload, replacement, and editing operations.")
 public class EditDDI  extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Access.class.getCanonicalName());
 
@@ -93,7 +99,14 @@ public class EditDDI  extends AbstractApiBean {
     @AuthRequired
     @Path("{fileId}")
     @Consumes("application/xml")
-    public Response edit(@Context ContainerRequestContext crc, InputStream body, @PathParam("fileId") String fileId) {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Updates tabular file variable metadata",
+            description = "Parses DDI XML for a tabular data file and updates variable metadata on the draft dataset version, creating a draft when needed.")
+    public Response edit(@Context ContainerRequestContext crc,
+            @RequestBody(description = "DDI XML containing variable metadata and variable group updates for the tabular file.")
+            InputStream body,
+            @Parameter(description = "Data file id whose variable metadata is updated.", required = true)
+            @PathParam("fileId") String fileId) {
         DataFile dataFile = null;
         try {
             dataFile = findDataFileOrDie(fileId);

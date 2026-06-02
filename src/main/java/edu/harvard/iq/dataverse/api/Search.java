@@ -37,12 +37,15 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
  * User-facing documentation:
  * <a href="http://guides.dataverse.org/en/latest/api/search.html">http://guides.dataverse.org/en/latest/api/search.html</a>
  */
 @Path("search")
+@Tag(name = "Search", description = "Search and search service discovery operations.")
 public class Search extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Search.class.getCanonicalName());
@@ -289,6 +292,8 @@ public class Search extends AbstractApiBean {
 
     @GET
     @Path("/services")
+    @Operation(summary = "Lists search services",
+            description = "Returns the configured search service names, display names, and the default search service.")
     public Response getSearchEngines() {
         Map<String, SearchService> availableEngines = searchServiceFactory.getAvailableServices();
         String defaultServiceName = JvmSettings.DEFAULT_SEARCH_SERVICE.lookupOptional().orElse(SearchServiceFactory.INTERNAL_SOLR_SERVICE_NAME);

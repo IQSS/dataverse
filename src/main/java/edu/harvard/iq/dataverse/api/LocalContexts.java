@@ -29,8 +29,13 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.container.ContainerRequestContext;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("localcontexts")
+@Tag(name = "Datasets", description = "Dataset metadata, versions, files, and publishing operations.")
 public class LocalContexts extends AbstractApiBean {
 
     protected static final Logger logger = Logger.getLogger(LocalContexts.class.getName());
@@ -48,7 +53,12 @@ public class LocalContexts extends AbstractApiBean {
     @Path("/datasets/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @AuthRequired
-    public Response getDatasetLocalContexts(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Finds Local Contexts projects for a dataset",
+            description = "Queries the configured Local Contexts service by dataset DOI and returns matching project information when the requester is allowed to inspect the dataset.")
+    public Response getDatasetLocalContexts(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier whose DOI is sent to Local Contexts.", required = true)
+            @PathParam("id") String id) {
         try {
             Dataset dataset = findDatasetOrDie(id);
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
@@ -112,7 +122,13 @@ public class LocalContexts extends AbstractApiBean {
     @GET
     @Path("/datasets/{id}/{projectId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response searchLocalContexts(@PathParam("id") String datasetId, @PathParam("projectId") String projectId) {
+    @Operation(summary = "Returns a Local Contexts project",
+            description = "Returns a Local Contexts project only when the project response includes a DOI matching the specified dataset.")
+    public Response searchLocalContexts(
+            @Parameter(description = "Dataset id or persistent identifier used to validate the Local Contexts project DOI.", required = true)
+            @PathParam("id") String datasetId,
+            @Parameter(description = "Local Contexts project id to retrieve.", required = true)
+            @PathParam("projectId") String projectId) {
         try {
             Dataset dataset = findDatasetOrDie(datasetId);
             String localContextsUrl = JvmSettings.LOCALCONTEXTS_URL.lookupOptional().orElse(null);

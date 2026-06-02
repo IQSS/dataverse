@@ -11,14 +11,22 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("externalTools")
+@Tag(name = "External Tools", description = "External tool registration and lookup operations.")
 public class ExternalToolsApi extends AbstractApiBean {
 
     @Inject
     ExternalTools externalTools;
 
     @GET
+    @Operation(summary = "Lists external tools",
+            description = "Returns all registered external tools.")
     public Response getExternalTools() {
         //ToDo - allow filtering by scope, tool type, file content type, etc?
         return externalTools.getExternalTools();
@@ -26,13 +34,22 @@ public class ExternalToolsApi extends AbstractApiBean {
 
     @GET
     @Path("{id}")
-    public Response getExternalTool(@PathParam("id") long externalToolIdFromUser) {
+    @Operation(summary = "Returns an external tool",
+            description = "Returns the registered external tool with the specified numeric id.")
+    public Response getExternalTool(
+            @Parameter(description = "Numeric id of the external tool to return.", required = true)
+            @PathParam("id") long externalToolIdFromUser) {
         return externalTools.getExternalTool(externalToolIdFromUser);
     }
 
     @POST
     @AuthRequired
-    public Response addExternalTool(@Context ContainerRequestContext crc, String manifest) {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Registers an external tool",
+            description = "Registers an external tool from its manifest when the authenticated user is a superuser.")
+    public Response addExternalTool(@Context ContainerRequestContext crc,
+            @RequestBody(description = "External tool manifest JSON to register.")
+            String manifest) {
         Response notAuthorized = authorize(crc);
         return notAuthorized == null ? externalTools.addExternalTool(manifest) : notAuthorized;
     }
@@ -40,7 +57,12 @@ public class ExternalToolsApi extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{id}")
-    public Response deleteExternalTool(@Context ContainerRequestContext crc, @PathParam("id") long externalToolIdFromUser) {
+    @SecurityRequirement(name = "DataverseApiKey")
+    @Operation(summary = "Deletes an external tool",
+            description = "Deletes the registered external tool with the specified numeric id when the authenticated user is a superuser.")
+    public Response deleteExternalTool(@Context ContainerRequestContext crc,
+            @Parameter(description = "Numeric id of the external tool to delete.", required = true)
+            @PathParam("id") long externalToolIdFromUser) {
         Response notAuthorized = authorize(crc);
         return notAuthorized == null ? externalTools.deleteExternalTool(externalToolIdFromUser) : notAuthorized;
     }

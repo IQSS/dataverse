@@ -135,10 +135,15 @@ import jakarta.persistence.Query;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.StreamingOutput;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.nio.file.Paths;
 import java.util.TreeMap;
@@ -150,6 +155,7 @@ import java.util.TreeMap;
  */
 @Stateless
 @Path("admin")
+@Tag(name = "Admin", description = "Administrative settings, users, roles, indexing, validation, and maintenance operations.")
 public class Admin extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Admin.class.getName());
@@ -204,6 +210,8 @@ public class Admin extends AbstractApiBean {
     
     @Path("settings")
     @GET
+    @Operation(summary = "Enumerate database settings",
+            description = "Lists all Dataverse database settings as a JSON object.")
     @APIResponses({
         @APIResponse(responseCode = "200",
             description = "All database options successfully queried",
@@ -217,10 +225,13 @@ public class Admin extends AbstractApiBean {
     @Path("settings")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Replace database settings",
+            description = "Creates or replaces multiple Dataverse database settings from a JSON object.")
     @APIResponses({
         @APIResponse(responseCode = "200", description = "All database options successfully updated")
     })
-    public Response putAllSettings(JsonObject settings) {
+    public Response putAllSettings(@RequestBody(description = "JSON object whose keys are setting names and whose values are setting values.")
+            JsonObject settings) {
         try {
             // Basic JSON structure validation only
             if (settings == null || settings.isEmpty()) {
@@ -237,7 +248,12 @@ public class Admin extends AbstractApiBean {
     
     @Path("settings/{name}")
     @PUT
-    public Response putSetting(@PathParam("name") String name, String content) {
+    @Operation(summary = "Store a database setting",
+            description = "Creates or replaces a Dataverse database setting value.")
+    public Response putSetting(@Parameter(description = "Database setting name.", required = true)
+            @PathParam("name") String name,
+            @RequestBody(description = "Setting value to store.")
+            String content) {
         try {
             SettingsServiceBean.validateSettingName(name);
             
@@ -250,7 +266,14 @@ public class Admin extends AbstractApiBean {
 
     @Path("settings/{name}/lang/{lang}")
     @PUT
-    public Response putSettingLang(@PathParam("name") String name, @PathParam("lang") String lang, String content) {
+    @Operation(summary = "Store a localized database setting",
+            description = "Creates or replaces a language-specific Dataverse database setting value.")
+    public Response putSettingLang(@Parameter(description = "Database setting name.", required = true)
+            @PathParam("name") String name,
+            @Parameter(description = "Language code for the localized value.", required = true)
+            @PathParam("lang") String lang,
+            @RequestBody(description = "Localized setting value to store.")
+            String content) {
         try {
             SettingsServiceBean.validateSettingName(name);
             SettingsServiceBean.validateSettingLang(lang);
@@ -264,7 +287,11 @@ public class Admin extends AbstractApiBean {
 
     @Path("settings/{name}")
     @GET
-    public Response getSetting(@PathParam("name") String name) {
+    @Operation(operationId = "Admin_getSettingByName",
+            summary = "Read a database setting",
+            description = "Returns the value for a Dataverse database setting.")
+    public Response getSetting(@Parameter(description = "Database setting name.", required = true)
+            @PathParam("name") String name) {
         try {
             SettingsServiceBean.validateSettingName(name);
             
@@ -277,7 +304,13 @@ public class Admin extends AbstractApiBean {
     
     @Path("settings/{name}/lang/{lang}")
     @GET
-    public Response getSetting(@PathParam("name") String name, @PathParam("lang") String lang) {
+    @Operation(operationId = "Admin_getLocalizedSetting",
+            summary = "Read a localized database setting",
+            description = "Returns the language-specific value for a Dataverse database setting.")
+    public Response getSetting(@Parameter(description = "Database setting name.", required = true)
+            @PathParam("name") String name,
+            @Parameter(description = "Language code for the localized value.", required = true)
+            @PathParam("lang") String lang) {
         try {
             SettingsServiceBean.validateSettingName(name);
             SettingsServiceBean.validateSettingLang(lang);
@@ -291,7 +324,10 @@ public class Admin extends AbstractApiBean {
 
     @Path("settings/{name}")
     @DELETE
-    public Response deleteSetting(@PathParam("name") String name) {
+    @Operation(summary = "Remove a database setting",
+            description = "Deletes a Dataverse database setting by name.")
+    public Response deleteSetting(@Parameter(description = "Database setting name.", required = true)
+            @PathParam("name") String name) {
         try {
             SettingsServiceBean.validateSettingName(name);
             
@@ -304,7 +340,12 @@ public class Admin extends AbstractApiBean {
 
     @Path("settings/{name}/lang/{lang}")
     @DELETE
-    public Response deleteSettingLang(@PathParam("name") String name, @PathParam("lang") String lang) {
+    @Operation(summary = "Remove a localized database setting",
+            description = "Deletes a language-specific Dataverse database setting value.")
+    public Response deleteSettingLang(@Parameter(description = "Database setting name.", required = true)
+            @PathParam("name") String name,
+            @Parameter(description = "Language code for the localized value.", required = true)
+            @PathParam("lang") String lang) {
         try {
             SettingsServiceBean.validateSettingName(name);
             SettingsServiceBean.validateSettingLang(lang);
@@ -318,7 +359,10 @@ public class Admin extends AbstractApiBean {
         
     @Path("template/{id}")
     @DELETE
-    public Response deleteTemplate(@PathParam("id") long id) {
+    @Operation(summary = "Remove a metadata template",
+            description = "Deletes a metadata template and clears default-template references that point to it.")
+    public Response deleteTemplate(@Parameter(description = "Template database id.", required = true)
+            @PathParam("id") long id) {
         
         AuthenticatedUser superuser = authSvc.getAdminUser();
         if (superuser == null) {
@@ -346,13 +390,18 @@ public class Admin extends AbstractApiBean {
     
     @Path("templates")
     @GET
+    @Operation(summary = "Enumerate metadata templates",
+            description = "Lists metadata templates with template id, name, and owner information.")
     public Response findAllTemplates() {
         return findTemplates("");
     }
     
     @Path("templates/{alias}")
     @GET
-    public Response findTemplates(@PathParam("alias") String alias) {
+    @Operation(summary = "Enumerate metadata templates for a dataverse",
+            description = "Lists metadata templates owned by the dataverse with the supplied alias.")
+    public Response findTemplates(@Parameter(description = "Dataverse alias whose templates are listed.", required = true)
+            @PathParam("alias") String alias) {
         List<Template> templates;
 
             if (alias.isEmpty()) {
@@ -387,6 +436,8 @@ public class Admin extends AbstractApiBean {
 
     @Path("authenticationProviderFactories")
     @GET
+    @Operation(summary = "Enumerate authentication provider factories",
+            description = "Lists authentication provider factory aliases and provider information.")
     public Response listAuthProviderFactories() {
         return ok(authSvc.listProviderFactories().stream()
                 .map(f -> jsonObjectBuilder().add("alias", f.getAlias()).add("info", f.getInfo()))
@@ -395,6 +446,8 @@ public class Admin extends AbstractApiBean {
 
     @Path("authenticationProviders")
     @GET
+    @Operation(summary = "Enumerate authentication providers",
+            description = "Lists registered authentication provider rows.")
     public Response listAuthProviders() {
         return ok(em.createNamedQuery("AuthenticationProviderRow.findAll", AuthenticationProviderRow.class)
                 .getResultList().stream().map(r -> json(r)).collect(toJsonArray()));
@@ -402,7 +455,10 @@ public class Admin extends AbstractApiBean {
 
     @Path("authenticationProviders")
     @POST
-    public Response addProvider(AuthenticationProviderRow row) {
+    @Operation(summary = "Register an authentication provider",
+            description = "Creates or updates an authentication provider row and registers the provider when it is enabled.")
+    public Response addProvider(@RequestBody(description = "Authentication provider row, including id, factory alias, enabled state, and factory configuration.")
+            AuthenticationProviderRow row) {
         try {
             AuthenticationProviderRow managed = em.find(AuthenticationProviderRow.class, row.getId());
             if (managed != null) {
@@ -424,7 +480,10 @@ public class Admin extends AbstractApiBean {
 
     @Path("authenticationProviders/{id}")
     @GET
-    public Response showProvider(@PathParam("id") String id) {
+    @Operation(summary = "Read an authentication provider",
+            description = "Returns the registered authentication provider row for the supplied provider id.")
+    public Response showProvider(@Parameter(description = "Authentication provider id.", required = true)
+            @PathParam("id") String id) {
         AuthenticationProviderRow row = em.find(AuthenticationProviderRow.class, id);
         return (row != null) ? ok(json(row))
                 : error(Status.NOT_FOUND, "Can't find authetication provider with id '" + id + "'");
@@ -432,14 +491,24 @@ public class Admin extends AbstractApiBean {
 
     @POST
     @Path("authenticationProviders/{id}/:enabled")
-    public Response enableAuthenticationProvider_deprecated(@PathParam("id") String id, String body) {
+    @Operation(summary = "Set authentication provider enabled state through the deprecated route",
+            description = "Enables or disables an authentication provider using the legacy route.")
+    public Response enableAuthenticationProvider_deprecated(@Parameter(description = "Authentication provider id.", required = true)
+            @PathParam("id") String id,
+            @RequestBody(description = "Boolean value indicating whether the provider should be enabled.")
+            String body) {
         return enableAuthenticationProvider(id, body);
     }
 
     @PUT
     @Path("authenticationProviders/{id}/enabled")
     @Produces("application/json")
-    public Response enableAuthenticationProvider(@PathParam("id") String id, String body) {
+    @Operation(summary = "Switch authentication provider enabled state",
+            description = "Enables or disables a registered authentication provider.")
+    public Response enableAuthenticationProvider(@Parameter(description = "Authentication provider id.", required = true)
+            @PathParam("id") String id,
+            @RequestBody(description = "Boolean value indicating whether the provider should be enabled.")
+            String body) {
         body = body.trim();
         if (!Util.isBoolean(body)) {
             return error(Response.Status.BAD_REQUEST, "Illegal value '" + body + "'. Use 'true' or 'false'");
@@ -484,7 +553,10 @@ public class Admin extends AbstractApiBean {
 
     @GET
     @Path("authenticationProviders/{id}/enabled")
-    public Response checkAuthenticationProviderEnabled(@PathParam("id") String id) {
+    @Operation(summary = "Check authentication provider enabled state",
+            description = "Returns whether a registered authentication provider is enabled.")
+    public Response checkAuthenticationProviderEnabled(@Parameter(description = "Authentication provider id.", required = true)
+            @PathParam("id") String id) {
         List<AuthenticationProviderRow> prvs = em
                 .createNamedQuery("AuthenticationProviderRow.findById", AuthenticationProviderRow.class)
                 .setParameter("id", id).getResultList();
@@ -497,7 +569,10 @@ public class Admin extends AbstractApiBean {
 
     @DELETE
     @Path("authenticationProviders/{id}/")
-    public Response deleteAuthenticationProvider(@PathParam("id") String id) {
+    @Operation(summary = "Remove an authentication provider",
+            description = "Deletes an authentication provider row and deregisters the provider.")
+    public Response deleteAuthenticationProvider(@Parameter(description = "Authentication provider id.", required = true)
+            @PathParam("id") String id) {
         authProvidersRegistrationSvc.deregisterProvider(id);
         AuthenticationProviderRow row = em.find(AuthenticationProviderRow.class, id);
         if (row != null) {
@@ -512,7 +587,10 @@ public class Admin extends AbstractApiBean {
 
     @GET
     @Path("authenticatedUsers/{identifier}/")
-    public Response getAuthenticatedUserByIdentifier(@PathParam("identifier") String identifier) {
+    @Operation(summary = "Read an authenticated user",
+            description = "Returns account details for an authenticated user identifier.")
+    public Response getAuthenticatedUserByIdentifier(@Parameter(description = "Authenticated user identifier.", required = true)
+            @PathParam("identifier") String identifier) {
         AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(identifier);
         if (authenticatedUser != null) {
             return ok(json(authenticatedUser));
@@ -522,7 +600,10 @@ public class Admin extends AbstractApiBean {
 
     @DELETE
     @Path("authenticatedUsers/{identifier}/")
-    public Response deleteAuthenticatedUser(@PathParam("identifier") String identifier) {
+    @Operation(summary = "Remove an authenticated user",
+            description = "Deletes an authenticated user after checking that the account can be safely removed.")
+    public Response deleteAuthenticatedUser(@Parameter(description = "Authenticated user identifier.", required = true)
+            @PathParam("identifier") String identifier) {
         AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
         if (user != null) {
             return deleteAuthenticatedUser(user);
@@ -532,7 +613,10 @@ public class Admin extends AbstractApiBean {
     
     @DELETE
     @Path("authenticatedUsers/id/{id}/")
-    public Response deleteAuthenticatedUserById(@PathParam("id") Long id) {
+    @Operation(summary = "Remove an authenticated user by id",
+            description = "Deletes an authenticated user by database id after checking that the account can be safely removed.")
+    public Response deleteAuthenticatedUserById(@Parameter(description = "Authenticated user database id.", required = true)
+            @PathParam("id") Long id) {
         AuthenticatedUser user = authSvc.findByID(id);
         if (user != null) {
             return deleteAuthenticatedUser(user);
@@ -562,7 +646,10 @@ public class Admin extends AbstractApiBean {
 
     @POST
     @Path("authenticatedUsers/{identifier}/deactivate")
-    public Response deactivateAuthenticatedUser(@PathParam("identifier") String identifier) {
+    @Operation(summary = "Deactivate an authenticated user",
+            description = "Disables an authenticated user account by identifier.")
+    public Response deactivateAuthenticatedUser(@Parameter(description = "Authenticated user identifier.", required = true)
+            @PathParam("identifier") String identifier) {
         AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
         if (user != null) {
             return deactivateAuthenticatedUser(user);
@@ -572,7 +659,10 @@ public class Admin extends AbstractApiBean {
 
     @POST
     @Path("authenticatedUsers/id/{id}/deactivate")
-    public Response deactivateAuthenticatedUserById(@PathParam("id") Long id) {
+    @Operation(summary = "Deactivate an authenticated user by id",
+            description = "Disables an authenticated user account by database id.")
+    public Response deactivateAuthenticatedUserById(@Parameter(description = "Authenticated user database id.", required = true)
+            @PathParam("id") Long id) {
         AuthenticatedUser user = authSvc.findByID(id);
         if (user != null) {
             return deactivateAuthenticatedUser(user);
@@ -595,7 +685,10 @@ public class Admin extends AbstractApiBean {
 
     @POST
     @Path("publishDataverseAsCreator/{id}")
-    public Response publishDataverseAsCreator(@PathParam("id") long id) {
+    @Operation(summary = "Publish a dataverse as its creator",
+            description = "Publishes a dataverse using the dataverse creator as the request user.")
+    public Response publishDataverseAsCreator(@Parameter(description = "Dataverse database id.", required = true)
+            @PathParam("id") long id) {
         try {
             Dataverse dataverse = dataverseSvc.find(id);
             if (dataverse != null) {
@@ -614,6 +707,9 @@ public class Admin extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("authenticatedUsers")
+    @Operation(summary = "Enumerate authenticated users",
+            description = "Lists all authenticated users for a superuser.")
+    @SecurityRequirement(name = "DataverseApiKey")
     public Response listAuthenticatedUsers(@Context ContainerRequestContext crc) {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
@@ -634,11 +730,18 @@ public class Admin extends AbstractApiBean {
     @AuthRequired
     @Path(listUsersPartialAPIPath)
     @Produces({ "application/json" })
+    @Operation(summary = "Search authenticated users",
+            description = "Searches authenticated users for the dashboard user list and returns paged JSON results.")
+    @SecurityRequirement(name = "DataverseApiKey")
     public Response filterAuthenticatedUsers(
             @Context ContainerRequestContext crc,
+            @Parameter(description = "Search text matched against authenticated users.")
             @QueryParam("searchTerm") String searchTerm,
+            @Parameter(description = "One-based result page to return.")
             @QueryParam("selectedPage") Integer selectedPage,
+            @Parameter(description = "Number of users to include on each page.")
             @QueryParam("itemsPerPage") Integer itemsPerPage,
+            @Parameter(description = "Sort field used for the user list.")
             @QueryParam("sortKey") String sortKey
     ) {
 
@@ -664,7 +767,10 @@ public class Admin extends AbstractApiBean {
      */
     @POST
     @Path("authenticatedUsers")
-    public Response createAuthenicatedUser(JsonObject jsonObject) {
+    @Operation(summary = "Provision an authenticated user",
+            description = "Creates an authenticated user account from provider id, persistent id, identifier, name, and email fields.")
+    public Response createAuthenicatedUser(@RequestBody(description = "User creation JSON containing authenticationProviderId, persistentUserId, identifier, firstName, lastName, and email.")
+            JsonObject jsonObject) {
         logger.fine("JSON in: " + jsonObject);
         String persistentUserId = jsonObject.getString("persistentUserId");
         String identifier = jsonObject.getString("identifier");
@@ -698,7 +804,14 @@ public class Admin extends AbstractApiBean {
     @AuthRequired
     @Path("authenticatedUsers/id/{id}/convertShibToBuiltIn")
     @Deprecated
-    public Response convertShibUserToBuiltin(@Context ContainerRequestContext crc, @PathParam("id") Long id, String newEmailAddress) {
+    @Operation(summary = "Convert a Shibboleth user to a built-in account",
+            description = "Converts a remote Shibboleth authenticated user to a built-in account using a new email address.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response convertShibUserToBuiltin(@Context ContainerRequestContext crc,
+            @Parameter(description = "Authenticated user database id.", required = true)
+            @PathParam("id") Long id,
+            @RequestBody(description = "Email address for the converted built-in account.")
+            String newEmailAddress) {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
@@ -735,7 +848,14 @@ public class Admin extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("authenticatedUsers/id/{id}/convertRemoteToBuiltIn")
-    public Response convertOAuthUserToBuiltin(@Context ContainerRequestContext crc, @PathParam("id") Long id, String newEmailAddress) {
+    @Operation(summary = "Convert a remote user to a built-in account",
+            description = "Converts a remote authenticated user to a built-in account using a new email address.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response convertOAuthUserToBuiltin(@Context ContainerRequestContext crc,
+            @Parameter(description = "Authenticated user database id.", required = true)
+            @PathParam("id") Long id,
+            @RequestBody(description = "Email address for the converted built-in account.")
+            String newEmailAddress) {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
@@ -777,7 +897,12 @@ public class Admin extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("authenticatedUsers/convert/builtin2shib")
-    public Response builtin2shib(@Context ContainerRequestContext crc, String content) {
+    @Operation(summary = "Convert a built-in user to a Shibboleth account",
+            description = "Converts a built-in authenticated user to a Shibboleth account using colon-separated conversion data.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response builtin2shib(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Colon-separated email, password, and replacement email values for the conversion.")
+            String content) {
         logger.info("entering builtin2shib...");
         try {
             AuthenticatedUser userToRunThisMethod = getRequestAuthenticatedUserOrDie(crc);
@@ -928,7 +1053,12 @@ public class Admin extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("authenticatedUsers/convert/builtin2oauth")
-    public Response builtin2oauth(@Context ContainerRequestContext crc, String content) {
+    @Operation(summary = "Convert a built-in user to a remote account",
+            description = "Converts a built-in authenticated user to a remote account using colon-separated conversion data.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response builtin2oauth(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Colon-separated email, password, replacement email, provider id, and persistent user id values.")
+            String content) {
         logger.info("entering builtin2oauth...");
         try {
             AuthenticatedUser userToRunThisMethod = getRequestAuthenticatedUserOrDie(crc);
@@ -1081,7 +1211,10 @@ public class Admin extends AbstractApiBean {
 
     @Path("roles")
     @POST
-    public Response createNewBuiltinRole(RoleDTO roleDto) {
+    @Operation(summary = "Provision a built-in role",
+            description = "Creates a built-in Dataverse role from the supplied role definition.")
+    public Response createNewBuiltinRole(@RequestBody(description = "Role definition containing alias, name, description, and permissions.")
+            RoleDTO roleDto) {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "createBuiltInRole")
                 .setInfo(roleDto.getAlias() + ":" + roleDto.getDescription());
         try {
@@ -1096,7 +1229,12 @@ public class Admin extends AbstractApiBean {
     }
     @Path("roles/{id}")
     @PUT
-    public Response updateBuiltinRole(RoleDTO roleDto, @PathParam("id") long roleId) {
+    @Operation(summary = "Revise a built-in role",
+            description = "Updates an existing built-in Dataverse role from the supplied role definition.")
+    public Response updateBuiltinRole(@RequestBody(description = "Updated role definition containing alias, name, description, and permissions.")
+            RoleDTO roleDto,
+            @Parameter(description = "Role database id.", required = true)
+            @PathParam("id") long roleId) {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "updateBuiltInRole")
                 .setInfo(roleDto.getAlias() + ":" + roleDto.getDescription());
         try {
@@ -1113,6 +1251,8 @@ public class Admin extends AbstractApiBean {
 
     @Path("roles")
     @GET
+    @Operation(summary = "Enumerate built-in roles",
+            description = "Lists built-in Dataverse roles.")
     public Response listBuiltinRoles() {
         try {
             return ok(rolesToJson(rolesSvc.findBuiltinRoles()));
@@ -1124,7 +1264,12 @@ public class Admin extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("roles/{id}")
-    public Response deleteRole(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+    @Operation(summary = "Remove a built-in role",
+            description = "Deletes a Dataverse role by id or alias.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response deleteRole(@Context ContainerRequestContext crc,
+            @Parameter(description = "Role id or alias.", required = true)
+            @PathParam("id") String id) {
 
         return response(req -> {
             DataverseRole doomed = findRoleOrDie(id);
@@ -1136,7 +1281,10 @@ public class Admin extends AbstractApiBean {
     @Path("superuser/{identifier}")
     @Deprecated
     @POST
-    public Response toggleSuperuser(@PathParam("identifier") String identifier) {
+    @Operation(summary = "Toggle superuser status",
+            description = "Switches an authenticated user between superuser and non-superuser status.")
+    public Response toggleSuperuser(@Parameter(description = "Authenticated user identifier.", required = true)
+            @PathParam("identifier") String identifier) {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "toggleSuperuser")
                 .setInfo(identifier);
         try {
@@ -1163,7 +1311,12 @@ public class Admin extends AbstractApiBean {
     @Path("superuser/{identifier}")
     @PUT
     // Using string instead of boolean so user doesn't need to add a Content-type header in their request
-    public Response setSuperuserStatus(@PathParam("identifier") String identifier, String isSuperuser) {
+    @Operation(summary = "Assign superuser status",
+            description = "Sets whether an authenticated user has superuser privileges.")
+    public Response setSuperuserStatus(@Parameter(description = "Authenticated user identifier.", required = true)
+            @PathParam("identifier") String identifier,
+            @RequestBody(description = "Boolean text indicating whether the user should be a superuser.")
+            String isSuperuser) {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "setSuperuserStatus")
                 .setInfo(identifier + ":" + isSuperuser);
         try {
@@ -1180,7 +1333,10 @@ public class Admin extends AbstractApiBean {
     @GET
     @Path("validate/datasets")
     @Produces({"application/json"})
-    public Response validateAllDatasets(@QueryParam("variables") boolean includeVariables) {
+    @Operation(summary = "Validate all datasets",
+            description = "Streams validation results for every local dataset.")
+    public Response validateAllDatasets(@Parameter(description = "Whether to include variable-level validation details.")
+            @QueryParam("variables") boolean includeVariables) {
         
         // Streaming output: the API will start producing 
         // the output right away, as it goes through the list 
@@ -1273,7 +1429,12 @@ public class Admin extends AbstractApiBean {
         
     @Path("validate/dataset/{id}")
     @GET
-    public Response validateDataset(@PathParam("id") String id, @QueryParam("variables") boolean includeVariables) {
+    @Operation(summary = "Validate one dataset",
+            description = "Validates a dataset and returns either valid status or the first constraint violation.")
+    public Response validateDataset(@Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String id,
+            @Parameter(description = "Whether to include variable-level validation details.")
+            @QueryParam("variables") boolean includeVariables) {
         Dataset dataset;
         try {
             dataset = findDatasetOrDie(id);
@@ -1318,7 +1479,10 @@ public class Admin extends AbstractApiBean {
     @GET
     @Path("validate/dataset/files/{id}")
     @Produces({"application/json"})
-    public Response validateDatasetDatafiles(@PathParam("id") String id) {
+    @Operation(summary = "Validate files in one dataset",
+            description = "Streams checksum validation results for all data files in a dataset.")
+    public Response validateDatasetDatafiles(@Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String id) {
         
         Dataset dataset;
         // First check if the dataset exists before starting the streaming output
@@ -1384,7 +1548,10 @@ public class Admin extends AbstractApiBean {
 
     @Path("assignments/assignees/{raIdtf: .*}")
     @GET
-    public Response getAssignmentsFor(@PathParam("raIdtf") String raIdtf) {
+    @Operation(summary = "Enumerate assignments for a role assignee",
+            description = "Lists role assignments held by the supplied role assignee identifier.")
+    public Response getAssignmentsFor(@Parameter(description = "Role assignee identifier.", required = true)
+            @PathParam("raIdtf") String raIdtf) {
 
         JsonArrayBuilder arr = Json.createArrayBuilder();
         roleAssigneeSvc.getAssignmentsFor(raIdtf).forEach(a -> arr.add(json(a)));
@@ -1401,7 +1568,10 @@ public class Admin extends AbstractApiBean {
      */
     @Path("confirmEmail/{userId}")
     @GET
-    public Response getConfirmEmailToken(@PathParam("userId") long userId) {
+    @Operation(summary = "Read a confirm-email token",
+            description = "Returns the active confirm-email token for an authenticated user.")
+    public Response getConfirmEmailToken(@Parameter(description = "Authenticated user database id.", required = true)
+            @PathParam("userId") long userId) {
         AuthenticatedUser user = authSvc.findByID(userId);
         if (user != null) {
             ConfirmEmailData confirmEmailData = confirmEmailSvc.findSingleConfirmEmailDataByUser(user);
@@ -1420,7 +1590,10 @@ public class Admin extends AbstractApiBean {
      */
     @Path("confirmEmail/{userId}")
     @POST
-    public Response startConfirmEmailProcess(@PathParam("userId") long userId) {
+    @Operation(summary = "Start confirm-email processing",
+            description = "Creates confirm-email data for an authenticated user and returns token metadata.")
+    public Response startConfirmEmailProcess(@Parameter(description = "Authenticated user database id.", required = true)
+            @PathParam("userId") long userId) {
         AuthenticatedUser user = authSvc.findByID(userId);
         if (user != null) {
             try {
@@ -1442,7 +1615,10 @@ public class Admin extends AbstractApiBean {
      */
     @Path("convertUserFromBcryptToSha1")
     @POST
-    public Response convertUserFromBcryptToSha1(String json) {
+    @Operation(summary = "Convert a test built-in password hash",
+            description = "Rewrites a built-in user's password hash to the legacy SHA-1 test value.")
+    public Response convertUserFromBcryptToSha1(@RequestBody(description = "JSON object containing builtinUserId.")
+            String json) {
         JsonReader jsonReader = Json.createReader(new StringReader(json));
         JsonObject object = jsonReader.readObject();
         jsonReader.close();
@@ -1457,7 +1633,12 @@ public class Admin extends AbstractApiBean {
     @Path("permissions/{dvo}")
     @AuthRequired
     @GET
-    public Response findPermissonsOn(@Context final ContainerRequestContext crc, @PathParam("dvo") final String dvo) {
+    @Operation(summary = "Inspect permissions on a Dataverse object",
+            description = "Returns the requesting user's permissions on the selected dataverse object.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response findPermissonsOn(@Context final ContainerRequestContext crc,
+            @Parameter(description = "Dataverse object id or persistent identifier.", required = true)
+            @PathParam("dvo") final String dvo) {
         try {
             final DvObject dvObj = findDvo(dvo);
             final User aUser = getRequestUser(crc);
@@ -1475,14 +1656,21 @@ public class Admin extends AbstractApiBean {
 
     @Path("assignee/{idtf}")
     @GET
-    public Response findRoleAssignee(@PathParam("idtf") String idtf) {
+    @Operation(summary = "Read a role assignee",
+            description = "Returns display information for a role assignee identifier.")
+    public Response findRoleAssignee(@Parameter(description = "Role assignee identifier.", required = true)
+            @PathParam("idtf") String idtf) {
         RoleAssignee ra = roleAssigneeSvc.getRoleAssignee(idtf);
         return (ra == null) ? notFound("Role Assignee '" + idtf + "' not found.") : ok(json(ra.getDisplayInfo()));
     }
 
     @Path("datasets/integrity/{datasetVersionId}/fixmissingunf")
     @POST
-    public Response fixUnf(@PathParam("datasetVersionId") String datasetVersionId,
+    @Operation(summary = "Repair missing UNF values",
+            description = "Recalculates missing UNF values for a dataset version.")
+    public Response fixUnf(@Parameter(description = "Dataset version database id.", required = true)
+            @PathParam("datasetVersionId") String datasetVersionId,
+            @Parameter(description = "When true, recalculate UNF values even when existing values are present.")
             @QueryParam("forceRecalculate") boolean forceRecalculate) {
         JsonObjectBuilder info = datasetVersionSvc.fixMissingUnf(datasetVersionId, forceRecalculate);
         return ok(info);
@@ -1490,6 +1678,8 @@ public class Admin extends AbstractApiBean {
 
     @Path("datafiles/integrity/fixmissingoriginaltypes")
     @GET
+    @Operation(summary = "Repair missing original file types",
+            description = "Starts a background repair for tabular files missing original file type metadata.")
     public Response fixMissingOriginalTypes() {
         JsonObjectBuilder info = Json.createObjectBuilder();
 
@@ -1513,7 +1703,10 @@ public class Admin extends AbstractApiBean {
         
     @Path("datafiles/integrity/fixmissingoriginalsizes")
     @GET
-    public Response fixMissingOriginalSizes(@QueryParam("limit") Integer limit) {
+    @Operation(summary = "Repair missing original file sizes",
+            description = "Starts a background repair for tabular files missing original file size metadata.")
+    public Response fixMissingOriginalSizes(@Parameter(description = "Maximum number of affected files to repair.")
+            @QueryParam("limit") Integer limit) {
         JsonObjectBuilder info = Json.createObjectBuilder();
 
         List<Long> affectedFileIds = fileService.selectFilesWithMissingOriginalSizes();
@@ -1544,7 +1737,10 @@ public class Admin extends AbstractApiBean {
      */
     @GET
     @Path("datasets/thumbnailMetadata/{id}")
-    public Response getDatasetThumbnailMetadata(@PathParam("id") Long idSupplied) {
+    @Operation(summary = "Read dataset thumbnail metadata",
+            description = "Returns thumbnail selection metadata and optional thumbnail image data for a dataset.")
+    public Response getDatasetThumbnailMetadata(@Parameter(description = "Dataset database id.", required = true)
+            @PathParam("id") Long idSupplied) {
         Dataset dataset = datasetSvc.find(idSupplied);
         if (dataset == null) {
             return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
@@ -1577,7 +1773,10 @@ public class Admin extends AbstractApiBean {
      */
     @Path("validatePassword")
     @POST
-    public Response validatePassword(String password) {
+    @Operation(summary = "Validate a password",
+            description = "Checks a password against the configured password policy and returns validation errors.")
+    public Response validatePassword(@RequestBody(description = "Password text to validate.")
+            String password) {
 
         final List<String> errors = passwordValidatorService.validate(password, new Date(), false);
         final JsonArrayBuilder errorArray = Json.createArrayBuilder();
@@ -1587,6 +1786,8 @@ public class Admin extends AbstractApiBean {
 
     @GET
     @Path("/isOrcid")
+    @Operation(summary = "Check ORCID authentication support",
+            description = "Returns whether ORCID authentication is enabled.")
     public Response isOrcidEnabled() {
         return authSvc.isOrcidEnabled() ? ok("Orcid is enabled") : ok("no orcid for you.");
     }
@@ -1594,7 +1795,12 @@ public class Admin extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/reregisterHDLToPID")
-    public Response reregisterHdlToPID(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+    @Operation(summary = "Migrate a dataset handle registration to DOI",
+            description = "Registers a dataset PID again when migrating a released handle-based dataset to DOI.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response reregisterHdlToPID(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String id) {
         logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
         try {
 
@@ -1633,7 +1839,12 @@ public class Admin extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/registerDataFile")
-    public Response registerDataFile(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+    @Operation(summary = "Process PID assignment for a data file",
+            description = "Attempts persistent identifier assignment for one published data file when file PIDs are enabled.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response registerDataFile(@Context ContainerRequestContext crc,
+            @Parameter(description = "Data file id or persistent identifier.", required = true)
+            @PathParam("id") String id) {
         logger.info("Starting to register  " + id + " file id. " + new Date());
 
         try {
@@ -1660,6 +1871,9 @@ public class Admin extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/registerDataFileAll")
+    @Operation(summary = "Process PID assignment for all eligible data files",
+            description = "Scans all data files and assigns persistent identifiers to released, unregistered files in collections where file PIDs are enabled.")
+    @SecurityRequirement(name = "DataverseApiKey")
     public Response registerDataFileAll(@Context ContainerRequestContext crc) {
         Integer count = fileService.findAll().size();
         Integer successes = 0;
@@ -1732,7 +1946,14 @@ public class Admin extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/registerDataFiles/{alias}")
-    public Response registerDataFilesInCollection(@Context ContainerRequestContext crc, @PathParam("alias") String alias, @QueryParam("sleep") Integer sleepInterval) {
+    @Operation(summary = "Process PID assignment for collection data files",
+            description = "Assigns persistent identifiers to released, unregistered files directly owned by a collection.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response registerDataFilesInCollection(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias for the collection whose files are processed.", required = true)
+            @PathParam("alias") String alias,
+            @Parameter(description = "Seconds to wait between file registration attempts.")
+            @QueryParam("sleep") Integer sleepInterval) {
         Dataverse collection;
         try {
             collection = findDataverseOrDie(alias);
@@ -1925,7 +2146,14 @@ public class Admin extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("/computeDataFileHashValue/{fileId}/algorithm/{alg}")
-    public Response computeDataFileHashValue(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @PathParam("alg") String alg) {
+    @Operation(summary = "Compute a data file hash value",
+            description = "Calculates a new checksum for one non-harvested data file using the requested algorithm and saves it on the file.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response computeDataFileHashValue(@Context ContainerRequestContext crc,
+            @Parameter(description = "Data file id or persistent identifier.", required = true)
+            @PathParam("fileId") String fileId,
+            @Parameter(description = "Checksum algorithm to calculate.", required = true)
+            @PathParam("alg") String alg) {
 
         try {
             User u = getRequestAuthenticatedUserOrDie(crc);
@@ -1987,7 +2215,12 @@ public class Admin extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("/validateDataFileHashValue/{fileId}")
-    public Response validateDataFileHashValue(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId) {
+    @Operation(summary = "Validate a data file hash value",
+            description = "Recalculates a data file checksum and compares it with the stored checksum.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response validateDataFileHashValue(@Context ContainerRequestContext crc,
+            @Parameter(description = "Data file id or persistent identifier.", required = true)
+            @PathParam("fileId") String fileId) {
 
         try {
             User u = getRequestAuthenticatedUserOrDie(crc);
@@ -2054,7 +2287,13 @@ public class Admin extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("/submitDatasetVersionToArchive/{id}/{version}")
-    public Response submitDatasetVersionToArchive(@Context ContainerRequestContext crc, @PathParam("id") String dsid,
+    @Operation(summary = "Submit a dataset version to an archive",
+            description = "Starts archival submission for a dataset version that has not already been archived.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response submitDatasetVersionToArchive(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String dsid,
+            @Parameter(description = "Dataset version number.", required = true)
             @PathParam("version") String versionNumber) {
 
         try {
@@ -2128,7 +2367,16 @@ public class Admin extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("/archiveAllUnarchivedDatasetVersions")
-    public Response archiveAllUnarchivedDatasetVersions(@Context ContainerRequestContext crc, @QueryParam("listonly") boolean listonly, @QueryParam("limit") Integer limit, @QueryParam("latestonly") boolean latestonly) {
+    @Operation(summary = "Archive unarchived dataset versions",
+            description = "Lists or starts archival submission for published dataset versions that do not yet have archival copies.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response archiveAllUnarchivedDatasetVersions(@Context ContainerRequestContext crc,
+            @Parameter(description = "When true, list matching dataset versions without submitting them.")
+            @QueryParam("listonly") boolean listonly,
+            @Parameter(description = "Maximum number of dataset versions to list or submit.")
+            @QueryParam("limit") Integer limit,
+            @Parameter(description = "When true, include only each dataset's latest version for archival submission.")
+            @QueryParam("latestonly") boolean latestonly) {
 
         try {
             AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
@@ -2210,6 +2458,8 @@ public class Admin extends AbstractApiBean {
     
     @DELETE
     @Path("/clearMetricsCache")
+    @Operation(summary = "Clear all metrics cache entries",
+            description = "Deletes every cached metric row.")
     public Response clearMetricsCache() {
         em.createNativeQuery("DELETE FROM metric").executeUpdate();
         return ok("all metric caches cleared.");
@@ -2217,7 +2467,10 @@ public class Admin extends AbstractApiBean {
 
     @DELETE
     @Path("/clearMetricsCache/{name}")
-    public Response clearMetricsCacheByName(@PathParam("name") String name) {
+    @Operation(summary = "Clear metrics cache entries by name",
+            description = "Deletes cached metric rows with the supplied metric name.")
+    public Response clearMetricsCacheByName(@Parameter(description = "Metric cache name to clear.", required = true)
+            @PathParam("name") String name) {
         Query deleteQuery = em.createNativeQuery("DELETE FROM metric where name = ?");
         deleteQuery.setParameter(1, name);
         deleteQuery.executeUpdate();
@@ -2227,7 +2480,12 @@ public class Admin extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/dataverse/{alias}/addRoleAssignmentsToChildren")
-    public Response addRoleAssignementsToChildren(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
+    @Operation(summary = "Propagate dataverse role assignments to children",
+            description = "Copies configured inherited role assignments from a dataverse to its child dataverses and datasets.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response addRoleAssignementsToChildren(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias whose child objects receive role assignments.", required = true)
+            @PathParam("alias") String alias) throws WrappedResponse {
         Dataverse owner = dataverseSvc.findByAlias(alias);
         if (owner == null) {
             return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
@@ -2281,7 +2539,14 @@ public class Admin extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("/dataverse/{alias}/curationLabelSet")
-    public Response setCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("alias") String alias, @QueryParam("name") String name) throws WrappedResponse {
+    @Operation(summary = "Assign a dataverse curation label set",
+            description = "Assigns a configured curation label set name to a dataverse.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response setCurationLabelSet(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias.", required = true)
+            @PathParam("alias") String alias,
+            @Parameter(description = "Configured curation label set name.")
+            @QueryParam("name") String name) throws WrappedResponse {
         Dataverse dataverse = dataverseSvc.findByAlias(alias);
         if (dataverse == null) {
             return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
@@ -2312,7 +2577,12 @@ public class Admin extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("/dataverse/{alias}/curationLabelSet")
-    public Response resetCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
+    @Operation(summary = "Reset a dataverse curation label set",
+            description = "Restores a dataverse to the default curation label set setting.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response resetCurationLabelSet(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias.", required = true)
+            @PathParam("alias") String alias) throws WrappedResponse {
         Dataverse dataverse = dataverseSvc.findByAlias(alias);
         if (dataverse == null) {
             return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
@@ -2332,6 +2602,9 @@ public class Admin extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/dataverse/curationLabelSets")
+    @Operation(summary = "Enumerate curation label sets",
+            description = "Lists configured curation label sets and their labels.")
+    @SecurityRequirement(name = "DataverseApiKey")
     public Response listCurationLabelSets(@Context ContainerRequestContext crc) throws WrappedResponse {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
@@ -2353,7 +2626,10 @@ public class Admin extends AbstractApiBean {
     
     @POST
     @Path("/bannerMessage")
-    public Response addBannerMessage(JsonObject jsonObject) throws WrappedResponse {
+    @Operation(summary = "Publish a banner message",
+            description = "Creates an active banner message with localized message text.")
+    public Response addBannerMessage(@RequestBody(description = "Banner message JSON containing dismissibleByUser and messageTexts entries.")
+            JsonObject jsonObject) throws WrappedResponse {
 
         BannerMessage toAdd = new BannerMessage();
         try {
@@ -2395,7 +2671,10 @@ public class Admin extends AbstractApiBean {
     
     @DELETE
     @Path("/bannerMessage/{id}")
-    public Response deleteBannerMessage(@PathParam("id") Long id) throws WrappedResponse {
+    @Operation(summary = "Remove a banner message",
+            description = "Deletes a banner message by database id.")
+    public Response deleteBannerMessage(@Parameter(description = "Banner message database id.", required = true)
+            @PathParam("id") Long id) throws WrappedResponse {
  
         BannerMessage message = em.find(BannerMessage.class, id);
         if (message == null){
@@ -2409,7 +2688,10 @@ public class Admin extends AbstractApiBean {
     
     @PUT
     @Path("/bannerMessage/{id}/deactivate")
-    public Response deactivateBannerMessage(@PathParam("id") Long id) throws WrappedResponse {
+    @Operation(summary = "Deactivate a banner message",
+            description = "Marks a banner message inactive by database id.")
+    public Response deactivateBannerMessage(@Parameter(description = "Banner message database id.", required = true)
+            @PathParam("id") Long id) throws WrappedResponse {
         BannerMessage message = em.find(BannerMessage.class, id);
         if (message == null){
             return error(Response.Status.NOT_FOUND, "Message id = "  + id + " not found.");
@@ -2422,7 +2704,10 @@ public class Admin extends AbstractApiBean {
     
     @GET
     @Path("/bannerMessage")
-    public Response getBannerMessages(@PathParam("id") Long id) throws WrappedResponse {
+    @Operation(summary = "Enumerate banner messages",
+            description = "Lists banner message ids and display values.")
+    public Response getBannerMessages(@Parameter(description = "Unused banner message id parameter.")
+            @PathParam("id") Long id) throws WrappedResponse {
 
         List<BannerMessage> messagesList = bannerMessageService.findAllBannerMessages();
 
@@ -2443,7 +2728,12 @@ public class Admin extends AbstractApiBean {
     @AuthRequired
     @Consumes("application/json")
     @Path("/requestSignedUrl")
-    public Response getSignedUrl(@Context ContainerRequestContext crc, JsonObject urlInfo) {
+    @Operation(summary = "Sign a URL",
+            description = "Creates a signed URL for a supplied URL and optional user token context.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response getSignedUrl(@Context ContainerRequestContext crc,
+            @RequestBody(description = "JSON object containing url, optional user identifier, timeout, HTTP method, and optional credential key.")
+            JsonObject urlInfo) {
         AuthenticatedUser superuser = null;
         try {
             superuser = getRequestAuthenticatedUserOrDie(crc);
@@ -2489,6 +2779,8 @@ public class Admin extends AbstractApiBean {
  
     @DELETE
     @Path("/clearThumbnailFailureFlag")
+    @Operation(summary = "Clear all thumbnail failure flags",
+            description = "Resets thumbnail preview failure flags for all dataverse objects.")
     public Response clearThumbnailFailureFlag() {
         em.createNativeQuery("UPDATE dvobject SET previewimagefail = FALSE").executeUpdate();
         return ok("Thumbnail Failure Flags cleared.");
@@ -2496,7 +2788,10 @@ public class Admin extends AbstractApiBean {
     
     @DELETE
     @Path("/clearThumbnailFailureFlag/{id}")
-    public Response clearThumbnailFailureFlagByDatafile(@PathParam("id") String fileId) {
+    @Operation(summary = "Clear a data file thumbnail failure flag",
+            description = "Resets the thumbnail preview failure flag for one data file.")
+    public Response clearThumbnailFailureFlagByDatafile(@Parameter(description = "Data file id or persistent identifier.", required = true)
+            @PathParam("id") String fileId) {
         try {
             DataFile df = findDataFileOrDie(fileId);
             Query deleteQuery = em.createNativeQuery("UPDATE dvobject SET previewimagefail = FALSE where id = ?");
@@ -2515,7 +2810,12 @@ public class Admin extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/downloadTmpFile")
-    public Response downloadTmpFile(@Context ContainerRequestContext crc, @QueryParam("fullyQualifiedPathToFile") String fullyQualifiedPathToFile) {
+    @Operation(summary = "Download a temporary file",
+            description = "Streams a file from the local /tmp directory for superuser testing.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    public Response downloadTmpFile(@Context ContainerRequestContext crc,
+            @Parameter(description = "Absolute path under /tmp to stream.")
+            @QueryParam("fullyQualifiedPathToFile") String fullyQualifiedPathToFile) {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
@@ -2537,6 +2837,8 @@ public class Admin extends AbstractApiBean {
 
     @GET
     @Path("/featureFlags")
+    @Operation(summary = "Enumerate feature flags",
+            description = "Lists feature flag names with enabled or disabled status.")
     public Response getFeatureFlags() {
         Map<String, String> map = new TreeMap<>();
         for (FeatureFlags flag : FeatureFlags.values()) {
@@ -2547,7 +2849,10 @@ public class Admin extends AbstractApiBean {
 
     @GET
     @Path("/featureFlags/{flag}")
-    public Response getFeatureFlag(@PathParam("flag") String flagIn) {
+    @Operation(summary = "Read a feature flag",
+            description = "Returns enabled status for one feature flag.")
+    public Response getFeatureFlag(@Parameter(description = "Feature flag enum name.", required = true)
+            @PathParam("flag") String flagIn) {
         try {
             FeatureFlags flag = FeatureFlags.valueOf(flagIn);
             JsonObjectBuilder job = Json.createObjectBuilder();
@@ -2561,8 +2866,15 @@ public class Admin extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/datafiles/auditFiles")
+    @Operation(summary = "Audit dataset file storage",
+            description = "Checks selected datasets for missing physical files and missing file metadata.")
+    @SecurityRequirement(name = "DataverseApiKey")
     public Response getAuditFiles(@Context ContainerRequestContext crc,
-                                  @QueryParam("firstId") Long firstId, @QueryParam("lastId") Long lastId,
+                                  @Parameter(description = "Lowest dataset database id to audit.")
+                                  @QueryParam("firstId") Long firstId,
+                                  @Parameter(description = "Highest dataset database id to audit.")
+                                  @QueryParam("lastId") Long lastId,
+                                  @Parameter(description = "Comma-separated dataset persistent identifiers to audit instead of an id range.")
                                   @QueryParam("datasetIdentifierList") String datasetIdentifierList) throws WrappedResponse {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
@@ -2719,7 +3031,11 @@ public class Admin extends AbstractApiBean {
     @AuthRequired
     @Path("/rateLimitStats")
     @Produces("text/csv")
+    @Operation(summary = "Download rate-limit statistics",
+            description = "Streams cached rate-limit statistics as CSV for a superuser.")
+    @SecurityRequirement(name = "DataverseApiKey")
     public Response rateLimitStats(@Context ContainerRequestContext crc,
+                                   @Parameter(description = "Limit statistics to entries within this many minutes.")
                                    @QueryParam("deltaMinutesFilter") Long deltaMinutesFilter) {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
