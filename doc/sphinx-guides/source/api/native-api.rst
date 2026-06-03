@@ -185,6 +185,13 @@ Usage example:
 
   curl "https://demo.dataverse.org/api/dataverses/root?returnChildCount=true"
 
+If a user with EditDataverse permissions wants to ignore the setting ``ExcludeEmailFromExport`` in order to see the contact emails, they must include the ``ignoreSettingExcludeEmailFromExport`` query parameter.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root?ignoreSettingExcludeEmailFromExport=true"
 
 To view an unpublished Dataverse collection:
 
@@ -1223,7 +1230,6 @@ Get a list of Guestbooks for a Dataverse Collection
 For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 
 Get a list of Guestbooks for a Dataverse Collection
-You must have "EditDataverse" permission on the Dataverse collection.
 
 .. code-block:: bash
 
@@ -1238,6 +1244,15 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/root/list"
+
+To include the inherited Guestbooks of the Dataverse Collection add the query parameter `includeInherited=true`
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/root/list?includeInherited=true"
+
+.. note:: By adding the query param "includeStats=true" `usageCount` and `responseCount` values can be added to the response.
+
 
 Get a Guestbook for a Dataverse Collection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1299,7 +1314,7 @@ The following attributes are supported:
 * ``description`` Description
 * ``affiliation`` Affiliation
 * ``filePIDsEnabled`` ("true" or "false") Restricted to use by superusers and only when the :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>` setting is true. Enables or disables registration of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
-* ``requireFilesToPublishDataset`` ("true" or "false") Restricted to use by superusers. Defines if Dataset needs files in order to be published.  If not set the determination will be made through inheritance by checking the owners of this collection. Publishing by a superusers will not be blocked.
+* ``requireFilesToPublishDataset`` ("true" or "false") Restricted to use by superusers. Defines if Dataset version needs files in order to be published or submitted for review.  If not set the determination will be made through inheritance by checking the owners of this collection. Publishing by a superusers will not be blocked.
 * ``allowedDatasetTypes`` Restricted to use by superusers. By default "dataset" is implied. Pass a comma-separated list of dataset types (e.g. "dataset,software"). You cannot unset this attribute so if you want to delete a dataset type, set ``allowedDatasetTypes`` to a dataset type you won't be deleting. See also :ref:`dataset-types`.
 
 See also :ref:`update-dataverse-api`.
@@ -1754,6 +1769,69 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/1/templates" --upload-file dataverse-template.json
+
+Update the Metadata and Instructions of a Template
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates the metadata and instructions of a template with a given ``id``.
+
+To update the template, you must send a JSON file. Your JSON file might look like :download:`template-update-metadata.json <../_static/api/template-update-metadata.json>` which you would send to the Dataverse installation like this:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/dataverses/{ID}/metadata" --upload-file template-update-metadata.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/dataverses/1/metadata" --upload-file template-update-metadata.json
+
+Update the License or Terms Of Use of a Template
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates the license or custom terms of use of a template with a given ``id``.
+
+To update the template, you must send a JSON file containing either the name of an active license or custom terms of use. Your JSON file might look like :download:`template-update-license.json <../_static/api/template-update-license.json>`  or :download:`template-update-terms.json <../_static/api/template-update-terms.json>` which you would send to the Dataverse installation like this:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/dataverses/{ID}/licenseTerms" --upload-file template-update-license.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/dataverses/1/licenseTerms" --upload-file template-update-license.json
+
+Update the Terms Of Access of a Template
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates the terms of access of a template with a given ``id``.
+
+To update the template, you must send a JSON file containing either the name of an active license or custom terms of use. Your JSON file might look like :download:`template-update-access.json <../_static/api/template-update-access.json>` which you would send to the Dataverse installation like this:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/dataverses/{ID}/access" --upload-file template-update-access.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/dataverses/1/access" --upload-file template-update-access.json
 
 Set a Default Template for a Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2645,7 +2723,7 @@ For these edits your JSON file need only include those dataset fields which you 
 
 This endpoint also allows removing fields, as long as they are not required by the dataset. To remove a field, send an empty value (``""``) for individual fields. For multiple fields, send an empty array (``[]``). A sample JSON file for removing fields may be downloaded here: :download:`dataset-edit-metadata-delete-fields-sample.json <../_static/api/dataset-edit-metadata-delete-fields-sample.json>`
 
-If another user updates the dataset version metadata before you send the update request, metadata inconsistencies may occur. To prevent this, you can use the optional ``sourceLastUpdateTime`` query parameter. This parameter must include the ``lastUpdateTime`` corresponding to the dataset version being updated. The date must be in the format ``yyyy-MM-dd'T'HH:mm:ss'Z'``.
+If another user updates the dataset version metadata before you send the update request, metadata inconsistencies may occur. To prevent this, you can use the optional ``sourceLastUpdateTime`` query parameter. The intended API workflow is for the client to send along the ``lastUpdateTime`` obtained from the last ``GET`` call on the version that is being modified. Dataverse APIs will always report these time stamps in UTC, ISO 8601-formatted (``yyyy-MM-dd'T'HH:mm:ss'Z'``; for example: ``2026-04-22T14:30:00Z``), regardless of the actual time zone used by the server. This is the only format this API will accept. 
 
 If this parameter is provided, the update will proceed only if the ``lastUpdateTime`` remains unchanged (meaning no one has updated the dataset metadata since you retrieved it). Otherwise, the request will fail with an error.
 
@@ -2695,6 +2773,9 @@ Update Dataset Terms of Access
 
 Updates the terms of access for the restricted files of a dataset by applying it to the draft version, or by creating a draft if none exists.
 
+If another user updates an already existing draft version before you send the update request, metadata inconsistencies may occur. To prevent this, you can use the optional ``sourceLastUpdateTime`` query parameter. The intended API workflow is for the client to send along the ``lastUpdateTime`` obtained from the last ``GET`` call on the version that is being modified. Dataverse APIs will always report these time stamps in UTC, ISO 8601-formatted (``yyyy-MM-dd'T'HH:mm:ss'Z'``; for example: ``2026-04-22T14:30:00Z``), regardless of the actual time zone used by the server. This is the only format this API will accept. 
+
+If this parameter is provided, the update will proceed only if the ``lastUpdateTime`` remains unchanged (meaning no one has updated the dataset metadata since you retrieved it). Otherwise, the request will fail with an error.
 
 To define custom terms of access, provide a JSON body with the following properties. All fields within ``customTermsOfAccess`` are optional, except if there are restricted files in your dataset then ``fileAccessRequest`` must be set to true or ``termsOfAccess`` must be provided:
 
@@ -4115,6 +4196,8 @@ Usage example:
   curl "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/citation/$FORMAT?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
 
 The type under CSL can vary based on the dataset type, with "dataset", "software", and "review" as supported values. See also :ref:`dataset-types`.
+
+.. note:: You can also get the Datafile Citation by using the Access Datafile API. See: :ref:`datafile-citation-formatted-access`.
 
 Get Citation by Preview URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -5543,7 +5626,8 @@ Updating File Metadata
 
 Updates the file metadata for an existing file where ``ID`` is the database id of the file to update or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the new metadata. No metadata from the previous version of this file will be persisted, so if you want to update a specific field first get the json with the above command and alter the fields you want.
 
-An optional parameter, sourceLastUpdateTime=datetime (in format: ``yyyy-MM-dd'T'HH:mm:ss'Z'``), can be used to verify that the file metadata being edited has not been changed since you last retrieved it, thereby avoiding potential lost metadata updates. The value for sourceLastUpdateTime can be taken from ``lastUpdateTime`` in the response to get $SERVER_URL/api/files/$ID API call.
+An optional parameter, ``sourceLastUpdateTime``, can be used to verify that the file metadata being edited has not been changed since you last retrieved it, thereby avoiding potential inconsistencies. In the intended API workflow this will be the time stamp in ``lastUpdateTime`` from the last ``GET /api/files/<id>`` API call. Dataverse APIs will always report these time stamps in UTC, ISO 8601-formatted (``yyyy-MM-dd'T'HH:mm:ss'Z'``; for example: ``2026-04-22T14:30:00Z``), regardless of the actual time zone used by the server. This is the only format this API will accept. 
+
 
 A curl example using an ``ID``
 
@@ -6536,6 +6620,28 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/info/settings/:DatasetPublishPopupCustomText"
 
+.. _show-custom-popup-for-submitting-for-review-datasets:
+
+Show Custom Popup Text for Submitting Datasets For Review
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For now, only the value for the :ref:`:DatasetSubmitForReviewPopupCustomText` setting from the Configuration section of the Installation Guide is exposed:
+
+.. note:: See :ref:`show-disclaimer-for-submit-for-review-datasets` if you want the user to acknowledge before submitting for review.
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/info/settings/:DatasetSubmitForReviewPopupCustomText"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/info/settings/:DatasetSubmitForReviewPopupCustomText"
+
 .. _show-disclaimer-for-publishing-datasets:
 
 Show Disclaimer for Publishing Datasets
@@ -6557,6 +6663,27 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/info/settings/:PublishDatasetDisclaimerText"
+
+.. _show-disclaimer-for-submit-for-review-datasets:
+
+Show Disclaimer for Submitting For Review Datasets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The setting :ref:`:SubmitForReviewDatasetDisclaimerText`, when set, will prevent a draft dataset from being submitted for review through the UI without the user acknowledging the disclaimer.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/info/settings/:SubmitForReviewDatasetDisclaimerText"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/info/settings/:SubmitForReviewDatasetDisclaimerText"
 
 .. _api-get-app-tou:
 
@@ -8773,7 +8900,7 @@ A curl example using allowing access to a dataset's metadata
 
   curl -H "X-Dataverse-key:$API_KEY" -H 'Content-Type:application/json' -d "$JSON" "$SERVER_URL/api/admin/requestSignedUrl"
 
-Please see :ref:`dataverse.api.signature-secret` for the configuration option to add a shared secret, enabling extra
+Please see :ref:`dataverse.api.signing-secret` for the configuration option to add a shared secret, enabling extra
 security.
 
 .. _send-feedback-admin:
