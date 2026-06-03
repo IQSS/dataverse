@@ -595,7 +595,7 @@ public class CroissantExportUtil {
     //                         "maxValue": 10
     //                     }
     //                 },
-	// 	     ]
+    //              ]
     //     }]
     public static JsonObjectBuilder getReviews(JsonObjectBuilder reviewsIn) {
         JsonObjectBuilder reviewsOut = Json.createObjectBuilder();
