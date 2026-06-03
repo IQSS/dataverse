@@ -75,17 +75,22 @@ public class JsonPrinter {
     @EJB
     static InAppNotificationsJsonPrinter inAppNotificationsJsonPrinter;
 
+    @EJB
+    static RoleAssigneeServiceBean roleAssigneeService;
+
     public static void injectSettingsService(SettingsServiceBean ssb,
                                              DatasetFieldServiceBean dfsb,
                                              DataverseFieldTypeInputLevelServiceBean dfils,
                                              DatasetServiceBean ds,
                                              MailServiceBean ms,
-                                             InAppNotificationsJsonPrinter njp) {
+                                             InAppNotificationsJsonPrinter njp,
+                                             RoleAssigneeServiceBean ras) {
             settingsService = ssb;
             datasetFieldService = dfsb;
             datasetService = ds;
             mailService = ms;
             inAppNotificationsJsonPrinter = njp;
+            roleAssigneeService = ras;
     }
 
     public JsonPrinter() {
@@ -145,14 +150,24 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(RoleAssignment ra) {
-        return jsonObjectBuilder()
-                .add("id", ra.getId())
-                .add("assignee", ra.getAssigneeIdentifier())
-                .add("roleId", ra.getRole().getId())
-                .add("roleName", ra.getRole().getName())
-                .add("_roleAlias", ra.getRole().getAlias())
-                .add("privateUrlToken", ra.getPrivateUrlToken())
-                .add("definitionPointId", ra.getDefinitionPoint().getId());
+        JsonObjectBuilder job = jsonObjectBuilder()
+                                    .add("id", ra.getId())
+                                    .add("assignee", ra.getAssigneeIdentifier())
+                                    .add("assigneeName", roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle())
+                                    .add("roleId", ra.getRole().getId())
+                                    .add("roleName", ra.getRole().getName())
+                                    .add("roleDescription", ra.getRole().getDescription())
+                                    .add("_roleAlias", ra.getRole().getAlias())
+                                    .add("privateUrlToken", ra.getPrivateUrlToken())
+                                    .add("definitionPointId", ra.getDefinitionPoint().getId())
+                                    .add("definitionPointName", ra.getDefinitionPoint().getDisplayName())
+                                    .add("definitionPointType", ra.getDefinitionPoint().getDtype());
+
+        if (ra.getDefinitionPoint().getGlobalId() != null) {
+            job.add("definitionPointGlobalId", ra.getDefinitionPoint().getGlobalId().toString());
+        }
+
+        return job;
     }
 
     public static JsonArrayBuilder json(Set<Permission> permissions) {
@@ -356,6 +371,7 @@ public class JsonPrinter {
             JsonArrayBuilder jab = Json.createArrayBuilder();
             for (DatasetType datasetType : allowedDatasetTypes) {
                 NullSafeJsonBuilder json = NullSafeJsonBuilder.jsonObjectBuilder()
+                    .add("id", datasetType.getId())
                     .add("name", datasetType.getName())
                     .add("displayName", datasetType.getDisplayName())
                     .add("description", datasetType.getDescription());
@@ -407,6 +423,12 @@ public class JsonPrinter {
             guestbookObject.add("nameRequired", guestbook.isNameRequired());
             guestbookObject.add("institutionRequired", guestbook.isInstitutionRequired());
             guestbookObject.add("positionRequired", guestbook.isPositionRequired());
+            if (guestbook.getUsageCount() != null) {
+                guestbookObject.add("usageCount", guestbook.getUsageCount());
+            }
+            if (guestbook.getResponseCount() != null) {
+                guestbookObject.add("responseCount", guestbook.getResponseCount());
+            }
             JsonArrayBuilder customQuestions = Json.createArrayBuilder();
             if (guestbook.getCustomQuestions() != null) {
                 for (CustomQuestion cq : guestbook.getCustomQuestions()) {
@@ -529,6 +551,7 @@ public class JsonPrinter {
                 .add("separator", ds.getSeparator())
                 .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
+                .add("image_url", ds.getThumbnailUrl())
                 .add("storageIdentifier", ds.getStorageIdentifier());
         if (ds.getGuestbook() != null) {
             bld.add("guestbookId", ds.getGuestbook().getId());
@@ -1107,6 +1130,16 @@ public class JsonPrinter {
             .add("fileEndPosition", dv.getFileEndPosition())
             .add("recordSegmentNumber", dv.getRecordSegmentNumber())
             .add("numberOfDecimalPoints",dv.getNumberOfDecimalPoints())
+             // TODO: This potentially is a design flaw and huge code smell.
+             //       VariableMetadata is versioned by (FileMetadata,DatasetVersion) in the (DataVariable,FileMetadata) pair.
+             //       This is wrong output, as we were only interested in the one version we asked for.
+             //       This is wasteful, as we load unrelated versions of the variable metadata.
+             //       (For datasets with many variables and many versions, this is very bad.)
+             //       This also leads to N+1 query expansions, as in the printing code we look for related entities id's and details.
+             //       There are two code path leading to this: a) from exporting, b) from api.Files.getFileDataTables().
+             //       -> For exports, we only are interested in a single dataset / file metadata version.
+             //       -> For the API call we probably want the full details? It seems SPA related - not sure if they should provide a version.
+             //
             .add("variableMetadata",jsonVarMetadata(dv.getVariableMetadatas()))
             .add("invalidRanges", dv.getInvalidRanges().isEmpty() ? null : JsonPrinter.jsonInvalidRanges(dv.getInvalidRanges()))
             .add("summaryStatistics", dv.getSummaryStatistics().isEmpty() ? null : JsonPrinter.jsonSumStat(dv.getSummaryStatistics()))

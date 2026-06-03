@@ -131,8 +131,31 @@ public class Access extends AbstractApiBean {
     DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
     
     private static final String DEFAULT_BUNDLE_NAME = "dataverse_files.zip";
+    private static final int GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES = 1;
     //@EJB
-    
+
+    @GET
+    @AuthRequired
+    @Path("datafile/{fileId}/citation/{format}")
+    public Response datafileCitation(@Context ContainerRequestContext crc,
+                                     @PathParam("fileId") String fileId,
+                                     @PathParam("format") String formatString) {
+
+        DataCitation.Format format = DataCitation.getFormat(formatString);
+        if (format == null) {
+            return badRequest(BundleUtil.getStringFromBundle("datasets.api.citation.invalidFormat"));
+        }
+
+        DataFile df = findDataFileOrDieWrapper(fileId);
+
+        // This will throw a ForbiddenException if access isn't authorized:
+        checkAuthorization(crc, df);
+
+        String dataCitationFormatted = (new DataCitation(df.getFileMetadata())).toString(format, true, false);
+
+        return Response.ok().type(DataCitation.getCitationFormatMediaType(format, true)).entity(dataCitationFormatted).build();
+    }
+
     // TODO: 
     // versions? -- L.A. 4.0 beta 10
     @GET
@@ -396,6 +419,11 @@ public class Access extends AbstractApiBean {
         while (fId.lastIndexOf('/') == fId.length() - 1) {
             fId = fId.substring(0, fId.length() - 1);
         }
+        // Handle persistentId by converting it back to ID
+        if (fileId.equals(PERSISTENT_ID_KEY)) {
+            DataFile file = findDataFileOrDieWrapper(fileId);
+            fId = String.valueOf(file.getId());
+        }
 
         if (fId.indexOf('/') > -1) {
             // This is for embedding folder names into the Access API URLs;
@@ -425,15 +453,17 @@ public class Access extends AbstractApiBean {
         // Handle Guestbook Responses
         String displayName = "";
         String gbrids = null;
-        Long datasetId = null;
+        List<String> fileIdList = new ArrayList<>();
+        String id = null;
         try {
             // since all files must be in the same Dataset we can generate a Guestbook Response once and just replace the DataFile for each file in the list
             DataFile firstDatafile = datafilesMap.values().size() > 0 ? (DataFile) Arrays.stream(datafilesMap.values().toArray()).findFirst().get() : null;
+            id = firstDatafile.getOwner().getId().toString();
             GuestbookResponse gbr = getGuestbookResponseFromBody(firstDatafile, GuestbookResponse.DOWNLOAD, jsonBody, user);
             boolean guestbookResponseRequired = checkGuestbookRequiredResponse(crc, uriInfo, firstDatafile, null);
             for (DataFile df : datafilesMap.values()) {
                 displayName = df.getDisplayName();
-                datasetId = df.getOwner().getId();
+                fileIdList.add(String.valueOf(df.getId()));
                 if (guestbookResponseRequired) {
                     if (gbr != null) {
                         gbr.setDataFile(df);
@@ -456,12 +486,17 @@ public class Access extends AbstractApiBean {
             List<String> args = Arrays.asList(displayName, ex.getLocalizedMessage());
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbook.commandError", args));
         }
-        return returnSignedUrl(crc, uriInfo, user, datasetId.toString(), gbrids);
+        // Check if requesting datafile(s) or all files within dataset
+        if (!uriInfo.getPath().toLowerCase().contains("/dataset/")) {
+            id = String.join(",", fileIdList);
+        }
+        return returnSignedUrl(crc, uriInfo, user, id, gbrids);
     }
 
     private Map<Long, DataFile> getDatafilesMap(ContainerRequestContext crc, String fileIds) {
         String fileIdParams[] = getFileIdsCSV(fileIds);
         Map<Long, DataFile> datafilesMap = new HashMap<>();
+        Long datasetId = null;
         // Get and validate all the DataFiles first
         if (fileIdParams != null && fileIdParams.length > 0) {
             for (int i = 0; i < fileIdParams.length; i++) {
@@ -471,6 +506,16 @@ public class Access extends AbstractApiBean {
                     String errorMessage = "Datafile " + df.getId() + " is a harvested file that cannot be accessed in this Dataverse";
                     throw new NotFoundException(errorMessage);
                     // (nobody should ever be using this API on a harvested DataFile)!
+                }
+
+                // Make sure all files are from the same dataset
+                if (datasetId == null) {
+                    datasetId = df.getOwner().getId();
+                } else {
+                    if (!datasetId.equals(df.getOwner().getId())) {
+                        // All files must be from the same Dataset
+                        throw new BadRequestException(BundleUtil.getStringFromBundle("access.api.download.failure.multipleDatasets"));
+                    }
                 }
 
                 // This will throw a ForbiddenException if access isn't authorized:
@@ -495,7 +540,7 @@ public class Access extends AbstractApiBean {
             ApiToken apiToken = authSvc.findApiTokenByUser(requestor);
             if (apiToken == null) {
                 logger.fine("Generating temporary API token for user " + userIdentifier);
-                apiToken = authSvc.generateApiTokenForUser(requestor, AuthenticationServiceBean.INTERVAL.MINUTES, 1);
+                apiToken = authSvc.generateApiTokenForUser(requestor, AuthenticationServiceBean.INTERVAL.MINUTES, GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES);
             }
             if (apiToken != null) {
                 key = apiToken.getTokenString();
@@ -503,7 +548,9 @@ public class Access extends AbstractApiBean {
         } else {
             // Guest
             userIdentifier = "guest";
-            key = uriInfo.getAbsolutePath().toASCIIString(); //TODO find a better one for here and in SignedUrlAuthMechanism.java
+            // Note: In order for the key to match we need to replace ":persistentId" with the actual file id since that is what will be sent in via the signed url.
+            key = URLDecoder.decode(uriInfo.getAbsolutePath().toASCIIString())
+                    .replace(":persistentId", id); //TODO find a better one for here and in SignedUrlAuthMechanism.java
         }
 
         UriBuilder builder = UriBuilder.fromUri(uriInfo.getRequestUri());
@@ -517,7 +564,7 @@ public class Access extends AbstractApiBean {
         String baseUrl = URLDecoder.decode(baseUrlEncoded, StandardCharsets.UTF_8);
         baseUrl = baseUrl.replace(":persistentId", id);
         key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
-        String signedUrl = UrlSignerUtil.signUrl(baseUrl, 1, userIdentifier, "GET", key);
+        String signedUrl = UrlSignerUtil.signUrl(baseUrl, GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES, userIdentifier, "GET", key);
         return ok(Json.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
     }
 
@@ -2004,7 +2051,7 @@ public class Access extends AbstractApiBean {
                         throw new NotFoundException("GuestbookResponse Not Found for id:" + gbrids);
                     }
                     Long delta = Instant.now().toEpochMilli() - gbr.getResponseTime().getTime();
-                    wasWrittenInPost = gbr.getDataset().getId().equals(df.getOwner().getId()) && delta < 10000;
+                    wasWrittenInPost = gbr.getDataset().getId().equals(df.getOwner().getId()) && delta <= (GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES * 60000L);
                 } catch (NumberFormatException | DateTimeParseException ex) {
                     throw new BadRequestException(ex.getMessage());
                 }

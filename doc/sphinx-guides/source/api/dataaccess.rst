@@ -105,7 +105,7 @@ Basic access URI:
 
   Example ::
 
-    POST http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB&signed=true -d '{"guestbookResponse": {"name": "My Name", "email": "myemail@example.com", "institution": "Harvard","position": "Staff", "answers": [{"id": 123,"value": "Good"},{"id": 124,"value": ["Multi","Line"]},{"id": 125,"value": "Yellow"}]}}'
+    curl -X POST -H 'Content-Type:application/json' -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB" -d '{"guestbookResponse": {"name": "My Name", "email": "myemail@example.com", "institution": "Harvard","position": "Staff", "answers": [{"id": 123,"value": "Good"},{"id": 124,"value": ["Multi","Line"]},{"id": 125,"value": "Yellow"}]}}'
 
 Parameters:
 ~~~~~~~~~~~
@@ -253,6 +253,26 @@ Value           Description
 ==============  ===========
 ID              Exports file with specific file metadata ``ID``.
 ==============  ===========
+
+
+.. _datafile-citation-formatted-access:
+
+Citation - Get Citation In Other Formats
+----------------------------------------
+
+Dataverse can generate datafile citations in "EndNote", "RIS", "BibTeX", and "CSL" formats.
+This API call sends the raw format with the appropriate content-type (EndNote is XML, RIS and BibTeX are plain text, and CSL is JSON). ("Internal" is also a valid value, returning the content as HTML).
+This API call requires a format in the API call which can be any of the values listed above.
+
+Usage example:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export DATAFILE_ID=99
+  export FORMAT=EndNote
+
+  curl "$SERVER_URL/api/access/datafile/$DATAFILE_ID/citation/$FORMAT"
 
 .. _data-variable-metadata-access:
 

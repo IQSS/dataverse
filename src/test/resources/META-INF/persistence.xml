@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.0"
+             xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+    <!--
+        transaction-type="RESOURCE_LOCAL" is necessary as we won't run tests in a (app server) container context.
+        We will provide our own transaction handling, but we need to let JPA know about that.
+        (Also, when building the entity manager, we hand in a "non-JTA" data source.)
+    -->
+    <persistence-unit name="VDCNet-ejbPU-test" transaction-type="RESOURCE_LOCAL">
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        
+        <!-- Point at the main compiled classes directory for entity scanning
+             (avoids being stuck with test class root for scanning) -->
+        <jar-file>../classes</jar-file>
+        <!-- Enable automatic entity scanning -->
+        <exclude-unlisted-classes>false</exclude-unlisted-classes>
+        
+        <properties>
+            <!-- Matching production configuration -->
+            <property name="eclipselink.weaving" value="false"/>
+            <property name="eclipselink.id-validation" value="NULL"/>
+            <property name="eclipselink.cache.shared.default" value="false"/>
+            
+            <!-- No logging enabled globally - may be overriden per test -->
+            <property name="eclipselink.logging.level" value="WARNING"/>
+            <property name="eclipselink.logging.level.sql" value="WARNING"/>
+            <property name="eclipselink.logging.parameters" value="false"/>
+            
+            <property name="eclipselink.persistence-context.close-on-commit" value="false"/>
+        </properties>
+    </persistence-unit>
+</persistence>
