@@ -1174,6 +1174,16 @@ public class JsonPrinter {
             .add("fileEndPosition", dv.getFileEndPosition())
             .add("recordSegmentNumber", dv.getRecordSegmentNumber())
             .add("numberOfDecimalPoints",dv.getNumberOfDecimalPoints())
+             // TODO: This potentially is a design flaw and huge code smell.
+             //       VariableMetadata is versioned by (FileMetadata,DatasetVersion) in the (DataVariable,FileMetadata) pair.
+             //       This is wrong output, as we were only interested in the one version we asked for.
+             //       This is wasteful, as we load unrelated versions of the variable metadata.
+             //       (For datasets with many variables and many versions, this is very bad.)
+             //       This also leads to N+1 query expansions, as in the printing code we look for related entities id's and details.
+             //       There are two code path leading to this: a) from exporting, b) from api.Files.getFileDataTables().
+             //       -> For exports, we only are interested in a single dataset / file metadata version.
+             //       -> For the API call we probably want the full details? It seems SPA related - not sure if they should provide a version.
+             //
             .add("variableMetadata",jsonVarMetadata(dv.getVariableMetadatas()))
             .add("invalidRanges", dv.getInvalidRanges().isEmpty() ? null : JsonPrinter.jsonInvalidRanges(dv.getInvalidRanges()))
             .add("summaryStatistics", dv.getSummaryStatistics().isEmpty() ? null : JsonPrinter.jsonSumStat(dv.getSummaryStatistics()))
