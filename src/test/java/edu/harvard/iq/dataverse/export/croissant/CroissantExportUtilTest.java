@@ -3,7 +3,11 @@ package edu.harvard.iq.dataverse.export.croissant;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,61 +24,10 @@ import jakarta.json.stream.JsonGenerator;
 public class CroissantExportUtilTest {
 
     @Test
-    void testGetReviews() {
-        // TODO consider reading this instead: doc/sphinx-guides/source/_static/api/list-reviews.json
-        String content = """
-{
-  "reviews": [
-    {
-      "title": "Review of Pediatric Asthma",
-      "authors": [
-        "Wazowski, Mike"
-      ],
-      "persistentId": "doi:10.5072/FK2/UWVWPY",
-      "persistentIdUrl": "https://doi.org/10.5072/FK2/UWVWPY",
-      "id": 243,
-      "citation": "Wazowski, Mike, 2026, \\\"Review of Pediatric Asthma\\\", https://doi.org/10.5072/FK2/UWVWPY, Root, V1",
-      "citationHtml": "Wazowski, Mike, 2026, \\\"Review of Pediatric Asthma\\\", <a href=\\\"https://doi.org/10.5072/FK2/UWVWPY\\\" target=\\\"_blank\\\">https://doi.org/10.5072/FK2/UWVWPY</a>, Root, V1",
-      "datePublished": "2026-05-27T19:45:20Z",
-      "description": "This is a review of a dataset.",
-      "rubricMetadataBlocks": [
-        {
-          "name": "rubric_trusteddatadimensionsintensities",
-          "displayName": "Trusted Data Dimensions and Intensities",
-          "fields": [
-            {
-              "typeName": "biasEquityAndRepresentativeness",
-              "value": "Low"
-            },
-            {
-              "typeName": "authorAndProvenance",
-              "value": "Medium"
-            },
-            {
-              "typeName": "fitnessForScopeAndContextualRelevance",
-              "value": "Medium"
-            },
-            {
-              "typeName": "integrityAndUsability",
-              "value": "High"
-            },
-            {
-              "typeName": "transparencyOfMethodsAndDocumentation",
-              "value": "Low"
-            },
-            {
-              "typeName": "licensingAndLegalClarity",
-              "value": "High"
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
-                        """;
-        JsonObject croissantJson = JsonUtil.getJsonObject(content);
-        JsonObjectBuilder job = Json.createObjectBuilder(croissantJson);
+    void testGetReviews() throws IOException {
+        String content = Files.readString(Path.of("doc/sphinx-guides/source/_static/api/list-reviews.json"), StandardCharsets.UTF_8);
+        JsonObject apiResponseJson = JsonUtil.getJsonObject(content);
+        JsonObjectBuilder job = Json.createObjectBuilder(apiResponseJson.getJsonObject("data"));
         JsonObject result = CroissantExportUtil.getReviews(job).build();
         System.out.println(prettyPrint(result));
         assertTrue(result.getJsonArray("reviews").size() == 1);
