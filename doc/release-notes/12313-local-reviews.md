@@ -6,7 +6,7 @@ A new metadata block called "Trusted Data Dimensions and Intensities" has been a
 
 If you set `dataverse.feature.croissant-with-local-reviews` to true, local reviews will appear in the croissant and croissantSlim metadata export formats for any dataset that has local reviews. This feature is experiemental, which is why it is hidden behind a feature flag.
 
-See the guides for the new [list reviews](https://preview.guides.gdcc.io/en/develop/api/native-api.html#list-reviews) API endpoint, #12313, and #12314.
+See the guides for the new [list reviews](https://preview.guides.gdcc.io/en/develop/api/native-api.html#list-reviews) API endpoint, #12313, #12314, and #12425.
 
 ## New Settings
 
