@@ -4887,13 +4887,6 @@ public class DatasetPage implements java.io.Serializable {
         return "";
     }
 
-    public String getVariableMetadataURL(Long fileid) {
-        String myHostURL = getDataverseSiteUrl();
-        String metaURL = myHostURL + "/api/meta/datafile/" + fileid;
-
-        return metaURL;
-    }
-
     public String getTabularDataFileURL(Long fileid) {
         String myHostURL = getDataverseSiteUrl();
         String dataURL = myHostURL + "/api/access/datafile/" + fileid;
