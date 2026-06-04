@@ -167,12 +167,18 @@ public class DataRetrieverApiIT {
         // Sleep for indexing
         Thread.sleep(4000);
 
-        // User1 gets the list of Dataverses/Collections it has access to
-        retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(User1ApiToken, null);
+        // User1 gets the list of Dataverses/Collections it has access to (with pagination)
+        // Get the first page
+        retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(User1ApiToken, null, null, 10);
         retrieveMyCollectionListResponse.prettyPrint();
+        int count = retrieveMyCollectionListResponse.getBody().jsonPath().getInt("data.count");
+        // get the second page
+        int offset = retrieveMyCollectionListResponse.getBody().jsonPath().getInt("data.nextOffset");
+        retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(User1ApiToken, null, offset, 10);
+        retrieveMyCollectionListResponse.prettyPrint();
+        count = count + retrieveMyCollectionListResponse.getBody().jsonPath().getInt("data.count");
         // The count should show the list size to be User1's + Root Dataverse count
-        items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("data.items");
-        assertEquals(rootCount + user1DataverseCount, items.size());
+        assertEquals(rootCount + user1DataverseCount, count);
 
         // User2 gets the list of Dataverses/Collections it has access to
         retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(User2ApiToken, null);

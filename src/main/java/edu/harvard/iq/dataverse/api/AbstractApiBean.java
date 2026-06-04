@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetV
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
+import edu.harvard.iq.dataverse.mydata.Pager;
 import edu.harvard.iq.dataverse.pidproviders.FailedPIDResolutionLoggingServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry;
@@ -297,6 +298,19 @@ public abstract class AbstractApiBean {
         } else {
             throw new WrappedResponse( badRequest("Illegal boolean value '" + input + "'"));
         }
+    }
+
+    // Get a Pager object for adding pagination to a list result
+    protected Pager getPager(Integer pageSize, Integer start) {
+        if (pageSize != null || start != null) {
+            int maxPageSize = pageSize != null ? Math.max(pageSize, 10) : 10;
+            int offset = start != null ? start : 0;
+            int selectedPageNumber = offset / maxPageSize + 1;
+            // Since a new Pager is created for each API call we need to default some values to make things work
+            int numResults = selectedPageNumber * maxPageSize;
+            return new Pager(numResults, maxPageSize, selectedPageNumber);
+        }
+        return null;
     }
 
      /**

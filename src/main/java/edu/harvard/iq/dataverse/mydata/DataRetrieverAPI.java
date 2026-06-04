@@ -327,11 +327,17 @@ public class DataRetrieverAPI extends AbstractApiBean {
     @AuthRequired
     @Path(retrieveDataPartialAPIPath + "/collectionList")
     @Produces("application/json")
-    public Response retrieveMyCollectionList(@Context ContainerRequestContext crc, @QueryParam("userIdentifier") String userIdentifier) {
+    public Response retrieveMyCollectionList(@Context ContainerRequestContext crc,
+                                             @QueryParam("userIdentifier") String userIdentifier,
+                                             @QueryParam("searchTerm") String searchTerm,
+                                             @QueryParam("offset") Integer start,
+                                             @QueryParam("pageSize") Integer pageSize) {
         try {
             verifyAuth(crc, userIdentifier);
-            List<Dataverse> collections = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), searchUser, Permission.AddDataset.name()));
-            return ok(JsonPrinter.jsonArray(collections));
+            Pager pager = getPager(pageSize, start);
+            List<Dataverse> collections = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), searchUser, Permission.AddDataset.name(),
+                    searchTerm, pager));
+            return ok(JsonPrinter.jsonArray(collections, pager));
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
