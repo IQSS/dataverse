@@ -1614,10 +1614,31 @@ public class DatasetsIT {
         Response exportDatasetAsDdi = UtilIT.exportDataset(datasetPersistentId, "ddi", apiToken);
         exportDatasetAsDdi.prettyPrint();
         exportDatasetAsDdi.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode());       
+        
 
         assertEquals(null, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
         assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
+
+        Response exportDatasetAsOpenAIRE = UtilIT.exportDataset(datasetPersistentId, "oai_datacite", apiToken);
+        System.out.print("$$$$$$$$$$$$$$$$$$$$$");
+        exportDatasetAsOpenAIRE.prettyPrint();
+         System.out.print("$$$$$$$$$$$$$$$$$$$$$");
+      exportDatasetAsOpenAIRE.then().assertThat()
+            .statusCode(OK.getStatusCode());
+        
+       // assertEquals(null, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
+      //  assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
+
+                Response exportDatasetAsDataCite = UtilIT.exportDataset(datasetPersistentId, "DataCite", apiToken);
+      //  exportDatasetAsDataCite.prettyPrint();
+        exportDatasetAsDataCite.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+      // assertEquals(null, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
+      //  assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
+
+
 
         Response reexportAllFormats = UtilIT.reexportDatasetAllFormats(datasetPersistentId);
         reexportAllFormats.prettyPrint();

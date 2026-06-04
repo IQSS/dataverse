@@ -292,7 +292,7 @@ public class OpenAireExportUtil {
                                         site = site + nameIdentifier.substring(0, nameIdentifier.indexOf("/") + 1);
                                         nameIdentifier = nameIdentifier.substring(nameIdentifier.indexOf("/") + 1);
 
-                                        creator_map.put("SchemeURI", site);
+                                        creator_map.put("schemeURI", site);
                                     }
 
                                     if (StringUtils.isNotBlank(nameIdentifierScheme)) {
@@ -301,6 +301,28 @@ public class OpenAireExportUtil {
                                     } else {
                                         writeFullElement(xmlw, null, "nameIdentifier", null, nameIdentifier, language);
                                     }
+                                    /*
+                                                    String nameIdentifier = null;
+                String nameIdentifierScheme = null;
+                if (StringUtils.isNotBlank(author.getIdValue()) && StringUtils.isNotBlank(author.getIdType())) {
+                    nameIdentifier = author.getIdValue();
+                    if (nameIdentifier != null) {
+                        // Normalizes to the URL form of the identifier, returns null if the identifier
+                        // is not valid given the type
+                        nameIdentifier = author.getIdentifierAsUrl();
+                    }
+                    nameIdentifierScheme = author.getIdType();
+                }
+
+                if (StringUtils.isNotBlank(creatorName)) {
+                    JsonObject creatorObj = PersonOrOrgUtil.getPersonOrOrganization(creatorName, false,
+                            Strinl gUtils.containsIgnoreCase(nameIdentifierScheme, "orcid"));
+                    nothingWritten = false;
+                    writeEntityElements(xmlw, "creator", null, creatorObj, affiliation, nameIdentifier, nameIdentifierScheme);
+                }
+                                    */
+                                    
+                                    
                                 }
 
                                 if (StringUtils.isNotBlank(affiliation)) {
@@ -769,11 +791,14 @@ public class OpenAireExportUtil {
         }
 
         String dateOfVersion = datasetVersionDTO.getReleaseTime();
+        //12294 set date type depending whether the version is republished
+        String dateType = (datasetVersionDTO.getMinorVersionNumber() > 0 || datasetVersionDTO.getVersionNumber() > 1) ? "updated" : "available";
+         
         if (StringUtils.isNotBlank(dateOfVersion)) {
             date_check = writeOpenTag(xmlw, "dates", date_check);
 
             Map<String, String> date_map = new HashMap<String, String>();
-            date_map.put("dateType", "Updated");
+            date_map.put("dateType", dateType);
             writeFullElement(xmlw, null, "date", date_map, dateOfVersion.substring(0, 10), language);
         }
 

@@ -609,6 +609,7 @@ public class JsonPrinter {
     }
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList,
         boolean includeFiles, boolean returnOwners, boolean includeMetadataBlocks, boolean ignoreSettingExcludeEmailFromExport) {
+        DataCitation citation = new DataCitation(dsv);
         Dataset dataset = dsv.getDataset();
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dataset.getId())
@@ -629,7 +630,7 @@ public class JsonPrinter {
                 .add("releaseTime", format(dsv.getReleaseTime()))
                 .add("createTime", format(dsv.getCreateTime()))
                 .add("alternativePersistentId", dataset.getAlternativePersistentIdentifier())
-                .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
+                .add("publicationDate", citation.getYear())
                 .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD())
                 .add("versionNote", dsv.getVersionNote());
         if (dataset.getGuestbook() != null) {
@@ -719,7 +720,10 @@ public class JsonPrinter {
      * should the method be renamed?
      */
     public static JsonObjectBuilder jsonAsDatasetDto(DatasetVersion dsv) {
+        //#12293 use the same logic for OpenAire as Datacite for publication date
+        Map<String, String > citationMap = new DataCitation(dsv).getDataCiteMetadata();
         JsonObjectBuilder datasetDtoAsJson = JsonPrinter.json(dsv.getDataset());
+        datasetDtoAsJson.add("publicationDate", citationMap.get("datacite.publicationyear"));
         datasetDtoAsJson.add("datasetVersion", jsonWithCitation(dsv, true));
         return datasetDtoAsJson;
     }
