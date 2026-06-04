@@ -43,12 +43,9 @@ public class UrlSignerUtil {
      */
     public static String signUrl(String baseUrl, Integer timeout, String user, String method, String key) {
 
-        // Remove any reserved signing parameters ("until", "user", "method", "token", "key",
-        // "signed") that may already be present in the base URL, so they cannot be spoofed and so
-        // re-signing an already-signed URL does not accumulate them. This is done with exact string
-        // surgery (not URIBuilder) because the signature is a byte-exact MAC computed over the URL
-        // string: normalizing/re-encoding the URL here (e.g. percent-encoding ':' and '/' in DOIs,
-        // or handling spaces/unicode) would change the bytes that get hashed and break validation.
+        // Strip reserved signing params that may already be in the base URL. Done with exact-string
+        // surgery (not URIBuilder): the signature is a byte-exact MAC, so re-encoding the URL here
+        // (e.g. percent-encoding ':' and '/' in DOIs) would change the hashed bytes and break it.
         baseUrl = stripReservedParameters(baseUrl);
         boolean firstParam = !baseUrl.contains("?");
         StringBuilder signedUrlBuilder = new StringBuilder(baseUrl);
@@ -80,14 +77,8 @@ public class UrlSignerUtil {
     }
 
     /**
-     * Removes any reserved signing parameters ("until", "user", "method", "token", "key",
-     * "signed") from the query string of the given URL while preserving the exact byte
-     * representation of the path and of every remaining query parameter. Unlike URIBuilder, this
-     * does not decode/re-encode the URL, which is required because {@link #signUrl} and
-     * {@link #isValidUrl} compute a byte-exact MAC over the URL string.
-     *
-     * @param baseUrl the URL to clean (may or may not contain a query string)
-     * @return the URL with reserved parameters removed, otherwise unchanged byte-for-byte
+     * Removes the reserved signing parameters from the query, preserving the exact bytes of the path
+     * and of every other parameter (unlike URIBuilder, which would re-encode and break the MAC).
      */
     static String stripReservedParameters(String baseUrl) {
         int queryStart = baseUrl.indexOf('?');

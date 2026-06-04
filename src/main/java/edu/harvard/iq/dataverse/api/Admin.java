@@ -2454,8 +2454,7 @@ public class Admin extends AbstractApiBean {
             return error(Response.Status.FORBIDDEN, "Requesting signed URLs is restricted to superusers.");
         }
 
-        // A signing secret must be configured. Without it the signing key would fall back to just
-        // the user's API token, which is too weak. Fail fast rather than hand out weakly-signed URLs.
+        // Require a signing secret: without it the key is only the user's API token, which is too weak.
         if (JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("").isEmpty()) {
             return error(Response.Status.BAD_REQUEST,
                     "Requesting signed URLs requires a signing secret to be configured. Please set the dataverse.api.signing-secret JVM option.");

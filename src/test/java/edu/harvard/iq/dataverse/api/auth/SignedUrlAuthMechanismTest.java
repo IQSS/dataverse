@@ -12,6 +12,10 @@ import org.mockito.Mockito;
 
 import jakarta.ws.rs.container.ContainerRequestContext;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
 import static edu.harvard.iq.dataverse.api.auth.SignedUrlAuthMechanism.RESPONSE_MESSAGE_BAD_SIGNED_URL;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -98,11 +102,9 @@ public class SignedUrlAuthMechanismTest {
         assertEquals(RESPONSE_MESSAGE_BAD_SIGNED_URL, wrappedUnauthorizedAuthErrorResponse.getMessage());
     }
 
-    // ---- End-to-end signature validation through the REAL SignedUrlAuthMechanism ----
-    // These drive the actual validation path: sign a URL, then validate it the way the server does
-    // (URLDecoder.decode(requestUri) -> UrlSignerUtil.isValidUrl), proving a signed URL produced for
-    // an rdm-integration-style URL actually authenticates the user (and that tampering does not).
-    // No signing-secret is configured in this unit context, so the signing key is just the API token.
+    // End-to-end validation through the REAL SignedUrlAuthMechanism (URLDecoder.decode + isValidUrl),
+    // which the isValidUrl-only tests in UrlSignerUtilTest do not exercise. No signing secret is
+    // configured here, so the signing key is just the API token.
 
     private void givenUserWithSigningKey(String key) {
         AuthenticationServiceBean authStub = Mockito.mock(AuthenticationServiceBean.class);
@@ -111,36 +113,6 @@ public class SignedUrlAuthMechanismTest {
         Mockito.when(apiToken.getTokenString()).thenReturn(key);
         Mockito.when(authStub.findApiTokenByUser(testAuthenticatedUser)).thenReturn(apiToken);
         sut.authSvc = authStub;
-    }
-
-    @Test
-    public void testEndToEnd_rawPersistentIdSignedUrl_authenticatesUser() throws WrappedAuthErrorResponse {
-        givenUserWithSigningKey(TEST_SIGNED_URL_TOKEN);
-        String base = "http://localhost:8080/api/v1/datasets/:persistentId?persistentId=doi:10.5072/FK2/ABC";
-        // The client signs this URL and requests it verbatim (a raw DOI is unchanged by URLDecoder.decode).
-        String signedUrl = UrlSignerUtil.signUrl(base, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNED_URL_TOKEN);
-
-        ContainerRequestContext request = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID, signedUrl);
-
-        assertEquals(testAuthenticatedUser, sut.findUserFromRequest(request),
-                "a signed raw-DOI URL must authenticate end to end (decode + validate)");
-    }
-
-    @Test
-    public void testEndToEnd_escapedPersistentIdReconstructedRequest_authenticatesUser() throws WrappedAuthErrorResponse {
-        givenUserWithSigningKey(TEST_SIGNED_URL_TOKEN);
-        // The signing client un-escapes before signing, so the server signs the DECODED form...
-        String decodedBase = "http://localhost:8080/api/v1/datasets/:persistentId?persistentId=doi:10.5072/FK2/ABC";
-        String signedDecoded = UrlSignerUtil.signUrl(decodedBase, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNED_URL_TOKEN);
-        // ...but the actual request carries the ESCAPED persistentId (the URL the caller built). The
-        // server's URLDecoder.decode turns it back into the signed (decoded) form, so it validates.
-        String escapedBase = "http://localhost:8080/api/v1/datasets/:persistentId?persistentId=doi%3A10.5072%2FFK2%2FABC";
-        String requestUri = escapedBase + signedDecoded.substring(decodedBase.length());
-
-        ContainerRequestContext request = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID, requestUri);
-
-        assertEquals(testAuthenticatedUser, sut.findUserFromRequest(request),
-                "an escaped persistentId must authenticate end to end (server signs decoded; validation decodes the request)");
     }
 
     @Test
@@ -154,5 +126,61 @@ public class SignedUrlAuthMechanismTest {
         ContainerRequestContext request = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID, tampered);
 
         assertThrows(WrappedUnauthorizedAuthErrorResponse.class, () -> sut.findUserFromRequest(request));
+    }
+
+    // Runs the real rdm flow: un-escape, sign, request the original (encoded) URL + signature, then the
+    // server URL-decodes the request and checks it. Returns true iff the user authenticates.
+    private boolean validatesEndToEndAsRdmClient(String urlAsClientBuilds) {
+        givenUserWithSigningKey(TEST_SIGNED_URL_TOKEN);
+        String canonical = URLDecoder.decode(urlAsClientBuilds, StandardCharsets.UTF_8);
+        String signed = UrlSignerUtil.signUrl(canonical, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNED_URL_TOKEN);
+        String requestUri = urlAsClientBuilds + signed.substring(canonical.length());
+        ContainerRequestContext request = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID, requestUri);
+        try {
+            return testAuthenticatedUser.equals(sut.findUserFromRequest(request));
+        } catch (WrappedAuthErrorResponse e) {
+            return false;
+        }
+    }
+
+    @Test
+    public void testEndToEnd_allRdmIntegrationUrls_authenticate() {
+        final String s = "https://demo.dataverse.org";
+        final String pid = "doi:10.5072/FK2/ABC";          // raw, as most rdm paths send it
+        final String escPid = "doi%3A10.5072%2FFK2%2FABC";  // url.QueryEscape form (GetDatasetMetadata, GetDatasetUserPermissions)
+
+        // Every URL shape rdm-integration signs - each must authenticate end to end.
+        List<String> urls = List.of(
+            // raw persistentId in the query (GetNodeMap, CheckPermission, globus, writes, dataverse plugin)
+            s + "/api/v1/datasets/:persistentId/versions/:latest/files?persistentId=" + pid,
+            s + "/api/v1/datasets/:persistentId?persistentId=" + pid,
+            s + "/api/v1/admin/permissions/:persistentId?persistentId=" + pid + "&unblock-key=UNBLOCK",
+            s + "/api/v1/datasets/:persistentId/requestGlobusUploadPaths?persistentId=" + pid,
+            s + "/api/v1/datasets/:persistentId/addGlobusFiles?persistentId=" + pid,
+            s + "/api/v1/datasets/:persistentId/requestGlobusDownload?persistentId=" + pid,
+            s + "/api/v1/datasets/:persistentId/monitorGlobusDownload?persistentId=" + pid,
+            s + "/api/v1/datasets/:persistentId/globusDownloadParameters?persistentId=" + pid + "&downloadId=globus-task-123",
+            s + "/api/v1/datasets/:persistentId/add?persistentId=" + pid,
+            s + "/api/v1/datasets/:persistentId/addFiles?persistentId=" + pid,
+            s + "/api/v1/datasets/:persistentId/replaceFiles?persistentId=" + pid,
+            s + "/api/v1/datasets/:persistentId/deleteFiles?persistentId=" + pid,
+            s + "/api/v1/datasets/:persistentId/cleanStorage?persistentId=" + pid,
+            // url-escaped persistentId (GetDatasetMetadata, GetDatasetUserPermissions)
+            s + "/api/v1/datasets/:persistentId?persistentId=" + escPid + "&excludeFiles=true",
+            s + "/api/v1/datasets/:persistentId/userPermissions?persistentId=" + escPid,
+            // mydata/retrieve: url-escaped search term, '+' for spaces, repeated query params
+            s + "/api/v1/mydata/retrieve?selected_page=1&dvobject_types=Dataset"
+                + "&published_states=Published&published_states=Unpublished&published_states=Draft"
+                + "&role_ids=1&role_ids=6&mydata_search_term=text%3A%22hello+world%22",
+            // numeric-id / no-persistentId paths
+            s + "/api/v1/access/datafile/123/metadata/ddi",
+            s + "/api/v1/access/datafile/123",
+            s + "/api/v1/files/123",
+            s + "/api/v1/users/:me",
+            s + "/api/v1/datasets/42/versions/:latest?excludeFiles=true"
+        );
+        for (String url : urls) {
+            assertTrue(validatesEndToEndAsRdmClient(url), "signed URL must authenticate end to end: " + url);
+        }
     }
 }

@@ -25,9 +25,8 @@ public class SignedUrlUriInfoTestFake extends UriInfoTestFake {
         this(signedUrlToken, signedUrlUserId, null);
     }
 
-    // Lets a test supply the exact request URI the server would see (e.g. a signed URL for a
-    // specific base URL, or a reconstructed/escaped presentation), so the real validation path
-    // (URLDecoder.decode + UrlSignerUtil.isValidUrl) can be exercised end to end.
+    // Lets a test supply the exact request URI the server would see, to exercise the real
+    // URLDecoder.decode + isValidUrl validation path.
     public SignedUrlUriInfoTestFake(String signedUrlToken, String signedUrlUserId, String requestUriOverride) {
         this.signedUrlToken = signedUrlToken;
         this.signedUrlUserId = signedUrlUserId;
