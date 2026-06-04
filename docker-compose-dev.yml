@@ -60,6 +60,7 @@ services:
         -Ddataverse.pid.fake.label=FakeDOIProvider
         -Ddataverse.pid.fake.authority=10.5072
         -Ddataverse.pid.fake.shoulder=FK2/
+        -Ddataverse.api.signing-secret=dev-only-signing-secret-change-me
         -Ddataverse.cors.origin=* \
         -Ddataverse.cors.methods=GET,POST,PUT,DELETE,OPTIONS \
         -Ddataverse.cors.headers.allow=range,content-type,x-dataverse-key,accept \

@@ -2,12 +2,10 @@ package edu.harvard.iq.dataverse.util;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.joda.time.LocalDateTime;
 
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -45,19 +43,13 @@ public class UrlSignerUtil {
      */
     public static String signUrl(String baseUrl, Integer timeout, String user, String method, String key) {
 
-        // check for reserved parameter names ("until","user", "method", or "token")
-        String[] urlQP = baseUrl.split("\\?");
-        if (urlQP.length > 1) {
-            try {
-                URIBuilder uriBuilder = new URIBuilder(baseUrl);
-                List<NameValuePair> params = uriBuilder.getQueryParams();
-                params.removeIf(pair -> reservedParameters.contains(pair.getName()));
-                uriBuilder.setParameters(params);
-                baseUrl = uriBuilder.build().toString();
-            } catch (URISyntaxException e) {
-                logger.severe("Invalid URL for signing: " + baseUrl + " " + e.getMessage());
-            }
-        }
+        // Remove any reserved signing parameters ("until", "user", "method", "token", "key",
+        // "signed") that may already be present in the base URL, so they cannot be spoofed and so
+        // re-signing an already-signed URL does not accumulate them. This is done with exact string
+        // surgery (not URIBuilder) because the signature is a byte-exact MAC computed over the URL
+        // string: normalizing/re-encoding the URL here (e.g. percent-encoding ':' and '/' in DOIs,
+        // or handling spaces/unicode) would change the bytes that get hashed and break validation.
+        baseUrl = stripReservedParameters(baseUrl);
         boolean firstParam = !baseUrl.contains("?");
         StringBuilder signedUrlBuilder = new StringBuilder(baseUrl);
 
@@ -85,6 +77,38 @@ public class UrlSignerUtil {
                     "URL signature is " + (isValidUrl(signedUrl, user, method, key) ? "valid" : "invalid"));
         }
         return signedUrl;
+    }
+
+    /**
+     * Removes any reserved signing parameters ("until", "user", "method", "token", "key",
+     * "signed") from the query string of the given URL while preserving the exact byte
+     * representation of the path and of every remaining query parameter. Unlike URIBuilder, this
+     * does not decode/re-encode the URL, which is required because {@link #signUrl} and
+     * {@link #isValidUrl} compute a byte-exact MAC over the URL string.
+     *
+     * @param baseUrl the URL to clean (may or may not contain a query string)
+     * @return the URL with reserved parameters removed, otherwise unchanged byte-for-byte
+     */
+    static String stripReservedParameters(String baseUrl) {
+        int queryStart = baseUrl.indexOf('?');
+        if (queryStart < 0) {
+            return baseUrl;
+        }
+        String path = baseUrl.substring(0, queryStart);
+        String query = baseUrl.substring(queryStart + 1);
+        StringBuilder kept = new StringBuilder();
+        for (String pair : query.split("&")) {
+            int equals = pair.indexOf('=');
+            String name = (equals < 0) ? pair : pair.substring(0, equals);
+            if (reservedParameters.contains(name)) {
+                continue;
+            }
+            if (kept.length() > 0) {
+                kept.append('&');
+            }
+            kept.append(pair);
+        }
+        return kept.length() > 0 ? path + "?" + kept : path;
     }
 
     /**

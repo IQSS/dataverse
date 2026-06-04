@@ -3349,9 +3349,10 @@ are time limited and only allow the action of the API call in the URL. See :ref:
 :ref:`api-native-signed-url` for more details. 
 
 The key used to sign a URL is created from the API token of the creating user plus a signing-secret provided by an administrator.
-**Using a signing-secret is highly recommended.** This setting defaults to an empty string. Using a non-empty 
-signing-secret makes it impossible for someone who knows an API token from forging signed URLs and provides extra security by 
-making the overall signing key longer.
+**A non-empty signing-secret is required to request signed URLs through the API.** If it is not configured, the
+``/api/admin/requestSignedUrl`` endpoint (see :ref:`api-native-signed-url`) returns an error instead of issuing a
+weakly-signed URL. (The setting otherwise defaults to an empty string.) A non-empty signing-secret makes it impossible for
+someone who only knows an API token to forge signed URLs, and provides extra security by making the overall signing key longer.
 
 **WARNING**:
 *Since the signing-secret is sensitive, you should treat it like a password.*
