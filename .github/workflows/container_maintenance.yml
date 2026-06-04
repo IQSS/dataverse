@@ -173,9 +173,9 @@ jobs:
         with:
           platforms: ${{ env.PLATFORMS }}
       - name: Setup Trivy binary for vulnerability scanning
-        uses: aquasecurity/setup-trivy@v0.2.5
+        uses: aquasecurity/setup-trivy@v0.3.1
         with:
-          version: v0.63.0
+          version: v0.69.3
 
       # Execute matrix build for the discovered branches
       - name: Execute build matrix script

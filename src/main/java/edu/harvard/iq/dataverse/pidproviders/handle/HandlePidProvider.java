@@ -185,7 +185,7 @@ public class HandlePidProvider extends AbstractPidProvider {
                 timestamp, null, true, true, true, false), new HandleValue(1, "URL".getBytes(StandardCharsets.UTF_8),
                 datasetUrl.getBytes(),
                 HandleValue.TTL_TYPE_RELATIVE, 86400,
-                timestamp, null, true, true, true, false)};
+                timestamp, null, true, true, false, false)};
 
             CreateHandleRequest req
                     = new CreateHandleRequest(handle.getBytes(StandardCharsets.UTF_8), val, auth);
@@ -259,7 +259,7 @@ public class HandlePidProvider extends AbstractPidProvider {
         logger.log(Level.FINE,"getRegistrationUrl");
         String siteUrl = SystemConfig.getDataverseSiteUrlStatic();
         String targetUrl = siteUrl + dvObject.getTargetUrl() + "hdl:" + dvObject.getAuthority()
-                + "/" + dvObject.getIdentifier();         
+                + "/" + dvObject.getIdentifier();
         return targetUrl;
     }
  
@@ -323,12 +323,6 @@ public class HandlePidProvider extends AbstractPidProvider {
         } else {
             return "0.NA/" + handlePrefix;
         }
-    }
-
-    @Override
-    public boolean alreadyRegistered(DvObject dvObject) {
-        String handle = getDvObjectHandle(dvObject);
-        return isHandleRegistered(handle);
     }
     
     @Override
@@ -400,6 +394,10 @@ public class HandlePidProvider extends AbstractPidProvider {
 
     @Override
     public String createIdentifier(DvObject dvObject) throws Throwable {
+        if (dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty()) {
+            dvObject = generatePid(dvObject);
+            logger.fine("generated identifier: " + getIdentifier(dvObject));
+        }
         Throwable result = registerNewHandle(dvObject);
         if (result != null)
             throw result;
