@@ -50,19 +50,19 @@ Recursively assigns the users and groups having a role(s),that are in the set co
 Configure a Dataverse Collection to Store All New Files in a Specific File Store
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To direct new files (uploaded when datasets are created or edited) for all datasets in a given Dataverse collection, the store can be specified via the API as shown below, or by editing the 'General Information' for a Dataverse collection on the Dataverse collection page. Only accessible to superusers. ::
+To direct new files (uploaded when datasets are created or edited) for all datasets in a given Dataverse collection, the store can be specified via the API as shown below, or by editing the 'General Information' for a Dataverse collection on the Dataverse collection page. Requires permission to edit the Dataverse collection (for example, the ``EditDataverse`` permission). ::
  
-    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $storageDriverLabel http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $storageDriverLabel http://$SERVER/api/dataverses/$dataverse-alias/storageDriver
 
 (Note that for ``dataverse.files.store1.label=MyLabel``, you should pass ``MyLabel``.)
     
 A store assigned directly to a collection can be seen using::
 
-    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/dataverses/$dataverse-alias/storageDriver
 
 This may be null. To get the effective storageDriver for a collection, which may be inherited from a parent collection or be the installation default, you can use:: 
 
-    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver?getEffective=true
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/dataverses/$dataverse-alias/storageDriver?getEffective=true
     
 This will never be null.
 
@@ -70,11 +70,11 @@ This will never be null.
 
 To delete a store assigned directly to a collection (so that the colllection's effective store is inherted from it's parent or is the global default), use::
 
-    curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
+    curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/dataverses/$dataverse-alias/storageDriver
     
-The available drivers can be listed with::
+The available drivers within a collection can be listed with::
 
-    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/storageDrivers
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/dataverses/$dataverse-alias/allowedStorageDrivers
     
 (Individual datasets can be configured to use specific file stores as well. See the "Datasets" section below.)
 
