@@ -986,7 +986,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
      * @param auxiliaryFileName (optional) - file name, if different from the main
      *                          file label.
      * @return redirect url
-     * @throws IOException.
+     * @throws IOException
      */
     public String generateTemporaryDownloadUrl(String auxiliaryTag, String auxiliaryType, String auxiliaryFileName)
             throws IOException {
@@ -1314,6 +1314,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     public void removeTempTag() throws IOException {
+        final boolean taggingDisabled = JvmSettings.DISABLE_S3_TAGGING.lookupOptional(Boolean.class, this.driverId)
+                .orElse(false);
+        if (taggingDisabled) {
+            logger.fine("S3 tagging disabled for storage driver " + driverId + "; skipping temp tag removal.");
+            return;
+        }
         if (!(dvObject instanceof DataFile)) {
             logger.warning("Attempt to remove tag from non-file DVObject id: " + dvObject.getId());
             throw new IOException("Attempt to remove temp tag from non-file S3 Object");
