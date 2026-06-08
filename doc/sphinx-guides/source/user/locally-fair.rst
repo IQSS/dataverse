@@ -38,13 +38,14 @@ What Locally FAIR Means
 Locally FAIR content is intended to be FAIR within a particular community.
 
 That means:
+
 - **Findable** Data is easy to locate for both humans and machines, when authorized. Locally FAIR datasets (and files if configured) have persistent identifiers, but do not use DOIs which are publicly searchable.
 
 - **Accessible** Data is retrievable through standardized protocols. Authorized users can use Dataverse's standard user interface and API calls to access Locally FAIR content in the same way they do with any published data.
 
 - **Interoperable** Data should be compatible with other datasets and systems. Locally FAIR datasets in Dataverse use the same standard metadata blocks as for public content and files undergo the same ingest process, use the same previewers and tools, etc.
 
-- **Reusable** Data should be well-described and licensed in a way that allows others to use it for future research. The licenses and terms on locally FAIR content make it clear how and when the data can be re-used.
+- **Reusable** Data should be well-described and licensed in a way that allows others to use it for future research. The licenses and terms on Locally FAIR content make it clear how and when the data can be re-used.
 
 Why Repositories Use It
 =======================
@@ -55,7 +56,7 @@ installations to separate public and organization-only content.
 How It Differs from Restricted Files
 ====================================
 
-Restricting or embargoing files limits access to the file contents, but in a standard public
+:ref:`Restricting <restricted-files>` or :ref:`embargoing <embargoes>` files limits access to the file contents, but in a standard public
 repository the dataset's published metadata, including the list of files, would still be visible.
 If a dataset allows requests for file access, anyone can request access, even if the dataset's
 license or terms limit access to specific groups.
@@ -68,7 +69,7 @@ Who Can See Locally FAIR Content
 ================================
 
 Visibility is determined by superusers and is managed at the collection level.
-Access can be granted to any group(s) or user(s) defined in Dataverse - the same groups/users
+Access can be granted to any groups or users defined in Dataverse - the same groups/users
 available when assigning roles on collections, datasets, and files.
 
 How Can You Tell When Content is Locally FAIR?
@@ -78,7 +79,7 @@ The Dataverse UI adds a "Locally FAIR" tag to all collections, datasets, and fil
 is limited by the locally FAIR mechanism.
 
 
-Why is Locally FAIR support "Experimental"
+Why is Locally FAIR Support "Experimental"
 ==========================================
 
 The word "experimental" is used when functionality is new, may evolve signifcantly in future releases,
@@ -104,3 +105,13 @@ If your repository supports Locally FAIR content:
   datasets you can see;
 - you should not share Locally FAIR content with others who don't have access themselves; and
 - this functionality is experimental.
+
+Enabling Locally FAIR Support
+=============================
+
+See :ref:`dataverse.feature.allow-locally-fair-data` in the Installation Guide.
+
+Managing Locally FAIR Via API
+=============================
+
+See :ref:`locally-fair-list-role-assignees` and related API enpoints in the API Guide.
