@@ -84,6 +84,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
     public static final String JSON_SUCCESS_FIELD_NAME = "success";
     public static final String JSON_ERROR_MSG_FIELD_NAME = "error_message";
+    public static final String JSON_MSG_FIELD_NAME = "message";
     public static final String JSON_DATA_FIELD_NAME = "data";
 
     /**
@@ -190,26 +191,18 @@ public class DataRetrieverAPI extends AbstractApiBean {
         }
         
         // ---------------------------------
-        // (1) Initialize filterParams and check for Errors 
+        // (1) Initialize filterParams and MyDataFinder and check for Errors
         // ---------------------------------
         DataverseRequest dataverseRequest = createDataverseRequest(authUser);
-
-        
         MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, dtypes, pub_states, roleIds, searchTerm, validities);
-        if (filterParams.hasError()){
-            return this.getJSONErrorString(filterParams.getErrorMessage(), filterParams.getErrorMessage());
+        myDataFinder = new MyDataFinder(rolePermissionHelper, roleAssigneeService, dvObjectServiceBean, groupService);
+        myDataFinder.runFindDataSteps(filterParams);
+
+        if (filterParams.hasError()) {
+            return myDataAsJson(filterParams.getErrorMessage()).build().toString();
         }
-       
-        // ---------------------------------
-        // (2) Initialize MyDataFinder and check for Errors 
-        // ---------------------------------
-        myDataFinder = new MyDataFinder(rolePermissionHelper,
-                                        roleAssigneeService,
-                                        dvObjectServiceBean, 
-                                        groupService);
-        this.myDataFinder.runFindDataSteps(filterParams);
-        if (myDataFinder.hasError()){
-            return this.getJSONErrorString(myDataFinder.getErrorMessage(), myDataFinder.getErrorMessage());
+        if (myDataFinder.hasError()) {
+            return myDataAsJson(myDataFinder.getErrorMessage()).build().toString();
         }
 
         // ---------------------------------
@@ -226,7 +219,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         List<String> defaultFilterQueries = this.myDataFinder.getSolrFilterQueries();
         if (defaultFilterQueries==null){
             logger.fine("No ids found for this search");
-            return this.getJSONErrorString(noMsgResultsFound, null);
+            return myDataAsJson(noMsgResultsFound).build().toString();
         }
         filterQueries.addAll(defaultFilterQueries);
 
@@ -257,7 +250,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                 );
 
             if (this.solrQueryResponse.getNumResultsFound()==0){
-                return this.getJSONErrorString(noMsgResultsFound, null);
+                return myDataAsJson(noMsgResultsFound).build().toString();
             }
 
         } catch (SearchException ex) {
@@ -281,9 +274,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
         //      - DvObject counts
         // ---------------------------------
 
-        // Initialize JSON response
-        JsonObjectBuilder jsonData = Json.createObjectBuilder();
-
         Pager pager = new Pager(solrQueryResponse.getNumResultsFound().intValue(),
                 SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE,
                 paginationStart);
@@ -291,20 +281,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         RoleTagRetriever roleTagRetriever = new RoleTagRetriever(this.rolePermissionHelper, this.roleAssigneeSvc, this.dvObjectServiceBean);
         roleTagRetriever.loadRoles(dataverseRequest, solrQueryResponse);
 
-
-        jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, true)
-                .add(DataRetrieverAPI.JSON_DATA_FIELD_NAME,
-                        Json.createObjectBuilder()
-                                .add("pagination", pager.asJsonObjectBuilderUsingCardTerms())
-                                //.add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, filterParams, this.myDataFinder))
-                                .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, roleTagRetriever, metadataFields))
-                                .add(SearchConstants.SEARCH_API_TOTAL_COUNT, solrQueryResponse.getNumResultsFound())
-                                .add(SearchConstants.SEARCH_API_START, solrQueryResponse.getResultsStart())
-                                .add("search_term",  filterParams.getSearchTerm())
-                                .add("dvobject_counts", this.getDvObjectTypeCounts(solrQueryResponse))
-                                .add("pubstatus_counts", this.getPublicationStatusCounts(solrQueryResponse))
-                                .add("selected_filters", this.myDataFinder.getSelectedFilterParamsAsJSON())
-                );
+        JsonObjectBuilder jsonData = myDataAsJson(null, pager, roleTagRetriever, metadataFields);
 
         // ---------------------------------------------------------
         // We're doing ~another~ solr query here
@@ -318,6 +295,32 @@ public class DataRetrieverAPI extends AbstractApiBean {
         }
 
         return jsonData.build().toString();
+    }
+
+    // For empty data to prevent null pointer exceptions in all the dependencies
+    private JsonObjectBuilder myDataAsJson(String message) {
+        solrQueryResponse = new SolrQueryResponse(null);
+        return myDataAsJson(message, new Pager(0, SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE, 1),
+                new RoleTagRetriever(this.rolePermissionHelper, this.roleAssigneeSvc, this.dvObjectServiceBean), List.of());
+    }
+
+    private JsonObjectBuilder myDataAsJson(String message, Pager pager, RoleTagRetriever roleTagRetriever, List<String> metadataFields) {
+        JsonObjectBuilder jsonData = Json.createObjectBuilder().add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, true);
+        if (message != null) {
+            jsonData.add(DataRetrieverAPI.JSON_MSG_FIELD_NAME, message);
+        }
+        jsonData.add(DataRetrieverAPI.JSON_DATA_FIELD_NAME,
+                Json.createObjectBuilder()
+                        .add("pagination", pager.asJsonObjectBuilderUsingCardTerms())
+                        .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, roleTagRetriever, metadataFields))
+                        .add(SearchConstants.SEARCH_API_TOTAL_COUNT, solrQueryResponse.getNumResultsFound())
+                        .add(SearchConstants.SEARCH_API_START, solrQueryResponse.getResultsStart())
+                        .add("search_term",  myDataFinder.filterParams.getSearchTerm())
+                        .add("dvobject_counts", this.getDvObjectTypeCounts(solrQueryResponse))
+                        .add("pubstatus_counts", this.getPublicationStatusCounts(solrQueryResponse))
+                        .add("selected_filters", this.myDataFinder.getSelectedFilterParamsAsJSON())
+                );
+        return jsonData;
     }
 
     @GET
