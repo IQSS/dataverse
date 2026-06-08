@@ -65,8 +65,8 @@
 	country	Benin		22											
 	country	Bermuda		23											
 	country	Bhutan		24											
-	country	"Bolivia, Plurinational State of"		25											
-	country	"Bonaire, Sint Eustatius and Saba"		26											
+	country	Bolivia, Plurinational State of		25											
+	country	Bonaire, Sint Eustatius and Saba		26											
 	country	Bosnia and Herzegovina		27											
 	country	Botswana		28	BOTSWANA										
 	country	Bouvet Island		29											
@@ -119,7 +119,7 @@
 	country	French Polynesia		76											
 	country	French Southern Territories		77											
 	country	Gabon		78											
-	country	Gambia		79	"Gambia, The"										
+	country	Gambia		79	Gambia, The										
 	country	Georgia		80											
 	country	Germany		81	Germany (Federal Republic of)										
 	country	Ghana		82	GHANA										
@@ -143,7 +143,7 @@
 	country	Iceland		100											
 	country	India		101	INDIA										
 	country	Indonesia		102	Sumatra										
-	country	"Iran, Islamic Republic of"		103	Iran										
+	country	Iran, Islamic Republic of		103	Iran										
 	country	Iraq		104	IRAQ										
 	country	Ireland		105											
 	country	Isle of Man		106											
@@ -256,7 +256,7 @@
 	country	Sweden		213											
 	country	Switzerland		214											
 	country	Syrian Arab Republic		215											
-	country	"Taiwan, Province of China"		216	Taiwan										
+	country	Taiwan, Province of China		216	Taiwan										
 	country	Tajikistan		217											
 	country	Tanzania, United Republic of		218	Tanzania										
 	country	Thailand		219											
