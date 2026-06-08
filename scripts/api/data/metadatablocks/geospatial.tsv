@@ -90,7 +90,7 @@
 	country	Colombia		47											
 	country	Comoros		48											
 	country	Congo		49											
-	country	"Congo, the Democratic Republic of the"		50											
+	country	Congo, the Democratic Republic of the		50											
 	country	Cook Islands		51											
 	country	Costa Rica		52											
 	country	Croatia		53											
@@ -156,8 +156,8 @@
 	country	Kazakhstan		113											
 	country	Kenya		114											
 	country	Kiribati		115											
-	country	"Korea, Democratic People's Republic of"		116											
-	country	"Korea, Republic of"		117											
+	country	Korea, Democratic People's Republic of		116											
+	country	Korea, Republic of		117											
 	country	Kuwait		118											
 	country	Kyrgyzstan		119											
 	country	Lao People's Democratic Republic		120	Laos										
@@ -170,7 +170,7 @@
 	country	Lithuania		127											
 	country	Luxembourg		128											
 	country	Macao		129											
-	country	"Macedonia, the Former Yugoslav Republic of"		130											
+	country	Macedonia, the Former Yugoslav Republic of		130											
 	country	Madagascar		131											
 	country	Malawi		132											
 	country	Malaysia		133											
@@ -183,8 +183,8 @@
 	country	Mauritius		140											
 	country	Mayotte		141											
 	country	Mexico		142											
-	country	"Micronesia, Federated States of"		143											
-	country	"Moldova, Republic of"		144											
+	country	Micronesia, Federated States of		143											
+	country	Moldova, Republic of		144											
 	country	Monaco		145											
 	country	Mongolia		146											
 	country	Montenegro		147											
@@ -208,7 +208,7 @@
 	country	Oman		165											
 	country	Pakistan		166											
 	country	Palau		167											
-	country	"Palestine, State of"		168											
+	country	Palestine, State of		168											
 	country	Panama		169											
 	country	Papua New Guinea		170											
 	country	Paraguay		171											
@@ -224,7 +224,7 @@
 	country	Rwanda		181											
 	country	Réunion		182											
 	country	Saint Barthélemy		183											
-	country	"Saint Helena, Ascension and Tristan da Cunha"		184											
+	country	Saint Helena, Ascension and Tristan da Cunha		184											
 	country	Saint Kitts and Nevis		185											
 	country	Saint Lucia		186											
 	country	Saint Martin (French part)		187											
@@ -258,7 +258,7 @@
 	country	Syrian Arab Republic		215											
 	country	"Taiwan, Province of China"		216	Taiwan										
 	country	Tajikistan		217											
-	country	"Tanzania, United Republic of"		218	Tanzania										
+	country	Tanzania, United Republic of		218	Tanzania										
 	country	Thailand		219											
 	country	Timor-Leste		220											
 	country	Togo		221											
@@ -279,10 +279,10 @@
 	country	Uruguay		236											
 	country	Uzbekistan		237											
 	country	Vanuatu		238											
-	country	"Venezuela, Bolivarian Republic of"		239											
+	country	Venezuela, Bolivarian Republic of		239											
 	country	Viet Nam		240											
-	country	"Virgin Islands, British"		241											
-	country	"Virgin Islands, U.S."		242											
+	country	Virgin Islands, British		241											
+	country	Virgin Islands, U.S.		242											
 	country	Wallis and Futuna		243											
 	country	Western Sahara		244											
 	country	Yemen		245	YEMEN										
