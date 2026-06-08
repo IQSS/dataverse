@@ -317,7 +317,7 @@
     <field name="coverage.Temporal.StopTime" type="date_range" multiValued="true" stored="true" indexed="true"/>
     <field name="dataCollectionSituation" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="dataCollector" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="dataLineageStatement" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="geoDataLineageStatement" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="datasetContact" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="datasetContactAffiliation" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="datasetContactEmail" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -330,12 +330,12 @@
     <field name="dateOfDeposit" type="date_range" multiValued="false" stored="true" indexed="true"/>
     <field name="depositor" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="deviationsFromSampleDesign" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="dimensionNameType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="dimensionSize" type="plong" multiValued="true" stored="true" indexed="true"/>
-    <field name="distribution" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="distributionDate" type="date_range" multiValued="false" stored="true" indexed="true"/>
-    <field name="distributionLink" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="distributionLinkLabel" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="geoDimensionNameType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="geoDimensionSize" type="plong" multiValued="true" stored="true" indexed="true"/>
+    <field name="geoDistribution" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="geoDistributionDate" type="date_range" multiValued="false" stored="true" indexed="true"/>
+    <field name="geoDistributionLink" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="geoDistributionLinkLabel" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="distributor" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="distributorAbbreviation" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="distributorAffiliation" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -378,7 +378,7 @@
     <field name="otherIdAgency" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="otherIdValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="otherReferences" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="processStep" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="geoProcessStep" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="producer" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="producerAbbreviation" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="producerAffiliation" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -387,7 +387,7 @@
     <field name="producerURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="productionDate" type="date_range" multiValued="false" stored="true" indexed="true"/>
     <field name="productionPlace" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="protocol" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="geoProtocol" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="publication" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="publicationCitation" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="publicationIDNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -395,22 +395,22 @@
     <field name="publicationRelationType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="publicationURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="redshiftType" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="referenceDate" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="referenceDateType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="referenceDateValue" type="date_range" multiValued="true" stored="true" indexed="true"/>
-    <field name="referenceSystemCode" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="referenceSystemCodeSpace" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="referenceSystemInfo" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="geoReferenceDate" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="geoReferenceDateType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="geoReferenceDateValue" type="date_range" multiValued="true" stored="true" indexed="true"/>
+    <field name="geoReferenceSystemCode" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="geoReferenceSystemCodeSpace" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="geoReferenceSystemInfo" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="relatedDatasets" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="relatedMaterial" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="researchInstrument" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="resolution" type="pdouble" multiValued="true" stored="true" indexed="true"/>
+    <field name="geoResolution" type="pdouble" multiValued="true" stored="true" indexed="true"/>
     <field name="resolution.Redshift" type="pdouble" multiValued="false" stored="true" indexed="true"/>
     <field name="resolution.Spatial" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="resolution.Spectral" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="resolution.Temporal" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="resolutionUnitOfMeasure" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="resourceType" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="geoResolutionUnitOfMeasure" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="geoResourceType" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="responseRate" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="samplingErrorEstimates" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="samplingProcedure" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -424,7 +424,6 @@
     <field name="software" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="softwareName" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="softwareVersion" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="sourceDescription" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="southLatitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="state" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="spatialRepresentationType" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -603,7 +602,7 @@
     <copyField source="coverage.Temporal.StopTime" dest="_text_" maxChars="3000"/>
     <copyField source="dataCollectionSituation" dest="_text_" maxChars="3000"/>
     <copyField source="dataCollector" dest="_text_" maxChars="3000"/>
-    <copyField source="dataLineageStatement" dest="_text_" maxChars="3000"/>
+    <copyField source="geoDataLineageStatement" dest="_text_" maxChars="3000"/>
     <copyField source="datasetContact" dest="_text_" maxChars="3000"/>
     <copyField source="datasetContactAffiliation" dest="_text_" maxChars="3000"/>
     <copyField source="datasetContactEmail" dest="_text_" maxChars="3000"/>
@@ -616,12 +615,12 @@
     <copyField source="dateOfDeposit" dest="_text_" maxChars="3000"/>
     <copyField source="depositor" dest="_text_" maxChars="3000"/>
     <copyField source="deviationsFromSampleDesign" dest="_text_" maxChars="3000"/>
-    <copyField source="dimensionNameType" dest="_text_" maxChars="3000"/>
-    <copyField source="dimensionSize" dest="_text_" maxChars="3000"/>
-    <copyField source="distribution" dest="_text_" maxChars="3000"/>
-    <copyField source="distributionDate" dest="_text_" maxChars="3000"/>
-    <copyField source="distributionLink" dest="_text_" maxChars="3000"/>
-    <copyField source="distributionLinkLabel" dest="_text_" maxChars="3000"/>
+    <copyField source="geoDimensionNameType" dest="_text_" maxChars="3000"/>
+    <copyField source="geoDimensionSize" dest="_text_" maxChars="3000"/>
+    <copyField source="geoDistribution" dest="_text_" maxChars="3000"/>
+    <copyField source="geoDistributionDate" dest="_text_" maxChars="3000"/>
+    <copyField source="geoDistributionLink" dest="_text_" maxChars="3000"/>
+    <copyField source="geoDistributionLinkLabel" dest="_text_" maxChars="3000"/>
     <copyField source="distributor" dest="_text_" maxChars="3000"/>
     <copyField source="distributorAbbreviation" dest="_text_" maxChars="3000"/>
     <copyField source="distributorAffiliation" dest="_text_" maxChars="3000"/>
@@ -664,7 +663,7 @@
     <copyField source="otherIdAgency" dest="_text_" maxChars="3000"/>
     <copyField source="otherIdValue" dest="_text_" maxChars="3000"/>
     <copyField source="otherReferences" dest="_text_" maxChars="3000"/>
-    <copyField source="processStep" dest="_text_" maxChars="3000"/>
+    <copyField source="geoProcessStep" dest="_text_" maxChars="3000"/>
     <copyField source="producer" dest="_text_" maxChars="3000"/>
     <copyField source="producerAbbreviation" dest="_text_" maxChars="3000"/>
     <copyField source="producerAffiliation" dest="_text_" maxChars="3000"/>
@@ -673,7 +672,7 @@
     <copyField source="producerURL" dest="_text_" maxChars="3000"/>
     <copyField source="productionDate" dest="_text_" maxChars="3000"/>
     <copyField source="productionPlace" dest="_text_" maxChars="3000"/>
-    <copyField source="protocol" dest="_text_" maxChars="3000"/>
+    <copyField source="geoProtocol" dest="_text_" maxChars="3000"/>
     <copyField source="publication" dest="_text_" maxChars="3000"/>
     <copyField source="publicationCitation" dest="_text_" maxChars="3000"/>
     <copyField source="publicationIDNumber" dest="_text_" maxChars="3000"/>
@@ -681,22 +680,22 @@
     <copyField source="publicationRelationType" dest="_text_" maxChars="3000"/>
     <copyField source="publicationURL" dest="_text_" maxChars="3000"/>
     <copyField source="redshiftType" dest="_text_" maxChars="3000"/>
-    <copyField source="referenceDate" dest="_text_" maxChars="3000"/>
-    <copyField source="referenceDateType" dest="_text_" maxChars="3000"/>
-    <copyField source="referenceDateValue" dest="_text_" maxChars="3000"/>
-    <copyField source="referenceSystemCode" dest="_text_" maxChars="3000"/>
-    <copyField source="referenceSystemCodeSpace" dest="_text_" maxChars="3000"/>
-    <copyField source="referenceSystemInfo" dest="_text_" maxChars="3000"/>
+    <copyField source="geoReferenceDate" dest="_text_" maxChars="3000"/>
+    <copyField source="geoReferenceDateType" dest="_text_" maxChars="3000"/>
+    <copyField source="geoReferenceDateValue" dest="_text_" maxChars="3000"/>
+    <copyField source="geoReferenceSystemCode" dest="_text_" maxChars="3000"/>
+    <copyField source="geoReferenceSystemCodeSpace" dest="_text_" maxChars="3000"/>
+    <copyField source="geoReferenceSystemInfo" dest="_text_" maxChars="3000"/>
     <copyField source="relatedDatasets" dest="_text_" maxChars="3000"/>
     <copyField source="relatedMaterial" dest="_text_" maxChars="3000"/>
     <copyField source="researchInstrument" dest="_text_" maxChars="3000"/>
-    <copyField source="resolution" dest="_text_" maxChars="3000"/>
+    <copyField source="geoResolution" dest="_text_" maxChars="3000"/>
     <copyField source="resolution.Redshift" dest="_text_" maxChars="3000"/>
     <copyField source="resolution.Spatial" dest="_text_" maxChars="3000"/>
     <copyField source="resolution.Spectral" dest="_text_" maxChars="3000"/>
     <copyField source="resolution.Temporal" dest="_text_" maxChars="3000"/>
-    <copyField source="resolutionUnitOfMeasure" dest="_text_" maxChars="3000"/>
-    <copyField source="resourceType" dest="_text_" maxChars="3000"/>
+    <copyField source="geoResolutionUnitOfMeasure" dest="_text_" maxChars="3000"/>
+    <copyField source="geoResourceType" dest="_text_" maxChars="3000"/>
     <copyField source="responseRate" dest="_text_" maxChars="3000"/>
     <copyField source="samplingErrorEstimates" dest="_text_" maxChars="3000"/>
     <copyField source="samplingProcedure" dest="_text_" maxChars="3000"/>
@@ -710,7 +709,6 @@
     <copyField source="software" dest="_text_" maxChars="3000"/>
     <copyField source="softwareName" dest="_text_" maxChars="3000"/>
     <copyField source="softwareVersion" dest="_text_" maxChars="3000"/>
-    <copyField source="sourceDescription" dest="_text_" maxChars="3000"/>
     <copyField source="southLatitude" dest="_text_" maxChars="3000"/>
     <copyField source="spatialRepresentationType" dest="_text_" maxChars="3000"/>
     <copyField source="spatialResolution" dest="_text_" maxChars="3000"/>
