@@ -43,9 +43,11 @@ public class UrlSignerUtil {
      */
     public static String signUrl(String baseUrl, Integer timeout, String user, String method, String key) {
 
-        // Strip reserved signing params that may already be in the base URL. Done with exact-string
-        // surgery (not URIBuilder): the signature is a byte-exact MAC, so re-encoding the URL here
-        // (e.g. percent-encoding ':' and '/' in DOIs) would change the hashed bytes and break it.
+        // Strip reserved signing params that may already be in the base URL, using exact-string
+        // surgery rather than URIBuilder. The URL must be signed exactly as provided (the pre-6.10
+        // behavior): validation reconstructs the signing string from the URL-decoded request, so
+        // re-encoding here (e.g. percent-encoding ':' and '/' in DOIs) would change the signed bytes
+        // and the signature would no longer match.
         baseUrl = stripReservedParameters(baseUrl);
         boolean firstParam = !baseUrl.contains("?");
         StringBuilder signedUrlBuilder = new StringBuilder(baseUrl);
