@@ -2456,7 +2456,7 @@ public class Admin extends AbstractApiBean {
 
         // Require a signing secret: without it the key is only the user's API token, which is too weak.
         if (JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("").isEmpty()) {
-            return error(Response.Status.BAD_REQUEST,
+            return error(Response.Status.INTERNAL_SERVER_ERROR,
                     "Requesting signed URLs requires a signing secret to be configured. Please set the dataverse.api.signing-secret JVM option.");
         }
 
