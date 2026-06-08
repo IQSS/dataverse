@@ -22,4 +22,6 @@ configured, the endpoint now returns an error instead of issuing a weakly-signed
 **Upgrade note:** installations that use signed URLs through this endpoint (including the
 `rdm-integration` connector) must set `dataverse.api.signing-secret`. See the
 [Configuration Guide](https://guides.dataverse.org/en/latest/installation/config.html#dataverse-api-signing-secret).
-Treat the value like a password.
+Treat the value like a password. Because the signing secret is part of the signing key, setting (or
+later changing) it invalidates previously issued signed URLs: any existing signed URLs that have not
+yet expired will stop working, and clients/integrations will need to request new ones.
