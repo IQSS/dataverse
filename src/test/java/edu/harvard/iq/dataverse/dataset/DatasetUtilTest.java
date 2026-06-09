@@ -8,7 +8,9 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -176,5 +178,35 @@ public class DatasetUtilTest {
         String[] expected = testCustomFields.split(",");
 
         assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void testGetLocalizedLicenseDetails_descriptionFallsBackToShortDescription() throws Exception {
+        License license = new License("My Custom License", "A short description from DB",
+                new URI("https://example.com/license"), null, true, 0L);
+
+        // When the key is not in License.properties, should return the DB shortDescription
+        String result = DatasetUtil.getLocalizedLicenseDetails(license, "DESCRIPTION");
+        assertEquals("A short description from DB", result);
+    }
+
+    @Test
+    public void testGetLocalizedLicenseDetails_descriptionFallsBackToNameWhenShortDescriptionNull() throws Exception {
+        License license = new License("My Custom License", null,
+                new URI("https://example.com/license"), null, true, 0L);
+
+        // When shortDescription is null, should fall back to the license name
+        String result = DatasetUtil.getLocalizedLicenseDetails(license, "DESCRIPTION");
+        assertEquals("My Custom License", result);
+    }
+
+    @Test
+    public void testGetLocalizedLicenseDetails_nameFallsBackToLicenseName() throws Exception {
+        License license = new License("My Custom License", "A short description from DB",
+                new URI("https://example.com/license"), null, true, 0L);
+
+        // When the key is not in License.properties for NAME, should return the license name
+        String result = DatasetUtil.getLocalizedLicenseDetails(license, "NAME");
+        assertEquals("My Custom License", result);
     }
 }
