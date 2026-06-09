@@ -659,8 +659,15 @@ public class JsonParser {
                     throw new JsonParseException(BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookresponseQuestionIdNotFound", List.of(cqId.toString())));
                 } else if (cq.getQuestionType().equalsIgnoreCase("textarea")) {
                     String lineFeed = String.valueOf((char) 10);
-                    JsonArray jsonArray = answer.getJsonArray("value");
-                    List<JsonString> lines = jsonArray.getValuesAs(JsonString.class);
+                    List<JsonString> lines = new ArrayList<>();
+                    try {
+                        // Assume it's an array but fall back to string if it isn't
+                        JsonArray jsonArray = answer.getJsonArray("value");
+                        lines = jsonArray.getValuesAs(JsonString.class);
+                    } catch (Exception ex) {
+                        // if not an array try to get a string and add it to the list
+                        lines.add(answer.getJsonString("value"));
+                    }
                     response = lines.stream().map(JsonString::getString).collect(Collectors.joining(lineFeed));
                 } else if (cq.getQuestionType().equalsIgnoreCase("options")) {
                     String option = answer.getString("value");

@@ -5596,6 +5596,7 @@ public class UtilIT {
         gb.getCustomQuestions().get(0).setId(jsonPath.getLong("data.customQuestions[0].id"));
         gb.getCustomQuestions().get(1).setId(jsonPath.getLong("data.customQuestions[1].id"));
         gb.getCustomQuestions().get(2).setId(jsonPath.getLong("data.customQuestions[2].id"));
+        gb.getCustomQuestions().get(3).setId(jsonPath.getLong("data.customQuestions[3].id"));
 
         // Add the Guestbook to the Dataset
         if (persistentId != null) {
@@ -5615,6 +5616,7 @@ public class UtilIT {
         return guestbookAsJson.replace("@ID", gb.getId().toString())
                 .replace("@QID1", cqIDs.get(0).toString())
                 .replace("@QID2", cqIDs.get(1).toString())
-                .replace("@QID3", cqIDs.get(2).toString());
+                .replace("@QID3", cqIDs.get(2).toString())
+                .replace("@QID4", cqIDs.get(3).toString());
     }
 }
