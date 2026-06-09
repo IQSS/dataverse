@@ -553,6 +553,9 @@ public class JsonParser {
 
     public Guestbook parseGuestbook(JsonObject obj, Guestbook gb) throws JsonParseException {
         try {
+            if (obj.containsKey("id")) {
+                gb.setId(Long.valueOf(obj.getInt("id")));
+            }
             gb.setName(obj.getString("name", null));
             gb.setEnabled(obj.getBoolean("enabled"));
             gb.setEmailRequired(obj.getBoolean("emailRequired"));
@@ -573,6 +576,9 @@ public class JsonParser {
             customQuestions.forEach(q -> {
                 JsonObject obj = q.asJsonObject();
                 CustomQuestion cq = new CustomQuestion();
+                if (obj.containsKey("id")) {
+                    cq.setId(Long.valueOf(obj.getInt("id")));
+                }
                 cq.setQuestionString(obj.getString("question"));
                 cq.setRequired(obj.getBoolean("required"));
                 cq.setDisplayOrder(obj.getInt("displayOrder"));
@@ -586,6 +592,9 @@ public class JsonParser {
                     optionValues.forEach(v -> {
                         JsonObject ov = v.asJsonObject();
                         CustomQuestionValue cqv = new CustomQuestionValue();
+                        if (ov.containsKey("id")) {
+                            cqv.setId(Long.valueOf(ov.getInt("id")));
+                        }
                         cqv.setValueString(ov.getString("value"));
                         cqv.setDisplayOrder(ov.getInt("displayOrder"));
                         cqv.setCustomQuestion(cq);

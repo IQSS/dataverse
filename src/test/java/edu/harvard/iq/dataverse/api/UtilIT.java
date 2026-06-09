@@ -611,6 +611,13 @@ public class UtilIT {
         return requestSpec.get("/api/guestbooks/" + guestbookId );
     }
 
+    static Response updateGuestbook(Long guestbookId, String guestbookAsJson, String apiToken) {
+        RequestSpecification requestSpec = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(guestbookAsJson);
+        return requestSpec.put("/api/guestbooks/" + guestbookId );
+    }
+
     static Response getGuestbooks(String dataverseAlias, String apiToken) {
         return getGuestbooks(dataverseAlias, apiToken, false,null);
     }
@@ -625,6 +632,20 @@ public class UtilIT {
             requestSpec.queryParam("includeInherited", includeInherited);
         }
         return requestSpec.get("/api/guestbooks/" + dataverseAlias + "/list");
+    }
+
+    static Response getGuestbooksResponses(Long guestbookId, Integer offset, Integer limit, String apiToken) {
+        RequestSpecification requestSpec = given();
+        if (apiToken != null) {
+            requestSpec.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (offset != null) {
+            requestSpec.queryParam("offset", offset);
+        }
+        if (limit != null) {
+            requestSpec.queryParam("limit", limit);
+        }
+        return requestSpec.get("/api/guestbooks/" + guestbookId + "/responses");
     }
 
     static Response enableGuestbook(String dataverseAlias, Long guestbookId, String apiToken, String enable) {
