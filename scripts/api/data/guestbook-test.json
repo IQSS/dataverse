@@ -48,7 +48,7 @@
     {
       "question": "Address",
       "required": false,
-      "displayOrder": 1,
+      "displayOrder": 3,
       "type": "textarea",
       "hidden": false
     }

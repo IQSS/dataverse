@@ -5611,7 +5611,9 @@ public class UtilIT {
         String guestbookAsJson = new String(Files.readAllBytes(Paths.get(guestbookJson.getAbsolutePath())));
 
         List<Long> cqIDs = new ArrayList<>();
-        gb.getCustomQuestions().stream().forEach(cq -> cqIDs.add(cq.getId()));
+        // Try to match the IDs. This is no easy task as the custom questions are not added to the db in order by id.
+        // We will use "displayOrder" to help match them up
+        gb.getCustomQuestions().stream().sorted(Comparator.comparing(CustomQuestion::getDisplayOrder)).forEach(cq -> cqIDs.add(cq.getId()));
 
         return guestbookAsJson.replace("@ID", gb.getId().toString())
                 .replace("@QID1", cqIDs.get(0).toString())
