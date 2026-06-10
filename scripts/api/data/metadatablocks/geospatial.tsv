@@ -1,6 +1,6 @@
 #metadataBlock	name	dataverseAlias	displayName												
 	geospatial		Geospatial Metadata												
-#datasetField	name	title	description	watermark	fieldType	display order	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
+#datasetField	name	title	description	watermark	fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
 	geographicCoverage	Geographic Coverage	Information on the geographic coverage of the data. Includes the total geographic scope of the data.		none	0		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
 	country	Country / Nation	The country or nation that the Dataset is about.		text	1	#VALUE,	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
 	state	State / Province	The state or province that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	2	#VALUE,	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
@@ -12,33 +12,33 @@
 	eastLongitude	Easternmost (Right) Longitude	Easternmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -180.0 <= East Bounding Longitude Value <= 180.0.		text	8		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
 	northLatitude	Northernmost (Top) Latitude	Northernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -90.0 <= North Bounding Latitude Value <= 90.0.		text	9		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
 	southLatitude	Southernmost (Bottom) Latitude	Southernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -90.0 <= South Bounding Latitude Value <= 90.0.		text	10		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
-	geoReferenceSystemInfo	Reference System Information	The spatial and temporal reference systems used in the Dataset		none	11		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
-	geoReferenceSystemCode	Reference System Code	An alphanumeric identifier for the reference system for the Dataset		text	12	#VALUE	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE	geoReferenceSystemInfo	geospatial
-	geoReferenceSystemCodeSpace	Reference System Code Space	The namespace of the system in which the reference system code is valid	EPSG, WGS, etc.	text	13	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geoReferenceSystemInfo	geospatial
+	geographicReferenceSystemInfo	Reference System Information	The spatial and temporal reference systems used in the Dataset		none	11		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
+	geographicReferenceSystemCode	Reference System Code	An alphanumeric identifier for the reference system for the Dataset		text	12	#VALUE	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicReferenceSystemInfo	geospatial
+	geographicReferenceSystemCodeSpace	Reference System Code Space	The namespace of the system in which the reference system code is valid	EPSG, WGS, etc.	text	13	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicReferenceSystemInfo	geospatial
 	spatialResolution	Spatial Resolution	The density of spatial data in the resource, or the range of resolutions in which a Dataset may be used. NOTE: This element should be repeated when describing upper and lower range		none	14		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
 	spatialResolutionValue	Value	The resource's spatial resolution, expressed as a value or as a brief textual description		text	15	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	spatialResolution	geospatial
 	spatialResolutionType	Type	Format in which the spatial resolution value is expressed	distance, vertical, angularDistance, levelOfDetail	text	16	(#VALUE)	FALSE	TRUE	FALSE	TRUE	FALSE	FALSE	spatialResolution	geospatial
 	spatialResolutionUnitOfMeasure	Spatial Resolution Unit of Measure	If the spatial resolution value is expressed as a distance, the unit of measure that corresponds to that value	cm', 'm', 'km', etc.	text	17	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	spatialResolution	geospatial
-	geoResourceType	Type of Geospatial Data Resource	The type of geospatial data resource that is described in this Dataset record		text	18	#VALUE	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		geospatial
-	geoReferenceDate	Resource Reference Date	A date which is used to help identify the resource		none	19		TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
-	geoReferenceDateValue	Date	A date which is used to help identify the resource	yyyy-mm-dd	date	20	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geoReferenceDate	geospatial
-	geoReferenceDateType	Type	The type of date represented in the Date field	revision, expiry, lastUpdate, lastRevision, nextUpdate, unavailable, inForce, adopted, deprecated, superseded, publication	text	21	(#VALUE)	TRUE	TRUE	FALSE	FALSE	FALSE	FALSE	geoReferenceDate	geospatial
-	geoDataLineageStatement	Data Lineage Statement	A statement about the Dataset's lineage		textbox	22	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		geospatial
-	geoProcessStep	Data Lineage Process Step Description	A description of the processes performed on the data as part of the Dataset's processing history		textbox	23	#VALUE	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
+	geographicResourceType	Type of Geospatial Data Resource	The type of geospatial data resource that is described in this Dataset record		text	18	#VALUE	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		geospatial
+	geographicReferenceDate	Resource Reference Date	A date which is used to help identify the resource		none	19		TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
+	geographicReferenceDateValue	Date	A date which is used to help identify the resource	yyyy-mm-dd	date	20	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicReferenceDate	geospatial
+	geographicReferenceDateType	Type	The type of date represented in the Date field	revision, expiry, lastUpdate, lastRevision, nextUpdate, unavailable, inForce, adopted, deprecated, superseded, publication	text	21	(#VALUE)	TRUE	TRUE	FALSE	FALSE	FALSE	FALSE	geographicReferenceDate	geospatial
+	geographicDataLineageStatement	Data Lineage Statement	A statement about the Dataset's lineage		textbox	22	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		geospatial
+	geographicProcessStep	Data Lineage Process Step Description	A description of the processes performed on the data as part of the Dataset's processing history		textbox	23	#VALUE	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
 	spatialRepresentationType	Spatial Representation Type	The type of spatial representation of the data in the Dataset		text	24	#VALUE	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		geospatial
 	geometricObjectCount	Vector Object Count	Vector data only: Total number of geometric objects in the Dataset		int	25	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		geospatial
 	geometricObjectType	Vector Object Type	Vector data only: The type of geometric objects (or shapes) that make up the structure of the vector Dataset	curve, composite, complex, point, solid, or surface	text	26	(#VALUE)	FALSE	TRUE	FALSE	TRUE	FALSE	FALSE		geospatial
 	numberOfDimensions	Raster Dimensions	Raster/grid data only: The number of independent spatio-temporal axes, or dimensions, represented in the Dataset		int	27		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		geospatial
 	axisDimensionProperties	Raster Dimension (Axis) Properties	Raster/grid data only: Information about spatial-temporal axis properties (dimensions).  NOTE: A raster Dataset will usually have 2+ dimensions. Repeat this field to describe all dimensions represented in the Dataset		none	28		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
-	geoDimensionNameType	Raster Dimension (Axis) Name	Raster/grid data only: Name/type for one of the spatial-temporal axis represented in the Dataset	row, column, vertical, track, crossTrack, line, sample, or time	text	29	#VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	axisDimensionProperties	geospatial
-	geoDimensionSize	Raster Dimension (Axis) Size	Number of elements along the axis		int	30		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	axisDimensionProperties	geospatial
-	geoResolution	Raster Dimension (Axis) Resolution	A decimal value representing a dimension's degree of detail, i.e. the size of the area that corresponds to a single data element along a Dataset's axis.	enter a decimal value	float	31	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	axisDimensionProperties	geospatial
-	geoResolutionUnitOfMeasure	Raster Dimension (Axis) Resolution Unit of Measure	Resolution unit of measure for the dimension resolution value	cm', 'm', 'km', etc.	text	32	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	axisDimensionProperties	geospatial
+	geographicDimensionNameType	Raster Dimension (Axis) Name	Raster/grid data only: Name/type for one of the spatial-temporal axis represented in the Dataset	row, column, vertical, track, crossTrack, line, sample, or time	text	29	#VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	axisDimensionProperties	geospatial
+	geographicDimensionSize	Raster Dimension (Axis) Size	Number of elements along the axis		int	30		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	axisDimensionProperties	geospatial
+	geographicResolution	Raster Dimension (Axis) Resolution	A decimal value representing a dimension's degree of detail, i.e. the size of the area that corresponds to a single data element along a Dataset's axis.	enter a decimal value	float	31	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	axisDimensionProperties	geospatial
+	geographicResolutionUnitOfMeasure	Raster Dimension (Axis) Resolution Unit of Measure	Resolution unit of measure for the dimension resolution value	cm', 'm', 'km', etc.	text	32	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	axisDimensionProperties	geospatial
 	cellGeometry	Raster Cell Geometry	Raster/grid data only: Identification of raster data in this Dataset		text	33	#VALUE	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		geospatial
-	geoDistribution	Distribution Link	Distribution links are URLs that can be used to access the Dataset		none	34		TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
-	geoDistributionLink	URL	The distribution link is a URL that can be used to access the datase		text	35	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	geoDistribution	geospatial
-	geoDistributionLinkLabel	Label	A descriptive label for the distribution link		text	36	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	geoDistribution	geospatial
-	geoProtocol	Protocol	The service or transfer protocol associated with the distribution link URL	HTTPS, FTP, HTTP, REST, etc.	text	37	(#VALUE)	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	geoDistribution	geospatial
+	geographicDistribution	Distribution Link	Distribution links are URLs that can be used to access the Dataset		none	34		TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
+	geographicDistributionLink	URL	The distribution link is a URL that can be used to access the datase		text	35	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicDistribution	geospatial
+	geographicDistributionLinkLabel	Label	A descriptive label for the distribution link		text	36	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicDistribution	geospatial
+	geographicProtocol	Protocol	The service or transfer protocol associated with the distribution link URL	HTTPS, FTP, HTTP, REST, etc.	text	37	(#VALUE)	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicDistribution	geospatial
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
 	country	Afghanistan		0											
 	country	Albania		1											
@@ -143,7 +143,7 @@
 	country	Iceland		100											
 	country	India		101	INDIA										
 	country	Indonesia		102	Sumatra										
-	country	Iran, Islamic Republic of		103	Iran										
+	country	Iran, Islamic Republic of		103	Iran (Islamic Republic of)									
 	country	Iraq		104	IRAQ										
 	country	Ireland		105											
 	country	Isle of Man		106											
@@ -274,7 +274,7 @@
 	country	Ukraine		231											
 	country	United Arab Emirates		232	UAE										
 	country	United Kingdom		233											
-	country	United States		234	U.S.A		United States of America	U.S.A.							
+	country	United States		234	U.S.A	USA	United States of America	U.S.A.							
 	country	United States Minor Outlying Islands		235											
 	country	Uruguay		236											
 	country	Uzbekistan		237											
@@ -298,34 +298,34 @@
 	cellGeometry	point	point	0											
 	cellGeometry	area	area	1											
 	cellGeometry	voxel	voxel	2											
-	geoDimensionNameType	row	row	0											
-	geoDimensionNameType	column	column	1											
-	geoDimensionNameType	vertical	vertical	2											
-	geoDimensionNameType	track	track	3											
-	geoDimensionNameType	crossTrack	crossTrack	4											
-	geoDimensionNameType	line	line	5											
-	geoDimensionNameType	sample	sample	6											
-	geoDimensionNameType	time	time	7											
+	geographicDimensionNameType	row	row	0											
+	geographicDimensionNameType	column	column	1											
+	geographicDimensionNameType	vertical	vertical	2											
+	geographicDimensionNameType	track	track	3											
+	geographicDimensionNameType	crossTrack	crossTrack	4											
+	geographicDimensionNameType	line	line	5											
+	geographicDimensionNameType	sample	sample	6											
+	geographicDimensionNameType	time	time	7											
 	spatialRepresentationType	stereoModel	stereoModel	0											
 	spatialRepresentationType	video	video	1											
 	spatialRepresentationType	tin	tin	2											
 	spatialRepresentationType	textTable	textTable	3											
 	spatialRepresentationType	grid	grid	4											
 	spatialRepresentationType	vector	vector	5											
-	geoResourceType	dataset	dataset	0											
-	geoResourceType	service	service	1											
-	geoResourceType	series	series	2											
-	geoReferenceDateType	revision	revision	0											
-	geoReferenceDateType	expiry	expiry	1											
-	geoReferenceDateType	lastUpdate	lastUpdate	2											
-	geoReferenceDateType	lastRevision	lastRevision	3											
-	geoReferenceDateType	nextUpdate	nextUpdate	4											
-	geoReferenceDateType	unavailable	unavailable	5											
-	geoReferenceDateType	inForce	inForce	6											
-	geoReferenceDateType	adopted	adopted	7											
-	geoReferenceDateType	deprecated	deprecated	8											
-	geoReferenceDateType	superseded	superseded	9											
-	geoReferenceDateType	publication	publication	10											
+	geographicResourceType	dataset	dataset	0											
+	geographicResourceType	service	service	1											
+	geographicResourceType	series	series	2											
+	geographicReferenceDateType	revision	revision	0											
+	geographicReferenceDateType	expiry	expiry	1											
+	geographicReferenceDateType	lastUpdate	lastUpdate	2											
+	geographicReferenceDateType	lastRevision	lastRevision	3											
+	geographicReferenceDateType	nextUpdate	nextUpdate	4											
+	geographicReferenceDateType	unavailable	unavailable	5											
+	geographicReferenceDateType	inForce	inForce	6											
+	geographicReferenceDateType	adopted	adopted	7											
+	geographicReferenceDateType	deprecated	deprecated	8											
+	geographicReferenceDateType	superseded	superseded	9											
+	geographicReferenceDateType	publication	publication	10											
 	spatialResolutionType	equivalentScale	equivalentScale	0											
 	spatialResolutionType	distance	distance	1											
 	spatialResolutionType	vertical	vertical	2											
