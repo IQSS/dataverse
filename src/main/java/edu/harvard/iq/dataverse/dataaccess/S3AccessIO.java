@@ -696,18 +696,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return targetFile;
     }
 
-    @Override
-    public List<String> listAuxObjects() throws IOException {
-        if (!this.canWrite()) {
-            open();
-        }
-        String prefix = getDestinationKey("");
-
-        List<String> ret = new ArrayList<>();
+    private List<S3Object> listObjects(String prefix, String methodName) throws IOException {
+        List<S3Object> objects = new ArrayList<>();
         ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
                 .bucket(bucketName)
                 .prefix(prefix)
-                .maxKeys(1000)
+                .maxKeys(1000) // Required for storJ
                 .build();
 
         try {
@@ -716,23 +710,35 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             do {
                 ListObjectsV2Request req = listRequest.toBuilder().continuationToken(nextToken).build();
                 listResponse = s3.listObjectsV2(req).get();
-                for (S3Object item : listResponse.contents()) {
-                    String destinationKey = item.key();
-                    String fileName = destinationKey.substring(destinationKey.lastIndexOf(".") + 1);
-                    logger.fine("S3 cached aux object fileName: " + fileName);
-                    ret.add(fileName);
-                }
+                objects.addAll(listResponse.contents());
                 nextToken = listResponse.nextContinuationToken();
                 if (listResponse.isTruncated() && nextToken == null) {
-                    logger.warning("S3 listAuxObjects: list is truncated but nextContinuationToken is null; stopping to avoid infinite loop");
+                    logger.warning("S3 " + methodName + ": list is truncated but nextContinuationToken is null; stopping to avoid infinite loop");
                     break;
                 }
             } while (listResponse.isTruncated());
         } catch (InterruptedException | ExecutionException e) {
-            throw new IOException("S3AccessIO: Failed to get aux objects for listing.", e);
+            throw new IOException("S3AccessIO: Failed to get objects for listing in " + methodName + ".", e);
         }
+        return objects;
+    }
 
-        return ret;
+    @Override
+    public List<String> listAuxObjects() throws IOException {
+        if (!this.canWrite()) {
+            open();
+        }
+        String prefix = getDestinationKey("");
+        List<S3Object> contents = listObjects(prefix, "listAuxObjects");
+
+        return contents.stream()
+                .map(item -> {
+                    String destinationKey = item.key();
+                    String fileName = destinationKey.substring(destinationKey.lastIndexOf(".") + 1);
+                    logger.fine("S3 cached aux object fileName: " + fileName);
+                    return fileName;
+                })
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -760,30 +766,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
 
         String prefix = getDestinationKey("");
-
-        List<S3Object> storedAuxFilesSummary = new ArrayList<>();
-        ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
-                .bucket(bucketName)
-                .prefix(prefix)
-                .maxKeys(1000)
-                .build();
-
-        try {
-            ListObjectsV2Response listResponse;
-            String nextToken = null;
-            do {
-                ListObjectsV2Request req = listRequest.toBuilder().continuationToken(nextToken).build();
-                listResponse = s3.listObjectsV2(req).get();
-                storedAuxFilesSummary.addAll(listResponse.contents());
-                nextToken = listResponse.nextContinuationToken();
-                if (listResponse.isTruncated() && nextToken == null) {
-                    logger.warning("S3 deleteAllAuxObjects: list is truncated but nextContinuationToken is null; stopping to avoid infinite loop");
-                    break;
-                }
-            } while (listResponse.isTruncated());
-        } catch (InterruptedException | ExecutionException e) {
-            throw new IOException("S3AccessIO: Failed to get aux objects for listing to delete.", e);
-        }
+        List<S3Object> storedAuxFilesSummary = listObjects(prefix, "deleteAllAuxObjects");
 
         if (storedAuxFilesSummary.isEmpty()) {
             logger.fine("S3AccessIO: No auxiliary objects to delete.");
@@ -1454,34 +1437,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         String prefix = dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/";
 
-        List<String> ret = new ArrayList<>();
-        ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
-                .bucket(bucketName)
-                .prefix(prefix)
-                .maxKeys(1000) //Required for storJ
-                .build();
+        List<S3Object> contents = listObjects(prefix, "listAllFiles");
 
-        try {
-            ListObjectsV2Response listResponse;
-            String nextToken = null;
-            do {
-                ListObjectsV2Request req = listRequest.toBuilder().continuationToken(nextToken).build();
-                listResponse = s3.listObjectsV2(req).get();
-                for (S3Object item : listResponse.contents()) {
-                    String fileName = item.key().substring(prefix.length());
-                    ret.add(fileName);
-                }
-                nextToken = listResponse.nextContinuationToken();
-                if (listResponse.isTruncated() && nextToken == null) {
-                    logger.warning("S3 listAllFiles: list is truncated but nextContinuationToken is null; stopping to avoid infinite loop");
-                    break;
-                }
-            } while (listResponse.isTruncated());
-        } catch (InterruptedException | ExecutionException e) {
-            throw new IOException("S3AccessIO: Failed to get objects for listing.", e);
-        }
-
-        return ret;
+        return contents.stream()
+                .map(item -> item.key().substring(prefix.length()))
+                .collect(Collectors.toList());
     }
 
     private void deleteFile(String fileName) throws IOException {

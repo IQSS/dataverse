@@ -1461,6 +1461,12 @@ You may provide the values for these via any `supported MicroProfile Config API 
 Reported Working S3-Compatible Storage
 ######################################
 
+
+`BackBlaze B2 <https://www.backblaze.com/cloud-storage>`_
+  (as of 6/11/2026)
+  Set ``dataverse.files.<id>.disable-tagging=true``, as B2 does not support tagging (and will fail without this setting).
+  Tested with ``.path-style-access=true``, ``.download-redirect=true``, and ``.upload-redirect=true``.
+
 `Minio v2018-09-12 <https://minio.io>`_
   Set ``dataverse.files.<id>.path-style-access=true``, as Minio works path-based. Works pretty smooth, easy to setup.
   **Can be used for quick testing, too:** just use the example values above. Uses the public (read: unsecure and
