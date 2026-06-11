@@ -135,9 +135,14 @@ The Review metadata block gives you a few basic fields common to all reviews suc
 
 You probably will want to create your own metadata blocks specific to the resources you are reviewing, your own "rubric". See :doc:`metadatacustomization` for details on creating and enabling custom metadata blocks.
 
-Instead of creating a new custom metadata block from scratch (if you simply want to evaluate the feature, for example), you can use the metadata blocks at https://github.com/IQSS/dataverse.harvard.edu
+Instead of creating a new custom metadata block from scratch (if you simply want to evaluate the feature, for example), in a test environment, you can use the "Trusted Data Dimensions and Intensities" for testing. (A test environment is advised because metadata blocks cannot be deleted once they are loaded (https://github.com/IQSS/dataverse/issues/9628).) These are the files to download:
+
+- :download:`rubric_trusteddatadimensionsintensities.tsv <../../../../scripts/api/data/metadatablocks/rubric_trusteddatadimensionsintensities.tsv>`
+- :download:`rubric_trusteddatadimensionsintensities.properties <../../../../src/main/java/propertyFiles/rubric_trusteddatadimensionsintensities.properties>` (optional)
 
 After loading the block, don't forget to update the Solr schema!
+
+As in the example above, the metadata block must start with ``rubric_`` (the "metadataBlock name" in the tsv itself) to be included in the output of the :ref:`api-list-reviews` API endpoint.
 
 Create a Review Dataset Type
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
