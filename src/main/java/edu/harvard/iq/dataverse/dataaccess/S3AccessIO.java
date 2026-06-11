@@ -704,47 +704,34 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         String prefix = getDestinationKey("");
 
         List<String> ret = new ArrayList<>();
-        ListObjectsV2Request listObjectsReqManual = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
+        ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
+                .bucket(bucketName)
+                .prefix(prefix)
+                .maxKeys(1000)
                 .build();
 
-        ListObjectsV2Response listObjectsResponse = null;
         try {
-            listObjectsResponse = s3.listObjectsV2(listObjectsReqManual).get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new IOException("S3 listAuxObjects: failed to get a listing for " + prefix, e);
-        }
-
-        if (listObjectsResponse == null) {
-            return ret;
-        }
-
-        List<S3Object> storedAuxFilesSummary = new ArrayList<>(listObjectsResponse.contents());
-
-        try {
-            String nextContinuationToken = listObjectsResponse.nextContinuationToken();
-            while (nextContinuationToken != null) {
-                logger.fine("S3 listAuxObjects: going to next page of list");
-                ListObjectsV2Request nextReq = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
-                        .continuationToken(nextContinuationToken).build();
-
-                ListObjectsV2Response nextResponse = s3.listObjectsV2(nextReq).get();
-                if (nextResponse != null) {
-                    storedAuxFilesSummary.addAll(nextResponse.contents());
-                    nextContinuationToken = nextResponse.nextContinuationToken();
-                } else {
-                    nextContinuationToken = null;
+            ListObjectsV2Response listResponse;
+            String nextToken = null;
+            do {
+                ListObjectsV2Request req = listRequest.toBuilder().continuationToken(nextToken).build();
+                listResponse = s3.listObjectsV2(req).get();
+                for (S3Object item : listResponse.contents()) {
+                    String destinationKey = item.key();
+                    String fileName = destinationKey.substring(destinationKey.lastIndexOf(".") + 1);
+                    logger.fine("S3 cached aux object fileName: " + fileName);
+                    ret.add(fileName);
                 }
-            }
+                nextToken = listResponse.nextContinuationToken();
+                if (listResponse.isTruncated() && nextToken == null) {
+                    logger.warning("S3 listAuxObjects: list is truncated but nextContinuationToken is null; stopping to avoid infinite loop");
+                    break;
+                }
+            } while (listResponse.isTruncated());
         } catch (InterruptedException | ExecutionException e) {
             throw new IOException("S3AccessIO: Failed to get aux objects for listing.", e);
         }
 
-        for (S3Object item : storedAuxFilesSummary) {
-            String destinationKey = item.key();
-            String fileName = destinationKey.substring(destinationKey.lastIndexOf(".") + 1);
-            logger.fine("S3 cached aux object fileName: " + fileName);
-            ret.add(fileName);
-        }
         return ret;
     }
 
@@ -775,17 +762,25 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         String prefix = getDestinationKey("");
 
         List<S3Object> storedAuxFilesSummary = new ArrayList<>();
+        ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
+                .bucket(bucketName)
+                .prefix(prefix)
+                .maxKeys(1000)
+                .build();
+
         try {
-            ListObjectsV2Request listRequest = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix).build();
-
             ListObjectsV2Response listResponse;
+            String nextToken = null;
             do {
-                listResponse = s3.listObjectsV2(listRequest).get();
+                ListObjectsV2Request req = listRequest.toBuilder().continuationToken(nextToken).build();
+                listResponse = s3.listObjectsV2(req).get();
                 storedAuxFilesSummary.addAll(listResponse.contents());
-
-                listRequest = listRequest.toBuilder().continuationToken(listResponse.nextContinuationToken()).build();
+                nextToken = listResponse.nextContinuationToken();
+                if (listResponse.isTruncated() && nextToken == null) {
+                    logger.warning("S3 deleteAllAuxObjects: list is truncated but nextContinuationToken is null; stopping to avoid infinite loop");
+                    break;
+                }
             } while (listResponse.isTruncated());
-
         } catch (InterruptedException | ExecutionException e) {
             throw new IOException("S3AccessIO: Failed to get aux objects for listing to delete.", e);
         }
@@ -1460,45 +1455,32 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         String prefix = dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/";
 
         List<String> ret = new ArrayList<>();
-        ListObjectsV2Request listObjectsReqManual = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
+        ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
+                .bucket(bucketName)
+                .prefix(prefix)
+                .maxKeys(1000) //Required for storJ
                 .build();
 
-        ListObjectsV2Response listObjectsResponse = null;
         try {
-            listObjectsResponse = s3.listObjectsV2(listObjectsReqManual).get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new IOException("S3 listObjects: failed to get a listing for " + prefix, e);
-        }
-
-        if (listObjectsResponse == null) {
-            return ret;
-        }
-
-        List<S3Object> storedFilesSummary = new ArrayList<>(listObjectsResponse.contents());
-
-        try {
-            String nextContinuationToken = listObjectsResponse.nextContinuationToken();
-            while (nextContinuationToken != null) {
-                logger.fine("S3 listObjects: going to next page of list");
-                ListObjectsV2Request nextReq = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
-                        .continuationToken(nextContinuationToken).build();
-
-                ListObjectsV2Response nextResponse = s3.listObjectsV2(nextReq).get();
-                if (nextResponse != null) {
-                    storedFilesSummary.addAll(nextResponse.contents());
-                    nextContinuationToken = nextResponse.nextContinuationToken();
-                } else {
-                    nextContinuationToken = null;
+            ListObjectsV2Response listResponse;
+            String nextToken = null;
+            do {
+                ListObjectsV2Request req = listRequest.toBuilder().continuationToken(nextToken).build();
+                listResponse = s3.listObjectsV2(req).get();
+                for (S3Object item : listResponse.contents()) {
+                    String fileName = item.key().substring(prefix.length());
+                    ret.add(fileName);
                 }
-            }
+                nextToken = listResponse.nextContinuationToken();
+                if (listResponse.isTruncated() && nextToken == null) {
+                    logger.warning("S3 listAllFiles: list is truncated but nextContinuationToken is null; stopping to avoid infinite loop");
+                    break;
+                }
+            } while (listResponse.isTruncated());
         } catch (InterruptedException | ExecutionException e) {
             throw new IOException("S3AccessIO: Failed to get objects for listing.", e);
         }
 
-        for (S3Object item : storedFilesSummary) {
-            String fileName = item.key().substring(prefix.length());
-            ret.add(fileName);
-        }
         return ret;
     }
 
