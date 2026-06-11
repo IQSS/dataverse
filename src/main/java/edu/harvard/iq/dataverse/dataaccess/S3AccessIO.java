@@ -708,7 +708,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             ListObjectsV2Response listResponse;
             String nextToken = null;
             do {
-                ListObjectsV2Request req = listRequest.toBuilder().continuationToken(nextToken).build();
+                ListObjectsV2Request.Builder reqBuilder = listRequest.toBuilder();
+                if (nextToken != null) {
+                    reqBuilder = reqBuilder.continuationToken(nextToken);
+                }
+                ListObjectsV2Request req = reqBuilder.build();
                 listResponse = s3.listObjectsV2(req).get();
                 objects.addAll(listResponse.contents());
                 nextToken = listResponse.nextContinuationToken();
