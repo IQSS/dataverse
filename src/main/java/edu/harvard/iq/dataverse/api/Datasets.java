@@ -849,7 +849,12 @@ public class Datasets extends AbstractApiBean {
                 return error( Response.Status.BAD_REQUEST, "You may not add files via this api.");
             }
 
-            boolean updateDraft = ds.getLatestVersion().isDraft();
+            DatasetVersion latestVersion = ds.getLatestVersion();
+            if (isDatasetVersionNoOp(incomingVersion, latestVersion)) {
+                return ok(json(latestVersion, true));
+            }
+
+            boolean updateDraft = latestVersion.isDraft();
 
             DatasetVersion managedVersion;
             if (updateDraft) {
@@ -880,6 +885,12 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
 
         }
+    }
+
+    // Helper extracted to make no-op detection testable.
+    static boolean isDatasetVersionNoOp(DatasetVersion incomingVersion, DatasetVersion latestVersion) {
+        DatasetVersionDifference diff = new DatasetVersionDifference(incomingVersion, latestVersion);
+        return diff.getDetailDataByBlock().isEmpty() && diff.getChangedTermsAccess().isEmpty();
     }
 
     @GET
