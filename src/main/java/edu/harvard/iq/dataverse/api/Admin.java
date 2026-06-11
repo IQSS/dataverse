@@ -1539,6 +1539,40 @@ public class Admin extends AbstractApiBean {
         return ok(info);
     }
 
+    @Path("datafiles/integrity/fixmissingfilesizes")
+    @AuthRequired
+    @GET
+    public Response fixMissingFileSizes(@Context final ContainerRequestContext crc, @QueryParam("limit") Integer limit) {
+
+        User u = getRequestUser(crc);
+        if (!u.isSuperuser()) {
+            return error(Status.FORBIDDEN, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
+        }
+        JsonObjectBuilder info = Json.createObjectBuilder();
+
+        List<String> accessibleDriverIds = DataAccess.getIdsForStorageDriversWithReadableFiles();
+        List<Long> affectedFileIds = fileService.selectFilesWithMissingSizes(accessibleDriverIds);
+
+        if (affectedFileIds.isEmpty()) {
+            info.add("message",
+                    "No datafiles found with missing filesizes for accessible storage drivers; exiting.");
+        } else {
+            int howmany = affectedFileIds.size();
+            String message = "Found " + howmany + " datafiles with missing filesizes. ";
+
+            if (limit != null && howmany > limit) {
+                affectedFileIds = affectedFileIds.subList(0, limit);
+                message = message.concat(" Kicking off an async job that will repair the " + limit + " files in the background.");
+            } else {
+                message = message.concat(" Kicking off an async job that will repair the files in the background.");
+            }
+            info.add("message", message);
+            fileService.fixMissingFileSizes(affectedFileIds);
+        }
+
+        return ok(info);
+    }
+
     /**
      * This method is used in API tests, called from UtilIt.java.
      */

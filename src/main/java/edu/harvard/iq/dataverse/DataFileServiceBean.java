@@ -33,6 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import jakarta.ejb.Asynchronous;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
@@ -55,6 +56,8 @@ public class DataFileServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DataFileServiceBean.class.getCanonicalName());
     @EJB
     DvObjectServiceBean dvObjectService;
+    @EJB
+    DataFileServiceBean self;
     @EJB
     PermissionServiceBean permissionService;
     @EJB
@@ -1336,6 +1339,101 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
     }
     
+    public List<Long> selectFilesWithMissingSizes(List<String> accessibleDriverIds) {
+        if (accessibleDriverIds == null || accessibleDriverIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        StringBuilder queryStr = new StringBuilder();
+        queryStr.append("SELECT f.id FROM datafile f WHERE (f.filesize IS NULL OR f.filesize <= 0) AND (");
+
+        for (int i = 0; i < accessibleDriverIds.size(); i++) {
+            String driverId = accessibleDriverIds.get(i);
+            if (i > 0) {
+                queryStr.append(" OR ");
+            }
+            queryStr.append("(");
+            if (driverId.equals(DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER)) {
+                queryStr.append("f.storageidentifier NOT LIKE '%").append(DataAccess.SEPARATOR).append("%' OR ");
+            }
+            queryStr.append("f.storageidentifier LIKE '").append(driverId).append(DataAccess.SEPARATOR).append("%')");
+        }
+        queryStr.append(") ORDER BY f.id");
+
+        Query query = em.createNativeQuery(queryStr.toString());
+
+        try {
+            return (List<Long>) query.getResultList().stream().map(o -> ((Number) o).longValue()).collect(Collectors.toList());
+        } catch (Exception ex) {
+            return new ArrayList<>();
+        }
+    }
+    
+
+    @Asynchronous
+    public void fixMissingFileSizes(List<Long> datafileIds) {
+        List<Long> failedIds = new ArrayList<>();
+        int batchSize = 25;
+        for (int i = 0; i < datafileIds.size(); i += batchSize) {
+            List<Long> batch = datafileIds.subList(i, Math.min(i + batchSize, datafileIds.size()));
+            try {
+                failedIds.addAll(self.fixMissingFileSizesBatch(batch));
+            } catch (Exception e) {
+                logger.severe("Batch processing failed unexpectedly: " + e.getMessage());
+                failedIds.addAll(batch);
+            }
+        }
+        if (failedIds.isEmpty()) {
+            logger.info("Finished repairing data files that were missing file sizes.");
+        } else {
+            logger.info("Finished repairing data files that were missing file sizes. Failed IDs: " + failedIds);
+        }
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public List<Long> fixMissingFileSizesBatch(List<Long> datafileIds) {
+        List<Long> failedIds = new ArrayList<>();
+        for (Long fileId : datafileIds) {
+            try {
+                fixMissingFileSizeInCurrentTransaction(fileId);
+            } catch (Exception e) {
+                logger.warning("Failed to fix missing file size for datafile id=" + fileId + ": " + e.getMessage());
+                failedIds.add(fileId);
+            }
+        }
+        return failedIds;
+    }
+
+    private void fixMissingFileSizeInCurrentTransaction(long fileId) throws IOException {
+        DataFile dataFile = find(fileId);
+
+        if (dataFile != null) {
+            String driverId = DataAccess.getStorageDriverFromIdentifier(dataFile.getStorageIdentifier());
+            if (StorageIO.isDataverseAccessible(driverId)) {
+                StorageIO<DataFile> storageIO = null;
+                try {
+                    storageIO = dataFile.getStorageIO();
+                    storageIO.open();
+                    long size = storageIO.getSize();
+                    if (size >= 0) {
+                        dataFile.setFilesize(size);
+                        save(dataFile);
+                        logger.fine("Fixed filesize for datafile id=" + fileId + ": " + size + " bytes.");
+                    } else {
+                        throw new IOException("storageIO.getSize() returned negative size: " + size);
+                    }
+                } finally {
+                    if (storageIO != null) {
+                        storageIO.closeInputStream();
+                    }
+                }
+            } else {
+                logger.warning("Skipping datafile id=" + fileId + " because storage driver " + driverId + " is not Dataverse accessible.");
+            }
+        } else {
+            logger.warning("DataFile id=" + fileId + ": No such DataFile!");
+        }
+    }
 
     public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {
         // Verify that the DataFile no longer exists: 

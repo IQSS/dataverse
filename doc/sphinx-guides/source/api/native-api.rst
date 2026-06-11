@@ -6194,6 +6194,23 @@ with limit parameter:
 
 Note the optional "limit" parameter. Without it, the API will attempt to populate the sizes for all the saved originals that don't have them in the database yet. Otherwise it will do so for the first N such datafiles. 
 
+Repair Missing File Sizes
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following superuser-only API will scan the database for datafiles with missing filesizes (i.e. where the size is not yet recorded in the database) and will attempt to retrieve the sizes from the underlying storage media and update the database records:
+
+.. code-block:: bash
+
+  curl "$SERVER_URL/api/admin/datafiles/integrity/fixmissingfilesizes"
+
+with limit parameter:
+
+.. code-block:: bash
+
+  curl "$SERVER_URL/api/admin/datafiles/integrity/fixmissingfilesizes?limit=100"
+
+Note the optional "limit" parameter. Without it, the API will attempt to populate the sizes for all the saved originals that don't have them in the database yet. Otherwise it will do so for the first N such datafiles.
+
 By default, the admin API calls are blocked and can only be called from localhost. See more details in :ref:`:BlockedApiEndpoints <:BlockedApiEndpoints>` and :ref:`:BlockedApiPolicy <:BlockedApiPolicy>` settings in :doc:`/installation/config`.
 
 Get File External Tool URL
