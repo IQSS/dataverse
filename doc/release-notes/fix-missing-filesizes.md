@@ -4,4 +4,4 @@ A new superuser-only Admin API endpoint has been added to allow administrators t
 
 The endpoint will attempt to retrieve the file size from the underlying storage and update the database record. It only processes files in storage drivers that are configured as Dataverse-accessible (where Dataverse can read the files).
 
-`GET /api/admin/datafiles/integrity/fixmissingfilesizes?limit=N`
+`POST /api/admin/datafiles/integrity/fixmissingfilesizes?limit=N`

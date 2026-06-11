@@ -1541,7 +1541,7 @@ public class Admin extends AbstractApiBean {
 
     @Path("datafiles/integrity/fixmissingfilesizes")
     @AuthRequired
-    @GET
+    @POST
     public Response fixMissingFileSizes(@Context final ContainerRequestContext crc, @QueryParam("limit") Integer limit) {
 
         User u = getRequestUser(crc);
@@ -1555,16 +1555,16 @@ public class Admin extends AbstractApiBean {
 
         if (affectedFileIds.isEmpty()) {
             info.add("message",
-                    "No datafiles found with missing filesizes for accessible storage drivers; exiting.");
+                    BundleUtil.getStringFromBundle("admin.api.datafiles.integrity.fixMissingFileSizes.noFilesFound"));
         } else {
             int howmany = affectedFileIds.size();
-            String message = "Found " + howmany + " datafiles with missing filesizes. ";
+            String message = BundleUtil.getStringFromBundle("admin.api.datafiles.integrity.fixMissingFileSizes.found", Arrays.asList(String.valueOf(howmany)));
 
             if (limit != null && howmany > limit) {
                 affectedFileIds = affectedFileIds.subList(0, limit);
-                message = message.concat(" Kicking off an async job that will repair the " + limit + " files in the background.");
+                message = message.concat(BundleUtil.getStringFromBundle("admin.api.datafiles.integrity.fixMissingFileSizes.kickingOffWithLimit", Arrays.asList(String.valueOf(limit))));
             } else {
-                message = message.concat(" Kicking off an async job that will repair the files in the background.");
+                message = message.concat(BundleUtil.getStringFromBundle("admin.api.datafiles.integrity.fixMissingFileSizes.kickingOff"));
             }
             info.add("message", message);
             fileService.fixMissingFileSizes(affectedFileIds);

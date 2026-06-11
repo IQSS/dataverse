@@ -6201,13 +6201,13 @@ The following superuser-only API will scan the database for datafiles with missi
 
 .. code-block:: bash
 
-  curl "$SERVER_URL/api/admin/datafiles/integrity/fixmissingfilesizes"
+  curl -X POST "$SERVER_URL/api/admin/datafiles/integrity/fixmissingfilesizes"
 
 with limit parameter:
 
 .. code-block:: bash
 
-  curl "$SERVER_URL/api/admin/datafiles/integrity/fixmissingfilesizes?limit=100"
+  curl -X POST "$SERVER_URL/api/admin/datafiles/integrity/fixmissingfilesizes?limit=100"
 
 Note the optional "limit" parameter. Without it, the API will attempt to populate the sizes for all the saved originals that don't have them in the database yet. Otherwise it will do so for the first N such datafiles.
 
