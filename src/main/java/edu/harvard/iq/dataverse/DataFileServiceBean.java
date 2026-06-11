@@ -1345,7 +1345,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
 
         StringBuilder queryStr = new StringBuilder();
-        queryStr.append("SELECT f.id FROM datafile f WHERE (f.filesize IS NULL OR f.filesize <= 0) AND (");
+        queryStr.append("SELECT f.id FROM datafile f, dvobject o WHERE f.id = o.id AND (f.filesize IS NULL OR f.filesize = -1) AND (");
 
         for (int i = 0; i < accessibleDriverIds.size(); i++) {
             String driverId = accessibleDriverIds.get(i);
@@ -1353,10 +1353,11 @@ public class DataFileServiceBean implements java.io.Serializable {
                 queryStr.append(" OR ");
             }
             queryStr.append("(");
+            //ToDo - are there any systems where entries for the default store don't have the store id/separator? If not, this can be dropped. If so, perhaps we update via flyway?
             if (driverId.equals(DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER)) {
-                queryStr.append("f.storageidentifier NOT LIKE '%").append(DataAccess.SEPARATOR).append("%' OR ");
+                queryStr.append("o.storageidentifier NOT LIKE '%").append(DataAccess.SEPARATOR).append("%' OR ");
             }
-            queryStr.append("f.storageidentifier LIKE '").append(driverId).append(DataAccess.SEPARATOR).append("%')");
+            queryStr.append("o.storageidentifier LIKE '").append(driverId).append(DataAccess.SEPARATOR).append("%')");
         }
         queryStr.append(") ORDER BY f.id");
 
