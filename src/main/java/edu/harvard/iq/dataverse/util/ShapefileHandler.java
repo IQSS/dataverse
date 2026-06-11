@@ -311,7 +311,7 @@ public class ShapefileHandler{
                 try {
                     File targetFile = new File(target_directory, zentryFileName);
                     if (!targetFile.getCanonicalPath().startsWith(canonicalTargetDir)) {
-                        logger.warning("Skipping invalid zip etnry: " + zentryFileName);
+                        logger.warning("Skipping invalid zip entry: " + zentryFileName);
                         continue;
                     }
                 } catch (IOException e) {
