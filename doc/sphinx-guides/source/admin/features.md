@@ -102,6 +102,140 @@ In-app and email notifications for access requests, requests for review, etc. ca
 ```
 ````
 
+````{grid} 3
+:gutter: 1
+
+```{grid-item-card}
+:text-align: center
+## {material-regular}`api` Integrations
+```
+
+```{grid-item-card} DataCite
+DOIs are reserved, and when datasets are published, their metadata is published to DataCite.
++++
+{doc}`More information.</admin/discoverability>`
+```
+
+```{grid-item-card} Handle
+Handles are a Persistent ID (PID) that are an alternative to DOIs.
++++
+{ref}`More information.<pids-configuration>`
+```
+
+```{grid-item-card} Globus
+Upload from and download to Dataverse using Globus endpoints.
++++
+{ref}`More information.<globus-support>`
+```
+
+```{grid-item-card} RSpace
+Exchange data and metadata with RSpace (e.g. IGSN ID). For example, a Data Management Plan (DMP) can be uploaded to 
+RSpace and updated with the DOI of a Dataverse dataset.
++++
+{ref}`More information.<rspace>`
+```
+
+```{grid-item-card} GitHub
+A GitHub Action is available to upload files from GitHub to a dataset.
++++
+{doc}`More information.</admin/integrations>`
+```
+
+```{grid-item-card} iRODS
+Pull data from an iRODS instance to a Dataverse dataset.
++++
+{ref}`More information.<irods>`
+```
+
+```{grid-item-card} Dropbox
+Upload files stored on Dropbox.
++++
+{doc}`More information.</admin/integrations>`
+```
+
+```{grid-item-card} Jupyter Notebooks
+Datasets can be opened in Binder to run code in Jupyter notebooks, RStudio, and other computation environments.
+They can also be previewed in Dataverse itself.
++++
+{ref}`More information.<binder>`
+```
+
+```{grid-item-card} Galaxy
+Import files directly from Dataverse into Galaxy as well as publish datasets containing artifacts
+ (Histories, datasets, etc.) from Galaxy to Dataverse.
++++
+{ref}`More information.<galaxy-integration>`
+```
+
+```{grid-item-card} External Tools
+Enable additional features not built in to the Dataverse software.
++++
+{doc}`More information.</installation/external-tools>`
+```
+
+```{grid-item-card} Additional Integrations
+Dataverse integrates with a wide variety of third party systems, some of which are highlighted above. 
++++
+For a full list, see {doc}`Integrations</admin/integrations>`.
+```
+````
+
+````{grid} 3
+:gutter: 1
+
+```{grid-item-card}
+:text-align: center
+## {material-regular}`compare_arrows` Interoperability
+```
+
+```{grid-item-card} APIs
+Search API, Data Deposit API, Data Access API, Metrics API, Migration API, etc. and client libraries in various languages.
++++
+{doc}`More information.</api/index>`
+```
+
+```{grid-item-card} OAI-PMH Metadata Harvesting
+Serve and harvest metadata to and from other systems (e.g. DataCite, other Dataverse installations, etc.) using standardized metadata formats.
++++
+{doc}`More information.</admin/harvestserver>`
+```
+
+```{grid-item-card} Schema.org JSON-LD
+Used by Google Dataset Search and other services for discoverability.
++++
+{ref}`More information.<metadata-export-formats>`
+```
+
+```{grid-item-card} Croissant
+Export metadata as linked data following the Croissant ontology.
++++
+{ref}`More information.<croissant-head>`
+```
+
+```{grid-item-card} Signposting
+Enable easier machine access to datasets by adding linkset in a Dataverse header.
++++
+{ref}`More information.<discovery-sign-posting>`
+```
+
+```{grid-item-card} External Vocabulary
+Let users pick from external vocabularies (provided via API/SKOSMOS) when filling in metadata.
++++
+{ref}`More information.<using-external-vocabulary-services>`
+```
+
+```{grid-item-card} BagIt Export
+For preservation, bags can be sent to the local filesystem, Duracloud, and Google Cloud.
++++
+{ref}`More information.<BagIt Export>`
+```
+
+```{grid-item-card} RO-Crate
+Export dataset metadata as an ro-crate.json.
++++
+{ref}`More information.<metadata-export-formats>`
+```
+````
 
 ## Authentication
 
@@ -228,103 +362,6 @@ GeoJSON, GeoTIFF, and Shapefiles can be previewed as a map.
 Pass `geo_point` and `geo_radius` to find datasets based on their bounding box.
 {doc}`More information.</api/search>`
 
-## Integrations
-
-### DataCite
-
-DOIs are reserved, and when datasets are published, their metadata is published to DataCite.
-{doc}`More information.</admin/discoverability>`
-
-### Handle
-
-Handles are a Persistent ID (PID) that are an alternative to DOIs.
-{ref}`More information.<pids-configuration>`
-
-### Globus
-
-Upload from and download to Dataverse using Globus endpoints.
-{ref}`More information.<globus-support>`
-
-### RSpace
-
-Exchange data and metadata with RSpace (e.g. IGSN ID). For example, a Data Management Plan (DMP) can be uploaded to RSpace and updated with the DOI of a Dataverse dataset.
-{ref}`More information.<rspace>`
-
-### GitHub
-
-A GitHub Action is available to upload files from GitHub to a dataset.
-{doc}`More information.</admin/integrations>`
-
-### iRODS
-
-Pull data from an iRODS instance to a Dataverse dataset.
-{ref}`More information.<irods>`
-
-### Dropbox
-
-Upload files stored on Dropbox.
-{doc}`More information.</admin/integrations>`
-
-### Jupyter Notebooks
-
-Datasets can be opened in Binder to run code in Jupyter notebooks, RStudio, and other computation environments. They can also be previewed in Dataverse itself.
-{ref}`More information.<binder>`
-
-### Galaxy
-
-Import files directly from Dataverse into Galaxy as well as publish datasets containing artifacts (Histories, datasets, etc.) from Galaxy to Dataverse.
-{ref}`More information.<galaxy-integration>`
-
-### External Tools
-
-Enable additional features not built in to the Dataverse software.
-{doc}`More information.</installation/external-tools>`
-
-### Additional Integrations
-
-Dataverse integrates with a wide variety of third party systems, some of which are highlighted above. For a full list, see {doc}`Integrations</admin/integrations>`.
-
-## Interoperability
-
-### APIs
-
-Search API, Data Deposit API, Data Access API, Metrics API, Migration API, etc. and client libraries in various languages.
-{doc}`More information.</api/index>`
-
-### OAI-PMH Metadata Harvesting
-
-Serve and harvest metadata to and from other systems (e.g. DataCite, other Dataverse installations, etc.) using standardized metadata formats: Dublin Core, Data Document Initiative (DDI), OpenAIRE, etc.
-{doc}`More information.</admin/harvestserver>`
-
-### Schema.org JSON-LD
-
-Used by Google Dataset Search and other services for discoverability.
-{ref}`More information.<metadata-export-formats>`
-
-### Croissant
-
-Export metadata as linked data following the Croissant ontology.
-{ref}`More information.<croissant-head>`
-
-### Signposting
-
-Enable easier machine access to datasets by adding linkset in a Dataverse header.
-{ref}`More information.<discovery-sign-posting>`
-
-### External Vocabulary
-
-Let users pick from external vocabularies (provided via API/SKOSMOS) when filling in metadata.
-{ref}`More information.<using-external-vocabulary-services>`
-
-### BagIt Export
-
-For preservation, bags can be sent to the local filesystem, Duracloud, and Google Cloud.
-{ref}`More information.<BagIt Export>`
-
-### RO-Crate
-
-Export dataset metadata as an ro-crate.json.
-{ref}`More information.<metadata-export-formats>`
 
 ## Reusability
 
