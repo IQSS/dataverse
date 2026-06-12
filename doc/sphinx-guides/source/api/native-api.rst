@@ -1275,6 +1275,28 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/1234"
 
+Update a Guestbook for a Dataverse Collection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
+
+Update a Guestbook that can be selected for a Dataset.
+You must have "EditDataverse" permission on the Dataverse collection.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1234
+
+  curl -PUT -H  "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/guestbooks/{ID}" -d "$JSON"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -PUT -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/1234" -d "$JSON"
+
 Enable or Disable a Guestbook for a Dataverse Collection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1297,6 +1319,32 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -X PUT -d 'true' -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/root/1234"
+
+Retrieve Guestbook Responses for a Guestbook
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
+
+In order to retrieve the Guestbook Responses for a Guestbook within a Dataverse collection, you must know the ID if the Guestbook. This API also supports pagination by passing a page limit and an optional offset (starting point). The resulting Json will include 'Next' and 'Prev' urls for navigation as well as the total number of responses.
+The resulting Json will be more detailed than that of the :ref:`download-guestbook-api` CSV response file by including Guestbook metadata as well as Guestbook Response metadata.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H  "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/guestbooks/$ID/responses"
+  curl -H  "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/guestbooks/$ID/responses?limit10&offset=0"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/1/responses"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/guestbooks/1/responses?limit10&offset=0"
 
 .. _collection-attributes-api:
   
@@ -4834,6 +4882,31 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/3/license" -H "Content-type:application/json" --upload-file license.json
+
+.. _api-list-reviews:
+
+List Reviews
+~~~~~~~~~~~~
+
+Datasets can have reviews. Specifically, if a :ref:`review dataset <review-datasets-user>` points at (using the ``itemReviewedUrl`` field) the URL form of a persistent ID of a dataset (e.g. https://doi.org/10.5072/FK2/ABCDEF) that is in the same Dataverse installation as the review dataset, the review dataset will be included in the list of reviews for the dataset. It is considered a local review. If additional "rubric" metadata blocks are enabled (see :ref:`review-datasets-setup`) the "metadataBlock name" must start with ``rubric_`` for the fields to be included in the output of this API endpoint.
+
+An API token is optional if the review dataset has been published.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/ABCDEF
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/reviews?persistentId=$PERSISTENT_IDENTIFIER"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/datasets/:persistentId/reviews?persistentId=doi:10.5072/FK2/ABCDEF"
+
+:download:`list-reviews.json <../_static/api/list-reviews.json>` contains sample output of how the API response might look.
 
 Files
 -----

@@ -4105,6 +4105,32 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode())
                 .body("data[0].usageCount", is(1))
                 .body("data[0].responseCount", is(17));
+
+        // Test Get All Responses
+        Response guestbookListResponses = UtilIT.getGuestbooksResponses(guestbook.getId(), null, null, ownerApiToken);
+        guestbookListResponses.prettyPrint();
+        guestbookListResponses.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        JsonPath jsonPath = JsonPath.from(guestbookListResponses.body().asString());
+        int totalCount = jsonPath.getList("data.responses").size();
+
+        // Test Get Responses with pagination
+        int pages = 4; // total should be 17. set to 4 pages
+        int limit = (totalCount / pages) + 1; // should be 5 per page. we should see 5, 5, 5, 2
+        int pagedTotalCount = 0;
+        int totalCountFromJson = 0;
+        for (int i = 0; i < pages; i++) {
+            int offset = limit * i;
+            guestbookListResponses = UtilIT.getGuestbooksResponses(guestbook.getId(), offset, limit, ownerApiToken);
+            guestbookListResponses.prettyPrint();
+            jsonPath = JsonPath.from(guestbookListResponses.body().asString());
+            pagedTotalCount += jsonPath.getList("data.responses").size();
+            totalCountFromJson = jsonPath.getInt("data.pagination.totalResponses");
+            // 'No duplicate ids' was manually verified. Just make sure the count is good. If there were duplicates the count would be high
+        }
+        // verify all counts are good and equal
+        assertEquals(totalCount, pagedTotalCount);
+        assertEquals(pagedTotalCount, totalCountFromJson);
     }
 
     @Test

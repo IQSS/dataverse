@@ -936,6 +936,8 @@ Review Datasets can only be created via API. You have the following options:
 
 When creating a review dataset you will likely need to fill in required fields like ``itemReviewedUrl`` as well as fields from one or more "rubric" metadata blocks, as described above under :ref:`review-datasets-overview`.
 
+If you point ``itemReviewedUrl`` at the URL form of a dataset (e.g. https://doi.org/10.5072/FK2/ABCDEF) that is in the same Dataverse installation as the review dataset, the review dataset is considered a local review and can be listed using the :ref:`api-list-reviews` API endpoint. These reviews appear in the Croissant metadata export if you enable the :ref:`dataverse.feature.croissant-with-local-reviews` feature flag.
+
 .. _dataset-types-datacite:
 
 Dataset Types and DataCite
