@@ -15,26 +15,26 @@
 	geographicReferenceSystemInfo	Reference System Information	The spatial and temporal reference systems used in the Dataset		none	11		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
 	geographicReferenceSystemCode	Reference System Code	An alphanumeric identifier for the reference system for the Dataset		text	12	#VALUE	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicReferenceSystemInfo	geospatial
 	geographicReferenceSystemCodeSpace	Reference System Code Space	The namespace of the system in which the reference system code is valid	EPSG, WGS, etc.	text	13	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicReferenceSystemInfo	geospatial
-	spatialResolution	Spatial Resolution	The density of spatial data in the resource, or the range of resolutions in which a Dataset may be used. NOTE: This element should be repeated when describing upper and lower range		none	14		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
-	spatialResolutionValue	Value	The resource's spatial resolution, expressed as a value or as a brief textual description		text	15	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	spatialResolution	geospatial
-	spatialResolutionType	Type	Format in which the spatial resolution value is expressed	distance, vertical, angularDistance, levelOfDetail	text	16	(#VALUE)	FALSE	TRUE	FALSE	TRUE	FALSE	FALSE	spatialResolution	geospatial
-	spatialResolutionUnitOfMeasure	Spatial Resolution Unit of Measure	If the spatial resolution value is expressed as a distance, the unit of measure that corresponds to that value	cm', 'm', 'km', etc.	text	17	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	spatialResolution	geospatial
+	geographicSpatialResolution	Spatial Resolution	The density of spatial data in the resource, or the range of resolutions in which a Dataset may be used. NOTE: This element should be repeated when describing upper and lower range		none	14		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
+	geographicSpatialResolutionValue	Value	The resource's spatial resolution, expressed as a value or as a brief textual description		text	15	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicSpatialResolution	geospatial
+	geographicSpatialResolutionType	Type	Format in which the spatial resolution value is expressed	distance, vertical, angularDistance, levelOfDetail	text	16	(#VALUE)	FALSE	TRUE	FALSE	TRUE	FALSE	FALSE	geographicSpatialResolution	geospatial
+	geographicSpatialResolutionUnitOfMeasure	Spatial Resolution Unit of Measure	If the spatial resolution value is expressed as a distance, the unit of measure that corresponds to that value	cm', 'm', 'km', etc.	text	17	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicSpatialResolution	geospatial
 	geographicResourceType	Type of Geospatial Data Resource	The type of geospatial data resource that is described in this Dataset record		text	18	#VALUE	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		geospatial
 	geographicReferenceDate	Resource Reference Date	A date which is used to help identify the resource		none	19		TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
 	geographicReferenceDateValue	Date	A date which is used to help identify the resource	yyyy-mm-dd	date	20	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicReferenceDate	geospatial
 	geographicReferenceDateType	Type	The type of date represented in the Date field	revision, expiry, lastUpdate, lastRevision, nextUpdate, unavailable, inForce, adopted, deprecated, superseded, publication	text	21	(#VALUE)	TRUE	TRUE	FALSE	FALSE	FALSE	FALSE	geographicReferenceDate	geospatial
 	geographicDataLineageStatement	Data Lineage Statement	A statement about the Dataset's lineage		textbox	22	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		geospatial
 	geographicProcessStep	Data Lineage Process Step Description	A description of the processes performed on the data as part of the Dataset's processing history		textbox	23	#VALUE	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
-	spatialRepresentationType	Spatial Representation Type	The type of spatial representation of the data in the Dataset		text	24	#VALUE	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		geospatial
+	geographicSpatialRepresentationType	Spatial Representation Type	The type of spatial representation of the data in the Dataset		text	24	#VALUE	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		geospatial
 	geometricObjectCount	Vector Object Count	Vector data only: Total number of geometric objects in the Dataset		int	25	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		geospatial
 	geometricObjectType	Vector Object Type	Vector data only: The type of geometric objects (or shapes) that make up the structure of the vector Dataset	curve, composite, complex, point, solid, or surface	text	26	(#VALUE)	FALSE	TRUE	FALSE	TRUE	FALSE	FALSE		geospatial
-	numberOfDimensions	Raster Dimensions	Raster/grid data only: The number of independent spatio-temporal axes, or dimensions, represented in the Dataset		int	27		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		geospatial
-	axisDimensionProperties	Raster Dimension (Axis) Properties	Raster/grid data only: Information about spatial-temporal axis properties (dimensions).  NOTE: A raster Dataset will usually have 2+ dimensions. Repeat this field to describe all dimensions represented in the Dataset		none	28		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
-	geographicDimensionNameType	Raster Dimension (Axis) Name	Raster/grid data only: Name/type for one of the spatial-temporal axis represented in the Dataset	row, column, vertical, track, crossTrack, line, sample, or time	text	29	#VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	axisDimensionProperties	geospatial
-	geographicDimensionSize	Raster Dimension (Axis) Size	Number of elements along the axis		int	30		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	axisDimensionProperties	geospatial
-	geographicResolution	Raster Dimension (Axis) Resolution	A decimal value representing a dimension's degree of detail, i.e. the size of the area that corresponds to a single data element along a Dataset's axis.	enter a decimal value	float	31	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	axisDimensionProperties	geospatial
-	geographicResolutionUnitOfMeasure	Raster Dimension (Axis) Resolution Unit of Measure	Resolution unit of measure for the dimension resolution value	cm', 'm', 'km', etc.	text	32	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	axisDimensionProperties	geospatial
-	cellGeometry	Raster Cell Geometry	Raster/grid data only: Identification of raster data in this Dataset		text	33	#VALUE	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		geospatial
+	geographicNumberOfDimensions	Raster Dimensions	Raster/grid data only: The number of independent spatio-temporal axes, or dimensions, represented in the Dataset		int	27		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		geospatial
+	geographicAxisDimensionProperties	Raster Dimension (Axis) Properties	Raster/grid data only: Information about spatial-temporal axis properties (dimensions).  NOTE: A raster Dataset will usually have 2+ dimensions. Repeat this field to describe all dimensions represented in the Dataset		none	28		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
+	geographicDimensionNameType	Raster Dimension (Axis) Name	Raster/grid data only: Name/type for one of the spatial-temporal axis represented in the Dataset	row, column, vertical, track, crossTrack, line, sample, or time	text	29	#VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	geographicAxisDimensionProperties	geospatial
+	geographicDimensionSize	Raster Dimension (Axis) Size	Number of elements along the axis		int	30		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicAxisDimensionProperties	geospatial
+	geographicResolution	Raster Dimension (Axis) Resolution	A decimal value representing a dimension's degree of detail, i.e. the size of the area that corresponds to a single data element along a Dataset's axis.	enter a decimal value	float	31	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicAxisDimensionProperties	geospatial
+	geographicResolutionUnitOfMeasure	Raster Dimension (Axis) Resolution Unit of Measure	Resolution unit of measure for the dimension resolution value	cm', 'm', 'km', etc.	text	32	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicAxisDimensionProperties	geospatial
+	geographicCellGeometry	Raster Cell Geometry	Raster/grid data only: Identification of raster data in this Dataset		text	33	#VALUE	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		geospatial
 	geographicDistribution	Distribution Link	Distribution links are URLs that can be used to access the Dataset		none	34		TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
 	geographicDistributionLink	URL	The distribution link is a URL that can be used to access the datase		text	35	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicDistribution	geospatial
 	geographicDistributionLinkLabel	Label	A descriptive label for the distribution link		text	36	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicDistribution	geospatial
@@ -295,9 +295,9 @@
 	geometricObjectType	point	point	3											
 	geometricObjectType	solid	solid	4											
 	geometricObjectType	surface	surface	5											
-	cellGeometry	point	point	0											
-	cellGeometry	area	area	1											
-	cellGeometry	voxel	voxel	2											
+	geographicCellGeometry	point	point	0											
+	geographicCellGeometry	area	area	1											
+	geographicCellGeometry	voxel	voxel	2											
 	geographicDimensionNameType	row	row	0											
 	geographicDimensionNameType	column	column	1											
 	geographicDimensionNameType	vertical	vertical	2											
@@ -306,12 +306,12 @@
 	geographicDimensionNameType	line	line	5											
 	geographicDimensionNameType	sample	sample	6											
 	geographicDimensionNameType	time	time	7											
-	spatialRepresentationType	stereoModel	stereoModel	0											
-	spatialRepresentationType	video	video	1											
-	spatialRepresentationType	tin	tin	2											
-	spatialRepresentationType	textTable	textTable	3											
-	spatialRepresentationType	grid	grid	4											
-	spatialRepresentationType	vector	vector	5											
+	geographicSpatialRepresentationType	stereoModel	stereoModel	0											
+	geographicSpatialRepresentationType	video	video	1											
+	geographicSpatialRepresentationType	tin	tin	2											
+	geographicSpatialRepresentationType	textTable	textTable	3											
+	geographicSpatialRepresentationType	grid	grid	4											
+	geographicSpatialRepresentationType	vector	vector	5											
 	geographicResourceType	dataset	dataset	0											
 	geographicResourceType	service	service	1											
 	geographicResourceType	series	series	2											
@@ -326,8 +326,8 @@
 	geographicReferenceDateType	deprecated	deprecated	8											
 	geographicReferenceDateType	superseded	superseded	9											
 	geographicReferenceDateType	publication	publication	10											
-	spatialResolutionType	equivalentScale	equivalentScale	0											
-	spatialResolutionType	distance	distance	1											
-	spatialResolutionType	vertical	vertical	2											
-	spatialResolutionType	angularDistance	angularDistance	3											
-	spatialResolutionType	levelOfDetail	levelOfDetail	4											
+	geographicSpatialResolutionType	equivalentScale	equivalentScale	0											
+	geographicSpatialResolutionType	distance	distance	1											
+	geographicSpatialResolutionType	vertical	vertical	2											
+	geographicSpatialResolutionType	angularDistance	angularDistance	3											
+	geographicSpatialResolutionType	levelOfDetail	levelOfDetail	4											
