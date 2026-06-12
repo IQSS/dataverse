@@ -494,6 +494,19 @@ public class PermissionServiceBean {
         }
         return permissions;
     }
+
+    public boolean isPowerUser(AuthenticatedUser user, DvObject dvo) {
+        if (user == null) {
+            return false;
+        }
+        if (user.isSuperuser()) {
+            return true;
+        }
+        if (dvo == null) {
+            return false;
+        }
+        return hasPermissionsFor(user, dvo, EnumSet.of(Permission.ScopedPowerAdmin));
+    }
     
     private void addGroupPermissionsFor(Set<RoleAssignee> ras, DvObject dvo, Set<Permission> permissions) {
         for (RoleAssignment asmnt : assignmentsFor(ras, dvo)) {

@@ -2212,8 +2212,8 @@ public class Dataverses extends AbstractApiBean {
 
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
-            if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            if (!permissionSvc.isPowerUser(user, dataverse)) {
+                return error(Response.Status.FORBIDDEN, "Superusers or Power Admins only.");
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
