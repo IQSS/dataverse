@@ -9,7 +9,7 @@ See {doc}`/quickstart/what-is-dataverse` for {ref}`core-capabilities`.
 ```
 -->
 
-````{grid} 3
+````{grid} 1 2 2 3
 :gutter: 1
 
 ```{grid-item-card}
@@ -30,7 +30,7 @@ Model Context Protocol (MCP) is a standard for AI Agents to communicate with too
 ```
 ````
 
-````{grid} 3
+````{grid} 1 2 2 3
 :gutter: 1
 
 ```{grid-item-card}
@@ -69,7 +69,7 @@ Proprietary tabular formats are converted into TSV and RData for download.
 ```
 ````
 
-````{grid} 3
+````{grid} 1 2 2 3
 :gutter: 1
 
 ```{grid-item-card}
@@ -180,7 +180,7 @@ For a full list, see {doc}`Integrations</admin/integrations>`.
 ```
 ````
 
-````{grid} 3
+````{grid} 1 2 2 3
 :gutter: 1
 
 ```{grid-item-card}
