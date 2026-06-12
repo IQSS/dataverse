@@ -105,7 +105,195 @@ In-app and email notifications for access requests, requests for review, etc. ca
 ```
 ````
 
-````{grid} 3
+````{grid} 1 2 2 3
+:gutter: 1
+
+```{grid-item-card}
+:text-align: center
+:columns: 12
+## {material-regular}`local_police` Authentication
+```
+
+```{grid-item-card} Login via Shibboleth
+Single Sign On (SSO) using your institution's credentials.
++++
+{doc}`More information.</installation/shibboleth>`
+```
+
+```{grid-item-card} Login via ORCID, Google, GitHub, or Microsoft
+Log in using popular OAuth2 providers.
++++
+{doc}`More information.</installation/oauth2>`
+```
+
+```{grid-item-card} Login via OpenID Connect (OIDC)
+Log in using your institution's identity provider or a third party.
++++
+{doc}`More information.</installation/oidc>`
+```
+````
+
+````{grid} 1 2 2 3
+:gutter: 1
+
+```{grid-item-card}
+:text-align: center
+:columns: 12
+## {material-regular}`palette` Customization
+```
+
+```{grid-item-card} Branding
+Your installation can be branded with a custom homepage, header, footer, CSS, etc.
++++
+{ref}`More information.<Branding Your Installation>`
+```
+
+```{grid-item-card} Internationalization
+The Dataverse software has been translated into multiple languages.
++++
+{ref}`More information.<i18n>`
+```
+
+```{grid-item-card} Customization of Collections
+Each personal or organizational collection can be customized and branded.
++++
+{ref}`More information.<theme>`
+```
+
+```{grid-item-card} Widgets
+Embed listings of data in external websites.
++++
+{ref}`More information.<dataverse-widgets>`
+```
+````
+
+````{grid} 1 2 2 3
+:gutter: 1
+
+```{grid-item-card}
+:text-align: center
+:columns: 12
+## {material-regular}`search`{material-regular}`touch_app`{material-regular}`settings`{material-regular}`recycling` FAIR Data Publication
+```
+
+```{grid-item-card} Support for FAIR Data Principles
+Findable, Accessible, Interoperable, Reusable.
++++
+[More information.](https://web.archive.org/web/20191206043258/https://scholar.harvard.edu/mercecrosas/presentations/fair-guiding-principles-implementation-dataverse)
+```
+
+```{grid-item-card} Versioning
+History of changes to datasets and files are preserved.
++++
+{doc}`More information.</user/dataset-management>`
+```
+
+```{grid-item-card} Prepublication Review Support
+Datasets start as drafts and can be submitted for review before publication where curators can mark datasets with curation status labels.
++++
+{ref}`More information.<dataverse-permissions>`
+```
+
+```{grid-item-card} Labels for Traditional Knowledge
+Integrate with the Local Contexts platform, enabling the use of Traditional Knowledge and Biocultural Labels, and Notices.
++++
+{doc}`More information.</installation/localcontexts>`
+```
+````
+
+````{grid} 1 2 2 3
+:gutter: 1
+
+```{grid-item-card}
+:text-align: center
+:columns: 12
+## {material-regular}`rule_folder` File Management
+```
+
+```{grid-item-card} File Hierarchy
+Users are able to control dataset file hierarchy and directory structure.
++++
+{doc}`More information.</user/dataset-management>`
+```
+
+```{grid-item-card} Restricted Files
+Control who can download files and choose whether or not to enable a "Request Access" button.
++++
+{ref}`More information.<restricted-files>`
+```
+
+```{grid-item-card} Embargo
+Make files inaccessible until an embargo end date.
++++
+{ref}`More information.<embargoes>`
+```
+
+```{grid-item-card} Retention Periods
+Make files inaccessible once the retention period set has passed.
++++
+{ref}`More information.<retention-periods>`
+```
+
+```{grid-item-card} Metadata Extraction from Files
+Populate dataset metadata fields from tabular, NetCDF, HDF5, and FITS files.
++++
+{ref}`More information.<file-handling>`
+```
+
+```{grid-item-card} Configurable Storage
+Choose between filesystem or object storage, configurable per collection and per dataset.
++++
+{doc}`More information.</installation/big-data-support>`
+```
+
+```{grid-item-card} Direct Upload and Download for S3
+After a permission check, files can pass freely and directly between a client computer and S3.
++++
+{doc}`More information.</installation/big-data-support>`
+```
+
+```{grid-item-card} Fixity Checks for Files
+MD5, SHA-1, SHA-256, SHA-512, UNF.
++++
+{ref}`More information.<:FileFixityChecksumAlgorithm>`
+```
+
+```{grid-item-card} Auxiliary Files for Data Files
+Each data file can have any number of auxiliary files for documentation or other purposes (experimental).
++++
+{doc}`More information.</developers/aux-file-support>`
+```
+````
+
+````{grid} 1 2 2 3
+:gutter: 1
+
+```{grid-item-card}
+:text-align: center
+:columns: 12
+## {material-regular}`map` Geospatial Data Support
+```
+
+```{grid-item-card} Geospatial Metadata Fields
+There is a dedicated geospatial metadata block.
++++
+{ref}`More information.<metadata-references>`
+```
+
+```{grid-item-card} Geospatial File Preview
+GeoJSON, GeoTIFF, and Shapefiles can be previewed as a map.
++++
+{ref}`More information.<geojson>`
+```
+
+```{grid-item-card} Geospatial Search API
+Pass `geo_point` and `geo_radius` to find datasets based on their bounding box.
++++
+{doc}`More information.</api/search>`
+```
+````
+
+````{grid} 1 2 2 3
 :gutter: 1
 
 ```{grid-item-card}
@@ -245,50 +433,39 @@ Export dataset metadata as an ro-crate.json.
 ````{grid} 1 2 2 3
 :gutter: 1
 
-Each data file can have any number of auxiliary files for documentation or other purposes (experimental).
-{doc}`More information.</developers/aux-file-support>`
+```{grid-item-card}
+:text-align: center
+:columns: 12
+## {material-regular}`open_in_new` Reusability
+```
 
-## Geospatial
-
-### Geospatial Metadata Fields
-
-There is a dedicated geospatial metadata block.
-{ref}`More information.<metadata-references>`
-
-### Geospatial File Preview
-
-GeoJSON, GeoTIFF, and Shapefiles can be previewed as a map.
-{ref}`More information.<geojson>`
-
-### Geospatial Search API
-
-Pass `geo_point` and `geo_radius` to find datasets based on their bounding box.
-{doc}`More information.</api/search>`
-
-
-## Reusability
-
-### Multiple License Support
-
+```{grid-item-card} Multiple License Support
 Users can select from multiple standard and provided custom licenses.
++++
 {ref}`More information.<license-config>`
+```
 
-### Custom Terms of Use
-
+```{grid-item-card} Custom Terms of Use
 Users can write custom terms of use in place of a predefined license.
++++
 {ref}`More information.<license-terms>`
+```
 
-### Data Citation Formats
-
+```{grid-item-card} Data Citation Formats
 EndNote XML, RIS, BibTeX, or 1000+ CSL formats at the dataset or file level.
++++
 {doc}`More information.</user/find-use-data>`
+```
 
-### Provenance
-
+```{grid-item-card} Provenance
 At the file level, upload standard W3C provenance files or enter free text instead.
++++
 {ref}`More information.<provenance>`
+```
 
-### Post-Publication Workflows
-
+```{grid-item-card} Post-Publication Workflows
 Allow publication of a dataset to trigger external processes and integrations.
++++
 {doc}`More information.</developers/workflows>`
+```
+````
