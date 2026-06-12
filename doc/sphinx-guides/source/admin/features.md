@@ -1,16 +1,11 @@
 # Features
 
-An overview of Dataverse features can be found at <https://dataverse.org/software-features>. This is a more comprehensive list.
+See {doc}`/quickstart/what-is-dataverse` for {ref}`core-capabilities`.
 
 ```{contents} Contents:
 :local:
 :depth: 3
 ```
-
-## Highlights
-
-- ...
-- ...
 
 ## AI
 
@@ -31,7 +26,7 @@ Model Context Protocol (MCP) is a standard for AI Agents to communicate with too
 Facets are data driven and customizable per collection.
 {doc}`More information.</user/find-use-data>`
 
-### File previews
+### File Previews
 
 A preview is available for text, tabular, image, audio, video, and geospatial files.
 {ref}`More information.<file-previews>`
@@ -46,7 +41,7 @@ Create a URL for reviewers to view an unpublished (and optionally anonymized) da
 Optionally collect data about who is downloading the files from your datasets.
 {ref}`More information.<dataset-guestbooks>`
 
-### File download in open tabular formats
+### File Download in Open Tabular Formats
 
 Proprietary tabular formats are converted into TSV and RData for download.
 {doc}`More information.</user/tabulardataingest/index>`
@@ -112,7 +107,7 @@ Each personal or organizational collection can be customized and branded.
 Embed listings of data in external websites.
 {ref}`More information.<dataverse-widgets>`
 
-## FAIR data publication
+## FAIR Data Publication
 
 ### Support for FAIR Data Principles
 
@@ -126,7 +121,7 @@ History of changes to datasets and files are preserved.
 
 ### Prepublication Review Support
 
-Datasets start as drafts and can be submitted for review before publication.
+Datasets start as drafts and can be submitted for review before publication where curators can mark datasets with curation status labels.
 {ref}`More information.<dataverse-permissions>`
 
 ### TK Labels
@@ -155,6 +150,11 @@ Make files inaccessible until an embargo end date.
 
 Make files inaccessible once the retention period set has passed.
 {ref}`More information.<retention-periods>`
+
+### Metadata Extraction from Files
+
+Populate dataset metadata fields from tabular, NetCDF, HDF5, and FITS files.
+{ref}`More information.<file-handling>`
 
 ### Configurable storage
 
@@ -187,11 +187,6 @@ There is a dedicated geospatial metadata block.
 
 GeoJSON, GeoTIFF, and Shapefiles can be previewed as a map.
 {ref}`More information.<geojson>`
-
-### Metadata Extraction from Geospatial Files
-
-Populate the bounding box from NetCDF and HDF5 files.
-{ref}`More information.<netcdf-and-hdf5>`
 
 ### Geospatial Search API
 
@@ -256,95 +251,69 @@ Dataverse integrates with a wide variety of third party systems, some of which a
 
 ## Interoperability
 
-### OAI-PMH (Serving and Harvesting)
+### APIs
+
+Search API, Data Deposit API, Data Access API, Metrics API, Migration API, etc. and client libraries in various languages.
+{doc}`More information.</api/index>`
+
+### OAI-PMH Metadata Harvesting
 
 Serve and harvest metadata to and from other systems (e.g. DataCite, other Dataverse installations, etc.) using standardized metadata formats: Dublin Core, Data Document Initiative (DDI), OpenAIRE, etc.
 {doc}`More information.</admin/harvestserver>`
-
-### Signposting
-
-Enable easier machine access to datasets by adding linkset in a Dataverse header.
-{ref}`More information.<discovery-sign-posting>`
-
-### Croissant
-
-Export metadata as linked data following the Croissant ontology.
-{ref}`More information.<croissant-head>`
-
-### RO-Crate
-
-Export dataset metadata as an ro-crate.json.
-{ref}`More information.<metadata-export-formats>`
-
-### APIs for interoperability and custom integrations
-
-Search API, Data Deposit (SWORD) API, Data Access API, Metrics API, Migration API, etc.
-{doc}`More information.</api/index>`
-
-### API client libraries
-
-Interact with Dataverse APIs from Python, R, Javascript, Java, and Ruby
-{doc}`More information.</api/client-libraries>`
 
 ### Schema.org JSON-LD
 
 Used by Google Dataset Search and other services for discoverability.
 {ref}`More information.<metadata-export-formats>`
 
-### External vocabulary
+### Croissant
+
+Export metadata as linked data following the Croissant ontology.
+{ref}`More information.<croissant-head>`
+
+### Signposting
+
+Enable easier machine access to datasets by adding linkset in a Dataverse header.
+{ref}`More information.<discovery-sign-posting>`
+
+### External Vocabulary
 
 Let users pick from external vocabularies (provided via API/SKOSMOS) when filling in metadata.
 {ref}`More information.<using-external-vocabulary-services>`
 
-### Export data in BagIt format
+### BagIt Export
 
-For preservation, bags can be sent to the local filesystem, Duraclound, and Google Cloud.
+For preservation, bags can be sent to the local filesystem, Duracloud, and Google Cloud.
 {ref}`More information.<BagIt Export>`
+
+### RO-Crate
+
+Export dataset metadata as an ro-crate.json.
+{ref}`More information.<metadata-export-formats>`
 
 ## Reusability
 
-### Data citation for datasets and files
+### Multiple License Support
+
+Users can select from multiple standard and provided custom licenses.
+{ref}`More information.<license-config>`
+
+### Custom Terms of Use
+
+Users can write custom terms of use in place of a predefined license.
+{ref}`More information.<license-terms>`
+
+### Data Citation Formats
 
 EndNote XML, RIS, BibTeX, or 1000+ CSL formats at the dataset or file level.
 {doc}`More information.</user/find-use-data>`
 
-### Multiple licenses
-
-CC0 by default but add as many standard licenses as you like or create your own.
-{ref}`More information.<license-config>`
-
-### Custom terms of use
-
-Custom terms of use can be used in place of a license or disabled by an administrator.
-{ref}`More information.<license-terms>`
-
-### Post-publication automation (workflows)
-
-Allow publication of a dataset to kick off external processes and integrations.
-{doc}`More information.</developers/workflows>`
-
 ### Provenance
 
-Upload standard W3C provenance files or enter free text instead.
+At the file level, upload standard W3C provenance files or enter free text instead.
 {ref}`More information.<provenance>`
 
+### Post-Publication Workflows
 
-## Misc
-
-### Preview and analysis of tabular files
-
-Data Explorer allows for searching, charting and cross tabulation analysis
-{ref}`More information.<inventory-of-external-tools>`
-
-
-## Curation
-
-### Curation status labels
-
-Let curators mark datasets with a status label customized to your needs.
-{ref}`More information.<:AllowedCurationLabels>`
-
-### Pull header metadata from Astronomy (FITS) files
-
-Dataset metadata prepopulated from FITS file metadata.
-{ref}`More information.<fits>`
+Allow publication of a dataset to trigger external processes and integrations.
+{doc}`More information.</developers/workflows>`
