@@ -28,7 +28,7 @@ Gather email addresses from the following sources (these are also described unde
 - "contact_email" in the `public installation spreadsheet`_
 - "Other Security Contacts" in the `private installation spreadsheet`_
 
-Once you have the emails, include them as bcc.
+Once you have the emails, upload them into Mailchimp and follow the `How to send a Dataverse security advisory <https://docs.google.com/document/d/1sYhi-_U1xP2ZEjWtqVqkuuMxncG_VZZYQRKDEv6N-KQ/edit?usp=sharing>`_ doc.
 
 .. _public installation spreadsheet: https://docs.google.com/spreadsheets/d/1bfsw7gnHlHerLXuk7YprUT68liHfcaMxs1rFciA-mEo/edit#gid=0
 .. _private installation spreadsheet: https://docs.google.com/spreadsheets/d/1EWDwsj6eptQ7nEr-loLvdU7I6Tm2ljAplfNSVWR42i0/edit?usp=sharing

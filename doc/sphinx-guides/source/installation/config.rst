@@ -252,16 +252,32 @@ For any resources to be integrated with Dataverse, find documentation how to set
 Ongoing Security of Your Installation
 +++++++++++++++++++++++++++++++++++++
 
-Like any application, you should keep up-to-date with patches to both the Dataverse software and the platform (usually Linux) it runs on. Dataverse releases are announced on the dataverse-community_ mailing list, the Dataverse blog_, and in chat.dataverse.org_.
+Like any application, you should keep up-to-date with patches to both the Dataverse software and the platform it runs on (usually Linux).
+
+You should also pay attention to security advisories sent by the Dataverse team.
+
+Dataverse Release Notifications
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Dataverse releases are announced on the dataverse-community_ mailing list, the Dataverse blog_, and in chat.dataverse.org_. You can also check https://github.com/IQSS/dataverse/releases (backend) and https://github.com/IQSS/dataverse-frontend/releases (frontend).
 
 .. _dataverse-community: https://groups.google.com/g/dataverse-community
 .. _blog: https://dataverse.org/blog
 .. _chat.dataverse.org: https://chat.dataverse.org
 
-In addition to these public channels, you can subscribe to receive security notices via email from the Dataverse team. These notices are sent to the ``contact_email`` in the installation spreadsheet_ and you can open an issue in the dataverse-installations_ repo to add or change the contact email. Security notices are also sent to people and organizations that prefer to remain anonymous. To be added to this private list, please email support@dataverse.org.
+Dataverse Security Advisories
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Historically, Dataverse security advisories were sent via email via bcc. We are `experimenting <https://groups.google.com/g/dataverse-community/c/wqSQYH_fSlA/m/6xcGh0CnAgAJ>`_ with sending them out via Mailchimp instead.
+
+We have imported into Mailchimp the email addresses that were stored in the following sources:
+
+- The ``contact_email`` in the installation spreadsheet_. To add yourself or your organization, please open an issue at https://github.com/IQSS/dataverse-installations.
+- A private, internal list of security contacts. To ask to be put on it, please email support@dataverse.org.
 
 .. _spreadsheet: https://docs.google.com/spreadsheets/d/1bfsw7gnHlHerLXuk7YprUT68liHfcaMxs1rFciA-mEo/edit#gid=0
-.. _dataverse-installations: https://github.com/IQSS/dataverse-installations
+
+Our plan, for now, is to copy new email addresses from the sources above to Mailchimp, before sending advisories. The goal is maintain control of who is subscribed while letting people opt-out via Mailchimp if they wish.
 
 For additional details about security practices by the Dataverse team, see the :doc:`/developers/security` section of the Developer Guide.
 
