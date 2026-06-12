@@ -159,12 +159,12 @@ Make files inaccessible once the retention period set has passed.
 ### Configurable storage
 
 Choose between filesystem or object storage, configurable per collection and per dataset.
-{doc}`More information.</developers/big-data-support>`
+{doc}`More information.</installation/big-data-support>`
 
 ### Direct upload and download for S3
 
 After a permission check, files can pass freely and directly between a client computer and S3.
-{doc}`More information.</developers/big-data-support>`
+{doc}`More information.</installation/big-data-support>`
 
 ### Fixity checks for files
 
