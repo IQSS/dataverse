@@ -2,71 +2,106 @@
 
 See {doc}`/quickstart/what-is-dataverse` for {ref}`core-capabilities`.
 
+<!--
 ```{contents} Contents:
-:local:
-:depth: 3
+#:local:
+#:depth: 3
+```
+-->
+
+````{grid} 3
+:gutter: 1
+
+```{grid-item-card}
+:text-align: center
+## {material-regular}`terminal` Artifical Intelligence
 ```
 
-## AI
-
-### AI Tools
-
+```{grid-item-card} AI Tools
 A number of AI tools integrate with Dataverse.
++++
 {doc}`More information.</ai/index>`
+```
 
-### Model Context Protocol (MCP)
-
+```{grid-item-card} Model Context Protocol
 Model Context Protocol (MCP) is a standard for AI Agents to communicate with tools and services.
++++
 {ref}`More information.<mcp>`
+```
+````
 
-## Access and Download
+````{grid} 3
+:gutter: 1
 
-### Faceted Search
+```{grid-item-card}
+:text-align: center
+## {material-regular}`download` Access and Download
+```
 
+```{grid-item-card} Faceted Search
 Facets are data driven and customizable per collection.
++++
 {doc}`More information.</user/find-use-data>`
+```
 
-### File Previews
-
+```{grid-item-card} File Previews
 A preview is available for text, tabular, image, audio, video, and geospatial files.
++++
 {ref}`More information.<file-previews>`
+```
 
-### Preview URL
-
+```{grid-item-card} Preview URL
 Create a URL for reviewers to view an unpublished (and optionally anonymized) dataset.
++++
 {ref}`More information.<previewUrl>`
+```
 
-### Guestbook
-
+```{grid-item-card} Guestbook
 Optionally collect data about who is downloading the files from your datasets.
++++
 {ref}`More information.<dataset-guestbooks>`
+```
 
-### File Download in Open Tabular Formats
-
+```{grid-item-card} Download in Open Tabular Formats
 Proprietary tabular formats are converted into TSV and RData for download.
++++
 {doc}`More information.</user/tabulardataingest/index>`
+```
+````
 
-## Administration
+````{grid} 3
+:gutter: 1
 
-### User Management
+```{grid-item-card}
+:text-align: center
+## {material-regular}`manage_accounts` Administration
+```
 
+```{grid-item-card} User Management
 Dashboard for common user-related tasks.
++++
 {doc}`More information.</admin/dashboard>`
+```
 
-### Quotas
-
+```{grid-item-card} Quotas
 For number of files, amount of storage, etc.
++++
 {doc}`More information.</admin/collectionquotas>`
+```
 
-### Usage Statistics and Metrics
-
+```{grid-item-card} Usage Statistics and Metrics
 Download counters, support for Make Data Count.
++++
 {doc}`More information.</admin/make-data-count>`
+```
 
-### Configurable Notifications
-
+```{grid-item-card} Configurable Notifications
 In-app and email notifications for access requests, requests for review, etc. can be muted.
++++
 {ref}`More information.<account-notifications>`
+```
+````
+
 
 ## Authentication
 

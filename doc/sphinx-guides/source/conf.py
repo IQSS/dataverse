@@ -48,6 +48,7 @@ extensions = [
     'sphinx_tabs.tabs',
     'sphinx_substitution_extensions',
     'sphinx_reredirects',
+    'sphinx_design'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
