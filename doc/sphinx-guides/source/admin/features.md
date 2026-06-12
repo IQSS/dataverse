@@ -19,9 +19,9 @@ A number of AI tools integrate with Dataverse.
 Model Context Protocol (MCP) is a standard for AI Agents to communicate with tools and services.
 {ref}`More information.<mcp>`
 
-## Access and download
+## Access and Download
 
-### Faceted search
+### Faceted Search
 
 Facets are data driven and customizable per collection.
 {doc}`More information.</user/find-use-data>`
@@ -48,7 +48,7 @@ Proprietary tabular formats are converted into TSV and RData for download.
 
 ## Administration
 
-### User management
+### User Management
 
 Dashboard for common user-related tasks.
 {doc}`More information.</admin/dashboard>`
@@ -58,12 +58,12 @@ Dashboard for common user-related tasks.
 For number of files, amount of storage, etc.
 {doc}`More information.</admin/collectionquotas>`
 
-### Usage statistics and metrics
+### Usage Statistics and Metrics
 
 Download counters, support for Make Data Count.
 {doc}`More information.</admin/make-data-count>`
 
-### Configurable notifications
+### Configurable Notifications
 
 In-app and email notifications for access requests, requests for review, etc. can be muted.
 {ref}`More information.<account-notifications>`
@@ -97,7 +97,7 @@ Your installation can be branded with a custom homepage, header, footer, CSS, et
 The Dataverse software has been translated into multiple languages.
 {ref}`More information.<i18n>`
 
-### Customization of collections
+### Customization of Collections
 
 Each personal or organizational collection can be customized and branded.
 {ref}`More information.<theme>`
@@ -129,14 +129,14 @@ Datasets start as drafts and can be submitted for review before publication wher
 Integrate with the Local Contexts platform, enabling the use of Traditional Knowledge and Biocultural Labels, and Notices.
 {doc}`More information.</installation/localcontexts>`
 
-## File management
+## File Management
 
-### File hierarchy
+### File Hierarchy
 
 Users are able to control dataset file hierarchy and directory structure.
 {doc}`More information.</user/dataset-management>`
 
-### Restricted files
+### Restricted Files
 
 Control who can download files and choose whether or not to enable a "Request Access" button.
 {ref}`More information.<restricted-files>`
@@ -156,22 +156,22 @@ Make files inaccessible once the retention period set has passed.
 Populate dataset metadata fields from tabular, NetCDF, HDF5, and FITS files.
 {ref}`More information.<file-handling>`
 
-### Configurable storage
+### Configurable Storage
 
 Choose between filesystem or object storage, configurable per collection and per dataset.
 {doc}`More information.</installation/big-data-support>`
 
-### Direct upload and download for S3
+### Direct Upload and Download for S3
 
 After a permission check, files can pass freely and directly between a client computer and S3.
 {doc}`More information.</installation/big-data-support>`
 
-### Fixity checks for files
+### Fixity Checks for Files
 
 MD5, SHA-1, SHA-256, SHA-512, UNF.
 {ref}`More information.<:FileFixityChecksumAlgorithm>`
 
-### Auxiliary files for data files
+### Auxiliary Files for Data Files
 
 Each data file can have any number of auxiliary files for documentation or other purposes (experimental).
 {doc}`More information.</developers/aux-file-support>`
