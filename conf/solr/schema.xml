@@ -286,8 +286,6 @@
     <field name="authorIdentifier" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="authorIdentifierScheme" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="authorName" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="axisDimensionProperties" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="cellGeometry" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="characteristicOfSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="city" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="cleaningOperations" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -341,7 +339,9 @@
     <field name="dsDescriptionValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="eastLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="frequencyOfDataCollection" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="geographicAxisDimensionProperties" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="geographicBoundingBox" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="geographicCellGeometry" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="geographicCoverage" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="geographicDataLineageStatement" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="geographicDimensionNameType" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -349,15 +349,21 @@
     <field name="geographicDistribution" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="geographicDistributionLink" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="geographicDistributionLinkLabel" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="geographicNumberOfDimensions" type="plong" multiValued="false" stored="true" indexed="true"/>
     <field name="geographicProcessStep" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="geographicProtocol" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="geographicReferenceDate" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="geographicReferenceDateType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="geographicReferenceDateValue" type="date_range" multiValued="true" stored="true" indexed="true"/>                                                                                                            <field name="geographicReferenceSystemCode" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="geographicReferenceDateValue" type="date_range" multiValued="true" stored="true" indexed="true"/>        <field name="geographicReferenceSystemCode" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="geographicReferenceSystemCodeSpace" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="geographicReferenceSystemInfo" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="geographicResolution" type="pdouble" multiValued="true" stored="true" indexed="true"/>
-    <field name="geographicResolutionUnitOfMeasure" type="text_en" multiValued="true" stored="true" indexed="true"/>                                                                                                          <field name="geographicResourceType" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="geographicResolutionUnitOfMeasure" type="text_en" multiValued="true" stored="true" indexed="true"/>      <field name="geographicResourceType" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="geographicSpatialRepresentationType" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="geographicSpatialResolution" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="geographicSpatialResolutionType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="geographicSpatialResolutionValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="geographicSpatialResolutionUnitOfMeasure" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="geographicUnit" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="geometricObjectCount" type="plong" multiValued="false" stored="true" indexed="true"/>
     <field name="geometricObjectType" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -378,7 +384,6 @@
     <field name="language" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="northLatitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="notesText" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="numberOfDimensions" type="plong" multiValued="false" stored="true" indexed="true"/>
     <field name="originOfSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="otherDataAppraisal" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="otherGeographicCoverage" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -423,11 +428,6 @@
     <field name="softwareVersion" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="southLatitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="state" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="spatialRepresentationType" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="spatialResolution" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="spatialResolutionType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="spatialResolutionValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="spatialResolutionUnitOfMeasure" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayCellType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayMeasurementType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayOrganism" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -568,8 +568,6 @@
     <copyField source="authorIdentifier" dest="_text_" maxChars="3000"/>
     <copyField source="authorIdentifierScheme" dest="_text_" maxChars="3000"/>
     <copyField source="authorName" dest="_text_" maxChars="3000"/>
-    <copyField source="axisDimensionProperties" dest="_text_" maxChars="3000"/>
-    <copyField source="cellGeometry" dest="_text_" maxChars="3000"/>
     <copyField source="characteristicOfSources" dest="_text_" maxChars="3000"/>
     <copyField source="city" dest="_text_" maxChars="3000"/>
     <copyField source="cleaningOperations" dest="_text_" maxChars="3000"/>
@@ -623,7 +621,9 @@
     <copyField source="dsDescriptionValue" dest="_text_" maxChars="3000"/>
     <copyField source="eastLongitude" dest="_text_" maxChars="3000"/>
     <copyField source="frequencyOfDataCollection" dest="_text_" maxChars="3000"/>
+    <copyField source="geographicAxisDimensionProperties" dest="_text_" maxChars="3000"/>
     <copyField source="geographicBoundingBox" dest="_text_" maxChars="3000"/>
+    <copyField source="geographicCellGeometry" dest="_text_" maxChars="3000"/>
     <copyField source="geographicCoverage" dest="_text_" maxChars="3000"/>
     <copyField source="geographicDataLineageStatement" dest="_text_" maxChars="3000"/>
     <copyField source="geographicDimensionNameType" dest="_text_" maxChars="3000"/>
@@ -631,6 +631,7 @@
     <copyField source="geographicDistribution" dest="_text_" maxChars="3000"/>
     <copyField source="geographicDistributionLink" dest="_text_" maxChars="3000"/>
     <copyField source="geographicDistributionLinkLabel" dest="_text_" maxChars="3000"/>
+    <copyField source="geographicNumberOfDimensions" dest="_text_" maxChars="3000"/>
     <copyField source="geographicProcessStep" dest="_text_" maxChars="3000"/>
     <copyField source="geographicProtocol" dest="_text_" maxChars="3000"/>
     <copyField source="geographicReferenceDate" dest="_text_" maxChars="3000"/>
@@ -642,6 +643,9 @@
     <copyField source="geographicResolution" dest="_text_" maxChars="3000"/>
     <copyField source="geographicResolutionUnitOfMeasure" dest="_text_" maxChars="3000"/>
     <copyField source="geographicResourceType" dest="_text_" maxChars="3000"/>
+    <copyField source="geographicSpatialRepresentationType" dest="_text_" maxChars="3000"/>
+    <copyField source="geographicSpatialResolution" dest="_text_" maxChars="3000"/>                                       <copyField source="geographicSpatialResolutionType" dest="_text_" maxChars="3000"/>
+    <copyField source="geographicSpatialResolutionUnitOfMeasure" dest="_text_" maxChars="3000"/>                          <copyField source="geographicSpatialResolutionValue" dest="_text_" maxChars="3000"/>
     <copyField source="geographicUnit" dest="_text_" maxChars="3000"/>
     <copyField source="geometricObjectCount" dest="_text_" maxChars="3000"/>
     <copyField source="geometricObjectType" dest="_text_" maxChars="3000"/>
@@ -662,7 +666,6 @@
     <copyField source="language" dest="_text_" maxChars="3000"/>
     <copyField source="northLatitude" dest="_text_" maxChars="3000"/>
     <copyField source="notesText" dest="_text_" maxChars="3000"/>
-    <copyField source="numberOfDimensions" dest="_text_" maxChars="3000"/>
     <copyField source="originOfSources" dest="_text_" maxChars="3000"/>
     <copyField source="otherDataAppraisal" dest="_text_" maxChars="3000"/>
     <copyField source="otherGeographicCoverage" dest="_text_" maxChars="3000"/>
@@ -706,11 +709,6 @@
     <copyField source="softwareName" dest="_text_" maxChars="3000"/>
     <copyField source="softwareVersion" dest="_text_" maxChars="3000"/>
     <copyField source="southLatitude" dest="_text_" maxChars="3000"/>
-    <copyField source="spatialRepresentationType" dest="_text_" maxChars="3000"/>
-    <copyField source="spatialResolution" dest="_text_" maxChars="3000"/>
-    <copyField source="spatialResolutionType" dest="_text_" maxChars="3000"/>
-    <copyField source="spatialResolutionUnitOfMeasure" dest="_text_" maxChars="3000"/>
-    <copyField source="spatialResolutionValue" dest="_text_" maxChars="3000"/>
     <copyField source="state" dest="_text_" maxChars="3000"/>
     <copyField source="studyAssayCellType" dest="_text_" maxChars="3000"/>
     <copyField source="studyAssayMeasurementType" dest="_text_" maxChars="3000"/>
