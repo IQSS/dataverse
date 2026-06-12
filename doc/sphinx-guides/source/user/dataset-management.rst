@@ -439,6 +439,7 @@ Go to the dataset you would like to edit, where you will see the listing of file
 - Restrict the selected files
 - Unrestrict the selected files (only if the selected files are restricted)
 - Add tags to the selected files
+- Embargo the selected files
 
 You will not have to leave the dataset page to complete these action, except for editing file metadata, which will bring you to the Edit Files page. There you will have to click the "Save Changes" button to apply your edits and return to the dataset page.
 
@@ -936,6 +937,8 @@ Review Datasets can only be created via API. You have the following options:
 - :ref:`import-dataset-with-type`
 
 When creating a review dataset you will likely need to fill in required fields like ``itemReviewedUrl`` as well as fields from one or more "rubric" metadata blocks, as described above under :ref:`review-datasets-overview`.
+
+If you point ``itemReviewedUrl`` at the URL form of a dataset (e.g. https://doi.org/10.5072/FK2/ABCDEF) that is in the same Dataverse installation as the review dataset, the review dataset is considered a local review and can be listed using the :ref:`api-list-reviews` API endpoint. These reviews appear in the Croissant metadata export if you enable the :ref:`dataverse.feature.croissant-with-local-reviews` feature flag.
 
 .. _dataset-types-datacite:
 
