@@ -1,13 +1,28 @@
 # Features
 
-See {doc}`/quickstart/what-is-dataverse` for {ref}`core-capabilities`.
+````{grid} 1 2 2 3
+:gutter: 1
+```{grid-item-card}
+:columns: 12
 
-<!--
-```{contents} Contents:
-#:local:
-#:depth: 3
+This page highlights features for administrators and power-users of a Dataverse installation.
+Use the links below to jump to a category, or scroll through all the feature cards.
+
+*See {doc}`/quickstart/what-is-dataverse` to learn about its {ref}`core-capabilities` for researchers if you're new to Dataverse.*
+
+- [](feature-ai)
+- [](feature-access-and-download)
+- [](feature-administration)
+- [](feature-authentication)
+- [](feature-customization)
+- [](feature-fair-data-publication)
+- [](feature-file-management)
+- [](feature-geospatial-data-support)
+- [](feature-integrations)
+- [](feature-interoperability)
+- [](feature-reusability)
 ```
--->
+````
 
 ````{grid} 1 2 2 3
 :gutter: 1
@@ -15,6 +30,8 @@ See {doc}`/quickstart/what-is-dataverse` for {ref}`core-capabilities`.
 ```{grid-item-card}
 :text-align: center
 :columns: 12
+:class-body: sd-fs-2
+(feature-ai)=
 ## {material-regular}`terminal` Artifical Intelligence
 ```
 
@@ -37,6 +54,9 @@ Model Context Protocol (MCP) is a standard for AI Agents to communicate with too
 ```{grid-item-card}
 :text-align: center
 :columns: 12
+:class-body: sd-fs-2
+
+(feature-access-and-download)=
 ## {material-regular}`download` Access and Download
 ```
 
@@ -77,6 +97,9 @@ Proprietary tabular formats are converted into TSV and RData for download.
 ```{grid-item-card}
 :text-align: center
 :columns: 12
+:class-body: sd-fs-2
+
+(feature-administration)=
 ## {material-regular}`manage_accounts` Administration
 ```
 
@@ -111,6 +134,9 @@ In-app and email notifications for access requests, requests for review, etc. ca
 ```{grid-item-card}
 :text-align: center
 :columns: 12
+:class-body: sd-fs-2
+
+(feature-authentication)=
 ## {material-regular}`local_police` Authentication
 ```
 
@@ -139,6 +165,9 @@ Log in using your institution's identity provider or a third party.
 ```{grid-item-card}
 :text-align: center
 :columns: 12
+:class-body: sd-fs-2
+
+(feature-customization)=
 ## {material-regular}`palette` Customization
 ```
 
@@ -173,6 +202,9 @@ Embed listings of data in external websites.
 ```{grid-item-card}
 :text-align: center
 :columns: 12
+:class-body: sd-fs-2
+
+(feature-fair-data-publication)=
 ## {material-regular}`search`{material-regular}`touch_app`{material-regular}`settings`{material-regular}`recycling` FAIR Data Publication
 ```
 
@@ -207,6 +239,9 @@ Integrate with the Local Contexts platform, enabling the use of Traditional Know
 ```{grid-item-card}
 :text-align: center
 :columns: 12
+:class-body: sd-fs-2
+
+(feature-file-management)=
 ## {material-regular}`rule_folder` File Management
 ```
 
@@ -271,6 +306,9 @@ Each data file can have any number of auxiliary files for documentation or other
 ```{grid-item-card}
 :text-align: center
 :columns: 12
+:class-body: sd-fs-2
+
+(feature-geospatial-data-support)=
 ## {material-regular}`map` Geospatial Data Support
 ```
 
@@ -299,6 +337,9 @@ Pass `geo_point` and `geo_radius` to find datasets based on their bounding box.
 ```{grid-item-card}
 :text-align: center
 :columns: 12
+:class-body: sd-fs-2
+
+(feature-integrations)=
 ## {material-regular}`api` Integrations
 ```
 
@@ -378,6 +419,9 @@ For a full list, see {doc}`Integrations</admin/integrations>`.
 ```{grid-item-card}
 :text-align: center
 :columns: 12
+:class-body: sd-fs-2
+
+(feature-interoperability)=
 ## {material-regular}`compare_arrows` Interoperability
 ```
 
@@ -436,6 +480,9 @@ Export dataset metadata as an ro-crate.json.
 ```{grid-item-card}
 :text-align: center
 :columns: 12
+:class-body: sd-fs-2
+
+(feature-reusability)=
 ## {material-regular}`open_in_new` Reusability
 ```
 
