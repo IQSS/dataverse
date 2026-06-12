@@ -14,6 +14,7 @@ See {doc}`/quickstart/what-is-dataverse` for {ref}`core-capabilities`.
 
 ```{grid-item-card}
 :text-align: center
+:columns: 12
 ## {material-regular}`terminal` Artifical Intelligence
 ```
 
@@ -35,6 +36,7 @@ Model Context Protocol (MCP) is a standard for AI Agents to communicate with too
 
 ```{grid-item-card}
 :text-align: center
+:columns: 12
 ## {material-regular}`download` Access and Download
 ```
 
@@ -74,6 +76,7 @@ Proprietary tabular formats are converted into TSV and RData for download.
 
 ```{grid-item-card}
 :text-align: center
+:columns: 12
 ## {material-regular}`manage_accounts` Administration
 ```
 
@@ -107,6 +110,7 @@ In-app and email notifications for access requests, requests for review, etc. ca
 
 ```{grid-item-card}
 :text-align: center
+:columns: 12
 ## {material-regular}`api` Integrations
 ```
 
@@ -185,6 +189,7 @@ For a full list, see {doc}`Integrations</admin/integrations>`.
 
 ```{grid-item-card}
 :text-align: center
+:columns: 12
 ## {material-regular}`compare_arrows` Interoperability
 ```
 
@@ -237,110 +242,8 @@ Export dataset metadata as an ro-crate.json.
 ```
 ````
 
-## Authentication
-
-### Login via Shibboleth
-
-Single Sign On (SSO) using your institution's credentials.
-{doc}`More information.</installation/shibboleth>`
-
-### Login via ORCID, Google, GitHub, or Microsoft
-
-Log in using popular OAuth2 providers.
-{doc}`More information.</installation/oauth2>`
-
-### Login via OpenID Connect (OIDC)
-
-Log in using your institution's identity provider or a third party.
-{doc}`More information.</installation/oidc>`
-
-## Customization
-
-### Branding
-
-Your installation can be branded with a custom homepage, header, footer, CSS, etc.
-{ref}`More information.<Branding Your Installation>`
-
-### Internationalization
-
-The Dataverse software has been translated into multiple languages.
-{ref}`More information.<i18n>`
-
-### Customization of Collections
-
-Each personal or organizational collection can be customized and branded.
-{ref}`More information.<theme>`
-
-### Widgets
-
-Embed listings of data in external websites.
-{ref}`More information.<dataverse-widgets>`
-
-## FAIR Data Publication
-
-### Support for FAIR Data Principles
-
-Findable, Accessible, Interoperable, Reusable.
-[More information.](https://web.archive.org/web/20191206043258/https://scholar.harvard.edu/mercecrosas/presentations/fair-guiding-principles-implementation-dataverse)
-
-### Versioning
-
-History of changes to datasets and files are preserved.
-{doc}`More information.</user/dataset-management>`
-
-### Prepublication Review Support
-
-Datasets start as drafts and can be submitted for review before publication where curators can mark datasets with curation status labels.
-{ref}`More information.<dataverse-permissions>`
-
-### TK Labels
-
-Integrate with the Local Contexts platform, enabling the use of Traditional Knowledge and Biocultural Labels, and Notices.
-{doc}`More information.</installation/localcontexts>`
-
-## File Management
-
-### File Hierarchy
-
-Users are able to control dataset file hierarchy and directory structure.
-{doc}`More information.</user/dataset-management>`
-
-### Restricted Files
-
-Control who can download files and choose whether or not to enable a "Request Access" button.
-{ref}`More information.<restricted-files>`
-
-### Embargo
-
-Make files inaccessible until an embargo end date.
-{ref}`More information.<embargoes>`
-
-### Retention Periods
-
-Make files inaccessible once the retention period set has passed.
-{ref}`More information.<retention-periods>`
-
-### Metadata Extraction from Files
-
-Populate dataset metadata fields from tabular, NetCDF, HDF5, and FITS files.
-{ref}`More information.<file-handling>`
-
-### Configurable Storage
-
-Choose between filesystem or object storage, configurable per collection and per dataset.
-{doc}`More information.</installation/big-data-support>`
-
-### Direct Upload and Download for S3
-
-After a permission check, files can pass freely and directly between a client computer and S3.
-{doc}`More information.</installation/big-data-support>`
-
-### Fixity Checks for Files
-
-MD5, SHA-1, SHA-256, SHA-512, UNF.
-{ref}`More information.<:FileFixityChecksumAlgorithm>`
-
-### Auxiliary Files for Data Files
+````{grid} 1 2 2 3
+:gutter: 1
 
 Each data file can have any number of auxiliary files for documentation or other purposes (experimental).
 {doc}`More information.</developers/aux-file-support>`
