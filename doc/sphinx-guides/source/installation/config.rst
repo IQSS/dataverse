@@ -4134,7 +4134,7 @@ dataverse.feature.allow-locally-fair-data
 
 Allows support for Locally FAIR collections and datasets.
 When enabled, selected content can remain visible only to authorized users or groups within a Dataverse installation.
-See :doc:`/user/locally-fair` for more information.
+See :ref:`locally-fair` for more information.
 
 .. _:ApplicationServerSettings:
 

@@ -942,7 +942,7 @@ List Locally FAIR Role Assignees for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Lists the Locally FAIR role assignee identifiers configured for a Dataverse collection identified by ``id``.
-For more about the concept, see the :doc:`/user/locally-fair` section of the User Guide.
+For more about the concept, see :ref:`locally-fair` in the User Guide.
 
 This API is superuser-only.
 
