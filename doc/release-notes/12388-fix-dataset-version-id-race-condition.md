@@ -1,0 +1,1 @@
+Fixed a race condition where a dataset draft could be indexed before its `datasetVersionId` was persisted to the database, which occasionally caused missing version information in the Solr index and 500 errors in some API endpoints.

@@ -608,102 +608,109 @@ public class SolrSearchResult {
             if (this.entity.isInstanceofDataset()) {
                 nullSafeJsonBuilder.add("storageIdentifier", this.entity.getStorageIdentifier());
                 Dataset ds = (Dataset) this.entity;
-                DatasetVersion dv = ds.getVersionFromId(this.datasetVersionId);
+                DatasetVersion dv = null;
+                if (this.datasetVersionId > 0) {
+                    dv = ds.getVersionFromId(this.datasetVersionId);
+                }
 
-                if (!dv.getKeywords().isEmpty()) {
-                    JsonArrayBuilder keyWords = Json.createArrayBuilder();
-                    for (String keyword : dv.getKeywords()) {
-                        keyWords.add(keyword);
+                if (dv == null) {
+                    logger.warning("DatasetVersion not found for dataset id " + ds.getId() + " and version id " + this.datasetVersionId + ". This may be due to a race condition between asynchronous indexing and the transaction commit. To fix this, you can call the re-index API: http://localhost:8080/api/admin/index/dataset?persistentId=" + ds.getGlobalId().toString());
+                } else {
+                    if (!dv.getKeywords().isEmpty()) {
+                        JsonArrayBuilder keyWords = Json.createArrayBuilder();
+                        for (String keyword : dv.getKeywords()) {
+                            keyWords.add(keyword);
+                        }
+                        nullSafeJsonBuilder.add("keywords", keyWords);
                     }
-                    nullSafeJsonBuilder.add("keywords", keyWords);
-                }
 
-                JsonArrayBuilder subjects = Json.createArrayBuilder();
-                for (String subject : dv.getDatasetSubjects()) {
-                    subjects.add(subject);
-                }
-                nullSafeJsonBuilder.add("subjects", subjects);
-                nullSafeJsonBuilder.add("fileCount", this.fileCount);
-                nullSafeJsonBuilder.add("versionId", dv.getId());
-                nullSafeJsonBuilder.add("versionState", dv.getVersionState().toString());
-                if (this.isPublishedState()) {
-                    nullSafeJsonBuilder.add("majorVersion", dv.getVersionNumber());
-                    nullSafeJsonBuilder.add("minorVersion", dv.getMinorVersionNumber());
-                }
-
-                nullSafeJsonBuilder.add("createdAt", ds.getCreateDate());
-                nullSafeJsonBuilder.add("updatedAt", ds.getModificationTime());
-
-                if (!dv.getDatasetContacts().isEmpty()) {
-                    JsonArrayBuilder contacts = Json.createArrayBuilder();
-                    NullSafeJsonBuilder nullSafeJsonBuilderInner = jsonObjectBuilder();
-                    for (String contact[] : dv.getDatasetContacts(false)) {
-                        nullSafeJsonBuilderInner.add("name", contact[0]);
-                        nullSafeJsonBuilderInner.add("affiliation", contact[1]);
-                        contacts.add(nullSafeJsonBuilderInner);
+                    JsonArrayBuilder subjects = Json.createArrayBuilder();
+                    for (String subject : dv.getDatasetSubjects()) {
+                        subjects.add(subject);
                     }
-                    nullSafeJsonBuilder.add("contacts", contacts);
-                }
-                if (!dv.getRelatedPublications().isEmpty()) {
-                    JsonArrayBuilder relPub = Json.createArrayBuilder();
-                    NullSafeJsonBuilder inner = jsonObjectBuilder();
-                    for (DatasetRelPublication dsRelPub : dv.getRelatedPublications()) {
-                        inner.add("title", dsRelPub.getTitle());
-                        inner.add("citation", dsRelPub.getText());
-                        inner.add("url", dsRelPub.getUrl());
-                        relPub.add(inner);
+                    nullSafeJsonBuilder.add("subjects", subjects);
+                    nullSafeJsonBuilder.add("fileCount", this.fileCount);
+                    nullSafeJsonBuilder.add("versionId", dv.getId());
+                    nullSafeJsonBuilder.add("versionState", dv.getVersionState().toString());
+                    if (this.isPublishedState()) {
+                        nullSafeJsonBuilder.add("majorVersion", dv.getVersionNumber());
+                        nullSafeJsonBuilder.add("minorVersion", dv.getMinorVersionNumber());
                     }
-                    nullSafeJsonBuilder.add("publications", relPub);
-                }
 
-                if (!dv.getDatasetProducers().isEmpty()) {
-                    JsonArrayBuilder producers = Json.createArrayBuilder();
-                    for (String[] producer : dv.getDatasetProducers()) {
-                        producers.add(producer[0]);
+                    nullSafeJsonBuilder.add("createdAt", ds.getCreateDate());
+                    nullSafeJsonBuilder.add("updatedAt", ds.getModificationTime());
+
+                    if (!dv.getDatasetContacts().isEmpty()) {
+                        JsonArrayBuilder contacts = Json.createArrayBuilder();
+                        NullSafeJsonBuilder nullSafeJsonBuilderInner = jsonObjectBuilder();
+                        for (String contact[] : dv.getDatasetContacts(false)) {
+                            nullSafeJsonBuilderInner.add("name", contact[0]);
+                            nullSafeJsonBuilderInner.add("affiliation", contact[1]);
+                            contacts.add(nullSafeJsonBuilderInner);
+                        }
+                        nullSafeJsonBuilder.add("contacts", contacts);
                     }
-                    nullSafeJsonBuilder.add("producers", producers);
-                }
-                if (!dv.getRelatedMaterial().isEmpty()) {
-                    JsonArrayBuilder relatedMaterials = Json.createArrayBuilder();
-                    for (String relatedMaterial : dv.getRelatedMaterial()) {
-                        relatedMaterials.add(relatedMaterial);
+                    if (!dv.getRelatedPublications().isEmpty()) {
+                        JsonArrayBuilder relPub = Json.createArrayBuilder();
+                        NullSafeJsonBuilder inner = jsonObjectBuilder();
+                        for (DatasetRelPublication dsRelPub : dv.getRelatedPublications()) {
+                            inner.add("title", dsRelPub.getTitle());
+                            inner.add("citation", dsRelPub.getText());
+                            inner.add("url", dsRelPub.getUrl());
+                            relPub.add(inner);
+                        }
+                        nullSafeJsonBuilder.add("publications", relPub);
                     }
-                    nullSafeJsonBuilder.add("relatedMaterial", relatedMaterials);
-                }
 
-                if (!dv.getGeographicCoverage().isEmpty()) {
-                    JsonArrayBuilder geoCov = Json.createArrayBuilder();
-                    NullSafeJsonBuilder inner = jsonObjectBuilder();
-                    for (String ind[] : dv.getGeographicCoverage()) {
-                        inner.add("country", ind[0]);
-                        inner.add("state", ind[1]);
-                        inner.add("city", ind[2]);
-                        inner.add("other", ind[3]);
-                        geoCov.add(inner);
+                    if (!dv.getDatasetProducers().isEmpty()) {
+                        JsonArrayBuilder producers = Json.createArrayBuilder();
+                        for (String[] producer : dv.getDatasetProducers()) {
+                            producers.add(producer[0]);
+                        }
+                        nullSafeJsonBuilder.add("producers", producers);
                     }
-                    nullSafeJsonBuilder.add("geographicCoverage", geoCov);
-                }
-                if (!dv.getDataSource().isEmpty()) {
-                    JsonArrayBuilder dataSources = Json.createArrayBuilder();
-                    for (String dsource : dv.getDataSource()) {
-                        dataSources.add(dsource);
+                    if (!dv.getRelatedMaterial().isEmpty()) {
+                        JsonArrayBuilder relatedMaterials = Json.createArrayBuilder();
+                        for (String relatedMaterial : dv.getRelatedMaterial()) {
+                            relatedMaterials.add(relatedMaterial);
+                        }
+                        nullSafeJsonBuilder.add("relatedMaterial", relatedMaterials);
                     }
-                    nullSafeJsonBuilder.add("dataSources", dataSources);
-                }
 
-                if (CollectionUtils.isNotEmpty(metadataFields)) {
-                    // create metadata fields map names
-                    Map<String, List<String>> metadataFieldMapNames = computeRequestedMetadataFieldMapNames(
-                            metadataFields);
+                    if (!dv.getGeographicCoverage().isEmpty()) {
+                        JsonArrayBuilder geoCov = Json.createArrayBuilder();
+                        NullSafeJsonBuilder inner = jsonObjectBuilder();
+                        for (String ind[] : dv.getGeographicCoverage()) {
+                            inner.add("country", ind[0]);
+                            inner.add("state", ind[1]);
+                            inner.add("city", ind[2]);
+                            inner.add("other", ind[3]);
+                            geoCov.add(inner);
+                        }
+                        nullSafeJsonBuilder.add("geographicCoverage", geoCov);
+                    }
+                    if (!dv.getDataSource().isEmpty()) {
+                        JsonArrayBuilder dataSources = Json.createArrayBuilder();
+                        for (String dsource : dv.getDataSource()) {
+                            dataSources.add(dsource);
+                        }
+                        nullSafeJsonBuilder.add("dataSources", dataSources);
+                    }
 
-                    // add metadatafields objet to wrap all requeested fields
-                    NullSafeJsonBuilder metadataFieldBuilder = jsonObjectBuilder();
+                    if (CollectionUtils.isNotEmpty(metadataFields)) {
+                        // create metadata fields map names
+                        Map<String, List<String>> metadataFieldMapNames = computeRequestedMetadataFieldMapNames(
+                                metadataFields);
 
-                    Map<MetadataBlock, List<DatasetField>> groupedFields = DatasetField
-                            .groupByBlock(dv.getFlatDatasetFields());
-                    json(metadataFieldMapNames, groupedFields, metadataFieldBuilder);
+                        // add metadatafields objet to wrap all requeested fields
+                        NullSafeJsonBuilder metadataFieldBuilder = jsonObjectBuilder();
 
-                    nullSafeJsonBuilder.add("metadataBlocks", metadataFieldBuilder);
+                        Map<MetadataBlock, List<DatasetField>> groupedFields = DatasetField
+                                .groupByBlock(dv.getFlatDatasetFields());
+                        json(metadataFieldMapNames, groupedFields, metadataFieldBuilder);
+
+                        nullSafeJsonBuilder.add("metadataBlocks", metadataFieldBuilder);
+                    }
                 }
 
                 if (this.collections != null && !this.collections.isEmpty()) {
