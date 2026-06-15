@@ -3402,6 +3402,8 @@ In order to update the number of files allowed for a Dataset, without causing a 
 
 To delete the existing limit:
 
+.. code-block:: bash
+
   curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/$ID/files/uploadlimit"
 
 The fully expanded example above (without environment variables) looks like this:
@@ -3411,6 +3413,8 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/files/uploadlimit/500"
 
 To delete the existing limit:
+
+.. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/24/files/uploadlimit"
 
