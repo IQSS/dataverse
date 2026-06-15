@@ -1,3 +1,17 @@
+## New Expanded Geospatial Metadata Block
+
+This release introduces a major enhancement to geospatial data support with the addition of an expanded Geospatial Metadata Block, designed to improve how researchers describe, share, and discover geospatial datasets.
+
+This new expanded metadata block aligns with the international ISO 19115 standard for describing geographic data.
+
+- Includes 22 new metadata fields to provide more detailed and standardized descriptions of geospatial data (e.g. vector, raster, mixed or multi-format geospatial collections)
+- Incorporates and extends current metadata elements (Geographic Coverage and Geographic Bounding Box)
+- Ensures backward compatibility while significantly improving metadata description capabilities.
+
+See [the guides](https://dataverse-guide--11507.org.readthedocs.build/en/11507/user/appendix.html#supported-metadata), #10398, and #11507.
+
+## Upgrade Instructions
+
 ### Update geospatial metadata block in existing installation (PR #11507)
 
 .. code-block:: javascript
