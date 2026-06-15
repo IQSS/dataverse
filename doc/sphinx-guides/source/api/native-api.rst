@@ -936,6 +936,123 @@ In particular, the user permissions that this API call checks, returned as boole
 
   curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/dataverses/$ID/userPermissions"
 
+.. _locally-fair-list-role-assignees:
+
+List Locally FAIR Role Assignees for a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Lists the Locally FAIR role assignee identifiers configured for a Dataverse collection identified by ``id``.
+For more about the concept, see :ref:`locally-fair` in the User Guide.
+
+This API is superuser-only.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/locallyFairRoleAssignees"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/locallyFairRoleAssignees"
+
+The response is a JSON array of role assignee identifiers. For example:
+
+.. code-block:: json
+
+  [
+    "@TestUser",
+    "&maildomain/harvard.edu"
+  ]
+
+.. _locally-fair-set-role-assignee:
+
+Set Locally FAIR Role Assignees for a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Replaces the full set locally FAIR role assignee identifiers for a Dataverse collection identified by ``id``.
+
+This API is superuser-only.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+  export JSON='["@TestUser","&maildomain/harvard.edu"]'
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -H "Content-Type: application/json" "$SERVER_URL/api/dataverses/$ID/locallyFairRoleAssignees" -d "$JSON"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT -H "Content-Type: application/json" "https://demo.dataverse.org/api/dataverses/root/locallyFairRoleAssignees" -d '["@TestUser","&maildomain/harvard.edu"]'
+
+Pass an empty array to clear all locally FAIR role assignees from the collection:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -H "Content-Type: application/json" "$SERVER_URL/api/dataverses/$ID/locallyFairRoleAssignees" -d '[]'
+
+All supplied identifiers must be valid existing role assignee identifiers. Invalid identifiers will result in ``400 Bad Request``.
+
+.. _locally-fair-add-role-assignee:
+
+Add a Locally FAIR Role Assignee to a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Adds a single locally FAIR role assignee identifier to a Dataverse collection identified by ``id``.
+
+This API is superuser-only.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+  export ROLE_ASSIGNEE=&shib/1
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/dataverses/$ID/locallyFairRoleAssignees/$ROLE_ASSIGNEE"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/dataverses/root/locallyFairRoleAssignees/&shib/1"
+
+The response includes the updated set of locally FAIR role assignee identifiers.
+
+.. _locally-fair-delete-role-assignee:
+
+Delete a Locally FAIR Role Assignee from a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Removes a single locally FAIR role assignee identifier from a Dataverse collection identified by ``id``.
+
+This API is superuser-only.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+  export ROLE_ASSIGNEE=:authenticated-users
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/dataverses/$ID/locallyFairRoleAssignees/$ROLE_ASSIGNEE"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverses/root/locallyFairRoleAssignees/:authenticated-users"
+
+The response includes the updated set of locally FAIR role assignee identifiers. Removing an identifier that is blank or not currently assigned will result in ``400 Bad Request``.
+
 .. _create-dataset-command:
 
 Create a Dataset in a Dataverse Collection
