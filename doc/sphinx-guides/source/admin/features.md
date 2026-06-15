@@ -6,7 +6,6 @@
 :columns: 12
 
 This page highlights features for administrators and power-users of a Dataverse installation.
-Use the links below to jump to a category, or scroll through all the feature cards.
 
 *See {doc}`/quickstart/what-is-dataverse` to learn about its {ref}`core-capabilities` for researchers if you're new to Dataverse.*
 
