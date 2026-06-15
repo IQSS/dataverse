@@ -21,7 +21,6 @@ User Guide
    dataverse-management
    dataset-management
    tabulardataingest/index
-   locally-fair
    appendix
 
 .. |what-is-dataverse| image:: ./img/what-is-dataverse.svg
