@@ -5622,6 +5622,7 @@ public class UtilIT {
         gb.getCustomQuestions().get(0).setId(jsonPath.getLong("data.customQuestions[0].id"));
         gb.getCustomQuestions().get(1).setId(jsonPath.getLong("data.customQuestions[1].id"));
         gb.getCustomQuestions().get(2).setId(jsonPath.getLong("data.customQuestions[2].id"));
+        gb.getCustomQuestions().get(3).setId(jsonPath.getLong("data.customQuestions[3].id"));
 
         // Add the Guestbook to the Dataset
         if (persistentId != null) {
@@ -5636,11 +5637,14 @@ public class UtilIT {
         String guestbookAsJson = new String(Files.readAllBytes(Paths.get(guestbookJson.getAbsolutePath())));
 
         List<Long> cqIDs = new ArrayList<>();
-        gb.getCustomQuestions().stream().forEach(cq -> cqIDs.add(cq.getId()));
+        // Try to match the IDs. This is no easy task as the custom questions are not added to the db in order by id.
+        // We will use "displayOrder" to help match them up
+        gb.getCustomQuestions().stream().sorted(Comparator.comparing(CustomQuestion::getDisplayOrder)).forEach(cq -> cqIDs.add(cq.getId()));
 
         return guestbookAsJson.replace("@ID", gb.getId().toString())
                 .replace("@QID1", cqIDs.get(0).toString())
                 .replace("@QID2", cqIDs.get(1).toString())
-                .replace("@QID3", cqIDs.get(2).toString());
+                .replace("@QID3", cqIDs.get(2).toString())
+                .replace("@QID4", cqIDs.get(3).toString());
     }
 }
