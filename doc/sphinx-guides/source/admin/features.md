@@ -1,319 +1,517 @@
 # Features
 
-See {doc}`/quickstart/what-is-dataverse` for {ref}`core-capabilities`.
+````{grid} 1 2 2 3
+:gutter: 1
+```{grid-item-card}
+:columns: 12
 
-```{contents} Contents:
-:local:
-:depth: 3
+This page highlights features for administrators and power-users of a Dataverse installation.
+
+*See {doc}`/quickstart/what-is-dataverse` to learn about its {ref}`core-capabilities` for researchers if you're new to Dataverse.*
+
+- [](feature-ai)
+- [](feature-access-and-download)
+- [](feature-administration)
+- [](feature-authentication)
+- [](feature-customization)
+- [](feature-fair-data-publication)
+- [](feature-file-management)
+- [](feature-geospatial-data-support)
+- [](feature-integrations)
+- [](feature-interoperability)
+- [](feature-reusability)
+```
+````
+
+````{grid} 1 2 2 3
+:gutter: 1
+
+```{grid-item-card}
+:text-align: center
+:columns: 12
+:class-body: sd-fs-2
+(feature-ai)=
+## {material-regular}`terminal` Artifical Intelligence
 ```
 
-## AI
-
-### AI Tools
-
+```{grid-item-card} AI Tools
 A number of AI tools integrate with Dataverse.
++++
 {doc}`More information.</ai/index>`
+```
 
-### Model Context Protocol (MCP)
-
+```{grid-item-card} Model Context Protocol
 Model Context Protocol (MCP) is a standard for AI Agents to communicate with tools and services.
++++
 {ref}`More information.<mcp>`
+```
+````
 
-## Access and Download
+````{grid} 1 2 2 3
+:gutter: 1
 
-### Faceted Search
+```{grid-item-card}
+:text-align: center
+:columns: 12
+:class-body: sd-fs-2
 
+(feature-access-and-download)=
+## {material-regular}`download` Access and Download
+```
+
+```{grid-item-card} Faceted Search
 Facets are data driven and customizable per collection.
++++
 {doc}`More information.</user/find-use-data>`
+```
 
-### File Previews
-
+```{grid-item-card} File Previews
 A preview is available for text, tabular, image, audio, video, and geospatial files.
++++
 {ref}`More information.<file-previews>`
+```
 
-### Preview URL
-
+```{grid-item-card} Preview URL
 Create a URL for reviewers to view an unpublished (and optionally anonymized) dataset.
++++
 {ref}`More information.<previewUrl>`
+```
 
-### Guestbook
-
+```{grid-item-card} Guestbook
 Optionally collect data about who is downloading the files from your datasets.
++++
 {ref}`More information.<dataset-guestbooks>`
+```
 
-### File Download in Open Tabular Formats
-
+```{grid-item-card} Download in Open Tabular Formats
 Proprietary tabular formats are converted into TSV and RData for download.
++++
 {doc}`More information.</user/tabulardataingest/index>`
+```
+````
 
-## Administration
+````{grid} 1 2 2 3
+:gutter: 1
 
-### User Management
+```{grid-item-card}
+:text-align: center
+:columns: 12
+:class-body: sd-fs-2
 
+(feature-administration)=
+## {material-regular}`manage_accounts` Administration
+```
+
+```{grid-item-card} User Management
 Dashboard for common user-related tasks.
++++
 {doc}`More information.</admin/dashboard>`
+```
 
-### Quotas
-
+```{grid-item-card} Quotas
 For number of files, amount of storage, etc.
++++
 {doc}`More information.</admin/collectionquotas>`
+```
 
-### Usage Statistics and Metrics
-
+```{grid-item-card} Usage Statistics and Metrics
 Download counters, support for Make Data Count.
++++
 {doc}`More information.</admin/make-data-count>`
+```
 
-### Configurable Notifications
-
+```{grid-item-card} Configurable Notifications
 In-app and email notifications for access requests, requests for review, etc. can be muted.
++++
 {ref}`More information.<account-notifications>`
+```
+````
 
-## Authentication
+````{grid} 1 2 2 3
+:gutter: 1
 
-### Login via Shibboleth
+```{grid-item-card}
+:text-align: center
+:columns: 12
+:class-body: sd-fs-2
 
+(feature-authentication)=
+## {material-regular}`local_police` Authentication
+```
+
+```{grid-item-card} Login via Shibboleth
 Single Sign On (SSO) using your institution's credentials.
++++
 {doc}`More information.</installation/shibboleth>`
+```
 
-### Login via ORCID, Google, GitHub, or Microsoft
-
+```{grid-item-card} Login via ORCID, Google, GitHub, or Microsoft
 Log in using popular OAuth2 providers.
++++
 {doc}`More information.</installation/oauth2>`
+```
 
-### Login via OpenID Connect (OIDC)
-
+```{grid-item-card} Login via OpenID Connect (OIDC)
 Log in using your institution's identity provider or a third party.
++++
 {doc}`More information.</installation/oidc>`
+```
+````
 
-## Customization
+````{grid} 1 2 2 3
+:gutter: 1
 
-### Branding
+```{grid-item-card}
+:text-align: center
+:columns: 12
+:class-body: sd-fs-2
 
+(feature-customization)=
+## {material-regular}`palette` Customization
+```
+
+```{grid-item-card} Branding
 Your installation can be branded with a custom homepage, header, footer, CSS, etc.
++++
 {ref}`More information.<Branding Your Installation>`
+```
 
-### Internationalization
-
+```{grid-item-card} Internationalization
 The Dataverse software has been translated into multiple languages.
++++
 {ref}`More information.<i18n>`
+```
 
-### Customization of Collections
-
+```{grid-item-card} Customization of Collections
 Each personal or organizational collection can be customized and branded.
++++
 {ref}`More information.<theme>`
+```
 
-### Widgets
-
+```{grid-item-card} Widgets
 Embed listings of data in external websites.
++++
 {ref}`More information.<dataverse-widgets>`
+```
+````
 
-## FAIR Data Publication
+````{grid} 1 2 2 3
+:gutter: 1
 
-### Support for FAIR Data Principles
+```{grid-item-card}
+:text-align: center
+:columns: 12
+:class-body: sd-fs-2
 
+(feature-fair-data-publication)=
+## {material-regular}`search`{material-regular}`touch_app`{material-regular}`settings`{material-regular}`recycling` FAIR Data Publication
+```
+
+```{grid-item-card} Support for FAIR Data Principles
 Findable, Accessible, Interoperable, Reusable.
++++
 [More information.](https://web.archive.org/web/20191206043258/https://scholar.harvard.edu/mercecrosas/presentations/fair-guiding-principles-implementation-dataverse)
+```
 
-### Versioning
-
+```{grid-item-card} Versioning
 History of changes to datasets and files are preserved.
++++
 {doc}`More information.</user/dataset-management>`
+```
 
-### Prepublication Review Support
-
+```{grid-item-card} Prepublication Review Support
 Datasets start as drafts and can be submitted for review before publication where curators can mark datasets with curation status labels.
++++
 {ref}`More information.<dataverse-permissions>`
+```
 
-### TK Labels
-
+```{grid-item-card} Labels for Traditional Knowledge
 Integrate with the Local Contexts platform, enabling the use of Traditional Knowledge and Biocultural Labels, and Notices.
++++
 {doc}`More information.</installation/localcontexts>`
+```
+````
 
-## File Management
+````{grid} 1 2 2 3
+:gutter: 1
 
-### File Hierarchy
+```{grid-item-card}
+:text-align: center
+:columns: 12
+:class-body: sd-fs-2
 
+(feature-file-management)=
+## {material-regular}`rule_folder` File Management
+```
+
+```{grid-item-card} File Hierarchy
 Users are able to control dataset file hierarchy and directory structure.
++++
 {doc}`More information.</user/dataset-management>`
+```
 
-### Restricted Files
-
+```{grid-item-card} Restricted Files
 Control who can download files and choose whether or not to enable a "Request Access" button.
++++
 {ref}`More information.<restricted-files>`
+```
 
-### Embargo
-
+```{grid-item-card} Embargo
 Make files inaccessible until an embargo end date.
++++
 {ref}`More information.<embargoes>`
+```
 
-### Retention Periods
-
+```{grid-item-card} Retention Periods
 Make files inaccessible once the retention period set has passed.
++++
 {ref}`More information.<retention-periods>`
+```
 
-### Metadata Extraction from Files
-
+```{grid-item-card} Metadata Extraction from Files
 Populate dataset metadata fields from tabular, NetCDF, HDF5, and FITS files.
++++
 {ref}`More information.<file-handling>`
+```
 
-### Configurable Storage
-
+```{grid-item-card} Configurable Storage
 Choose between filesystem or object storage, configurable per collection and per dataset.
++++
 {doc}`More information.</installation/big-data-support>`
+```
 
-### Direct Upload and Download for S3
-
+```{grid-item-card} Direct Upload and Download for S3
 After a permission check, files can pass freely and directly between a client computer and S3.
++++
 {doc}`More information.</installation/big-data-support>`
+```
 
-### Fixity Checks for Files
-
+```{grid-item-card} Fixity Checks for Files
 MD5, SHA-1, SHA-256, SHA-512, UNF.
++++
 {ref}`More information.<:FileFixityChecksumAlgorithm>`
+```
 
-### Auxiliary Files for Data Files
-
+```{grid-item-card} Auxiliary Files for Data Files
 Each data file can have any number of auxiliary files for documentation or other purposes (experimental).
++++
 {doc}`More information.</developers/aux-file-support>`
+```
+````
 
-## Geospatial
+````{grid} 1 2 2 3
+:gutter: 1
 
-### Geospatial Metadata Fields
+```{grid-item-card}
+:text-align: center
+:columns: 12
+:class-body: sd-fs-2
 
+(feature-geospatial-data-support)=
+## {material-regular}`map` Geospatial Data Support
+```
+
+```{grid-item-card} Geospatial Metadata Fields
 There is a dedicated geospatial metadata block.
++++
 {ref}`More information.<metadata-references>`
+```
 
-### Geospatial File Preview
-
+```{grid-item-card} Geospatial File Preview
 GeoJSON, GeoTIFF, and Shapefiles can be previewed as a map.
++++
 {ref}`More information.<geojson>`
+```
 
-### Geospatial Search API
-
+```{grid-item-card} Geospatial Search API
 Pass `geo_point` and `geo_radius` to find datasets based on their bounding box.
++++
 {doc}`More information.</api/search>`
+```
+````
 
-## Integrations
+````{grid} 1 2 2 3
+:gutter: 1
 
-### DataCite
+```{grid-item-card}
+:text-align: center
+:columns: 12
+:class-body: sd-fs-2
 
+(feature-integrations)=
+## {material-regular}`api` Integrations
+```
+
+```{grid-item-card} DataCite
 DOIs are reserved, and when datasets are published, their metadata is published to DataCite.
++++
 {doc}`More information.</admin/discoverability>`
+```
 
-### Handle
-
+```{grid-item-card} Handle
 Handles are a Persistent ID (PID) that are an alternative to DOIs.
++++
 {ref}`More information.<pids-configuration>`
+```
 
-### Globus
-
+```{grid-item-card} Globus
 Upload from and download to Dataverse using Globus endpoints.
++++
 {ref}`More information.<globus-support>`
+```
 
-### RSpace
-
-Exchange data and metadata with RSpace (e.g. IGSN ID). For example, a Data Management Plan (DMP) can be uploaded to RSpace and updated with the DOI of a Dataverse dataset.
+```{grid-item-card} RSpace
+Exchange data and metadata with RSpace (e.g. IGSN ID). For example, a Data Management Plan (DMP) can be uploaded to 
+RSpace and updated with the DOI of a Dataverse dataset.
++++
 {ref}`More information.<rspace>`
+```
 
-### GitHub
-
+```{grid-item-card} GitHub
 A GitHub Action is available to upload files from GitHub to a dataset.
++++
 {doc}`More information.</admin/integrations>`
+```
 
-### iRODS
-
+```{grid-item-card} iRODS
 Pull data from an iRODS instance to a Dataverse dataset.
++++
 {ref}`More information.<irods>`
+```
 
-### Dropbox
-
+```{grid-item-card} Dropbox
 Upload files stored on Dropbox.
++++
 {doc}`More information.</admin/integrations>`
+```
 
-### Jupyter Notebooks
-
-Datasets can be opened in Binder to run code in Jupyter notebooks, RStudio, and other computation environments. They can also be previewed in Dataverse itself.
+```{grid-item-card} Jupyter Notebooks
+Datasets can be opened in Binder to run code in Jupyter notebooks, RStudio, and other computation environments.
+They can also be previewed in Dataverse itself.
++++
 {ref}`More information.<binder>`
+```
 
-### Galaxy
-
-Import files directly from Dataverse into Galaxy as well as publish datasets containing artifacts (Histories, datasets, etc.) from Galaxy to Dataverse.
+```{grid-item-card} Galaxy
+Import files directly from Dataverse into Galaxy as well as publish datasets containing artifacts
+ (Histories, datasets, etc.) from Galaxy to Dataverse.
++++
 {ref}`More information.<galaxy-integration>`
+```
 
-### External Tools
-
+```{grid-item-card} External Tools
 Enable additional features not built in to the Dataverse software.
++++
 {doc}`More information.</installation/external-tools>`
+```
 
-### Additional Integrations
+```{grid-item-card} Additional Integrations
+Dataverse integrates with a wide variety of third party systems, some of which are highlighted above. 
++++
+For a full list, see {doc}`Integrations</admin/integrations>`.
+```
+````
 
-Dataverse integrates with a wide variety of third party systems, some of which are highlighted above. For a full list, see {doc}`Integrations</admin/integrations>`.
+````{grid} 1 2 2 3
+:gutter: 1
 
-## Interoperability
+```{grid-item-card}
+:text-align: center
+:columns: 12
+:class-body: sd-fs-2
 
-### APIs
+(feature-interoperability)=
+## {material-regular}`compare_arrows` Interoperability
+```
 
+```{grid-item-card} APIs
 Search API, Data Deposit API, Data Access API, Metrics API, Migration API, etc. and client libraries in various languages.
++++
 {doc}`More information.</api/index>`
+```
 
-### OAI-PMH Metadata Harvesting
-
-Serve and harvest metadata to and from other systems (e.g. DataCite, other Dataverse installations, etc.) using standardized metadata formats: Dublin Core, Data Document Initiative (DDI), OpenAIRE, etc.
+```{grid-item-card} OAI-PMH Metadata Harvesting
+Serve and harvest metadata to and from other systems (e.g. DataCite, other Dataverse installations, etc.) using standardized metadata formats.
++++
 {doc}`More information.</admin/harvestserver>`
+```
 
-### Schema.org JSON-LD
-
+```{grid-item-card} Schema.org JSON-LD
 Used by Google Dataset Search and other services for discoverability.
++++
 {ref}`More information.<metadata-export-formats>`
+```
 
-### Croissant
-
+```{grid-item-card} Croissant
 Export metadata as linked data following the Croissant ontology.
++++
 {ref}`More information.<croissant-head>`
+```
 
-### Signposting
-
+```{grid-item-card} Signposting
 Enable easier machine access to datasets by adding linkset in a Dataverse header.
++++
 {ref}`More information.<discovery-sign-posting>`
+```
 
-### External Vocabulary
-
+```{grid-item-card} External Vocabulary
 Let users pick from external vocabularies (provided via API/SKOSMOS) when filling in metadata.
++++
 {ref}`More information.<using-external-vocabulary-services>`
+```
 
-### BagIt Export
-
+```{grid-item-card} BagIt Export
 For preservation, bags can be sent to the local filesystem, Duracloud, and Google Cloud.
++++
 {ref}`More information.<BagIt Export>`
+```
 
-### RO-Crate
-
+```{grid-item-card} RO-Crate
 Export dataset metadata as an ro-crate.json.
++++
 {ref}`More information.<metadata-export-formats>`
+```
+````
 
-## Reusability
+````{grid} 1 2 2 3
+:gutter: 1
 
-### Multiple License Support
+```{grid-item-card}
+:text-align: center
+:columns: 12
+:class-body: sd-fs-2
 
+(feature-reusability)=
+## {material-regular}`open_in_new` Reusability
+```
+
+```{grid-item-card} Multiple License Support
 Users can select from multiple standard and provided custom licenses.
++++
 {ref}`More information.<license-config>`
+```
 
-### Custom Terms of Use
-
+```{grid-item-card} Custom Terms of Use
 Users can write custom terms of use in place of a predefined license.
++++
 {ref}`More information.<license-terms>`
+```
 
-### Data Citation Formats
-
+```{grid-item-card} Data Citation Formats
 EndNote XML, RIS, BibTeX, or 1000+ CSL formats at the dataset or file level.
++++
 {doc}`More information.</user/find-use-data>`
+```
 
-### Provenance
-
+```{grid-item-card} Provenance
 At the file level, upload standard W3C provenance files or enter free text instead.
++++
 {ref}`More information.<provenance>`
+```
 
-### Post-Publication Workflows
-
+```{grid-item-card} Post-Publication Workflows
 Allow publication of a dataset to trigger external processes and integrations.
++++
 {doc}`More information.</developers/workflows>`
+```
+````
