@@ -32,6 +32,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCom
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetReviewsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
@@ -104,6 +105,7 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.Json;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.OptimisticLockException;
 
@@ -133,6 +135,7 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
+import edu.harvard.iq.dataverse.export.croissant.CroissantExportUtil;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
@@ -4887,13 +4890,6 @@ public class DatasetPage implements java.io.Serializable {
         return "";
     }
 
-    public String getVariableMetadataURL(Long fileid) {
-        String myHostURL = getDataverseSiteUrl();
-        String metaURL = myHostURL + "/api/meta/datafile/" + fileid;
-
-        return metaURL;
-    }
-
     public String getTabularDataFileURL(Long fileid) {
         String myHostURL = getDataverseSiteUrl();
         String dataURL = myHostURL + "/api/access/datafile/" + fileid;
@@ -6123,6 +6119,20 @@ public class DatasetPage implements java.io.Serializable {
             final String CROISSANT_SCHEMA_NAME = "croissantSlim";
             ExportService instance = ExportService.getInstance();
             String croissant = instance.getLatestPublishedAsString(dataset, CROISSANT_SCHEMA_NAME);
+            if (FeatureFlags.CROISSANT_WITH_LOCAL_REVIEWS.enabled()) {
+                // Rewrite the export on the fly and insert local reviews until we have a solution for https://github.com/gdcc/dataverse-spi/issues/5
+                JsonObjectBuilder reviewsJsonObj = null;
+                try {
+                    reviewsJsonObj = commandEngine.submit(new GetDatasetReviewsCommand(dvRequestService.getDataverseRequest(), dataset));
+                    JsonObjectBuilder reviews = CroissantExportUtil.getReviews(reviewsJsonObj);
+                    JsonObject croissantJson = JsonUtil.getJsonObject(croissant);
+                    String updatedContent = Json.createObjectBuilder(croissantJson)
+                        .add("reviews", reviews.build().getJsonArray("reviews")).build().toString();
+                    return updatedContent;
+                } catch (CommandException e) {
+                    logger.fine("Couldn't get reviews");
+                }
+            }
             if (croissant != null && !croissant.isEmpty()) {
                 logger.fine("Returning cached CROISSANT.");
                 return croissant;

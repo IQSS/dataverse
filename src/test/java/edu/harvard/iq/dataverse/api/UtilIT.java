@@ -617,6 +617,13 @@ public class UtilIT {
         return requestSpec.get("/api/guestbooks/" + guestbookId );
     }
 
+    static Response updateGuestbook(Long guestbookId, String guestbookAsJson, String apiToken) {
+        RequestSpecification requestSpec = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(guestbookAsJson);
+        return requestSpec.put("/api/guestbooks/" + guestbookId );
+    }
+
     static Response getGuestbooks(String dataverseAlias, String apiToken) {
         return getGuestbooks(dataverseAlias, apiToken, false,null);
     }
@@ -631,6 +638,20 @@ public class UtilIT {
             requestSpec.queryParam("includeInherited", includeInherited);
         }
         return requestSpec.get("/api/guestbooks/" + dataverseAlias + "/list");
+    }
+
+    static Response getGuestbooksResponses(Long guestbookId, Integer offset, Integer limit, String apiToken) {
+        RequestSpecification requestSpec = given();
+        if (apiToken != null) {
+            requestSpec.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (offset != null) {
+            requestSpec.queryParam("offset", offset);
+        }
+        if (limit != null) {
+            requestSpec.queryParam("limit", limit);
+        }
+        return requestSpec.get("/api/guestbooks/" + guestbookId + "/responses");
     }
 
     static Response enableGuestbook(String dataverseAlias, Long guestbookId, String apiToken, String enable) {
@@ -1505,11 +1526,6 @@ public class UtilIT {
         }
 
         return request.get("/api/files/" + fileId + "/versionDifferences");
-    }
-
-    static Response testIngest(String fileName, String fileType) {
-        return given()
-                .get("/api/ingest/test/file?fileName=" + fileName + "&fileType=" + fileType);
     }
 
     static Response redetectFileType(String fileId, boolean dryRun, String apiToken) {
@@ -2682,15 +2698,16 @@ public class UtilIT {
         return requestSpecification.get("/api/search?q=" + query + parameterString);
     }
 
-    private static void sleepForDatasetIndex(String query, String apiToken) {
+    static void sleepForDatasetIndex(String query, String apiToken) {
+        String id = query;
         if (query.contains("id:dataset") || query.contains("id:datafile")) {
             String[] splitted = query.split("_");
             if (splitted.length >= 2) {
-                boolean ok = UtilIT.sleepForReindex(String.valueOf(splitted[1]), apiToken, 5);
-                if (!ok) {
-                    logger.info("Still indexing after 5 seconds");
-                }
+                id = splitted[1];
             }
+        }
+        if (!UtilIT.sleepForReindex(id, apiToken, 10)) {
+            logger.warning("Still indexing after 10 seconds");
         }
     }
 
@@ -5429,7 +5446,25 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/dataverses/" + templateId + "/template");
     }
-    
+
+    static Response getReviews(String datasetIdOrPersistentId) {
+        return getReviews(datasetIdOrPersistentId, null);
+    }
+
+    static Response getReviews(String datasetIdOrPersistentId, String apiToken) {
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+        RequestSpecification responseSpec = given();
+        if (apiToken != null) {
+            responseSpec.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return responseSpec.get("/api/datasets/" + idInPath + "/reviews" + optionalQueryParam);
+    }
+
     /**
      * Gets the tool URL for a dataset with optional parameters
      * @param datasetId The ID of the dataset

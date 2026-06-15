@@ -4127,6 +4127,13 @@ dataverse.feature.require-embargo-reason
 
 Require an embargo reason when a user creates an embargo on one or more files. See :ref:`embargoes`.
 
+.. _dataverse.feature.croissant-with-local-reviews:
+
+dataverse.feature.croissant-with-local-reviews
+++++++++++++++++++++++++++++++++++++++++++++++
+
+Have the croissant and croissantSlim metadata export formats include an extra "reviews" array if local reviews exist. See :ref:`croissant-head`, :ref:`review-datasets-user`, :ref:`creating-a-review-dataset`, and :ref:`api-list-reviews`.
+
 .. _dataverse.feature.allow-locally-fair-data:
 
 dataverse.feature.allow-locally-fair-data
