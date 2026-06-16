@@ -242,8 +242,8 @@ public abstract class AbstractApiBean {
     
     @EJB 
     GuestbookResponseServiceBean gbRespSvc;
-    
-    @EJB 
+
+    @EJB
     TemplateServiceBean templateSvc;
 
     @Inject
@@ -373,9 +373,23 @@ public abstract class AbstractApiBean {
         }
         return dv;
     }
-    
+    /** Find a dataverse but filter according to the visibility from the locallyFAIRRoleAssignments
+     *
+     * @param dvIdtf - the dataverse identifier
+     * @param req - the DataverseRequest
+     * @return the dataverse if found and visible, otherwise throws WrappedResponse
+     * @throws WrappedResponse if dataverse is not found (in findDatasetOrDie()) or not visible
+     */
+    protected Dataverse findDataverseUserCanSeeOrDie(String dvIdtf, DataverseRequest req) throws WrappedResponse {
+        Dataverse dataverse = findDataverseOrDie(dvIdtf);
+        if (dataverse.isLocallyFAIR() && !permissionSvc.hasLocallyFAIRAccess(req, dataverse)) {
+            throw new WrappedResponse(error( Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + dvIdtf + "'"));
+        }
+        return dataverse;
+    }
+
     protected Template findTemplateOrDie(Long templateId) throws WrappedResponse {
-        
+
         Template template = templateSvc.find(templateId);
         if (template == null) {
             throw new WrappedResponse(
@@ -469,6 +483,22 @@ public abstract class AbstractApiBean {
             dataset = datasetSvc.find(datasetId);
         }
         if (dataset == null) {
+            throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
+        }
+        return dataset;
+    }
+
+    /** Find a dataset but filter according to the visibility from the locallyFAIRRoleAssignments
+     *
+     * @param id - the dataset identifier
+     * @param req - the DataverseRequest
+     * @param deep - whether to perform a deep search
+     * @return the dataset if found and visible, otherwise throws WrappedResponse
+     * @throws WrappedResponse if dataset is not found (in findDatasetOrDie()) or not visible
+     */
+    protected Dataset findDatasetUserCanSeeOrDie(String id, DataverseRequest req, boolean deep) throws WrappedResponse {
+        Dataset dataset = findDatasetOrDie(id, deep);
+        if (dataset.isLocallyFAIR() && !permissionSvc.hasLocallyFAIRAccess(req, dataset)) {
             throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
         }
         return dataset;
@@ -571,7 +601,22 @@ public abstract class AbstractApiBean {
             }
         }
     }
-       
+
+    /** Find a datafile but filter according to the visibility from the locallyFAIRRoleAssignments
+     *
+     * @param id - the datafile identifier
+     * @param req - the DataverseRequest
+     * @return the datafile if found and visible, otherwise throws WrappedResponse
+     * @throws WrappedResponse if datafile is not found (in findDatasetOrDie()) or not visible
+     */
+    protected DataFile findDataFileUserCanSeeOrDie(String id, DataverseRequest req) throws WrappedResponse {
+        DataFile dataFile = findDataFileOrDie(id);
+        if (dataFile.isLocallyFAIR() && !permissionSvc.hasLocallyFAIRAccess(req, dataFile)) {
+            throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.id", Collections.singletonList(id))));
+        }
+        return dataFile;
+    }
+
     protected DataverseRole findRoleOrDie(String id) throws WrappedResponse {
         DataverseRole role;
         if (id.equals(ALIAS_KEY)) {

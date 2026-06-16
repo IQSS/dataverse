@@ -7,7 +7,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:o="http://omnifaces.org/ui"
       xmlns:of="http://omnifaces.org/functions"
-      xmlns:jsf="http://xmlns.jcp.org/jsf">
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:dataverse="http://xmlns.jcp.org/jsf/composite/dataverse">
     <h:head>
     </h:head>
     <h:body>
@@ -296,6 +297,22 @@
                                                 <f:selectItems value="#{DataversePage.getPidProviderOptions()}" var="option" itemLabel="#{option.getValue()}" itemValue="#{option.getKey()}"/>
                                             </h:selectOneMenu>
                                             <p:message for="dsPidProviderOption" display="text"/>
+                                        </div>
+                                    </div>
+                                    <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
+                                    <ui:param name="allowLocallyFAIR" value="#{FeatureFlags.ALLOW_LOCALLY_FAIR_DATA.enabled()}"/>
+                                    <div class="col-xs-12 form-group" jsf:rendered="#{dataverseSession.user.superuser and (allowLocallyFAIR or not empty DataversePage.locallyFAIRRoleAssigneesList)}">
+                                        <h:outputLabel for="locallyFAIRRoleAssignees" styleClass="control-label">
+                                            #{bundle['dataverse.locallyfair.label']}
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.locallyfair.title']}"></span>
+                                        </h:outputLabel>
+                                        <div class="form-col-container">
+                                            <dataverse:userGroupSelect id="userGroupNameAssign"
+                                                   value="#{DataversePage.locallyFAIRRoleAssigneesList}"
+                                                   completeMethod="#{DataversePage.completeRoleAssignee}"
+                                                   disabled="#{!allowLocallyFAIR}"
+                                                   requiredMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.requiredMsg']}"/>
                                         </div>
                                     </div>
                                 </div>

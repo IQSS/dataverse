@@ -145,6 +145,8 @@ public class SolrSearchResult {
 
     private boolean datasetValid;
 
+    private boolean locallyFAIR;
+
     public String getDvTree() {
         return dvTree;
     }
@@ -1435,4 +1437,12 @@ public class SolrSearchResult {
     public void setDatasetCount(Long datasetCount) {
         this.datasetCount = datasetCount;
     }
+
+    public void setLocallyFAIR(Boolean locallyFAIR) {
+        this.locallyFAIR = Boolean.TRUE.equals(locallyFAIR);
+    }
+    public boolean isLocallyFAIR() {
+        return locallyFAIR;
+    }
+
 }
