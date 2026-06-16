@@ -177,10 +177,7 @@ public class DatasetFieldCompoundValue implements Serializable {
                 if (StringUtils.isBlank(format)) {
                     format = "#VALUE";
                 }
-                /*
-                if (format.equals("#VALUE,")) {
-                    format = "#VALUE, ";
-                }*/
+
                 String sanitizedValue = childDatasetField.getDatasetFieldType().isSanitizeHtml() ? MarkupChecker.sanitizeBasicHTML(childDatasetField.getValue()) :  childDatasetField.getValue();
                 if (!childDatasetField.getDatasetFieldType().isSanitizeHtml() && childDatasetField.getDatasetFieldType().isEscapeOutputText()){
                     sanitizedValue = MarkupChecker.stripAllTags(sanitizedValue);
