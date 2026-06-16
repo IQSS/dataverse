@@ -529,6 +529,12 @@ public class Access extends AbstractApiBean {
     }
 
     private Response returnSignedUrl(ContainerRequestContext crc, UriInfo uriInfo, User user, String id, String gbrids) {
+        // Require a signing secret: without it the key is only the user's API token (or, for a guest,
+        // a guessable value derived from the URL), which is too weak. Mirrors Admin.getSignedUrl.
+        if (JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("").isEmpty()) {
+            return error(INTERNAL_SERVER_ERROR,
+                    "Requesting signed URLs requires a signing secret to be configured. Please set the dataverse.api.signing-secret JVM option.");
+        }
         // Create the signed URL
         String userIdentifier = null;
         String key = null;

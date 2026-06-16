@@ -21,13 +21,16 @@ required.
 
 ### A signing secret is now required to request signed URLs
 
-Separately from the fix above, the `/api/admin/requestSignedUrl` endpoint now requires a non-empty
+Separately from the fix above, the endpoints that issue signed URLs - `/api/admin/requestSignedUrl`
+and the guestbook-response file download (`POST /api/access/datafile/{id}`) - now require a non-empty
 signing secret (`dataverse.api.signing-secret`) to be configured. Previously an unset secret silently
-fell back to using only the user's API token as the signing key, which is too weak. If the secret is
-not configured, the endpoint now returns an error instead of issuing a weakly-signed URL.
+fell back to using only the user's API token (or, for a guest, a guessable value derived from the URL)
+as the signing key, which is too weak. If the secret is not configured, these endpoints now return an
+error instead of issuing a weakly-signed URL.
 
-**Upgrade note:** installations that use signed URLs through this endpoint (including the
-`rdm-integration` connector) must set `dataverse.api.signing-secret`. See the
+**Upgrade note:** installations that use signed URLs through these endpoints (including the
+`rdm-integration` connector and signed guestbook-response downloads) must set
+`dataverse.api.signing-secret`. See the
 [Configuration Guide](https://guides.dataverse.org/en/latest/installation/config.html#dataverse-api-signing-secret).
 Treat the value like a password. Because the signing secret is part of the signing key, setting (or
 later changing) it invalidates previously issued signed URLs: any existing signed URLs that have not
