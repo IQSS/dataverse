@@ -177,12 +177,16 @@ public class DatasetFieldCompoundValue implements Serializable {
                 if (StringUtils.isBlank(format)) {
                     format = "#VALUE";
                 }
+                /*
+                if (format.equals("#VALUE,")) {
+                    format = "#VALUE, ";
+                }*/
                 String sanitizedValue = childDatasetField.getDatasetFieldType().isSanitizeHtml() ? MarkupChecker.sanitizeBasicHTML(childDatasetField.getValue()) :  childDatasetField.getValue();
                 if (!childDatasetField.getDatasetFieldType().isSanitizeHtml() && childDatasetField.getDatasetFieldType().isEscapeOutputText()){
                     sanitizedValue = MarkupChecker.stripAllTags(sanitizedValue);
                 }
                 //if a series of child values is comma delimited we want to strip off the final entry's comma
-                if (format.equals("#VALUE, ")) fixTrailingComma = true;
+                if (format.trim().equals("#VALUE,")) fixTrailingComma = true;
                 
                 // replace the special values in the format (note: we replace #VALUE last since we don't
                 // want any issues if the value itself has #NAME in it)
@@ -247,9 +251,17 @@ public class DatasetFieldCompoundValue implements Serializable {
             keyVal = entry.getKey();
             oldValue = entry.getValue();
         }
-
+        
+        String newValue = oldValue; 
+        
         if (keyVal != null && oldValue != null && oldValue.length() >= 2) {
-            String newValue = oldValue.substring(0, oldValue.length() - 2);
+        //To take into account both versions of the tsv for display value
+            if (oldValue.endsWith(", ")) {
+                newValue = oldValue.substring(0, oldValue.length() - 2);
+            } else if (oldValue.endsWith(",")) {
+                newValue = oldValue.substring(0, oldValue.length() - 1);
+            }
+         
             mapIn.replace(keyVal, oldValue, newValue);
         }
 
