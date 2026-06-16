@@ -213,6 +213,7 @@ public class ExternalToolHandlerTest {
     
     @Test
     @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
+    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = "test-only-signing-secret")
     public void testGetToolUrlWithAllowedApiCalls() {
         System.out.println("allowedApiCalls test");
         Dataset ds = new Dataset();

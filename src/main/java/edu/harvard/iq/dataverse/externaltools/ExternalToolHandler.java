@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 
@@ -111,8 +110,12 @@ public class ExternalToolHandler extends URLTokenUtil {
                             + externalTool.getId();
                 }
                 if (apiToken != null) {
-                    callback = UrlSignerUtil.signUrl(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(), HttpMethod.GET,
-                        JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + apiToken.getTokenString());
+                    if (UrlSignerUtil.isSigningSecretConfigured()) {
+                        callback = UrlSignerUtil.signUrlWithApiKey(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(),
+                                HttpMethod.GET, apiToken.getTokenString());
+                    } else {
+                        logger.warning("Cannot sign external tool callback: no signing secret configured (dataverse.api.signing-secret). Sending an unsigned callback.");
+                    }
                 }
                 paramsString= "?callback=" + Base64.getEncoder().encodeToString(StringUtils.getBytesUtf8(callback));
                 if (getLocaleCode() != null) {

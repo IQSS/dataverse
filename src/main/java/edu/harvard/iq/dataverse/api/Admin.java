@@ -17,7 +17,6 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsValidationException;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
@@ -2455,7 +2454,7 @@ public class Admin extends AbstractApiBean {
         }
 
         // Require a signing secret: without it the key is only the user's API token, which is too weak.
-        if (JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("").isEmpty()) {
+        if (!UrlSignerUtil.isSigningSecretConfigured()) {
             return error(Response.Status.INTERNAL_SERVER_ERROR,
                     "Requesting signed URLs requires a signing secret to be configured. Please set the dataverse.api.signing-secret JVM option.");
         }
@@ -2481,14 +2480,13 @@ public class Admin extends AbstractApiBean {
             if (key == null) {
                 return error(Response.Status.CONFLICT, "Do not have a valid user with apiToken");
             }
-            key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
         }
-        
+
         String baseUrl = urlInfo.getString("url");
         int timeout = urlInfo.getInt(URLTokenUtil.TIMEOUT, 10);
         String method = urlInfo.getString(URLTokenUtil.HTTP_METHOD, "GET");
-        
-        String signedUrl = UrlSignerUtil.signUrl(baseUrl, timeout, userId, method, key); 
+
+        String signedUrl = UrlSignerUtil.signUrlWithApiKey(baseUrl, timeout, userId, method, key);
         
         return ok(Json.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
     }

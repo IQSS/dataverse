@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -76,6 +77,37 @@ public class UrlSignerUtil {
                     "URL signature is " + (isValidUrl(signedUrl, user, method, key) ? "valid" : "invalid"));
         }
         return signedUrl;
+    }
+
+    /**
+     * Whether a non-empty API signing secret ({@code dataverse.api.signing-secret}) is configured.
+     * Every signed URL whose key is derived from a user's API token must be guarded by this: without
+     * the secret the signing key would be only the caller-supplied value (for a guest, even a value
+     * derived from the public URL), which is too weak. Callers either refuse the request or skip
+     * signing when this returns false, so a weakly-signed URL is never emitted.
+     */
+    public static boolean isSigningSecretConfigured() {
+        return !JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("").isEmpty();
+    }
+
+    /**
+     * Signs a URL using the configured API signing secret prepended to the given per-user key
+     * (typically the user's API token). This is the single place that combines the server-side
+     * signing secret with a user key, so every API-token-based signed URL is produced the same way.
+     *
+     * <p>Stores that sign with their own per-store secret (the remote and Globus overlay stores) are
+     * the exception and must keep calling {@link #signUrl} directly with that secret.
+     *
+     * @throws IllegalStateException if no signing secret is configured - callers should normally
+     *                               guard with {@link #isSigningSecretConfigured()} first
+     */
+    public static String signUrlWithApiKey(String baseUrl, Integer timeout, String user, String method, String apiKey) {
+        String secret = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("");
+        if (secret.isEmpty()) {
+            throw new IllegalStateException(
+                    "Cannot sign a URL: no signing secret is configured. Please set the dataverse.api.signing-secret JVM option.");
+        }
+        return signUrl(baseUrl, timeout, user, method, secret + apiKey);
     }
 
     /**

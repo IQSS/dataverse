@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
@@ -227,9 +226,12 @@ public class URLTokenUtil {
                 // Sign if apiToken exists, otherwise send unsigned URL (i.e. for guest users)
                 ApiToken apiToken = getApiToken();
                 if (apiToken != null) {
-                    url = UrlSignerUtil.signUrl(apiPath, timeout, apiToken.getAuthenticatedUser().getUserIdentifier(),
-                            httpmethod, JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("")
-                                    + getApiToken().getTokenString());
+                    if (UrlSignerUtil.isSigningSecretConfigured()) {
+                        url = UrlSignerUtil.signUrlWithApiKey(apiPath, timeout, apiToken.getAuthenticatedUser().getUserIdentifier(),
+                                httpmethod, apiToken.getTokenString());
+                    } else {
+                        logger.warning("Cannot sign URL: no signing secret configured (dataverse.api.signing-secret). Sending an unsigned URL.");
+                    }
                 }
                 logger.fine("Signed URL: " + url);
                 apisBuilder.add(Json.createObjectBuilder().add(NAME, name).add(HTTP_METHOD, httpmethod)

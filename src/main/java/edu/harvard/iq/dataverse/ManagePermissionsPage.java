@@ -20,7 +20,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContributorRoleCommand;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
@@ -736,9 +735,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
                     key = apiToken.getTokenString();
                 }
             }
-            key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
-            if(key.length() >= 36) {
-                return UrlSignerUtil.signUrl(fullApiPath, 10, userId, "GET", key);
+            if (key != null && UrlSignerUtil.isSigningSecretConfigured()) {
+                return UrlSignerUtil.signUrlWithApiKey(fullApiPath, 10, userId, "GET", key);
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error generating signed URL for permissions history CSV: " + e.getMessage(), e);

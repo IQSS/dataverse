@@ -19,15 +19,26 @@ they did before 6.10 keep working unchanged, signatures are computed the same wa
 regression, and URLs containing special characters validate again. No client-side changes are
 required.
 
-### A signing secret is now required to request signed URLs
+### A signing secret is now required for signed URLs
 
-Separately from the fix above, the `/api/admin/requestSignedUrl` endpoint now requires a non-empty
-signing secret (`dataverse.api.signing-secret`) to be configured. Previously an unset secret silently
-fell back to using only the user's API token as the signing key, which is too weak. If the secret is
-not configured, the endpoint now returns an error instead of issuing a weakly-signed URL.
+Separately from the fix above, Dataverse no longer falls back to a weak signing key when
+`dataverse.api.signing-secret` is unset. Previously, with no secret configured, signed URLs were
+signed using only the user's API token (or, for a guest, a value derived from the public URL), which
+is too weak to be a signing key. A non-empty `dataverse.api.signing-secret` is now required wherever
+URLs are signed with a key based on a user's API token:
 
-**Upgrade note:** installations that use signed URLs through this endpoint (including the
-`rdm-integration` connector) must set `dataverse.api.signing-secret`. See the
+- The endpoints that issue a signed URL on request - `/api/admin/requestSignedUrl` and the
+  guestbook-response file download (`POST /api/access/datafile/{id}`) - return an error instead of
+  issuing a weakly-signed URL.
+- Signed callbacks and links built internally (external tool launches, Globus transfers, the
+  permission-history CSV links) are sent unsigned, with a warning logged, rather than weakly signed.
+
+Remote and Globus overlay stores are unaffected: they sign with their own per-store secret key, not
+`dataverse.api.signing-secret`.
+
+**Upgrade note:** installations that rely on signed URLs - including the `rdm-integration` connector,
+signed guestbook-response downloads, and external tools or Globus transfers that use signed callbacks -
+must set `dataverse.api.signing-secret`. See the
 [Configuration Guide](https://guides.dataverse.org/en/latest/installation/config.html#dataverse-api-signing-secret).
 Treat the value like a password. Because the signing secret is part of the signing key, setting (or
 later changing) it invalidates previously issued signed URLs: any existing signed URLs that have not
