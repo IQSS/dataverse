@@ -1359,6 +1359,81 @@
             </build>
         </profile>
         <profile>
+            <!--
+                Fast redeploy for the container based development environment ("frd"):
+                "mvn -Pfrd package" incrementally compiles your changes, refreshes the exploded WAR
+                at target/dataverse (bind mounted into the application container by
+                docker-compose-dev.yml) and makes Payara hot-redeploy it - no container restarts,
+                no image rebuilds. Requires a running dev environment, started the usual way
+                ("mvn -Pct clean package docker:run"). See also the "Fast Redeploy" section
+                of the container guide.
+            -->
+            <id>frd</id>
+            <properties>
+                <skipUnitTests>true</skipUnitTests>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <executions>
+                            <!-- Skip zipping up the WAR archive - Payara deploys the exploded
+                                 directory, so building the archive would only cost time. -->
+                            <execution>
+                                <id>default-war</id>
+                                <phase>none</phase>
+                            </execution>
+                            <!-- Refresh the exploded WAR directory at target/dataverse instead. -->
+                            <execution>
+                                <id>frd-exploded-war</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>exploded</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>io.smallrye</groupId>
+                        <artifactId>smallrye-open-api-maven-plugin</artifactId>
+                        <executions>
+                            <!-- Skip regenerating the OpenAPI schema on every redeploy - it costs
+                                 a few seconds per cycle and the schema from the last full build
+                                 remains part of the exploded WAR anyway. -->
+                            <execution>
+                                <id>default</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <!-- Tell Payara inside the running container to hot-redeploy the
+                                 application from the bind mounted exploded WAR. -->
+                            <execution>
+                                <id>frd-redeploy</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>exec</argument>
+                                        <argument>dev_dataverse</argument>
+                                        <argument>redeploy.sh</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>external-search-get</id>
             <build>
                 <plugins>
