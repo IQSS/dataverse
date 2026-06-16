@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.faces.view.ViewScoped;
@@ -56,6 +57,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { DvObject.id : Boolean }
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
     
+    Boolean hasLocallyFAIRAccess;
     /**
      * Check if the current Dataset can Issue Commands
      *
@@ -326,5 +328,13 @@ public class PermissionsWrapper implements java.io.Serializable {
     
     public String notFound() {
         return navigationWrapper.notFound();
+    }
+
+    // The locallyFAIRraIds should not change within a given view (they are set in the parent Dataverse of whatever object the view is for)
+    public boolean hasLocallyFAIRAccess(DataverseRequest req, DvObject dvo) {
+        if(hasLocallyFAIRAccess == null ) {
+            hasLocallyFAIRAccess = permissionService.hasLocallyFAIRAccess(req, dvo);
+        }
+        return hasLocallyFAIRAccess;
     }
 }

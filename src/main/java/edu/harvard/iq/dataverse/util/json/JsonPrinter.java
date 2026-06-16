@@ -413,10 +413,50 @@ public class JsonPrinter {
         return getOwnersFromDvObject(dvObject, null);
     }
 
+    public static JsonObjectBuilder json(GuestbookResponse gbResponse) {
+        JsonObjectBuilder guestbookResponseObject = jsonObjectBuilder();
+        if (gbResponse != null) {
+            guestbookResponseObject.add("id", gbResponse.getId());
+            guestbookResponseObject.add("dataset", gbResponse.getDataset().getDisplayName());
+            guestbookResponseObject.add("datasetPid", gbResponse.getDataset().getIdentifier());
+            guestbookResponseObject.add("date", format(gbResponse.getResponseTime()));
+            guestbookResponseObject.add("type", gbResponse.getEventType());
+            guestbookResponseObject.add("fileName", gbResponse.getDataFile().getDisplayName());
+            guestbookResponseObject.add("fileId", gbResponse.getDataFile().getId());
+            if (gbResponse.getDataFile().getGlobalId() != null) {
+                guestbookResponseObject.add("filePid", gbResponse.getDataFile().getGlobalId().asString());
+            }
+            guestbookResponseObject.add("userName", gbResponse.getAuthenticatedUser() != null ? gbResponse.getAuthenticatedUser().getUserIdentifier() : "Guest");
+            if (gbResponse.getEmail() != null) {
+                guestbookResponseObject.add("email", gbResponse.getEmail());
+            }
+            if (gbResponse.getInstitution() != null) {
+                guestbookResponseObject.add("institution", gbResponse.getInstitution());
+            }
+            if (gbResponse.getPosition() != null) {
+                guestbookResponseObject.add("position", gbResponse.getPosition());
+            }
+            final List<CustomQuestionResponse> cqResponses = gbResponse.getCustomQuestionResponses();
+            if (cqResponses != null && !cqResponses.isEmpty()) {
+                JsonArrayBuilder customQuestions = Json.createArrayBuilder();
+                for (CustomQuestionResponse cqResponse : cqResponses) {
+                    JsonObjectBuilder cqObj = jsonObjectBuilder();
+                    cqObj.add("question", cqResponse.getCustomQuestion().getQuestionString());
+                    cqObj.add("response", cqResponse.getResponse());
+                    customQuestions.add(cqObj);
+                }
+                guestbookResponseObject.add("customQuestions", customQuestions);
+            }
+        }
+        return guestbookResponseObject;
+    }
+
     public static JsonObjectBuilder json(Guestbook guestbook) {
         JsonObjectBuilder guestbookObject = jsonObjectBuilder();
         if (guestbook != null) {
-            guestbookObject.add("id", guestbook.getId());
+            if (guestbook.getId() != null) {
+                guestbookObject.add("id", guestbook.getId());
+            }
             guestbookObject.add("name", guestbook.getName());
             guestbookObject.add("enabled", guestbook.isEnabled());
             guestbookObject.add("emailRequired", guestbook.isEmailRequired());
@@ -429,15 +469,15 @@ public class JsonPrinter {
             if (guestbook.getResponseCount() != null) {
                 guestbookObject.add("responseCount", guestbook.getResponseCount());
             }
-            JsonArrayBuilder customQuestions = Json.createArrayBuilder();
-            if (guestbook.getCustomQuestions() != null) {
+            if (guestbook.getCustomQuestions() != null && !guestbook.getCustomQuestions().isEmpty()) {
+                JsonArrayBuilder customQuestions = Json.createArrayBuilder();
                 for (CustomQuestion cq : guestbook.getCustomQuestions()) {
                     customQuestions.add(json(cq));
                 }
+                guestbookObject.add("customQuestions", customQuestions);
             }
-            guestbookObject.add("customQuestions", customQuestions);
             if (guestbook.getCreateTime() != null) {
-                guestbookObject.add("createTime", guestbook.getCreateTime().toString());
+                guestbookObject.add("createTime", format(guestbook.getCreateTime()));
             }
             if (guestbook.getDataverse() != null) {
                 guestbookObject.add("dataverseId", guestbook.getDataverse().getId());
@@ -447,7 +487,9 @@ public class JsonPrinter {
     }
     public static JsonObjectBuilder json(CustomQuestion customQuestion) {
         JsonObjectBuilder customQuestionObject = jsonObjectBuilder();
-        customQuestionObject.add("id", customQuestion.getId());
+        if (customQuestion.getId() != null) {
+            customQuestionObject.add("id", customQuestion.getId());
+        }
         customQuestionObject.add("question", customQuestion.getQuestionString());
         customQuestionObject.add("required", customQuestion.isRequired());
         customQuestionObject.add("displayOrder", customQuestion.getDisplayOrder());
@@ -457,7 +499,9 @@ public class JsonPrinter {
             JsonArrayBuilder customQuestionsValues = Json.createArrayBuilder();
             for (CustomQuestionValue value : customQuestion.getCustomQuestionValues()) {
                 JsonObjectBuilder customQuestionValueObject = jsonObjectBuilder();
-                customQuestionValueObject.add("id", value.getId());
+                if (value.getId() != null) {
+                    customQuestionValueObject.add("id", value.getId());
+                }
                 customQuestionValueObject.add("value", value.getValueString());
                 customQuestionValueObject.add("displayOrder", value.getDisplayOrder());
                 customQuestionsValues.add(customQuestionValueObject);
@@ -1306,6 +1350,18 @@ public class JsonPrinter {
             }
         }
         return tabularTags;
+    }
+
+    public static JsonObjectBuilder jsonLocallyFairRoleAssignees(Dataverse dataverse) {
+        JsonArrayBuilder assignees = Json.createArrayBuilder();
+        dataverse.getLocallyFAIRRoleAssigneeIdentifiers().stream()
+                .sorted()
+                .forEach(assignees::add);
+
+        return Json.createObjectBuilder()
+                .add("dataverseId", dataverse.getId())
+                .add("dataverseAlias", dataverse.getAlias())
+                .add("locallyFairRoleAssignees", assignees);
     }
 
     private static class DatasetFieldsToJson implements DatasetFieldWalker.Listener {
