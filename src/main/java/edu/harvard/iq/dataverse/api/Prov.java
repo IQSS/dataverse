@@ -36,11 +36,9 @@ import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("files")
-@SecurityRequirement(name = "DataverseApiKey")
 @Tag(name = "Files", description = "Data file metadata, upload, replacement, and editing operations.")
 public class Prov extends AbstractApiBean {
 

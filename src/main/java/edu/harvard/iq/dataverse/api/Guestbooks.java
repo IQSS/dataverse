@@ -32,12 +32,10 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("guestbooks")
-@SecurityRequirement(name = "DataverseApiKey")
-@Tag(name = "Dataverses", description = "Dataverse collection metadata and administration operations.")
+@Tag(name = "Guestbooks", description = "Guestbook definitions and guestbook response operations.")
 public class Guestbooks extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Guestbooks.class.getCanonicalName());
@@ -145,7 +143,13 @@ public class Guestbooks extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{id}")
-    public Response updateGuestbook(@Context ContainerRequestContext crc, @PathParam("id") Long id, String jsonBody) {
+    @Operation(summary = "Updates a guestbook",
+            description = "Updates a guestbook definition from JSON when the requester may edit the owning dataverse.")
+    public Response updateGuestbook(@Context ContainerRequestContext crc,
+            @Parameter(description = "Numeric id of the guestbook to update.", required = true)
+            @PathParam("id") Long id,
+            @RequestBody(description = "Guestbook JSON definition to parse and apply.")
+            String jsonBody) {
         return response( req -> {
             Guestbook guestbook = guestbookService.find(id);
             if (guestbook != null) {
@@ -167,8 +171,15 @@ public class Guestbooks extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/{id}/responses")
-    public Response getResponses(@Context ContainerRequestContext crc, @PathParam("id") Long id,
-                                 @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
+    @Operation(summary = "Lists guestbook responses",
+            description = "Returns guestbook metadata and response records, with pagination links when a limit is supplied.")
+    public Response getResponses(@Context ContainerRequestContext crc,
+                                 @Parameter(description = "Numeric id of the guestbook whose responses are listed.", required = true)
+                                 @PathParam("id") Long id,
+                                 @Parameter(description = "Maximum number of response records to return.")
+                                 @QueryParam("limit") Integer limit,
+                                 @Parameter(description = "Response record offset.")
+                                 @QueryParam("offset") Integer offset) {
 
         return response( req -> {
             Guestbook guestbook = guestbookService.find(id);

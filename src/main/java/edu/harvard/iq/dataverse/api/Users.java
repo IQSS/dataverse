@@ -40,7 +40,6 @@ import jakarta.ws.rs.core.*;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
@@ -57,7 +56,6 @@ public class Users extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{consumedIdentifier}/mergeIntoUser/{baseIdentifier}")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Merges one user account into another",
             description = "Moves account data from one authenticated user into another when the requester is a superuser.")
     public Response mergeInAuthenticatedUser(@Context ContainerRequestContext crc,
@@ -103,7 +101,6 @@ public class Users extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/changeIdentifier/{newIdentifier}")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Changes a user identifier",
             description = "Changes an authenticated user's identifier when the requester is a superuser.")
     public Response changeAuthenticatedUserIdentifier(@Context ContainerRequestContext crc,
@@ -144,7 +141,6 @@ public class Users extends AbstractApiBean {
     @Path("token")
     @AuthRequired
     @DELETE
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Deletes the current user's API token",
             description = "Removes the API token for the authenticated user.")
     public Response deleteToken(@Context ContainerRequestContext crc) {
@@ -166,7 +162,6 @@ public class Users extends AbstractApiBean {
     @Path("token")
     @AuthRequired
     @GET
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Returns the current user's API token expiration",
             description = "Returns the authenticated user's API token string and expiration time.")
     public Response getTokenExpirationDate(@Context ContainerRequestContext crc) {
@@ -188,7 +183,6 @@ public class Users extends AbstractApiBean {
     @Path("token/recreate")
     @AuthRequired
     @POST
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Recreates the current user's API token",
             description = "Deletes the authenticated user's existing API token, creates a new token, and optionally includes its expiration time in the response.")
     public Response recreateToken(@Context ContainerRequestContext crc,
@@ -221,7 +215,6 @@ public class Users extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path(":me")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Returns the authenticated user",
             description = "Returns the authenticated user associated with the supplied API token or active API session.")
     public Response getAuthenticatedUserByToken(@Context ContainerRequestContext crc) {
@@ -245,7 +238,6 @@ public class Users extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/removeRoles")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Removes all roles from a user",
             description = "Revokes all role assignments for the specified authenticated user.")
     public Response removeUserRoles(@Context ContainerRequestContext crc,
@@ -266,7 +258,6 @@ public class Users extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/traces")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Returns user traces",
             description = "Returns trace information showing where the specified authenticated user appears across role assignments, groups, datasets, files, guestbooks, and saved searches.")
     public Response getTraces(@Context ContainerRequestContext crc,
@@ -287,7 +278,6 @@ public class Users extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/traces/{element}")
     @Produces("text/csv, application/json")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Returns a user trace element",
             description = "Returns one category of trace information for the specified authenticated user as JSON or CSV.")
     public Response getTracesElement(@Context ContainerRequestContext crc, @Context Request req,
@@ -327,7 +317,6 @@ public class Users extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/allowedCollections/{permission}")
     @Produces("application/json")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Lists collections permitted for a user",
             description = "Returns collections where the specified user has the requested permission when the requester is that user or a superuser.")
     public Response getUserPermittedCollections(@Context ContainerRequestContext crc, @Context Request req,

@@ -14,7 +14,6 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("externalTools")
@@ -44,7 +43,6 @@ public class ExternalToolsApi extends AbstractApiBean {
 
     @POST
     @AuthRequired
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Registers an external tool",
             description = "Registers an external tool from its manifest when the authenticated user is a superuser.")
     public Response addExternalTool(@Context ContainerRequestContext crc,
@@ -57,7 +55,6 @@ public class ExternalToolsApi extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{id}")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Deletes an external tool",
             description = "Deletes the registered external tool with the specified numeric id when the authenticated user is a superuser.")
     public Response deleteExternalTool(@Context ContainerRequestContext crc,

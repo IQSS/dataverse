@@ -80,7 +80,6 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import javax.xml.stream.XMLStreamException;
@@ -93,7 +92,6 @@ import javax.xml.stream.XMLStreamException;
 @Stateless
 @Path("dataverses")
 @Tag(name = "Dataverses", description = "Dataverse collection metadata, datasets, roles, groups, links, templates, storage, and featured content.")
-@SecurityRequirement(name = "DataverseApiKey")
 public class Dataverses extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Dataverses.class.getCanonicalName());
@@ -2714,7 +2712,11 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/locallyFairRoleAssignees")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response listLocallyFairRoleAssignees(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+    @Operation(summary = "Lists locally FAIR role assignees",
+            description = "Lists role assignee identifiers configured for locally FAIR metadata access in a dataverse.")
+    public Response listLocallyFairRoleAssignees(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) {
         try {
             User user = getRequestUser(crc);
             if (!user.isSuperuser()) {
@@ -2737,8 +2739,13 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/locallyFairRoleAssignees")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Replaces locally FAIR role assignees",
+            description = "Replaces the full locally FAIR role assignee identifier set for a dataverse and reindexes the dataverse.")
+    @RequestBody(description = "JSON array of role assignee identifiers to configure for locally FAIR metadata access.")
     public Response setLocallyFairRoleAssignees(@Context ContainerRequestContext crc,
+                                                @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
                                                 @PathParam("identifier") String dvIdtf,
+                                                @RequestBody(description = "JSON array of role assignee identifiers to configure for locally FAIR metadata access.")
                                                 List<String> roleAssigneeIdentifiers) {
         try {
             User user = getRequestUser(crc);
@@ -2762,8 +2769,12 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/locallyFairRoleAssignees/{roleAssigneeIdentifier: .*}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Adds a locally FAIR role assignee",
+            description = "Adds one role assignee identifier to the locally FAIR metadata access set for a dataverse and reindexes the dataverse.")
     public Response addLocallyFairRoleAssignee(@Context ContainerRequestContext crc,
+                                               @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
                                                @PathParam("identifier") String dvIdtf,
+                                               @Parameter(description = "Role assignee identifier to add, such as a user or group identifier.", required = true)
                                                @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
         try {
             User user = getRequestUser(crc);
@@ -2790,8 +2801,12 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/locallyFairRoleAssignees/{roleAssigneeIdentifier: .*}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Removes a locally FAIR role assignee",
+            description = "Removes one role assignee identifier from the locally FAIR metadata access set for a dataverse and reindexes the dataverse.")
     public Response deleteLocallyFairRoleAssignee(@Context ContainerRequestContext crc,
+                                                  @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
                                                   @PathParam("identifier") String dvIdtf,
+                                                  @Parameter(description = "Role assignee identifier to remove from locally FAIR metadata access.", required = true)
                                                   @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
         try {
             User user = getRequestUser(crc);

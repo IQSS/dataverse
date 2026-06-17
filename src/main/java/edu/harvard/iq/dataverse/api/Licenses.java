@@ -29,7 +29,6 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
@@ -72,7 +71,6 @@ public class Licenses extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("/")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Creates a license",
             description = "Creates a license when the authenticated user is a superuser and returns the created license location.")
     @APIResponse(responseCode = "201",
@@ -120,7 +118,6 @@ public class Licenses extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("/default/{id}")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Sets the default license",
             description = "Sets the specified license as the default when the authenticated user is a superuser.")
     public Response setDefault(@Context ContainerRequestContext crc,
@@ -157,7 +154,6 @@ public class Licenses extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("/{id}/:active/{activeState}")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Sets license active state",
             description = "Updates whether the specified license is active when the authenticated user is a superuser.")
     public Response setActiveState(@Context ContainerRequestContext crc,
@@ -195,7 +191,6 @@ public class Licenses extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("/{id}/:sortOrder/{sortOrder}")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Sets license sort order",
             description = "Updates the sort order for the specified license when the authenticated user is a superuser.")
     public Response setSortOrder(@Context ContainerRequestContext crc,
@@ -234,7 +229,6 @@ public class Licenses extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("/{id}")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Deletes a license",
             description = "Deletes a non-default license when the authenticated user is a superuser.")
     public Response deleteLicenseById(@Context ContainerRequestContext crc,

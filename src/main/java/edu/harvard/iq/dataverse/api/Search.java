@@ -38,7 +38,6 @@ import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 
@@ -63,7 +62,6 @@ public class Search extends AbstractApiBean {
     @AuthRequired
     @Operation(summary = "Searches Dataverse content",
             description = "Searches dataverses, datasets, and files using query text, type filters, subtree filters, facets, sorting, and pagination options.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response search(
             @Context ContainerRequestContext crc,
             @Parameter(description = "Search query string.") @QueryParam("q") String query,

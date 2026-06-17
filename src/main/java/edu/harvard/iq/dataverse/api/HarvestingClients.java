@@ -41,11 +41,9 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("harvest/clients")
-@SecurityRequirement(name = "DataverseApiKey")
 @Tag(name = "Admin", description = "Administrative Dataverse operations.")
 public class HarvestingClients extends AbstractApiBean {
 

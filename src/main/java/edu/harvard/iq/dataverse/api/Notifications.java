@@ -21,12 +21,10 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Stateless
 @Path("notifications")
-@SecurityRequirement(name = "DataverseApiKey")
 @Tag(name = "Notifications", description = "User notification lookup and notification preference operations.")
 public class Notifications extends AbstractApiBean {
 

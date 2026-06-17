@@ -1,10 +1,18 @@
 package edu.harvard.iq.dataverse.openapi;
 
+import java.io.File;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.ArrayDeque;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.eclipse.microprofile.openapi.OASFactory;
 import org.eclipse.microprofile.openapi.OASFilter;
@@ -21,6 +29,7 @@ import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
+import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.models.security.SecurityScheme;
 
 /**
@@ -40,6 +49,16 @@ import org.eclipse.microprofile.openapi.models.security.SecurityScheme;
  */
 public class DataverseOpenApiFilter implements OASFilter {
 
+    private static final Logger logger = Logger.getLogger(DataverseOpenApiFilter.class.getCanonicalName());
+    private static final String DATAVERSE_API_KEY = "DataverseApiKey";
+    private static final String AUTH_REQUIRED_ANNOTATION = "edu.harvard.iq.dataverse.api.auth.AuthRequired";
+    private static final String HTTP_METHOD_ANNOTATION = "jakarta.ws.rs.HttpMethod";
+    private static final String PATH_ANNOTATION = "jakarta.ws.rs.Path";
+    private static final String[] API_PACKAGES = {
+        "edu.harvard.iq.dataverse.api",
+        "edu.harvard.iq.dataverse.mydata"
+    };
+
     /*
      * These operations produce binary downloads, but their Java return types are
      * server-side writer inputs such as BundleDownloadInstance or DownloadInstance.
@@ -50,6 +69,7 @@ public class DataverseOpenApiFilter implements OASFilter {
     private static final String ACCESS_BUNDLE = "Access_datafileBundle";
     private static final String ACCESS_BUNDLE_WITH_GUESTBOOK = "Access_datafileBundleWithGuestbookResponse";
     private static final String ACCESS_AUXILIARY = "Access_downloadAuxiliaryFile";
+    private Set<String> authRequiredOperationIds;
 
     /**
      * Applies Dataverse-specific cleanup after SmallRye has generated the base
@@ -65,8 +85,13 @@ public class DataverseOpenApiFilter implements OASFilter {
     @Override
     public void filterOpenAPI(OpenAPI openAPI) {
         ensureDataverseApiKeySecurityScheme(openAPI);
-        forEachOperation(openAPI, operation -> {
+        Set<String> securedOperationIds = authRequiredOperationIds();
+        Set<String> securedEndpointKeys = findAuthRequiredEndpointKeys();
+        forEachOperation(openAPI, (path, method, operation) -> {
             String operationId = operation.getOperationId();
+            if (securedOperationIds.contains(operationId) || securedEndpointKeys.contains(endpointKey(method, path))) {
+                ensureDataverseApiKeySecurityRequirement(operation);
+            }
             if (ACCESS_BUNDLE.equals(operationId) || ACCESS_BUNDLE_WITH_GUESTBOOK.equals(operationId)) {
                 replaceOkResponse(operation, "application/zip",
                         "ZIP archive containing the data file bundle, citation files, and available metadata.");
@@ -77,6 +102,24 @@ public class DataverseOpenApiFilter implements OASFilter {
         });
         removeCircularSchemaBackReferences(openAPI);
         pruneUnreachableSchemas(openAPI);
+    }
+
+    /**
+     * Adds security metadata to operations as they are built.
+     * <p>
+     * SmallRye may invoke operation-level filters after operation ids are
+     * finalized, so this complements the full-model pass in
+     * {@link #filterOpenAPI(OpenAPI)}.
+     *
+     * @param operation generated OpenAPI operation to normalize
+     * @return the updated operation
+     */
+    @Override
+    public Operation filterOperation(Operation operation) {
+        if (operation != null && authRequiredOperationIds().contains(operation.getOperationId())) {
+            ensureDataverseApiKeySecurityRequirement(operation);
+        }
+        return operation;
     }
 
     /**
@@ -100,14 +143,197 @@ public class DataverseOpenApiFilter implements OASFilter {
                 .in(SecurityScheme.In.HEADER)
                 .name("X-Dataverse-key")
                 .description("Dataverse API token.");
-        components.addSecurityScheme("DataverseApiKey", scheme);
+        components.addSecurityScheme(DATAVERSE_API_KEY, scheme);
+    }
+
+    /**
+     * Adds the Dataverse API key requirement to an operation when it is not already
+     * present.
+     *
+     * @param operation generated OpenAPI operation to update
+     */
+    private void ensureDataverseApiKeySecurityRequirement(Operation operation) {
+        if (operation.getSecurity() != null) {
+            for (SecurityRequirement requirement : operation.getSecurity()) {
+                if (requirement != null && requirement.hasScheme(DATAVERSE_API_KEY)) {
+                    return;
+                }
+            }
+        }
+        operation.addSecurityRequirement(OASFactory.createSecurityRequirement().addScheme(DATAVERSE_API_KEY));
+    }
+
+    /**
+     * Finds OpenAPI operation ids for Java resource methods that require
+     * authentication at runtime.
+     * <p>
+     * Dataverse already marks secured endpoints with {@code @AuthRequired}. The
+     * filter uses that runtime annotation as the source of truth. Operation ids
+     * are retained as a fallback for methods whose generated path cannot be
+     * reconstructed from local JAX-RS annotations.
+     *
+     * @return operation ids that should require the Dataverse API key scheme
+     */
+    private Set<String> findAuthRequiredOperationIds() {
+        Set<String> operationIds = new HashSet<>();
+        for (String packageName : API_PACKAGES) {
+            for (Class<?> apiClass : findClasses(packageName)) {
+                boolean classRequiresAuth = hasAnnotation(apiClass, AUTH_REQUIRED_ANNOTATION);
+                for (Method method : apiClass.getDeclaredMethods()) {
+                    if (classRequiresAuth || hasAnnotation(method, AUTH_REQUIRED_ANNOTATION)) {
+                        operationIds.add(apiClass.getSimpleName() + "_" + method.getName());
+                        String explicitOperationId = explicitOperationId(method);
+                        if (explicitOperationId != null) {
+                            operationIds.add(explicitOperationId);
+                        }
+                    }
+                }
+            }
+        }
+        return operationIds;
+    }
+
+    /**
+     * Lazily computes operation ids for authenticated resource methods.
+     *
+     * @return cached operation ids that should require API-key security
+     */
+    private Set<String> authRequiredOperationIds() {
+        if (authRequiredOperationIds == null) {
+            authRequiredOperationIds = findAuthRequiredOperationIds();
+        }
+        return authRequiredOperationIds;
+    }
+
+    /**
+     * Finds generated OpenAPI path/method pairs for Java resource methods that
+     * require authentication at runtime.
+     * <p>
+     * Matching on the route is more reliable than relying only on operation ids:
+     * the OpenAPI generator may assign ids at a different phase from this filter,
+     * but the JAX-RS HTTP method and path are the same metadata used by the
+     * runtime endpoint.
+     *
+     * @return endpoint keys in the form {@code METHOD /path}
+     */
+    private Set<String> findAuthRequiredEndpointKeys() {
+        Set<String> endpointKeys = new HashSet<>();
+        for (String packageName : API_PACKAGES) {
+            for (Class<?> apiClass : findClasses(packageName)) {
+                boolean classRequiresAuth = hasAnnotation(apiClass, AUTH_REQUIRED_ANNOTATION);
+                String classPath = pathValue(apiClass);
+                for (Method method : apiClass.getDeclaredMethods()) {
+                    if (classRequiresAuth || hasAnnotation(method, AUTH_REQUIRED_ANNOTATION)) {
+                        String httpMethod = httpMethod(method);
+                        if (httpMethod != null) {
+                            endpointKeys.add(endpointKey(httpMethod, combinePaths(classPath, pathValue(method))));
+                        }
+                    }
+                }
+            }
+        }
+        return endpointKeys;
+    }
+
+    /**
+     * Reads an explicit MicroProfile OpenAPI operation id from a method when one
+     * is declared.
+     *
+     * @param method Java resource method to inspect
+     * @return explicit operation id, or {@code null} when none is declared
+     */
+    private String explicitOperationId(Method method) {
+        org.eclipse.microprofile.openapi.annotations.Operation operation =
+                method.getAnnotation(org.eclipse.microprofile.openapi.annotations.Operation.class);
+        if (operation == null || operation.operationId() == null || operation.operationId().isBlank()) {
+            return null;
+        }
+        return operation.operationId();
+    }
+
+    /**
+     * Recursively finds compiled classes below a package on the current classpath.
+     * <p>
+     * SmallRye invokes this filter while Maven is generating OpenAPI from compiled
+     * classes, so the resource packages are available as file-system directories
+     * under {@code target/classes}. Non-file classpath entries are ignored because
+     * Dataverse API resources are generated from project classes in this build
+     * step.
+     *
+     * @param packageName Java package to scan
+     * @return loadable classes found under the package
+     */
+    private Set<Class<?>> findClasses(String packageName) {
+        Set<Class<?>> classes = new HashSet<>();
+        String packagePath = packageName.replace('.', '/');
+        for (ClassLoader classLoader : classLoaders()) {
+            if (classLoader == null) {
+                continue;
+            }
+            try {
+                Enumeration<URL> resources = classLoader.getResources(packagePath);
+                while (resources.hasMoreElements()) {
+                    URL resource = resources.nextElement();
+                    if ("file".equals(resource.getProtocol())) {
+                        collectClasses(new File(resource.toURI()), packageName, classLoader, classes);
+                    }
+                }
+            } catch (Exception ex) {
+                logger.log(Level.WARNING, "Unable to scan OpenAPI auth annotations in package " + packageName, ex);
+            }
+        }
+        return classes;
+    }
+
+    /**
+     * Returns classloaders that may expose compiled project resource classes
+     * during Maven OpenAPI generation.
+     *
+     * @return classloaders to scan
+     */
+    private ClassLoader[] classLoaders() {
+        return new ClassLoader[] {
+            Thread.currentThread().getContextClassLoader(),
+            DataverseOpenApiFilter.class.getClassLoader(),
+            ClassLoader.getSystemClassLoader()
+        };
+    }
+
+    /**
+     * Recursively loads classes from a package directory.
+     *
+     * @param directory classpath directory matching the package
+     * @param packageName Java package represented by {@code directory}
+     * @param classLoader classloader that exposed {@code directory}
+     * @param classes destination set for loaded classes
+     */
+    private void collectClasses(File directory, String packageName, ClassLoader classLoader, Set<Class<?>> classes) {
+        if (directory == null || !directory.exists()) {
+            return;
+        }
+        File[] files = directory.listFiles();
+        if (files == null) {
+            return;
+        }
+        for (File file : files) {
+            if (file.isDirectory()) {
+                collectClasses(file, packageName + "." + file.getName(), classLoader, classes);
+            } else if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
+                String className = packageName + "." + file.getName().substring(0, file.getName().length() - ".class".length());
+                try {
+                    classes.add(Class.forName(className, false, classLoader));
+                } catch (ClassNotFoundException | NoClassDefFoundError ex) {
+                    logger.log(Level.FINE, "Skipping class while scanning OpenAPI auth annotations: " + className, ex);
+                }
+            }
+        }
     }
 
     /**
      * Callback used when iterating over all generated operations.
      */
     private interface OperationConsumer {
-        void accept(Operation operation);
+        void accept(String path, PathItem.HttpMethod method, Operation operation);
     }
 
     /**
@@ -121,15 +347,130 @@ public class DataverseOpenApiFilter implements OASFilter {
         if (paths == null || paths.getPathItems() == null) {
             return;
         }
-        for (PathItem pathItem : paths.getPathItems().values()) {
+        for (Map.Entry<String, PathItem> pathEntry : paths.getPathItems().entrySet()) {
+            PathItem pathItem = pathEntry.getValue();
             if (pathItem == null || pathItem.getOperations() == null) {
                 continue;
             }
-            for (Operation operation : pathItem.getOperations().values()) {
+            for (Map.Entry<PathItem.HttpMethod, Operation> operationEntry : pathItem.getOperations().entrySet()) {
+                Operation operation = operationEntry.getValue();
                 if (operation != null) {
-                    consumer.accept(operation);
+                    consumer.accept(pathEntry.getKey(), operationEntry.getKey(), operation);
                 }
             }
+        }
+    }
+
+    /**
+     * Builds a stable endpoint key from an OpenAPI HTTP method enum and path.
+     *
+     * @param method generated OpenAPI HTTP method
+     * @param path generated OpenAPI path
+     * @return endpoint key in the form {@code METHOD /path}
+     */
+    private String endpointKey(PathItem.HttpMethod method, String path) {
+        return endpointKey(method.name(), path);
+    }
+
+    /**
+     * Builds a stable endpoint key from an HTTP method and path.
+     *
+     * @param method HTTP method
+     * @param path JAX-RS or OpenAPI path
+     * @return endpoint key in the form {@code METHOD /path}
+     */
+    private String endpointKey(String method, String path) {
+        return method.toUpperCase() + " " + normalizePath(path);
+    }
+
+    /**
+     * Returns whether an element has an annotation with the requested name.
+     * <p>
+     * The OpenAPI Maven plugin can load project classes through a different
+     * classloader than the filter itself, so annotation names are more reliable
+     * than annotation class identity here.
+     *
+     * @param element annotated class or method to inspect
+     * @param annotationName fully qualified annotation class name
+     * @return {@code true} when the annotation is present
+     */
+    private boolean hasAnnotation(AnnotatedElement element, String annotationName) {
+        for (Annotation annotation : element.getAnnotations()) {
+            if (annotation.annotationType().getName().equals(annotationName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns the value of a JAX-RS {@code @Path} annotation.
+     *
+     * @param element annotated class or method to inspect
+     * @return annotation value, or an empty path when absent
+     */
+    private String pathValue(AnnotatedElement element) {
+        for (Annotation annotation : element.getAnnotations()) {
+            if (annotation.annotationType().getName().equals(PATH_ANNOTATION)) {
+                return annotationValue(annotation);
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Combines class-level and method-level JAX-RS paths into one path.
+     *
+     * @param classPath class-level path
+     * @param methodPath method-level path
+     * @return combined path
+     */
+    private String combinePaths(String classPath, String methodPath) {
+        return normalizePath(classPath + "/" + methodPath);
+    }
+
+    /**
+     * Normalizes JAX-RS and OpenAPI paths for route matching.
+     *
+     * @param path path to normalize
+     * @return path with one leading slash and no duplicate slashes
+     */
+    private String normalizePath(String path) {
+        if (path == null || path.isBlank()) {
+            return "/";
+        }
+        String normalized = ("/" + path).replaceAll("/+", "/").replaceAll("/$", "");
+        return normalized.isEmpty() ? "/" : normalized;
+    }
+
+    /**
+     * Reads the JAX-RS HTTP method from a resource method.
+     *
+     * @param method Java resource method to inspect
+     * @return HTTP method name, or {@code null} when the method is not a JAX-RS operation
+     */
+    private String httpMethod(Method method) {
+        for (Annotation annotation : method.getAnnotations()) {
+            for (Annotation metaAnnotation : annotation.annotationType().getAnnotations()) {
+                if (metaAnnotation.annotationType().getName().equals(HTTP_METHOD_ANNOTATION)) {
+                    return annotationValue(metaAnnotation);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Reads the {@code value()} member from an annotation.
+     *
+     * @param annotation annotation to inspect
+     * @return annotation value as text, or an empty string when absent
+     */
+    private String annotationValue(Annotation annotation) {
+        try {
+            return (String) annotation.annotationType().getMethod("value").invoke(annotation);
+        } catch (ReflectiveOperationException | ClassCastException ex) {
+            return "";
         }
     }
 

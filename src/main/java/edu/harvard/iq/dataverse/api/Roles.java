@@ -24,7 +24,6 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
@@ -39,7 +38,6 @@ public class Roles extends AbstractApiBean {
 	@GET
     @AuthRequired
 	@Path("{id}")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Returns a role",
             description = "Returns a role definition when the authenticated user can manage permissions on the role owner.")
 	public Response viewRole(@Context ContainerRequestContext crc,
@@ -56,7 +54,6 @@ public class Roles extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{id}")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Deletes a role",
             description = "Deletes a non-builtin role definition from its owner dataverse.")
     public Response deleteRole(@Context ContainerRequestContext crc,
@@ -75,7 +72,6 @@ public class Roles extends AbstractApiBean {
 	
 	@POST
     @AuthRequired
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Creates a role",
             description = "Creates a role definition in the specified dataverse and returns the saved role.")
 	public Response createNewRole(@Context ContainerRequestContext crc,
@@ -91,7 +87,6 @@ public class Roles extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("userSelectable")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Lists selectable roles",
             description = "Returns dataverse roles that the authenticated requester can select for role assignment.")
     public Response getUserSelectableRoles(@Context ContainerRequestContext crc) {

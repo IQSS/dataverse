@@ -43,7 +43,6 @@ import jakarta.ws.rs.PathParam;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLInputFactory;
@@ -99,7 +98,6 @@ public class EditDDI  extends AbstractApiBean {
     @AuthRequired
     @Path("{fileId}")
     @Consumes("application/xml")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Updates tabular file variable metadata",
             description = "Parses DDI XML for a tabular data file and updates variable metadata on the draft dataset version, creating a draft when needed.")
     public Response edit(@Context ContainerRequestContext crc,

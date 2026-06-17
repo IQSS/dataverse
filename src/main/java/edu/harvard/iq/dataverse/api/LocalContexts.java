@@ -31,7 +31,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("localcontexts")
@@ -53,7 +52,6 @@ public class LocalContexts extends AbstractApiBean {
     @Path("/datasets/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @AuthRequired
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Finds Local Contexts projects for a dataset",
             description = "Queries the configured Local Contexts service by dataset DOI and returns matching project information when the requester is allowed to inspect the dataset.")
     public Response getDatasetLocalContexts(@Context ContainerRequestContext crc,

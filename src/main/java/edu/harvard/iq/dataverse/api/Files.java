@@ -74,7 +74,6 @@ import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -136,7 +135,6 @@ public class Files extends AbstractApiBean {
     @Path("{id}/restrict")
     @Operation(summary = "Change file restriction status",
             description = "Applies restricted or unrestricted status to a data file, with optional access-request and terms-of-access settings.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response restrictFileInDataset(@Context ContainerRequestContext crc,
                                           @Parameter(description = "Data file id or persistent identifier.", required = true)
                                           @PathParam("id") String fileToRestrictId,
@@ -228,7 +226,6 @@ public class Files extends AbstractApiBean {
     @Produces("application/json")
     @Operation(summary = "Replace a file on a dataset", 
                description = "Replace a file to a dataset")
-    @SecurityRequirement(name = "DataverseApiKey")
     @APIResponse(responseCode = "200",
                description = "File replaced successfully on the dataset")
     @Tag(name = "replaceFilesInDataset", 
@@ -383,7 +380,6 @@ public class Files extends AbstractApiBean {
     @Path("{id}")
     @Operation(summary = "Remove a file from its dataset",
             description = "Removes a data file from the dataset draft and deletes the physical file when the file has never been released.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response deleteFileInDataset(@Context ContainerRequestContext crc,
                                         @Parameter(description = "Data file id or persistent identifier.", required = true)
                                         @PathParam("id") String fileIdOrPersistentId){
@@ -433,7 +429,6 @@ public class Files extends AbstractApiBean {
     @Path("{id}/metadata")
     @Operation(summary = "Revise file metadata",
             description = "Updates metadata for an existing data file using multipart JSON metadata.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response updateFileMetadata(@Context ContainerRequestContext crc,
                     @Parameter(description = "JSON metadata update for the data file.")
                     @FormDataParam("jsonData") String jsonData,
@@ -838,7 +833,6 @@ public class Files extends AbstractApiBean {
     @Path("{id}/redetect")
     @Operation(summary = "Re-evaluate file content type",
             description = "Runs content-type detection for a non-tabular data file and optionally reports the result without saving it.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response redetectDatafile(@Context ContainerRequestContext crc,
                                      @Parameter(description = "Data file id or persistent identifier.", required = true)
                                      @PathParam("id") String id,
@@ -939,7 +933,6 @@ public class Files extends AbstractApiBean {
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(summary = "Creates a file external tool URL",
             description = "Returns launch URL details for a file-scoped external tool after checking tool configuration and file permissions.")
-    @SecurityRequirement(name = "DataverseApiKey")
     @RequestBody(description = "External tool launch options such as preview mode and locale.")
     public Response getExternalToolUrl(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String fileId,
             @Parameter(description = "External tool id.") @PathParam("tid") long externalToolId,
@@ -1064,7 +1057,6 @@ public class Files extends AbstractApiBean {
     @Path("{id}/metadata/{fmid}/toolparams/{tid}")
     @Operation(summary = "Resolve external tool parameters for file metadata",
             description = "Reports the parameter payload and allowed API calls for an external tool working with a specific file metadata record.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response getExternalToolFMParams(@Context ContainerRequestContext crc,
             @Parameter(description = "External tool database id.", required = true)
             @PathParam("tid") long externalToolId,
@@ -1108,7 +1100,6 @@ public class Files extends AbstractApiBean {
     @Path("{id}/downloadCount")
     @Operation(summary = "Show file download count",
             description = "Reports the recorded download count for a data file.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response getFileDownloadCount(@Context ContainerRequestContext crc,
                                          @Parameter(description = "Data file id or persistent identifier.", required = true)
                                          @PathParam("id") String dataFileId) {
@@ -1123,7 +1114,6 @@ public class Files extends AbstractApiBean {
     @Path("{id}/dataTables")
     @Operation(summary = "Show tabular data tables",
             description = "Reports data table metadata associated with a tabular data file after checking file access when needed.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response getFileDataTables(@Context ContainerRequestContext crc,
                                       @Parameter(description = "Data file id or persistent identifier.", required = true)
                                       @PathParam("id") String dataFileId) {
@@ -1152,7 +1142,6 @@ public class Files extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Apply category labels to file metadata",
             description = "Adds or replaces category labels on the selected file metadata record.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response setFileCategories(@Context ContainerRequestContext crc,
                                       @Parameter(description = "Data file id or persistent identifier.", required = true)
                                       @PathParam("id") String dataFileId,
@@ -1188,7 +1177,6 @@ public class Files extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Apply tabular tags to a file",
             description = "Adds or replaces tabular data tags on a tabular data file.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response setFileTabularTags(@Context ContainerRequestContext crc,
                                        @Parameter(description = "Data file id or persistent identifier.", required = true)
                                        @PathParam("id") String dataFileId,
@@ -1229,7 +1217,6 @@ public class Files extends AbstractApiBean {
     @Path("{id}/hasBeenDeleted")
     @Operation(summary = "Check whether a file was deleted",
             description = "Reports whether the selected data file has a deletion record.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response getHasBeenDeleted(@Context ContainerRequestContext crc,
                                       @Parameter(description = "Data file id or persistent identifier.", required = true)
                                       @PathParam("id") String dataFileId) {
@@ -1250,7 +1237,6 @@ public class Files extends AbstractApiBean {
     @Path("{id}/versions/{dsVersionString}/citation")
     @Operation(summary = "Format a citation for a file version",
             description = "Reports the citation text for a data file in the requested dataset version.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response getFileCitationByVersion(@Context ContainerRequestContext crc,
                                              @Parameter(description = "Data file id or persistent identifier.", required = true)
                                              @PathParam("id") String fileIdOrPersistentId,
@@ -1286,7 +1272,6 @@ public class Files extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Compare file versions",
             description = "Reports metadata differences across versions for a data file.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response getFileVersionsList(@Context ContainerRequestContext crc,
                                         @Parameter(description = "Data file id or persistent identifier.", required = true)
                                         @PathParam("id") String fileIdOrPersistentId,

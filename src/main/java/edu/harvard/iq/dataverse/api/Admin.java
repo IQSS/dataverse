@@ -142,7 +142,6 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.nio.file.Paths;
@@ -709,7 +708,6 @@ public class Admin extends AbstractApiBean {
     @Path("authenticatedUsers")
     @Operation(summary = "Enumerate authenticated users",
             description = "Lists all authenticated users for a superuser.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response listAuthenticatedUsers(@Context ContainerRequestContext crc) {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
@@ -732,7 +730,6 @@ public class Admin extends AbstractApiBean {
     @Produces({ "application/json" })
     @Operation(summary = "Search authenticated users",
             description = "Searches authenticated users for the dashboard user list and returns paged JSON results.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response filterAuthenticatedUsers(
             @Context ContainerRequestContext crc,
             @Parameter(description = "Search text matched against authenticated users.")
@@ -806,7 +803,6 @@ public class Admin extends AbstractApiBean {
     @Deprecated
     @Operation(summary = "Convert a Shibboleth user to a built-in account",
             description = "Converts a remote Shibboleth authenticated user to a built-in account using a new email address.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response convertShibUserToBuiltin(@Context ContainerRequestContext crc,
             @Parameter(description = "Authenticated user database id.", required = true)
             @PathParam("id") Long id,
@@ -850,7 +846,6 @@ public class Admin extends AbstractApiBean {
     @Path("authenticatedUsers/id/{id}/convertRemoteToBuiltIn")
     @Operation(summary = "Convert a remote user to a built-in account",
             description = "Converts a remote authenticated user to a built-in account using a new email address.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response convertOAuthUserToBuiltin(@Context ContainerRequestContext crc,
             @Parameter(description = "Authenticated user database id.", required = true)
             @PathParam("id") Long id,
@@ -899,7 +894,6 @@ public class Admin extends AbstractApiBean {
     @Path("authenticatedUsers/convert/builtin2shib")
     @Operation(summary = "Convert a built-in user to a Shibboleth account",
             description = "Converts a built-in authenticated user to a Shibboleth account using colon-separated conversion data.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response builtin2shib(@Context ContainerRequestContext crc,
             @RequestBody(description = "Colon-separated email, password, and replacement email values for the conversion.")
             String content) {
@@ -1055,7 +1049,6 @@ public class Admin extends AbstractApiBean {
     @Path("authenticatedUsers/convert/builtin2oauth")
     @Operation(summary = "Convert a built-in user to a remote account",
             description = "Converts a built-in authenticated user to a remote account using colon-separated conversion data.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response builtin2oauth(@Context ContainerRequestContext crc,
             @RequestBody(description = "Colon-separated email, password, replacement email, provider id, and persistent user id values.")
             String content) {
@@ -1266,7 +1259,6 @@ public class Admin extends AbstractApiBean {
     @Path("roles/{id}")
     @Operation(summary = "Remove a built-in role",
             description = "Deletes a Dataverse role by id or alias.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response deleteRole(@Context ContainerRequestContext crc,
             @Parameter(description = "Role id or alias.", required = true)
             @PathParam("id") String id) {
@@ -1635,7 +1627,6 @@ public class Admin extends AbstractApiBean {
     @GET
     @Operation(summary = "Inspect permissions on a Dataverse object",
             description = "Returns the requesting user's permissions on the selected dataverse object.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response findPermissonsOn(@Context final ContainerRequestContext crc,
             @Parameter(description = "Dataverse object id or persistent identifier.", required = true)
             @PathParam("dvo") final String dvo) {
@@ -1797,7 +1788,6 @@ public class Admin extends AbstractApiBean {
     @Path("{id}/reregisterHDLToPID")
     @Operation(summary = "Migrate a dataset handle registration to DOI",
             description = "Registers a dataset PID again when migrating a released handle-based dataset to DOI.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response reregisterHdlToPID(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataset id or persistent identifier.", required = true)
             @PathParam("id") String id) {
@@ -1841,7 +1831,6 @@ public class Admin extends AbstractApiBean {
     @Path("{id}/registerDataFile")
     @Operation(summary = "Process PID assignment for a data file",
             description = "Attempts persistent identifier assignment for one published data file when file PIDs are enabled.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response registerDataFile(@Context ContainerRequestContext crc,
             @Parameter(description = "Data file id or persistent identifier.", required = true)
             @PathParam("id") String id) {
@@ -1873,7 +1862,6 @@ public class Admin extends AbstractApiBean {
     @Path("/registerDataFileAll")
     @Operation(summary = "Process PID assignment for all eligible data files",
             description = "Scans all data files and assigns persistent identifiers to released, unregistered files in collections where file PIDs are enabled.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response registerDataFileAll(@Context ContainerRequestContext crc) {
         Integer count = fileService.findAll().size();
         Integer successes = 0;
@@ -1948,7 +1936,6 @@ public class Admin extends AbstractApiBean {
     @Path("/registerDataFiles/{alias}")
     @Operation(summary = "Process PID assignment for collection data files",
             description = "Assigns persistent identifiers to released, unregistered files directly owned by a collection.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response registerDataFilesInCollection(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias for the collection whose files are processed.", required = true)
             @PathParam("alias") String alias,
@@ -2150,7 +2137,6 @@ public class Admin extends AbstractApiBean {
     @Path("/computeDataFileHashValue/{fileId}/algorithm/{alg}")
     @Operation(summary = "Compute a data file hash value",
             description = "Calculates a new checksum for one non-harvested data file using the requested algorithm and saves it on the file.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response computeDataFileHashValue(@Context ContainerRequestContext crc,
             @Parameter(description = "Data file id or persistent identifier.", required = true)
             @PathParam("fileId") String fileId,
@@ -2219,7 +2205,6 @@ public class Admin extends AbstractApiBean {
     @Path("/validateDataFileHashValue/{fileId}")
     @Operation(summary = "Validate a data file hash value",
             description = "Recalculates a data file checksum and compares it with the stored checksum.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response validateDataFileHashValue(@Context ContainerRequestContext crc,
             @Parameter(description = "Data file id or persistent identifier.", required = true)
             @PathParam("fileId") String fileId) {
@@ -2291,7 +2276,6 @@ public class Admin extends AbstractApiBean {
     @Path("/submitDatasetVersionToArchive/{id}/{version}")
     @Operation(summary = "Submit a dataset version to an archive",
             description = "Starts archival submission for a dataset version that has not already been archived.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response submitDatasetVersionToArchive(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataset id or persistent identifier.", required = true)
             @PathParam("id") String dsid,
@@ -2371,7 +2355,6 @@ public class Admin extends AbstractApiBean {
     @Path("/archiveAllUnarchivedDatasetVersions")
     @Operation(summary = "Archive unarchived dataset versions",
             description = "Lists or starts archival submission for published dataset versions that do not yet have archival copies.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response archiveAllUnarchivedDatasetVersions(@Context ContainerRequestContext crc,
             @Parameter(description = "When true, list matching dataset versions without submitting them.")
             @QueryParam("listonly") boolean listonly,
@@ -2484,7 +2467,6 @@ public class Admin extends AbstractApiBean {
     @Path("/dataverse/{alias}/addRoleAssignmentsToChildren")
     @Operation(summary = "Propagate dataverse role assignments to children",
             description = "Copies configured inherited role assignments from a dataverse to its child dataverses and datasets.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response addRoleAssignementsToChildren(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias whose child objects receive role assignments.", required = true)
             @PathParam("alias") String alias) throws WrappedResponse {
@@ -2545,7 +2527,6 @@ public class Admin extends AbstractApiBean {
     @Path("/dataverse/{alias}/curationLabelSet")
     @Operation(summary = "Assign a dataverse curation label set",
             description = "Assigns a configured curation label set name to a dataverse.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response setCurationLabelSet(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias.", required = true)
             @PathParam("alias") String alias,
@@ -2583,7 +2564,6 @@ public class Admin extends AbstractApiBean {
     @Path("/dataverse/{alias}/curationLabelSet")
     @Operation(summary = "Reset a dataverse curation label set",
             description = "Restores a dataverse to the default curation label set setting.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response resetCurationLabelSet(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias.", required = true)
             @PathParam("alias") String alias) throws WrappedResponse {
@@ -2608,7 +2588,6 @@ public class Admin extends AbstractApiBean {
     @Path("/dataverse/curationLabelSets")
     @Operation(summary = "Enumerate curation label sets",
             description = "Lists configured curation label sets and their labels.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response listCurationLabelSets(@Context ContainerRequestContext crc) throws WrappedResponse {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
@@ -2734,7 +2713,6 @@ public class Admin extends AbstractApiBean {
     @Path("/requestSignedUrl")
     @Operation(summary = "Sign a URL",
             description = "Creates a signed URL for a supplied URL and optional user token context.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response getSignedUrl(@Context ContainerRequestContext crc,
             @RequestBody(description = "JSON object containing url, optional user identifier, timeout, HTTP method, and optional credential key.")
             JsonObject urlInfo) {
@@ -2816,7 +2794,6 @@ public class Admin extends AbstractApiBean {
     @Path("/downloadTmpFile")
     @Operation(summary = "Download a temporary file",
             description = "Streams a file from the local /tmp directory for superuser testing.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response downloadTmpFile(@Context ContainerRequestContext crc,
             @Parameter(description = "Absolute path under /tmp to stream.")
             @QueryParam("fullyQualifiedPathToFile") String fullyQualifiedPathToFile) {
@@ -2872,7 +2849,6 @@ public class Admin extends AbstractApiBean {
     @Path("/datafiles/auditFiles")
     @Operation(summary = "Audit dataset file storage",
             description = "Checks selected datasets for missing physical files and missing file metadata.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response getAuditFiles(@Context ContainerRequestContext crc,
                                   @Parameter(description = "Lowest dataset database id to audit.")
                                   @QueryParam("firstId") Long firstId,
@@ -3037,7 +3013,6 @@ public class Admin extends AbstractApiBean {
     @Produces("text/csv")
     @Operation(summary = "Download rate-limit statistics",
             description = "Streams cached rate-limit statistics as CSV for a superuser.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response rateLimitStats(@Context ContainerRequestContext crc,
                                    @Parameter(description = "Limit statistics to entries within this many minutes.")
                                    @QueryParam("deltaMinutesFilter") Long deltaMinutesFilter) {

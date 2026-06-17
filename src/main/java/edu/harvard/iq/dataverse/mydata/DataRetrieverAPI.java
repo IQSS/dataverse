@@ -41,7 +41,6 @@ import jakarta.ws.rs.core.Response;
 import org.json.JSONObject;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
@@ -153,7 +152,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
     @Produces({"application/json"})
     @Operation(summary = "Retrieves My Data results",
             description = "Returns datasets, files, and collections visible to the requester with filters for object type, publication state, role, validity, search text, and pagination.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public String retrieveMyDataAsJsonString(
             @Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse object type filters.") @QueryParam("dvobject_types") List<DvObject.DType> dvobject_types,
@@ -337,7 +335,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
     @Produces("application/json")
     @Operation(summary = "Lists collections for My Data",
             description = "Returns collections where the requester or selected user may add datasets.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response retrieveMyCollectionList(@Context ContainerRequestContext crc, @Parameter(description = "User identifier filter.") @QueryParam("userIdentifier") String userIdentifier) {
         try {
             verifyAuth(crc, userIdentifier);

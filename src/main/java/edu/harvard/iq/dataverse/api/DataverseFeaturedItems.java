@@ -17,7 +17,6 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -30,7 +29,6 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 @Stateless
 @Path("dataverseFeaturedItems")
 @Tag(name = "Dataverse Featured Items", description = "Manage featured items displayed on dataverse pages.")
-@SecurityRequirement(name = "DataverseApiKey")
 public class DataverseFeaturedItems extends AbstractApiBean {
 
     @Inject

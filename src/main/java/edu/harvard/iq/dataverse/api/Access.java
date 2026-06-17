@@ -51,7 +51,6 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -177,7 +176,6 @@ public class Access extends AbstractApiBean {
             description = "ZIP archive containing the data file bundle, citation files, and available metadata.",
             content = @Content(mediaType = "application/zip",
                     schema = @Schema(type = SchemaType.STRING, format = "binary")))
-    @SecurityRequirement(name = "DataverseApiKey")
     public BundleDownloadInstance datafileBundle(@Context ContainerRequestContext crc,
                                                  @Parameter(description = "Data file id or persistent identifier for the bundle.", required = true)
                                                  @PathParam("fileId") String fileId,
@@ -252,7 +250,6 @@ public class Access extends AbstractApiBean {
             description = "ZIP archive containing the data file bundle, citation files, and available metadata.",
             content = @Content(mediaType = "application/zip",
                     schema = @Schema(type = SchemaType.STRING, format = "binary")))
-    @SecurityRequirement(name = "DataverseApiKey")
     public BundleDownloadInstance datafileBundleWithGuestbookResponse(@Context ContainerRequestContext crc,
             @Parameter(description = "Data file id or persistent identifier for the bundle.", required = true)
             @PathParam("fileId") String fileId,
@@ -456,7 +453,6 @@ public class Access extends AbstractApiBean {
     @Produces({"application/json"})
     @Operation(summary = "Submit guestbook response for a data file",
             description = "Records the supplied guestbook response and returns access details for a data file download.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response datafileWithGuestbookResponse(@Context ContainerRequestContext crc,
                                                   @Parameter(description = "Data file id, persistent identifier, or path-style file reference.", required = true)
                                                   @PathParam("fileId") String fileId,
@@ -639,7 +635,6 @@ public class Access extends AbstractApiBean {
     @Produces({"text/xml"})
     @Operation(summary = "Export tabular file metadata",
             description = "Streams tabular data file metadata in the default DDI XML format.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public String tabularDatafileMetadata(@Context ContainerRequestContext crc,
                                           @Parameter(description = "Data file id or persistent identifier for the tabular file.", required = true)
                                           @PathParam("fileId") String fileId,
@@ -663,7 +658,6 @@ public class Access extends AbstractApiBean {
     @Produces({"text/xml"})
     @Operation(summary = "Export tabular file metadata as DDI",
             description = "Streams DDI XML metadata for a tabular data file.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public String tabularDatafileMetadataDDI(@Context ContainerRequestContext crc,
                                              @Parameter(description = "Data file id or persistent identifier for the tabular file.", required = true)
                                              @PathParam("fileId") String fileId,
@@ -901,7 +895,6 @@ public class Access extends AbstractApiBean {
     @Produces({ "application/zip" })
     @Operation(summary = "Stream a ZIP for selected files",
             description = "Accepts a text list of data file ids and streams the selected files as a ZIP archive.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response postDownloadDatafiles(@Context ContainerRequestContext crc,
                                           @RequestBody(description = "Text list of data file ids to include in the ZIP archive.")
                                           String body,
@@ -985,7 +978,6 @@ public class Access extends AbstractApiBean {
     @Produces({"application/zip"})
     @Operation(summary = "Submit guestbook response for latest dataset files",
             description = "Records a guestbook response and prepares a ZIP download for files in the latest accessible dataset version.")
-    @SecurityRequirement(name = "DataverseApiKey")
     public Response downloadAllFromLatestWithGuestbookResponse(@Context ContainerRequestContext crc,
                                                                @Parameter(description = "Dataset id or persistent identifier.", required = true)
                                                                @PathParam("id") String datasetIdOrPersistentId,

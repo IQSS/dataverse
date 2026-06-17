@@ -26,7 +26,6 @@ import java.text.MessageFormat;
 import java.util.logging.Logger;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("sendfeedback")
@@ -44,7 +43,6 @@ public class SendFeedbackAPI extends AbstractApiBean {
     **/
     @POST
     @AuthRequired
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Submits feedback",
             description = "Sends a feedback email to contacts for a target object or to the support address after validating the sender and message body.")
     public Response submitFeedback(@Context ContainerRequestContext crc,

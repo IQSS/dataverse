@@ -23,7 +23,6 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Stateless
@@ -44,7 +43,6 @@ public class FileRecordJobResource extends AbstractApiBean {
     @AuthRequired
     @Path("import/datasets/files/{identifier}")
     @Produces(MediaType.APPLICATION_JSON)
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Starts a file-system import job",
             description = "Starts a background job that imports files from a server-side upload folder into the specified dataset and returns the job execution id.")
     public Response getFilesystemImport(@Context ContainerRequestContext crc,

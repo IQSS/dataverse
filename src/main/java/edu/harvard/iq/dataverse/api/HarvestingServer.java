@@ -38,7 +38,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
@@ -125,7 +124,6 @@ public class HarvestingServer extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("/add")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Creates an OAI set",
             description = "Creates an OAI set from name, definition, and optional description JSON when the authenticated user is a superuser.")
     public Response createOaiSet(@Context ContainerRequestContext crc,
@@ -202,7 +200,6 @@ public class HarvestingServer extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{specname}")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Updates an OAI set",
             description = "Updates the definition or description of an OAI set when the authenticated user is a superuser.")
     public Response modifyOaiSet(@Context ContainerRequestContext crc,
@@ -264,7 +261,6 @@ public class HarvestingServer extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{specname}")
-    @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Deletes an OAI set",
             description = "Marks an OAI set for deletion and removes it when the authenticated user is a superuser.")
     public Response deleteOaiSet(@Context ContainerRequestContext crc,
