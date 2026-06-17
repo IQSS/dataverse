@@ -1305,16 +1305,16 @@ public class DatasetVersion implements Serializable {
                     String[] coverageItem = null;
                     for (DatasetField subField : geoCoverage.getChildDatasetFields()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.country)) {
-                            country = subField.getDisplayValue();
+                            country = subField.getValue();
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.state)) {
-                            state = subField.getDisplayValue();
+                            state = subField.getValue();
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.city)) {
-                            city = subField.getDisplayValue();
+                            city = subField.getValue();
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.otherGeographicCoverage)) {
-                            other = subField.getDisplayValue();
+                            other = subField.getValue();
                         }
 
                         coverageItem = new String[]{country, state, city, other};
