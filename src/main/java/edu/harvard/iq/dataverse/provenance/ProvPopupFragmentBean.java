@@ -100,7 +100,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
                     .log(Level.INFO, BundleUtil.getStringFromBundle("file.editProvenanceDialog.invalidSchemaError")); 
             provJsonState = null;
             removeJsonAndRelatedData();
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.editProvenanceDialog.invalidSchemaError"), message);
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.editProvenanceDialog.invalidSchemaError"), "Reason: " + message);
         }, () -> {
             try {
                 generateProvJsonParsedEntities();
