@@ -23,8 +23,12 @@ import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
@@ -71,8 +75,13 @@ public class Licenses extends AbstractApiBean {
     @SecurityRequirement(name = "DataverseApiKey")
     @Operation(summary = "Creates a license",
             description = "Creates a license when the authenticated user is a superuser and returns the created license location.")
+    @APIResponse(responseCode = "201",
+            description = "License created with a Location header pointing to the new license.")
     public Response addLicense(@Context ContainerRequestContext crc,
-            @RequestBody(description = "License definition to persist, including name, URI, active state, and sort order.")
+            @RequestBody(description = "License definition to persist, including name, URI, active state, and sort order.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = SchemaType.OBJECT,
+                                    description = "License definition accepted by the license administration API.")))
             License license) {
         User authenticatedUser;
         try {

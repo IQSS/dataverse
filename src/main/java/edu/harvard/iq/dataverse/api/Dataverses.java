@@ -1076,6 +1076,7 @@ public class Dataverses extends AbstractApiBean {
     @Consumes(MediaType.WILDCARD)
     @Operation(summary = "Set metadata-block root status through legacy route",
             description = "Changes whether a dataverse is a metadata-block root using the legacy route.")
+    @RequestBody(description = "Boolean text indicating whether the dataverse is a metadata-block root.")
     public Response setMetadataRoot_legacy(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("identifier") String dvIdtf,
@@ -1091,6 +1092,7 @@ public class Dataverses extends AbstractApiBean {
     @Consumes(MediaType.WILDCARD)
     @Operation(summary = "Assign metadata-block root status",
             description = "Changes whether a dataverse is a metadata-block root.")
+    @RequestBody(description = "Boolean text indicating whether the dataverse is a metadata-block root.")
     public Response setMetadataRoot(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("identifier") String dvIdtf,
@@ -1365,6 +1367,7 @@ public class Dataverses extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Assign metadata block facet root status",
             description = "Changes whether a dataverse is a metadata-block-facet root.")
+    @RequestBody(description = "Boolean text indicating whether the dataverse is a metadata-block-facet root.")
     public Response updateMetadataBlockFacetsRoot(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("identifier") String dvIdtf,
@@ -2106,6 +2109,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/featuredItems")
     @Operation(summary = "Provision a dataverse featured item",
             description = "Creates a featured item with text, optional linked object, display order, and optional image.")
+    @RequestBody(description = "Multipart featured item creation request with text, ordering, optional linked object, and optional image.")
     public Response createFeaturedItem(@Context ContainerRequestContext crc,
                                        @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
                                        @PathParam("identifier") String dvIdtf,
@@ -2167,6 +2171,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{dataverseId}/featuredItems")
     @Operation(summary = "Replace dataverse featured items",
             description = "Creates, updates, reorders, and removes featured items for a dataverse from multipart form lists.")
+    @RequestBody(description = "Multipart featured item list update with ids, text, ordering, linked objects, keep-image flags, and uploaded images.")
     public Response updateFeaturedItems(
             @Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)

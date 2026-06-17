@@ -2034,7 +2034,9 @@ public class Admin extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/updateHashValues/{alg}")
-    public Response updateHashValues(@Context ContainerRequestContext crc, @PathParam("alg") String alg, @QueryParam("num") int num) {
+    @Operation(summary = "Updates file hash values",
+            description = "Recalculates file hash values with the requested algorithm for eligible files when the requester is authorized.")
+    public Response updateHashValues(@Context ContainerRequestContext crc, @Parameter(description = "Checksum algorithm.") @PathParam("alg") String alg, @Parameter(description = "Maximum number of objects to update.") @QueryParam("num") int num) {
         Integer count = fileService.findAll().size();
         Integer successes = 0;
         Integer alreadyUpdated = 0;
@@ -2517,7 +2519,9 @@ public class Admin extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/dataverse/{alias}/curationLabelSet")
-    public Response getCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
+    @Operation(summary = "Returns a dataverse curation label set",
+            description = "Returns the curation label set configured on a dataverse when the requester is a superuser.")
+    public Response getCurationLabelSet(@Context ContainerRequestContext crc, @Parameter(description = "Dataverse alias.") @PathParam("alias") String alias) throws WrappedResponse {
         Dataverse dataverse = dataverseSvc.findByAlias(alias);
         if (dataverse == null) {
             return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");

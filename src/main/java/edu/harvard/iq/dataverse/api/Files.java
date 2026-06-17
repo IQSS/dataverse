@@ -233,7 +233,8 @@ public class Files extends AbstractApiBean {
                description = "File replaced successfully on the dataset")
     @Tag(name = "replaceFilesInDataset", 
          description = "Replace a file to a dataset")
-    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA)) 
+    @RequestBody(description = "Multipart request containing replacement file content and JSON replacement metadata.",
+            content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA)) 
     public Response replaceFileInDataset(
                     @Context ContainerRequestContext crc,
                     @Parameter(description = "Data file id or persistent identifier for the file being replaced.", required = true)
@@ -570,11 +571,13 @@ public class Files extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}")
+    @Operation(summary = "Returns file metadata",
+            description = "Returns file metadata for the latest accessible dataset version, optionally including dataset version and owner details.")
     public Response getFileData(@Context ContainerRequestContext crc,
-                                @PathParam("id") String fileIdOrPersistentId,
-                                @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
-                                @QueryParam("returnDatasetVersion") boolean returnDatasetVersion,
-                                @QueryParam("returnOwners") boolean returnOwners,
+                                @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String fileIdOrPersistentId,
+                                @Parameter(description = "Whether deaccessioned dataset versions are included.") @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                @Parameter(description = "Whether dataset version information is included in the response.") @QueryParam("returnDatasetVersion") boolean returnDatasetVersion,
+                                @Parameter(description = "Whether owner information is included in the response.") @QueryParam("returnOwners") boolean returnOwners,
                                 @Context UriInfo uriInfo,
                                 @Context HttpHeaders headers) {
         return response( req -> getFileDataResponse(req, fileIdOrPersistentId, DS_VERSION_LATEST, includeDeaccessioned, returnDatasetVersion, returnOwners, uriInfo, headers), getRequestUser(crc));
@@ -583,12 +586,14 @@ public class Files extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{datasetVersionId}")
+    @Operation(summary = "Returns file metadata for a version",
+            description = "Returns file metadata for the requested dataset version, optionally including dataset version and owner details.")
     public Response getFileDataForVersion(@Context ContainerRequestContext crc,
-                                @PathParam("id") String fileIdOrPersistentId,
-                                @PathParam("datasetVersionId") String datasetVersionId,
-                                @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
-                                @QueryParam("returnDatasetVersion") boolean returnDatasetVersion,
-                                @QueryParam("returnOwners") boolean returnOwners,
+                                @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String fileIdOrPersistentId,
+                                @Parameter(description = "Dataset version selector.") @PathParam("datasetVersionId") String datasetVersionId,
+                                @Parameter(description = "Whether deaccessioned dataset versions are included.") @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                @Parameter(description = "Whether dataset version information is included in the response.") @QueryParam("returnDatasetVersion") boolean returnDatasetVersion,
+                                @Parameter(description = "Whether owner information is included in the response.") @QueryParam("returnOwners") boolean returnOwners,
                                 @Context UriInfo uriInfo,
                                 @Context HttpHeaders headers) {
         return response( req -> getFileDataResponse(req, fileIdOrPersistentId, datasetVersionId, includeDeaccessioned, returnDatasetVersion, returnOwners, uriInfo, headers), getRequestUser(crc));
@@ -645,7 +650,9 @@ public class Files extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/metadata")
-    public Response getFileMetadata(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
+    @Operation(summary = "Returns published file metadata",
+            description = "Returns the latest published metadata for a data file as JSON text.")
+    public Response getFileMetadata(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String fileIdOrPersistentId, @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
         //ToDo - versionId is not used - can't get metadata for earlier versions
         DataverseRequest req;
             try {
@@ -688,14 +695,18 @@ public class Files extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/metadata/draft")
-    public Response getFileMetadataDraft(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
+    @Operation(summary = "Returns draft file metadata",
+            description = "Returns draft metadata for a data file when the requester may access the draft.")
+    public Response getFileMetadataDraft(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String fileIdOrPersistentId, @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
         return getFileMetadata(crc, fileIdOrPersistentId, versionId, uriInfo, headers, response, true);
     }
 
     @POST
     @AuthRequired
     @Path("{id}/uningest")
-    public Response uningestDatafile(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+    @Operation(summary = "Uningests a data file",
+            description = "Converts an ingested tabular data file back to a regular file when the requester is a superuser.")
+    public Response uningestDatafile(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
 
         DataFile dataFile;
         try {
@@ -753,7 +764,9 @@ public class Files extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/reingest")
-    public Response reingest(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+    @Operation(summary = "Reingests a data file",
+            description = "Starts ingest processing for a data file when the requester is a superuser.")
+    public Response reingest(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
 
         AuthenticatedUser u;
         try {
@@ -853,7 +866,9 @@ public class Files extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/extractNcml")
-    public Response extractNcml(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+    @Operation(summary = "Extracts NcML metadata",
+            description = "Extracts NcML metadata from a data file when the requester is a superuser.")
+    public Response extractNcml(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
         try {
             AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
             if (!au.isSuperuser()) {
@@ -922,8 +937,14 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/externalTool/{tid}/toolUrl")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response getExternalToolUrl(@Context ContainerRequestContext crc, @PathParam("id") String fileId,
-            @PathParam("tid") long externalToolId, String jsonBody) {
+    @Operation(summary = "Creates a file external tool URL",
+            description = "Returns launch URL details for a file-scoped external tool after checking tool configuration and file permissions.")
+    @SecurityRequirement(name = "DataverseApiKey")
+    @RequestBody(description = "External tool launch options such as preview mode and locale.")
+    public Response getExternalToolUrl(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String fileId,
+            @Parameter(description = "External tool id.") @PathParam("tid") long externalToolId,
+            @RequestBody(description = "External tool launch options such as preview mode and locale.")
+            String jsonBody) {
 
         boolean preview = false;
         String locale = null;

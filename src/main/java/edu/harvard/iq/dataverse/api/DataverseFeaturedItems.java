@@ -14,10 +14,11 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -61,6 +62,7 @@ public class DataverseFeaturedItems extends AbstractApiBean {
     @Path("{id}")
     @Operation(summary = "Revise a dataverse featured item",
             description = "Updates text, linked object, display order, and optional image content for a featured item.")
+    @RequestBody(description = "Multipart featured item update with text, ordering, optional linked object, and optional replacement image.")
     public Response updateFeaturedItem(@Context ContainerRequestContext crc,
                                        @Parameter(description = "Database id of the featured item to update.", required = true)
                                        @PathParam("id") Long id,
