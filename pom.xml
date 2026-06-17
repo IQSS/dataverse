@@ -1116,6 +1116,7 @@
                             <operationIdStrategy>CLASS_METHOD</operationIdStrategy>
                             <scanPackages>edu.harvard.iq.dataverse</scanPackages>
                             <scanDependenciesDisable>true</scanDependenciesDisable>
+                            <filter>edu.harvard.iq.dataverse.openapi.DataverseOpenApiFilter</filter>
                         </configuration>
                     </execution>
                 </executions>
