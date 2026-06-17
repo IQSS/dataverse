@@ -3874,7 +3874,6 @@ public class FilesIT {
     @Test
     public void testDownloadFileWithGuestbookResponse() throws IOException, JsonParseException {
         msgt("testDownloadFileWithGuestbookResponse");
-        UtilIT.enableSetting(SettingsServiceBean.Key.FilePIDsEnabled);
         // Create superuser
         Response createUserResponse = UtilIT.createRandomUser();
         assertEquals(200, createUserResponse.getStatusCode());
@@ -3948,6 +3947,8 @@ public class FilesIT {
         uploadResponse.prettyPrint();
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
         Integer fileId3 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        UtilIT.enableSetting(SettingsServiceBean.Key.FilePIDsEnabled);
         JsonObjectBuilder json4 = Json.createObjectBuilder().add("description", "my description4").add("directoryLabel", directoryLabel).add("categories", Json.createArrayBuilder().add("Data"));
         uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/Robot-Icon_2.png", json4.build(), ownerApiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
