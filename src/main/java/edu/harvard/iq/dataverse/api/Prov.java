@@ -59,8 +59,9 @@ public class Prov extends AbstractApiBean {
                 return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.jsonUpdateNotAllowed"));
             }
             
-            if(!provUtil.isProvValid(body)) {
-                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("file.editProvenanceDialog.invalidSchemaError"));
+            var schemaErrorMessages = provUtil.isProvValid(body);
+            if(!schemaErrorMessages.isEmpty()) {
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("file.editProvenanceDialog.invalidSchemaError") + schemaErrorMessages.get());
             }
             
             /*Add when we actually integrate provCpl*/

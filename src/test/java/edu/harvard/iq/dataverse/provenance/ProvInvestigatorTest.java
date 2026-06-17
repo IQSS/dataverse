@@ -68,7 +68,7 @@ public class ProvInvestigatorTest {
             "    }\n" +
             "}";
         
-        assertTrue(provUtilBean.isProvValid(validJsonString)); 
+        assertTrue(provUtilBean.isProvValid(validJsonString).isEmpty()); 
         
         //This string has the "entity" section misnamed to "entitddd"
         String invalidJsonString = "{\n" +
@@ -102,7 +102,7 @@ public class ProvInvestigatorTest {
             "    }\n" +
             "}";
         
-        assertFalse(provUtilBean.isProvValid(invalidJsonString)); 
+        assertFalse(provUtilBean.isProvValid(invalidJsonString).isEmpty()); 
 
     }
     
