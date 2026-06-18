@@ -1,21 +1,22 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.util.MarkupChecker;
-import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.DataFileComparator;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.license.License;
-import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.StringUtil;
-import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.DateUtil;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.*;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
+import jakarta.json.*;
+import jakarta.persistence.*;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.Size;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -27,39 +28,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.OrderBy;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-import jakarta.persistence.Transient;
-import jakarta.persistence.UniqueConstraint;
-import jakarta.persistence.Version;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.constraints.Size;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -132,6 +100,7 @@ public class DatasetVersion implements Serializable {
     public static final String ARCHIVAL_STATUS_PENDING = "pending";
     public static final String ARCHIVAL_STATUS_SUCCESS = "success";
     public static final String ARCHIVAL_STATUS_FAILURE = "failure";
+    public static final String ARCHIVAL_STATUS_OBSOLETE = "obsolete";
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -159,7 +128,7 @@ public class DatasetVersion implements Serializable {
      * @todo versionState should never be null so when we are ready, uncomment
      * the `nullable = false` below.
      */
-//    @Column(nullable = false)
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private VersionState versionState;
 
@@ -231,8 +200,9 @@ public class DatasetVersion implements Serializable {
     @Transient
     private DatasetVersionDifference dvd;
     
+    //The Json version of the archivalCopyLocation string
     @Transient 
-    private JsonObject archivalStatus;
+    private JsonObject archivalCopyLocationJson;
     
     public Long getId() {
         return this.id;
@@ -383,25 +353,25 @@ public class DatasetVersion implements Serializable {
     public String getArchivalCopyLocationStatus() {
         populateArchivalStatus(false);
         
-        if(archivalStatus!=null) {
-            return archivalStatus.getString(ARCHIVAL_STATUS);
+        if(archivalCopyLocationJson!=null) {
+            return archivalCopyLocationJson.getString(ARCHIVAL_STATUS);
         } 
         return null;
     }
     public String getArchivalCopyLocationMessage() {
         populateArchivalStatus(false);
-        if(archivalStatus!=null) {
-            return archivalStatus.getString(ARCHIVAL_STATUS_MESSAGE);
+        if(archivalCopyLocationJson!=null && archivalCopyLocationJson.containsKey(ARCHIVAL_STATUS_MESSAGE)) {
+            return archivalCopyLocationJson.getString(ARCHIVAL_STATUS_MESSAGE);
         } 
         return null;
     }
     
     private void populateArchivalStatus(boolean force) {
-        if(archivalStatus ==null || force) {
+        if(archivalCopyLocationJson ==null || force) {
             if(archivalCopyLocation!=null) {
                 try {
-            archivalStatus = JsonUtil.getJsonObject(archivalCopyLocation);
-                } catch(Exception e) {
+                    archivalCopyLocationJson = JsonUtil.getJsonObject(archivalCopyLocation);
+                } catch (Exception e) {
                     logger.warning("DatasetVersion id: " + id + "has a non-JsonObject value, parsing error: " + e.getMessage());
                     logger.fine(archivalCopyLocation);
                 }
@@ -412,6 +382,15 @@ public class DatasetVersion implements Serializable {
     public void setArchivalCopyLocation(String location) {
         this.archivalCopyLocation = location;
         populateArchivalStatus(true);
+    }
+
+    // Convenience method to just change the status without changing the location
+    public void setArchivalStatusOnly(String status) {
+        populateArchivalStatus(false);
+        JsonObjectBuilder job = Json.createObjectBuilder(archivalCopyLocationJson);
+        job.add(DatasetVersion.ARCHIVAL_STATUS, status);
+        archivalCopyLocationJson = job.build();
+        archivalCopyLocation = JsonUtil.prettyPrint(archivalCopyLocationJson);
     }
 
     public String getDeaccessionLink() {
@@ -706,23 +685,7 @@ public class DatasetVersion implements Serializable {
             */
             
             for (FileMetadata fm : this.getFileMetadatas()) {
-                FileMetadata newFm = new FileMetadata();
-                // TODO: 
-                // the "category" will be removed, shortly. 
-                // (replaced by multiple, tag-like categories of 
-                // type DataFileCategory) -- L.A. beta 10
-                //newFm.setCategory(fm.getCategory());
-                // yep, these are the new categories:
-                newFm.setCategories(fm.getCategories());
-                newFm.setDescription(fm.getDescription());
-                newFm.setLabel(fm.getLabel());
-                newFm.setDirectoryLabel(fm.getDirectoryLabel());
-                newFm.setRestricted(fm.isRestricted());
-                newFm.setDataFile(fm.getDataFile());
-                newFm.setDatasetVersion(dsv);
-                newFm.setProvFreeForm(fm.getProvFreeForm());
-                
-                dsv.getFileMetadatas().add(newFm);
+                fm.createCopyInVersion(dsv);
             }
             
             if (this.getTermsOfUseAndAccess()!= null){
@@ -2147,7 +2110,7 @@ public class DatasetVersion implements Serializable {
                 boolean hideFilesBoolean = JvmSettings.HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS.lookupOptional(Boolean.class).orElse(false);
                 if (!hideFilesBoolean) {
                     String nullDownloadType = null;
-                    fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false, fileMetadata.getId()));
+                    fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false, fileMetadata.getId(), null));
                 }
                 fileArray.add(fileObject);
             }

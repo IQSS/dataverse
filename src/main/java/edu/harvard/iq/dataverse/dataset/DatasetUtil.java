@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -531,7 +532,7 @@ public class DatasetUtil {
         } else {
             summaryFieldNames = customFieldNames;
         }
-        return summaryFieldNames.split("\\s*,\\s*");
+        return ListSplitUtil.split(summaryFieldNames).toArray(new String[0]);
     }
 
     public static boolean isRsyncAppropriateStorageDriver(Dataset dataset){
@@ -738,5 +739,22 @@ public class DatasetUtil {
             localizedName = label;
         }
         return localizedName;
+    }
+    
+    // Find the prior version - relies on version sorting by major/minor numbers 
+    public static DatasetVersion getPriorVersion(DatasetVersion version) {
+        boolean foundCurrent = false;
+        DatasetVersion priorVersion = null;
+        for (DatasetVersion versionLoop : version.getDataset().getVersions()) {
+            if (foundCurrent) {
+                priorVersion = versionLoop;
+                break;
+            }
+            if (versionLoop.equals(version)) {
+                foundCurrent = true;
+            }
+
+        }
+        return priorVersion;
     }
 }

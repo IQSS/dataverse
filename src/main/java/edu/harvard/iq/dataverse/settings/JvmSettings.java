@@ -247,6 +247,7 @@ public enum JvmSettings {
     // AUTH: OIDC SETTINGS
     SCOPE_OIDC(SCOPE_AUTH, "oidc"),
     OIDC_ENABLED(SCOPE_OIDC, "enabled"),
+    OIDC_HIDDEN_JSF(SCOPE_OIDC, "hidden-jsf"), // Special case when this provider needs to be hidden in JSF UI
     OIDC_TITLE(SCOPE_OIDC, "title"),
     OIDC_SUBTITLE(SCOPE_OIDC, "subtitle"),
     OIDC_AUTH_SERVER_URL(SCOPE_OIDC, "auth-server-url"),
@@ -275,6 +276,11 @@ public enum JvmSettings {
     BAGIT_SOURCE_ORG_NAME(SCOPE_BAGIT_SOURCEORG, "name"),
     BAGIT_SOURCEORG_ADDRESS(SCOPE_BAGIT_SOURCEORG, "address"),
     BAGIT_SOURCEORG_EMAIL(SCOPE_BAGIT_SOURCEORG, "email"),
+    SCOPE_BAGIT_ZIP(SCOPE_BAGIT, "zip"),
+    BAGIT_ZIP_MAX_FILE_SIZE(SCOPE_BAGIT_ZIP, "max-file-size"),
+    BAGIT_ZIP_MAX_DATA_SIZE(SCOPE_BAGIT_ZIP, "max-data-size"),
+    BAGIT_ZIP_HOLEY(SCOPE_BAGIT_ZIP, "holey"),
+    BAGIT_ARCHIVE_ON_VERSION_UPDATE(SCOPE_BAGIT, "archive-on-version-update"),
 
     // STORAGE USE SETTINGS
     SCOPE_STORAGEUSE(PREFIX, "storageuse"),
@@ -301,6 +307,17 @@ public enum JvmSettings {
     SCOPE_LOCALCONTEXTS(PREFIX, "localcontexts"),
     LOCALCONTEXTS_URL(SCOPE_LOCALCONTEXTS, "url"),
     LOCALCONTEXTS_API_KEY(SCOPE_LOCALCONTEXTS, "api-key"),
+
+    // LEGACY SETTINGS
+    SCOPE_LEGACY(PREFIX, "legacy"),
+    SCHEMAORG_IN_HTML_HEAD(SCOPE_LEGACY, "schemaorg-in-html-head"),
+    
+    // LinkedDataNotification
+    SCOPE_LINKEDDATANOTIFICATION(PREFIX, "ldn"),
+    LINKEDDATANOTIFICATION_ALLOWED_HOSTS(SCOPE_LINKEDDATANOTIFICATION, "allowed-hosts"),
+    SCOPE_COARNOTIFY(SCOPE_LINKEDDATANOTIFICATION, "coar-notify"),
+    SCOPE_COARNOTIFY_RELATIONSHIP_ANNOUNCEMENT(SCOPE_COARNOTIFY, "relationship-announcement"),
+    COARNOTIFY_RELATIONSHIP_ANNOUNCEMENT_NOTIFY_SUPERUSERS_ONLY(SCOPE_COARNOTIFY_RELATIONSHIP_ANNOUNCEMENT, "notify-superusers-only"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";
@@ -309,6 +326,7 @@ public enum JvmSettings {
     
     private final String key;
     private final String scopedKey;
+    @SuppressWarnings("unused")
     private final JvmSettings parent;
     private final List<String> oldNames;
     private final int placeholders;
@@ -608,4 +626,73 @@ public enum JvmSettings {
         return String.format(this.getScopedKey(), (Object[]) arguments);
     }
     
+    /**
+     * Lookup an optional comma-separated value and return the tokens as an immutable list.
+     * MicroProfile Config removes zero-length segments when it converts to {@code String[]}, but
+     * it leaves any leading or trailing whitespace on the surviving tokens (including tokens that
+     * contain only spaces). This convenience overload trims each token; after trimming, any token
+     * that becomes empty (because it consisted solely of whitespace) is discarded so callers still
+     * receive a list that is free of empty strings. Use the boolean overload with {@code false} if
+     * you need the exact whitespace that MicroProfile provided.
+     *
+     * @return an {@link Optional} containing the list of tokens when the setting is present;
+     *         an empty {@link Optional} if the setting is not configured
+     */
+    public Optional<List<String>> lookupSplittedListOptional() {
+        return lookupSplittedListOptional(true);
+    }
+
+    /**
+    * Lookup an optional comma-separated value and return the tokens as an immutable list.
+    *
+    * @param trimSpaces when {@code true}, individual elements are trimmed; tokens that become empty after
+    *                   trimming (because they were all whitespace) are removed to preserve MicroProfile's
+    *                   "no empty entries" guarantee; when {@code false}, the tokens are returned exactly as
+    *                   produced by MicroProfile Config
+     * @return an {@link Optional} containing the list of tokens when the setting is present;
+     *         an empty {@link Optional} if the setting is not configured
+     */
+    public Optional<List<String>> lookupSplittedListOptional(boolean trimSpaces) {
+        return lookupOptional(String[].class)
+            .map(values -> Arrays.stream(values)
+                .map(s -> trimSpaces ? s.trim() : s)
+                .filter(s -> trimSpaces ? !s.isEmpty() : true)
+                .toList());
+    }
+
+    /**
+     * Lookup a required comma-separated value and return the tokens as an immutable list.
+     * MicroProfile Config removes zero-length segments when it converts to {@code String[]}, but it
+     * leaves any leading or trailing whitespace on the surviving tokens (including tokens that contain
+     * only spaces). This convenience overload trims each token; after trimming, any token that becomes
+     * empty (because it consisted solely of whitespace) is discarded so callers still receive a list that
+     * is free of empty strings. Use the boolean overload with {@code false} if you need the exact whitespace
+     * that MicroProfile provided.
+     *
+     * @return the list of tokens for the configured setting
+     * @throws java.util.NoSuchElementException if the setting is missing or blank
+     * @throws IllegalArgumentException if conversion to {@code String[]} fails
+     */
+    public List<String> lookupSplittedList() {
+        return lookupSplittedList(true);
+    }
+
+    /**
+    * Lookup a required comma-separated value and return the tokens as an immutable list.
+    *
+    * @param trimSpaces when {@code true}, individual elements are trimmed; tokens that become empty after
+    *                   trimming (because they were all whitespace) are removed to preserve MicroProfile's
+    *                   "no empty entries" guarantee; when {@code false}, the tokens are returned exactly as
+    *                   produced by MicroProfile Config
+     * @return the list of tokens for the configured setting
+     * @throws java.util.NoSuchElementException if the setting is missing or blank
+     * @throws IllegalArgumentException if conversion to {@code String[]} fails
+     */
+    public List<String> lookupSplittedList(boolean trimSpaces) {
+        return Arrays.stream(lookup(String[].class))
+            .map(s -> trimSpaces ? s.trim() : s)
+            .filter(s -> trimSpaces ? !s.isEmpty() : true)
+            .toList();
+    }
+
 }

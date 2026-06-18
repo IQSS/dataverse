@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -60,23 +61,41 @@ public class SearchPermissionsServiceBean {
     public List<String> findDataversePerms(Dataverse dataverse) {
         List<String> permStrings = new ArrayList<>();
         if (hasBeenPublished(dataverse)) {
-            permStrings.add(IndexServiceBean.getPublicGroupString());
+            Set<String> raIds = dataverse.getLocallyFAIRRoleAssigneeIdentifiers();
+            if (raIds.isEmpty()) {
+                permStrings.add(IndexServiceBean.getPublicGroupString());
+            } else {
+                raIds.stream()
+                .map(this::convertToIndexableString)
+                .filter(s -> s != null)
+                .forEach(permStrings::add);
+            }
         }
+        // And anyone who has permission to view the unpublished version
         permStrings.addAll(findDvObjectPerms(dataverse));
         return permStrings;
     }
-    
+
     public List<String> findDatasetVersionPerms(DatasetVersion version) {
         List<String> perms = new ArrayList<>();
         if (version.isReleased()) {
-            perms.add(IndexServiceBean.getPublicGroupString());
-        }
+            Set<String> raIds = version.getDataset().getOwner().getLocallyFAIRRoleAssigneeIdentifiers();
+            if (raIds.isEmpty()) {
+                perms.add(IndexServiceBean.getPublicGroupString());
+            } else {
+                raIds.stream()
+                .map(this::convertToIndexableString)
+                .filter(s -> s != null)
+                .forEach(perms::add);
+            }
 
+        }
+        // And anyone who has permission to view the unpublished version
         perms.addAll(findDvObjectPerms(version.getDataset()));
         return perms;
     }
 
-    public List<String> findDvObjectPerms(DvObject dvObject) {
+    private List<String> findDvObjectPerms(DvObject dvObject) {
         List<String> permStrings = new ArrayList<>();
         Permission p = getRequiredSearchPermission(dvObject);
 
@@ -90,52 +109,6 @@ public class SearchPermissionsServiceBean {
             }
         }
         return permStrings;
-    }
-
-    public Map<DatasetVersion.VersionState, Boolean> getDesiredCards(Dataset dataset) {
-        Map<DatasetVersion.VersionState, Boolean> desiredCards = new LinkedHashMap<>();
-        DatasetVersion latestVersion = dataset.getLatestVersion();
-        DatasetVersion.VersionState latestVersionState = latestVersion.getVersionState();
-        DatasetVersion releasedVersion = dataset.getReleasedVersion();
-        boolean atLeastOnePublishedVersion = false;
-        if (releasedVersion != null) {
-            atLeastOnePublishedVersion = true;
-        } else {
-            atLeastOnePublishedVersion = false;
-        }
-
-        if (atLeastOnePublishedVersion == false) {
-            if (latestVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
-                desiredCards.put(DatasetVersion.VersionState.DRAFT, true);
-                desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, false);
-                desiredCards.put(DatasetVersion.VersionState.RELEASED, false);
-            } else if (latestVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
-                desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, true);
-                desiredCards.put(DatasetVersion.VersionState.RELEASED, false);
-                desiredCards.put(DatasetVersion.VersionState.DRAFT, false);
-            } else {
-                String msg = "No-op. Unexpected condition reached: There is no published version and the latest published version is neither " + DatasetVersion.VersionState.DRAFT + " nor " + DatasetVersion.VersionState.DEACCESSIONED + ". Its state is " + latestVersionState + ".";
-                logger.info(msg);
-            }
-        } else if (atLeastOnePublishedVersion == true) {
-            if (latestVersionState.equals(DatasetVersion.VersionState.RELEASED)
-                    || latestVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
-                desiredCards.put(DatasetVersion.VersionState.RELEASED, true);
-                desiredCards.put(DatasetVersion.VersionState.DRAFT, false);
-                desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, false);
-            } else if (latestVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
-                desiredCards.put(DatasetVersion.VersionState.DRAFT, true);
-                desiredCards.put(DatasetVersion.VersionState.RELEASED, true);
-                desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, false);
-            } else {
-                String msg = "No-op. Unexpected condition reached: There is at least one published version but the latest version is neither published nor draft";
-                logger.info(msg);
-            }
-        } else {
-            String msg = "No-op. Unexpected condition reached: Has a version been published or not?";
-            logger.info(msg);
-        }
-        return desiredCards;
     }
 
     private boolean hasBeenPublished(Dataverse dataverse) {
@@ -181,5 +154,42 @@ public class SearchPermissionsServiceBean {
             return null;
         }
     }
+    
+
+/**
+ * Converts a single role assignee identifier (e.g., "@john.doe", "&admins") to its
+ * indexable form for Solr (e.g., "user_1", "group_admins") w/o any db lookup for groups.
+ * 
+ * @param identifier Identifier prefixed with @ (user) or & (group)
+ * @return Indexable string for Solr, or null if conversion fails
+ */
+public String convertToIndexableString(String identifier) {
+    if (identifier == null || identifier.isEmpty()) {
+        return null;
+    }
+    
+    char prefix = identifier.charAt(0);
+    String value = identifier.substring(1);
+    
+    if (prefix == '@') {
+        // User identifier - need to extract the numeric ID
+        // Format: @userIdentifier -> user_<primaryKey>
+        AuthenticatedUser user = authSvc.getAuthenticatedUser(value);
+        if (user != null) {
+            return IndexServiceBean.getGroupPerUserPrefix() + user.getId();
+        } else {
+            logger.fine("Could not find user for identifier: " + identifier);
+            return null;
+        }
+    } else if (prefix == '&') {
+        // Group alias - can use directly
+        // Format: &groupAlias -> group_groupAlias
+        return IndexServiceBean.getGroupPrefix() + value;
+    } else {
+        logger.warning("Unknown role assignee identifier format: " + identifier);
+        return null;
+    }
+}
+
 
 }

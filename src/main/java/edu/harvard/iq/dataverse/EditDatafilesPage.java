@@ -35,16 +35,9 @@ import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
-import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.JsfHelper;
-import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.WebloaderUtil;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.EjbUtil;
-import edu.harvard.iq.dataverse.util.FileMetadataUtil;
+import edu.harvard.iq.dataverse.util.*;
 
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.File;
@@ -81,6 +74,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
+
 import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.faces.event.FacesEvent;
 import jakarta.servlet.ServletOutputStream;
@@ -185,6 +180,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     private String persistentId;
 
     private String versionString = "";
+
+    private String storageSizeStr;
 
     private boolean saveEnabled = false;
 
@@ -381,19 +378,11 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public String populateHumanPerFormatTabularLimits() {
-        String keyPrefix = ":TabularIngestSizeLimit:";
-        List<String> formatLimits = new ArrayList<>();
-        for (Setting setting : settingsService.listAll()) {
-            String name = setting.getName();
-            if (!name.startsWith(keyPrefix)) {
-                continue;
-            }
-            String tabularName = setting.getName().substring(keyPrefix.length());
-            String bytes = setting.getContent();
-            String humanReadableSize = FileSizeChecker.bytesToHumanReadable(Long.valueOf(bytes));
-            formatLimits.add(tabularName + ": " + humanReadableSize);
-        }
-        return String.join(", ", formatLimits);
+        return systemConfig.getTabularIngestSizeLimits().entrySet().stream()
+            // The human-readable list shall not contain the setting for non-matching formats
+            .filter(entry -> ! entry.getKey().equals(SystemConfig.TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY))
+            .map(entry -> entry.getKey() + ": " + FileSizeChecker.bytesToHumanReadable(entry.getValue()))
+            .collect(Collectors.joining(", "));
     }
 
     public Integer getFileUploadsAvailable() {
@@ -571,6 +560,17 @@ public class EditDatafilesPage implements java.io.Serializable {
     public boolean isFileUploadCountExceeded() {
         boolean ignoreLimit = this.session.getUser().isSuperuser();
         return !ignoreLimit && !isFileReplaceOperation() && fileUploadsAvailable != null && fileUploadsAvailable == 0;
+    }
+
+    /**
+     *
+     * @return cached formatted storage size. '1,234 bytes'; '1.23 GB'; '1.00 TB'
+     */
+    public String getCurrentContainerStorageUse() {
+        if (storageSizeStr == null) {
+            storageSizeStr = FileSizeChecker.bytesToHumanReadable(datafileService.currentStorageSizeInBytes(dataset.getOwner()));
+        }
+        return storageSizeStr;
     }
 
     public String init() {
@@ -1065,6 +1065,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public String save() {
 
+        storageSizeStr = null; // Let this re-calculate after the calling save()
         Collection<String> duplicates = IngestUtil.findDuplicateFilenames(workingVersion, newFiles);
         if (!duplicates.isEmpty()) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.filesFailure"), BundleUtil.getStringFromBundle("dataset.message.editMetadata.duplicateFilenames", new ArrayList<>(duplicates)));
@@ -1705,7 +1706,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         String storageIdentifier = null;
         try {
             storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
-            urls = s3io.generateTemporaryS3UploadUrls(dataset.getGlobalId().asString(), storageIdentifier, fileSize);
+            urls = s3io.generateTemporaryS3UploadUrls(dataset.getGlobalIdForFileStorageAsString(), storageIdentifier, fileSize);
 
         } catch (IOException io) {
             logger.warning(io.getMessage());

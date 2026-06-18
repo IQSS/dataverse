@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
-
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -26,7 +25,6 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
-
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
@@ -49,13 +47,13 @@ public class OREMap {
     public static final String NAME = "OREMap";
     
     //NOTE: Update this value whenever the output of this class is changed
-    private static final String DATAVERSE_ORE_FORMAT_VERSION = "Dataverse OREMap Format v1.0.1";
+    private static final String DATAVERSE_ORE_FORMAT_VERSION = "Dataverse OREMap Format v1.0.3";
     //v1.0.1 - added versionNote
     private static final String DATAVERSE_SOFTWARE_NAME = "Dataverse";
     private static final String DATAVERSE_SOFTWARE_URL = "https://github.com/iqss/dataverse";
     
     
-    private Map<String, String> localContext = new TreeMap<String, String>();
+    private Map<String, JsonValue> localContext = new TreeMap<String, JsonValue>();
     private DatasetVersion version;
     private Boolean excludeEmail = null;
 
@@ -63,7 +61,7 @@ public class OREMap {
         this.version = version;
     }
 
-    //Used when the ExcludeEmailFromExport needs to be overriden, i.e. for archiving
+    //Used when the ExcludeEmailFromExport needs to be overridden, i.e. for archiving
     public OREMap(DatasetVersion dv, boolean exclude) {
         this.version = dv;
         this.excludeEmail = exclude;
@@ -91,10 +89,10 @@ public class OREMap {
         
         // Add namespaces we'll definitely use to Context
         // Additional namespaces are added as needed below
-        localContext.putIfAbsent(JsonLDNamespace.ore.getPrefix(), JsonLDNamespace.ore.getUrl());
-        localContext.putIfAbsent(JsonLDNamespace.dcterms.getPrefix(), JsonLDNamespace.dcterms.getUrl());
-        localContext.putIfAbsent(JsonLDNamespace.dvcore.getPrefix(), JsonLDNamespace.dvcore.getUrl());
-        localContext.putIfAbsent(JsonLDNamespace.schema.getPrefix(), JsonLDNamespace.schema.getUrl());
+        localContext.putIfAbsent(JsonLDNamespace.ore.getPrefix(), Json.createValue(JsonLDNamespace.ore.getUrl()));
+        localContext.putIfAbsent(JsonLDNamespace.dcterms.getPrefix(), Json.createValue(JsonLDNamespace.dcterms.getUrl()));
+        localContext.putIfAbsent(JsonLDNamespace.dvcore.getPrefix(), Json.createValue(JsonLDNamespace.dvcore.getUrl()));
+        localContext.putIfAbsent(JsonLDNamespace.schema.getPrefix(), Json.createValue(JsonLDNamespace.schema.getUrl()));
 
         Dataset dataset = version.getDataset();
         String id = dataset.getGlobalId().asURL();
@@ -130,7 +128,8 @@ public class OREMap {
         if(vs.equals(VersionState.DEACCESSIONED)) {
             JsonObjectBuilder deaccBuilder = Json.createObjectBuilder();
             deaccBuilder.add(JsonLDTerm.schemaOrg("name").getLabel(), vs.name());
-            deaccBuilder.add(JsonLDTerm.DVCore("reason").getLabel(), version.getDeaccessionNote());
+            // Reason is supposed to not be null, but historically this has not been enforced (in the API)
+            addIfNotNull(deaccBuilder, JsonLDTerm.DVCore("reason"), version.getDeaccessionNote());
             addIfNotNull(deaccBuilder, JsonLDTerm.DVCore("forwardUrl"), version.getDeaccessionLink());
             aggBuilder.add(JsonLDTerm.schemaOrg("creativeWorkStatus").getLabel(), deaccBuilder);
             
@@ -280,7 +279,7 @@ public class OREMap {
                 JsonObject checksum = null;
                 // Add checksum. RDA recommends SHA-512
                 if (df.getChecksumType() != null && df.getChecksumValue() != null) {
-                    checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toString())
+                    checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toUri())
                             .add("@value", df.getChecksumValue()).build();
                     aggRes.add(JsonLDTerm.checksum.getLabel(), checksum);
                 }
@@ -296,7 +295,7 @@ public class OREMap {
         }
         // Build the '@context' object for json-ld based on the localContext entries
         JsonObjectBuilder contextBuilder = Json.createObjectBuilder();
-        for (Entry<String, String> e : localContext.entrySet()) {
+        for (Entry<String, JsonValue> e : localContext.entrySet()) {
             contextBuilder.add(e.getKey(), e.getValue());
         }
         if (aggregationOnly) {
@@ -381,7 +380,7 @@ public class OREMap {
 
     private void addToContextMap(JsonLDTerm key) {
         if (!key.inNamespace()) {
-            localContext.putIfAbsent(key.getLabel(), key.getUrl());
+            localContext.putIfAbsent(key.getLabel(), Json.createValue(key.getUrl()));
         }
     }
 
@@ -417,7 +416,7 @@ public class OREMap {
     }
     
     public static JsonValue getJsonLDForField(DatasetField field, Boolean excludeEmail, Map<Long, JsonObject> cvocMap,
-            Map<String, String> localContext) {
+            Map<String, JsonValue> localContext2) {
 
         DatasetFieldType dfType = field.getDatasetFieldType();
         if (excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dfType.getFieldType())) {
@@ -426,15 +425,15 @@ public class OREMap {
 
         JsonLDTerm fieldName = dfType.getJsonLDTerm();
         if (fieldName.inNamespace()) {
-            localContext.putIfAbsent(fieldName.getNamespace().getPrefix(), fieldName.getNamespace().getUrl());
+            localContext2.putIfAbsent(fieldName.getNamespace().getPrefix(), Json.createValue(fieldName.getNamespace().getUrl()));
         } else {
-            localContext.putIfAbsent(fieldName.getLabel(), fieldName.getUrl());
+            localContext2.putIfAbsent(fieldName.getLabel(), Json.createValue(fieldName.getUrl()));
         }
         JsonArrayBuilder vals = Json.createArrayBuilder();
         if (!dfType.isCompound()) {
             for (String val : field.getValues_nondisplay()) {
                 if (cvocMap.containsKey(dfType.getId())) {
-                    addCvocValue(val, vals, cvocMap.get(dfType.getId()), localContext);
+                    addCvocValue(val, vals, cvocMap.get(dfType.getId()), localContext2);
                 } else {
                     vals.add(val);
                 }
@@ -450,7 +449,7 @@ public class OREMap {
                     JsonLDTerm subFieldName = dsft.getJsonLDTerm();
 
                     if (dsft.isCompound()) {
-                        JsonValue compoundChildVals = getJsonLDForField(dsf, excludeEmail, cvocMap, localContext);
+                        JsonValue compoundChildVals = getJsonLDForField(dsf, excludeEmail, cvocMap, localContext2);
                         child.add(subFieldName.getLabel(), compoundChildVals);
                     } else {
                         if (excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dsft.getFieldType())) {
@@ -461,10 +460,10 @@ public class OREMap {
                             // Add context entry
                             // ToDo - also needs to recurse here?
                             if (subFieldName.inNamespace()) {
-                                localContext.putIfAbsent(subFieldName.getNamespace().getPrefix(),
-                                        subFieldName.getNamespace().getUrl());
+                                localContext2.putIfAbsent(subFieldName.getNamespace().getPrefix(),
+                                        Json.createValue(subFieldName.getNamespace().getUrl()));
                             } else {
-                                localContext.putIfAbsent(subFieldName.getLabel(), subFieldName.getUrl());
+                                localContext2.putIfAbsent(subFieldName.getLabel(), Json.createValue(subFieldName.getUrl()));
                             }
 
                             List<String> values = dsf.getValues_nondisplay();
@@ -475,7 +474,7 @@ public class OREMap {
                                 logger.fine("Child name: " + dsft.getName());
                                 if (cvocMap.containsKey(dsft.getId())) {
                                     logger.fine("Calling addcvocval for: " + dsft.getName());
-                                    addCvocValue(val, childVals, cvocMap.get(dsft.getId()), localContext);
+                                    addCvocValue(val, childVals, cvocMap.get(dsft.getId()), localContext2);
                                 } else {
                                     childVals.add(val);
                                 }
@@ -497,19 +496,24 @@ public class OREMap {
     }
 
     private static void addCvocValue(String val, JsonArrayBuilder vals, JsonObject cvocEntry,
-            Map<String, String> localContext) {
+            Map<String, JsonValue> localContext2) {
         try {
             if (cvocEntry.containsKey("retrieval-filtering")) {
                 JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
                 JsonObject context = filtering.getJsonObject("@context");
                 for (String prefix : context.keySet()) {
-                    localContext.putIfAbsent(prefix, context.getString(prefix));
+                    localContext2.putIfAbsent(prefix, context.get(prefix));
                 }
-                JsonObjectBuilder job = Json.createObjectBuilder(datasetFieldService.getExternalVocabularyValue(val));
-                job.add("@id", val);
-                JsonObject extVal = job.build();
-                logger.fine("Adding: " + extVal);
-                vals.add(extVal);
+                JsonObject cachedValue = datasetFieldService.getExternalVocabularyValue(val);
+                if (cachedValue != null) {
+                    JsonObjectBuilder job = Json.createObjectBuilder(cachedValue);
+                    job.add("@id", val);
+                    JsonObject extVal = job.build();
+                    logger.fine("Adding: " + extVal);
+                    vals.add(extVal);
+                } else {
+                    vals.add(val);
+                }
             } else {
                 vals.add(val);
             }

@@ -7,7 +7,6 @@ import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
 import edu.harvard.iq.dataverse.api.dto.*;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
-
 import edu.harvard.iq.dataverse.api.imports.ImportException;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -15,15 +14,16 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -39,6 +39,7 @@ import edu.harvard.iq.dataverse.util.json.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
@@ -70,7 +71,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import jakarta.ws.rs.core.StreamingOutput;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -87,7 +90,6 @@ import javax.xml.stream.XMLStreamException;
 public class Dataverses extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Dataverses.class.getCanonicalName());
-    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
@@ -118,6 +120,9 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     PermissionServiceBean permissionService;
+    
+    @EJB
+    TemplateServiceBean templateService;
 
     @EJB
     DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
@@ -352,10 +357,10 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/datasetSchema")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDatasetSchema(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf) {
-        User u = getRequestUser(crc);
+        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
 
         try {
-            String datasetSchema = execCommand(new GetDatasetSchemaCommand(createDataverseRequest(u), findDataverseOrDie(idtf)));
+            String datasetSchema = execCommand(new GetDatasetSchemaCommand(req, findDataverseUserCanSeeOrDie(idtf, req)));
             JsonObject jsonObject = JsonUtil.getJsonObject(datasetSchema);
             return Response.ok(jsonObject).build();
         } catch (WrappedResponse ex) {
@@ -712,10 +717,21 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}")
-    public Response getDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf, @QueryParam("returnOwners") boolean returnOwners, @QueryParam("returnChildCount") boolean returnChildCount) {
+    public Response getDataverse(@Context ContainerRequestContext crc,
+                                 @PathParam("identifier") String idtf,
+                                 @QueryParam("returnOwners") boolean returnOwners,
+                                 @QueryParam("returnChildCount") boolean returnChildCount,
+                                 @QueryParam("ignoreSettingExcludeEmailFromExport") Boolean ignoreSettingToExcludeEmailFromExport) {
         return response(req -> {
-            Dataverse dataverse = execCommand(new GetDataverseCommand(req, findDataverseOrDie(idtf)));
+            Dataverse dataverse = execCommand(new GetDataverseCommand(req, findDataverseUserCanSeeOrDie(idtf, req)));
             boolean hideEmail = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false);
+
+            // Check to see if the caller wants to ignore the ExcludeEmailFromExport setting and that they have permission to do so
+            boolean ignoreSettingExcludeEmailFromExport = ignoreSettingToExcludeEmailFromExport != null ? ignoreSettingToExcludeEmailFromExport : false;
+            if (hideEmail && ignoreSettingExcludeEmailFromExport && permissionService.userOn(getRequestUser(crc), dataverse).has(Permission.EditDataverse)) {
+                hideEmail = false;
+            }
+
             return ok(json(dataverse, hideEmail, returnOwners, false, returnChildCount ? dataverseService.getChildCount(dataverse) : null));
         }, getRequestUser(crc));
     }
@@ -764,8 +780,9 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/inputLevels")
     public Response getInputLevels(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) {
         try {
-            Dataverse dataverse = findDataverseOrDie(identifier);
-            List<DataverseFieldTypeInputLevel> inputLevels = execCommand(new ListDataverseInputLevelsCommand(createDataverseRequest(getRequestUser(crc)), dataverse));
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            Dataverse dataverse = findDataverseUserCanSeeOrDie(identifier, req);
+            List<DataverseFieldTypeInputLevel> inputLevels = execCommand(new ListDataverseInputLevelsCommand(req, dataverse));
             return ok(jsonDataverseInputLevels(inputLevels));
         } catch (WrappedResponse e) {
             return e.getResponse();
@@ -856,11 +873,12 @@ public class Dataverses extends AbstractApiBean {
                                        @QueryParam("returnDatasetFieldTypes") boolean returnDatasetFieldTypes,
                                        @QueryParam("datasetType") String datasetTypeIn) {
         try {
-            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            Dataverse dataverse = findDataverseUserCanSeeOrDie(dvIdtf, req);
             DatasetType datasetType = datasetTypeSvc.getByName(datasetTypeIn);
             final List<MetadataBlock> metadataBlocks = execCommand(
                     new ListMetadataBlocksCommand(
-                            createDataverseRequest(getRequestUser(crc)),
+                            req,
                             dataverse,
                             onlyDisplayedOnCreate,
                             datasetType
@@ -915,7 +933,7 @@ public class Dataverses extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMetadataRoot(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
         return response(req -> {
-            final Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            final Dataverse dataverse = findDataverseUserCanSeeOrDie(dvIdtf, req);
             if (permissionSvc.request(req)
                     .on(dataverse)
                     .has(Permission.EditDataverse)) {
@@ -961,7 +979,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             User user = getRequestUser(crc);
             DataverseRequest request = createDataverseRequest(user);
-            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            Dataverse dataverse = findDataverseUserCanSeeOrDie(dvIdtf, request);
             List<DataverseFacet> dataverseFacets = execCommand(new ListFacetsCommand(request, dataverse));
 
             if (returnDetails) {
@@ -990,7 +1008,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             User u = getRequestUser(crc);
             DataverseRequest r = createDataverseRequest(u);
-            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            Dataverse dataverse = findDataverseUserCanSeeOrDie(dvIdtf, r);
             JsonArrayBuilder fs = Json.createArrayBuilder();
             for (Dataverse f : execCommand(new ListFeaturedCollectionsCommand(r, dataverse))) {
                 fs.add(f.getAlias());
@@ -1121,7 +1139,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             User u = getRequestUser(crc);
             DataverseRequest request = createDataverseRequest(u);
-            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            Dataverse dataverse = findDataverseUserCanSeeOrDie(dvIdtf, request);
             List<DataverseMetadataBlockFacet> metadataBlockFacets = Optional.ofNullable(execCommand(new ListMetadataBlockFacetsCommand(request, dataverse))).orElse(Collections.emptyList());
             List<DataverseMetadataBlockFacetDTO.MetadataBlockDTO> metadataBlocksDTOs = metadataBlockFacets.stream()
                     .map(item -> new DataverseMetadataBlockFacetDTO.MetadataBlockDTO(item.getMetadataBlock().getName(), item.getMetadataBlock().getLocaleDisplayFacet()))
@@ -1217,7 +1235,7 @@ public class Dataverses extends AbstractApiBean {
         };
 
         return response(req -> ok(
-                execCommand(new ListDataverseContentCommand(req, findDataverseOrDie(dvIdtf)))
+                execCommand(new ListDataverseContentCommand(req, findDataverseUserCanSeeOrDie(dvIdtf, req)))
                         .stream()
                         .map(dvo -> (JsonObjectBuilder) dvo.accept(ser))
                         .collect(toJsonArray())
@@ -1230,15 +1248,16 @@ public class Dataverses extends AbstractApiBean {
     public Response getStorageSize(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("includeCached") boolean includeCached) throws WrappedResponse {
                 
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.datasize"),
-                execCommand(new GetDataverseStorageSizeCommand(req, findDataverseOrDie(dvIdtf), includeCached)))), getRequestUser(crc));
+                execCommand(new GetDataverseStorageSizeCommand(req, findDataverseUserCanSeeOrDie(dvIdtf, req), includeCached)))), getRequestUser(crc));
     }
     
     @GET
     @AuthRequired
     @Path("{identifier}/storage/quota")
-    public Response getCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) throws WrappedResponse {
+    public Response getCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("showInherited") boolean showInherited) throws WrappedResponse {
         try {
-            Long bytesAllocated = execCommand(new GetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf)));
+            DataverseRequest request = createDataverseRequest(getRequestUser(crc));
+            Long bytesAllocated = execCommand(new GetCollectionQuotaCommand(request, findDataverseUserCanSeeOrDie(dvIdtf, request), showInherited));
             if (bytesAllocated != null) {
                 return ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.storage.quota.allocation"),bytesAllocated));
             }
@@ -1248,11 +1267,17 @@ public class Dataverses extends AbstractApiBean {
         }
     }
     
-    @POST
+    @PUT
     @AuthRequired
-    @Path("{identifier}/storage/quota/{bytesAllocated}")
-    public Response setCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("bytesAllocated") Long bytesAllocated) throws WrappedResponse {
+    @Path("{identifier}/storage/quota")
+    public Response setCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String value) throws WrappedResponse {
         try {
+            Long bytesAllocated; 
+            try {
+                bytesAllocated = Long.parseLong(value);
+            } catch (NumberFormatException nfe){
+                return error(Status.BAD_REQUEST, value + " is not a valid number of bytes");
+            }
             execCommand(new SetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf), bytesAllocated));
             return ok(BundleUtil.getStringFromBundle("dataverse.storage.quota.updated"));
         } catch (WrappedResponse ex) {
@@ -1286,7 +1311,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/storage/use")
     public Response getCollectionStorageUse(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) throws WrappedResponse {
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.storage.use"),
-                execCommand(new GetCollectionStorageUseCommand(req, findDataverseOrDie(identifier))))), getRequestUser(crc));
+                execCommand(new GetCollectionStorageUseCommand(req, findDataverseUserCanSeeOrDie(identifier, req))))), getRequestUser(crc));
     }
 
     @GET
@@ -1294,7 +1319,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/roles")
     public Response listRoles(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
         return response(req -> ok(
-                execCommand(new ListRolesCommand(req, findDataverseOrDie(dvIdtf)))
+                execCommand(new ListRolesCommand(req, findDataverseUserCanSeeOrDie(dvIdtf, req)))
                         .stream().map(r -> json(r))
                         .collect(toJsonArray())
         ), getRequestUser(crc));
@@ -1312,104 +1337,13 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/assignments")
     public Response listAssignments(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
         return response(req -> ok(
-                execCommand(new ListRoleAssignments(req, findDataverseOrDie(dvIdtf)))
+                execCommand(new ListRoleAssignments(req, findDataverseUserCanSeeOrDie(dvIdtf, req)))
                         .stream()
                         .map(a -> json(a))
                         .collect(toJsonArray())
         ), getRequestUser(crc));
     }
 
-    /**
-     * This code for setting a dataverse logo via API was started when initially
-     * investigating https://github.com/IQSS/dataverse/issues/3559 but it isn't
-     * finished so it's commented out. See also * "No functionality should be
-     * GUI-only. Make all functionality reachable via the API" at
-     * https://github.com/IQSS/dataverse/issues/3440
-     */
-//    File tempDir;
-//
-//    TODO: Code duplicate in ThemeWidgetFragment. Maybe extract, make static and put some place else?
-//          Important: at least use JvmSettings.DOCROOT_DIRECTORY and not the hardcoded location!
-//    private void createTempDir(Dataverse editDv) {
-//        try {
-//            File tempRoot = java.nio.file.Files.createDirectories(Paths.get("../docroot/logos/temp")).toFile();
-//            tempDir = java.nio.file.Files.createTempDirectory(tempRoot.toPath(), editDv.getId().toString()).toFile();
-//        } catch (IOException e) {
-//            throw new RuntimeException("Error creating temp directory", e); // improve error handling
-//        }
-//    }
-//
-//    private DataverseTheme initDataverseTheme(Dataverse editDv) {
-//        DataverseTheme dvt = new DataverseTheme();
-//        dvt.setLinkColor(DEFAULT_LINK_COLOR);
-//        dvt.setLogoBackgroundColor(DEFAULT_LOGO_BACKGROUND_COLOR);
-//        dvt.setBackgroundColor(DEFAULT_BACKGROUND_COLOR);
-//        dvt.setTextColor(DEFAULT_TEXT_COLOR);
-//        dvt.setDataverse(editDv);
-//        return dvt;
-//    }
-//
-//    @PUT
-//    @Path("{identifier}/logo")
-//    @Consumes(MediaType.MULTIPART_FORM_DATA)
-//    public Response setDataverseLogo(@PathParam("identifier") String dvIdtf,
-//            @FormDataParam("file") InputStream fileInputStream,
-//            @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-//            @QueryParam("key") String apiKey) {
-//        boolean disabled = true;
-//        if (disabled) {
-//            return error(Status.FORBIDDEN, "Setting the dataverse logo via API needs more work.");
-//        }
-//        try {
-//            final DataverseRequest req = createDataverseRequest(findUserOrDie());
-//            final Dataverse editDv = findDataverseOrDie(dvIdtf);
-//
-//            logger.finer("entering fileUpload");
-//            if (tempDir == null) {
-//                createTempDir(editDv);
-//                logger.finer("created tempDir");
-//            }
-//            File uploadedFile;
-//            try {
-//                String fileName = contentDispositionHeader.getFileName();
-//
-//                uploadedFile = new File(tempDir, fileName);
-//                if (!uploadedFile.exists()) {
-//                    uploadedFile.createNewFile();
-//                }
-//                logger.finer("created file");
-//                File file = null;
-//                file = FileUtil.inputStreamToFile(fileInputStream);
-//                if (file.length() > systemConfig.getUploadLogoSizeLimit()) {
-//                    return error(Response.Status.BAD_REQUEST, "File is larger than maximum size: " + systemConfig.getUploadLogoSizeLimit() + ".");
-//                }
-//                java.nio.file.Files.copy(fileInputStream, uploadedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-//                logger.finer("copied inputstream to file");
-//                editDv.setDataverseTheme(initDataverseTheme(editDv));
-//                editDv.getDataverseTheme().setLogo(fileName);
-//
-//            } catch (IOException e) {
-//                logger.finer("caught IOException");
-//                logger.throwing("ThemeWidgetFragment", "handleImageFileUpload", e);
-//                throw new RuntimeException("Error uploading logo file", e); // improve error handling
-//            }
-//            // If needed, set the default values for the logo
-//            if (editDv.getDataverseTheme().getLogoFormat() == null) {
-//                editDv.getDataverseTheme().setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
-//            }
-//            logger.finer("end handelImageFileUpload");
-//            UpdateDataverseThemeCommand cmd = new UpdateDataverseThemeCommand(editDv, uploadedFile, req);
-//            Dataverse saved = execCommand(cmd);
-//
-//            /**
-//             * @todo delete the temp file:
-//             * docroot/logos/temp/1148114212463761832421/cc0.png
-//             */
-//            return ok("logo uploaded: " + saved.getDataverseTheme().getLogo());
-//        } catch (WrappedResponse ex) {
-//            return error(Status.BAD_REQUEST, "problem uploading logo: " + ex);
-//        }
-//    }
     @POST
     @AuthRequired
     @Path("{identifier}/assignments")
@@ -1502,7 +1436,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/groups/")
     public Response listGroups(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey) {
         return response(req -> ok(
-                execCommand(new ListExplicitGroupsCommand(req, findDataverseOrDie(dvIdtf)))
+                execCommand(new ListExplicitGroupsCommand(req, findDataverseUserCanSeeOrDie(dvIdtf, req)))
                         .stream().map(eg -> json(eg))
                         .collect(toJsonArray())
         ), getRequestUser(crc));
@@ -1514,7 +1448,7 @@ public class Dataverses extends AbstractApiBean {
     public Response getGroupByOwnerAndAliasInOwner(@Context ContainerRequestContext crc,
                                                    @PathParam("identifier") String dvIdtf,
                                                    @PathParam("aliasInOwner") String grpAliasInOwner) {
-        return response(req -> ok(json(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf),
+        return response(req -> ok(json(findExplicitGroupOrDie(findDataverseUserCanSeeOrDie(dvIdtf, req),
                 req,
                 grpAliasInOwner))), getRequestUser(crc));
     }
@@ -1527,9 +1461,10 @@ public class Dataverses extends AbstractApiBean {
 
         Dataverse dv;
         try {
-            dv = findDataverseOrDie(dvIdtf);
             User u = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(u);
+            dv = findDataverseUserCanSeeOrDie(dvIdtf, req);
+
             if (permissionSvc.request(req)
                     .on(dv)
                     .has(Permission.EditDataverse)) {
@@ -1620,6 +1555,21 @@ public class Dataverses extends AbstractApiBean {
 
     }
 
+    @GET
+    @AuthRequired
+    @Path("{identifier}/defaultContributorRole")
+    public Response getDefaultContributorRole(
+            @Context ContainerRequestContext crc,
+            @PathParam("identifier") String dvIdtf) {
+
+        return response(req -> ok(
+                json(
+                        execCommand(
+                                new GetCollectionDefaultContributorRoleCommand(req,
+                                        findDataverseOrDie(dvIdtf))))), getRequestUser(crc));
+
+    }
+
     @DELETE
     @AuthRequired
     @Path("{identifier}/groups/{aliasInOwner}")
@@ -1686,7 +1636,8 @@ public class Dataverses extends AbstractApiBean {
     public Response listLinks(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
         try {
             User u = getRequestUser(crc);
-            Dataverse dv = findDataverseOrDie(dvIdtf);
+            DataverseRequest req = createDataverseRequest(u);
+            Dataverse dv = findDataverseUserCanSeeOrDie(dvIdtf, req);
             if (!u.isSuperuser()) {
                 return error(Status.FORBIDDEN, "Not a superuser");
             }
@@ -1983,6 +1934,21 @@ public class Dataverses extends AbstractApiBean {
             return e.getResponse();
         }
     }
+    
+    @GET
+    @AuthRequired
+    @Path("{id}/template/")
+    public Response getTemplate(@Context ContainerRequestContext crc, @PathParam("id") Long templateId) {
+        try {
+            Template template = templateService.find(templateId);
+            if (template == null){
+                return error(Response.Status.NOT_FOUND, "Template with id " + templateId + " -  not found.");
+            }
+            return ok(jsonTemplate(execCommand(new GetTemplateCommand(createDataverseRequest(getRequestUser(crc)), template))));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
 
     @POST
     @AuthRequired
@@ -1990,16 +1956,219 @@ public class Dataverses extends AbstractApiBean {
     public Response createTemplate(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String dvIdtf) {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            NewTemplateDTO newTemplateDTO;
+            TemplateDTO newTemplateDTO;
             try {
-                newTemplateDTO = NewTemplateDTO.fromRequestBody(body, jsonParser());
+                newTemplateDTO = TemplateDTO.fromRequestBody(body, jsonParser());
             } catch (JsonParseException ex) {
                 return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.createTemplate.error.jsonParseMetadataFields"), ex.getMessage()));
             }
-            return ok(jsonTemplate(execCommand(new CreateTemplateCommand(newTemplateDTO.toTemplate(), createDataverseRequest(getRequestUser(crc)), dataverse, true))));
+            Template created = execCommand(new CreateTemplateCommand(newTemplateDTO.toTemplate(), createDataverseRequest(getRequestUser(crc)), dataverse, true));
+            
+            return created("/dataverses/template/" + created.getId(), jsonTemplate(created));
+        
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{templateId}/metadata")
+    public Response updateTemplateMetadata(@Context ContainerRequestContext crc, String body, @PathParam("templateId") Long templateId, @QueryParam("replace") boolean replaceData) {
+        try {
+            Template template = findTemplateOrDie(templateId);
+            Dataverse dataverse = template.getDataverse();
+            boolean nameOnly = false;
+            JsonObject json = JsonUtil.getJsonObject(body);
+
+            /*
+            You can also set a new name for your template in the json
+            */
+            if (json.containsKey("name") && !json.getString("name").isBlank()) {
+                template.setName(json.getString("name"));
+                nameOnly = true;
+            }
+
+            List<DatasetField> updatedFields = new ArrayList<>();
+            // if it doesn't contain fields, instructions or name it better have a single dataset field
+            // to be updated
+            if (json.getJsonArray("fields") == null) {
+                if (!json.containsKey("instructions") && !json.containsKey("name")) {
+                    updatedFields.add(jsonParser().parseField(json, Boolean.FALSE, replaceData));
+                }
+            } else {
+                updatedFields = jsonParser().parseMultipleFields(json, replaceData);
+            }
+
+            Map<String, String> instructionsMap = jsonParser().parseRequestBodyInstructionsMap(json);
+
+            // if we're only updating the name then return the metadata and instructions to previous
+            nameOnly = nameOnly && updatedFields.isEmpty() && instructionsMap == null;
+
+            if (nameOnly) {
+                updatedFields = template.getDatasetFields();
+                instructionsMap = template.getInstructionsMap();
+            }
+
+            Template updated = execCommand(new UpdateTemplateFieldsCommand(template, dataverse, updatedFields, instructionsMap, replaceData, createDataverseRequest(getRequestUser(crc))));
+
+            return created("/dataverses/template/" + updated.getId(), jsonTemplate(updated));
+        } catch (JsonParseException ex) {
+            logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.editMetadata.error.parseUpdate", List.of(ex.getMessage())));
+
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{templateId}/licenseTerms")
+    public Response updateTemplateLicenseTerms(@Context ContainerRequestContext crc, LicenseUpdateRequest requestBody, @PathParam("templateId") Long templateId, @QueryParam("replace") boolean replaceData) {
+        try {
+            Template template = findTemplateOrDie(templateId);
+            Dataverse dataverse = template.getDataverse();
+
+            if (requestBody.getName() != null && !requestBody.getName().isBlank()) {
+                String licenseName = requestBody.getName();
+                License license = licenseSvc.getByNameOrUri(licenseName);
+                if (license == null) {
+                    return notFound(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNotFound", List.of(licenseName)));
+                }
+
+                execCommand(new UpdateTemplateLicenseCommand(createDataverseRequest(getRequestUser(crc)), template, dataverse, license));
+                return ok(BundleUtil.getStringFromBundle("dataverses.api.update.template.license.success"));
+            } else if (requestBody.getCustomTerms() != null) {
+                CustomTermsDTO customTerms = requestBody.getCustomTerms();
+                execCommand(new UpdateTemplateLicenseCommand(createDataverseRequest(getRequestUser(crc)), template, dataverse, customTerms.toTermsOfUseAndAccess()));
+                return ok(BundleUtil.getStringFromBundle("dataverses.api.update.template.license.success"));
+            } else {
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNameIsEmpty"));
+            }
+
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{templateId}/access")
+    public Response updateTemplateTermsOfAccess(@Context ContainerRequestContext crc, String jsonBody, @PathParam("templateId") Long templateId) {
+        try {
+
+            boolean publicInstall = settingsSvc.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false);
+
+            Template template = findTemplateOrDie(templateId);
+
+            JsonObject json = JsonUtil.getJsonObject(jsonBody);
+
+            TermsOfUseAndAccess toua = jsonParser().parseTermsOfAccess(json);
+
+            if (publicInstall && (toua.isFileAccessRequest() || !toua.getTermsOfAccess().isEmpty())){
+                return error(BAD_REQUEST, "Setting File Access Request or Terms of Access is not permitted on a public installation.");
+            }
+
+            execCommand(new UpdateTemplateTermsOfAccessCommand(createDataverseRequest(getRequestUser(crc)), template, template.getDataverse(), toua ));
+
+            return ok(BundleUtil.getStringFromBundle("dataverses.api.update.template.access.success"));
+
+        } catch (JsonParseException ex) {
+            logger.log(Level.SEVERE, "Semantic error parsing template terms update Json: " + ex.getMessage(), ex);
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.editMetadata.error.parseUpdate", List.of(ex.getMessage())));
+        } catch (WrappedResponse ex) {
+            logger.log(Level.SEVERE, "Update terms of access error: " + ex.getMessage(), ex);
+            return ex.getResponse();
+        }
+    }
+
+    @POST
+    @AuthRequired
+    @Path("{identifier}/template/default/{templateId}")
+    public Response setDefaultTemplate(@Context ContainerRequestContext crc,
+            @PathParam("identifier") String dvId,
+            @PathParam("templateId") Long templateId) {
+
+        try {
+
+            Dataverse dataverse = findDataverseOrDie(dvId);
+            Template template = findTemplateInDataverseOrParentsOrDie(templateId, dataverse);
+            DataverseRequest dvReq = createDataverseRequest(getRequestUser(crc));
+            SetDefaultTemplateCommand command = new SetDefaultTemplateCommand(template, dvReq, dataverse);
+            
+            execCommand(command);
+
+            return ok(BundleUtil.getStringFromBundle("dataverse.setDefaultTemplate.success"));
+        
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("{identifier}/template/default")
+    public Response removeDefaultTemplate(@Context ContainerRequestContext crc,
+            @PathParam("identifier") String dvId) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(dvId);
+            RemoveDefaultTemplateCommand command = new RemoveDefaultTemplateCommand(createDataverseRequest(getRequestUser(crc)), dataverse);
+            execCommand(command);
+            return ok(BundleUtil.getStringFromBundle("dataverse.removeDefaultTemplate.success"));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/allowedMetadataLanguages")
+    public Response getMetadataLanguage(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+        return response(req -> {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            return ok(jsonLanguage(execCommand(
+                    new GetDataverseMetadataLanguageCommand(req, dataverse))));
+        }, getRequestUser(crc));
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/allowedMetadataLanguages/{metadataLanguage}")
+    public Response setMetadataLanguage(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("metadataLanguage") String lang) {
+        return response(req -> {
+            Map<String, String> langMap = settingsService.getBaseMetadataLanguageMap(null, true);
+            if (langMap.isEmpty()) {
+                return badRequest("There are no metadata languages configured on this server");
+            }
+            if (!langMap.containsKey(lang)) {
+                return badRequest("The specified metadata language " + lang + " is not allowed on this server!");
+            }
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            return ok(jsonLanguage(execCommand(new SetDataverseMetadataLanguageCommand(req, dataverse, lang))));
+        }, getRequestUser(crc));
+    }
+    
+    @Path("{id}/template")
+    @AuthRequired
+    @DELETE
+    public Response deleteTemplate(@Context ContainerRequestContext crc, @PathParam("id") long id) {
+
+        Template doomed = templateService.find(id);
+        if (doomed == null) {
+            return error(Response.Status.NOT_FOUND, "Template with id " + id + " -  not found.");
+        }
+
+        Dataverse dv = doomed.getDataverse();
+        List<Dataverse> dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(doomed.getId());
+        try {
+            execCommand(new DeleteTemplateCommand(createDataverseRequest(getRequestUser(crc)), dv, doomed, dataverseWDefaultTemplate));
+        } catch (WrappedResponse wr) {
+            return handleWrappedResponse(wr);
+        }
+
+        return ok("Template " + doomed.getName() + " deleted.");
     }
     
     @GET
@@ -2023,4 +2192,202 @@ public class Dataverses extends AbstractApiBean {
             return getRoleAssignmentHistoryResponse(dataverse, authenticatedUser, false, headers);
         }, getRequestUser(crc));
     }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/storageDriver")
+    public Response getStorageDriver(@Context ContainerRequestContext crc, @PathParam("identifier") String id,
+                                     @QueryParam("getEffective") Boolean getEffective) throws WrappedResponse {
+
+        Dataverse dataverse = findDataverseOrDie(id);
+
+        return response(req -> {
+            String storageDriver = execCommand(new GetDataverseStorageDriverCommand(req, dataverse, getEffective));
+            return ok(JsonPrinter.jsonStorageDriver(storageDriver));
+        }, getRequestUser(crc));
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/storageDriver")
+    public Response setStorageDriver(@Context ContainerRequestContext crc,
+                                     @PathParam("identifier") String id, String label) throws WrappedResponse {
+        Dataverse dataverse = findDataverseOrDie(id);
+
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        for (Entry<String, String> store: DataAccess.getStorageDriverLabels().entrySet()) {
+            if(store.getKey().equals(label)) {
+                dataverse.setStorageDriverId(store.getValue());
+                return ok("Storage set to: " + store.getKey() + "/" + store.getValue());
+            }
+        }
+        return error(Response.Status.BAD_REQUEST,
+                "No Storage Driver found for : " + label);
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("{identifier}/storageDriver")
+    public Response resetStorageDriver(@Context ContainerRequestContext crc, @PathParam("identifier") String id) throws WrappedResponse {
+
+        Dataverse dataverse = findDataverseOrDie(id);
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        dataverse.setStorageDriverId("");
+        return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/allowedStorageDrivers")
+    public Response listStorageDrivers(@Context ContainerRequestContext crc, @PathParam("identifier") String id) throws WrappedResponse {
+
+        Dataverse dv = findDataverseOrDie(id);
+
+        /*
+         * TODO: This endpoint ad GetDataverseAllowedStorageDriverCommand needs to be completed implementing
+         * the request from Jim Myers, which is to return the list of storage drivers that the dataverse can use.
+         * Currently it will return the full list of drivers available.
+         */
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            DataverseRequest request = createDataverseRequest(user);
+            GetDataverseAllowedStorageDriverCommand getAllowedStorageDriversCommand = new GetDataverseAllowedStorageDriverCommand(request, dv);
+            return ok(execCommand(getAllowedStorageDriversCommand));
+        } catch (WrappedResponse wr) {
+            return handleWrappedResponse(wr);
+        }
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/locallyFairRoleAssignees")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listLocallyFairRoleAssignees(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+        try {
+            User user = getRequestUser(crc);
+            if (!user.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
+
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            JsonArrayBuilder assignees = Json.createArrayBuilder();
+            dataverse.getLocallyFAIRRoleAssigneeIdentifiers().stream()
+                    .sorted()
+                    .forEach(assignees::add);
+            return ok(assignees);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/locallyFairRoleAssignees")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setLocallyFairRoleAssignees(@Context ContainerRequestContext crc,
+                                                @PathParam("identifier") String dvIdtf,
+                                                List<String> roleAssigneeIdentifiers) {
+        try {
+            User user = getRequestUser(crc);
+            if (!user.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
+
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            Set<String> validatedIdentifiers = validateLocallyFairRoleAssigneeIdentifiers(roleAssigneeIdentifiers);
+            dataverse.setLocallyFAIRRoleAssigneeIdentifiers(validatedIdentifiers);
+            dataverseService.save(dataverse);
+            dataverseService.index(dataverse, true);
+
+            return ok(String.format("Locally FAIR role assignees updated for dataverse %s.", dvIdtf), jsonLocallyFairRoleAssignees(dataverse));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/locallyFairRoleAssignees/{roleAssigneeIdentifier: .*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addLocallyFairRoleAssignee(@Context ContainerRequestContext crc,
+                                               @PathParam("identifier") String dvIdtf,
+                                               @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
+        try {
+            User user = getRequestUser(crc);
+            if (!user.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
+
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            if (findAssignee(roleAssigneeIdentifier) == null) {
+                return badRequest("Invalid role assignee identifier: " + roleAssigneeIdentifier);
+            }
+
+            dataverse.addLocallyFAIRRoleAssignee(roleAssigneeIdentifier);
+            dataverseService.save(dataverse);
+            dataverseService.index(dataverse, true);
+
+            return ok(String.format("Locally FAIR role assignee added to dataverse %s.", dvIdtf), jsonLocallyFairRoleAssignees(dataverse));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("{identifier}/locallyFairRoleAssignees/{roleAssigneeIdentifier: .*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteLocallyFairRoleAssignee(@Context ContainerRequestContext crc,
+                                                  @PathParam("identifier") String dvIdtf,
+                                                  @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
+        try {
+            User user = getRequestUser(crc);
+            if (!user.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
+
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            if(StringUtils.isBlank(roleAssigneeIdentifier) || !dataverse.getLocallyFAIRRoleAssigneeIdentifiers().contains(roleAssigneeIdentifier)) {
+                return badRequest("Invalid role assignee identifier: " + roleAssigneeIdentifier);
+            }
+            dataverse.removeLocallyFAIRRoleAssignee(roleAssigneeIdentifier);
+            dataverseService.save(dataverse);
+            dataverseService.index(dataverse, true);
+
+            return ok(String.format("Locally FAIR role assignee removed from dataverse %s.", dvIdtf), jsonLocallyFairRoleAssignees(dataverse));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    private Set<String> validateLocallyFairRoleAssigneeIdentifiers(List<String> roleAssigneeIdentifiers) throws WrappedResponse {
+        if (roleAssigneeIdentifiers == null) {
+            return Collections.emptySet();
+        }
+
+        Set<String> validatedIdentifiers = new TreeSet<>();
+        for (String identifier : roleAssigneeIdentifiers) {
+            if (findAssignee(identifier) == null) {
+                throw new WrappedResponse(badRequest("Invalid role assignee identifier: " + identifier));
+            }
+            validatedIdentifiers.add(identifier);
+        }
+        return validatedIdentifiers;
+    }
+
 }

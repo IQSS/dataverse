@@ -4,7 +4,8 @@
     xmlns:c="http://java.sun.com/jsp/jstl/core"
     xmlns:p="http://primefaces.org/ui"
     xmlns:jsf="http://xmlns.jcp.org/jsf"
-    xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+    xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs"
+    xmlns:dataverse="http://xmlns.jcp.org/jsf/composite/dataverse">
     <p:dialog id="userGroupDialog" styleClass="largePopUp" header="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.header']}" widgetVar="userGroupsForm" modal="true">
         <p:focus context="userGroupDialog"/>
         <p:fragment id="assignRoleMessages">
@@ -20,27 +21,11 @@
                         #{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                     </label>
                     <div class="col-md-9">
-                        <p:autoComplete id="userGroupNameAssign" placeholder="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.enterName']}"
-                                        multiple="true" scrollHeight="180" forceSelection="true"
-                                        minQueryLength="2" queryDelay="1000"                                      
-                                        groupBy="#{roleAssignee.identifier.startsWith('@')?'Users':'Groups'}"
-                                        emptyMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.invalidMsg']}"
-                                        value="#{managePermissionsPage.roleAssignSelectedRoleAssignees}"
-                                        completeMethod="#{managePermissionsPage.completeRoleAssignee}"
-                                        required="#{param['DO_ASSIGN_VALIDATION']}" requiredMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.requiredMsg']}"
-                                        styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
-                                        var="roleAssignee" itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter">
-                            <p:column>
-                                <h:outputText value="#{roleAssignee.displayInfo.title}"/>
-                                <h:outputText value=" (#{roleAssignee.displayInfo.affiliation})" rendered="#{!empty roleAssignee.displayInfo.affiliation}"/>
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{roleAssignee.identifier}"/>
-                            </p:column>
-                            <p:ajax process="@this" event="itemSelect" />
-                            <p:ajax process="@this" event="itemUnselect" />
-                        </p:autoComplete>
-                        <p:message for="userGroupNameAssign" display="text"/>
+                        <dataverse:userGroupSelect id="userGroupNameAssign"
+                                                   value="#{managePermissionsPage.roleAssignSelectedRoleAssignees}"
+                                                   completeMethod="#{managePermissionsPage.completeRoleAssignee}"
+                                                   required="#{param['DO_ASSIGN_VALIDATION']}"
+                                                   requiredMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.requiredMsg']}"/>
                     </div>
                 </div>
                 <div class="form-group">
@@ -91,7 +76,8 @@
                 <p:commandButton styleClass="btn btn-default" value="#{bundle.saveChanges}"
                                update="assignRoleContent assignedRoles roleAssignmentHistory @([id$=Messages])"
                                actionListener="#{managePermissionsPage.assignRole}" 
-                               oncomplete="if (args &amp;&amp; !args.validationFailed) PF('userGroupsForm').hide();">
+                               oncomplete="if (args &amp;&amp; !args.validationFailed) PF('userGroupsForm').hide();"
+                               process="userGroupNameAssign assignRoleRadios @this">
                     <f:param name="DO_ASSIGN_VALIDATION" value="true"/>
                 </p:commandButton>
                 <button type="button" class="btn btn-link" onclick="PF('userGroupsForm').hide()">

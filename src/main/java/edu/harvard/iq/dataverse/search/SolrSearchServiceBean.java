@@ -463,7 +463,9 @@ public class SolrSearchServiceBean implements SearchService {
             Boolean datasetValid = (Boolean) solrDocument.getFieldValue(SearchFields.DATASET_VALID);
             Long fileCount = (Long) solrDocument.getFieldValue(SearchFields.FILE_COUNT);
             Long datasetCount = (Long) solrDocument.getFieldValue(SearchFields.DATASET_COUNT);
-            
+
+            Boolean locallyFAIR = (Boolean) solrDocument.getFieldValue(SearchFields.LOCALLY_FAIR);
+
             List<String> matchedFields = new ArrayList<>();
             
             SolrSearchResult solrSearchResult = new SolrSearchResult(query, name);
@@ -546,6 +548,7 @@ public class SolrSearchServiceBean implements SearchService {
             solrSearchResult.setEmbargoEndDate(embargoEndDate);
             solrSearchResult.setRetentionEndDate(retentionEndDate);
 
+            solrSearchResult.setLocallyFAIR(locallyFAIR);
             /**
              * @todo start using SearchConstants class here
              */
@@ -759,12 +762,33 @@ public class SolrSearchServiceBean implements SearchService {
                         } catch (Exception e) {
                             localefriendlyName = facetFieldCount.getName();
                         }
+                    } else if (facetField.getName().equals(SearchFields.DATASET_TYPE)) {
+                        /**
+                         * For dataset types we use the machine readable name (e.g. "dataset" or
+                         * "software") rather than the display name (e.g. "Dataset" or "Software")
+                         * because otherwise the facet doesn't work in the SPA when you click it. The
+                         * SPA operates on the "labels" array (see below) and the keys of the objects in
+                         * this array are passed back into the Search API when clicked (e.g.
+                         * "fq=datasetType:dataset").
+                         *
+                         * "datasetType": {
+                         * "friendly": "Dataset Type",
+                         * "labels": [
+                         * {"dataset":8},
+                         * {"software":1}
+                         * ]
+                         * }
+                         * See also https://github.com/IQSS/dataverse-frontend/issues/809
+                         * and https://github.com/IQSS/dataverse/issues/11758 .
+                         *
+                         * We recognize that this will be a problem for internationalizing the SPA but
+                         * the SPA will likely have similar problems with facets like publicationStatus
+                         * where the labels are in English (e.g. {"Draft":42}). The Search API much use
+                         * the English string when faceting (e.g. "fq=publicationStatus:Draft").
+                         */
+                        localefriendlyName = facetFieldCount.getName();
                     } else {
                         try {
-                            // This is where facets are capitalized.
-                            // This will be a problem for the API clients because they get back a string like this from the Search API...
-                            // {"datasetType":{"friendly":"Dataset Type","labels":[{"Dataset":1},{"Software":1}]}
-                            // ... but they will need to use the lower case version (e.g. "software") to narrow results.
                            localefriendlyName = BundleUtil.getStringFromPropertyFile(facetFieldCount.getName(), "Bundle");
                         } catch (Exception e) {
                            localefriendlyName = facetFieldCount.getName();

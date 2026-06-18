@@ -77,7 +77,7 @@ public abstract class AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(AbstractApiBean.class.getName());
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
-    private static final String PERSISTENT_ID_KEY=":persistentId";
+    protected static final String PERSISTENT_ID_KEY=":persistentId";
     private static final String ALIAS_KEY=":alias";
     public static final String STATUS_WF_IN_PROGRESS = "WORKFLOW_IN_PROGRESS";
     public static final String DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME = "X-Dataverse-invocationID";
@@ -243,6 +243,9 @@ public abstract class AbstractApiBean {
     @EJB 
     GuestbookResponseServiceBean gbRespSvc;
 
+    @EJB
+    TemplateServiceBean templateSvc;
+
     @Inject
     FailedPIDResolutionLoggingServiceBean fprLogService;
     
@@ -370,6 +373,49 @@ public abstract class AbstractApiBean {
         }
         return dv;
     }
+    /** Find a dataverse but filter according to the visibility from the locallyFAIRRoleAssignments
+     *
+     * @param dvIdtf - the dataverse identifier
+     * @param req - the DataverseRequest
+     * @return the dataverse if found and visible, otherwise throws WrappedResponse
+     * @throws WrappedResponse if dataverse is not found (in findDatasetOrDie()) or not visible
+     */
+    protected Dataverse findDataverseUserCanSeeOrDie(String dvIdtf, DataverseRequest req) throws WrappedResponse {
+        Dataverse dataverse = findDataverseOrDie(dvIdtf);
+        if (dataverse.isLocallyFAIR() && !permissionSvc.hasLocallyFAIRAccess(req, dataverse)) {
+            throw new WrappedResponse(error( Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + dvIdtf + "'"));
+        }
+        return dataverse;
+    }
+
+    protected Template findTemplateOrDie(Long templateId) throws WrappedResponse {
+
+        Template template = templateSvc.find(templateId);
+        if (template == null) {
+            throw new WrappedResponse(
+                    error(Response.Status.NOT_FOUND, "Can't find template with identifier='" + templateId + "'"));
+        }
+        return template;
+    }
+
+    protected Template findTemplateInDataverseOrParentsOrDie(Long templateId, Dataverse dataverse) throws WrappedResponse {
+        
+        List<Template> templates = new ArrayList<>();
+        
+        templates.addAll(dataverse.getTemplates());
+        templates.addAll(dataverse.getParentTemplates());
+        
+        Template template = templates.stream()
+                .filter(t -> Objects.equals(t.getId(), templateId))
+                .findFirst()
+                .orElse(null);
+
+        if (template == null) {
+            throw new WrappedResponse(
+                    error(Response.Status.NOT_FOUND, "Can't find template with identifier='" + templateId + "'"));
+        }
+        return template;
+    }
     
     protected DataverseLinkingDataverse findDataverseLinkingDataverseOrDie(String dataverseId, String linkedDataverseId) throws WrappedResponse {
         DataverseLinkingDataverse dvld;
@@ -442,6 +488,22 @@ public abstract class AbstractApiBean {
         return dataset;
     }
 
+    /** Find a dataset but filter according to the visibility from the locallyFAIRRoleAssignments
+     *
+     * @param id - the dataset identifier
+     * @param req - the DataverseRequest
+     * @param deep - whether to perform a deep search
+     * @return the dataset if found and visible, otherwise throws WrappedResponse
+     * @throws WrappedResponse if dataset is not found (in findDatasetOrDie()) or not visible
+     */
+    protected Dataset findDatasetUserCanSeeOrDie(String id, DataverseRequest req, boolean deep) throws WrappedResponse {
+        Dataset dataset = findDatasetOrDie(id, deep);
+        if (dataset.isLocallyFAIR() && !permissionSvc.hasLocallyFAIRAccess(req, dataset)) {
+            throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
+        }
+        return dataset;
+    }
+
     protected DatasetVersion findDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned) throws WrappedResponse {
         DatasetVersion dsv = execCommand(handleVersion(versionNumber, new Datasets.DsVersionHandler<Command<DatasetVersion>>() {
 
@@ -469,7 +531,27 @@ public abstract class AbstractApiBean {
     }
 
     protected void validateInternalTimestampIsNotOutdated(DvObject dvObject, String sourceLastUpdateTime) throws WrappedResponse {
-        Date date = sourceLastUpdateTime != null ? DateUtil.parseDate(sourceLastUpdateTime, "yyyy-MM-dd'T'HH:mm:ss'Z'") : null;
+        // The timestamp string must always be in UTC, ISO 8601-formatted
+        // for example: 2026-04-22T14:30:00Z. This is explicitly specified in the
+        // API guide.
+        //
+        // In the intended workflow, the clients will be reusing the last update
+        // timestamps obtained from the output of other Dataverse APIs, such as
+        // /versions and /files, where they are always in that form, regardless
+        // of the actual time zone the server lives in.
+        //
+        // For consistency, we do not want to accept any other formats or timezones,
+        // and will reject anything that does not match "yyyy-MM-dd'T'HH:mm:ss'Z'".
+        // For that reason there is an explicit check added for .endsWith("Z").
+        // The "X" in the parsing format string will recognize literal 'Z' as "+0000",
+        // but it would also accept other ISO 8601 timezones, such as "+0400" for
+        // EDT, etc. In theory, we could accept all these other notations - in
+        // case the client decided to convert the UTC timestamp they received from
+        // Dataverse into that... but there is really no good reason to encourage
+        // that.
+        Date date = sourceLastUpdateTime != null && sourceLastUpdateTime.endsWith("Z")
+                ? DateUtil.parseDate(sourceLastUpdateTime, "yyyy-MM-dd'T'HH:mm:ssX")
+                : null;
         if (date == null) {
             throw new WrappedResponse(
                     badRequest(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date", Collections.singletonList(sourceLastUpdateTime)))
@@ -519,7 +601,22 @@ public abstract class AbstractApiBean {
             }
         }
     }
-       
+
+    /** Find a datafile but filter according to the visibility from the locallyFAIRRoleAssignments
+     *
+     * @param id - the datafile identifier
+     * @param req - the DataverseRequest
+     * @return the datafile if found and visible, otherwise throws WrappedResponse
+     * @throws WrappedResponse if datafile is not found (in findDatasetOrDie()) or not visible
+     */
+    protected DataFile findDataFileUserCanSeeOrDie(String id, DataverseRequest req) throws WrappedResponse {
+        DataFile dataFile = findDataFileOrDie(id);
+        if (dataFile.isLocallyFAIR() && !permissionSvc.hasLocallyFAIRAccess(req, dataFile)) {
+            throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.id", Collections.singletonList(id))));
+        }
+        return dataFile;
+    }
+
     protected DataverseRole findRoleOrDie(String id) throws WrappedResponse {
         DataverseRole role;
         if (id.equals(ALIAS_KEY)) {
@@ -873,6 +970,8 @@ public abstract class AbstractApiBean {
             throw new WrappedResponse(ex, badRequest(ex.getMessage(), ex.getFieldErrors()));
         } catch (InvalidCommandArgumentsException ex) {
             throw new WrappedResponse(ex, error(Status.BAD_REQUEST, ex.getMessage()));
+        } catch (ConflictException ex) {
+            throw new WrappedResponse(ex, conflict(ex.getMessage()));
         } catch (CommandException ex) {
             Logger.getLogger(AbstractApiBean.class.getName()).log(Level.SEVERE, "Error while executing command " + cmd, ex);
             throw new WrappedResponse(ex, error(Status.INTERNAL_SERVER_ERROR, ex.getMessage()));

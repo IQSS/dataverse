@@ -35,6 +35,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -60,7 +61,9 @@ import java.util.stream.Collectors;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
+import jakarta.faces.validator.ValidatorException;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -218,15 +221,21 @@ public class FilePage implements java.io.Serializable {
                 }
             }
             
-            // If this DatasetVersion is unpublished and permission is doesn't have permissions:
-            //  > Go to the Login page
-            //
             // Check permissions
-            Boolean authorized = (fileMetadata.getDatasetVersion().isReleased())
-                    || (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset());
-
-            if (!authorized) {
-                return permissionsWrapper.notAuthorized();
+            DatasetVersion datasetVersion = fileMetadata.getDatasetVersion();
+            Dataset dataset = datasetVersion.getDataset();
+            
+            // Check Locally FAIR permissions for released datasets
+            boolean releasedAndCanView = datasetVersion.isReleased() && (!file.isLocallyFAIR() ||
+                    permissionsWrapper.hasLocallyFAIRAccess(dvRequestService.getDataverseRequest(), file));
+            
+            if (!releasedAndCanView && !canViewUnpublishedDataset()) {
+                // Return notFound for FAIR-restricted content, notAuthorized otherwise
+                if (file.isLocallyFAIR()) {
+                    return permissionsWrapper.notFound();
+                } else {
+                    return permissionsWrapper.notAuthorized();
+                }
             }
             
             //termsOfAccess = fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();
@@ -1489,4 +1498,8 @@ public class FilePage implements java.io.Serializable {
         return "";
     }
 
+    public void validateEmbargoReason(FacesContext context, UIComponent component, Object value) {
+        FileUtil.validateEmbargoReason(context, component, value, removeEmbargo);
+    }
+    
 }

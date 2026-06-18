@@ -116,6 +116,15 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     public void setShowDeleted(boolean showDeleted) {
         this.showDeleted = showDeleted;
     }
+    private boolean showHistory = false;
+
+    public boolean isShowHistory() {
+        return showHistory;
+    }
+
+    public void setShowHistory(boolean showHistory) {
+        this.showHistory = showHistory;
+    }
 
     public Dataset getDataset() {
         return dataset;
@@ -142,6 +151,13 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             backingShowDeleted = showDeleted;
         }
 
+    }
+    private boolean backingShowHistory = false;
+    public void showHistoryCheckboxChange() {
+        if (backingShowHistory != showHistory) {
+            initMaps();
+            backingShowHistory = showHistory;
+        }
     }
 
     public String init() {
@@ -199,7 +215,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                 fileMap.put(file, raList);
 
                 // populate the file access requests map
-                for (FileAccessRequest fileAccessRequest : file.getFileAccessRequests(FileAccessRequest.RequestState.CREATED)) {
+                for (FileAccessRequest fileAccessRequest : !showHistory ? file.getFileAccessRequests(FileAccessRequest.RequestState.CREATED) : file.getFileAccessRequests()) {
                     List<FileAccessRequest> fileAccessRequestList = fileAccessRequestMap.get(fileAccessRequest.getRequester());
                     if (fileAccessRequestList == null) {
                         fileAccessRequestList = new ArrayList<>();
@@ -248,6 +264,21 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         }
 
         return Util.getDateTimeFormat().format(date);
+    }
+
+    public String getAccessRequestStates(List<FileAccessRequest> fileAccessRequests) {
+        String result = "";
+        if (fileAccessRequests != null) {
+            Map<String, Long> items = fileAccessRequests.stream()
+                    .sorted(Comparator.comparing(FileAccessRequest::getState))
+                    .collect(Collectors.groupingBy(
+                            FileAccessRequest::getStateLabelNationalized,
+                            Collectors.counting()));
+
+            result = items.entrySet().stream().map(entry -> entry.getKey() + ":" + entry.getValue())
+                    .collect(Collectors.joining(", ", "[ ", " ]"));
+        }
+        return result;
     }
 
     private void addFileToRoleAssignee(RoleAssignment assignment, boolean fileDeleted) {
@@ -586,7 +617,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
     public String getSignedUrlForRAHistoryCsv() {
         //Including /v1 is required for the signature to validate
-        String apiPath = "/api/v1/datasets/" + dataset.getId() + "/files/permissions/history";
+        String apiPath = "/api/v1/datasets/" + dataset.getId() + "/files/assignments/history";
         
         try {
             // Get the application URL from the system config

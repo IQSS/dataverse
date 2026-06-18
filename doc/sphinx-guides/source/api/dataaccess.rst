@@ -27,10 +27,14 @@ Please note that in addition to the files from dataset, an additional file call 
 
 There are two forms of the "download by dataset" API, a basic form and one that supports dataset versions.
 
+.. _basic-download-by-dataset:
+
 Basic Download By Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The basic form downloads files from the latest accessible version of the dataset. If you are not using an API token, this means the most recently published version. If you are using an API token with full access to the dataset, this means the draft version or the most recently published version if no draft exists.
+
+.. note:: Files that require a Guestbook Response will require an additional step to supply the Guestbook Response. A POST to the same endpoint with the Guestbook Response in the body can return a signed url that can be used to download the file(s) via a browser or download manager. To determine what information is required in the response you must first get the Guestbook for the Dataset whose file(s) you are trying to access along with any Custom Questions. Call ``GET http://$SERVER/api/guestbooks/{id}`` with the guestbookId from the Dataset (See :ref:`dataset-json-representation` to get the Dataset with guestbookId) to retrieve the Guestbook and Custom Questions. Build the JSON response with the information requested and add it to the body of the POST call within "guestbookResponse":{}. For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 
 A curl example using a DOI (no version):
 
@@ -48,6 +52,8 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -L -O -J -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/access/dataset/:persistentId/?persistentId=doi:10.70122/FK2/N2XGBJ
 
+.. _download-by-dataset-by-version:
+
 Download By Dataset By Version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -58,6 +64,8 @@ The second form of the "download by dataset" API allows you to specify which ver
 * ``:latest-published`` the latest published version
 * ``x.y`` a specific version, where ``x`` is the major version number and ``y`` is the minor version number.
 * ``x`` same as ``x.0``
+
+.. note:: Files that require a Guestbook Response will require an additional step to supply the Guestbook Response. A POST to the same endpoint with the Guestbook Response in the body can return a signed url that can be used to download the file(s) via a browser or download manager. To determine what information is required in the response you must first get the Guestbook for the Dataset whose file(s) you are trying to access along with any Custom Questions. Call ``GET http://$SERVER/api/guestbooks/{id}`` with the guestbookId from the Dataset (See :ref:`dataset-json-representation` to get the Dataset with guestbookId) to retrieve the Guestbook and Custom Questions. Build the JSON response with the information requested and add it to the body of the POST call within "guestbookResponse":{}. For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 
 A curl example using a DOI (with version):
 
@@ -78,6 +86,8 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -O -J -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/access/dataset/:persistentId/versions/2.0?persistentId=doi:10.70122/FK2/N2XGBJ
 
+.. _basic-file-access:
+
 Basic File Access
 -----------------
 
@@ -91,6 +101,11 @@ Basic access URI:
 
     GET http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB
 
+.. note:: Files that require a Guestbook Response will require an additional step to supply the Guestbook Response. A POST to the same endpoint with the Guestbook Response in the body can return a signed url that can be used to download the file(s) via a browser or download manager. For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide. In the following JSON example please note that the `name`, `email`, `institution`, and `position` fields will default to the User's account information if not included in the response. Call ``GET http://$SERVER/api/guestbooks/{id}`` with the guestbookId from the Dataset (See :ref:`dataset-json-representation` to get the Dataset with guestbookId) to retrieve the Guestbook and Custom Questions. Build the JSON response with the information requested and add it to the body of the POST call within "guestbookResponse":{}.
+
+  Example ::
+
+    curl -X POST -H 'Content-Type:application/json' -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB" -d '{"guestbookResponse": {"name": "My Name", "email": "myemail@example.com", "institution": "Harvard","position": "Staff", "answers": [{"id": 123,"value": "Good"},{"id": 124,"value": ["Multi","Line"]},{"id": 125,"value": "Yellow"}]}}'
 
 Parameters:
 ~~~~~~~~~~~
@@ -168,6 +183,23 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "Range:bytes=0-9" https://demo.dataverse.org/api/access/datafile/42
 
+
+.. _get-file-using-preview-url-token:
+
+Using a Preview URL Token
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you want to access a file in a dataset shared by a preview URL (see :ref:`previewUrl`, :ref:`get-dataset-by-preview-url-token` and :ref:`create-a-preview-url-for-a-dataset`) using the API, you can use the token in the preview URL as API_TOKEN.
+
+.. code-block:: bash
+
+  SERVER_URL=https://demo.dataverse.org
+  PREVIEW_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
+  FILE_ID=1111111
+  FILENAME=example.txt
+  curl -H "X-Dataverse-key:$PREVIEW_URL_TOKEN" -o "$FILENAME" "$SERVER_URL/api/access/datafile/$FILE_ID"
+
+
 Multiple File ("bundle") download
 ---------------------------------
 
@@ -180,6 +212,8 @@ Returns the files listed, zipped. As of v6.7 the name of the zipped bundle will 
 .. note:: If the request can only be completed partially - if only *some* of the requested files can be served (because of the permissions and/or size restrictions), the file MANIFEST.TXT included in the zipped bundle will have entries specifying the reasons the missing files could not be downloaded. IN THE FUTURE the API will return a 207 status code to indicate that the result was a partial success. (As of writing this - v.4.11 - this hasn't been implemented yet)
 
 .. note:: If any of the datafiles have the ``DirectoryLabel`` attributes in the corresponding ``FileMetadata`` entries, these will be added as folders to the Zip archive, and the files will be placed in them accordingly. 
+
+.. note:: If Guestbook Responses are required they can be included in the body along with the file ids as JSON: ``{"fileIds" :[1,2,3], {"guestbookResponse": {"answers": []}}}``. For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 
 Parameters: 
 ~~~~~~~~~~~
@@ -219,6 +253,26 @@ Value           Description
 ==============  ===========
 ID              Exports file with specific file metadata ``ID``.
 ==============  ===========
+
+
+.. _datafile-citation-formatted-access:
+
+Citation - Get Citation In Other Formats
+----------------------------------------
+
+Dataverse can generate datafile citations in "EndNote", "RIS", "BibTeX", and "CSL" formats.
+This API call sends the raw format with the appropriate content-type (EndNote is XML, RIS and BibTeX are plain text, and CSL is JSON). ("Internal" is also a valid value, returning the content as HTML).
+This API call requires a format in the API call which can be any of the values listed above.
+
+Usage example:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export DATAFILE_ID=99
+  export FORMAT=EndNote
+
+  curl "$SERVER_URL/api/access/datafile/$DATAFILE_ID/citation/$FORMAT"
 
 .. _data-variable-metadata-access:
 
@@ -361,7 +415,9 @@ This method requests access to the datafile whose id is passed on the behalf of 
 A curl example using an ``id``::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X PUT http://$SERVER/api/access/datafile/{id}/requestAccess
-    
+
+.. note:: Some installations of Dataverse may require you to provide a Guestbook Response when requesting access to certain restricted files. The response can be passed in the body of this call. See "Get a Guestbook for a Dataverse Collection" in the :doc:`native-api`.
+
 Grant File Access:
 ~~~~~~~~~~~~~~~~~~ 
 
@@ -404,7 +460,22 @@ This method returns a list of Authenticated Users who have requested access to t
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X GET http://$SERVER/api/access/datafile/{id}/listRequests
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET $SERVER/api/access/datafile/{id}/listRequests
+
+Query parameters have been added to retrieve the historical list of "created", "granted", and "rejected" requests:
+
+* `includeHistory` When `true` this will force the return of all requests and not just the "created" ones.
+* `start` For pagination, use this to request a specific page.
+* `per_page` For pagination, use this to limit the number of items in each paged list.
+
+.. note:: Pagination is only available when `includeHistory` is `true`
+
+If requesting a page beyond the last page this API will return a 404 "There are no access requests for this file:..."
+If requesting a page before page 1 or requesting the number of items to be 0 or less this API will ignore these parameters and return the entire list.
+
+A curl example using an ``id``::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER/api/access/datafile/{id}/listRequests?includeHistory=true&start=1&per_page=20"
 
 User Has Requested Access to a File:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -415,7 +486,7 @@ This method returns true or false depending on whether or not the calling user h
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X GET "http://$SERVER/api/access/datafile/{id}/userFileAccessRequested"
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER/api/access/datafile/{id}/userFileAccessRequested"
 
 
 Get User Permissions on a File:
@@ -423,7 +494,7 @@ Get User Permissions on a File:
 
 ``/api/access/datafile/{id}/userPermissions``
 
-This method returns the permissions that the calling user has on a particular file.
+This method returns the permissions that the calling user has on a particular file. 
 
 In particular, the user permissions that this method checks, returned as booleans, are the following:
 
@@ -434,3 +505,5 @@ In particular, the user permissions that this method checks, returned as boolean
 A curl example using an ``id``::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X GET "http://$SERVER/api/access/datafile/{id}/userPermissions"
+
+Authentication is required for this API. 

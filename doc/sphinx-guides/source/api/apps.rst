@@ -132,6 +132,13 @@ Dataverse Software on Android makes use of a Dataverse installation's Search API
 
 https://github.com/IQSS/dataverse-android
 
+DVImportExport
+~~~~~~~~~~~~~~
+
+The open-source DVImportExport tool is a command-line tool for exporting/importing dataverses, datasets and files from one Dataverse instance to another. Source code, jar files and documentation are available on Gitlab. DVImportExport is developed at the Luxembourg Centre for Contemporary and Digital History of the Université de Luxembourg.
+
+https://gitlab.com/uniluxembourg/c2dh/dataverse/dataverse-import-export
+
 Go
 --
 
@@ -164,7 +171,7 @@ OpenScholar
 
 The Dataverse Software module from OpenScholar allows a Dataverse installation's widgets to be easily embedded in its web pages:
 
-https://github.com/openscholar/openscholar/tree/SCHOLAR-3.x/openscholar/modules/os_features/os_dataverse
+https://github.com/openscholar/d7-openscholar/tree/SCHOLAR-3.x/openscholar/modules/os_features/os_dataverse 
 
 Ruby
 ----

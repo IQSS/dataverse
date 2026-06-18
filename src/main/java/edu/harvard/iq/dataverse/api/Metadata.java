@@ -8,11 +8,9 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 
+import java.util.Date;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.*;
 
 import jakarta.ws.rs.core.Response;
@@ -60,8 +58,18 @@ public class Metadata extends AbstractApiBean {
     @GET
     @Path("/reExportAll")
     @Produces("application/json")
-    public Response reExportAll() {
-        datasetService.reExportAllAsync();
+    public Response reExportAll(@QueryParam(value = "olderThan") String olderThan) {
+        Date reExportDate = null;
+        if (olderThan != null && !olderThan.isEmpty()) {
+            try {
+                java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                dateFormat.setLenient(false);
+                reExportDate = dateFormat.parse(olderThan);
+            } catch (java.text.ParseException e) {
+                return error(Response.Status.BAD_REQUEST, "Invalid date format for olderThan parameter. Expected format: YYYY-MM-DD");
+            }
+        }
+        datasetService.reExportAllAsync(reExportDate);
         return this.accepted();
     }
 

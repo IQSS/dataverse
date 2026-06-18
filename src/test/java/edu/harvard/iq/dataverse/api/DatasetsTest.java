@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import org.junit.jupiter.api.Test;
 import java.util.HashSet;
 import java.util.Set;
@@ -54,5 +57,20 @@ public class DatasetsTest {
         assertTrue(deleted.contains("18383198c49-aeda08ccffff"));
         assertTrue(deleted.contains("1837fda17ce-d7b9987fc6e9_suffix"));
         assertTrue(deleted.contains("1837fda17ce-d7b9987fc6e9.aux"));
+    }
+
+    @Test
+    public void testGetDatasetDestroyedMessageWithId() {
+        assertEquals("Dataset 42 destroyed", Datasets.getDatasetDestroyedMessage("42", new Dataset()));
+    }
+
+    @Test
+    public void testGetDatasetDestroyedMessageWithPersistentId() {
+        Dataset dataset = new Dataset();
+        dataset.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, "10.5072", "FK2/ABCDEF", "/",
+                AbstractDOIProvider.DOI_RESOLVER_URL, null));
+
+        assertEquals("Dataset doi:10.5072/FK2/ABCDEF destroyed",
+                Datasets.getDatasetDestroyedMessage(AbstractApiBean.PERSISTENT_ID_KEY, dataset));
     }
 }

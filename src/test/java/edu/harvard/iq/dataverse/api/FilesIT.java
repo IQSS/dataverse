@@ -1,51 +1,53 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.Guestbook;
+import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
-import edu.harvard.iq.dataverse.util.json.JsonParseException;
-import edu.harvard.iq.dataverse.util.json.JsonParser;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
-
-import java.util.*;
-import java.util.logging.Logger;
-
-import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
-import jakarta.json.JsonObject;
-import org.assertj.core.util.Lists;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeAll;
-import io.restassured.path.json.JsonPath;
-
-import static edu.harvard.iq.dataverse.api.ApiConstants.*;
-import static io.restassured.path.json.JsonPath.with;
-import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.path.xml.XmlPath;
+import io.restassured.response.Response;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.core.Response.Status;
+import org.assertj.core.util.Lists;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import java.io.File;
 import java.io.IOException;
-
-import static java.lang.Thread.sleep;
-
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
-
-import jakarta.json.Json;
-import jakarta.json.JsonObjectBuilder;
-
-import static jakarta.ws.rs.core.Response.Status.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.MessageFormat;
 import java.time.Year;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterAll;
+import java.util.*;
+import java.util.logging.Logger;
 
+import static edu.harvard.iq.dataverse.api.ApiConstants.*;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+import static io.restassured.RestAssured.get;
+import static io.restassured.path.json.JsonPath.with;
+import static jakarta.ws.rs.core.Response.Status.*;
+import static java.lang.Thread.sleep;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -59,7 +61,11 @@ public class FilesIT {
 
         Response removePublicInstall = UtilIT.deleteSetting(SettingsServiceBean.Key.PublicInstall);
         removePublicInstall.then().assertThat().statusCode(200);
+    }
 
+    @AfterEach
+    public void resetClass() {
+        UtilIT.deleteSetting(SettingsServiceBean.Key.FilePIDsEnabled);
     }
 
     @AfterAll
@@ -1209,6 +1215,106 @@ public class FilesIT {
 
     }
     
+    @Nested
+    class IngestSizeLimits {
+        
+        static String apiToken;
+        static int datasetId;
+        @TempDir
+        static Path tempDir;
+        static String csvFileName = "data.csv";
+        static Path csvFile;
+        static final String csvData =
+            """
+            name,pounds,species,treats
+            Midnight,15,dog,milkbones
+            Tiger,17,cat,cat grass
+            Panther,21,cat,cat nip
+            """;
+        
+        @BeforeAll
+        static void setup() throws IOException {
+            // Create random user, collection and dataset to work with
+            Response createUser = UtilIT.createRandomUser();
+            createUser.then().assertThat().statusCode(OK.getStatusCode());
+            String username = UtilIT.getUsernameFromResponse(createUser);
+            apiToken = UtilIT.getApiTokenFromResponse(createUser);
+            Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
+            makeSuperUser.then().assertThat().statusCode(OK.getStatusCode());
+            
+            Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+            createDataverseResponse.prettyPrint();
+            String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+            Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+            createDatasetResponse.prettyPrint();
+            datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+            
+            // Create CSV datafile to work with
+            csvFile = tempDir.resolve(csvFileName);
+            java.nio.file.Files.writeString(csvFile, csvData, StandardCharsets.UTF_8);
+        }
+        
+        @AfterAll
+        static void teardown() {
+            // Remove the setting for test isolation purposes
+            Response removeLimit = UtilIT.deleteSetting(Key.TabularIngestSizeLimit);
+            removeLimit.then().assertThat().statusCode(OK.getStatusCode());
+        }
+        
+        static List<Arguments> configurations() {
+            return List.of(
+                // Too small for 134 chars
+                Arguments.of("{\"csv\": 50}", BAD_REQUEST, "message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported"))),
+                Arguments.of("{\"default\": 50.0}", BAD_REQUEST, "message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported"))),
+                
+                // The behavior of `"default": "-2"` is not documented in the guides
+                // but it acts like `"default": "0"` which disables ingest.
+                Arguments.of("{\"default\": -2}", BAD_REQUEST, "message", equalTo(BundleUtil.getStringFromBundle("files.api.only.tabular.supported"))),
+                
+                // Large enough :-)
+                Arguments.of("-1", OK, "data[0].varQuantity", equalTo(4)),
+                Arguments.of("123456", OK, "data[0].varQuantity", equalTo(4)),
+                Arguments.of("{\"default\": 123456}", OK, "data[0].varQuantity", equalTo(4)),
+                Arguments.of("{\"csv\": 123456}", OK, "data[0].varQuantity", equalTo(4)),
+                Arguments.of("{\"csv\": \"123457\"}", OK, "data[0].varQuantity", equalTo(4)),
+                Arguments.of("{\"csv\": 123458.0}", OK, "data[0].varQuantity", equalTo(4)),
+                // Default is disabled, but exception for CSV
+                Arguments.of("{\"default\": 0,\"csv\": 123456}", OK, "data[0].varQuantity", equalTo(4))
+            );
+        }
+        
+        @ParameterizedTest
+        @MethodSource("configurations")
+        void testIngestSizeLimits(String ingestSizeLimitConfig, Status expectedStatus, String jsonPath, Matcher matcher) {
+            // given
+            Response setLimit = UtilIT.setSetting(Key.TabularIngestSizeLimit, ingestSizeLimitConfig);
+            setLimit.then().assertThat().statusCode(OK.getStatusCode());
+            
+            // when
+            Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), csvFile.toString(), apiToken);
+            //uploadResponse.prettyPrint();
+            uploadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo(csvFileName));
+            String fileId = JsonPath.from(uploadResponse.body().asString()).getString("data.files[0].dataFile.id");
+            
+            // Wait for ingest to complete
+            assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION),
+                "Failed test if Ingest Lock exceeds max duration");
+            
+            // then
+            Response getTabularFails = UtilIT.getFileDataTables(fileId, apiToken);
+            //getTabularFails.prettyPrint();
+            getTabularFails.then().assertThat()
+                .statusCode(expectedStatus.getStatusCode())
+                .body(jsonPath, matcher);
+            
+            // delete the file for the next test
+            UtilIT.deleteFile(Integer.valueOf(fileId), apiToken);
+        }
+    }
+
+
     @Test
     public void testUningestFileViaApi() throws InterruptedException {
         Response createUser = UtilIT.createRandomUser();
@@ -3099,7 +3205,7 @@ public class FilesIT {
         assertEquals(BundleUtil.getStringFromBundle("dataverse.storage.quota.notdefined"), JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
         
         // Set quota to 1K:
-        Response setQuotaResponse = UtilIT.setCollectionQuota(dataverseAlias, 1024, apiToken);
+        Response setQuotaResponse = UtilIT.setCollectionQuota(dataverseAlias, Long.valueOf(1024), apiToken);
         setQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
         assertEquals(BundleUtil.getStringFromBundle("dataverse.storage.quota.updated"), JsonPath.from(setQuotaResponse.body().asString()).getString("data.message"));
         
@@ -3169,9 +3275,7 @@ public class FilesIT {
         // ... should work this time around:
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
             
-        // Let's confirm that the total storage use has been properly implemented:
-
-        //try {sleep(1000);}catch(InterruptedException ie){}
+        // Let's confirm that the total storage use has been properly incremented:
         
         checkStorageUseResponse = UtilIT.checkCollectionStorageUse(dataverseAlias, apiToken);
         checkStorageUseResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -3188,6 +3292,125 @@ public class FilesIT {
         UtilIT.deleteSetting(SettingsServiceBean.Key.UseStorageQuotas);
     }
     
+    @Test
+    public void testDatasetStorageQuotas() {
+        // This test largely replicates the collection-level storage quota test
+        // above. Both types of quotas share the same implementation underneath 
+        // (it operates on DvObjectContainers), so the separate tests here 
+        // are for testing the dataverses- and datasets-level APIs that expose
+        // the functionality. 
+        // A minimal storage quota functionality test: 
+        // - We create a dataset and define a storage quota
+        // - We configure the Dataverse instance to enforce it 
+        // - We confirm that we can upload a file with the size under the quota
+        // - We confirm that we cannot upload a file once the quota is reached
+        // - We disable the quota on the dataset and try again
+        
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        
+        System.out.println("dataset-level quota test, dataset id: "+datasetId);
+        
+        Response checkQuotaResponse = UtilIT.checkDatasetQuota(datasetId.toString(), apiToken);
+        checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // This brand new dataset shouldn't have any quota defined yet: 
+        assertEquals(BundleUtil.getStringFromBundle("dataset.storage.quota.notdefined"), JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
+        
+        // Set quota to 1K:
+        Response setQuotaResponse = UtilIT.setDatasetQuota(datasetId.toString(), Long.valueOf(1024), apiToken);
+        setQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        assertEquals(BundleUtil.getStringFromBundle("dataset.storage.quota.updated"), JsonPath.from(setQuotaResponse.body().asString()).getString("data.message"));
+        
+        // Check again:
+        checkQuotaResponse = UtilIT.checkDatasetQuota(datasetId.toString(), apiToken);
+        checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String expectedApiMessage = BundleUtil.getStringFromBundle("dataset.storage.quota.allocation", Arrays.asList("1,024"));
+        assertEquals(expectedApiMessage, JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
+
+        System.out.println(expectedApiMessage);
+        
+        UtilIT.enableSetting(SettingsServiceBean.Key.UseStorageQuotas);
+                
+        String pathToFile306bytes = "src/test/resources/FileRecordJobIT.properties"; 
+        String pathToFile1787bytes = "src/test/resources/datacite.xml";
+
+        // Upload a small file: 
+        
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile306bytes, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        // Check the recorded storage use: 
+        
+        Response checkStorageUseResponse = UtilIT.checkDatasetStorageUse(datasetId.toString(), apiToken);
+        checkStorageUseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataset.storage.use", Arrays.asList("306"));
+        assertEquals(expectedApiMessage, JsonPath.from(checkStorageUseResponse.body().asString()).getString("data.message"));
+
+        System.out.println(expectedApiMessage);
+        
+        // Attempt to upload the second file - this should get us over the quota, 
+        // so it should be rejected:
+        
+        uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile1787bytes, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        // We should get this error message made up from 2 Bundle strings:
+        expectedApiMessage = BundleUtil.getStringFromBundle("file.addreplace.error.ingest_create_file_err");
+        expectedApiMessage = expectedApiMessage + " " + BundleUtil.getStringFromBundle("file.addreplace.error.quota_exceeded", Arrays.asList("1.7 KB", "718 B"));
+        assertEquals(expectedApiMessage, JsonPath.from(uploadResponse.body().asString()).getString("message"));
+        
+        System.out.println(expectedApiMessage);
+        
+        // Check Storage Use again - should be unchanged: 
+        
+        checkStorageUseResponse = UtilIT.checkDatasetStorageUse(datasetId.toString(), apiToken);
+        checkStorageUseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataset.storage.use", Arrays.asList("306"));
+        assertEquals(expectedApiMessage, JsonPath.from(checkStorageUseResponse.body().asString()).getString("data.message"));
+
+        // Disable the quota on the dataset; try again:
+        
+        Response disableQuotaResponse = UtilIT.disableDatasetQuota(datasetId.toString(), apiToken);
+        disableQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataset.storage.quota.deleted");
+        assertEquals(expectedApiMessage, JsonPath.from(disableQuotaResponse.body().asString()).getString("data.message"));
+
+        // Check again: 
+        
+        checkQuotaResponse = UtilIT.checkDatasetQuota(datasetId.toString(), apiToken);
+        checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // ... should say "no quota", again: 
+        assertEquals(BundleUtil.getStringFromBundle("dataset.storage.quota.notdefined"), JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
+        
+        // And try to upload the larger file again:
+        
+        uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile1787bytes, Json.createObjectBuilder().build(), apiToken);
+        // ... should work this time around:
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+            
+        // Let's confirm that the storage use for the dataset has been properly incremented:
+        
+        checkStorageUseResponse = UtilIT.checkDatasetStorageUse(datasetId.toString(), apiToken);
+        checkStorageUseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataset.storage.use", Arrays.asList("2,093"));
+        assertEquals(expectedApiMessage, JsonPath.from(checkStorageUseResponse.body().asString()).getString("data.message"));
+
+        System.out.println(expectedApiMessage);
+        
+        UtilIT.deleteSetting(SettingsServiceBean.Key.UseStorageQuotas);
+    }
+
     @Test
     public void testIngestWithAndWithoutVariableHeader() throws NoSuchAlgorithmException {
         msgt("testIngestWithAndWithoutVariableHeader");
@@ -3436,6 +3659,8 @@ public class FilesIT {
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         // Update the dataverse with a datasetFileCountLimit of 1
@@ -3451,10 +3676,10 @@ public class FilesIT {
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
-        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
-        String datasetPersistenceId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
         createDatasetResponse.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String datasetPersistenceId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
 
         // -------------------------
         // Add initial file
@@ -3644,5 +3869,446 @@ public class FilesIT {
                 .body("status", equalTo(ApiConstants.STATUS_ERROR))
                 .body("message", equalTo(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date",Collections.singletonList("bad-date"))))
                 .statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void testDownloadFileWithGuestbookResponse() throws IOException, JsonParseException {
+        msgt("testDownloadFileWithGuestbookResponse");
+        // Create superuser
+        Response createUserResponse = UtilIT.createRandomUser();
+        assertEquals(200, createUserResponse.getStatusCode());
+        String ownerApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String superusername = UtilIT.getUsernameFromResponse(createUserResponse);
+        UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
+
+        // Create Parent Dataverse
+        String parentDataverseAlias = createDataverseGetAlias(ownerApiToken);
+        Response publishResponse = UtilIT.publishDataverseViaNativeApi(parentDataverseAlias, ownerApiToken);
+        assertEquals(200, publishResponse.getStatusCode());
+        // Create a Parent Guestbook
+        Guestbook parentGuestbook = UtilIT.createRandomGuestbook(parentDataverseAlias, null, ownerApiToken);
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(ownerApiToken);
+        UtilIT.moveDataverse(dataverseAlias, parentDataverseAlias, null, ownerApiToken);
+
+        // Create user with no permission
+        createUserResponse = UtilIT.createRandomUser();
+        assertEquals(200, createUserResponse.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String username = UtilIT.getUsernameFromResponse(createUserResponse);
+
+        // Create second user with no permission
+        createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.prettyPrint();
+        assertEquals(200, createUserResponse.getStatusCode());
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String username2 = UtilIT.getUsernameFromResponse(createUserResponse);
+        String user2Email = JsonPath.from(createUserResponse.body().asString()).getString("data.authenticatedUser.email");
+
+        // Create Dataset
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, ownerApiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        String directoryLabel = "data/store/" + persistentId.substring(4);
+        Response getDatasetMetadata = UtilIT.nativeGet(datasetId, ownerApiToken);
+        getDatasetMetadata.then().assertThat().statusCode(200);
+
+        Response getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken);
+        getGuestbooksResponse.then().assertThat().statusCode(200);
+        assertTrue(getGuestbooksResponse.getBody().jsonPath().getList("data").isEmpty());
+
+        // Create a Guestbook
+        Guestbook guestbook = UtilIT.createRandomGuestbook(dataverseAlias, persistentId, ownerApiToken);
+
+        // Get the list of Guestbooks
+        getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken);
+        getGuestbooksResponse.then().assertThat().statusCode(200);
+        assertEquals(1, getGuestbooksResponse.getBody().jsonPath().getList("data").size());
+        // Get the list of Guestbooks including Parent Guestbook
+        getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, false, Boolean.TRUE);
+        getGuestbooksResponse.then().assertThat().statusCode(200);
+        assertEquals(2, getGuestbooksResponse.getBody().jsonPath().getList("data").size());
+
+        // Upload files
+        JsonObjectBuilder json1 = Json.createObjectBuilder().add("description", "my description1").add("directoryLabel", directoryLabel).add("categories", Json.createArrayBuilder().add("Data"));
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/dataverseproject.png", json1.build(), ownerApiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId1 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        JsonObjectBuilder json2 = Json.createObjectBuilder().add("description", "my description2").add("directoryLabel", directoryLabel).add("categories", Json.createArrayBuilder().add("Data"));
+        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/orcid_16x16.png", json2.build(), ownerApiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId2 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        JsonObjectBuilder json3 = Json.createObjectBuilder().add("description", "my description3").add("directoryLabel", directoryLabel).add("categories", Json.createArrayBuilder().add("Data"));
+        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/cc0.png", json3.build(), ownerApiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId3 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        UtilIT.enableSetting(SettingsServiceBean.Key.FilePIDsEnabled);
+        JsonObjectBuilder json4 = Json.createObjectBuilder().add("description", "my description4").add("directoryLabel", directoryLabel).add("categories", Json.createArrayBuilder().add("Data"));
+        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/Robot-Icon_2.png", json4.build(), ownerApiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        uploadResponse.prettyPrint();
+        Integer fileId4 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        String filePersistentId = JsonPath.from(uploadResponse.body().asString()).getString("data.files[0].dataFile.persistentId");
+
+        // Restrict files
+        Response restrictResponse = UtilIT.restrictFile(fileId1.toString(), true, ownerApiToken);
+        restrictResponse.then().assertThat().statusCode(OK.getStatusCode());
+        restrictResponse = UtilIT.restrictFile(fileId2.toString(), true, ownerApiToken);
+        restrictResponse.then().assertThat().statusCode(OK.getStatusCode());
+        restrictResponse = UtilIT.restrictFile(fileId3.toString(), true, ownerApiToken);
+        restrictResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // do not restrict fileId4
+
+        // Update Dataset to allow requests
+        Response allowAccessRequestsResponse = UtilIT.allowAccessRequests(datasetId.toString(), true, ownerApiToken);
+        assertEquals(200, allowAccessRequestsResponse.getStatusCode());
+        // Publish dataverse and dataset
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, ownerApiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", ownerApiToken);
+        assertEquals(200, publishDataset.getStatusCode());
+
+        // Request access
+        Response requestFileAccessResponse = UtilIT.requestFileAccess(fileId1.toString(), apiToken, null);
+        assertEquals(200, requestFileAccessResponse.getStatusCode());
+        requestFileAccessResponse = UtilIT.requestFileAccess(fileId2.toString(), apiToken, null);
+        assertEquals(200, requestFileAccessResponse.getStatusCode());
+        requestFileAccessResponse = UtilIT.requestFileAccess(fileId3.toString(), apiToken, null);
+        assertEquals(200, requestFileAccessResponse.getStatusCode());
+
+        // Grant file access
+        Response grantFileAccessResponse = UtilIT.grantFileAccess(fileId1.toString(), "@" + username, ownerApiToken);
+        assertEquals(200, grantFileAccessResponse.getStatusCode());
+        grantFileAccessResponse = UtilIT.grantFileAccess(fileId2.toString(), "@" + username, ownerApiToken);
+        assertEquals(200, grantFileAccessResponse.getStatusCode());
+        grantFileAccessResponse = UtilIT.grantFileAccess(fileId3.toString(), "@" + username, ownerApiToken);
+        assertEquals(200, grantFileAccessResponse.getStatusCode());
+
+        String guestbookResponse = UtilIT.generateGuestbookResponse(guestbook);
+
+        // Download unrestricted file by guest user fails without GuestbookResponse
+        Response downloadResponse = UtilIT.downloadFile(fileId4);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat()
+                .body("status", equalTo(ApiConstants.STATUS_ERROR))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", List.of(guestbook.getId().toString()))))
+                .statusCode(BAD_REQUEST.getStatusCode());
+        // With GuestbookResponse. Guest user doesn't have the required Name and Email. so this will still fail
+        downloadResponse = UtilIT.postDownloadFile(fileId4, guestbookResponse);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat()
+                .body("status", equalTo(ApiConstants.STATUS_ERROR))
+                .body("message", containsString("(Name,Email)"))
+                .statusCode(BAD_REQUEST.getStatusCode());
+        String guestbookResponseForGuest = guestbookResponse.replace("\"guestbookResponse\": {",
+                "\"guestbookResponse\": { \"name\":\"My Name\", \"email\":\"myemail@example.com\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
+
+        // With GuestbookResponse. Guest user doesn't have the required Name, etc. So we will add those to the Guestbook Response
+        downloadResponse = UtilIT.postDownloadFile(fileId4, guestbookResponseForGuest);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+        // Download the file using the signed url
+        Response signedUrlResponse = get(signedUrl);
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+
+        // Get Download Url attempt - Guestbook Response is required but not found
+        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken, null);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat()
+                .body("status", equalTo(ApiConstants.STATUS_ERROR))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", List.of(guestbook.getId().toString()))))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Get Signed Download Url with guestbook response
+        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken, guestbookResponse);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+
+        // Verify that the Guestbook Response is persisted
+        Response guestbookResponseResponse = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), ownerApiToken);
+        guestbookResponseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(guestbookResponseResponse.prettyPrint().contains("What color car do you drive,Yellow"));
+
+        // Download the file using the signed url
+        signedUrlResponse = get(signedUrl);
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+
+        // Download multiple files - Guestbook Response is required but not found for file2 and file3
+        downloadResponse = UtilIT.postDownloadDatafiles(fileId1 + "," + fileId2+ "," + fileId3, apiToken);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat()
+                .body("status", equalTo(ApiConstants.STATUS_ERROR))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", List.of(guestbook.getId().toString()))))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Download multiple files with guestbook response and fileIds in json
+        String jsonBody = "{\"fileIds\":[" + fileId1 + "," + fileId2+ "," + fileId3 +"], " + guestbookResponse.substring(1);
+        downloadResponse = UtilIT.postDownloadDatafiles(jsonBody, apiToken);
+        assertEquals(OK.getStatusCode(), downloadResponse.getStatusCode());
+
+        // Download all files in dataset with guestbook response using dataset persistentId
+        downloadResponse = UtilIT.downloadAllDatasetFilesWithGuestbookResponse(persistentId, apiToken, guestbookResponse);
+        downloadResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+        signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+        signedUrlResponse = get(signedUrl);
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+
+        downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(new Integer[]{fileId1, fileId2, fileId3}, apiToken, guestbookResponse);
+        signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+        signedUrlResponse = get(signedUrl);
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+
+        // TEST Overwrite name, email, institution and position in guestbook Response. Using user2
+        requestFileAccessResponse = UtilIT.requestFileAccess(fileId1.toString(), apiToken2, null);
+        assertEquals(200, requestFileAccessResponse.getStatusCode());
+        grantFileAccessResponse = UtilIT.grantFileAccess(fileId1.toString(), "@" + username2, ownerApiToken);
+        assertEquals(200, grantFileAccessResponse.getStatusCode());
+        // Modify guestbookResponse excluding email to show that the email remains unchanged
+        guestbookResponse = guestbookResponse.replace("\"guestbookResponse\": {",
+                "\"guestbookResponse\": { \"name\":\"My Name\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
+        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken2, guestbookResponse);
+        downloadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Response guestbookResponses = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), ownerApiToken);
+        assertTrue(guestbookResponses.prettyPrint().contains("My Name," + user2Email + ",My Institution,My Position"));
+
+        // Get Signed Download Url for guest with guestbook response using file's persistentId
+        // POST /api/access/datafile/:persistentId?persistentId=
+        downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(filePersistentId, null, guestbookResponseForGuest);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+        // verify that the fileId is correct
+        assertTrue(signedUrl.contains("/access/datafile/" + fileId4 + "?"));
+        // verify that the persistentId is no longer in the url
+        assertFalse(signedUrl.contains("persistentId"));
+        // verify that the signed url is good
+        signedUrlResponse = get(signedUrl);
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+
+        // Verify that the guestbook has proper stats
+        Response guestbookListResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, true, null);
+        guestbookListResponse.prettyPrint();
+        guestbookListResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].usageCount", is(1))
+                .body("data[0].responseCount", is(17));
+
+        // Test Get All Responses
+        Response guestbookListResponses = UtilIT.getGuestbooksResponses(guestbook.getId(), null, null, ownerApiToken);
+        guestbookListResponses.prettyPrint();
+        guestbookListResponses.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        JsonPath jsonPath = JsonPath.from(guestbookListResponses.body().asString());
+        int totalCount = jsonPath.getList("data.responses").size();
+
+        // Test Get Responses with pagination
+        int pages = 4; // total should be 17. set to 4 pages
+        int limit = (totalCount / pages) + 1; // should be 5 per page. we should see 5, 5, 5, 2
+        int pagedTotalCount = 0;
+        int totalCountFromJson = 0;
+        for (int i = 0; i < pages; i++) {
+            int offset = limit * i;
+            guestbookListResponses = UtilIT.getGuestbooksResponses(guestbook.getId(), offset, limit, ownerApiToken);
+            guestbookListResponses.prettyPrint();
+            jsonPath = JsonPath.from(guestbookListResponses.body().asString());
+            pagedTotalCount += jsonPath.getList("data.responses").size();
+            totalCountFromJson = jsonPath.getInt("data.pagination.totalResponses");
+            // 'No duplicate ids' was manually verified. Just make sure the count is good. If there were duplicates the count would be high
+        }
+        // verify all counts are good and equal
+        assertEquals(totalCount, pagedTotalCount);
+        assertEquals(pagedTotalCount, totalCountFromJson);
+    }
+
+    @Test
+    public void testGetFileCitationFormatted() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadFile.then().assertThat().statusCode(OK.getStatusCode());
+
+        String fileId = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        // Test good formats
+        Response response = UtilIT.getFileCitationFormat(fileId,"EndNote", apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(response.prettyPrint().contains("<custom1>coffeeshop.png</custom1>"));
+
+        response = UtilIT.getFileCitationFormat(fileId,"RIS", apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(response.prettyPrint().contains("C1  - coffeeshop.png"));
+
+        response = UtilIT.getFileCitationFormat(fileId,"BibTeX", apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(response.prettyPrint().contains("author = {Finch, Fiona},"));
+
+        response = UtilIT.getFileCitationFormat(fileId,"CSL", apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(response.prettyPrint().contains("\"title\": \"Darwin's Finches\","));
+
+        response = UtilIT.getFileCitationFormat(fileId,"Internal", apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(response.prettyPrint().contains("coffeeshop.png [fileName]"));
+
+        // Test an unknown format
+        response = UtilIT.getFileCitationFormat(fileId,"bad", apiToken);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.citation.invalidFormat")));
+        // Test an NULL format
+        response = UtilIT.getFileCitationFormat(fileId,null, apiToken);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.citation.invalidFormat")));
+
+        // Test a user that doesn't have permission to get the citation
+        Response createUser2 = UtilIT.createRandomUser();
+        createUser2.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+        response = UtilIT.getFileCitationFormat(fileId,"EndNote", apiToken2);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode());
+
+        // Test a guest user after publishing
+        response = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        response = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        response = UtilIT.getFileCitationFormat(fileId,"EndNote", null);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
+
+    // This test is disabled because it is only compatible with the containerized development environment and would cause the Jenkins job to fail.
+    @Test
+    @Disabled
+    public void testDownloadFileWithGuestbookResponseUsingBearerToken() throws IOException, JsonParseException {
+        msgt("testDownloadFileWithGuestbookResponseUsingBearerToken");
+        UtilIT.enableSetting(SettingsServiceBean.Key.FilePIDsEnabled);
+        // Create superuser
+        Response createUserResponse = UtilIT.createRandomUser();
+        assertEquals(200, createUserResponse.getStatusCode());
+        String ownerApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String superusername = UtilIT.getUsernameFromResponse(createUserResponse);
+        UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(ownerApiToken);
+
+        // Create Dataset
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, ownerApiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        Response getDatasetMetadata = UtilIT.nativeGet(datasetId, ownerApiToken);
+        getDatasetMetadata.then().assertThat().statusCode(200);
+
+        // Create a Guestbook
+        Guestbook guestbook = UtilIT.createRandomGuestbook(dataverseAlias, persistentId, ownerApiToken);
+
+        // Upload files
+        JsonObjectBuilder json1 = Json.createObjectBuilder().add("description", "my description1").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/dataverseproject.png", json1.build(), ownerApiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String filePersistentId = JsonPath.from(uploadResponse.body().asString()).getString("data.files[0].dataFile.persistentId");
+
+        // Publish dataverse and dataset
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, ownerApiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", ownerApiToken);
+        assertEquals(200, publishDataset.getStatusCode());
+
+        // Set Up - Get the admin access token from the OIDC provider
+        Response adminOidcLoginResponse = UtilIT.performKeycloakROPCLogin("admin", "admin");
+        adminOidcLoginResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("access_token", notNullValue());
+        String adminOidcAccessToken = adminOidcLoginResponse.jsonPath().getString("access_token");
+
+        // Create user with bearer token and no api token
+        String randomUsername = UUID.randomUUID().toString().substring(0, 8);
+        String email = randomUsername + "@dataverse.org";
+        String firstName = "John";
+        String lastName = "Doe";
+
+        String newKeycloakUserWithClaimsJson = "{"
+                + "\"username\":\"" + randomUsername + "\","
+                + "\"enabled\":true,"
+                + "\"email\":\"" + email + "\","
+                + "\"firstName\":\"" + firstName + "\","
+                + "\"lastName\":\"" + lastName + "\","
+                + "\"credentials\":["
+                + "  {"
+                + "    \"type\":\"password\","
+                + "    \"value\":\"password\","
+                + "    \"temporary\":false"
+                + "  }"
+                + "]"
+                + "}";
+        Response createKeycloakOidcUserResponse = UtilIT.createKeycloakUser(adminOidcAccessToken, newKeycloakUserWithClaimsJson);
+        createKeycloakOidcUserResponse.prettyPrint();
+        createKeycloakOidcUserResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Response newUserOidcLoginResponse = UtilIT.performKeycloakROPCLogin(randomUsername, "password");
+        newUserOidcLoginResponse.prettyPrint();
+        String userWithClaimsAccessToken = newUserOidcLoginResponse.jsonPath().getString("access_token");
+        Response registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{"
+                        + "\"termsAccepted\":true"
+                        + "}",
+                "Bearer " + userWithClaimsAccessToken
+        );
+        registerOidcUserResponse.prettyPrint();
+        assertEquals(200, registerOidcUserResponse.getStatusCode());
+
+        // Download using Bearer Token
+        // POST with guestbook response
+        String guestbookResponse = UtilIT.generateGuestbookResponse(guestbook).replace("\"guestbookResponse\": {",
+                "\"guestbookResponse\": { \"name\":\"My Name\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
+        Response downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(filePersistentId,null, guestbookResponse, userWithClaimsAccessToken);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+        // verify that the username is correct
+        assertTrue(signedUrl.contains("&user=" + randomUsername + "&"));
+        // Download using the signed URL
+        Response signedUrlResponse = get(signedUrl);
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
     }
 }
