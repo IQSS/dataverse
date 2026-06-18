@@ -539,7 +539,7 @@ public class Datasets extends AbstractApiBean {
             }
 
             JsonObjectBuilder jsonBuilder = json(requestedDatasetVersion, null, includeFiles,
-                    returnOwners, includeMetadataBlocks, ignoreSettingExcludeEmailFromExport);
+                    returnOwners, includeMetadataBlocks, false, ignoreSettingExcludeEmailFromExport);
             return ok(jsonBuilder);
 
         }, getRequestUser(crc));
