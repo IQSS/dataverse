@@ -1078,7 +1078,8 @@ public class Access extends AbstractApiBean {
 
         List<DataFile> selectedDataFiles = new ArrayList<>();
         try {
-            selectedDataFiles = fileDownloadService.resolveSelectedDataFilesInDataset(fileIdsList);
+            // Locally FAIR permission check is made in this call
+            selectedDataFiles = fileDownloadService.resolveSelectedDataFilesInDataset(fileIdsList, req);
         } catch (FileNotFoundException e) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.invalidFileId"));
         } catch (FileDownloadServiceBean.MultipleDatasetsException e) {

@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
@@ -134,7 +135,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         List<DataFile> selectedDataFiles = new ArrayList<>();
         //Should not be getting exceptions with Dataverse generating the fileIds
         try {
-            selectedDataFiles = resolveSelectedDataFilesInDataset(fileIdsList);
+            selectedDataFiles = resolveSelectedDataFilesInDataset(fileIdsList, dvRequestService.getDataverseRequest());
         } catch (FileNotFoundException e) {
             PrimeFaces.current().dialog().showMessageDynamic(new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.getMessage()));
             return;
@@ -268,7 +269,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         return savedIds;
     }
 
-    public List<DataFile> resolveSelectedDataFilesInDataset(List<String> rawFileIds)
+    public List<DataFile> resolveSelectedDataFilesInDataset(List<String> rawFileIds, DataverseRequest req)
             throws FileNotFoundException, MultipleDatasetsException {
 
         List<DataFile> selectedDataFiles = new ArrayList<>(rawFileIds.size());
@@ -289,6 +290,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             DataFile dataFile = datafileService.find(fileId);
             if (dataFile == null) {
                 throw new FileNotFoundException("No file found for id: " + fileId);
+            }
+            
+            if (selectedDataFiles.isEmpty()) {
+                if (dataFile.isLocallyFAIR() && !permissionService.hasLocallyFAIRAccess(req, dataFile)) {
+                    throw new FileNotFoundException("No file found for id: " + fileId);
+                }
             }
 
             Long currentDatasetId = dataFile.getOwner().getId();
