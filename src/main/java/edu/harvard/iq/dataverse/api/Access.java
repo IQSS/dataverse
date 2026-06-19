@@ -1114,7 +1114,7 @@ public class Access extends AbstractApiBean {
             if (useCustomZipService) {
                 URI redirect_uri = null;
                 try {
-                    redirect_uri = handleCustomZipDownload(user, customZipServiceUrl, fileIdsList, uriInfo, headers, donotwriteGBResponse, true);
+                    redirect_uri = handleCustomZipDownload(user, customZipServiceUrl, authorizedDatafiles, uriInfo, headers, donotwriteGBResponse, getOrig);
                 } catch (WebApplicationException wae) {
                     throw wae;
                 }
@@ -2159,73 +2159,38 @@ public class Access extends AbstractApiBean {
         return false; 
     }
 
-    private URI handleCustomZipDownload(User user, String customZipServiceUrl, List<String> fileIdsList, UriInfo uriInfo, HttpHeaders headers, boolean donotwriteGBResponse, boolean orig) throws WebApplicationException {
-        
-        String zipServiceKey = null; 
-        Timestamp timestamp = null; 
+    private URI handleCustomZipDownload(User user, String customZipServiceUrl, List<DataFile> authorizedDatafiles, UriInfo uriInfo, HttpHeaders headers, boolean donotwriteGBResponse, boolean orig) throws WebApplicationException {
 
-        int validIdCount = 0; 
-        int validFileCount = 0;
-        int downloadAuthCount = 0; 
+        String zipServiceKey = null;
+        Timestamp timestamp = null;
 
-        if (fileIdsList == null || fileIdsList.isEmpty()) {
-            throw new BadRequestException();
-        }
-        
-        for (int i = 0; i < fileIdsList.size(); i++) {
-            Long fileId = null;
-            try {
-                fileId = Long.parseLong(fileIdsList.get(i));
-                validIdCount++;
-            } catch (NumberFormatException nfe) {
-                fileId = null;
-            }
-            if (fileId != null) {
-                DataFile file = dataFileService.find(fileId);
-                if (file != null) {
-                    validFileCount++;
-                    if (isAccessAuthorized(user, file)) {
-                        logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
-                        if (donotwriteGBResponse != true && file.isReleased()) {
-                            GuestbookResponse gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, user);
-                            guestbookResponseService.save(gbr);
-                            MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, file);
-                            mdcLogService.logEntry(entry);
-                        }
-
-                        if (zipServiceKey == null) {
-                            zipServiceKey = fileDownloadService.generateServiceKey();
-                        }
-                        if (timestamp == null) {
-                            timestamp = new Timestamp(new Date().getTime());
-                        }
-
-                        fileDownloadService.addFileToCustomZipJob(zipServiceKey, file, timestamp, true);
-                        downloadAuthCount++;
-                    }
-                }
-            }
-        }
-
-        if (validIdCount == 0) {
-            throw new BadRequestException();
-        }
-        
-        if (validFileCount == 0) {
-            // no supplied id translated into an existing DataFile
-            throw new NotFoundException();
-        }
-        
-        if (downloadAuthCount == 0) {
-            // none of the DataFiles were authorized for download
+        if (authorizedDatafiles == null || authorizedDatafiles.isEmpty()) {
             throw new ForbiddenException();
         }
-        
+
+        if (!donotwriteGBResponse) {
+            GuestbookResponse gbr = guestbookResponseService.initAPIGuestbookResponse(authorizedDatafiles.getFirst().getOwner(), authorizedDatafiles.getFirst(), session, user);
+            fileDownloadService.writeGuestbookResponseRecords(gbr, authorizedDatafiles);
+        }
+
+        for (DataFile file : authorizedDatafiles) {
+            logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
+
+            if (zipServiceKey == null) {
+                zipServiceKey = fileDownloadService.generateServiceKey();
+            }
+            if (timestamp == null) {
+                timestamp = new Timestamp(new Date().getTime());
+            }
+
+            fileDownloadService.addFileToCustomZipJob(zipServiceKey, file, timestamp, orig);
+        }
+
         URI redirectUri = null;
         try {
             redirectUri = new URI(customZipServiceUrl + "?" + zipServiceKey);
         } catch (URISyntaxException use) {
-            throw new BadRequestException(); 
+            throw new BadRequestException();
         }
         return redirectUri;
     }
