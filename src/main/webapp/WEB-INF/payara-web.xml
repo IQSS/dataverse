@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE payara-web-app PUBLIC "-//Payara.fish//DTD Payara Server 6.36.0//EN" "https://raw.githubusercontent.com/payara/Payara-Documentation/main-6/docs/modules/ROOT/pages/Appendix/Schemas/payara-web-app_4.dtd">
+<!DOCTYPE payara-web-app PUBLIC "-//Payara.fish//DTD Payara Server 7.2026.2//EN" "https://raw.githubusercontent.com/payara/Payara-Documentation/main-7/docs/modules/ROOT/pages/Appendix/Schemas/payara-web-app_6_1-0.dtd">
 <payara-web-app error-url="">
   <context-root>/</context-root>
   <class-loader delegate="true"/>
