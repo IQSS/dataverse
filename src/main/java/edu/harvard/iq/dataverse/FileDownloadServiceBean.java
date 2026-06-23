@@ -226,7 +226,10 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         int countRequestAccessSuccess = 0;
 
+        // ToDo - rewrite to avoid 1 transaction per guestbookresponse/file
         for(DataFile dataFile : selectedDataFiles){
+            // The guestbookResponse can be reused because the final save() of
+            // the guestbookResponse is in a new transaction. (Otherwise we'd need to make a copy)
             guestbookResponse.setDataFile(dataFile);
             writeGuestbookResponseRecordForRequestAccess(guestbookResponse);
             if(requestAccess(dataFile,guestbookResponse)){
