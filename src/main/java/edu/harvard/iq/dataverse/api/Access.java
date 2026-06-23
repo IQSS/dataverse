@@ -843,7 +843,7 @@ public class Access extends AbstractApiBean {
                 // is that we know that guest never has the Permission.ViewUnpublishedDataset. 
                 final DatasetVersion draft = versionService.getDatasetVersionById(retrieved.getId(), DatasetVersion.VersionState.DRAFT.toString());
                 if (draft != null && permissionService.requestOn(req, retrieved).has(Permission.ViewUnpublishedDataset)) {                    
-                    List<String> fileIds = getFileIdsList(draft.getFileMetadatas());
+                    List<String> fileIds = getFileIdsList(draft);
                     // We don't want downloads from Draft versions to be counted, 
                     // so we are setting the gbrecs (aka "do not write guestbook response") 
                     // variable accordingly:
@@ -867,7 +867,7 @@ public class Access extends AbstractApiBean {
                 //throw new NotFoundException();
             }
             
-            List<String> fileIdsList = getFileIdsList(latest.getFileMetadatas());
+            List<String> fileIdsList = getFileIdsList(latest);
             return downloadDatafiles(crc, fileIdsList, gbrecs, gbrids, uriInfo, headers, response, latest.getFriendlyVersionNumber());
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -888,14 +888,14 @@ public class Access extends AbstractApiBean {
             if (!(user instanceof GuestUser)) {
                 final DatasetVersion draft = versionService.getDatasetVersionById(retrieved.getId(), DatasetVersion.VersionState.DRAFT.toString());
                 if (draft != null && permissionService.requestOn(req, retrieved).has(Permission.ViewUnpublishedDataset)) {
-                    fileIdsList = getFileIdsList(draft.getFileMetadatas());
+                    fileIdsList = getFileIdsList(draft);
                     gbrecs = true;
                     version = "draft";
                 }
             }
             if (version == null) {
                 final DatasetVersion latest = versionService.getLatestReleasedVersionFast(retrieved.getId());
-                fileIdsList = getFileIdsList(latest.getFileMetadatas());
+                fileIdsList = getFileIdsList(latest);
                 version = latest.getFriendlyVersionNumber();
             }
             return processDatafilesWithGuestbookResponse(crc, req, headers, fileIdsList, uriInfo, gbrecs, jsonBody);
@@ -919,7 +919,7 @@ public class Access extends AbstractApiBean {
                 // -- L.A.)
                 return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.exception.version.not.found"));
             }
-            List<String> fileIdsList = getFileIdsList(dsv.getFileMetadatas());
+            List<String> fileIdsList = getFileIdsList(dsv);
             // We don't want downloads from Draft versions to be counted,
             // so we are setting the gbrecs (aka "do not write guestbook response")
             // variable accordingly:
@@ -943,7 +943,7 @@ public class Access extends AbstractApiBean {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             DatasetVersion dsv = getDatasetVersionFromVersion(crc, datasetIdOrPersistentId, versionId);
-            List<String> fileIdsList = getFileIdsList(dsv.getFileMetadatas());
+            List<String> fileIdsList = getFileIdsList(dsv);
             return processDatafilesWithGuestbookResponse(crc, req, headers, fileIdsList, uriInfo, gbrecs, jsonBody);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -977,10 +977,13 @@ public class Access extends AbstractApiBean {
         }));
     }
 
-    private static List<String> getFileIdsList(List<FileMetadata> fileMetadatas) {
-        return fileMetadatas.stream().map(fileMetadata -> fileMetadata.getId().toString()).collect(Collectors.toList());
+    private List<String> getFileIdsList(DatasetVersion dsv) {
+        return dataFileService.findDataFileIdsByDatasetVersionId(dsv.getId())
+                .stream()
+                .map(String::valueOf)
+                .collect(Collectors.toList());
     }
-    
+
     private String generateMultiFileBundleName(Dataset dataset, String versionTag) {
         String bundleName = DEFAULT_BUNDLE_NAME;
         

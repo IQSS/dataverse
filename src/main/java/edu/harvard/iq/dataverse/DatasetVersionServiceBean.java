@@ -1279,8 +1279,7 @@ w
     /**
      * Execute a query to return DatasetVersion
      * 
-     * @param queryString
-     * @return 
+     * @return
      */
     public List<DatasetVersion> getUnarchivedDatasetVersions(){
         
@@ -1359,4 +1358,5 @@ w
             logger.log(Level.SEVERE, "Could not find DatasetVersion with id={0} to retry persisting archival copy location after OptimisticLockException.", dv.getId());
         }
     }
+
 }
