@@ -73,6 +73,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     @EJB
     MailServiceBean mailService;
 
+    @EJB
+    FileDownloadServiceBean self;
+
     @Inject
     DataverseSession session;
     
@@ -268,7 +271,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             perFileResponse.setDataFile(dataFile);
             responsesToPersist.add(perFileResponse);
         }
-        List<String> savedIds = saveGuestbookResponseRecordsAndMDCLogEntries(responsesToPersist);
+        List<String> savedIds = self.saveGuestbookResponseRecordsAndMDCLogEntries(responsesToPersist);
         return savedIds;
     }
 
