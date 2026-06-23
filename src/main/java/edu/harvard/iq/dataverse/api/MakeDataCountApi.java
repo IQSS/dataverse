@@ -147,6 +147,8 @@ public class MakeDataCountApi extends AbstractApiBean {
             final Dataset dataset = findDatasetOrDie(id);
             final GlobalId pid = dataset.getGlobalId();
             final PidProvider pidProvider = PidUtil.getPidProvider(pid.getProviderId());
+            // PathParam 'id' could be ":persistentId" so we want the actual value to be logged
+            final String datasetId = PERSISTENT_ID_KEY.equals(id) ? getRequestParameter(PERSISTENT_ID_KEY.substring(1)) : id;
 
             // Only supported for DOIs and for DataCite DOI providers
             if (!DataCiteDOIProvider.TYPE.equals(pidProvider.getProviderType())) {
@@ -168,21 +170,21 @@ public class MakeDataCountApi extends AbstractApiBean {
                         lastExecutionTime.set(System.currentTimeMillis());
 
                         if (success) {
-                            logger.fine("Successfully processed citation update for dataset " + id);
+                            logger.fine("Successfully processed citation update for dataset " + datasetId);
                         } else {
-                            logger.warning("Failed to process citation update for dataset " + id);
+                            logger.warning("Failed to process citation update for dataset " + datasetId);
                         }
                     } catch (Exception e) {
-                        logger.log(Level.SEVERE, "Error processing citation update for dataset " + id, e);
+                        logger.log(Level.SEVERE, "Error processing citation update for dataset " + datasetId, e);
                     }
                 });
 
                 JsonObjectBuilder output = Json.createObjectBuilder();
                 output.add("status", "queued");
-                output.add("message", "Citation update for dataset " + id + " has been queued for processing");
+                output.add("message", "Citation update for dataset " + datasetId + " has been queued for processing");
                 return ok(output);
             } catch (RejectedExecutionException ree) {
-                logger.warning("Citation update for dataset " + id + " was rejected: Queue is full");
+                logger.warning("Citation update for dataset " + datasetId + " was rejected: Queue is full");
                 return error(Status.SERVICE_UNAVAILABLE,
                         "Citation update service is currently at capacity. Please try again later.");
             }

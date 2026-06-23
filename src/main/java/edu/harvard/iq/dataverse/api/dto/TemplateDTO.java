@@ -9,24 +9,24 @@ import jakarta.json.*;
 import java.sql.Timestamp;
 import java.util.*;
 
-public class NewTemplateDTO {
+public class TemplateDTO {
 
     private String name;
     private List<DatasetField> datasetFields;
     private Map<String, String> instructionsMap;
     private boolean isDefault;
 
-    public static NewTemplateDTO fromRequestBody(String requestBody, JsonParser jsonParser) throws JsonParseException {
-        NewTemplateDTO newTemplateDTO = new NewTemplateDTO();
+    public static TemplateDTO fromRequestBody(String requestBody, JsonParser jsonParser) throws JsonParseException {
+        TemplateDTO templateDTO = new TemplateDTO();
 
         JsonObject jsonObject = JsonUtil.getJsonObject(requestBody);
 
-        newTemplateDTO.name = jsonObject.getString("name");
-        newTemplateDTO.datasetFields = jsonParser.parseMultipleFields(jsonObject);
-        newTemplateDTO.instructionsMap = parseRequestBodyInstructionsMap(jsonObject);
-        newTemplateDTO.isDefault = jsonObject.getBoolean("isDefault", false);
-
-        return newTemplateDTO;
+        templateDTO.name = jsonObject.getString("name");
+        templateDTO.datasetFields = jsonParser.parseMultipleFields(jsonObject);
+        templateDTO.instructionsMap = jsonParser.parseRequestBodyInstructionsMap(jsonObject);
+        templateDTO.isDefault = jsonObject.getBoolean("isDefault", false);
+               
+        return templateDTO;
     }
 
     public Template toTemplate() {
@@ -59,18 +59,4 @@ public class NewTemplateDTO {
         return isDefault;
     }
 
-    private static Map<String, String> parseRequestBodyInstructionsMap(JsonObject jsonObject) {
-        Map<String, String> instructionsMap = new HashMap<>();
-        JsonArray instructionsJsonArray = jsonObject.getJsonArray("instructions");
-        if (instructionsJsonArray == null) {
-            return null;
-        }
-        for (JsonObject instructionJsonObject : instructionsJsonArray.getValuesAs(JsonObject.class)) {
-            instructionsMap.put(
-                    instructionJsonObject.getString("instructionField"),
-                    instructionJsonObject.getString("instructionText")
-            );
-        }
-        return instructionsMap;
-    }
 }

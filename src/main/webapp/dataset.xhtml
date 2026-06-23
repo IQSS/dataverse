@@ -27,7 +27,8 @@
             <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
             <ui:param name="canDownloadFiles" value="#{DatasetPage.canDownloadFiles()}"/>
             <ui:param name="canIssuePublishDatasetCommand" value="#{permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
-            <ui:param name="showPublishLink" value="#{version == DatasetPage.dataset.latestVersion 
+            <ui:param name="canIssueSubmitDatasetForReviewCommand" value="#{permissionsWrapper.canIssueSubmitDatasetForReviewCommand(DatasetPage.dataset)}"/>
+            <ui:param name="showPublishLink" value="#{version == DatasetPage.dataset.latestVersion
                                                       and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                       and canIssuePublishDatasetCommand}"/>
             <ui:param name="versionHasTabular" value="#{DatasetPage.versionHasTabular}"/>
@@ -56,7 +57,8 @@
                                                               and !DatasetPage.datasetLockedInWorkflow
                                                               and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                               and canUpdateDataset
-                                                              and !canIssuePublishDatasetCommand}"/>
+                                                              and !canIssuePublishDatasetCommand
+                                                              and canIssueSubmitDatasetForReviewCommand}"/>
             <ui:param name="showReturnToAuthorLink" value="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and latestVersionInReview
                                                              and canIssuePublishDatasetCommand}"/>
             <ui:param name="showAccessDatasetButtonGroup" value="#{(canDownloadFiles or versionHasGlobus)
@@ -173,6 +175,7 @@
                                             <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{version.inReview}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{deaccessioned}"/>
+                                            <h:outputText value="#{bundle['dataset.versionUI.locallyFAIR']}"  title="#{bundle['dataset.versionUI.locallyFAIR.tip']}"  styleClass="label label-primary" rendered="#{DatasetPage.dataset.locallyFAIR}"/>
                                             <h:outputText value="#{bundle['incomplete']}" styleClass="label label-danger" rendered="#{!valid}"/>
                                             <o:importFunctions type="edu.harvard.iq.dataverse.dataset.DatasetUtil" />
                                             <h:outputText value="#{DatasetUtil:getLocaleCurationStatusLabel(version.currentCurationStatus)}" styleClass="label curation-status label-info" rendered="#{canSeeCurationStatus}"/>
@@ -358,7 +361,7 @@
                                             <!-- END: DOWNLOAD/ACCESS DATASET -->
 
                                             <!-- PUBLISH DATASET -->
-                                            <div class="btn-group btn-group-justified" jsf:rendered="#{showPublishLink or showSubmitForReviewLink}">
+                                            <div class="btn-group btn-group-justified" jsf:rendered="#{showSubmitForReviewLink or showReturnToAuthorLink or showPublishLink or latestVersionInReview}">
                                                 <div class="btn-group">
                                                     <!-- Publish BTN -->
                                                     <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess or !valid}">
@@ -372,7 +375,7 @@
                                                             <f:passThroughAttribute name="aria-haspopup" value="true"/>
                                                             <f:passThroughAttribute name="aria-expanded" value="false"/>
                                                         </c:if>
-                                                        #{showPublishLink ? bundle['dataset.publishBtn'] : (latestVersionInReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn'])} <span jsf:rendered="#{(showSubmitForReviewLink or showReturnToAuthorLink) and showPublishLink}" class="caret"></span>
+                                                        #{showPublishLink ? bundle['dataset.publishBtn'] : (latestVersionInReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn'])} <span jsf:rendered="#{(showSubmitForReviewLink or showReturnToAuthorLink or showPublishLink or latestVersionInReview)}" class="caret"></span>
                                                     </h:outputLink>
                                                     <!-- Publish BTN DROPDOWN-MENU OPTIONS -->
                                                     <ul class="dropdown-menu pull-right text-left">
@@ -1945,11 +1948,25 @@
                         <p jsf:rendered="#{!valid}" class="text-warning">
                             <span class="glyphicon glyphicon-warning-sign"/><b style="color:red;"> #{bundle['dataset.message.incomplete.warning']}</b>
                         </p>
+                        <div class="well terms-agreement-block" jsf:rendered="#{DatasetPage.displaySubmitForReviewPopupCustomText}">
+                            <h:outputText value="#{DatasetPage.datasetSubmitForReviewCustomText}" escape="false"/>
+                        </div>
                         <c:if test="#{showSubmitForReviewLink}">
                             <ui:include src="datasetLicenseInfoFragment.xhtml"/>
                         </c:if>
+                        <ui:fragment rendered="#{valid and settingsWrapper.isHasSubmitForReviewDatasetDisclaimerText()}">
+                            <div class="form-group">
+                                <p:selectBooleanCheckbox class="text-danger" id="submitForReviewDisclaimer"
+                                                         itemLabel="#{MarkupChecker:sanitizeAdvancedHTML(settingsWrapper.getSubmitForReviewDatasetDisclaimerText())}"
+                                                         escape="false"
+                                                         value="#{DatasetPage.submitForReviewDisclaimerAcknowledged}">
+                                    <p:ajax event="change" update="submitReviewDatasetButton"/>
+                                </p:selectBooleanCheckbox>
+                            </div>
+                        </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton rendered="#{DatasetPage.validOrCanReviewIncomplete}" styleClass="btn btn-default" value="#{bundle.submit}" 
+                            <p:commandButton id="submitReviewDatasetButton" rendered="#{DatasetPage.validOrCanReviewIncomplete}" styleClass="btn btn-default" value="#{bundle.submit}"
+                                             disabled="#{!DatasetPage.submitForReviewDisclaimerAcknowledged}"
                                              onclick="PF('inreview').hide();
                                                      PF('blockDatasetForm').hide();" action="#{DatasetPage.submitDataset}" immediate="true"/>
                             <button class="btn btn-link" onclick="PF('inreview').hide();PF('blockDatasetForm').hide();" type="button">
@@ -2034,7 +2051,8 @@
                         <ui:fragment rendered="#{valid and settingsWrapper.isHasPublishDatasetDisclaimerText()}">
                             <div class="form-group">
                                 <p:selectBooleanCheckbox class="text-danger" id="publishDisclaimer"
-                                                         itemLabel="#{settingsWrapper.getPublishDatasetDisclaimerText()}"
+                                                         itemLabel="#{MarkupChecker:sanitizeAdvancedHTML(settingsWrapper.getPublishDatasetDisclaimerText())}"
+                                                         escape="false"
                                                          value="#{DatasetPage.publishDisclaimerAcknowledged}">
                                     <p:ajax event="change" update="releaseDatasetButton"/>
                                 </p:selectBooleanCheckbox>

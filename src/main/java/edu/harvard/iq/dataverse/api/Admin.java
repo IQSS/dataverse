@@ -74,7 +74,6 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -271,8 +270,8 @@ public class Admin extends AbstractApiBean {
             
             String content = settingsSvc.get(name);
             return (content != null) ? ok(content) : notFound("Setting " + name + " not found.");
-        } catch (IllegalArgumentException iae) {
-            return error(Response.Status.BAD_REQUEST, iae.getMessage());
+        } catch (SettingsValidationException sve) {
+            return error(Response.Status.BAD_REQUEST, sve.getMessage());
         }
     }
     
@@ -2259,94 +2258,6 @@ public class Admin extends AbstractApiBean {
     
     @GET
     @AuthRequired
-    @Path("/dataverse/{alias}/storageDriver")
-    public Response getStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias,
-                                     @QueryParam("getEffective") Boolean getEffective) throws WrappedResponse {
-        Dataverse dataverse = dataverseSvc.findByAlias(alias);
-        if (dataverse == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
-        }
-        try {
-            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
-            if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
-            }
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-
-        if (getEffective != null && getEffective) {
-            return ok(JsonPrinter.jsonStorageDriver(dataverse.getEffectiveStorageDriverId()));
-        } else {
-            return ok(JsonPrinter.jsonStorageDriver(dataverse.getStorageDriverId()));
-        }
-    }
-    
-    @PUT
-    @AuthRequired
-    @Path("/dataverse/{alias}/storageDriver")
-    public Response setStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias, String label) throws WrappedResponse {
-        Dataverse dataverse = dataverseSvc.findByAlias(alias);
-        if (dataverse == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
-        }
-        try {
-            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
-            if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
-            }
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        for (Entry<String, String> store: DataAccess.getStorageDriverLabels().entrySet()) {
-            if(store.getKey().equals(label)) {
-                dataverse.setStorageDriverId(store.getValue());
-                return ok("Storage set to: " + store.getKey() + "/" + store.getValue());
-            }
-        }
-        return error(Response.Status.BAD_REQUEST,
-                "No Storage Driver found for : " + label);
-    }
-
-    @DELETE
-    @AuthRequired
-    @Path("/dataverse/{alias}/storageDriver")
-    public Response resetStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
-        Dataverse dataverse = dataverseSvc.findByAlias(alias);
-        if (dataverse == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
-        }
-        try {
-            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
-            if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
-            }
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        dataverse.setStorageDriverId("");
-        return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
-    }
-    
-    @GET
-    @AuthRequired
-    @Path("/dataverse/storageDrivers")
-    public Response listStorageDrivers(@Context ContainerRequestContext crc) throws WrappedResponse {
-        try {
-            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
-            if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
-            }
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        JsonObjectBuilder bld = jsonObjectBuilder();
-        DataAccess.getStorageDriverLabels().entrySet().forEach(s -> bld.add(s.getKey(), s.getValue()));
-        return ok(bld);
-    }
-    
-    @GET
-    @AuthRequired
     @Path("/dataverse/{alias}/curationLabelSet")
     public Response getCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
         Dataverse dataverse = dataverseSvc.findByAlias(alias);
@@ -2821,4 +2732,5 @@ public class Admin extends AbstractApiBean {
         String csvData = cacheFactory.getStats(CacheFactoryBean.RATE_LIMIT_CACHE, deltaMinutesFilter != null ? String.valueOf(deltaMinutesFilter) : null);
         return Response.ok(csvData).header("Content-Disposition", "attachment; filename=\"data.csv\"").build();
     }
+
 }

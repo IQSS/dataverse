@@ -15,7 +15,7 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{FilePage.fileMetadata.dataFile.displayName} - #{FilePage.file.owner.owner.displayName}"/>
+            <ui:param name="pageTitle" value="#{FilePage.fileMetadata.labelForOriginal} - #{FilePage.file.owner.owner.displayName}"/>
             <ui:param name="dataverse" value="#{FilePage.file.owner.owner}"/>
             <ui:param name="showDataverseHeader" value="#{!FilePage.isAnonymizedAccess()}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
@@ -45,7 +45,7 @@
                         <div class="col-xs-12">
                             <div class="row">
                                 <div id="file-title-block" class="col-xs-12 margin-bottom-half">
-                                    <span class="file-title-label">#{FilePage.fileMetadata.label}</span>
+                                    <span class="file-title-label">#{FilePage.fileMetadata.labelForOriginal}</span>
 
                                     <!-- FILE LEVEL MSGs -->
                                     <div class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{FilePage.fileMetadata.dataFile.ingestProblem and FilePage.canUpdateDataset()}">
@@ -80,6 +80,7 @@
                                         <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}"/>
+                                        <h:outputText value="#{bundle['dataset.versionUI.locallyFAIR']}"  title="#{bundle['dataset.versionUI.locallyFAIR.tip']}"  styleClass="label label-primary" rendered="#{FilePage.file.locallyFAIR}"/>
                                         <h:outputText value="#{DatasetUtil:getLocaleCurationStatusLabel(FilePage.fileMetadata.datasetVersion.currentCurationStatus)}" styleClass="label label-info curation-status" rendered="#{FilePage.canSeeCurationStatus()}"/>
                                         <h:outputText value="#{bundle['incomplete']}" styleClass="label label-danger" rendered="#{!FilePage.valid}"/>
                                         <!-- DATASET VERSION NUMBER -->
@@ -590,11 +591,11 @@
                                                         <td>#{FilePage.file.retention.reason}
                                                         </td>
                                                     </tr>
-                                                    <tr id="fileSizeBlock" jsf:rendered="#{!(empty FilePage.file.friendlySize)}">
+                                                    <tr id="fileSizeBlock" jsf:rendered="#{!(empty FilePage.file.friendlyOriginalFileSize)}">
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.size.label']}
                                                         </th>
-                                                        <td>#{FilePage.file.friendlySize}</td>
+                                                        <td>#{FilePage.file.friendlyOriginalFileSize}</td>
                                                     </tr>
                                                     <tr id="fileTypeBlock" jsf:rendered="#{!(empty FilePage.file.friendlyType)}">
                                                         <th scope="row">
