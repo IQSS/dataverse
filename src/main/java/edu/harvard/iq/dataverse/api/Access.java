@@ -494,7 +494,7 @@ public class Access extends AbstractApiBean {
         // Check if requesting datafile or all files within dataset using :persistentId
         // If so, we need the datafile/dataset id to create a canonical signed URL
         String idString = null;
-        if (!uriInfo.getPath().toLowerCase().contains(":persitentId")) {
+        if (!uriInfo.getPath().toLowerCase().contains(":persistentId")) {
             if (!uriInfo.getPath().toLowerCase().contains("/dataset/")) {
                 // Should only be one file if :persistentId is being used
                 idString = datafiles.stream().map(df -> String.valueOf(df.getId())).collect(Collectors.joining(","));
@@ -569,7 +569,7 @@ public class Access extends AbstractApiBean {
         if (gbrids != null && !gbrids.isEmpty()) {
             builder.replaceQueryParam("gbrids", gbrids);
         }
-        builder.replaceQueryParam("persistentId", (Object) null); // remove this as a parm and add the id to the path
+        builder.replaceQueryParam("persistentId"); // remove this as a parm and add the id to the path
         crc.setProperty("gbrids", gbrids);
         String baseUrlEncoded = builder.build().toString();
         String baseUrl = URLDecoder.decode(baseUrlEncoded, StandardCharsets.UTF_8);
