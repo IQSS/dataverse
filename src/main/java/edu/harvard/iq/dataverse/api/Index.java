@@ -59,6 +59,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.QueryParam;
@@ -369,22 +370,43 @@ public class Index extends AbstractApiBean {
         return ok(response);
     }
 
-    @GET
+    @POST
+    @AuthRequired
     @Path("perms")
-    public Response indexAllPermissions() {
-        solrIndexService.asyncIndexAllPermissions();
-        return ok("Asynchronous indexing of all permissions has been started. Check the server logs for progress.");
+    public Response indexAllPermissions(@Context ContainerRequestContext crc) {
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Superusers only.");
+            }
+            if (solrIndexService.isIndexingPermissionsInProgress()) {
+                return conflict("Asynchronous indexing of all permissions is already in progress.");
+            }
+            solrIndexService.asyncIndexAllPermissions();
+            return ok("Asynchronous indexing of all permissions has been started. Check the server logs for progress.");
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
     }
 
-    @GET
+    @POST
+    @AuthRequired
     @Path("perms/{id}")
-    public Response indexPermissions(@PathParam("id") Long id) {
-        DvObject dvObject = dvObjectService.findDvObject(id);
-        if (dvObject == null) {
-            return error(Status.BAD_REQUEST, "Could not find DvObject based on id " + id);
-        } else {
-            IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(dvObject);
-            return ok(indexResponse.getMessage());
+    public Response indexPermissions(@Context ContainerRequestContext crc, @PathParam("id") Long id) {
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Superusers only.");
+            }
+            DvObject dvObject = dvObjectService.findDvObject(id);
+            if (dvObject == null) {
+                return error(Status.BAD_REQUEST, "Could not find DvObject based on id " + id);
+            } else {
+                IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(dvObject);
+                return ok(indexResponse.getMessage());
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
     }
     /**

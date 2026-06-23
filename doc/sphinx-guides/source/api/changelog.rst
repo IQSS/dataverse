@@ -7,6 +7,14 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.12
+-----
+- The permission reindexing endpoints have been updated to use ``POST`` and require superuser access. They are now documented in the :doc:`/admin/solr-search-index` guide.
+
+  - **/api/admin/index/perms**
+
+  - **/api/admin/index/perms/{id}**
+
 v6.10
 -----
 - The following GET APIs will now return ``400`` if a required Guestbook Response is not supplied. A Guestbook Response can be passed to these APIs in the JSON body using a POST call. See the notes under :ref:`basic-file-access` and :ref:`download-by-dataset-by-version` for details.
