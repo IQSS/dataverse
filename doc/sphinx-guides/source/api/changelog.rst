@@ -26,6 +26,7 @@ v6.11
 
 - The ``GET /api/access/datafile/{id}/userPermissions`` endpoint now requires authentication.
 - The Croissant :ref:`metadata export format <metadata-export-formats>` has been updated from version 1.0 to 1.1, which is reflected in the ``conformsTo`` property. The unused ``wd`` property has been dropped.
+
 v6.10
 -----
 - The following GET APIs will now return ``400`` if a required Guestbook Response is not supplied. A Guestbook Response can be passed to these APIs in the JSON body using a POST call. See the notes under :ref:`basic-file-access` and :ref:`download-by-dataset-by-version` for details.
