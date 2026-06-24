@@ -3088,7 +3088,7 @@ public class Datasets extends AbstractApiBean {
                         "You must upload a file or provide a valid storageidentifier, filename, and mimetype.");
             }
         } else {
-            newFilename = contentDispositionHeader.getFileName();
+            newFilename = FileUtil.decodeFileName(contentDispositionHeader.getFileName());
             // Let's see if the form data part has the mime (content) type specified.
             // Note that we don't want to rely on formDataBodyPart.getMediaType() -
             // because that defaults to "text/plain" when no "Content-Type:" header is

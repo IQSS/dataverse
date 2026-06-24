@@ -282,7 +282,7 @@ public class Files extends AbstractApiBean {
                         "You must upload a file or provide a valid storageidentifier, filename, and mimetype.");
             }
         } else {
-            newFilename = contentDispositionHeader.getFileName();
+            newFilename = FileUtil.decodeFileName(contentDispositionHeader.getFileName());
             newFileContentType = formDataBodyPart.getMediaType().toString();
         }
         
