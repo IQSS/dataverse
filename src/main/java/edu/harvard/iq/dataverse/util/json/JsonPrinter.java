@@ -359,6 +359,10 @@ public class JsonPrinter {
         bld.add("effectiveRequiresFilesToPublishDataset", dv.getEffectiveRequiresFilesToPublishDataset());
         bld.add("isReleased", dv.isReleased());
 
+        if (dv.isLinked()) {
+            bld.add("isLinked", true);
+        }
+
         List<DataverseFieldTypeInputLevel> inputLevels = dv.getDataverseFieldTypeInputLevels();
         if (!inputLevels.isEmpty()) {
             bld.add("inputLevels", JsonPrinter.jsonDataverseFieldTypeInputLevels(inputLevels));
@@ -613,6 +617,10 @@ public class JsonPrinter {
         }
         bld.add("datasetType", ds.getDatasetType().getName());
 
+        if (ds.isLinked()) {
+            bld.add("isLinked", true);
+        }
+
         JsonArrayBuilder locksArrayBuilder = Json.createArrayBuilder();
         for (DatasetLock lock : ds.getLocks()) {
             locksArrayBuilder.add(lock.getReason().toString());
@@ -680,6 +688,10 @@ public class JsonPrinter {
                 .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
                 .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD())
                 .add("versionNote", dsv.getVersionNote());
+
+        if (dsv.getDataset().isLinked()) {
+            bld.add("isLinked", true);
+        }
         if (dataset.getGuestbook() != null) {
             bld.add("guestbookId", dataset.getGuestbook().getId());
         }

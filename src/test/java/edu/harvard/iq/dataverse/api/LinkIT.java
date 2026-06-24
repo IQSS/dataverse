@@ -3,22 +3,19 @@ package edu.harvard.iq.dataverse.api;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
-
-import static jakarta.ws.rs.core.Response.Status.*;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.jupiter.api.Assertions.*;
-
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.io.StringReader;
+import java.util.logging.Logger;
+
+import static jakarta.ws.rs.core.Response.Status.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LinkIT {
 
@@ -88,6 +85,13 @@ public class LinkIT {
         assertEquals("Darwin's Finches", JsonPath.from(getLinksResponse.asString()).getString("data.linkedDatasets[0].title"));
         assertEquals(datasetPid, JsonPath.from(getLinksResponse.asString()).getString("data.linkedDatasets[0].identifier"));
 
+        // Test that search shows the "isLinked" attribute in the result
+        Response searchResponse = UtilIT.search("id:dataset_" + datasetId + "_draft", superuserApiToken);
+        searchResponse.prettyPrint();
+        searchResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].isLinked", equalTo(true));
+
         // A dataset cannot be linked to its parent dataverse.
         Response tryToLinkToParentDataverse = UtilIT.linkDataset(datasetPid, dataverse1Alias, superuserApiToken);
         tryToLinkToParentDataverse.prettyPrint();
@@ -150,11 +154,25 @@ public class LinkIT {
                 .body("data.linkedDataverses[0].alias", equalTo(dataverseAlias))
                 .body("data.linkedDataverses[0].displayName", equalTo(dataverseAlias));
 
+        // Test that search shows the "isLinked" attribute in the result
+        Response searchResponse = UtilIT.search("dvAlias:" + dataverseAlias, apiToken);
+        searchResponse.prettyPrint();
+        searchResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].isLinked", equalTo(true));
+
         Response deleteLinkingDataverseResponse = UtilIT.deleteDataverseLink(dataverseAlias, dataverseAlias2, apiToken);
         deleteLinkingDataverseResponse.prettyPrint();
         deleteLinkingDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.message", equalTo("Link from Dataverse " + dataverseAlias + " to linked Dataverse " + dataverseAlias2 + " deleted"));
+
+        // Test that search no longer shows the "isLinked" attribute in the result
+        searchResponse = UtilIT.search("dvAlias:" + dataverseAlias, apiToken);
+        searchResponse.prettyPrint();
+        searchResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].isLinked", equalTo(null));
     }
 
     @Test
