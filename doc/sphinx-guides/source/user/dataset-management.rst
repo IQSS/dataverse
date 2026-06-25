@@ -726,7 +726,7 @@ Preview URL to Review Unpublished Dataset
 
 Creating a Preview URL for a draft version of your dataset allows you to share your dataset (for viewing and downloading files, including :ref:`restricted <restricted-files>` and :ref:`embargoed <embargoes>` files) before it is published to a wide group of people who might not have a user account on the Dataverse installation. Anyone you send the Preview URL to will not have to log in to the Dataverse installation to view the unpublished dataset. Once a dataset has been published, you may create new General Preview URLs for subsequent draft versions, but the Anonymous Preview URL will no longer be available.
 
-**Note:** To create a Preview URL, you must have the *ManageDatasetPermissions* permission for your draft dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*. Take into account that before being able to create an Anonymous Preview URL, you must define what fields you want to ‘withheld’ when dataset access occurs via a Private Url with Anonymized Access. Please, refer to [this](https://guides.dataverse.org/en/latest/installation/config.html#anonymizedfieldtypenames) for more information.
+**Note:** To create a Preview URL, you must have the *ManageDatasetPermissions* permission for your draft dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*. Take into account that before being able to create an Anonymous Preview URL, your system administrator much configure :ref:`a setting <:AnonymizedFieldTypeNames>` that indicates which fields will be withheld (Author Name, for example) when dataset access occurs via a Preview Url with Anonymized Access.
 
 #. Go to your unpublished dataset
 #. Select the “Edit” button
