@@ -363,8 +363,9 @@ public class Datasets extends AbstractApiBean {
         
         // Instead of bailing out on the first error, keep going and record any problems before reporting back
         List<String> errors = new ArrayList<>();
-        // Note: the set automatically avoids duplicate requests
-        Set<DatasetVersion> versions = new HashSet<>();
+        // Note: The set automatically avoids duplicate requests, linked set preserves insertion order.
+        //       (As an API user may rely on keeping the order as given in the request.)
+        Set<DatasetVersion> versions = new LinkedHashSet<>();
         
         // Get all the requested DatasetVersions (requiring permission checks)
         for (MultiDatasetExportRequest.ExportItem requested : request.datasets()) {
