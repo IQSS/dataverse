@@ -490,9 +490,9 @@ public class OREMap {
                 vals.add(child);
             }
         }
-        // Add metadata value to aggregation, suppress array when only one value
+        // Add metadata value to aggregation, suppress array when multiples not allowed
         JsonArray valArray = vals.build();
-        return (valArray.size() != 1) ? valArray : valArray.get(0);
+        return (dfType.isAllowMultiples()) ? valArray : valArray.get(0);
     }
 
     private static void addCvocValue(String val, JsonArrayBuilder vals, JsonObject cvocEntry,
