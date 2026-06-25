@@ -124,7 +124,6 @@ import static jakarta.ws.rs.core.HttpHeaders.ACCEPT_LANGUAGE;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
-import static jakarta.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -427,8 +426,30 @@ public class Datasets extends AbstractApiBean {
                 .build();
         }
         
-        // TODO: hand over to ExportService to export all the datasets now
-        return error(NOT_IMPLEMENTED, "TODO");
+        // Retrieve the export service and prepare the export
+        // TODO: the service should be an injected EJB singleton, aligned with how the rest of the API works
+        ExportService instance = ExportService.getInstance();
+        String mediaType = instance.getMediaType(request.exporter());
+        String exportId = UUID.randomUUID().toString();
+        
+        // Streaming Lambda to write the serialized exporter output to the client
+        // TODO: Make Data Count still needs a notification for released datasets
+        StreamingOutput stream = output -> {
+            try {
+                instance.writeExports(request.exporter(), versions, output);
+                output.flush();
+            } catch (ExportException | IOException e) {
+                logger.log(Level.WARNING, e,
+                    () -> "Internal error occurred during streaming multi-dataset export response. exportId=" + exportId);
+                throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
+            }
+        };
+        
+        return Response.ok(stream)
+            .type(mediaType)
+            // Include this header to provide an individual marker for tracking purposes in case of exceptions
+            .header("X-Dataverse-Export-Id", exportId)
+            .build();
     }
 
     @DELETE
