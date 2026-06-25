@@ -75,6 +75,7 @@ import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
@@ -344,7 +345,9 @@ public class Datasets extends AbstractApiBean {
     @Operation(summary = "Export metadata for one or multiple dataset versions")
     @APIResponse(responseCode = "400", description = "Invalid JSON or not following schema (syntactical error), or valid JSON, but not processable (semantical error).")
     public Response exportMultiple(@RequestBody(content = @Content(schema = @Schema(implementation = MultiDatasetExportRequest.class)))
-                                   @Valid MultiDatasetExportRequest request,
+                                   // TODO: Extend capturing capabilities for exceptions to provide clean error messages
+                                   //       JsonbException, ProcessingException, UnexpectedTypeException, IllegalArgumentException, ...
+                                   @NotNull(message = "request body may not be absent") @Valid MultiDatasetExportRequest request,
                                    @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context ContainerRequestContext crc) {
         
         // Verify the exporter exists and supports multiple datasets (when given more than one)
