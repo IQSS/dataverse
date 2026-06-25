@@ -367,6 +367,7 @@ public class Datasets extends AbstractApiBean {
         Set<DatasetVersion> versions = new LinkedHashSet<>();
         
         // Get all the requested DatasetVersions (requiring permission checks)
+        // TODO: This should not be a part of the API code, but a distinct service, owning the business logic
         for (MultiDatasetExportRequest.ExportItem requested : request.datasets()) {
             // First, lookup the dataset itself to verify it exists
             Dataset dataset = datasetService.findByGlobalId(requested.persistentId());
@@ -422,7 +423,8 @@ public class Datasets extends AbstractApiBean {
         // In case of errors, stop here. Otherwise, hand over to ExportService.
         if (!errors.isEmpty()) {
             return JsonResponseBuilder.error(BAD_REQUEST)
-                .message("The following errors were found in your request:\n" + StringUtils.join("\n", errors))
+                // TODO: align with error messages from validation (keep a consistent output!), make it more granular
+                .message("The following errors were found in your request:" + StringUtils.join("\n", errors))
                 .build();
         }
         
