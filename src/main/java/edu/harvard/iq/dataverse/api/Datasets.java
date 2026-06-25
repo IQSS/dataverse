@@ -67,8 +67,6 @@ import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import io.gdcc.spi.export.ExportException;
-import io.gdcc.spi.export.Exporter;
-import io.gdcc.spi.export.MultiDatasetExporter;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
@@ -348,15 +346,15 @@ public class Datasets extends AbstractApiBean {
     public Response exportMultiple(@RequestBody(content = @Content(schema = @Schema(implementation = MultiDatasetExportRequest.class)))
                                    @Valid MultiDatasetExportRequest request,
                                    @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context ContainerRequestContext crc) {
+        
         // Verify the exporter exists and supports multiple datasets (when given more than one)
-        try {
-            Exporter exporter = ExportService.getInstance().getExporter(request.exporter());
-            if (request.datasets().size() > 1 && !(exporter instanceof MultiDatasetExporter)) {
-                return error(BAD_REQUEST, "Requested exporter "+request.exporter()+" does not support multi-dataset exports");
-            }
-        } catch (ExportException e) {
-            return error(BAD_REQUEST, "No such exporter "+request.exporter());
+        if (!ExportService.isSupported(request.exporter())) {
+            return error(BAD_REQUEST, "Requested export format "+request.exporter()+" is not supported");
         }
+        if (request.datasets().size() > 1 && !ExportService.isSupported(request.exporter(), request.datasets().size())) {
+            return error(BAD_REQUEST, "Requested export format "+request.exporter()+" does not support multi-dataset exports");
+        }
+        
         // Lookup the HTTP request enhanced with the authenticated user from context (resolved by the AuthFilter/AuthRequired mechanism)
         DataverseRequest userScopedHttpRequest = createDataverseRequest(getRequestUser(crc));
         

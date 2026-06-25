@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
+import io.gdcc.spi.export.MultiDatasetExporter;
 import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -128,6 +129,33 @@ public class ExportService {
             retList.add(temp);
         });
         return retList;
+    }
+    
+    /**
+     * Checks if the specified format name is supported.
+     *
+     * @param formatName the name of the format to check for support.
+     * @return {@code true} if the format is supported; {@code false} otherwise.
+     */
+    public static boolean isSupported(String formatName) {
+        return getInstance().exporterMap.containsKey(formatName);
+    }
+    
+    /**
+     * Checks whether the specified format name is supported for the given request size.
+     *
+     * @param formatName the name of the format to check for support.
+     * @param requestSize the size of the request. A value less than 1 will always return false.
+     * @return {@code true} if the format is supported and the request size meets the conditions; {@code false} otherwise.
+     */
+    public static boolean isSupported(String formatName, int requestSize) {
+        if (!isSupported(formatName) || requestSize < 1) {
+            return false;
+        }
+        if (requestSize > 1) {
+            return getInstance().exporterMap.get(formatName) instanceof MultiDatasetExporter;
+        }
+        return true;
     }
 
     public InputStream getExport(DatasetVersion datasetVersion, String formatName) throws ExportException, IOException {
