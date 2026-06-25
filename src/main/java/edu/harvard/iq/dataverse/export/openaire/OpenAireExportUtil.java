@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.gson.Gson;
 
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.ExternalIdentifier;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
@@ -29,6 +30,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class OpenAireExportUtil {
 
@@ -157,6 +160,25 @@ public class OpenAireExportUtil {
         // 19 FundingReference (with name, identifier, and award related sub- properties) (O)
         writeFundingReferencesElement(xmlw, version, language);
     }
+    
+    
+    private static String getIdentifierAsUrl(String idType, String idValue) {
+        if (idType != null && !idType.isEmpty() && idValue != null && !idValue.isEmpty()) {
+            try {
+                ExternalIdentifier externalIdentifier = ExternalIdentifier.valueOf(idType);
+                if (externalIdentifier.isValidIdentifier(idValue)) {
+                    String uri = externalIdentifier.format(idValue);
+                    //The DAI identifier is a URI starting with "info" - we don't want to return it as a URL (we assume non-null URLs should be links in the display)
+                    if (uri.startsWith("http")) {
+                        return uri;
+                    }
+                }
+            } catch (Exception e) {
+                // non registered identifier
+            }
+        }
+        return null;
+    }
 
     /**
      * Get the language value or null
@@ -249,6 +271,9 @@ public class OpenAireExportUtil {
                                 }
                                 if (DatasetFieldConstant.authorIdValue.equals(next.getTypeName())) {
                                     nameIdentifier = next.getSinglePrimitive();
+                                    if(nameIdentifier !=null){
+                                        System.out.print("name identifier: " + nameIdentifier );
+                                    }
                                 }
                                 if (DatasetFieldConstant.authorIdType.equals(next.getTypeName())) {
                                     nameIdentifierScheme = next.getSinglePrimitive();
@@ -256,6 +281,12 @@ public class OpenAireExportUtil {
                                 if (DatasetFieldConstant.authorAffiliation.equals(next.getTypeName())) {
                                     affiliation = next.getSinglePrimitive();
                                 }
+                            }
+                            
+                            String identifierAsURL = null;
+                            
+                            if (nameIdentifierScheme !=null &&  nameIdentifier !=null){
+                                identifierAsURL = getIdentifierAsUrl(nameIdentifier, nameIdentifierScheme);
                             }
 
                             if (StringUtils.isNotBlank(creatorName)) {
@@ -282,47 +313,25 @@ public class OpenAireExportUtil {
                                     writeFullElement(xmlw, null, "familyName", null, creatorObj.getString("familyName"),
                                             language);
                                 }
-
+                                //12295 fix schemeURL and name Identifier formatting
                                 if (StringUtils.isNotBlank(nameIdentifier)) {
-                                    creator_map.clear();
+                                    String idasURL = getIdentifierAsUrl(nameIdentifierScheme, nameIdentifier);
 
-                                    if (StringUtils.contains(nameIdentifier, "http")) {
-                                        String site = nameIdentifier.substring(0, nameIdentifier.indexOf("/") + 2);
-                                        nameIdentifier = nameIdentifier.replace(nameIdentifier.substring(0, nameIdentifier.indexOf("/") + 2), "");
-                                        site = site + nameIdentifier.substring(0, nameIdentifier.indexOf("/") + 1);
-                                        nameIdentifier = nameIdentifier.substring(nameIdentifier.indexOf("/") + 1);
+                                    if (idasURL != null) {
+                                        try {
+                                            URL url = new URL(idasURL);
+                                            String protocol = url.getProtocol();
+                                            String authority = url.getAuthority();
+                                            String site = String.format("%s://%s", protocol, authority);
+                                            Map<String, String> attributeMap = new HashMap<String, String>();
+                                            attributeMap.put("schemeURI", site);
+                                            attributeMap.put("nameIdentifierScheme", nameIdentifierScheme);
+                                            writeFullElement(xmlw, "nameIdentifier", null, attributeMap, idasURL, language);
 
-                                        creator_map.put("schemeURI", site);
+                                        } catch (MalformedURLException e) {
+                                            logger.warning("getIdentifierAsUrl returned a Malformed URL: " + nameIdentifier);
+                                        }
                                     }
-
-                                    if (StringUtils.isNotBlank(nameIdentifierScheme)) {
-                                        creator_map.put("nameIdentifierScheme", nameIdentifierScheme);
-                                        writeFullElement(xmlw, null, "nameIdentifier", creator_map, nameIdentifier, language);
-                                    } else {
-                                        writeFullElement(xmlw, null, "nameIdentifier", null, nameIdentifier, language);
-                                    }
-                                    /*
-                                                    String nameIdentifier = null;
-                String nameIdentifierScheme = null;
-                if (StringUtils.isNotBlank(author.getIdValue()) && StringUtils.isNotBlank(author.getIdType())) {
-                    nameIdentifier = author.getIdValue();
-                    if (nameIdentifier != null) {
-                        // Normalizes to the URL form of the identifier, returns null if the identifier
-                        // is not valid given the type
-                        nameIdentifier = author.getIdentifierAsUrl();
-                    }
-                    nameIdentifierScheme = author.getIdType();
-                }
-
-                if (StringUtils.isNotBlank(creatorName)) {
-                    JsonObject creatorObj = PersonOrOrgUtil.getPersonOrOrganization(creatorName, false,
-                            Strinl gUtils.containsIgnoreCase(nameIdentifierScheme, "orcid"));
-                    nothingWritten = false;
-                    writeEntityElements(xmlw, "creator", null, creatorObj, affiliation, nameIdentifier, nameIdentifierScheme);
-                }
-                                    */
-                                    
-                                    
                                 }
 
                                 if (StringUtils.isNotBlank(affiliation)) {
