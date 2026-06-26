@@ -515,7 +515,7 @@ public class OpenAireExportUtilTest {
                 + "<date dateType=\"Issued\">1004-01-01</date>"
                 + "<date dateType=\"Created\">1003-01-01</date>"
                 + "<date dateType=\"Submitted\">1002-01-01</date>"
-                + "<date dateType=\"Updated\">2015-09-29</date>"
+                + "<date dateType=\"Available\">2015-09-29</date>"
                 + "<date dateType=\"Collected\">1006-01-01/1006-01-01</date>"
                 + "<date dateType=\"Collected\">1006-02-01/1006-02-02</date>"
                 + "</dates>",

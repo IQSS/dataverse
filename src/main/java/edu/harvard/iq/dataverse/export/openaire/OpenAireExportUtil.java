@@ -316,14 +316,14 @@ public class OpenAireExportUtil {
                                 //12295 fix schemeURL and name Identifier formatting
                                 if (StringUtils.isNotBlank(nameIdentifier)) {
                                     String idasURL = getIdentifierAsUrl(nameIdentifierScheme, nameIdentifier);
-
+                                    Map<String, String> attributeMap = new HashMap<>();
                                     if (idasURL != null) {
                                         try {
                                             URL url = new URL(idasURL);
                                             String protocol = url.getProtocol();
                                             String authority = url.getAuthority();
                                             String site = String.format("%s://%s", protocol, authority);
-                                            Map<String, String> attributeMap = new HashMap<String, String>();
+
                                             attributeMap.put("schemeURI", site);
                                             attributeMap.put("nameIdentifierScheme", nameIdentifierScheme);
                                             writeFullElement(xmlw, "nameIdentifier", null, attributeMap, idasURL, language);
@@ -331,6 +331,9 @@ public class OpenAireExportUtil {
                                         } catch (MalformedURLException e) {
                                             logger.warning("getIdentifierAsUrl returned a Malformed URL: " + nameIdentifier);
                                         }
+                                    } else {
+                                        attributeMap.put("nameIdentifierScheme", nameIdentifierScheme);
+                                        writeFullElement(xmlw, "nameIdentifier", null, attributeMap, nameIdentifier, language);
                                     }
                                 }
 
@@ -801,7 +804,7 @@ public class OpenAireExportUtil {
 
         String dateOfVersion = datasetVersionDTO.getReleaseTime();
         //12294 set date type depending whether the version is republished
-        String dateType = (datasetVersionDTO.getMinorVersionNumber() > 0 || datasetVersionDTO.getVersionNumber() > 1) ? "updated" : "available";
+        String dateType = (datasetVersionDTO.getMinorVersionNumber() > 0 || datasetVersionDTO.getVersionNumber() > 1) ? "Updated" : "Available";
          
         if (StringUtils.isNotBlank(dateOfVersion)) {
             date_check = writeOpenTag(xmlw, "dates", date_check);
