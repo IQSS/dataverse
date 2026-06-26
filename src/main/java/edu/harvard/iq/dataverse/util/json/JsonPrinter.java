@@ -31,6 +31,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.MailUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import jakarta.ejb.EJB;
@@ -426,7 +427,10 @@ public class JsonPrinter {
             if (gbResponse.getDataFile().getGlobalId() != null) {
                 guestbookResponseObject.add("filePid", gbResponse.getDataFile().getGlobalId().asString());
             }
-            guestbookResponseObject.add("userName", gbResponse.getAuthenticatedUser() != null ? gbResponse.getAuthenticatedUser().getUserIdentifier() : "Guest");
+            String name = gbResponse.getName();
+            String userName = gbResponse.getAuthenticatedUser() != null ? gbResponse.getAuthenticatedUser().getUserIdentifier() : "Guest";
+            guestbookResponseObject.add("name", StringUtil.isEmpty(name) ? userName : name);
+            guestbookResponseObject.add("userName", userName);
             if (gbResponse.getEmail() != null) {
                 guestbookResponseObject.add("email", gbResponse.getEmail());
             }
