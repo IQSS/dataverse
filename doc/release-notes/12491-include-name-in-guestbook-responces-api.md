@@ -1,3 +1,2 @@
 ## BUG ##
-Changed "userName" in response in API GET /api/guestbooks/{guestbookId}/responses
-"userName" shows either the "Name" entered by the user, or Name of the Auth User, or "Guest". Actual Auth User's username is no longer returned.
+Changed "userName" in guestbook response to "name" to match the parser in API GET /api/guestbooks/{guestbookId}/responses

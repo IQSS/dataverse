@@ -428,8 +428,7 @@ public class JsonPrinter {
                 guestbookResponseObject.add("filePid", gbResponse.getDataFile().getGlobalId().asString());
             }
             String name = gbResponse.getName();
-            String userName = gbResponse.getAuthenticatedUser() != null ? gbResponse.getAuthenticatedUser().getName() : "Guest";
-            guestbookResponseObject.add("userName", StringUtil.isEmpty(name) ? userName : name);
+            guestbookResponseObject.add("name", StringUtil.isEmpty(name) ? "Guest" : name);
             if (gbResponse.getEmail() != null) {
                 guestbookResponseObject.add("email", gbResponse.getEmail());
             }
