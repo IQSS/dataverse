@@ -268,7 +268,12 @@ public class XmlMetadataTemplate {
                     if (nameIdentifier != null) {
                         // Normalizes to the URL form of the identifier, returns null if the identifier
                         // is not valid given the type
-                        nameIdentifier = author.getIdentifierAsUrl();
+                        if (author.getIdentifierAsUrl() != null) {
+                            nameIdentifier = author.getIdentifierAsUrl();
+                            //12296 if it's DAI it's cool OK otherwise back to null 
+                        } else if (!author.getIdType().equals("DAI")) {
+                            nameIdentifier = null;
+                        }
                     }
                     nameIdentifierScheme = author.getIdType();
                 }
@@ -611,6 +616,10 @@ public class XmlMetadataTemplate {
                 attributeMap.put("nameIdentifierScheme", nameIdentifierScheme);
                 XmlWriterUtil.writeFullElementWithAttributes(xmlw, "nameIdentifier", attributeMap, nameIdentifier);
             } catch (MalformedURLException e) {
+                //122956  show DAI 
+                //if the nameIdentifier attribute is not a valid url (DAI) just show without schemeURL
+                attributeMap.put("nameIdentifierScheme", nameIdentifierScheme);
+                XmlWriterUtil.writeFullElementWithAttributes(xmlw, "nameIdentifier", attributeMap, nameIdentifier);
                 logger.warning("DatasetAuthor.getIdentifierAsUrl returned a Malformed URL: " + nameIdentifier);
             }
         }
