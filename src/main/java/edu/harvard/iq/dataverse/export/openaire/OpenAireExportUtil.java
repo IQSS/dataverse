@@ -332,6 +332,7 @@ public class OpenAireExportUtil {
                                             logger.warning("getIdentifierAsUrl returned a Malformed URL: " + nameIdentifier);
                                         }
                                     } else {
+                                        //if the get identifier as url fails use the "traditional" display of identifier
                                         attributeMap.put("nameIdentifierScheme", nameIdentifierScheme);
                                         writeFullElement(xmlw, "nameIdentifier", null, attributeMap, nameIdentifier, language);
                                     }
