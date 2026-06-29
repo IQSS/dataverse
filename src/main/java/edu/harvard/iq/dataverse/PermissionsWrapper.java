@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -260,7 +261,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     // PUBLISH DATASET
     public boolean canIssuePublishDatasetCommand(DvObject dvo){
         User u = session.getUser();
-        if (u == null) {
+        if (u == null || u instanceof GuestUser) {
             return false; // guests can not publish
         }
         if (u.isSuperuser()) {
@@ -281,7 +282,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     // SUBMIT DATASET FOR REVIEW
     public boolean canIssueSubmitDatasetForReviewCommand(DvObject dvo){
         User u = session.getUser();
-        if (u == null) {
+        if (u == null || u instanceof GuestUser) {
             return false; // guests can not submit for review
         }
         // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
