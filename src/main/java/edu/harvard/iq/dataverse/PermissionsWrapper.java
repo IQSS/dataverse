@@ -267,34 +267,51 @@ public class PermissionsWrapper implements java.io.Serializable {
         if (u.isSuperuser()) {
             return true;
         }
-        // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
-        if (dvo.isInstanceofDataset()) {
-            Dataverse dv =((Dataset)dvo).getOwner();
-            if (dv != null) {
-                if (!datasetVersionService.hasFiles(((Dataset) dvo).getLatestVersion().getId()) && dv.getEffectiveRequiresFilesToPublishDataset()) {
-                    return false;
+        if (checkDvoCacheForCommandAuthorization(dvo.getId(), PublishDatasetCommand.class, authUsersCommandMap) == null) {
+            // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
+            if (dvo.isInstanceofDataset()) {
+                Dataverse dv = ((Dataset) dvo).getOwner();
+                if (dv != null) {
+                    if (!datasetVersionService.hasFiles(((Dataset) dvo).getLatestVersion().getId()) && dv.getEffectiveRequiresFilesToPublishDataset()) {
+                        // it appears (?) to be safe caching the result; if a user
+                        // uploads more files within the same session, that re-renders 
+                        // the page resulting in a new ViewScoped instance of this
+                        // wrapper. 
+                        addCommandAuthorizationToDvoCache(dvo.getId(), PublishDatasetCommand.class, authUsersCommandMap, false);
+                        return false;
+                    }
                 }
             }
+            boolean canPublish = canIssueCommand(dvo, PublishDatasetCommand.class);
+            addCommandAuthorizationToDvoCache(dvo.getId(), PublishDatasetCommand.class, authUsersCommandMap, canPublish);
         }
-        return canIssueCommand(dvo, PublishDatasetCommand.class);
+        return checkDvoCacheForCommandAuthorization(dvo.getId(), PublishDatasetCommand.class, authUsersCommandMap);
     }
 
     // SUBMIT DATASET FOR REVIEW
-    public boolean canIssueSubmitDatasetForReviewCommand(DvObject dvo){
+    public boolean canIssueSubmitDatasetForReviewCommand(DvObject dvo) {
+
         User u = session.getUser();
         if (u == null || u instanceof GuestUser) {
             return false; // guests can not submit for review
         }
-        // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
-        if (dvo.isInstanceofDataset()) {
-            Dataverse dv =((Dataset)dvo).getOwner();
-            if (dv != null) {
-                if (!datasetVersionService.hasFiles(((Dataset) dvo).getLatestVersion().getId()) && dv.getEffectiveRequiresFilesToPublishDataset()) {
-                    return false;
+
+        if (checkDvoCacheForCommandAuthorization(dvo.getId(), SubmitDatasetForReviewCommand.class, authUsersCommandMap) == null) {
+            // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
+            if (dvo.isInstanceofDataset()) {
+                Dataverse dv = ((Dataset) dvo).getOwner();
+                if (dv != null) {
+                    if (!datasetVersionService.hasFiles(((Dataset) dvo).getLatestVersion().getId()) && dv.getEffectiveRequiresFilesToPublishDataset()) {
+                        // see the comment in canIssuePublishDataset() above
+                        addCommandAuthorizationToDvoCache(dvo.getId(), SubmitDatasetForReviewCommand.class, authUsersCommandMap, false);
+                        return false;
+                    }
                 }
             }
+            boolean canIssueSubmitForReview = canIssueCommand(dvo, SubmitDatasetForReviewCommand.class);
+            addCommandAuthorizationToDvoCache(dvo.getId(), SubmitDatasetForReviewCommand.class, authUsersCommandMap, canIssueSubmitForReview);
         }
-        return canIssueCommand(dvo, SubmitDatasetForReviewCommand.class);
+        return checkDvoCacheForCommandAuthorization(dvo.getId(), SubmitDatasetForReviewCommand.class, authUsersCommandMap);
     }
 
     // For the dataverse_header fragment (and therefore, most of the pages),
