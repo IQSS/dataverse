@@ -33,6 +33,9 @@ public class PermissionsWrapper implements java.io.Serializable {
     @EJB
     PermissionServiceBean permissionService;
 
+    @EJB
+    DatasetVersionServiceBean  datasetVersionService;
+
     @Inject
     DataverseSession session;
     
@@ -257,15 +260,17 @@ public class PermissionsWrapper implements java.io.Serializable {
     // PUBLISH DATASET
     public boolean canIssuePublishDatasetCommand(DvObject dvo){
         User u = session.getUser();
-        if (u != null && u.isSuperuser()) {
+        if (u == null) {
+            return false; // guests can not publish
+        }
+        if (u.isSuperuser()) {
             return true;
         }
         // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
         if (dvo.isInstanceofDataset()) {
             Dataverse dv =((Dataset)dvo).getOwner();
             if (dv != null) {
-                List<FileMetadata> metadataList = ((Dataset) dvo).getLatestVersion().getFileMetadatas();
-                if (metadataList.size() == 0 && dv.getEffectiveRequiresFilesToPublishDataset()) {
+                if (!datasetVersionService.hasFiles(((Dataset) dvo).getLatestVersion().getId()) && dv.getEffectiveRequiresFilesToPublishDataset()) {
                     return false;
                 }
             }
@@ -275,12 +280,15 @@ public class PermissionsWrapper implements java.io.Serializable {
 
     // SUBMIT DATASET FOR REVIEW
     public boolean canIssueSubmitDatasetForReviewCommand(DvObject dvo){
+        User u = session.getUser();
+        if (u == null) {
+            return false; // guests can not submit for review
+        }
         // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
         if (dvo.isInstanceofDataset()) {
             Dataverse dv =((Dataset)dvo).getOwner();
             if (dv != null) {
-                List<FileMetadata> metadataList = ((Dataset) dvo).getLatestVersion().getFileMetadatas();
-                if (metadataList.size() == 0 && dv.getEffectiveRequiresFilesToPublishDataset()) {
+                if (!datasetVersionService.hasFiles(((Dataset) dvo).getLatestVersion().getId()) && dv.getEffectiveRequiresFilesToPublishDataset()) {
                     return false;
                 }
             }
