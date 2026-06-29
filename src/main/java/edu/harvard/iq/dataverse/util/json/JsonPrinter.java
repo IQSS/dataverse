@@ -427,8 +427,9 @@ public class JsonPrinter {
             if (gbResponse.getDataFile().getGlobalId() != null) {
                 guestbookResponseObject.add("filePid", gbResponse.getDataFile().getGlobalId().asString());
             }
-            String name = gbResponse.getName();
-            guestbookResponseObject.add("name", StringUtil.isEmpty(name) ? "Guest" : name);
+            if (!StringUtil.isEmpty(gbResponse.getName())) {
+                guestbookResponseObject.add("name", gbResponse.getName());
+            }
             if (gbResponse.getEmail() != null) {
                 guestbookResponseObject.add("email", gbResponse.getEmail());
             }
