@@ -33,7 +33,7 @@
         <reload4j.version>1.2.26</reload4j.version>
         <flyway.version>12.9.0</flyway.version>
         <auto-service.version>1.1.1</auto-service.version>
-        <jhove.version>1.34.0</jhove.version>
+        <jhove.version>1.20.1</jhove.version>
         <poi.version>5.5.1</poi.version>
         <tika.version>3.3.1</tika.version>
         <netcdf.version>5.10.0</netcdf.version>

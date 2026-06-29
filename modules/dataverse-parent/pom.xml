@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd;">
     <modelVersion>4.0.0</modelVersion>
@@ -132,7 +133,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>6.10.1</revision>
+        <revision>6.11</revision>
     
         <target.java.version>21</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -149,12 +150,12 @@
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
     
         <!-- Major system components and dependencies -->
-        <payara.version>7.2026.2</payara.version>
+        <payara.version>7.2026.6</payara.version>
         <postgresql.version>42.7.11</postgresql.version>
-        <solr.version>9.8.0</solr.version>
+        <solr.version>9.10.0</solr.version>
         <postgresql.server.version>16</postgresql.server.version>
-        <aws.version>2.33.0</aws.version>
-        <google.library.version>26.30.0</google.library.version>
+        <aws.version>2.46.17</aws.version>
+        <google.library.version>26.69.0</google.library.version>
     
         <!-- Basic libs, logging -->
         <slf4j.version>1.7.35</slf4j.version>
@@ -418,7 +419,7 @@
         <repository>
             <id>unidata-all</id>
             <name>Unidata All</name>
-            <url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
+            <url>https://artifacts.unidata.ucar.edu/repository/unidata-all</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>

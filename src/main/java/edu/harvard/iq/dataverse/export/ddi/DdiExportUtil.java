@@ -2021,7 +2021,7 @@ public class DdiExportUtil {
             Document document = builder.parse(datafile);
 
             // Use a Transformer for output
-            TransformerFactory tFactory = TransformerFactory.newInstance();
+            TransformerFactory tFactory = TransformerFactory.newDefaultInstance();
             // Set secure processing feature
             tFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             tFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
