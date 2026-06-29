@@ -95,7 +95,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         provJsonState = IOUtils.toString(jsonUploadedTempFile.getInputStream());
         
         
-        provUtil.isProvValid(provJsonState).ifPresentOrElse(message -> { //if uploaded prov-json does not comply with schema
+        provUtil.optionalProvValidationMessage(provJsonState).ifPresentOrElse(message -> { //if uploaded prov-json does not comply with schema
             Logger.getLogger(ProvPopupFragmentBean.class.getName())
                     .log(Level.INFO, BundleUtil.getStringFromBundle("file.editProvenanceDialog.invalidSchemaError")); 
             provJsonState = null;

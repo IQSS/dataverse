@@ -115,7 +115,7 @@ public class ProvInvestigator {
         return gson.toJson(je);
     }
 
-    public Optional<String> isProvValid(String jsonInput) {
+    public Optional<String> optionalProvValidationMessage(String jsonInput) {
         try { 
             schema.validate(new JSONObject(jsonInput)); // throws a ValidationException if this object is invalid
         } catch (ValidationException vx) {
