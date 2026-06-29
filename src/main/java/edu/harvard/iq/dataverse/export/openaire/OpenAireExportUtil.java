@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.gson.Gson;
 
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.ExternalIdentifier;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
@@ -26,6 +27,10 @@ import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import jakarta.json.JsonValue.ValueType;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jakarta.mail.internet.AddressException;
@@ -161,6 +166,10 @@ public class OpenAireExportUtil {
         writeFundingReferencesElement(xmlw, version, language);
     }
     
+    private static JsonObject getExternalVocabularyValue(String id) {
+        return CDI.current().select(DatasetFieldServiceBean.class).get().getExternalVocabularyValue(id);
+    }
+    
     
     private static String getIdentifierAsUrl(String idType, String idValue) {
         if (idType != null && !idType.isEmpty() && idValue != null && !idValue.isEmpty()) {
@@ -271,9 +280,6 @@ public class OpenAireExportUtil {
                                 }
                                 if (DatasetFieldConstant.authorIdValue.equals(next.getTypeName())) {
                                     nameIdentifier = next.getSinglePrimitive();
-                                    if(nameIdentifier !=null){
-                                        System.out.print("name identifier: " + nameIdentifier );
-                                    }
                                 }
                                 if (DatasetFieldConstant.authorIdType.equals(next.getTypeName())) {
                                     nameIdentifierScheme = next.getSinglePrimitive();
@@ -281,12 +287,6 @@ public class OpenAireExportUtil {
                                 if (DatasetFieldConstant.authorAffiliation.equals(next.getTypeName())) {
                                     affiliation = next.getSinglePrimitive();
                                 }
-                            }
-                            
-                            String identifierAsURL = null;
-                            
-                            if (nameIdentifierScheme !=null &&  nameIdentifier !=null){
-                                identifierAsURL = getIdentifierAsUrl(nameIdentifier, nameIdentifierScheme);
                             }
 
                             if (StringUtils.isNotBlank(creatorName)) {
@@ -337,9 +337,34 @@ public class OpenAireExportUtil {
                                         writeFullElement(xmlw, "nameIdentifier", null, attributeMap, nameIdentifier, language);
                                     }
                                 }
-
+                                
+                                //12297 get full info on ROR affiliation
                                 if (StringUtils.isNotBlank(affiliation)) {
-                                    writeFullElement(xmlw, null, "affiliation", null, affiliation, language);
+                                    Map<String, String> attributeMap = new HashMap<>();
+                                    attributeMap.clear();
+                                    boolean isROR = false;
+                                    String orgName = affiliation;
+                                    ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
+
+                                    if (externalIdentifier.isValidIdentifier(orgName)) {
+                                        isROR = true;
+                                        JsonObject jo = getExternalVocabularyValue(orgName);
+                                        // Some ext. cvv configs store a JsonArray of multiple objects/values. In such cases, we'll leave orgName blank 
+                                        if (jo != null && jo.containsKey("termName")) {
+                                            JsonValue termName = jo.get("termName");
+                                            if (termName.getValueType() == ValueType.STRING) {
+                                                orgName = ((JsonString) termName).getString();
+                                            }
+                                        }
+                                    }
+
+                                    if (isROR) {
+                                        attributeMap.put("schemeURI", "https://ror.org");
+                                        attributeMap.put("affiliationIdentifierScheme", "ROR");
+                                        attributeMap.put("affiliationIdentifier", affiliation);
+                                    }
+
+                                    writeFullElement(xmlw, null, "affiliation", attributeMap, affiliation, language);
                                 }
                                 xmlw.writeEndElement(); // </creator>
                             }
