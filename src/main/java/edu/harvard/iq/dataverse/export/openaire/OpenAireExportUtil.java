@@ -37,6 +37,7 @@ import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.apache.commons.text.StringEscapeUtils;
 
 public class OpenAireExportUtil {
 
@@ -364,7 +365,7 @@ public class OpenAireExportUtil {
                                         attributeMap.put("affiliationIdentifier", affiliation);
                                     }
 
-                                    writeFullElement(xmlw, null, "affiliation", attributeMap, affiliation, language);
+                                    writeFullElement(xmlw, null, "affiliation", attributeMap, StringEscapeUtils.escapeXml10(orgName), language);
                                 }
                                 xmlw.writeEndElement(); // </creator>
                             }
