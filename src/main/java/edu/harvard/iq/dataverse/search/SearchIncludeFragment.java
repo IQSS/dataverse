@@ -1550,11 +1550,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public boolean canSeeCurationStatus(SolrSearchResult solrSearchResult) {
-        if (solrSearchResult.getEntity() != null) {
-            return canSeeCurationStatus(solrSearchResult.getEntity());
-        } else {
-            return canSeeCurationStatus(dvObjectService.findDvObject(solrSearchResult.getEntityId()));
+        if (solrSearchResult.getEntity() == null) {
+            solrSearchResult.setEntity(dvObjectService.findDvObject(solrSearchResult.getEntityId()));
         }
+        return canSeeCurationStatus(solrSearchResult.getEntity());
     }
 
     public boolean canSeeCurationStatus(DvObject dvo) {
