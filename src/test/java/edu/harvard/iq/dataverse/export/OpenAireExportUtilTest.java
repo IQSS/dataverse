@@ -30,6 +30,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 public class OpenAireExportUtilTest {
 
@@ -42,6 +45,7 @@ public class OpenAireExportUtilTest {
     private void setup() throws XMLStreamException {
         xmlWriter = xmlOutputFactory.createXMLStreamWriter(stringWriter);
     }
+    
     @AfterEach
     private void teardown() throws XMLStreamException {
         stringWriter.flush();
@@ -1102,6 +1106,64 @@ public class OpenAireExportUtilTest {
                 + "<fundingReference><funderName>NIH</funderName><awardNumber>NIH99999999</awardNumber></fundingReference>"
                 + "</fundingReferences>",
                 stringWriter.toString());
+    }
+    
+    /**
+     * Test 20, test author ROR affilaition
+     *
+     */
+    @Test
+    public void testWriteCreatorsElementWithRor() throws IOException, XMLStreamException {
+        // 1. Given: Parse the existing simplified JSON file
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-for-ror-export-test.txt", DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+
+        // 2. MOCK THE BEAN LAYER: Create the service bean that the CDI layer expects to fetch
+        edu.harvard.iq.dataverse.DatasetFieldServiceBean mockDatasetFieldService
+                = Mockito.mock(edu.harvard.iq.dataverse.DatasetFieldServiceBean.class);
+
+        // Explicitly force the service bean to return null, mimicking a missing DB record
+        Mockito.when(mockDatasetFieldService.getExternalVocabularyValue(Mockito.anyString()))
+                .thenReturn(null);
+
+        // 3. MOCK THE CDI CONTAINER LAYER:
+        jakarta.enterprise.inject.spi.CDI<Object> mockCdiContainer = Mockito.mock(jakarta.enterprise.inject.spi.CDI.class);
+        jakarta.enterprise.inject.Instance<Object> mockInstance = Mockito.mock(jakarta.enterprise.inject.Instance.class);
+
+        // Stub the single-argument select signature
+        Mockito.when(mockCdiContainer.select(Mockito.any(Class.class)))
+                .thenReturn(mockInstance);
+
+        // Stub the varargs select signature 
+        Mockito.when(mockCdiContainer.select(Mockito.any(Class.class), Mockito.any(java.lang.annotation.Annotation[].class)))
+                .thenReturn(mockInstance);
+
+        // CRITICAL FIX: Return our mocked service bean instead of null!
+        Mockito.when(mockInstance.get()).thenReturn(mockDatasetFieldService);
+
+        // 4. WHEN: Intercept CDI.current() statically and run the test
+        try (MockedStatic<jakarta.enterprise.inject.spi.CDI> cdiMockedStatic = Mockito.mockStatic(jakarta.enterprise.inject.spi.CDI.class)) {
+            cdiMockedStatic.when(jakarta.enterprise.inject.spi.CDI::current).thenReturn(mockCdiContainer);
+
+            // Execute utility method
+            OpenAireExportUtil.writeCreatorsElement(xmlWriter, dto, null);
+            xmlWriter.flush();
+        }
+        String actualXml = stringWriter.toString();
+
+        // Verify the OpenAIRE attributes were appended because isROR triggered true
+        assertTrue(actualXml.contains("schemeURI=\"https://ror.org\""),
+                "XML should contain the correct ROR scheme URI attribute.");
+
+        assertTrue(actualXml.contains("affiliationIdentifierScheme=\"ROR\""),
+                "XML should identify ROR as the affiliation scheme.");
+
+        assertTrue(actualXml.contains("affiliationIdentifier=\"https://ror.org/03vek6s52\""),
+                "XML should bind the exact ROR URL string to the identifier attribute.");
+
+        // Verify the fallback handled the inner text content gracefully
+        assertTrue(actualXml.contains(">https://ror.org/03vek6s52</affiliation>"),
+                "XML element text should fall back to the raw ROR URL safely when lookup is missing.");
     }
 
     // private static final Jsonb jsonb = JsonbBuilder.create();
