@@ -1344,8 +1344,10 @@ w
         Query query = em.createNativeQuery("SELECT id FROM fileMetadata WHERE datasetversion_id="+datasetVersionId+" LIMIT 1");
         try {
             query.getSingleResult();
+            logger.severe(">>>>version service bean  hasFiles true id"+datasetVersionId);
             return true;
         } catch (NoResultException e) {
+            logger.severe(">>>>version service bean  hasFiles true id"+datasetVersionId);
             return false;
         }
     }

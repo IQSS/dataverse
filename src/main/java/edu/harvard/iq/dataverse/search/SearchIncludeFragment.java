@@ -1411,10 +1411,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return datafile.getFriendlySize();
 
     }
-
-    public boolean canPublishDataset(Long datasetId){
-        return permissionsWrapper.canIssuePublishDatasetCommand(dvObjectService.findDvObject(datasetId));
-    }
     
     public void setDisplayCardValues() {
 
@@ -1555,10 +1551,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
     
     public boolean canSeeCurationStatus(Long datasetId) {
         boolean creatorsCanSeeStatus = JvmSettings.UI_SHOW_CURATION_STATUS_TO_ALL.lookupOptional(Boolean.class).orElse(false);
-        if (creatorsCanSeeStatus) {
-            return permissionsWrapper.canViewUnpublishedDataset(getDataverseRequest(),(Dataset) dvObjectService.findDvObject(datasetId));
+        Dataset ds = (Dataset) dvObjectService.findDvObject(datasetId);
+        if (ds != null) {
+            if (creatorsCanSeeStatus) {
+                return permissionsWrapper.canViewUnpublishedDataset(getDataverseRequest(), ds);
+            } else {
+                return permissionsWrapper.canIssuePublishDatasetCommand(ds);
+            }
         } else {
-            return canPublishDataset(datasetId);
+            return false;
         }
     }
 
