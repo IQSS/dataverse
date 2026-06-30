@@ -1549,16 +1549,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
         });
     }
 
-    public boolean canSeeCurationStatus(SolrSearchResult solrSearchResult) {
-        if (solrSearchResult.getEntity() == null) {
-            solrSearchResult.setEntity(dvObjectService.findDvObject(solrSearchResult.getEntityId()));
-        }
-        return canSeeCurationStatus(solrSearchResult.getEntity());
-    }
-
-    public boolean canSeeCurationStatus(DvObject dvo) {
+    public boolean canSeeCurationStatus(Long datasetId) {
         boolean creatorsCanSeeStatus = JvmSettings.UI_SHOW_CURATION_STATUS_TO_ALL.lookupOptional(Boolean.class).orElse(false);
-        Dataset ds = (dvo instanceof Dataset) ? (Dataset) dvo : null;
+        Dataset ds = (Dataset) dvObjectService.findDvObject(datasetId);
         if (ds != null) {
             if (creatorsCanSeeStatus) {
                 return permissionsWrapper.canViewUnpublishedDataset(getDataverseRequest(), ds);
