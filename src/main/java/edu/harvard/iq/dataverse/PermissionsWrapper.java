@@ -294,7 +294,6 @@ public class PermissionsWrapper implements java.io.Serializable {
     // cache the hasFiles in the ds version for performance reasons
     private boolean datasetVersionHasFiles(DatasetVersion dsv) {
         if (dsv.hasFiles() == null) {
-            logger.severe(">>>>perm wrapper  hasFiles true id"+dsv.getId());
             dsv.setHasFiles(datasetVersionService.hasFiles(dsv.getId()));
         }
         return dsv.hasFiles();
