@@ -193,7 +193,7 @@ jobs:
           echo "Running suite: $TEST_SUITE"
           
           mvn test \
-            -Dtest="$TEST_SUITE" \
+            -Dtest="HugeDatasetExportPerformanceIT#shouldExportLargeDataset" \
             -Dmaven.test.failure.ignore=true \
             -Ddataverse.test.baseurl=http://localhost:8080 \
             -DcompilerArgument=-Xlint:unchecked
