@@ -1549,9 +1549,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
         });
     }
     
-    public boolean canSeeCurationStatus(Long datasetId) {
+    public boolean canSeeCurationStatus(DvObject dvo) {
         boolean creatorsCanSeeStatus = JvmSettings.UI_SHOW_CURATION_STATUS_TO_ALL.lookupOptional(Boolean.class).orElse(false);
-        Dataset ds = (Dataset) dvObjectService.findDvObject(datasetId);
+        Dataset ds = (dvo instanceof Dataset) ? (Dataset) dvo : null;
         if (ds != null) {
             if (creatorsCanSeeStatus) {
                 return permissionsWrapper.canViewUnpublishedDataset(getDataverseRequest(), ds);
