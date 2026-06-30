@@ -1548,7 +1548,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
             return true;
         });
     }
-    
+
+    public boolean canSeeCurationStatus(SolrSearchResult solrSearchResult) {
+        if (solrSearchResult.getEntity() != null) {
+            return canSeeCurationStatus(solrSearchResult.getEntity());
+        } else {
+            return canSeeCurationStatus(dvObjectService.findDvObject(solrSearchResult.getEntityId()));
+        }
+    }
+
     public boolean canSeeCurationStatus(DvObject dvo) {
         boolean creatorsCanSeeStatus = JvmSettings.UI_SHOW_CURATION_STATUS_TO_ALL.lookupOptional(Boolean.class).orElse(false);
         Dataset ds = (dvo instanceof Dataset) ? (Dataset) dvo : null;
