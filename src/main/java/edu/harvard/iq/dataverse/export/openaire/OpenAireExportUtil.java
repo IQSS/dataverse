@@ -763,12 +763,10 @@ public class OpenAireExportUtil {
             xmlw.writeAttribute("contributorType", contributorType.replaceAll(" ", ""));
         }
 
-        boolean nameType_check = false;
-        Map<String, String> contributor_map = new HashMap<String, String>();
-
+        Map<String, String> contributor_map = new HashMap<>();
+        //12298 change logic here (change org if tied to false) to match Datacite
         JsonObject contributorObj = PersonOrOrgUtil.getPersonOrOrganization(contributorName,
-                ("ContactPerson".equals(contributorType) && !isValidEmailAddress(contributorName)), false);
-
+                false, false);
         if (contributorObj.getBoolean("isPerson")) {
             if(contributorObj.containsKey("givenName")) {
                 contributor_map.put("nameType", "Personal");
