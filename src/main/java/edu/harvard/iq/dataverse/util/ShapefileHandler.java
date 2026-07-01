@@ -71,6 +71,10 @@ public class ShapefileHandler{
     public static final List<String> SHAPEFILE_MANDATORY_EXTENSIONS = Arrays.asList("shp", "shx", "dbf", "prj");
     public static final String SHP_XML_EXTENSION = "shp.xml";
     public static final String BLANK_EXTENSION = "__PLACEHOLDER-FOR-BLANK-EXTENSION__";
+    public static final String SKIP_PREFIX_1 = "__";
+    public static final String SKIP_PREFIX_2 = "._";
+    public static final String SKIP_PREFIX_3 = "..";
+    public static final String SKIP_SUFFIX_1 = ".DS_Store";
     public static final List<String> SHAPEFILE_ALL_EXTENSIONS = Arrays.asList("shp", "shx", "dbf", "prj", "sbn", "sbx", "fbn", "fbx", "ain", "aih", "ixs", "mxs", "atx", "cpg", "qpj", "qmd", SHP_XML_EXTENSION);
     private final File zipFile;
     public boolean DEBUG = false;
@@ -282,7 +286,19 @@ public class ShapefileHandler{
             return false;
         }
 
-       List<String> unzippedFileNames = new ArrayList<>();
+        String canonicalTargetDir;
+        try {
+            canonicalTargetDir = target_directory.getCanonicalPath();
+            
+            if (!canonicalTargetDir.endsWith(File.separator)) {
+                canonicalTargetDir += File.separator;
+            }
+        } catch (IOException e) {
+            this.addErrorMessage("Failed to get canonical path for target directory: " + target_directory.getAbsolutePath());
+            return false;
+        }
+
+        List<String> unzippedFileNames = new ArrayList<>();
 
 
         try {
@@ -290,6 +306,18 @@ public class ShapefileHandler{
                 
                 String zentryFileName = origEntry.getName();
                 logger.fine("\nOriginal entry name: " + origEntry);
+
+                // validate zip entry:
+                try {
+                    File targetFile = new File(target_directory, zentryFileName);
+                    if (!targetFile.getCanonicalPath().startsWith(canonicalTargetDir)) {
+                        logger.warning("Skipping invalid zip entry: " + zentryFileName);
+                        continue;
+                    }
+                } catch (IOException e) {
+                    logger.warning("Failed to get canonical path for zip entry: " + zentryFileName);
+                    continue;
+                }
                 
                  if (this.isFileToSkip(zentryFileName)){
                     logger.fine("Skip file");
@@ -629,16 +657,28 @@ public class ShapefileHandler{
             return true;
         }
         
-        if (fname.startsWith("__")){
+        // null bytes can be a problem:
+        if (fname.indexOf('\0') >= 0) {
             return true;
         }
         
-        if (fname.startsWith("._")){
+        if (fname.startsWith(SKIP_PREFIX_1)){
+            return true;
+        }
+        
+        if (fname.startsWith(SKIP_PREFIX_2)){
+            return true;
+        }
+        
+        // normalize, re-check:
+        String fnameNormalized = fname.replace('\\', File.separatorChar);
+        if (fnameNormalized.startsWith(SKIP_PREFIX_3 + File.separator) 
+                || fnameNormalized.contains(File.separator + SKIP_PREFIX_3 + File.separator)) {
             return true;
         }
         
         File fnameFile = new File(fname);
-        if (fnameFile.getName().endsWith(".DS_Store")){
+        if (fnameFile.getName().endsWith(SKIP_SUFFIX_1)){
             return true;
         }
         return false;

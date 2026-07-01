@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.Guestbook;
-import edu.harvard.iq.dataverse.GuestbookServiceBean;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -30,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 @Path("guestbooks")
 public class Guestbooks extends AbstractApiBean {
@@ -38,6 +37,8 @@ public class Guestbooks extends AbstractApiBean {
 
     @EJB
     GuestbookServiceBean guestbookService;
+    @EJB
+    GuestbookResponseServiceBean guestbookResponseService;
 
     @GET
     @AuthRequired
@@ -57,16 +58,24 @@ public class Guestbooks extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/list")
-    public Response getGuestbooks(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) {
+    public Response getGuestbooks(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, @QueryParam("includeInherited") boolean includeInherited, @QueryParam("includeStats") boolean includeStats) {
         return response( req -> {
             Dataverse dataverse = findDataverseOrDie(identifier);
+            final Long dataverseId = dataverse.getId();
             if (!permissionSvc.request(req).on(dataverse).has(Permission.EditDataverse)) {
                 return error(Response.Status.FORBIDDEN, "Not authorized");
             }
-            List<Guestbook> guestbooks = guestbookService.findGuestbooksForGivenDataverse(dataverse);
+            List<Guestbook> guestbooks = (includeInherited) ?
+                    guestbookService.findEffectiveGuestbooksForGivenDataverse(dataverse):
+                    guestbookService.findGuestbooksForGivenDataverse(dataverse);
+
             JsonArrayBuilder guestbookArray = Json.createArrayBuilder();
             JsonPrinter jsonPrinter = new JsonPrinter();
             for (Guestbook gb : guestbooks) {
+                if (includeStats) {
+                    gb.setUsageCount(guestbookService.findCountUsages(gb.getId(), dataverseId));
+                    gb.setResponseCount(guestbookResponseService.findCountByGuestbookId(gb.getId(), dataverseId));
+                }
                 guestbookArray.add(jsonPrinter.json(gb));
             }
             return ok(guestbookArray);
@@ -106,6 +115,80 @@ public class Guestbooks extends AbstractApiBean {
             logger.log(Level.SEVERE, "Error creating guestbook", ex);
             return error(Response.Status.INTERNAL_SERVER_ERROR, "Error creating guestbook: " + ex.getMessage());
         }
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{id}")
+    public Response updateGuestbook(@Context ContainerRequestContext crc, @PathParam("id") Long id, String jsonBody) {
+        return response( req -> {
+            Guestbook guestbook = guestbookService.find(id);
+            if (guestbook != null) {
+                try {
+                    JsonObject jsonObj = JsonUtil.getJsonObject(jsonBody);
+                    jsonParser().parseGuestbook(jsonObj, guestbook);
+                } catch (JsonException | JsonParseException ex) {
+                    logger.log(Level.WARNING, "Error parsing guestbook JSON", ex);
+                    return badRequest("Error parsing guestbook JSON");
+                }
+                Guestbook newGuestbook = execCommand(new UpdateGuestbookCommand(guestbook, req, guestbook.getDataverse()));
+                return ok(json(newGuestbook));
+            } else {
+                return notFound(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.notFound"));
+            }
+        }, getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("/{id}/responses")
+    public Response getResponses(@Context ContainerRequestContext crc, @PathParam("id") Long id,
+                                 @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
+
+        return response( req -> {
+            Guestbook guestbook = guestbookService.find(id);
+            if (guestbook == null) {
+                return notFound("Guestbook " + id + " not found.");
+            }
+            Dataverse dataverse = guestbook.getDataverse();
+            if (!permissionSvc.request(req).on(dataverse).has(Permission.EditDataverse)) {
+                return error(Response.Status.FORBIDDEN, "Not authorized");
+            }
+            Long totalUsageCount = guestbookService.findCountUsages(guestbook.getId(), dataverse.getId());
+            Long totalResponseCount = guestbookResponseService.findCountByGuestbookId(guestbook.getId(), dataverse.getId());
+            guestbook.setUsageCount(totalUsageCount);
+            guestbook.setResponseCount(totalResponseCount);
+
+            List<GuestbookResponse> responses = guestbookResponseService.findAllByGuestbookId(guestbook.getId(), offset, limit);
+
+            JsonObjectBuilder guestbookResponseObject = jsonObjectBuilder();
+            guestbookResponseObject.add("guestbook", JsonPrinter.json(guestbook));
+
+            JsonArrayBuilder responseObjects = Json.createArrayBuilder();
+            for (GuestbookResponse gr : responses) {
+                responseObjects.add(JsonPrinter.json(gr));
+            }
+            guestbookResponseObject.add("responses", responseObjects);
+
+            if (limit != null) {
+                JsonObjectBuilder guestbookPageObject = jsonObjectBuilder();
+                int thisOffset = offset != null ? offset : 0;
+                int next = thisOffset + limit;
+                int prev = thisOffset - limit;
+
+                String baseUrl = crc.getUriInfo().getAbsolutePath() + "?limit=" + limit + "&offset=" ;
+                if (prev >= 0) {
+                    guestbookPageObject.add("previous",baseUrl + prev);
+                }
+                if (next < totalResponseCount) {
+                    guestbookPageObject.add("next", baseUrl + next);
+                }
+                guestbookPageObject.add("totalResponses", totalResponseCount);
+
+                guestbookResponseObject.add("pagination", guestbookPageObject);
+            }
+            return ok(guestbookResponseObject);
+        }, getRequestUser(crc));
     }
 
     @PUT
