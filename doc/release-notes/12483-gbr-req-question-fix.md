@@ -1,0 +1,1 @@
+A bug that caused any required custom questions in guestbooks to still be optional has been fixed in the current UI.
