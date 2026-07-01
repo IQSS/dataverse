@@ -244,17 +244,6 @@ Often someone is making sure that the proper milestone (e.g. 6.10.1) is being ap
 
 Check for merged pull requests that have no milestone by going to https://github.com/IQSS/dataverse/pulls and entering `is:pr is:merged no:milestone <https://github.com/IQSS/dataverse/pulls?q=is%3Apr+is%3Amerged+no%3Amilestone>`_ as a query. If you find any, first check if those pull requests are against open pull requests. If so, do nothing. Otherwise, add the milestone to the pull request and any issues it closes. This includes the "merge develop into master" pull request above.
 
-(Optional) Test Docker Images
------------------------------
-
-After the "master" branch has been updated and the GitHub Action to build and push Docker images has run (see `PR #9776 <https://github.com/IQSS/dataverse/pull/9776>`_), go to https://hub.docker.com/u/gdcc and make sure the "latest" tag for the following images has been updated:
-
-- https://hub.docker.com/r/gdcc/base
-- https://hub.docker.com/r/gdcc/dataverse
-- https://hub.docker.com/r/gdcc/configbaker
-
-TODO: Get https://github.com/gdcc/api-test-runner working.
-
 .. _build-guides:
 
 Build the Guides for the Release
@@ -318,6 +307,21 @@ Go to https://github.com/IQSS/dataverse/releases/new to start creating a draft r
 At this point you can send around the draft release for any final feedback. Links to the guides for this release should be working now, since you build them above.
 
 Make corrections to the draft, if necessary. It will be out of sync with the .md file, but that's ok (`#7988 <https://github.com/IQSS/dataverse/issues/7988>`_ is tracking this).
+
+Test Docker Images
+------------------
+
+Go to https://hub.docker.com/u/gdcc and navigate to "gdcc/dataverse". Click on "tags" and check if the "latest" tag has been updated. If not, give the GitHub Actions workflow more time to complete. It should have been trigged above when we merged "develop" into "master".
+
+After the "latest" tag has been updated. Spin up the "latest" tag locally:
+
+.. code-block:: bash
+
+  cd docker/compose/demo
+  rm -rf data
+  docker compose up
+
+Wait for the bootstrapping process to complete. Then, make sure the version returned by http://localhost:8080/api/info/version matches the version you are releasing.
 
 Publish the Release
 -------------------
