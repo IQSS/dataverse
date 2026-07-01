@@ -320,23 +320,6 @@ At this point you can send around the draft release for any final feedback. Link
 
 Make corrections to the draft, if necessary. It will be out of sync with the .md file, but that's ok (`#7988 <https://github.com/IQSS/dataverse/issues/7988>`_ is tracking this).
 
-Test Docker Images
-------------------
-
-Go to https://hub.docker.com/u/gdcc and navigate to "gdcc/dataverse". Click on "tags" and check if the "latest" tag has been updated. If not, give the GitHub Actions workflow more time to complete. It should have been trigged above when we merged "develop" into "master".
-
-After the "latest" tag has been updated. Spin up the "latest" tag locally:
-
-.. code-block:: bash
-
-  docker rmi gdcc/dataverse:latest
-  docker rmi gdcc/configbaker:latest
-  cd docker/compose/demo
-  rm -rf data
-  docker compose up
-
-Wait for the bootstrapping process to complete. Then, make sure the version returned by http://localhost:8080/api/info/version matches the version you are releasing.
-
 Publish the Release
 -------------------
 
@@ -355,6 +338,27 @@ ssh into the guides server and update the symlink to point to the latest release
   ln -s 6.10.1 latest
 
 This step could be done before publishing the release if you'd like to double check that links in the release notes work.
+
+Test Docker Images
+------------------
+
+Publishing the release should have trigged the "Container Images Scheduled Maintenance" GitHub Action. Allow it to finish and then go to https://hub.docker.com/u/gdcc and navigate to "gdcc/dataverse".
+
+Click on "tags", make sure the "latest" tag has been updated.
+
+If the "latest" tag wasn't updated, you might need to manually run the GitHub Action again.
+
+Delete old images and spin up the "latest" tag.
+
+.. code-block:: bash
+
+  docker rmi gdcc/dataverse:latest
+  docker rmi gdcc/configbaker:latest
+  cd docker/compose/demo
+  rm -rf data
+  docker compose up
+
+Wait for the bootstrapping process to complete. Then, make sure the version returned by http://localhost:8080/api/info/version matches the version you are releasing.
 
 Close Milestone on GitHub and Create a New One
 ----------------------------------------------
