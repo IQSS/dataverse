@@ -224,7 +224,14 @@ Merge "develop" into "master" (non-hotfix only)
 
 If this is a regular (non-hotfix) release, create a pull request to merge the "develop" branch into the "master" branch using this "compare" link: https://github.com/IQSS/dataverse/compare/master...develop
 
-Allow time for important tests (compile, unit tests, etc.) to pass. Don't worry about style tests failing such as for shell scripts. It's ok to skip code review.
+Allow time for important tests pass:
+
+- Unit tests: Maven Tests
+- API tests: Container Integration Tests Workflow
+
+Don't worry about style tests failing such as for shell scripts.
+
+It's ok to skip code review.
 
 When merging the pull request, be sure to choose "create a merge commit" and not "squash and merge" or "rebase and merge". We suspect that choosing squash or rebase may have led to `lots of merge conflicts <https://github.com/IQSS/dataverse/pull/11647#issuecomment-3085289132>`_ when we tried to perform this "merge develop to master" step, forcing us to `re-do <https://docs.google.com/document/d/1oit6LLDUWpNpV_uWveOMvdwDsaUey-74ehvzCZp1f3k/edit?usp=sharing>`_ the previous release before we could proceed with the current release.
 
