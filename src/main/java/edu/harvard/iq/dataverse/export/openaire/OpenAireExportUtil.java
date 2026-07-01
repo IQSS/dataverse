@@ -761,6 +761,9 @@ public class OpenAireExportUtil {
 
         if (StringUtils.isNotBlank(contributorType)) {
             xmlw.writeAttribute("contributorType", contributorType.replaceAll(" ", ""));
+        } else {
+            //12299 if no contributor is available write "other"
+            xmlw.writeAttribute("contributorType", "Other");
         }
 
         Map<String, String> contributor_map = new HashMap<>();
