@@ -329,6 +329,8 @@ After the "latest" tag has been updated. Spin up the "latest" tag locally:
 
 .. code-block:: bash
 
+  docker rmi gdcc/dataverse:latest
+  docker rmi gdcc/configbaker:latest
   cd docker/compose/demo
   rm -rf data
   docker compose up
