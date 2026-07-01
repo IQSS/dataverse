@@ -1549,14 +1549,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
         });
     }
 
-    public boolean canSeeCurationStatus(Long datasetId) {
-        boolean creatorsCanSeeStatus = JvmSettings.UI_SHOW_CURATION_STATUS_TO_ALL.lookupOptional(Boolean.class).orElse(false);
-        Dataset ds = (Dataset) dvObjectService.findDvObject(datasetId);
-        if (ds != null) {
+    public boolean canSeeCurationStatus(DvObject dvo) {
+        if (dvo != null && dvo instanceof Dataset) {
+            boolean creatorsCanSeeStatus = JvmSettings.UI_SHOW_CURATION_STATUS_TO_ALL.lookupOptional(Boolean.class).orElse(false);
             if (creatorsCanSeeStatus) {
-                return permissionsWrapper.canViewUnpublishedDataset(getDataverseRequest(), ds);
+                return permissionsWrapper.canViewUnpublishedDataset(getDataverseRequest(), (Dataset)dvo);
             } else {
-                return permissionsWrapper.canIssuePublishDatasetCommand(ds);
+                return permissionsWrapper.canIssuePublishDatasetCommand(dvo);
             }
         } else {
             return false;
