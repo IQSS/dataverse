@@ -861,8 +861,8 @@ public class OpenAireExportUtil {
                                     dateOfCollectionEnd = next.getSinglePrimitive();
                                 }
                             }
-
-                            if (StringUtils.isNotBlank(dateOfCollectionStart) && StringUtils.isNotBlank(dateOfCollectionEnd)) {
+                            //12301 write collection dates even of start or end os blank
+                            if (StringUtils.isNotBlank(dateOfCollectionStart) || StringUtils.isNotBlank(dateOfCollectionEnd)) {
                                 date_check = writeOpenTag(xmlw, "dates", date_check);
 
                                 Map<String, String> date_map = new HashMap<String, String>();
