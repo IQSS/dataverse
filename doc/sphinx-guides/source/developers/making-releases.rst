@@ -358,7 +358,7 @@ Delete old images and spin up the "latest" tag.
   rm -rf data
   docker compose up
 
-Wait for the bootstrapping process to complete. Then, make sure the version returned by http://localhost:8080/api/info/version matches the version you just released.
+Wait for the bootstrapping process to complete. Then, look at http://localhost:8080/api/info/version to make sure "version" shows the version that you just released. Note that it's normal for "build" to be null for our Docker images.
 
 Close Milestone on GitHub and Create a New One
 ----------------------------------------------
