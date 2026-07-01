@@ -1,0 +1,1 @@
+Users without permission to edit a dataset or dataverse were not able to access the permission and group management pages via the dataset/dataverse page menus even if they had the relevant ManagePermissions permission. See #3981 and #12218 for details.
