@@ -861,7 +861,7 @@ public class OpenAireExportUtil {
                                     dateOfCollectionEnd = next.getSinglePrimitive();
                                 }
                             }
-                            //12301 write collection dates even of start or end os blank
+                            //12301 write collection dates even 1f start or end is blank
                             if (StringUtils.isNotBlank(dateOfCollectionStart) || StringUtils.isNotBlank(dateOfCollectionEnd)) {
                                 date_check = writeOpenTag(xmlw, "dates", date_check);
 
@@ -871,7 +871,33 @@ public class OpenAireExportUtil {
                             }
                         }
                     }
+                    //12302 add time period covered to the date export
+                    if (DatasetFieldConstant.timePeriodCovered.equals(fieldDTO.getTypeName())) {
+                        for (HashSet<FieldDTO> fieldDTOs : fieldDTO.getMultipleCompound()) {
+                            String timePeriodCoveredStart = null;
+                            String timePeriodCoveredEnd = null;
+
+                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.timePeriodCoveredStart.equals(next.getTypeName())) {
+                                    timePeriodCoveredStart = next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.timePeriodCoveredEnd.equals(next.getTypeName())) {
+                                    timePeriodCoveredEnd = next.getSinglePrimitive();
+                                }
+                            }
+                            //12301 write collection dates even 1f start or end is blank
+                            if (StringUtils.isNotBlank(timePeriodCoveredStart) || StringUtils.isNotBlank(timePeriodCoveredEnd)) {
+                                date_check = writeOpenTag(xmlw, "dates", date_check);
+                                Map<String, String> date_map = new HashMap<String, String>();
+                                date_map.put("dateType", "Other");
+                                date_map.put("dateInformation", "Time period covered by the data");                                       
+                                writeFullElement(xmlw, null, "date", date_map, timePeriodCoveredStart + "/" + timePeriodCoveredEnd, language);
+                            }
+                        }
+                    }
                 }
+                
             }
         }
         writeEndTag(xmlw, date_check);
