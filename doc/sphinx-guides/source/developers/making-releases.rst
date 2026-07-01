@@ -273,7 +273,7 @@ As described below, we'll soon point the "latest" symlink to that new directory.
 Run a Build to Create the War File
 ----------------------------------
 
-Go to https://github.com/IQSS/dataverse/actions/workflows/generate_war_file.yml click "run workflow". For a regular release, change the branch to "master". For a hotfix release, use whatever branch name is used for the hotfix. Leave the custom label blank and click "run workflow". This will create an action that should result in a zip file. Inside that zip is another zip that contains the war file.
+Go to https://github.com/IQSS/dataverse/actions/workflows/generate_war_file.yml click "run workflow". For a regular release, change the branch to "master". For a hotfix release, use whatever branch name is used for the hotfix. Leave the custom label blank and click "run workflow". This will create an action that should result in a zip file. Inside that zip is another zip that contains the war file. Download it.
 
 The build number will appear in ``/api/info/version`` (along with the commit mentioned above) from a running installation (e.g. ``{"version":"6.10.1","build":"master-300d5b5"}``).
 
@@ -282,12 +282,17 @@ Build Installer (dvinstall.zip)
 
 In a git checkout of the source, switch to the master branch and pull the latest.
 
-Copy the war file from the previous step (shown in ``/tmp`` in the example below ) to the ``target`` directory in the root of the repo (create the ``target`` directory, if necessary):
+Unzip the zip file from the previous step.
+
+Copy the war file to the ``target`` directory in the root of the repo (create the ``target`` directory, if necessary):
 
 .. code-block:: bash
 
-  mkdir target
-  cp /tmp/dataverse-6.10.1.war target
+  cp ~/Downloads/built-app.zip .
+  unzip built-app.zip
+  rm built-app.zip
+  mkdir -p target
+  mv dataverse-*.war target
 
 Then, create the installer:
 
