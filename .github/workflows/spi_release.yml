@@ -45,7 +45,7 @@ jobs:
                   server-id: central
                   server-username: MAVEN_USERNAME
                   server-password: MAVEN_PASSWORD
-            - uses: actions/cache@v5
+            - uses: actions/cache@v6
               with:
                   path: ~/.m2
                   key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -68,7 +68,7 @@ jobs:
                 with:
                     java-version: '21'
                     distribution: 'adopt'
-            -   uses: actions/cache@v5
+            -   uses: actions/cache@v6
                 with:
                     path: ~/.m2
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
