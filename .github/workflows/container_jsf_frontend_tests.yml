@@ -26,7 +26,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  main-frontend-tests-workflow:
+  main-jsf-frontend-tests-workflow:
     runs-on: ubuntu-latest
     timeout-minutes: 90
 
@@ -242,6 +242,7 @@ jobs:
           DV_FULL_NAME:   "Playwright Runner"
           ROOT_DATAVERSE: "/dataverse/root"
           SKIP_PREFLIGHT: "true"
+          DOTENV_CONFIG_QUIET: "true"
 
       # ---------------------------
       # UPLOAD PLAYWRIGHT REPORT
