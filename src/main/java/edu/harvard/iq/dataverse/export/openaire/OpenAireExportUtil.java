@@ -1067,7 +1067,8 @@ public class OpenAireExportUtil {
 
                                 relatedIdentifier_map.put("relatedIdentifierType", relatedIdentifierType);
                                 if(relationType== null) {
-                                    relationType = "IsCitedBy";
+                                    //12305 change to match DataCite
+                                    relationType = "IsSupplementTo";
                                 }
                                 relatedIdentifier_map.put("relationType", relationType);
 

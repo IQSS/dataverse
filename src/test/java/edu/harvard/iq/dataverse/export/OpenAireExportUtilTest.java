@@ -453,7 +453,8 @@ public class OpenAireExportUtilTest {
         // then
         assertEquals("<contributors>"
                 + "<contributor contributorType=\"ContactPerson\">"
-                + "<contributorName nameType=\"Organizational\">LastContact1, FirstContact1</contributorName>"
+                + "<contributorName nameType=\"Personal\">LastContact1, FirstContact1</contributorName>"
+                + "<givenName>FirstContact1</givenName><familyName>LastContact1</familyName>"
                 + "<affiliation>ContactAffiliation1</affiliation>"
                 + "</contributor>"
                 + "<contributor contributorType=\"ContactPerson\">"
@@ -520,6 +521,8 @@ public class OpenAireExportUtilTest {
                 + "<date dateType=\"Created\">1003-01-01</date>"
                 + "<date dateType=\"Submitted\">1002-01-01</date>"
                 + "<date dateType=\"Available\">2015-09-29</date>"
+                + "<date dateType=\"Other\" dateInformation=\"Time period covered by the data\">1005-01-01/1005-01-02</date>"
+                + "<date dateType=\"Other\" dateInformation=\"Time period covered by the data\">1005-02-01/1005-02-02</date>"
                 + "<date dateType=\"Collected\">1006-01-01/1006-01-01</date>"
                 + "<date dateType=\"Collected\">1006-02-01/1006-02-02</date>"
                 + "</dates>",
@@ -623,7 +626,7 @@ public class OpenAireExportUtilTest {
         assertEquals("<relatedIdentifiers>"
                 + "<relatedIdentifier relationType=\"IsSupplementTo\" relatedIdentifierType=\"ARK\">"
                 + "RelatedPublicationIDNumber1</relatedIdentifier>"
-                + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"arXiv\">"
+                + "<relatedIdentifier relationType=\"IsSupplementTo\" relatedIdentifierType=\"arXiv\">"
                 + "RelatedPublicationIDNumber2</relatedIdentifier>"
                 + "</relatedIdentifiers>",
                 stringWriter.toString());
