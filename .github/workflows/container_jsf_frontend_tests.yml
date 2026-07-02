@@ -45,7 +45,7 @@ jobs:
       # CHECKOUT
       # ---------------------------
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # ---------------------------
       # VERIFY DOCKER
@@ -185,9 +185,6 @@ jobs:
       # ---------------------------
       # CREATE PLAYWRIGHT TEST USER
       # ---------------------------
-      # Creates a builtin account the Playwright suite will authenticate as,
-      # then promotes it to superuser so it can perform all suite actions
-      # (create/publish dataverses, assign roles, etc.).
       - name: Create Playwright test user via Dataverse API
         run: |
           set -euo pipefail
@@ -215,23 +212,28 @@ jobs:
           echo "Test user ready."
 
       # ---------------------------
-      # INSTALL KUNAI-RUNNER
+      # CHECKOUT KUNAI-RUNNER
       # ---------------------------
-      - name: Install kunai-runner
-        # Pin to the dist-tag matching your running Dataverse version.
-        # Update this tag when upgrading Dataverse (e.g. dv-6.11.0).
-        run: npm install kunai-runner@dv-6.10.1
+      - name: Checkout kunai-runner
+        uses: actions/checkout@v6
+        with:
+          repository: uncch-rdmc/kunai-runner
+          path: kunai-runner
+
+      - name: Install kunai-runner dependencies
+        run: npm ci
+        working-directory: kunai-runner
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
-        working-directory: node_modules/kunai-runner
+        working-directory: kunai-runner
 
       # ---------------------------
       # RUN PLAYWRIGHT FRONTEND TESTS
       # ---------------------------
       - name: Run Playwright frontend tests
         run: npx playwright test
-        working-directory: node_modules/kunai-runner
+        working-directory: kunai-runner
         env:
           BASE_URL:       "http://localhost:8080"
           LOGIN_ADAPTER:  "builtin"
@@ -249,7 +251,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: node_modules/kunai-runner/playwright-report/
+          path: kunai-runner/playwright-report/
           retention-days: 14
 
       - name: Upload Playwright test results (traces, videos, screenshots)
@@ -257,7 +259,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-test-results
-          path: node_modules/kunai-runner/test-results/
+          path: kunai-runner/test-results/
           retention-days: 14
 
       # ---------------------------
