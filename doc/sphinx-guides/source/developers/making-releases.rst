@@ -344,11 +344,11 @@ Test Docker Images
 
 Publishing the release should have trigged the "Container Images Scheduled Maintenance" GitHub Action. Allow it to finish and then go to https://hub.docker.com/u/gdcc and navigate to "gdcc/dataverse".
 
-Click on "tags", make sure the "latest" tag has been updated.
+Click on "tags" and note that the "latest" tag has not yet been updated. As a workaround, we will run the action again. Go to https://github.com/IQSS/dataverse/actions/workflows/container_maintenance.yml and click the "run workflow" dropdown. Make sure the branch is set to "develop" and click "run workflow" button.
 
-If the "latest" tag wasn't updated, you might need to manually run the GitHub Action again.
+Wait for the action to finish and then check again that the "latest" tag has been updated.
 
-Delete old images and spin up the "latest" tag.
+Locally, delete old images and spin up the "latest" tag.
 
 .. code-block:: bash
 
