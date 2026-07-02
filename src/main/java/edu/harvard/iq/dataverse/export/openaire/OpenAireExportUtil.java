@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
@@ -974,14 +975,15 @@ public class OpenAireExportUtil {
 
                             if (StringUtils.isNotBlank(alternateIdentifier)) {
                                 alternateIdentifier_check = writeOpenTag(xmlw, "alternateIdentifiers", alternateIdentifier_check);
-
+                                Map<String, String> alternateIdentifier_map = new HashMap<String, String>();
                                 if (StringUtils.isNotBlank(alternateIdentifierType)) {
-                                    Map<String, String> alternateIdentifier_map = new HashMap<String, String>();
+
                                     alternateIdentifier_map.put("alternateIdentifierType", alternateIdentifierType);
-                                    writeFullElement(xmlw, null, "alternateIdentifier", alternateIdentifier_map, alternateIdentifier, language);
                                 } else {
-                                    writeFullElement(xmlw, null, "alternateIdentifier", null, alternateIdentifier, language);
+                                    //12304 use "unav" if no type provided
+                                    alternateIdentifier_map.put("alternateIdentifierType", AbstractPidProvider.UNAVAILABLE);
                                 }
+                                writeFullElement(xmlw, null, "alternateIdentifier", alternateIdentifier_map, alternateIdentifier, language);
                             }
                         }
                     }
