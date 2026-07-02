@@ -1,0 +1,301 @@
+name: Container JSF Frontend Tests Workflow
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+      - master
+    paths-ignore:
+      - "doc/**"
+      - "**/*.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/*.md"
+  pull_request:
+    branches:
+      - develop
+      - master
+    paths-ignore:
+      - "doc/**"
+      - "**/*.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/*.md"
+
+concurrency:
+  group: "container-jsf-frontend-tests-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  main-frontend-tests-workflow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    defaults:
+      run:
+        shell: bash
+
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
+    steps:
+
+      # ---------------------------
+      # CHECKOUT
+      # ---------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ---------------------------
+      # VERIFY DOCKER
+      # ---------------------------
+      - name: Verify Docker
+        run: |
+          set -euo pipefail
+          docker version
+
+      # ---------------------------
+      # SETUP JAVA + MAVEN
+      # ---------------------------
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "21"
+          cache: "maven"
+
+      - name: Verify Maven
+        run: |
+          set -euo pipefail
+          mvn -version
+
+      # ---------------------------
+      # BUILD IMAGES (Dataverse-native)
+      # ---------------------------
+      - name: Build Dataverse containers via Maven
+        run: |
+          set -euo pipefail
+          mvn -Pct -T 1C package
+
+      # ---------------------------
+      # START CONTAINERS (BACKGROUND)
+      # ---------------------------
+      - name: Start Dataverse stack
+        run: |
+          set -euo pipefail
+          mvn -Pct docker:start \
+            -Ddataverse.feature.index-harvested-metadata-source=true \
+            -Ddataverse.oai.server.maxidentifiers=2 \
+            -Ddataverse.oai.server.maxrecords=2
+
+      # ---------------------------
+      # WAIT FOR API READINESS
+      # ---------------------------
+      - name: Wait for Dataverse API readiness
+        run: |
+          set -euo pipefail
+          URL="http://localhost:8080/api/info/version"
+          MAX_ATTEMPTS=10
+          SLEEP_TIME=15
+          echo "Waiting for Dataverse readiness..."
+          for attempt in $(seq 1 $MAX_ATTEMPTS); do
+            echo "Attempt $attempt..."
+            RESPONSE=$(curl -s --max-time 15 "$URL" || true)
+            STATUS=$(echo "$RESPONSE" | jq -r '.status' 2>/dev/null || echo "NOT_READY")
+            if [ "$STATUS" = "OK" ]; then
+              echo "Dataverse endpoint is READY."
+              echo "Waiting 30 more seconds for full readiness..."
+              sleep 30
+              echo "Response: $RESPONSE"
+              exit 0
+            fi
+            echo "Not ready. Sleeping ${SLEEP_TIME}s..."
+            sleep $SLEEP_TIME
+            if [ $SLEEP_TIME -lt 60 ]; then
+              SLEEP_TIME=$((SLEEP_TIME * 2))
+              if [ $SLEEP_TIME -gt 60 ]; then
+                SLEEP_TIME=60
+              fi
+            fi
+          done
+          echo "Dataverse failed to become ready."
+          docker ps
+          CONTAINERS="$(docker ps -aq)"
+          if [ -n "$CONTAINERS" ]; then
+            for cid in $CONTAINERS; do
+              echo "===== Logs for container $cid ====="
+              docker logs "$cid" || true
+            done
+          else
+            echo "No running containers to show logs for."
+          fi
+          exit 1
+
+      # ---------------------------
+      # MAP LOCALSTACK TO LOCALHOST
+      # ---------------------------
+      - name: Map localstack to localhost for Maven tests
+        run: echo "127.0.0.1 localstack" | sudo tee -a /etc/hosts
+
+      # ---------------------------
+      # CONFIGURE DATAVERSE FOR TESTS
+      # ---------------------------
+      - name: Configure Dataverse API Settings
+        run: |
+          set -euo pipefail
+
+          echo "Setting API Database Settings via internal container curl..."
+
+          declare -A settings=(
+            [":BuiltinUsersKey"]="burrito"
+            [":ProvCollectionEnabled"]="true"
+            [":AllowApiTokenLookupViaApi"]="true"
+            [":AllowSignUp"]="true"
+          )
+          for key in "${!settings[@]}"; do
+            echo "Setting $key..."
+            docker exec dev_dataverse curl --fail-with-body -sS -X PUT -d "${settings[$key]}" "http://localhost:8080/api/admin/settings/$key"
+            echo ""
+          done
+
+      # ---------------------------
+      # PRE-TEST INJECTIONS
+      # ---------------------------
+      - name: Put SUSHI config file in place
+        run: |
+          set -euo pipefail
+
+          SOURCE_FILE="${{ github.workspace }}/src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json"
+
+          echo "Injecting local file into container..."
+          docker exec -i dev_dataverse sh -c "cat > /tmp/sushi_sample_logs.json" < "$SOURCE_FILE"
+
+          docker exec dev_dataverse ls -l /tmp/sushi_sample_logs.json
+          docker exec dev_dataverse head -n 5 /tmp/sushi_sample_logs.json
+
+      # ---------------------------
+      # SETUP NODE.JS
+      # ---------------------------
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      # ---------------------------
+      # CREATE PLAYWRIGHT TEST USER
+      # ---------------------------
+      # Creates a builtin account the Playwright suite will authenticate as,
+      # then promotes it to superuser so it can perform all suite actions
+      # (create/publish dataverses, assign roles, etc.).
+      - name: Create Playwright test user via Dataverse API
+        run: |
+          set -euo pipefail
+
+          echo "Creating builtin test user..."
+          CREATE_RESPONSE=$(curl --fail-with-body -sS -X POST \
+            -H "Content-Type: application/json" \
+            "http://localhost:8080/api/builtin-users?key=burrito&sendEmailNotification=false" \
+            -d '{
+              "userName":    "playwright",
+              "displayName": "Playwright Runner",
+              "firstName":   "Playwright",
+              "lastName":    "Runner",
+              "affiliation": "CI",
+              "position":    "Automated Test Account",
+              "email":       "playwright@mailinator.com",
+              "password":    "Playwright1!"
+            }')
+          echo "Create response: $CREATE_RESPONSE"
+
+          echo "Promoting to superuser..."
+          docker exec dev_dataverse curl --fail-with-body -sS -X POST \
+            "http://localhost:8080/api/admin/superuser/playwright"
+
+          echo "Test user ready."
+
+      # ---------------------------
+      # INSTALL KUNAI-RUNNER
+      # ---------------------------
+      - name: Install kunai-runner
+        # Pin to the dist-tag matching your running Dataverse version.
+        # Update this tag when upgrading Dataverse (e.g. dv-6.11.0).
+        run: npm install kunai-runner@dv-6.10.1
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+        working-directory: node_modules/kunai-runner
+
+      # ---------------------------
+      # RUN PLAYWRIGHT FRONTEND TESTS
+      # ---------------------------
+      - name: Run Playwright frontend tests
+        run: npx playwright test
+        working-directory: node_modules/kunai-runner
+        env:
+          BASE_URL:       "http://localhost:8080"
+          LOGIN_ADAPTER:  "builtin"
+          DV_USERNAME:    "playwright"
+          DV_PASSWORD:    "Playwright1!"
+          DV_FULL_NAME:   "Playwright Runner"
+          ROOT_DATAVERSE: "/dataverse/root"
+          SKIP_PREFLIGHT: "true"
+
+      # ---------------------------
+      # UPLOAD PLAYWRIGHT REPORT
+      # ---------------------------
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: node_modules/kunai-runner/playwright-report/
+          retention-days: 14
+
+      - name: Upload Playwright test results (traces, videos, screenshots)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: node_modules/kunai-runner/test-results/
+          retention-days: 14
+
+      # ---------------------------
+      # COLLECT DOCKER LOGS (ALWAYS)
+      # ---------------------------
+      - name: Collect Docker logs (mapped)
+        if: always()
+        run: |
+          mkdir -p docker-logs
+          echo "Gathering container metadata..."
+          docker ps -a --format '{{.Names}}|{{.Image}}|{{.Status}}' > docker-logs/container-summary.txt
+          while IFS='|' read -r name image status; do
+            label="$name"
+            case "$name" in
+              *dataverse*) label="dataverse-app" ;;
+              *postgres*)  label="postgres-db" ;;
+              *solr*)      label="solr-index" ;;
+              *localstack*)label="localstack-s3" ;;
+            esac
+            echo "Collecting logs for $name ($label)"
+            {
+              echo "===== CONTAINER: $name ====="
+              echo "Label: $label"
+              echo "Image: $image"
+              echo "Status: $status"
+              echo ""
+              echo "===== LOGS ====="
+              docker logs --timestamps "$name" 2>&1 || true
+            } > "docker-logs/${label}__${name}.log"
+          done < docker-logs/container-summary.txt
+
+      # ---------------------------
+      # UPLOAD DOCKER LOGS (ALWAYS)
+      # ---------------------------
+      - name: Upload Docker logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-logs
+          path: docker-logs/
+          retention-days: 14
