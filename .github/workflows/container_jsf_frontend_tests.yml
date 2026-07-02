@@ -182,34 +182,34 @@ jobs:
         with:
           node-version: "24"
 
-      # ---------------------------
-      # CREATE PLAYWRIGHT TEST USER
-      # ---------------------------
-      - name: Create Playwright test user via Dataverse API
-        run: |
-          set -euo pipefail
+    #   # ---------------------------
+    #   # CREATE PLAYWRIGHT TEST USER
+    #   # ---------------------------
+    #   - name: Create Playwright test user via Dataverse API
+    #     run: |
+    #       set -euo pipefail
 
-          echo "Creating builtin test user..."
-          CREATE_RESPONSE=$(curl --fail-with-body -sS -X POST \
-            -H "Content-Type: application/json" \
-            "http://localhost:8080/api/builtin-users?key=burrito&sendEmailNotification=false" \
-            -d '{
-              "userName":    "playwright",
-              "displayName": "Playwright Runner",
-              "firstName":   "Playwright",
-              "lastName":    "Runner",
-              "affiliation": "CI",
-              "position":    "Automated Test Account",
-              "email":       "playwright@mailinator.com",
-              "password":    "Playwright1!"
-            }')
-          echo "Create response: $CREATE_RESPONSE"
+    #       echo "Creating builtin test user..."
+    #       CREATE_RESPONSE=$(curl --fail-with-body -sS -X POST \
+    #         -H "Content-Type: application/json" \
+    #         "http://localhost:8080/api/builtin-users?key=burrito&sendEmailNotification=false" \
+    #         -d '{
+    #           "userName":    "playwright",
+    #           "displayName": "Playwright Runner",
+    #           "firstName":   "Playwright",
+    #           "lastName":    "Runner",
+    #           "affiliation": "CI",
+    #           "position":    "Automated Test Account",
+    #           "email":       "playwright@mailinator.com",
+    #           "password":    "Playwright1!"
+    #         }')
+    #       echo "Create response: $CREATE_RESPONSE"
 
-          echo "Promoting to superuser..."
-          docker exec dev_dataverse curl --fail-with-body -sS -X POST \
-            "http://localhost:8080/api/admin/superuser/playwright"
+    #       echo "Promoting to superuser..."
+    #       docker exec dev_dataverse curl --fail-with-body -sS -X POST \
+    #         "http://localhost:8080/api/admin/superuser/playwright"
 
-          echo "Test user ready."
+    #       echo "Test user ready."
 
       # ---------------------------
       # CHECKOUT KUNAI-RUNNER
@@ -237,9 +237,9 @@ jobs:
         env:
           BASE_URL:       "http://localhost:8080"
           LOGIN_ADAPTER:  "builtin"
-          DV_USERNAME:    "playwright"
-          DV_PASSWORD:    "Playwright1!"
-          DV_FULL_NAME:   "Playwright Runner"
+          DV_USERNAME:    "dataverseAdmin"
+          DV_PASSWORD:    "admin1"
+          DV_FULL_NAME:   "Dataverse Admin"
           ROOT_DATAVERSE: "/dataverse/root"
           SKIP_PREFLIGHT: "true"
           DOTENV_CONFIG_QUIET: "true"
