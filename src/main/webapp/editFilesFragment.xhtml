@@ -29,7 +29,13 @@
     <ui:param name="maxFileUploadSize" value="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}"/>
     <ui:param name="maxNumberOfFiles" value="#{EditDatafilesPage.getMaxNumberOfFiles()}"/>
     <ui:param name="fileUploadsAvailable" value="#{EditDatafilesPage.getFileUploadsAvailable()}"/>
-    <ui:param name="useReactUploader" value="#{systemConfig.reactUploaderEnabled and useDirectUpload and !EditDatafilesPage.fileReplaceOperation}"/>
+    <!-- EditDatafilesPage.reactUploaderActive is the complete predicate for
+         "the React uploader replaces the JSF HTTP upload UI" — page mode,
+         package files, file replace, and the installation-level gate
+         (SystemConfig.isReactUploaderAvailable) all live in the bean, so
+         this param and editdatafiles.xhtml's Done-button handling can never
+         disagree. -->
+    <ui:param name="useReactUploader" value="#{EditDatafilesPage.reactUploaderActive}"/>
     
     <h:outputScript name='js/fileupload.js?version=#{systemConfig.getVersion()}' />
     <ui:fragment rendered = '#{useDirectUpload}'>
@@ -87,9 +93,29 @@
                             locale: #{systemConfig.jsString(dataverseSession.localeCode)},
                             rootElementId: 'dv-uploader'
                         };
+                        // Fallback when the bundle script fails to load (CDN
+                        // outage, misconfigured base-url, blocked by CSP or an
+                        // extension). Without it the page has no uploader AND
+                        // no legacy Done button (editdatafiles.xhtml hides it
+                        // while the React uploader is active) — a dead end.
+                        // The failure is recorded as a class on the <html>
+                        // element: it sits outside every PrimeFaces update
+                        // region, so elements hidden via the
+                        // dv-hide-when-react-uploader CSS contract (the Done
+                        // button in editdatafiles.xhtml) stay revealed even
+                        // when a later partial update re-renders them.
+                        function dvReactUploaderLoadFailed() {
+                            var mount = document.getElementById('dv-uploader');
+                            if (mount) {
+                                mount.innerHTML = '<div class="alert alert-danger" role="alert">'
+                                    + #{systemConfig.jsString(bundle['file.reactUploader.loadFailed'])}
+                                    + '</div>';
+                            }
+                            document.documentElement.classList.add('dv-react-uploader-failed');
+                        }
                         //]]>
                     </script>
-                    <script type="module" src="#{systemConfig.reusableComponentsBaseUrl}/dv-uploader.js?version=#{systemConfig.reusableComponentsVersion}"></script>
+                    <script type="module" src="#{systemConfig.reusableComponentsBaseUrl}/dv-uploader.js?version=#{systemConfig.reusableComponentsVersion}" onerror="dvReactUploaderLoadFailed()"></script>
                 </ui:fragment>
 
                 <!-- Upload -->
@@ -160,20 +186,6 @@
                                     </h:outputFormat>
                                 </p>
                     
-                    <!--
-                        dropBoxUploadFinished is hoisted out of the legacy upload
-                        block below because the Dropbox panel renders independently
-                        of the HTTP upload widget and still needs this callback when
-                        the React uploader replaces the PrimeFaces upload UI.
-                    -->
-                    <script>
-                        //<![CDATA[
-                        function dropBoxUploadFinished(fileupload) {
-                            $('button[id$="dropBoxUploadFinished"]').trigger('click');
-                        }
-                        //]]>
-                    </script>
-
                     <ui:fragment rendered="#{!useReactUploader}">
                     <script>
                         //<![CDATA[
@@ -254,10 +266,14 @@
                         uploader replaces it) and conceptually grouped them
                         under "HTTP" even though Dropbox/Globus/Webloader
                         are independent transport methods. Hoisted here as
-                        sibling panels so each renders based purely on its
-                        own enable flag, parallel to httpPanel and rsyncPanel.
+                        sibling panels so each renders based on its own
+                        enable flag, parallel to httpPanel and rsyncPanel.
+                        The !hasPackageFile guard carries over from the old
+                        nesting (contentOfHttpPanel): a dataset holding an
+                        rsync package must reject every other upload method,
+                        and the httpPanel warning blocks above explain why.
                     -->
-                    <div jsf:id="webloaderPanel" jsf:rendered="#{webloaderUploadSupported and !lockedFromEdits}" class="panel panel-default">
+                    <div jsf:id="webloaderPanel" jsf:rendered="#{webloaderUploadSupported and !lockedFromEdits and !hasPackageFile}" class="panel panel-default">
                         <div role="tab" id="headingWebloader" data-toggle="collapse" data-target="#panelCollapseWebloader" class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseWebloader">
                             #{bundle['file.fromWebloader']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
                         </div>
@@ -270,13 +286,29 @@
                         </div>
                     </div>
 
-                    <div jsf:id="dropboxPanel" jsf:rendered="#{settingsWrapper.isHasDropBoxKey() and !lockedFromEdits}" class="panel panel-default">
+                    <div jsf:id="dropboxPanel" jsf:rendered="#{settingsWrapper.isHasDropBoxKey() and !lockedFromEdits and !hasPackageFile}" class="panel panel-default">
                         <div role="tab" id="headingDropbox" data-toggle="collapse" data-target="#panelCollapseDropbox" class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseDropbox">
                             #{bundle['file.fromDropbox']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
                         </div>
                         <div id="panelCollapseDropbox" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingDropbox">
                             <div class="panel-body">
                                 <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
+                                <!-- Defined next to its only caller (the hidden
+                                     dropBoxButton's oncomplete) so the function
+                                     exists whenever the button does. It used to
+                                     live inside the HTTP panel's body, which is
+                                     suppressed when the React uploader is active
+                                     or HTTP upload is disabled — leaving the
+                                     Dropbox chooser to finish into a
+                                     ReferenceError and never register the
+                                     downloaded files. -->
+                                <script>
+                                    //<![CDATA[
+                                    function dropBoxUploadFinished(fileupload) {
+                                        $('button[id$="dropBoxUploadFinished"]').trigger('click');
+                                    }
+                                    //]]>
+                                </script>
                                 <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
                                 <p:commandButton id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" oncomplete="javascript:dropBoxUploadFinished();" update="@none" style="display:none;" />
                                 <p:commandButton id="dropBoxUserButton" disabled="#{!(showFileUploadComponent)}" value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
@@ -285,7 +317,7 @@
                         </div>
                     </div>
 
-                    <div jsf:id="globusPanel" jsf:rendered="#{globusUploadSupported and !lockedFromEdits}" class="panel panel-default">
+                    <div jsf:id="globusPanel" jsf:rendered="#{globusUploadSupported and !lockedFromEdits and !hasPackageFile}" class="panel panel-default">
                         <div role="tab" id="headingGlobus" data-toggle="collapse" data-target="#panelCollapseGlobus" class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseGlobus">
                             #{bundle['file.fromGlobus']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
                         </div>

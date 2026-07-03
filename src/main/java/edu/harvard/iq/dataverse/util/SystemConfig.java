@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectContainer;
@@ -258,6 +259,23 @@ public class SystemConfig {
     }
 
     /**
+     * Installation-level availability of the React file uploader for a
+     * dataset's store: feature flag raised, store supports direct upload,
+     * and HTTP is an enabled upload method. This is the shared core of the
+     * gate — dataset.xhtml's create tab consumes it directly (the
+     * EditDatafilesPage bean is uninitialized there), and
+     * {@code EditDatafilesPage#isReactUploaderActive} layers the page-state
+     * terms (edit mode, package files, file replace) on top. Keeping the
+     * core here prevents the two pages' gates from drifting.
+     */
+    public boolean isReactUploaderAvailable(Dataset dataset) {
+        return isReactUploaderEnabled()
+                && dataset != null
+                && directUploadEnabled(dataset)
+                && isHTTPUpload();
+    }
+
+    /**
      * Returns the base URL from which the Dataverse reusable React component
      * bundles (e.g. {@code dv-uploader.js}) are loaded. The default value
      * {@code /reusable-components} serves the pre-built bundle that ships
@@ -294,7 +312,23 @@ public class SystemConfig {
                 : configured;
     }
 
-    private static boolean isSafeReusableComponentsBaseUrl(String value) {
+    // Thread-safe and immutable per commons-validator docs, so shared.
+    // ALLOW_LOCAL_URLS keeps single-label and intranet hosts working —
+    // pointing the base URL at http://localhost:5173 (a Vite dev server, as
+    // the frontend-dev container guide describes) or an internal CDN host
+    // is a first-class use of this setting. It still demands an authority,
+    // so opaque URIs like "http:evil" (which java.net.URI parses with
+    // scheme "http" and no host, and browsers resolve against host "evil")
+    // stay rejected.
+    private static final org.apache.commons.validator.routines.UrlValidator BASE_URL_VALIDATOR =
+            new org.apache.commons.validator.routines.UrlValidator(
+                    new String[]{"http", "https"},
+                    org.apache.commons.validator.routines.UrlValidator.ALLOW_2_SLASHES
+                            + org.apache.commons.validator.routines.UrlValidator.ALLOW_LOCAL_URLS);
+
+    // Public so ConfigCheckService can warn at startup about a configured
+    // value that this check would otherwise silently reject at render time.
+    public static boolean isSafeReusableComponentsBaseUrl(String value) {
         if (value == null || value.isEmpty()) return false;
         // No control characters or HTML-attribute-breaking chars.
         for (int i = 0; i < value.length(); i++) {
@@ -302,33 +336,9 @@ public class SystemConfig {
             if (c <= 0x20 || c == '"' || c == '\'' || c == '<' || c == '>') return false;
         }
         if (value.startsWith("/")) return true;
-        try {
-            java.net.URI uri = java.net.URI.create(value);
-            String scheme = uri.getScheme();
-            return "http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme);
-        } catch (IllegalArgumentException ex) {
-            return false;
-        }
+        return BASE_URL_VALIDATOR.isValid(value);
     }
 
-    /**
-     * Cache-busting token for the reusable-components bundle URLs.
-     *
-     * Returns Dataverse's app version concatenated with the modification
-     * timestamp of the entry-point bundle on disk, when that file is
-     * available (the WAR's bundled copy under
-     * {@code webapp/reusable-components/dv-tree-view.js}).
-     * Falls back to the plain app version when the file can't be
-     * located — avoids breaking pages on installs that override
-     * {@code REUSABLE_COMPONENTS_BASE_URL} to point at a CDN.
-     *
-     * Why not just {@link #getVersion()}: that string is pinned per
-     * release (e.g. {@code "6.10.1"}) and never changes between local
-     * dev rebuilds, so browsers happily serve the cached bundle for
-     * the lifetime of the deployment. Cache invalidation needs a token
-     * that changes whenever the bundle does — file mtime is the
-     * cheapest such signal that does not require a build-time hook.
-     */
     /**
      * JSON-encode a single string value (with surrounding quotes), suitable
      * for inlining into a JavaScript object literal in a JSF page. Use:
@@ -359,18 +369,55 @@ public class SystemConfig {
         return json.replace("</", "<\\/");
     }
 
+    /**
+     * Cache-busting token for the reusable-components bundle URLs.
+     *
+     * Returns Dataverse's app version concatenated with the modification
+     * timestamp of the entry-point bundle on disk, when that file is
+     * available (the WAR's bundled copy under
+     * {@code webapp/reusable-components/dv-tree-view.js}).
+     * Falls back to the plain app version when the file can't be
+     * located — avoids breaking pages on installs that override
+     * {@code REUSABLE_COMPONENTS_BASE_URL} to point at a CDN.
+     *
+     * Why not just {@link #getVersion()}: that string is pinned per
+     * release (e.g. {@code "6.10.1"}) and never changes between local
+     * dev rebuilds, so browsers happily serve the cached bundle for
+     * the lifetime of the deployment. Cache invalidation needs a token
+     * that changes whenever the bundle does — file mtime is the
+     * cheapest such signal that does not require a build-time hook.
+     *
+     * The successful answer is cached for a short TTL rather than per
+     * deployment or per render: per render would stat the file on every
+     * page view for an answer that almost never changes, while pinning it
+     * forever would miss an operator hot-copying a patched bundle into the
+     * exploded WAR without redeploying (a redeploy resets the cache via the
+     * classloader anyway, but a hot copy does not). Failures — no
+     * FacesContext, unresolvable path, missing file — are never cached, so
+     * a transient hiccup on the first render can't pin the weaker
+     * version-only token for the deployment's lifetime.
+     */
     public String getReusableComponentsVersion() {
+        long now = System.currentTimeMillis();
+        String cached = reusableComponentsVersionToken;
+        if (cached != null && now - reusableComponentsVersionTokenAtMs < REUSABLE_COMPONENTS_VERSION_TTL_MS) {
+            return cached;
+        }
         String base = getVersion();
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
-            if (fc != null) {
-                String real = fc.getExternalContext()
-                        .getRealPath("/reusable-components/dv-tree-view.js");
-                if (real != null) {
-                    File bundle = new File(real);
-                    if (bundle.isFile()) {
-                        return base + "-" + bundle.lastModified();
-                    }
+            if (fc == null) {
+                return base;
+            }
+            String real = fc.getExternalContext()
+                    .getRealPath("/reusable-components/dv-tree-view.js");
+            if (real != null) {
+                File bundle = new File(real);
+                if (bundle.isFile()) {
+                    String token = base + "-" + bundle.lastModified();
+                    reusableComponentsVersionToken = token;
+                    reusableComponentsVersionTokenAtMs = now;
+                    return token;
                 }
             }
         } catch (Exception ignore) {
@@ -379,6 +426,10 @@ public class SystemConfig {
         return base;
     }
 
+    // Benign race: concurrent renders compute the same value.
+    private static volatile String reusableComponentsVersionToken = null;
+    private static volatile long reusableComponentsVersionTokenAtMs = 0;
+    private static final long REUSABLE_COMPONENTS_VERSION_TTL_MS = 60_000;
 
     /**
      * Lookup (or construct) the designated URL of this instance from configuration.

@@ -71,8 +71,7 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import org.apache.commons.codec.digest.DigestUtils;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
@@ -100,7 +99,6 @@ import software.amazon.awssdk.services.s3.model.CompletedPart;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -631,44 +629,62 @@ public class Datasets extends AbstractApiBean {
                                    @QueryParam("order") String orderParam,
                                    @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                    @QueryParam("originals") boolean originals,
-                                   @HeaderParam("If-None-Match") String ifNoneMatch,
+                                   @Context Request jaxrsRequest,
                                    @Context UriInfo uriInfo,
                                    @Context HttpHeaders headers) {
         return response(req -> {
             Include include;
             Order order;
+            String normalizedPath;
             try {
                 include = Include.fromQuery(includeParam);
                 order = Order.fromQuery(orderParam);
+                // Normalized once, up front: junk-only paths ("..", "-")
+                // must 400 here rather than reach the ETag hash or alias
+                // onto the root listing.
+                normalizedPath = DatasetVersionTreeService.normalizePath(path);
             } catch (InvalidQueryException ex) {
                 return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.tree.invalid.query", List.of(ex.getMessage())));
             }
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId, false), uriInfo, headers, includeDeaccessioned);
-            // Stable ETag for cacheable (released, non-deaccessioned) versions only.
-            // Drafts and deaccessioned versions can change in place, so we don't
-            // emit a cacheable ETag for them.
+            // ETag for released, non-deaccessioned versions only. Drafts and
+            // deaccessioned versions can change in place, so they get no
+            // caching headers at all.
             //
-            // Cache-Control is `private` rather than `public` because the route
-            // is `@AuthRequired` — even though today the response body does not
-            // vary by user (restricted files are returned with their `access`
-            // marker, the metadata itself is not filtered), `private` keeps a
-            // future user-dependent SQL filter from leaking through a shared
-            // proxy. `immutable` is still safe: released non-deaccessioned
-            // versions are content-immutable, so the browser's own cache can
-            // skip revalidation.
-            String etag = isCacheableVersion(datasetVersion)
-                    ? computeTreeEtag(datasetVersion, path, limit, cursor, include, order,
-                            originals, includeDeaccessioned)
+            // A released version's *file list* is frozen, but this response
+            // is still time-dependent: the per-file `access` marker flips
+            // when an embargo lapses or a retention period expires (both at
+            // a date boundary), and `df.restricted` is live datafile state.
+            // The ETag therefore includes the current date — taken from the
+            // DATABASE's clock, because the flips happen on the SQL side's
+            // `current_date` and the JVM's timezone can trail it by hours,
+            // during which a JVM-stamped validator would keep confirming
+            // (304) a body the SQL has already changed. Cache-Control is
+            // `no-cache` (revalidate every use; a matching ETag still short-
+            // circuits to a body-less 304) rather than a long max-age or
+            // `immutable`, which would let stale access flags live forever.
+            // Restricted-flag changes are only picked up when the date (and
+            // with it the ETag) rolls over — a bounded, documented staleness.
+            //
+            // `private` rather than `public` because the route is
+            // `@AuthRequired`: it keeps a future user-dependent SQL filter
+            // from leaking through a shared proxy.
+            EntityTag etag = isCacheableVersion(datasetVersion)
+                    ? new EntityTag(computeTreeEtag(datasetVersion, normalizedPath, limit, cursor, include, order,
+                            originals, includeDeaccessioned, datasetVersionTreeService.currentDbDate()))
                     : null;
-            if (etag != null && etag.equals(ifNoneMatch)) {
-                return Response.notModified()
-                        .tag(etag)
-                        .header("Cache-Control", "private, immutable")
-                        .build();
+            if (etag != null) {
+                Response.ResponseBuilder precondition = jaxrsRequest.evaluatePreconditions(etag);
+                if (precondition != null) {
+                    // If-None-Match matched: 304 with the validator re-attached.
+                    return precondition.tag(etag)
+                            .header("Cache-Control", TREE_CACHE_CONTROL)
+                            .build();
+                }
             }
             TreePage page;
             try {
-                page = datasetVersionTreeService.listChildren(datasetVersion, path, limit, cursor, include, order, originals);
+                page = datasetVersionTreeService.listChildren(datasetVersion, normalizedPath, limit, cursor, include, order, originals);
             } catch (InvalidQueryException ex) {
                 return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.tree.invalid.query", List.of(ex.getMessage())));
             }
@@ -678,37 +694,46 @@ public class Datasets extends AbstractApiBean {
                             .build())
                     .type(MediaType.APPLICATION_JSON);
             if (etag != null) {
-                rb.tag(etag).header("Cache-Control", "private, immutable");
+                rb.tag(etag).header("Cache-Control", TREE_CACHE_CONTROL);
             }
             return rb.build();
         }, getRequestUser(crc));
     }
 
+    private static final String TREE_CACHE_CONTROL = "private, no-cache";
+
     private static boolean isCacheableVersion(DatasetVersion v) {
         return v.isReleased() && !v.isDeaccessioned();
     }
 
+    /**
+     * Returns the bare (unquoted) ETag token; quoting is {@link EntityTag}'s
+     * job. Pre-quoting here would get quoted a second time by JAX-RS,
+     * producing a malformed {@code ETag: ""…""} header that no echoed
+     * {@code If-None-Match} can ever match.
+     *
+     * {@code path} must already be normalized (the caller normalizes once,
+     * up front) so equivalent requests share a validator; {@code dbToday}
+     * is the database's current date — the clock the SQL's embargo/
+     * retention predicates flip on, deliberately not the JVM's.
+     */
     private static String computeTreeEtag(DatasetVersion version, String path, Integer limit,
                                            String cursor, Include include, Order order,
-                                           boolean originals, boolean includeDeaccessioned) {
+                                           boolean originals, boolean includeDeaccessioned,
+                                           LocalDate dbToday) {
         StringBuilder sb = new StringBuilder();
         sb.append(version.getId()).append(':')
                 .append(version.getVersionState() != null ? version.getVersionState().name() : "").append(':')
-                .append(path == null ? "" : path).append(':')
-                .append(limit == null ? "" : limit).append(':')
+                .append(path).append(':')
+                .append(DatasetVersionTreeService.clampLimit(limit)).append(':')
                 .append(cursor == null ? "" : cursor).append(':')
                 .append(include.name()).append(':')
                 .append(order.wireValue()).append(':')
                 .append(originals).append(':')
-                .append(includeDeaccessioned);
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hash = md.digest(sb.toString().getBytes(StandardCharsets.UTF_8));
-            String b64 = Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
-            return "\"" + b64.substring(0, 16) + "\"";
-        } catch (NoSuchAlgorithmException ex) {
-            return null;
-        }
+                .append(includeDeaccessioned).append(':')
+                .append(dbToday);
+        byte[] hash = DigestUtils.sha256(sb.toString());
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(hash).substring(0, 16);
     }
 
     private static JsonObjectBuilder jsonTreePage(TreePage page) {
@@ -725,7 +750,8 @@ public class Datasets extends AbstractApiBean {
                         .add("folders", folder.folderCount)
                         .add("bytes", folder.bytes)
                         .add("restricted", folder.restrictedCount)
-                        .add("embargoed", folder.embargoedCount));
+                        .add("embargoed", folder.embargoedCount)
+                        .add("retentionExpired", folder.retentionExpiredCount));
             } else if (item instanceof FileItem) {
                 FileItem file = (FileItem) item;
                 ob.add("id", file.id);

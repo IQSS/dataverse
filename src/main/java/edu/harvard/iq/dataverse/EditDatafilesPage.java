@@ -1384,6 +1384,32 @@ public class EditDatafilesPage implements java.io.Serializable {
         return mode == FileEditMode.UPLOAD || mode == FileEditMode.CREATE || mode == FileEditMode.REPLACE;
     }
 
+    /**
+     * Whether the React file uploader replaces the classic PrimeFaces upload
+     * widget for this page view. This is the complete predicate — page mode
+     * included — shared by the mount point in editFilesFragment.xhtml and
+     * the legacy Done-button handling in editdatafiles.xhtml; the two must
+     * not drift, or the page can end up with neither an uploader nor a way
+     * to leave it.
+     *
+     * Page-state terms live here: an upload-capable mode (also what makes
+     * the uninitialized instance reachable from dataset.xhtml's create flow
+     * answer false — mode and workingVersion are null there; the dataset
+     * field is never null, it is initialized to a blank Dataset), no
+     * package file (rsync datasets reject every other upload path), and not
+     * the file-replace flow. The installation-level terms (feature flag,
+     * direct upload, :UploadMethods HTTP) come from
+     * {@link SystemConfig#isReactUploaderAvailable}, which dataset.xhtml's
+     * create tab also consumes.
+     */
+    public boolean isReactUploaderActive() {
+        return showFileUploadFragment()
+                && workingVersion != null
+                && !workingVersion.isHasPackageFile()
+                && !isFileReplaceOperation()
+                && systemConfig.isReactUploaderAvailable(dataset);
+    }
+
     public boolean showFileUploadComponent() {
         if (mode == FileEditMode.UPLOAD || mode == FileEditMode.CREATE) {
             return true;

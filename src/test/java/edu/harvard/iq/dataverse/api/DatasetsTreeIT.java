@@ -406,7 +406,7 @@ public class DatasetsTreeIT {
         Response response = UtilIT.getVersionTree(datasetId, DRAFT_VERSION,
                 null, null, null, null, null, null, null, apiToken);
         response.then().assertThat().statusCode(OK.getStatusCode());
-        // Drafts can change — no ETag, no immutable cache header.
+        // Drafts can change in place — no ETag, no cache headers.
         assertNull(response.getHeader("ETag"),
                 "Draft versions must not emit a cacheable ETag");
     }
@@ -431,20 +431,27 @@ public class DatasetsTreeIT {
 
         Response first = UtilIT.getVersionTree(datasetId, LATEST,
                 null, null, null, null, null, null, null, apiToken);
+        // `no-cache` (not `immutable`): the body is time-dependent — access
+        // markers flip when an embargo lapses or a retention period expires —
+        // so clients must revalidate; a matching ETag still gets a body-less
+        // 304 below.
         first.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .header("Cache-Control", equalTo("private, immutable"));
+                .header("Cache-Control", equalTo("private, no-cache"));
         String etag = first.getHeader("ETag");
         assertNotNull(etag, "Published versions must emit an ETag");
-        assert etag.startsWith("\"") && etag.endsWith("\"") : "ETag must be quoted: " + etag;
+        assert etag.startsWith("\"") && etag.endsWith("\"") : "ETag must be quoted exactly once: " + etag;
+        assert !etag.startsWith("\"\"") : "ETag must not be double-quoted: " + etag;
 
+        // Echo the ETag back exactly as received (the wire-quoted form) —
+        // this is what a real HTTP cache sends in If-None-Match.
         Response cached = io.restassured.RestAssured.given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
                 .header("If-None-Match", etag)
                 .get("/api/datasets/" + datasetId + "/versions/" + LATEST + "/tree");
         cached.then().assertThat()
                 .statusCode(jakarta.ws.rs.core.Response.Status.NOT_MODIFIED.getStatusCode())
-                .header("Cache-Control", equalTo("private, immutable"));
+                .header("Cache-Control", equalTo("private, no-cache"));
 
         // Different query params must yield a different ETag.
         Response differentQuery = UtilIT.getVersionTree(datasetId, LATEST,

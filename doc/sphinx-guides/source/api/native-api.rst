@@ -2359,7 +2359,7 @@ Folders are returned first, then files. Both are sorted by name (case-insensitiv
 
 Query parameters:
 
-* ``path`` — folder within the dataset, forward-slash separated; root is ``""`` or omit. The server normalises repeated and trailing slashes.
+* ``path`` — folder within the dataset, forward-slash separated; root is ``""`` or omit. The server normalises the value with the same rules applied to folder names at upload time: repeated slashes and backslashes collapse to ``/``, and leading dots, dashes and spaces are stripped (stored folder names never start with them). The end of the path is preserved apart from trailing slashes — interior folder names may legitimately end in a dot or space, and paths emitted by the endpoint itself always round-trip. A path that normalises to nothing (for example ``..``) is rejected with ``400``.
 * ``limit`` — page size; default ``100``, clamped to ``1000``.
 * ``cursor`` — opaque server-issued token. Pass back the ``nextCursor`` from a previous response to fetch the next page. Invalid or stale cursors yield ``400``.
 * ``include`` — ``all`` (default), ``folders``, or ``files``.
@@ -2376,7 +2376,7 @@ Response shape:
     "items": [
       { "type": "folder", "name": "2024", "path": "data/raw/2024",
         "counts": { "files": 12, "folders": 1, "bytes": 4194304,
-                    "restricted": 0, "embargoed": 0 } },
+                    "restricted": 0, "embargoed": 0, "retentionExpired": 0 } },
       { "type": "file", "id": 42, "name": "data.csv", "path": "data/raw/data.csv",
         "size": 1024, "contentType": "text/csv", "access": "public",
         "checksum": { "type": "MD5", "value": "abc" },
@@ -2389,13 +2389,15 @@ Response shape:
     "approximateCount": 137
   }
 
-Permissions and embargoes are honoured exactly as on ``GET /api/datasets/{id}/versions/{versionId}/files``.
+``approximateCount`` is the total number of folders and files at the requested path, snapshotted on the first page of a pagination walk and carried unchanged through the rest of the walk (hence "approximate": on draft versions, files added mid-walk are not reflected until a new walk starts).
 
-Folder counts are recursive: ``counts.files`` is the total number of files anywhere in the folder's subtree, ``counts.folders`` is the count of immediate subfolders, and ``counts.bytes`` is the total size of all files in the subtree. ``counts.bytes`` uses ``df.filesize`` — the size of the bytes the default ``downloadUrl`` would serve, which for ingested tabular files is the converted TSV rather than the original upload — so it is intended as a "downloading this folder = N GB" UX hint, not an authoritative original-bytes total. ``counts.restricted`` and ``counts.embargoed`` mirror the per-file ``access`` resolution: a restricted file is counted as restricted even if it also carries an embargo, and only non-restricted files with an active embargo are counted as embargoed. Public files are implied as ``files - restricted - embargoed``.
+The per-file ``access`` marker is one of ``retentionExpired``, ``restricted``, ``embargoed``, or ``public``, resolved in that order (a retention-expired file cannot be served at all, so that state wins even for restricted files; a restricted file with an active embargo reports ``restricted``). The embargo and retention date checks match the actual download enforcement (a file whose embargo lifts today is ``public`` and downloadable). Note this differs by one day, at the boundary, from the ``files`` endpoint's access-status *filter*, which treats a file as embargoed through the lift date itself.
+
+Folder counts are recursive: ``counts.files`` is the total number of files anywhere in the folder's subtree, ``counts.folders`` is the count of immediate subfolders, and ``counts.bytes`` is the total size of all files in the subtree. ``counts.bytes`` uses ``df.filesize`` — the size of the bytes the default ``downloadUrl`` would serve, which for ingested tabular files is the converted TSV rather than the original upload — so it is intended as a "downloading this folder = N GB" UX hint, not an authoritative original-bytes total. ``counts.restricted``, ``counts.embargoed`` and ``counts.retentionExpired`` mirror the per-file ``access`` resolution and are mutually exclusive buckets; public files are implied as ``files - restricted - embargoed - retentionExpired``.
 
 Checksum semantics: ``checksum`` is present on a file row only when it is the digest of the bytes a client would receive by following ``downloadUrl``. For ingested tabular files the default ``downloadUrl`` resolves to the converted TSV — bytes whose digest Dataverse does not store — so the ``checksum`` field is omitted; requesting the same listing with ``originals=true`` flips ``downloadUrl`` to ``?format=original`` (the saved-original auxiliary blob) and the matching digest is reported again. The per-file ``size`` follows the same rule: under ``originals=true`` it reports the saved original's size so it matches the original bytes, while the folder ``counts.bytes`` rollup stays the served-form total. Clients can therefore treat "``checksum`` present" as an unconditional commitment that the value matches what ``downloadUrl`` will serve — and, under ``originals=true``, that ``size`` matches too.
 
-Caching: for published, non-deaccessioned versions the response carries an ``ETag`` header derived from the request inputs and a ``Cache-Control: private, immutable`` header. Clients can use the ETag in a subsequent ``If-None-Match`` request header to receive a ``304 Not Modified`` response without re-fetching the body. ``private`` keeps the response out of shared caches because the route is auth-required; the browser's own cache still benefits from ``immutable``. Drafts and deaccessioned versions do not emit an ETag because their content can change in place.
+Caching: for published, non-deaccessioned versions the response carries an ``ETag`` header (derived from the request inputs and the current date) and ``Cache-Control: private, no-cache``. A released version's file list is frozen, but the response is still time-dependent — ``access`` markers flip when an embargo lapses or a retention period expires — so clients must revalidate rather than reuse a stored copy blindly; sending the ETag back in ``If-None-Match`` yields a body-less ``304 Not Modified`` while it still matches, and the date component of the ETag makes embargo/retention transitions invalidate it. ``private`` keeps the response out of shared caches because the route is auth-required. Drafts and deaccessioned versions emit no caching headers because their content can change in place.
 
 Get File Counts in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

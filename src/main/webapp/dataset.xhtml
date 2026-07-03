@@ -960,11 +960,19 @@
                                  dataset, matches the SPA's flow and avoids a dual-
                                  uploader UX (legacy on create, React after). The
                                  legacy JSF flow remains unchanged on instances that
-                                 haven't enabled the react-uploader feature flag. -->
-                            <ui:fragment rendered="#{systemConfig.reactUploaderEnabled and systemConfig.directUploadEnabled(DatasetPage.dataset)}">
+                                 haven't enabled the react-uploader feature flag.
+                                 systemConfig.reactUploaderAvailable is the same
+                                 installation-level core (flag + direct upload +
+                                 :UploadMethods HTTP) the edit page's mount predicate
+                                 builds on, so this gate cannot drift from it: when the
+                                 React uploader would never become active after save,
+                                 the create tab keeps its regular upload fragment (e.g.
+                                 a Globus panel) instead of promising a React flow that
+                                 won't appear. -->
+                            <ui:fragment rendered="#{systemConfig.isReactUploaderAvailable(DatasetPage.dataset)}">
                                 <p class="help-block">#{bundle['dataset.create.uploadFilesAfterSave']}</p>
                             </ui:fragment>
-                            <ui:fragment rendered="#{!(systemConfig.reactUploaderEnabled and systemConfig.directUploadEnabled(DatasetPage.dataset))}">
+                            <ui:fragment rendered="#{!systemConfig.isReactUploaderAvailable(DatasetPage.dataset)}">
                                 <ui:include src="editFilesFragment.xhtml">
                                     <ui:param name="datasetPage" value="true"/>
                                     <ui:param name="editDatafilesPage" value="false"/>

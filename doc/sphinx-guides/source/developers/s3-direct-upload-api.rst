@@ -42,10 +42,13 @@ Single URL: when the file is smaller than the size at which uploads must be brok
     "status":"OK",
     "data":{
       "url":"...",
+      "tagging":"dv-state=temp",
       "partSize":1073741824,
       "storageIdentifier":"s3://demo-dataverse-bucket:177883619b8-892ca9f7112e"
     }
   }
+
+The ``tagging`` value is the exact string to send as the ``x-amz-tagging`` header on the PUT (the URL was presigned with it). When the store has S3 tagging disabled (see :ref:`s3-tagging`) the field is the empty string ``""``, which means the header must *not* be sent — the URL was signed without it, and sending it anyway fails the S3 signature check. Clients written against servers older than the introduction of this field should treat a *missing* ``tagging`` key as ``dv-state=temp``.
 
 Multiple URLs: when the file must be uploaded in multiple parts. The part size is set by the Dataverse installation and, for AWS-based storage, range from 5 MB to 5 GB
 
@@ -78,13 +81,13 @@ Upload Files to S3
 
 The client must then use the URL(s) to PUT the file, or if the file is larger than the specified partSize, parts of the file.
 
-In the single part case, only one call to the supplied URL is required:
+In the single part case, only one call to the supplied URL is required, sending the ``tagging`` value from the upload-URLs response as the ``x-amz-tagging`` header:
 
 .. code-block:: bash
 
     curl -i -H 'x-amz-tagging:dv-state=temp' -X PUT -T <filename> "<supplied url>"
 
-Or, if you have disabled S3 tagging (see :ref:`s3-tagging`), you should omit the header like this:
+Or, when the response carried ``"tagging": ""`` (S3 tagging disabled, see :ref:`s3-tagging`), the header must be omitted:
 
 .. code-block:: bash
 
@@ -92,7 +95,7 @@ Or, if you have disabled S3 tagging (see :ref:`s3-tagging`), you should omit the
 
 Note that without the ``-i`` flag, you should not expect any output from the command above. With the ``-i`` flag, you should expect to see a "200 OK" response.
 
-In the multipart case, the client must send each part and collect the 'eTag' responses from the server. The calls for this are the same as the one for the single part case except that each call should send a <partSize> slice of the total file, with the last part containing the remaining bytes.
+In the multipart case, the client must send each part and collect the 'eTag' responses from the server. The calls for this are the same as the one for the single part case except that each call should send a <partSize> slice of the total file, with the last part containing the remaining bytes — and no ``x-amz-tagging`` header is ever sent on part uploads: the part URLs are not signed for it, and the temporary tag (when enabled) was already applied by the Dataverse server when it initiated the multipart upload.
 The responses from the S3 server for these calls will include the 'eTag' for the uploaded part.
 
 To successfully conclude the multipart upload, the client must call the 'complete' URI, sending a json object including the part eTags:

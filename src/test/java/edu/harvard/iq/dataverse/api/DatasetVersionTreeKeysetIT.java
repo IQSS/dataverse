@@ -260,7 +260,12 @@ public class DatasetVersionTreeKeysetIT {
         assertEquals(8, oracle.size(), "Expected 8 items at root");
         assertFoldersBeforeFiles(oracle);
 
-        for (int limit : new int[] {1, 2, 3, 5, 7, 10}) {
+        // limit=4 makes the folder listing end exactly at the page boundary
+        // (4 folders, page full, files still unseen) — the regression case
+        // where the walk used to stop with nextCursor=null and silently drop
+        // every root file. limit=1 and limit=2 hit the same boundary on a
+        // later page; limit=8 fits everything exactly on one page.
+        for (int limit : new int[] {1, 2, 3, 4, 5, 7, 8, 10}) {
             List<Item> paged = pagedWalk(datasetId, null, null, null, limit, token);
             assertNoDuplicates(paged);
             assertEquals(oracle, paged,

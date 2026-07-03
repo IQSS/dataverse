@@ -97,16 +97,27 @@
                                 </div>
                                 <div jsf:rendered="#{empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment())}">
                                     <!--
-                                        Hide the legacy "Done" button when the React uploader
-                                        is wired and visible. The React uploader exposes its
-                                        own finish action, and a second Done button below the
-                                        component confused testers. Falls back to the
-                                        previous behaviour whenever the React uploader is
-                                        not in play (legacy upload widget, file-replace
-                                        flow, non-direct-upload storage).
+                                        Hide the legacy "Done" button while the React uploader
+                                        is wired and visible (it brings its own finish action,
+                                        and a second Done button below the component confused
+                                        testers). Hidden through a stylesheet rule keyed on the
+                                        dv-hide-when-react-uploader class rather than rendered=
+                                        false or an inline style: if the React bundle fails to
+                                        load, its onerror fallback (dvReactUploaderLoadFailed in
+                                        editFilesFragment.xhtml) marks <html> with
+                                        dv-react-uploader-failed, which lifts the rule — and
+                                        because the marker lives on the root element, the button
+                                        stays revealed even when a PrimeFaces partial update
+                                        re-renders this panel (an inline style would be
+                                        re-emitted hidden). reactUploaderActive is the same bean
+                                        predicate that decides the React mount, so the two
+                                        cannot drift.
                                     -->
-                                    <button id="doneFilesButtonnop" class="btn btn-default" value="#{bundle.done}" onclick="cancelDatasetEdit();return false;"
-                                            jsf:rendered="#{!(systemConfig.reactUploaderEnabled and systemConfig.directUploadEnabled(EditDatafilesPage.dataset) and !EditDatafilesPage.fileReplaceOperation)}">#{bundle.done}</button>
+                                    <style>
+                                        html:not(.dv-react-uploader-failed) .dv-hide-when-react-uploader { display: none; }
+                                    </style>
+                                    <button id="doneFilesButtonnop" value="#{bundle.done}" onclick="cancelDatasetEdit();return false;"
+                                            class="btn btn-default#{EditDatafilesPage.reactUploaderActive ? ' dv-hide-when-react-uploader' : ''}">#{bundle.done}</button>
                                     <p:remoteCommand name="cancelEditCommand" process="@this" partialSubmit="true" async="true" update="" action="#{EditDatafilesPage.cancel}"/>
 
                                 </div>

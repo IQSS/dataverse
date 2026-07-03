@@ -1,21 +1,23 @@
 package edu.harvard.iq.dataverse.datasetversiontree;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import jakarta.ejb.Stateless;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonException;
 import jakarta.json.JsonNumber;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonString;
-import jakarta.json.JsonValue;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -40,6 +42,12 @@ import java.util.Objects;
  *
  * Folders come first (ascending or descending by name), then files (same
  * ordering with a stable {@code datafile_id} tie-break).
+ *
+ * Per-file {@code access} is one of {@code retentionExpired},
+ * {@code restricted}, {@code embargoed}, {@code public} — precedence and
+ * date-boundary semantics are defined once, in
+ * {@link #ACCESS_CLASSIFIER_SQL}, shared by the file listing and the
+ * folder rollup counts.
  */
 @Stateless
 public class DatasetVersionTreeService {
@@ -87,6 +95,17 @@ public class DatasetVersionTreeService {
         }
     }
 
+    /**
+     * Malformed client input (bad cursor, junk path, unknown enum value) —
+     * the endpoint maps it to a 400. {@code @ApplicationException} is
+     * load-bearing: without it the EJB container treats this unchecked
+     * exception as a system exception when it escapes a business method of
+     * this {@code @Stateless} bean, wraps it in {@code EJBException}, and
+     * the endpoint's {@code catch (InvalidQueryException)} never matches —
+     * turning every malformed cursor into a 500. No rollback: the service
+     * only reads.
+     */
+    @jakarta.ejb.ApplicationException(rollback = false)
     public static class InvalidQueryException extends RuntimeException {
         public InvalidQueryException(String message) {
             super(message);
@@ -139,30 +158,30 @@ public class DatasetVersionTreeService {
          */
         public final long bytes;
         /**
-         * Files in the subtree marked {@code df.restricted = true}.
-         * Mutually exclusive with {@link #embargoedCount} — a row hits
-         * the restricted bucket first, mirroring the per-file
-         * {@code access} string.
+         * Subtree file counts per access bucket. The buckets are the
+         * per-file {@code access} marker aggregated — mutually exclusive
+         * by construction, precedence and date semantics defined once on
+         * {@link #ACCESS_CLASSIFIER_SQL}. "Public" is implied:
+         * {@code fileCount - restrictedCount - embargoedCount
+         * - retentionExpiredCount}.
          */
         public final long restrictedCount;
-        /**
-         * Files in the subtree that are NOT restricted but carry an
-         * embargo whose {@code dateavailable} is still in the future
-         * (the same active-embargo predicate the per-file query uses).
-         * "Public" count is implied: {@code fileCount - restrictedCount
-         * - embargoedCount}.
-         */
+        /** See {@link #restrictedCount}. */
         public final long embargoedCount;
+        /** See {@link #restrictedCount}. */
+        public final long retentionExpiredCount;
 
         public FolderItem(String name, String path,
                           long fileCount, long folderCount, long bytes,
-                          long restrictedCount, long embargoedCount) {
+                          long restrictedCount, long embargoedCount,
+                          long retentionExpiredCount) {
             super("folder", name, path);
             this.fileCount = fileCount;
             this.folderCount = folderCount;
             this.bytes = bytes;
             this.restrictedCount = restrictedCount;
             this.embargoedCount = embargoedCount;
+            this.retentionExpiredCount = retentionExpiredCount;
         }
     }
 
@@ -197,17 +216,31 @@ public class DatasetVersionTreeService {
      * back the raw string. The {@code phase} marker tells the server
      * whether the next page continues mid-folder-list or has crossed into
      * the file list; {@code keys} carries either the last folder name or
-     * the {@code (lower(label), datafile_id)} pair from the previous page.
+     * the {@code (label, datafile_id)} pair from the previous page. Keys
+     * hold the <em>raw</em> name/label, never a lowercased copy: the SQL
+     * applies its own {@code lower()} to both sides of the keyset
+     * comparison, so ordering always follows the database's collation
+     * rules rather than Java's (which disagree on non-ASCII input under
+     * e.g. a C-collation database). {@code approximateCount} snapshots the
+     * folder+file counts computed on the first page so later pages don't
+     * re-aggregate a value that is constant across the walk; every minted
+     * cursor carries it, and decoding rejects cursors without it (this
+     * format has never shipped, so there is no legacy form to accept).
      */
-    record TreeCursor(Phase phase, String lastFolderName, String lastFileLabelLower, Long lastFileId) {
+    record TreeCursor(Phase phase, String lastFolderName, String lastFileLabel, Long lastFileId,
+                      int approximateCount) {
         enum Phase { FOLDERS, FILES }
 
         static TreeCursor folders(String lastFolderName) {
-            return new TreeCursor(Phase.FOLDERS, lastFolderName, null, null);
+            return new TreeCursor(Phase.FOLDERS, lastFolderName, null, null, -1);
         }
 
-        static TreeCursor files(String lastFileLabelLower, long lastFileId) {
-            return new TreeCursor(Phase.FILES, null, lastFileLabelLower, lastFileId);
+        static TreeCursor files(String lastFileLabel, long lastFileId) {
+            return new TreeCursor(Phase.FILES, null, lastFileLabel, lastFileId, -1);
+        }
+
+        TreeCursor withApproximateCount(int count) {
+            return new TreeCursor(phase, lastFolderName, lastFileLabel, lastFileId, count);
         }
     }
 
@@ -225,9 +258,10 @@ public class DatasetVersionTreeService {
 
         int remaining = limit;
         boolean hasMoreFolders = false;
+        boolean hasMoreFiles = false;
         List<FolderItem> folderRows = new ArrayList<>();
         List<FileItem> fileRows = new ArrayList<>();
-        String nextCursor = null;
+        TreeCursor next = null;
 
         // ---- folders ----------------------------------------------------
         if (include != Include.FILES && (cursor == null || cursor.phase() == TreeCursor.Phase.FOLDERS)) {
@@ -238,35 +272,121 @@ public class DatasetVersionTreeService {
             folderRows = rows.subList(0, take);
             remaining -= take;
             if (hasMoreFolders) {
-                nextCursor = encodeCursor(TreeCursor.folders(folderRows.get(take - 1).name));
+                next = TreeCursor.folders(folderRows.get(take - 1).name);
             }
         }
 
-        // ---- files (same page if folders left room) ---------------------
-        if (remaining > 0 && include != Include.FOLDERS && !hasMoreFolders) {
-            String afterLabelLower = null;
+        // ---- files ------------------------------------------------------
+        // Runs whenever the folder listing is exhausted — even with no room
+        // left on the page (remaining == 0, the folders-exactly-fill-a-page
+        // boundary). The LIMIT-1 fetch is then the "is anything behind this
+        // boundary" probe, asked through the exact same query the next page
+        // will run, so the probe can never disagree with the listing.
+        if (include != Include.FOLDERS && !hasMoreFolders) {
+            String afterLabel = null;
             Long afterId = null;
             if (cursor != null && cursor.phase() == TreeCursor.Phase.FILES) {
-                afterLabelLower = cursor.lastFileLabelLower();
+                afterLabel = cursor.lastFileLabel();
                 afterId = cursor.lastFileId();
             }
-            List<FileItem> rows = runFileQuery(versionId, path, remaining + 1, afterLabelLower, afterId, order, originals);
+            List<FileItem> rows = runFileQuery(versionId, path, remaining + 1, afterLabel, afterId, order, originals);
             int take = Math.min(remaining, rows.size());
-            boolean hasMoreFiles = rows.size() > remaining;
+            hasMoreFiles = rows.size() > remaining;
             fileRows = rows.subList(0, take);
             if (hasMoreFiles) {
-                FileItem last = fileRows.get(take - 1);
-                nextCursor = encodeCursor(TreeCursor.files(last.name.toLowerCase(Locale.ROOT), last.id));
+                // take == 0 is the boundary case: files exist but the page
+                // was filled exactly by folders. Re-issue the folder cursor
+                // — the next page's folder keyset query returns nothing and
+                // falls into the files phase from the start. This keeps the
+                // cursor wire format at exactly two states (FOLDERS/FILES
+                // with their keys); no dedicated "files from the start"
+                // state to mint, decode, or maintain.
+                next = take > 0
+                        ? TreeCursor.files(fileRows.get(take - 1).name, fileRows.get(take - 1).id)
+                        : TreeCursor.folders(folderRows.get(folderRows.size() - 1).name);
             }
         }
+
+        // ---- counts ------------------------------------------------------
+        // approximateCount is a snapshot taken on the first page of a walk
+        // and carried inside the cursor — it is constant across the walk by
+        // contract. A phase that completed inside this page already IS its
+        // exact count; only truncated or skipped phases need a COUNT query,
+        // so the common single-page listing runs no aggregate queries at all.
+        int approximateCount;
+        if (cursor != null) {
+            approximateCount = cursor.approximateCount();
+        } else {
+            int folderCount = include != Include.FILES && !hasMoreFolders
+                    ? folderRows.size()
+                    : countFolders(versionId, path);
+            int fileCount = include != Include.FOLDERS && !hasMoreFolders && !hasMoreFiles
+                    ? fileRows.size()
+                    : countFiles(versionId, path);
+            approximateCount = folderCount + fileCount;
+        }
+
+        String nextCursor = next == null ? null
+                : encodeCursor(next.withApproximateCount(approximateCount));
 
         List<TreeItem> out = new ArrayList<>(folderRows.size() + fileRows.size());
         out.addAll(folderRows);
         out.addAll(fileRows);
 
-        int approximateCount = countFolders(versionId, path) + countFiles(versionId, path);
-
         return new TreePage(path, out, nextCursor, limit, order, include, approximateCount);
+    }
+
+    // ---------- Access classification ------------------------------------
+
+    // Wire values of the per-file access marker (also used as folder-count
+    // bucket names). Fixed by the shipped dv-tree-view bundle's contract;
+    // /files and search spell the equivalent states differently
+    // (FileAccessStatus.RetentionPeriodExpired etc.).
+    static final String ACCESS_RETENTION_EXPIRED = "retentionExpired";
+    static final String ACCESS_RESTRICTED = "restricted";
+    static final String ACCESS_EMBARGOED = "embargoed";
+    static final String ACCESS_PUBLIC = "public";
+
+    /**
+     * Row-wise access classification, shared by the folder rollup (which
+     * aggregates it into the per-bucket counts) and the file listing (which
+     * selects it as the per-file {@code access} marker) — the single
+     * encoding of the precedence contract: retention-expired wins (the file
+     * cannot be served at all), then restricted, then actively embargoed,
+     * else public. The buckets are therefore mutually exclusive by
+     * construction and {@code public = files - restricted - embargoed -
+     * retentionExpired} holds for every folder.
+     *
+     * Joined as {@code CROSS JOIN LATERAL} after the {@code embargo} and
+     * {@code retention} LEFT JOINs it references. The date predicates
+     * mirror the actual download enforcement in {@code FileUtil}
+     * ({@code isRetentionExpired}: {@code dateunavailable < current_date};
+     * {@code isActivelyEmbargoed}: {@code dateavailable > current_date}).
+     * {@code /files}' access-status <em>filter</em> uses {@code >=} for the
+     * embargo — an off-by-one against enforcement the tree deliberately
+     * does not copy. NULL dates (no embargo/retention row behind the LEFT
+     * JOIN) make their WHEN false and fall through — no IS NOT NULL guards
+     * needed. NULL never reaches the output: the ELSE arm catches
+     * everything.
+     */
+    private static final String ACCESS_CLASSIFIER_SQL =
+            "CROSS JOIN LATERAL (SELECT CASE "
+            + "WHEN r.dateunavailable < current_date THEN '" + ACCESS_RETENTION_EXPIRED + "' "
+            + "WHEN df.restricted THEN '" + ACCESS_RESTRICTED + "' "
+            + "WHEN e.dateavailable > current_date THEN '" + ACCESS_EMBARGOED + "' "
+            + "ELSE '" + ACCESS_PUBLIC + "' END AS access) x ";
+
+    /**
+     * The database's current date — the clock every date predicate in this
+     * service's SQL uses ({@code current_date}). Callers building cache
+     * validators over this service's output must stamp them with this date,
+     * not the JVM's: the two clocks can sit in different timezones, and a
+     * validator on the wrong clock keeps confirming (304) a body whose
+     * embargo/retention markers the SQL has already flipped.
+     */
+    public LocalDate currentDbDate() {
+        java.sql.Date d = (java.sql.Date) em.createNativeQuery("SELECT current_date").getSingleResult();
+        return d.toLocalDate();
     }
 
     // ---------- Folder query --------------------------------------------
@@ -301,18 +421,18 @@ public class DatasetVersionTreeService {
         // INCLUDE(filesize) index on `datafile(id)` so the join becomes
         // index-only.
         sql.append("       COALESCE(SUM(df.filesize), 0) AS bytes_under, ");
-        // Per-access counts mirror the per-file `access` resolution: a
-        // restricted file always counts as restricted (even if it also
-        // carries an active embargo), and only non-restricted files with
-        // an active embargo count as embargoed. The "public" count is
-        // implied: files_under - restricted_count - embargoed_count.
-        sql.append("       SUM(CASE WHEN df.restricted THEN 1 ELSE 0 END) AS restricted_count, ");
-        sql.append("       SUM(CASE WHEN NOT df.restricted ");
-        sql.append("                 AND df.embargo_id IS NOT NULL ");
-        sql.append("                 AND e.dateavailable > current_date THEN 1 ELSE 0 END) AS embargoed_count ");
+        // Per-access counts aggregate the shared row classifier (see
+        // ACCESS_CLASSIFIER_SQL for the precedence contract), so the folder
+        // buckets are the same expression the per-file `access` marker
+        // selects — they cannot drift apart.
+        sql.append("       COUNT(*) FILTER (WHERE x.access = '").append(ACCESS_RESTRICTED).append("') AS restricted_count, ");
+        sql.append("       COUNT(*) FILTER (WHERE x.access = '").append(ACCESS_EMBARGOED).append("') AS embargoed_count, ");
+        sql.append("       COUNT(*) FILTER (WHERE x.access = '").append(ACCESS_RETENTION_EXPIRED).append("') AS retentionexpired_count ");
         sql.append("FROM filemetadata fm JOIN datafile df ON df.id = fm.datafile_id ");
-        // Small, FK-indexed; hash join in practice.
+        // Small, FK-indexed; hash joins in practice.
         sql.append("                     LEFT JOIN embargo e ON df.embargo_id = e.id ");
+        sql.append("                     LEFT JOIN retention r ON df.retention_id = r.id ");
+        sql.append(ACCESS_CLASSIFIER_SQL);
         sql.append("WHERE fm.datasetversion_id = ?").append(params.size() + 1).append(" ");
         params.add(versionId);
         if (root) {
@@ -334,12 +454,16 @@ public class DatasetVersionTreeService {
             // primary `lower(name)` ordering. We add the case-sensitive
             // name as a deterministic secondary key. The matching ORDER BY
             // below carries the same `(lower, cs)` tuple so the keyset
-            // walk is stable.
+            // walk is stable. The cursor carries the raw folder name and
+            // the lowering happens in SQL — Java's toLowerCase and
+            // Postgres's lower() disagree on non-ASCII input under some
+            // collations (e.g. C), and a mismatch here skips or repeats
+            // rows at page boundaries.
             String cmp = order == Order.NAME_ZA ? "<" : ">";
-            sql.append("  AND (lower(split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1)) ").append(cmp).append(" ?").append(params.size() + 1)
-                    .append("       OR (lower(split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1)) = ?").append(params.size() + 1)
+            sql.append("  AND (lower(split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1)) ").append(cmp).append(" lower(?").append(params.size() + 1).append(") ")
+                    .append("       OR (lower(split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1)) = lower(?").append(params.size() + 1).append(") ")
                     .append("           AND split_part(substring(fm.directorylabel FROM ").append(substringFrom).append("), '/', 1) ").append(cmp).append(" ?").append(params.size() + 2).append(")) ");
-            params.add(afterFolderName.toLowerCase(Locale.ROOT));
+            params.add(afterFolderName);
             params.add(afterFolderName);
         }
         // Repeat the expression in GROUP BY / ORDER BY rather than referring
@@ -372,10 +496,11 @@ public class DatasetVersionTreeService {
             long bytesUnder = row[3] == null ? 0L : ((Number) row[3]).longValue();
             long restrictedUnder = row[4] == null ? 0L : ((Number) row[4]).longValue();
             long embargoedUnder = row[5] == null ? 0L : ((Number) row[5]).longValue();
+            long retentionExpiredUnder = row[6] == null ? 0L : ((Number) row[6]).longValue();
             String folderPath = root ? folderName : path + "/" + folderName;
             out.add(new FolderItem(folderName, folderPath,
                     filesUnder, subfolderCount, bytesUnder,
-                    restrictedUnder, embargoedUnder));
+                    restrictedUnder, embargoedUnder, retentionExpiredUnder));
         }
         return out;
     }
@@ -384,7 +509,7 @@ public class DatasetVersionTreeService {
 
     @SuppressWarnings("unchecked")
     private List<FileItem> runFileQuery(long versionId, String path, int limit,
-                                         String afterLabelLower, Long afterId,
+                                         String afterLabel, Long afterId,
                                          Order order, boolean originals) {
         boolean root = path.isEmpty();
 
@@ -399,12 +524,9 @@ public class DatasetVersionTreeService {
         // columns symmetrically — see the comment on the CASE expressions.
         int originalsSlot = params.size() + 1;
         params.add(originals);
-        // The `actively_embargoed` boolean mirrors `FileUtil.isActivelyEmbargoed`:
-        // an embargo row whose `dateavailable` is strictly after today still
-        // restricts access; a row whose date has already passed does not.
-        // Without this comparison the tree would mark files as `embargoed`
-        // forever once an embargo row is attached, contradicting how the
-        // rest of Dataverse renders the same files.
+        // The per-file `access` marker is the shared row classifier's label
+        // (see ACCESS_CLASSIFIER_SQL for the precedence and date-boundary
+        // contract) — the same expression the folder rollup aggregates.
         // size: served-form (df.filesize) by default. For ingested tabular files
         // under originals=true, return the saved-original's size (dt.originalfilesize)
         // so the reported size matches the bytes the ?format=original downloadUrl
@@ -412,8 +534,7 @@ public class DatasetVersionTreeService {
         sql.append("SELECT fm.label, df.id, ");
         sql.append("       CASE WHEN dt.id IS NOT NULL AND ?").append(originalsSlot)
            .append(" THEN COALESCE(dt.originalfilesize, df.filesize) ELSE df.filesize END, ");
-        sql.append("       df.contenttype, df.restricted, ");
-        sql.append("       (df.embargo_id IS NOT NULL AND e.dateavailable > current_date) AS actively_embargoed, ");
+        sql.append("       df.contenttype, x.access, ");
         // For ingested tabular files (those with an associated `datatable` row),
         // `df.checksumvalue` is the digest of the *original upload* — Dataverse
         // never persists a digest of the converted TSV that the default
@@ -428,10 +549,12 @@ public class DatasetVersionTreeService {
         sql.append("       CASE WHEN dt.id IS NOT NULL AND NOT ?").append(originalsSlot).append(" THEN NULL ELSE df.checksumvalue END ");
         sql.append("FROM filemetadata fm JOIN datafile df ON fm.datafile_id = df.id ");
         sql.append("                     LEFT JOIN embargo e ON df.embargo_id = e.id ");
+        sql.append("                     LEFT JOIN retention r ON df.retention_id = r.id ");
         // Single LEFT JOIN on `datatable.datafile_id` (already FK-indexed).
         // The join exists on the file's row regardless of cursor / ordering,
         // so it does not break the keyset's index plan.
         sql.append("                     LEFT JOIN datatable dt ON dt.datafile_id = df.id ");
+        sql.append(ACCESS_CLASSIFIER_SQL);
         sql.append("WHERE fm.datasetversion_id = ?").append(params.size() + 1).append(" ");
         params.add(versionId);
         if (root) {
@@ -440,19 +563,23 @@ public class DatasetVersionTreeService {
             sql.append("  AND fm.directorylabel = ?").append(params.size() + 1).append(" ");
             params.add(path);
         }
-        if (afterLabelLower != null && afterId != null) {
+        if (afterLabel != null && afterId != null) {
             String cmp = order == Order.NAME_ZA ? "<" : ">";
             // Standard tuple-keyset pattern: (lower(label), datafile_id) compared lexicographically.
             // afterLabel needs two positional slots — the value is the same in both, but EclipseLink's
-            // native-query binding wants each occurrence as its own ?N.
+            // native-query binding wants each occurrence as its own ?N. The cursor carries the raw
+            // label and both sides are lowered by Postgres itself (`lower(?)`), so the comparison
+            // can never disagree with the `ORDER BY lower(fm.label)` collation the walk relies on —
+            // Java's toLowerCase produces different results for non-ASCII input under e.g. a
+            // C-collation database, which would skip or repeat rows at page boundaries.
             int afterLabelLeft = params.size() + 1;
-            params.add(afterLabelLower);
+            params.add(afterLabel);
             int afterLabelRight = params.size() + 1;
-            params.add(afterLabelLower);
+            params.add(afterLabel);
             int afterIdSlot = params.size() + 1;
             params.add(afterId);
-            sql.append("  AND (lower(fm.label) ").append(cmp).append(" ?").append(afterLabelLeft).append(" ");
-            sql.append("       OR (lower(fm.label) = ?").append(afterLabelRight).append(" AND df.id ").append(cmp).append(" ?").append(afterIdSlot).append(")) ");
+            sql.append("  AND (lower(fm.label) ").append(cmp).append(" lower(?").append(afterLabelLeft).append(") ");
+            sql.append("       OR (lower(fm.label) = lower(?").append(afterLabelRight).append(") AND df.id ").append(cmp).append(" ?").append(afterIdSlot).append(")) ");
         }
         sql.append("ORDER BY lower(fm.label) ").append(order == Order.NAME_ZA ? "DESC" : "ASC")
            .append(", df.id ").append(order == Order.NAME_ZA ? "DESC" : "ASC").append(" ");
@@ -471,20 +598,15 @@ public class DatasetVersionTreeService {
             long id = ((Number) row[1]).longValue();
             long size = row[2] == null ? 0L : ((Number) row[2]).longValue();
             String contentType = (String) row[3];
-            Boolean restricted = (Boolean) row[4];
-            Boolean activelyEmbargoed = (Boolean) row[5];
-            String checksumTypeRaw = (String) row[6];
-            String checksumValue = (String) row[7];
+            String access = (String) row[4];
+            String checksumTypeRaw = (String) row[5];
+            String checksumValue = (String) row[6];
 
-            String access;
-            if (Boolean.TRUE.equals(restricted)) {
-                access = "restricted";
-            } else if (Boolean.TRUE.equals(activelyEmbargoed)) {
-                access = "embargoed";
-            } else {
-                access = "public";
-            }
-            String checksumType = checksumTypeRaw;  // stored as the enum name already
+            // The column stores the enum *name* ("SHA1"); every other API
+            // response emits the display label ("SHA-1") via
+            // ChecksumType#toString, so map before exposing.
+            String checksumType = checksumTypeRaw == null ? null
+                    : DataFile.ChecksumType.valueOf(checksumTypeRaw).toString();
             String filePath = root ? label : path + "/" + label;
             String downloadUrl = "/api/access/datafile/" + id + (originals ? "?format=original" : "");
 
@@ -566,21 +688,61 @@ public class DatasetVersionTreeService {
 
     // ---------- Path normalisation --------------------------------------
 
+    /**
+     * Normalizes a requested path so it matches what the write side stores.
+     * FileMetadata#setDirectoryLabel runs every stored directorylabel through
+     * StringUtil.sanitizeFileDirectory: slash/backslash runs collapse into
+     * "/", and '/', '-', '.', ' ' are stripped from the two ENDS of the whole
+     * label. That means a stored label's first segment never starts with
+     * those characters — so stripping them from the front of a query aligns
+     * it with storage (".hidden" was stored as "hidden"). The TAIL is
+     * different: a folder path names a PREFIX of stored labels, and interior
+     * segments legitimately end with '.', ' ' or '-' ("data./sub" is
+     * storable, and the tree emits its parent folder as path "data."), so a
+     * trailing strip would break the round-trip of the server's own emitted
+     * paths. Only trailing slashes (impossible in storage) are dropped.
+     *
+     * A non-blank path that normalizes to nothing ("..", "-", ". ") names
+     * nothing storable and is rejected — mapping it to the root listing
+     * would alias junk onto real content.
+     *
+     * @throws InvalidQueryException for non-blank input that normalizes away
+     */
     public static String normalizePath(String raw) {
-        if (raw == null) {
+        if (raw == null || raw.isBlank()) {
             return "";
         }
-        String collapsed = raw.replaceAll("/+", "/");
-        if (collapsed.startsWith("/")) {
-            collapsed = collapsed.substring(1);
+        String p = raw.replaceAll("[\\\\/]+", "/");
+        if (p.chars().allMatch(c -> c == '/')) {
+            return ""; // "/", "//" — explicit spellings of the root
         }
-        if (collapsed.endsWith("/")) {
-            collapsed = collapsed.substring(0, collapsed.length() - 1);
+        // Strip the leading run over the FULL junk set in one loop, exactly
+        // like the write-side sanitizer: stripping one class can expose
+        // another ("./data" → "data", "../." → nothing), and a partial
+        // strip would make this function non-idempotent — the endpoint
+        // normalizes once up front and the service normalizes again, and
+        // the two results must be identical.
+        int start = 0;
+        while (start < p.length()) {
+            char c = p.charAt(start);
+            if (c == '/' || c == '.' || c == '-' || c == ' ') {
+                start++;
+            } else {
+                break;
+            }
         }
-        return collapsed;
+        p = p.substring(start);
+        // Post-collapse there is at most one trailing slash.
+        if (p.endsWith("/")) {
+            p = p.substring(0, p.length() - 1);
+        }
+        if (p.isEmpty()) {
+            throw new InvalidQueryException("invalid path: " + raw);
+        }
+        return p;
     }
 
-    private static int clampLimit(Integer requested) {
+    public static int clampLimit(Integer requested) {
         if (requested == null || requested <= 0) {
             return DEFAULT_LIMIT;
         }
@@ -600,25 +762,24 @@ public class DatasetVersionTreeService {
     private static final String CURSOR_PHASE_FOLDERS = "FOLDERS";
     private static final String CURSOR_PHASE_FILES = "FILES";
 
-    private static String encodeCursor(TreeCursor cursor) {
-        // Tiny hand-rolled JSON; pulling Jackson here would be overkill
-        // for two strings + a long.
-        StringBuilder json = new StringBuilder();
-        json.append("{\"p\":\"");
-        json.append(cursor.phase() == TreeCursor.Phase.FOLDERS ? CURSOR_PHASE_FOLDERS : CURSOR_PHASE_FILES);
-        json.append("\",\"k\":[");
+    static String encodeCursor(TreeCursor cursor) {
+        JsonArrayBuilder keys = Json.createArrayBuilder();
         if (cursor.phase() == TreeCursor.Phase.FOLDERS) {
-            json.append('"').append(escapeJson(cursor.lastFolderName())).append('"');
+            keys.add(cursor.lastFolderName());
         } else {
-            json.append('"').append(escapeJson(cursor.lastFileLabelLower())).append('"');
-            json.append(',').append(cursor.lastFileId());
+            keys.add(cursor.lastFileLabel());
+            keys.add(cursor.lastFileId());
         }
-        json.append("]}");
+        String json = Json.createObjectBuilder()
+                .add("p", cursor.phase() == TreeCursor.Phase.FOLDERS ? CURSOR_PHASE_FOLDERS : CURSOR_PHASE_FILES)
+                .add("k", keys)
+                .add("c", cursor.approximateCount())
+                .build().toString();
         return Base64.getUrlEncoder().withoutPadding()
-                .encodeToString(json.toString().getBytes(StandardCharsets.UTF_8));
+                .encodeToString(json.getBytes(StandardCharsets.UTF_8));
     }
 
-    private static TreeCursor decodeCursor(String raw) {
+    static TreeCursor decodeCursor(String raw) {
         if (raw == null || raw.isEmpty()) {
             return null;
         }
@@ -628,54 +789,35 @@ public class DatasetVersionTreeService {
                 JsonObject obj = reader.readObject();
                 String phaseStr = obj.getString("p", null);
                 JsonArray keys = obj.getJsonArray("k");
-                if (phaseStr == null || keys == null) {
+                // Every minted cursor carries the count snapshot; a cursor
+                // without one (or with a negative one) was not produced by
+                // this server. The format has never shipped, so there is no
+                // legacy cursor shape to grandfather in — reject as invalid
+                // ("invalid or stale cursors yield 400" is the documented
+                // contract).
+                int approximateCount = obj.getInt("c", -1);
+                if (phaseStr == null || keys == null || approximateCount < 0) {
                     throw new InvalidQueryException("invalid cursor");
                 }
                 if (CURSOR_PHASE_FOLDERS.equals(phaseStr) && keys.size() == 1) {
-                    return TreeCursor.folders(((JsonString) keys.get(0)).getString());
+                    return new TreeCursor(TreeCursor.Phase.FOLDERS,
+                            ((JsonString) keys.get(0)).getString(), null, null, approximateCount);
                 }
                 if (CURSOR_PHASE_FILES.equals(phaseStr) && keys.size() == 2) {
                     String label = ((JsonString) keys.get(0)).getString();
-                    long id = ((JsonValue) keys.get(1)) instanceof JsonNumber n
-                            ? n.longValueExact()
-                            : Long.parseLong(keys.get(1).toString());
-                    return TreeCursor.files(label, id);
+                    long id = ((JsonNumber) keys.get(1)).longValueExact();
+                    return new TreeCursor(TreeCursor.Phase.FILES, null, label, id, approximateCount);
                 }
                 throw new InvalidQueryException("invalid cursor");
             }
-        } catch (IllegalArgumentException | JsonException ex) {
+        } catch (IllegalArgumentException | JsonException | ClassCastException | ArithmeticException ex) {
+            // IllegalArgumentException: not Base64. JsonException: not JSON,
+            // or not a JSON object. ClassCastException: right shape but wrong
+            // member types (e.g. {"k":[1]} — a number where the label string
+            // belongs). ArithmeticException: fractional or overflowing id.
+            // All of these are malformed client input and must surface as a
+            // 400 via InvalidQueryException, never as a 500.
             throw new InvalidQueryException("invalid cursor");
         }
-    }
-
-    private static String escapeJson(String s) {
-        // Minimal JSON-string escape. directorylabel / label come from
-        // user-controlled text so we do need this to be correct.
-        StringBuilder out = new StringBuilder(s.length() + 4);
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            switch (c) {
-                case '"':
-                case '\\':
-                    out.append('\\').append(c);
-                    break;
-                case '\n':
-                    out.append("\\n");
-                    break;
-                case '\r':
-                    out.append("\\r");
-                    break;
-                case '\t':
-                    out.append("\\t");
-                    break;
-                default:
-                    if (c < 0x20) {
-                        out.append(String.format(Locale.ROOT, "\\u%04x", (int) c));
-                    } else {
-                        out.append(c);
-                    }
-            }
-        }
-        return out.toString();
     }
 }

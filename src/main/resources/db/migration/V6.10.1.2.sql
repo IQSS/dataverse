@@ -11,13 +11,23 @@
 --     WHERE datasetversion_id = :v AND directorylabel = :path
 --     ORDER BY lower(label), datafile_id
 --
--- Postgres uses btree LIKE-prefix optimisation on (datasetversion_id,
--- directorylabel) for the folder query. The trailing
+-- directorylabel uses the text_pattern_ops operator class: on databases
+-- with a non-C collation (the norm — UTF-8 installs) a plain btree text
+-- column cannot serve LIKE-prefix patterns as an index range condition,
+-- so the folder query would fall back to scanning every row of the
+-- version (bounded by the leading datasetversion_id key, but still the
+-- whole version instead of one subtree). text_pattern_ops restores the
+-- range scan; ordinary equality (the file query's directorylabel = :path)
+-- is still supported by this operator class. The trailing
 -- (lower(label), datafile_id) carries the keyset order for the file
--- query without a separate index. lower(label) is an expression
--- index and matches the application-side case-insensitive ordering.
+-- query without a separate index. lower(label) is an expression index
+-- and matches the application-side case-insensitive ordering.
 --
 -- IF NOT EXISTS keeps the migration re-runnable on dev databases that
--- already have an experimental copy of the index.
+-- already have an experimental copy of the index. If you pre-created the
+-- index out-of-band (see the release note) make sure it used this exact
+-- definition, text_pattern_ops included — IF NOT EXISTS matches by name
+-- only and will happily keep a definition that lacks the range-scan
+-- support.
 CREATE INDEX IF NOT EXISTS ix_filemetadata_tree
-    ON filemetadata (datasetversion_id, directorylabel, lower(label), datafile_id);
+    ON filemetadata (datasetversion_id, directorylabel text_pattern_ops, lower(label), datafile_id);

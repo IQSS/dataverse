@@ -6,7 +6,7 @@ The endpoint is the backend half of the **tree view selection and download** wor
 
 Query parameters:
 
-- `path` — folder path within the dataset version. Root is `""` or omit. Forward-slash separated.
+- `path` — folder path within the dataset version. Root is `""` or omit. Forward-slash separated. Normalized with the write side's rules (slash/backslash runs collapse, leading dots/dashes/spaces stripped); folder-path tails round-trip, and junk-only paths like `..` yield `400`.
 - `limit` — page size; default `100`, clamped to `1000`.
 - `cursor` — opaque server-issued token from a previous response. Invalid/stale cursors return `400`.
 - `include` — `all` (default), `folders`, or `files`.
@@ -22,7 +22,7 @@ Response shape:
   "items": [
     { "type": "folder", "name": "2024", "path": "data/raw/2024",
       "counts": { "files": 12, "folders": 1, "bytes": 4194304,
-                  "restricted": 0, "embargoed": 0 } },
+                  "restricted": 0, "embargoed": 0, "retentionExpired": 0 } },
     { "type": "file", "id": 42, "name": "data.csv", "path": "data/raw/data.csv",
       "size": 1024, "contentType": "text/csv", "access": "public",
       "checksum": { "type": "MD5", "value": "abc" },
@@ -36,21 +36,25 @@ Response shape:
 }
 ```
 
-Folder rows carry recursive aggregates over their subtree: `counts.files` is the total file count, `counts.folders` is the immediate-subfolder count, `counts.bytes` is the total size of files in the subtree (using `df.filesize` — the served-form size, intended as a "downloading this folder = N GB" UX hint, not authoritative under `originals=true`). `counts.restricted` and `counts.embargoed` mirror the per-file `access` resolution: a restricted file is counted as restricted even if it also carries an embargo, and only non-restricted files with an active embargo are counted as embargoed. Public files are implied as `files - restricted - embargoed`.
+`approximateCount` (total folders + files at the path) is snapshotted on the first page of a walk and carried through the cursor for the rest of it.
+
+Folder rows carry recursive aggregates over their subtree: `counts.files` is the total file count, `counts.folders` is the immediate-subfolder count, `counts.bytes` is the total size of files in the subtree (using `df.filesize` — the served-form size, intended as a "downloading this folder = N GB" UX hint, not authoritative under `originals=true`). `counts.restricted`, `counts.embargoed` and `counts.retentionExpired` mirror the per-file `access` resolution and are mutually exclusive: retention-expired wins (the file cannot be served at all), then restricted (even if it also carries an embargo), then non-restricted files with an active embargo. Public files are implied as `files - restricted - embargoed - retentionExpired`.
 
 The per-file `checksum` object is present only when the digest matches the bytes the corresponding `downloadUrl` would serve. For ingested tabular files the default `downloadUrl` resolves to a converted TSV whose digest Dataverse does not store, so `checksum` is omitted on those rows; passing `originals=true` flips both the URL (`?format=original`) and the checksum back on, since the saved-original aux blob's bytes match `df.checksumvalue`. The per-file `size` follows the same rule: under `originals=true` it reports the saved original's size (`dt.originalfilesize`) so it matches the original bytes, while the folder `counts.bytes` rollup stays the served-form total. Clients can therefore treat "checksum present" as an unconditional commitment that the value matches the bytes they would receive — and, under `originals=true`, that the reported `size` matches them too.
 
-Permissions and embargoes are honoured exactly as on `GET /api/datasets/{id}/versions/{versionId}/files` — the endpoint is a thin lazy projection of the same `DatasetVersion.fileMetadatas`.
+The per-file `access` marker is one of `retentionExpired`, `restricted`, `embargoed`, `public` — resolved in that order. The embargo and retention date checks match Dataverse's actual download enforcement (`FileUtil.isActivelyEmbargoed` / `isRetentionExpired`): a file whose embargo lifts today is reported `public` and is downloadable. Note this differs by one day, at the boundary, from the `files` endpoint's access-status *filter*, which uses an inclusive comparison and treats a file as embargoed through the lift date itself.
 
-For published, non-deaccessioned versions the response carries `ETag` and `Cache-Control: private, immutable` headers; clients can pass the ETag back in `If-None-Match` to receive `304 Not Modified` without re-fetching the body. `private` keeps responses out of shared proxies because the endpoint is auth-required; the browser's own cache still benefits from `immutable`. Drafts do not emit an ETag.
+For published, non-deaccessioned versions the response carries an `ETag` (derived from the request inputs plus the current date) and `Cache-Control: private, no-cache`; clients pass the ETag back in `If-None-Match` and receive a body-less `304 Not Modified` while it still matches. A released version's file list is frozen, but the response is still time-dependent — `access` flips when an embargo lapses or a retention period expires — which is why the contract is revalidate-always (`no-cache`) with a date-scoped validator rather than `immutable`. `private` keeps responses out of shared proxies because the endpoint is auth-required. Drafts and deaccessioned versions emit no caching headers.
 
 ## Performance
 
 The endpoint is backed by two native keyset SQL queries (folder rollup + file listing) against the `filemetadata` table, driven by a covering index added in Flyway migration `V6.10.1.2`:
 
 ```
-ix_filemetadata_tree(datasetversion_id, directorylabel, lower(label), datafile_id)
+ix_filemetadata_tree(datasetversion_id, directorylabel text_pattern_ops, lower(label), datafile_id)
 ```
+
+(`text_pattern_ops` on `directorylabel` is what lets the folder query's `LIKE 'path/%'` run as an index range scan on the UTF-8/ICU-collated databases virtually all installs use; without it the scan is bounded only by the version id.)
 
 Listing one folder is independent of the dataset's total file count — the queries scan only the rows under the requested path, with the keyset cursor (`(lower(label), datafile_id)` for files, last folder name for folders) avoiding the offset penalty. The wire format and cursor opacity are unchanged from the first cut; clients keep echoing back `nextCursor` exactly as before.
 
