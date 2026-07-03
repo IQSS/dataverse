@@ -3997,17 +3997,19 @@ Enables additional hardening for session-cookie API usage. This flag only has an
 The rules are based on request authentication mechanism (session cookie), not on the identity provider used to create the session
 (``builtin``, Shibboleth, OAuth, OIDC, etc.).
 
-When enabled, Dataverse requires all API requests authenticated via session cookie (except the CSRF bootstrap endpoint) to include:
+When enabled, Dataverse requires API requests authenticated via session cookie (from a fully-authenticated session) to satisfy:
 
-- A valid same-origin ``Origin`` or ``Referer`` header.
+- Any ``Origin`` or ``Referer`` header the request carries must match the site origin. Requests carrying neither header — for example same-origin ``GET`` requests from a page served with ``Referrer-Policy: no-referrer`` — are not rejected on that basis; the CSRF token below then decides. This keeps the hardening usable on installations that suppress referrer information, without weakening the protection: cross-site ``fetch``/XHR/form submissions always carry ``Origin``, and a cross-site page can neither read nor set the CSRF header.
 - The ``X-Dataverse-CSRF-Token`` header matching the token obtained from ``GET /api/users/:csrf-token``.
 
-The only per-endpoint exception is the CSRF bootstrap call itself (``GET /api/users/:csrf-token``), which by design cannot send the token it is obtaining. All other API paths are subject to these requirements, and this applies uniformly to all HTTP methods (``GET``, ``POST``, ``PUT``, ``DELETE``, etc.).
-The simplicity is intentional: session-cookie API auth
+The only per-endpoint exception is the CSRF bootstrap call itself (``GET /api/users/:csrf-token``), which by design cannot send the token it is obtaining (its response carries ``Cache-Control: no-store``). These requirements apply to all HTTP methods (``GET``, ``POST``, ``PUT``, ``DELETE``, etc.) on all ``@AuthRequired`` API endpoints — the set the authentication filter runs on. That is every endpoint whose request user is resolved by the filter, including ones that also read the JSF session directly (such as the multipart direct-upload helpers ``GET {id}/uploadurls``, ``PUT``/``DELETE /api/datasets/mpupload``) and ``POST /api/logout``. A session-cookie client must therefore send ``X-Dataverse-CSRF-Token`` on those calls too — including logout and the direct-upload flow — once hardening is enabled.
+The per-method simplicity is intentional: session-cookie API auth
 is only used by same-origin front-end clients that always have the CSRF token available.
 Some ``GET`` endpoints in the codebase have side effects, so exempting reads would leave gaps.
 
-The CSRF token is **session-lifetime**: it is minted on first request to the bootstrap endpoint, reused for the duration of the session, and only invalidated when the session user changes (login/logout). There is no per-request rotation. Treat the token like other session-scoped secrets — do not log it, and refresh it (by logging in again) if you suspect it has leaked.
+Guest sessions and private-URL preview sessions (``PrivateUrlUser``) are exempt: a guest holds no privileges worth forging, and a private-URL preview is read-only (no state to forge, and its responses are not readable cross-origin), so the checks would add no protection. This also keeps anonymous preview-link file downloads — which are served through the JSF preview flow that has no way to obtain a token — working with hardening enabled.
+
+The CSRF token is **session-lifetime**: it is minted on first request to the bootstrap endpoint, reused for the duration of the session, and invalidated whenever the session identity changes (login, logout, or the account being deleted/deactivated). There is no per-request rotation. Treat the token like other session-scoped secrets — do not log it, and refresh it (by logging in again) if you suspect it has leaked.
 
 Clients not on the same origin should use bearer-token authentication instead.
 

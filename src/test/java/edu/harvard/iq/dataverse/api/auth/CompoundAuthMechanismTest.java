@@ -17,7 +17,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @LocalJvmSettings
@@ -37,9 +37,10 @@ public class CompoundAuthMechanismTest {
         User actual = sut.findUserFromRequest(containerRequestContext);
 
         assertThat(actual, equalTo(GuestUser.get()));
-        verify(containerRequestContext, atLeastOnce()).setProperty(
-                ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM,
-                ApiConstants.AUTH_MECHANISM_NONE);
+        // The auth-mechanism tag is only ever set for session-cookie auth;
+        // for everything else (including the guest fallback) it stays absent.
+        verify(containerRequestContext, never()).setProperty(
+                Mockito.eq(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM), Mockito.any());
     }
 
     @Test

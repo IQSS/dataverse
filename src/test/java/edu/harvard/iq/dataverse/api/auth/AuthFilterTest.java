@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.api.Users;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -13,7 +14,6 @@ import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ResourceInfo;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -27,515 +27,278 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit tests for the session-cookie CSRF hardening in {@link AuthFilter}.
+ *
+ * <p>The filter's decisions depend only on the auth-mechanism tag, the user,
+ * the Origin/Referer/CSRF headers, and the resolved resource method (for the
+ * bootstrap exemption) — deliberately NOT on the HTTP method or request path,
+ * so no test stubs those.
+ */
 @LocalJvmSettings
 class AuthFilterTest {
 
+    private static final String SITE_URL = "https://demo.dataverse.org";
+    private static final String VALID_TOKEN = "valid-token";
+
     @Test
     void testFilter_HardeningDisabled_DoesNotAbort() throws Exception {
-        AuthFilter sut = new AuthFilter();
-        ContainerRequestContext requestContext = mockRequestContext("POST", "datasets/1");
-        CompoundAuthMechanism compound = Mockito.mock(CompoundAuthMechanism.class);
-        DataverseSession session = Mockito.mock(DataverseSession.class);
-        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
         User user = new AuthenticatedUser();
-        when(compound.findUserFromRequest(requestContext)).thenReturn(user);
+        Fixture f = fixture(user, false);
 
-        inject(sut, "compoundAuthMechanism", compound);
-        inject(sut, "session", session);
-        inject(sut, "systemConfig", systemConfig);
+        f.sut.filter(f.requestContext);
 
-        sut.filter(requestContext);
-
-        verify(requestContext, never()).abortWith(any(Response.class));
-        verify(requestContext).setProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_USER, user);
+        verify(f.requestContext, never()).abortWith(any(Response.class));
+        verify(f.requestContext).setProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_USER, user);
     }
 
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
-    void testFilter_HardeningEnabled_SessionCookieGetAllowedWithOriginAndCsrf() throws Exception {
-        AuthFilter sut = new AuthFilter();
-        ContainerRequestContext requestContext = mockRequestContext("GET", "access/datafile/123");
-        CompoundAuthMechanism compound = Mockito.mock(CompoundAuthMechanism.class);
-        DataverseSession session = Mockito.mock(DataverseSession.class);
-        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
+    void testFilter_SessionCookie_MatchingOriginAndValidToken_Allowed() throws Exception {
+        Fixture f = sessionCookieFixture(new AuthenticatedUser());
+        when(f.requestContext.getHeaderString(ApiConstants.ORIGIN_HEADER)).thenReturn(SITE_URL);
+        givenValidToken(f);
 
-        when(systemConfig.getDataverseSiteUrl()).thenReturn("https://demo.dataverse.org");
-        when(compound.findUserFromRequest(requestContext)).thenAnswer(invocation -> {
-            ContainerRequestContext crc = invocation.getArgument(0);
-            crc.setProperty(
-                    ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM,
-                    ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-            return new AuthenticatedUser();
-        });
-        when(requestContext.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
-                .thenReturn(ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-        when(requestContext.getHeaderString("Origin")).thenReturn("https://demo.dataverse.org");
-        when(requestContext.getHeaderString(ApiConstants.CSRF_TOKEN_HEADER)).thenReturn("valid-token");
-        when(session.matchesApiCsrfToken("valid-token")).thenReturn(true);
+        f.sut.filter(f.requestContext);
 
-        inject(sut, "compoundAuthMechanism", compound);
-        inject(sut, "session", session);
-        inject(sut, "systemConfig", systemConfig);
-
-        sut.filter(requestContext);
-
-        verify(requestContext, never()).abortWith(any(Response.class));
+        verify(f.requestContext, never()).abortWith(any(Response.class));
     }
 
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
-    void testFilter_HardeningEnabled_SessionCookieGetBlockedWithoutOriginAndCsrf() throws Exception {
-        AuthFilter sut = new AuthFilter();
-        ContainerRequestContext requestContext = mockRequestContext("GET", "access/datafile/123");
+    void testFilter_SessionCookie_MatchingRefererAndValidToken_Allowed() throws Exception {
+        Fixture f = sessionCookieFixture(new AuthenticatedUser());
+        when(f.requestContext.getHeaderString(ApiConstants.REFERER_HEADER))
+                .thenReturn(SITE_URL + "/dataset.xhtml");
+        givenValidToken(f);
+
+        f.sut.filter(f.requestContext);
+
+        verify(f.requestContext, never()).abortWith(any(Response.class));
+    }
+
+    /**
+     * Browsers omit Origin on same-origin GETs, and Referrer-Policy: no-referrer
+     * suppresses Referer — a legitimate same-origin request can carry neither
+     * header. The CSRF token is then the deciding credential; failing closed here
+     * would make the hardening unusable on no-referrer installations.
+     */
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    void testFilter_SessionCookie_NoOriginNoReferer_ValidTokenSufficient() throws Exception {
+        Fixture f = sessionCookieFixture(new AuthenticatedUser());
+        givenValidToken(f);
+
+        f.sut.filter(f.requestContext);
+
+        verify(f.requestContext, never()).abortWith(any(Response.class));
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    void testFilter_SessionCookie_NoOriginNoRefererNoToken_Blocked() throws Exception {
+        Fixture f = sessionCookieFixture(new AuthenticatedUser());
+
+        f.sut.filter(f.requestContext);
+
+        assertForbidden(f);
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    void testFilter_SessionCookie_CrossOriginReferer_BlockedEvenWithValidToken() throws Exception {
+        Fixture f = sessionCookieFixture(new AuthenticatedUser());
+        when(f.requestContext.getHeaderString(ApiConstants.REFERER_HEADER))
+                .thenReturn("https://evil.example/malicious");
+        givenValidToken(f);
+
+        f.sut.filter(f.requestContext);
+
+        assertForbidden(f);
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    void testFilter_SessionCookie_CrossOriginOrigin_Blocked() throws Exception {
+        Fixture f = sessionCookieFixture(new AuthenticatedUser());
+        when(f.requestContext.getHeaderString(ApiConstants.ORIGIN_HEADER)).thenReturn("https://evil.example");
+
+        f.sut.filter(f.requestContext);
+
+        assertForbidden(f);
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    void testFilter_SessionCookie_MatchingOriginButMissingToken_Blocked() throws Exception {
+        Fixture f = sessionCookieFixture(new AuthenticatedUser());
+        when(f.requestContext.getHeaderString(ApiConstants.ORIGIN_HEADER)).thenReturn(SITE_URL);
+        // CSRF token header absent (mock returns null by default)
+
+        f.sut.filter(f.requestContext);
+
+        assertForbidden(f);
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    void testFilter_SessionCookie_MatchingOriginButWrongToken_Blocked() throws Exception {
+        Fixture f = sessionCookieFixture(new AuthenticatedUser());
+        when(f.requestContext.getHeaderString(ApiConstants.ORIGIN_HEADER)).thenReturn(SITE_URL);
+        when(f.requestContext.getHeaderString(ApiConstants.CSRF_TOKEN_HEADER)).thenReturn("wrong-token");
+        when(f.session.matchesApiCsrfToken("wrong-token")).thenReturn(false);
+
+        f.sut.filter(f.requestContext);
+
+        assertForbidden(f);
+    }
+
+    /**
+     * A guest session carries no privileges worth forging, so hardening
+     * short-circuits before the origin/token checks.
+     */
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    void testFilter_GuestSessionCookieRequest_SkipsHardening() throws Exception {
+        Fixture f = sessionCookieFixture(GuestUser.get());
+        // No Origin/Referer and no CSRF token — would block an authenticated session.
+
+        f.sut.filter(f.requestContext);
+
+        verify(f.requestContext, never()).abortWith(any(Response.class));
+        verify(f.requestContext).setProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_USER, GuestUser.get());
+    }
+
+    /**
+     * PrivateUrlUser.isAuthenticated() is false, so a read-only private-URL
+     * preview session is exempt like a guest: hardening it adds no protection
+     * (no state to forge, responses not cross-origin readable) and the JSF
+     * preview flow that mints these sessions cannot obtain a token.
+     */
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    void testFilter_PrivateUrlUserSessionCookieRequest_IsExemptLikeGuest() throws Exception {
+        Fixture f = sessionCookieFixture(new PrivateUrlUser(42L));
+        // No Origin/Referer and no token — would block an authenticated session.
+
+        f.sut.filter(f.requestContext);
+
+        verify(f.requestContext, never()).abortWith(any(Response.class));
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    void testFilter_NonSessionCookieMechanism_SkipsHardening() throws Exception {
+        // No auth-mechanism property set — how every non-session mechanism looks.
+        Fixture f = fixture(new AuthenticatedUser(), false);
+
+        f.sut.filter(f.requestContext);
+
+        verify(f.requestContext, never()).abortWith(any(Response.class));
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    void testFilter_CsrfBootstrapEndpoint_AllowedWithMatchingOriginAndNoToken() throws Exception {
+        Fixture f = sessionCookieFixture(new AuthenticatedUser());
+        when(f.requestContext.getHeaderString(ApiConstants.ORIGIN_HEADER)).thenReturn(SITE_URL);
+        inject(f.sut, "resourceInfo", mockBootstrapResourceInfo());
+
+        f.sut.filter(f.requestContext);
+
+        verify(f.requestContext, never()).abortWith(any(Response.class));
+    }
+
+    /**
+     * The bootstrap endpoint must also work when neither Origin nor Referer is
+     * sent (no-referrer installations): the request holds the session cookie,
+     * and the token it fetches is useless to a party that lacks that cookie.
+     */
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    void testFilter_CsrfBootstrapEndpoint_AllowedWithoutOriginHeaders() throws Exception {
+        Fixture f = sessionCookieFixture(new AuthenticatedUser());
+        inject(f.sut, "resourceInfo", mockBootstrapResourceInfo());
+
+        f.sut.filter(f.requestContext);
+
+        verify(f.requestContext, never()).abortWith(any(Response.class));
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    void testFilter_CsrfBootstrapEndpoint_CrossOriginBlocked() throws Exception {
+        Fixture f = sessionCookieFixture(new AuthenticatedUser());
+        when(f.requestContext.getHeaderString(ApiConstants.ORIGIN_HEADER)).thenReturn("https://evil.example");
+        inject(f.sut, "resourceInfo", mockBootstrapResourceInfo());
+
+        f.sut.filter(f.requestContext);
+
+        assertForbidden(f);
+    }
+
+    /**
+     * With an unparseable site URL the allowed origin cannot be established:
+     * requests carrying origin headers fail closed, while header-less requests
+     * are still decided by the token (ConfigCheckService flags this state at
+     * startup).
+     */
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    void testFilter_SessionCookie_UnparseableSiteUrl_OriginCarryingRequestBlocked() throws Exception {
+        Fixture f = sessionCookieFixture(new AuthenticatedUser());
+        when(f.systemConfig.getDataverseSiteUrl()).thenReturn("not a url");
+        when(f.requestContext.getHeaderString(ApiConstants.ORIGIN_HEADER)).thenReturn(SITE_URL);
+        givenValidToken(f);
+
+        f.sut.filter(f.requestContext);
+
+        assertForbidden(f);
+    }
+
+    // ---- fixtures ---------------------------------------------------------
+
+    private static final class Fixture {
+        AuthFilter sut;
+        ContainerRequestContext requestContext;
+        DataverseSession session;
+        SystemConfig systemConfig;
+    }
+
+    private Fixture fixture(User user, boolean sessionCookieAuthenticated) throws Exception {
+        Fixture f = new Fixture();
+        f.sut = new AuthFilter();
+        f.requestContext = Mockito.mock(ContainerRequestContext.class);
+        f.session = Mockito.mock(DataverseSession.class);
+        f.systemConfig = Mockito.mock(SystemConfig.class);
+        when(f.systemConfig.getDataverseSiteUrl()).thenReturn(SITE_URL);
+
         CompoundAuthMechanism compound = Mockito.mock(CompoundAuthMechanism.class);
-        DataverseSession session = Mockito.mock(DataverseSession.class);
-        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
+        when(compound.findUserFromRequest(f.requestContext)).thenReturn(user);
+        if (sessionCookieAuthenticated) {
+            when(f.requestContext.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
+                    .thenReturn(ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
+        }
 
-        when(systemConfig.getDataverseSiteUrl()).thenReturn("https://demo.dataverse.org");
-        when(compound.findUserFromRequest(requestContext)).thenAnswer(invocation -> {
-            ContainerRequestContext crc = invocation.getArgument(0);
-            crc.setProperty(
-                    ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM,
-                    ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-            return new AuthenticatedUser();
-        });
-        when(requestContext.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
-                .thenReturn(ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-        // No Origin, Referer, or CSRF token
+        inject(f.sut, "compoundAuthMechanism", compound);
+        inject(f.sut, "session", f.session);
+        inject(f.sut, "systemConfig", f.systemConfig);
+        return f;
+    }
 
-        inject(sut, "compoundAuthMechanism", compound);
-        inject(sut, "session", session);
-        inject(sut, "systemConfig", systemConfig);
+    private Fixture sessionCookieFixture(User user) throws Exception {
+        return fixture(user, true);
+    }
 
-        sut.filter(requestContext);
+    private void givenValidToken(Fixture f) {
+        when(f.requestContext.getHeaderString(ApiConstants.CSRF_TOKEN_HEADER)).thenReturn(VALID_TOKEN);
+        when(f.session.matchesApiCsrfToken(VALID_TOKEN)).thenReturn(true);
+    }
 
+    private void assertForbidden(Fixture f) {
         ArgumentCaptor<Response> abortResponseCaptor = ArgumentCaptor.forClass(Response.class);
-        verify(requestContext).abortWith(abortResponseCaptor.capture());
+        verify(f.requestContext).abortWith(abortResponseCaptor.capture());
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), abortResponseCaptor.getValue().getStatus());
-    }
-
-    @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
-    void testFilter_HardeningEnabled_SessionCookieAccessBatchDownloadPostRequiresOriginAndCsrf() throws Exception {
-        AuthFilter sut = new AuthFilter();
-        ContainerRequestContext requestContext = mockRequestContext("POST", "access/datafiles");
-        CompoundAuthMechanism compound = Mockito.mock(CompoundAuthMechanism.class);
-        DataverseSession session = Mockito.mock(DataverseSession.class);
-        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
-
-        when(systemConfig.getDataverseSiteUrl()).thenReturn("https://demo.dataverse.org");
-        when(compound.findUserFromRequest(requestContext)).thenAnswer(invocation -> {
-            ContainerRequestContext crc = invocation.getArgument(0);
-            crc.setProperty(
-                    ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM,
-                    ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-            return new AuthenticatedUser();
-        });
-        when(requestContext.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
-                .thenReturn(ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-        when(requestContext.getHeaderString("Referer")).thenReturn("https://demo.dataverse.org/dataset.xhtml");
-        when(requestContext.getHeaderString(ApiConstants.CSRF_TOKEN_HEADER)).thenReturn("valid-token");
-        when(session.matchesApiCsrfToken("valid-token")).thenReturn(true);
-
-        inject(sut, "compoundAuthMechanism", compound);
-        inject(sut, "session", session);
-        inject(sut, "systemConfig", systemConfig);
-
-        sut.filter(requestContext);
-
-        verify(requestContext, never()).abortWith(any(Response.class));
-    }
-
-    @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
-    void testFilter_HardeningEnabled_SessionCookieAccessBatchDownloadPostWithApiPrefixAndTrailingSlashAllowed() throws Exception {
-        AuthFilter sut = new AuthFilter();
-        ContainerRequestContext requestContext = mockRequestContext("POST", "api/access/datafiles/");
-        CompoundAuthMechanism compound = Mockito.mock(CompoundAuthMechanism.class);
-        DataverseSession session = Mockito.mock(DataverseSession.class);
-        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
-
-        when(systemConfig.getDataverseSiteUrl()).thenReturn("https://demo.dataverse.org");
-        when(compound.findUserFromRequest(requestContext)).thenAnswer(invocation -> {
-            ContainerRequestContext crc = invocation.getArgument(0);
-            crc.setProperty(
-                    ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM,
-                    ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-            return new AuthenticatedUser();
-        });
-        when(requestContext.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
-                .thenReturn(ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-        when(requestContext.getHeaderString("Referer")).thenReturn("https://demo.dataverse.org/dataset.xhtml");
-        when(requestContext.getHeaderString(ApiConstants.CSRF_TOKEN_HEADER)).thenReturn("valid-token");
-        when(session.matchesApiCsrfToken("valid-token")).thenReturn(true);
-
-        inject(sut, "compoundAuthMechanism", compound);
-        inject(sut, "session", session);
-        inject(sut, "systemConfig", systemConfig);
-
-        sut.filter(requestContext);
-
-        verify(requestContext, never()).abortWith(any(Response.class));
-    }
-
-    @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
-    void testFilter_HardeningEnabled_SessionCookieAccessBatchDownloadPostCrossOriginBlocked() throws Exception {
-        AuthFilter sut = new AuthFilter();
-        ContainerRequestContext requestContext = mockRequestContext("POST", "access/datafiles");
-        CompoundAuthMechanism compound = Mockito.mock(CompoundAuthMechanism.class);
-        DataverseSession session = Mockito.mock(DataverseSession.class);
-        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
-
-        when(systemConfig.getDataverseSiteUrl()).thenReturn("https://demo.dataverse.org");
-        when(compound.findUserFromRequest(requestContext)).thenAnswer(invocation -> {
-            ContainerRequestContext crc = invocation.getArgument(0);
-            crc.setProperty(
-                    ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM,
-                    ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-            return new AuthenticatedUser();
-        });
-        when(requestContext.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
-                .thenReturn(ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-        when(requestContext.getHeaderString("Referer")).thenReturn("https://evil.example/malicious");
-
-        inject(sut, "compoundAuthMechanism", compound);
-        inject(sut, "session", session);
-        inject(sut, "systemConfig", systemConfig);
-
-        sut.filter(requestContext);
-
-        ArgumentCaptor<Response> abortResponseCaptor = ArgumentCaptor.forClass(Response.class);
-        verify(requestContext).abortWith(abortResponseCaptor.capture());
-        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), abortResponseCaptor.getValue().getStatus());
-    }
-
-    @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
-    void testFilter_HardeningEnabled_SessionCookieMutatingAccessEndpointAllowedWithOriginAndCsrf() throws Exception {
-        AuthFilter sut = new AuthFilter();
-        ContainerRequestContext requestContext = mockRequestContext("PUT", "access/datafile/1/requestAccess");
-        CompoundAuthMechanism compound = Mockito.mock(CompoundAuthMechanism.class);
-        DataverseSession session = Mockito.mock(DataverseSession.class);
-        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
-
-        when(systemConfig.getDataverseSiteUrl()).thenReturn("https://demo.dataverse.org");
-        when(compound.findUserFromRequest(requestContext)).thenAnswer(invocation -> {
-            ContainerRequestContext crc = invocation.getArgument(0);
-            crc.setProperty(
-                    ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM,
-                    ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-            return new AuthenticatedUser();
-        });
-        when(requestContext.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
-                .thenReturn(ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-        when(requestContext.getHeaderString("Origin")).thenReturn("https://demo.dataverse.org");
-        when(requestContext.getHeaderString(ApiConstants.CSRF_TOKEN_HEADER)).thenReturn("valid-token");
-        when(session.matchesApiCsrfToken("valid-token")).thenReturn(true);
-
-        inject(sut, "compoundAuthMechanism", compound);
-        inject(sut, "session", session);
-        inject(sut, "systemConfig", systemConfig);
-
-        sut.filter(requestContext);
-
-        verify(requestContext, never()).abortWith(any(Response.class));
-    }
-
-    @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
-    void testFilter_HardeningEnabled_SessionCookieMutatingAccessEndpointBlockedWithoutCsrf() throws Exception {
-        AuthFilter sut = new AuthFilter();
-        ContainerRequestContext requestContext = mockRequestContext("PUT", "access/datafile/1/requestAccess");
-        CompoundAuthMechanism compound = Mockito.mock(CompoundAuthMechanism.class);
-        DataverseSession session = Mockito.mock(DataverseSession.class);
-        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
-
-        when(systemConfig.getDataverseSiteUrl()).thenReturn("https://demo.dataverse.org");
-        when(compound.findUserFromRequest(requestContext)).thenAnswer(invocation -> {
-            ContainerRequestContext crc = invocation.getArgument(0);
-            crc.setProperty(
-                    ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM,
-                    ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-            return new AuthenticatedUser();
-        });
-        when(requestContext.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
-                .thenReturn(ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-        when(requestContext.getHeaderString("Origin")).thenReturn("https://demo.dataverse.org");
-        // No CSRF token header
-
-        inject(sut, "compoundAuthMechanism", compound);
-        inject(sut, "session", session);
-        inject(sut, "systemConfig", systemConfig);
-
-        sut.filter(requestContext);
-
-        ArgumentCaptor<Response> abortResponseCaptor = ArgumentCaptor.forClass(Response.class);
-        verify(requestContext).abortWith(abortResponseCaptor.capture());
-        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), abortResponseCaptor.getValue().getStatus());
-    }
-
-    @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
-    void testFilter_HardeningEnabled_StateChangingCallNeedsCsrfAndOrigin() throws Exception {
-        AuthFilter sut = new AuthFilter();
-        ContainerRequestContext requestContext = mockRequestContext("POST", "datasets/1/add");
-        CompoundAuthMechanism compound = Mockito.mock(CompoundAuthMechanism.class);
-        DataverseSession session = Mockito.mock(DataverseSession.class);
-        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
-
-        when(systemConfig.getDataverseSiteUrl()).thenReturn("https://demo.dataverse.org");
-        when(compound.findUserFromRequest(requestContext)).thenAnswer(invocation -> {
-            ContainerRequestContext crc = invocation.getArgument(0);
-            crc.setProperty(
-                    ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM,
-                    ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-            return new AuthenticatedUser();
-        });
-        when(requestContext.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
-                .thenReturn(ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-        when(requestContext.getHeaderString("Origin")).thenReturn("https://demo.dataverse.org");
-        when(requestContext.getHeaderString("Referer")).thenReturn("https://demo.dataverse.org/dataset.xhtml");
-        when(requestContext.getHeaderString(ApiConstants.CSRF_TOKEN_HEADER)).thenReturn("valid-token");
-        when(session.matchesApiCsrfToken("valid-token")).thenReturn(true);
-
-        inject(sut, "compoundAuthMechanism", compound);
-        inject(sut, "session", session);
-        inject(sut, "systemConfig", systemConfig);
-
-        sut.filter(requestContext);
-
-        verify(requestContext, never()).abortWith(any(Response.class));
-    }
-
-    @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
-    void testFilter_HardeningEnabled_GuestSessionCookieRequestSkipsHardening() throws Exception {
-        AuthFilter sut = new AuthFilter();
-        ContainerRequestContext requestContext = mockRequestContext("POST", "datasets/1/add");
-        CompoundAuthMechanism compound = Mockito.mock(CompoundAuthMechanism.class);
-        DataverseSession session = Mockito.mock(DataverseSession.class);
-        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
-
-        when(compound.findUserFromRequest(requestContext)).thenAnswer(invocation -> {
-            ContainerRequestContext crc = invocation.getArgument(0);
-            crc.setProperty(
-                    ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM,
-                    ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-            return GuestUser.get();
-        });
-        when(requestContext.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
-                .thenReturn(ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-        // No Origin/Referer and no CSRF token — would block an authenticated session, but a guest
-        // has no privileges to forge, so hardening must short-circuit before these checks.
-
-        inject(sut, "compoundAuthMechanism", compound);
-        inject(sut, "session", session);
-        inject(sut, "systemConfig", systemConfig);
-
-        sut.filter(requestContext);
-
-        verify(requestContext, never()).abortWith(any(Response.class));
-        verify(requestContext).setProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_USER, GuestUser.get());
-    }
-
-    @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
-    void testFilter_HardeningEnabled_NonSessionAuthNotBlockedForAnyPath() throws Exception {
-        AuthFilter sut = new AuthFilter();
-        ContainerRequestContext requestContext = mockRequestContext("GET", "access/datafile/123");
-        CompoundAuthMechanism compound = Mockito.mock(CompoundAuthMechanism.class);
-        DataverseSession session = Mockito.mock(DataverseSession.class);
-        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
-
-        when(compound.findUserFromRequest(requestContext)).thenAnswer(invocation -> {
-            ContainerRequestContext crc = invocation.getArgument(0);
-            crc.setProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM, ApiConstants.AUTH_MECHANISM_API_KEY);
-            return new AuthenticatedUser();
-        });
-        when(requestContext.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
-                .thenReturn(ApiConstants.AUTH_MECHANISM_API_KEY);
-
-        inject(sut, "compoundAuthMechanism", compound);
-        inject(sut, "session", session);
-        inject(sut, "systemConfig", systemConfig);
-
-        sut.filter(requestContext);
-
-        verify(requestContext, never()).abortWith(any(Response.class));
-    }
-
-    @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
-    void testFilter_HardeningEnabled_StateChangingCallWithNoOriginOrRefererBlocked() throws Exception {
-        AuthFilter sut = new AuthFilter();
-        ContainerRequestContext requestContext = mockRequestContext("POST", "datasets/1/add");
-        CompoundAuthMechanism compound = Mockito.mock(CompoundAuthMechanism.class);
-        DataverseSession session = Mockito.mock(DataverseSession.class);
-        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
-
-        when(systemConfig.getDataverseSiteUrl()).thenReturn("https://demo.dataverse.org");
-        when(compound.findUserFromRequest(requestContext)).thenAnswer(invocation -> {
-            ContainerRequestContext crc = invocation.getArgument(0);
-            crc.setProperty(
-                    ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM,
-                    ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-            return new AuthenticatedUser();
-        });
-        when(requestContext.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
-                .thenReturn(ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-        // No Origin or Referer headers
-
-        inject(sut, "compoundAuthMechanism", compound);
-        inject(sut, "session", session);
-        inject(sut, "systemConfig", systemConfig);
-
-        sut.filter(requestContext);
-
-        ArgumentCaptor<Response> abortResponseCaptor = ArgumentCaptor.forClass(Response.class);
-        verify(requestContext).abortWith(abortResponseCaptor.capture());
-        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), abortResponseCaptor.getValue().getStatus());
-    }
-
-    @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
-    void testFilter_HardeningEnabled_StateChangingCallWithMissingCsrfTokenBlocked() throws Exception {
-        AuthFilter sut = new AuthFilter();
-        ContainerRequestContext requestContext = mockRequestContext("DELETE", "datasets/1");
-        CompoundAuthMechanism compound = Mockito.mock(CompoundAuthMechanism.class);
-        DataverseSession session = Mockito.mock(DataverseSession.class);
-        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
-
-        when(systemConfig.getDataverseSiteUrl()).thenReturn("https://demo.dataverse.org");
-        when(compound.findUserFromRequest(requestContext)).thenAnswer(invocation -> {
-            ContainerRequestContext crc = invocation.getArgument(0);
-            crc.setProperty(
-                    ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM,
-                    ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-            return new AuthenticatedUser();
-        });
-        when(requestContext.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
-                .thenReturn(ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-        when(requestContext.getHeaderString("Origin")).thenReturn("https://demo.dataverse.org");
-        // CSRF token header absent (returns null by default from mock)
-
-        inject(sut, "compoundAuthMechanism", compound);
-        inject(sut, "session", session);
-        inject(sut, "systemConfig", systemConfig);
-
-        sut.filter(requestContext);
-
-        ArgumentCaptor<Response> abortResponseCaptor = ArgumentCaptor.forClass(Response.class);
-        verify(requestContext).abortWith(abortResponseCaptor.capture());
-        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), abortResponseCaptor.getValue().getStatus());
-    }
-
-    @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
-    void testFilter_HardeningEnabled_StateChangingCallWithWrongCsrfTokenBlocked() throws Exception {
-        AuthFilter sut = new AuthFilter();
-        ContainerRequestContext requestContext = mockRequestContext("PUT", "datasets/1/editMetadata");
-        CompoundAuthMechanism compound = Mockito.mock(CompoundAuthMechanism.class);
-        DataverseSession session = Mockito.mock(DataverseSession.class);
-        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
-
-        when(systemConfig.getDataverseSiteUrl()).thenReturn("https://demo.dataverse.org");
-        when(compound.findUserFromRequest(requestContext)).thenAnswer(invocation -> {
-            ContainerRequestContext crc = invocation.getArgument(0);
-            crc.setProperty(
-                    ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM,
-                    ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-            return new AuthenticatedUser();
-        });
-        when(requestContext.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
-                .thenReturn(ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-        when(requestContext.getHeaderString("Origin")).thenReturn("https://demo.dataverse.org");
-        when(requestContext.getHeaderString(ApiConstants.CSRF_TOKEN_HEADER)).thenReturn("wrong-token");
-        when(session.matchesApiCsrfToken("wrong-token")).thenReturn(false);
-
-        inject(sut, "compoundAuthMechanism", compound);
-        inject(sut, "session", session);
-        inject(sut, "systemConfig", systemConfig);
-
-        sut.filter(requestContext);
-
-        ArgumentCaptor<Response> abortResponseCaptor = ArgumentCaptor.forClass(Response.class);
-        verify(requestContext).abortWith(abortResponseCaptor.capture());
-        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), abortResponseCaptor.getValue().getStatus());
-    }
-
-    @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
-    void testFilter_HardeningEnabled_CsrfBootstrapEndpointAllowedWithOriginOnly() throws Exception {
-        AuthFilter sut = new AuthFilter();
-        ContainerRequestContext requestContext = mockRequestContext("GET", "users/:csrf-token");
-        CompoundAuthMechanism compound = Mockito.mock(CompoundAuthMechanism.class);
-        DataverseSession session = Mockito.mock(DataverseSession.class);
-        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
-
-        when(systemConfig.getDataverseSiteUrl()).thenReturn("https://demo.dataverse.org");
-        when(compound.findUserFromRequest(requestContext)).thenAnswer(invocation -> {
-            ContainerRequestContext crc = invocation.getArgument(0);
-            crc.setProperty(
-                    ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM,
-                    ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-            return new AuthenticatedUser();
-        });
-        when(requestContext.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
-                .thenReturn(ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-        when(requestContext.getHeaderString("Origin")).thenReturn("https://demo.dataverse.org");
-        // No CSRF token header — bootstrap endpoint should not require it
-
-        inject(sut, "compoundAuthMechanism", compound);
-        inject(sut, "session", session);
-        inject(sut, "systemConfig", systemConfig);
-        inject(sut, "resourceInfo", mockBootstrapResourceInfo());
-
-        sut.filter(requestContext);
-
-        verify(requestContext, never()).abortWith(any(Response.class));
-    }
-
-    @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
-    void testFilter_HardeningEnabled_CsrfBootstrapEndpointBlockedWithoutOrigin() throws Exception {
-        AuthFilter sut = new AuthFilter();
-        ContainerRequestContext requestContext = mockRequestContext("GET", "users/:csrf-token");
-        CompoundAuthMechanism compound = Mockito.mock(CompoundAuthMechanism.class);
-        DataverseSession session = Mockito.mock(DataverseSession.class);
-        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
-
-        when(systemConfig.getDataverseSiteUrl()).thenReturn("https://demo.dataverse.org");
-        when(compound.findUserFromRequest(requestContext)).thenAnswer(invocation -> {
-            ContainerRequestContext crc = invocation.getArgument(0);
-            crc.setProperty(
-                    ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM,
-                    ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-            return new AuthenticatedUser();
-        });
-        when(requestContext.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
-                .thenReturn(ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
-        // No Origin or Referer — should still be blocked even for bootstrap endpoint
-
-        inject(sut, "compoundAuthMechanism", compound);
-        inject(sut, "session", session);
-        inject(sut, "systemConfig", systemConfig);
-        inject(sut, "resourceInfo", mockBootstrapResourceInfo());
-
-        sut.filter(requestContext);
-
-        ArgumentCaptor<Response> abortResponseCaptor = ArgumentCaptor.forClass(Response.class);
-        verify(requestContext).abortWith(abortResponseCaptor.capture());
-        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), abortResponseCaptor.getValue().getStatus());
-    }
-
-    private ContainerRequestContext mockRequestContext(String method, String path) {
-        ContainerRequestContext requestContext = Mockito.mock(ContainerRequestContext.class);
-        UriInfo uriInfo = Mockito.mock(UriInfo.class);
-        when(requestContext.getMethod()).thenReturn(method);
-        when(requestContext.getUriInfo()).thenReturn(uriInfo);
-        when(uriInfo.getPath()).thenReturn(path);
-        return requestContext;
     }
 
     private ResourceInfo mockBootstrapResourceInfo() throws NoSuchMethodException {

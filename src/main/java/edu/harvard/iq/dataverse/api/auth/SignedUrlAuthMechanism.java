@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.api.auth;
 
-import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.*;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
@@ -45,11 +44,6 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
             return user;
         }
         throw new WrappedUnauthorizedAuthErrorResponse(RESPONSE_MESSAGE_BAD_SIGNED_URL);
-    }
-
-    @Override
-    public String mechanismTag() {
-        return ApiConstants.AUTH_MECHANISM_SIGNED_URL;
     }
 
     private String getSignedUrlRequestParameter(ContainerRequestContext containerRequestContext) {

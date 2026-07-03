@@ -41,8 +41,8 @@ class UsersSessionCsrfTokenTest {
     void testGetCsrfToken_NonSessionCookieAuth_Returns403() throws Exception {
         Users sut = new Users();
         ContainerRequestContext crc = Mockito.mock(ContainerRequestContext.class);
-        when(crc.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
-                .thenReturn(ApiConstants.AUTH_MECHANISM_API_KEY);
+        // The auth-mechanism tag is absent for every non-session mechanism
+        // (api key, bearer, signed URL, ...) — the mock's default null models that.
 
         Response response = sut.getSessionCsrfToken(crc);
 
@@ -70,6 +70,30 @@ class UsersSessionCsrfTokenTest {
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         String body = response.getEntity().toString();
         assertTrue(body.contains("test-csrf-token-value"));
+        // The body carries a session secret; browsers and intermediaries must not cache it.
+        assertEquals("no-store", response.getHeaderString("Cache-Control"));
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    void testGetCsrfToken_PrivateUrlUserSession_ReturnsUnauthorized() throws Exception {
+        // PrivateUrlUser.isAuthenticated() is false and its preview sessions are exempt
+        // from hardening (read-only), so it is never asked for a token and is not issued
+        // one — symmetric with the AuthFilter exemption.
+        Users sut = new Users();
+        DataverseSession session = Mockito.mock(DataverseSession.class);
+        ContainerRequestContext crc = Mockito.mock(ContainerRequestContext.class);
+
+        when(crc.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM))
+                .thenReturn(ApiConstants.AUTH_MECHANISM_SESSION_COOKIE);
+        when(crc.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_USER))
+                .thenReturn(new edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser(42L));
+
+        inject(sut, Users.class, "session", session);
+
+        Response response = sut.getSessionCsrfToken(crc);
+
+        assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
     }
 
     @Test
@@ -89,7 +113,7 @@ class UsersSessionCsrfTokenTest {
 
         Response response = sut.getSessionCsrfToken(crc);
 
-        // getRequestAuthenticatedUserOrDie throws WrappedResponse for non-authenticated users
+        // Guests hold no session-borne privileges and get no token.
         assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
     }
 

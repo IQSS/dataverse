@@ -21,10 +21,4 @@ interface AuthMechanism {
      * @throws edu.harvard.iq.dataverse.api.auth.WrappedAuthErrorResponse if there is a credential provided, but invalid.
      */
     User findUserFromRequest(ContainerRequestContext containerRequestContext) throws WrappedAuthErrorResponse;
-
-    /**
-     * Returns a short tag identifying this mechanism, used by downstream filters (e.g. {@code AuthFilter})
-     * to apply mechanism-specific policies. Values are defined in {@link edu.harvard.iq.dataverse.api.ApiConstants}.
-     */
-    String mechanismTag();
 }

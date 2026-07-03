@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataverseHeaderFragment;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 
 import jakarta.inject.Inject;
@@ -23,9 +24,21 @@ public class Logout extends AbstractApiBean {
      * This endpoint replicates the logic from the JSF Log Out feature:
      * @see DataverseHeaderFragment#logout()
      * <p>
+     * {@code @AuthRequired} routes this endpoint through {@code AuthFilter} so the
+     * session-cookie CSRF hardening (when enabled) covers it: logout is state-changing
+     * and session-cookie-authenticated, and without the annotation it would be the one
+     * such endpoint the hardening never sees. Two behavior changes follow from running
+     * the filter, both intended: with hardening enabled a session-cookie logout must
+     * now carry the {@code X-Dataverse-CSRF-Token} header like any other state-changing
+     * call, and an <em>invalid</em> non-session credential (e.g. a bad API key) is now
+     * rejected by the filter with 401 rather than reaching the handler. A valid
+     * non-session credential still falls through to the handler's "no session cookie"
+     * response as before, since the handler reads the JSF session directly.
+     * <p>
      * TODO: This endpoint must change when a final API authentication mechanism is established for use cases / applications subject to Log Out
      */
     @POST
+    @AuthRequired
     @Path("/")
     public Response logout() {
         if (!FeatureFlags.API_SESSION_AUTH.enabled()) {

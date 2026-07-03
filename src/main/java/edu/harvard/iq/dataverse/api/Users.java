@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.api.auth.CompoundAuthMechanism;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
@@ -221,8 +222,7 @@ public class Users extends AbstractApiBean {
         if (!FeatureFlags.API_SESSION_AUTH_HARDENING.enabled()) {
             return error(Response.Status.BAD_REQUEST, "Session-auth hardening is disabled.");
         }
-        Object authMechanism = crc.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM);
-        if (!ApiConstants.AUTH_MECHANISM_SESSION_COOKIE.equals(authMechanism)) {
+        if (!CompoundAuthMechanism.isSessionCookieRequest(crc)) {
             return error(
                     Response.Status.FORBIDDEN,
                     "CSRF token endpoint is only available for session-cookie authentication.");
@@ -230,12 +230,22 @@ public class Users extends AbstractApiBean {
         // AuthFilter handles authentication and Origin/Referer validation.
         // The CSRF header check is skipped for this endpoint (bootstrap exception in AuthFilter)
         // so the client can obtain the token before making subsequent hardened calls.
-        try {
-            getRequestAuthenticatedUserOrDie(crc);
-            return ok(Json.createObjectBuilder().add("csrfToken", session.getOrCreateApiCsrfToken()));
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
+        //
+        // Only fully-authenticated session users get a token — mirroring the hardening
+        // scope in AuthFilter, which exempts guests and PrivateUrlUser preview sessions
+        // (both isAuthenticated() == false). Those exempt sessions are never asked for a
+        // token, so issuing one would be pointless.
+        User user = getRequestUser(crc);
+        if (user == null || !user.isAuthenticated()) {
+            return error(Response.Status.UNAUTHORIZED, "An authenticated session is required to obtain a CSRF token.");
         }
+        // no-store: the body carries a session secret; neither browser caches nor
+        // intermediaries should retain it (bfcache/disk-cache copies would outlive
+        // the page that fetched it).
+        return Response.fromResponse(
+                        ok(Json.createObjectBuilder().add("csrfToken", session.getOrCreateApiCsrfToken())))
+                .header("Cache-Control", "no-store")
+                .build();
     }
 
     @POST

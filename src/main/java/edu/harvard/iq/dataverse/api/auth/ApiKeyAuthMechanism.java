@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.api.auth;
 
 import edu.harvard.iq.dataverse.UserServiceBean;
-import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
@@ -52,11 +51,6 @@ public class ApiKeyAuthMechanism implements AuthMechanism {
             return authUser;
         }
         throw new WrappedUnauthorizedAuthErrorResponse(RESPONSE_MESSAGE_BAD_API_KEY);
-    }
-
-    @Override
-    public String mechanismTag() {
-        return ApiConstants.AUTH_MECHANISM_API_KEY;
     }
 
     private String getRequestApiKey(ContainerRequestContext containerRequestContext) {

@@ -115,15 +115,26 @@ public class DataverseSession implements Serializable{
             AuthenticatedUser auFreshLookup = authenticationService.findByID(auFromSession.getId());
             if (auFreshLookup == null) {
                 logger.fine("getUser found user no longer exists (was deleted). Returning GuestUser.");
-                user = GuestUser.get();
+                demoteToGuest();
             } else {
                 if (auFreshLookup.isDeactivated()) {
                     logger.fine("getUser found user is deactivated. Returning GuestUser.");
-                    user = GuestUser.get();
+                    demoteToGuest();
                 }
             }
         }
         return user;
+    }
+
+    /**
+     * Demotes the session to guest after discovering the authenticated user was
+     * deleted or deactivated. The CSRF token is dropped along with the identity
+     * it was minted for — {@code setUser} does the same on login/logout, and a
+     * token must never outlive its user.
+     */
+    private void demoteToGuest() {
+        user = GuestUser.get();
+        clearApiCsrfToken();
     }
 
     /**

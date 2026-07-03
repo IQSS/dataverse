@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.api.Users;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.UrlOriginUtil;
 
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
@@ -17,13 +18,17 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.URI;
-import java.util.Locale;
 import java.util.logging.Logger;
 
 /**
  * @author Guillermo Portas
  * Dedicated filter to authenticate the user requesting an API endpoint that requires user authentication.
+ *
+ * <p>Note on scope: this filter is name-bound to {@link AuthRequired}, so the
+ * session-cookie CSRF hardening below protects exactly the {@code @AuthRequired}
+ * endpoints. Endpoints that read the session directly without the annotation are
+ * NOT covered — keep that set empty for state-changing endpoints, or annotate
+ * them (as {@code /api/logout} is).
  */
 @AuthRequired
 @Provider
@@ -60,15 +65,28 @@ public class AuthFilter implements ContainerRequestFilter {
         if (!FeatureFlags.API_SESSION_AUTH_HARDENING.enabled()) {
             return;
         }
-        if (!isSessionCookieRequest(containerRequestContext)) {
+        if (!CompoundAuthMechanism.isSessionCookieRequest(containerRequestContext)) {
             return;
         }
-        // CSRF/origin protections guard authenticated session state; guests carry no privileges
-        // worth forging, so the hardening checks would only add friction without security benefit.
+        // Only fully-authenticated session users are hardened. isAuthenticated() is false
+        // for both GuestUser and PrivateUrlUser, and both are deliberately exempt:
+        //   - a guest carries no privileges worth forging;
+        //   - a private-URL preview session is read-only (no state to forge) and its
+        //     responses are not cross-origin readable, so CSRF hardening adds no
+        //     protection — while the JSF preview flow that mints these sessions has no
+        //     way to obtain or send a token, so hardening it would only break anonymous
+        //     preview downloads.
         if (user == null || !user.isAuthenticated()) {
             return;
         }
 
+        // Browser-sent Origin/Referer headers must match the site origin when present.
+        // When BOTH are absent we fall through to the CSRF token instead of failing
+        // closed: browsers omit Origin on same-origin GETs and suppress Referer under
+        // Referrer-Policy: no-referrer, so a legitimate same-origin request can carry
+        // neither — while the cross-site deliveries that matter cannot reach the token
+        // check anyway (cross-site fetch/XHR/form POSTs always carry Origin, and a
+        // cross-site attacker cannot read or set the X-Dataverse-CSRF-Token header).
         if (!isOriginOrRefererAllowed(containerRequestContext)) {
             throw new WrappedForbiddenAuthErrorResponse(
                     "Request origin validation failed for session-cookie authentication.");
@@ -84,12 +102,6 @@ public class AuthFilter implements ContainerRequestFilter {
             throw new WrappedForbiddenAuthErrorResponse(
                     "Missing or invalid CSRF token for session-cookie authentication.");
         }
-    }
-
-    private boolean isSessionCookieRequest(ContainerRequestContext containerRequestContext) {
-        Object authMechanism = containerRequestContext
-                .getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM);
-        return ApiConstants.AUTH_MECHANISM_SESSION_COOKIE.equals(authMechanism);
     }
 
     /**
@@ -109,24 +121,29 @@ public class AuthFilter implements ContainerRequestFilter {
                 && "getSessionCsrfToken".equals(method.getName());
     }
 
+    /**
+     * Validates any Origin/Referer headers that are present against the site origin.
+     * Absence of both headers is allowed — the CSRF token check that follows is then
+     * the deciding credential (see the caller for the reasoning).
+     */
     private boolean isOriginOrRefererAllowed(ContainerRequestContext containerRequestContext) {
-        String allowedOrigin = toOrigin(systemConfig.getDataverseSiteUrl());
-        if (allowedOrigin == null) {
-            logger.warning("Unable to validate Origin/Referer for session hardening: dataverse site URL is invalid.");
-            return false;
-        }
-        String originHeader = containerRequestContext.getHeaderString("Origin");
-        String refererHeader = containerRequestContext.getHeaderString("Referer");
+        String originHeader = containerRequestContext.getHeaderString(ApiConstants.ORIGIN_HEADER);
+        String refererHeader = containerRequestContext.getHeaderString(ApiConstants.REFERER_HEADER);
         boolean hasOrigin = originHeader != null && !originHeader.isBlank();
         boolean hasReferer = refererHeader != null && !refererHeader.isBlank();
 
         if (!hasOrigin && !hasReferer) {
+            return true;
+        }
+        String allowedOrigin = UrlOriginUtil.toOrigin(systemConfig.getDataverseSiteUrl());
+        if (allowedOrigin == null) {
+            logger.warning("Unable to validate Origin/Referer for session hardening: dataverse site URL is invalid.");
             return false;
         }
-        if (hasOrigin && !allowedOrigin.equals(toOrigin(originHeader))) {
+        if (hasOrigin && !allowedOrigin.equals(UrlOriginUtil.toOrigin(originHeader))) {
             return false;
         }
-        if (hasReferer && !allowedOrigin.equals(toOrigin(refererHeader))) {
+        if (hasReferer && !allowedOrigin.equals(UrlOriginUtil.toOrigin(refererHeader))) {
             return false;
         }
         return true;
@@ -135,41 +152,5 @@ public class AuthFilter implements ContainerRequestFilter {
     private boolean isCsrfTokenValid(ContainerRequestContext containerRequestContext) {
         String requestToken = containerRequestContext.getHeaderString(ApiConstants.CSRF_TOKEN_HEADER);
         return requestToken != null && !requestToken.isBlank() && session.matchesApiCsrfToken(requestToken);
-    }
-
-    /**
-     * Normalizes {@code url} to its origin form ({@code scheme://host[:port]}), lowercasing scheme and host
-     * and omitting default ports. Returns {@code null} if the input is missing scheme or host, or is unparseable.
-     * Exposed for shared use by startup configuration checks.
-     */
-    public static String toOrigin(String url) {
-        if (url == null || url.isBlank()) {
-            return null;
-        }
-        try {
-            URI uri = URI.create(url.trim());
-            if (uri.getScheme() == null || uri.getHost() == null) {
-                return null;
-            }
-            String scheme = uri.getScheme().toLowerCase(Locale.ROOT);
-            String host = uri.getHost().toLowerCase(Locale.ROOT);
-            int port = uri.getPort();
-            if (port == -1 || port == defaultPort(scheme)) {
-                return scheme + "://" + host;
-            }
-            return scheme + "://" + host + ":" + port;
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
-    }
-
-    private static int defaultPort(String scheme) {
-        if ("http".equals(scheme)) {
-            return 80;
-        }
-        if ("https".equals(scheme)) {
-            return 443;
-        }
-        return -1;
     }
 }

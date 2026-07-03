@@ -6274,10 +6274,15 @@ session-cookie API authentication can fetch a CSRF token from this endpoint::
 
     GET /api/users/:csrf-token
 
-This endpoint requires an authenticated session-cookie request and returns a
-token that must be sent in the ``X-Dataverse-CSRF-Token`` header for all
+This endpoint requires a fully-authenticated session-cookie request and returns
+a token that must be sent in the ``X-Dataverse-CSRF-Token`` header for all
 subsequent session-cookie API requests protected by the hardening rules.
-These hardened requests must also include an ``Origin`` or ``Referer`` header.
+(Guest and private-URL preview sessions are exempt from the hardening and are
+not issued a token.) Any ``Origin``
+or ``Referer`` header those requests carry must match the site origin;
+requests carrying neither header are accepted on the strength of the token.
+The response is marked ``Cache-Control: no-store`` — treat the token like a
+session secret.
 
 Example::
 
