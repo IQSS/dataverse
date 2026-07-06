@@ -134,13 +134,13 @@
                 </div>
             </ui:fragment>
             <div class="form-group"
-                jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.termsOfAccess and (hasRestrictedFile or !empty fileDownloadHelper.filesForRequestAccess)}">
+                 jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.disclaimer}">
                 <label jsf:for="fdTermsOfAccess" class="col-sm-3 control-label">
-                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.termsOfsAccess']}
                 </label>
                 <h:outputText id="fdTermsOfAccess" class="col-sm-6"
-                    value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfAccess)}"
-                    escape="false" />
+                              value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfAccess)}"
+                              escape="false" />
             </div>
             <p:fragment rendered="#{guestbookAndTermsPopupRequired and (((termsGuestbookPopupAction != bundle.download) != guestbookPopupRequiredAtDownload) and guestbookPopupRequired)}" id="guestbookUIFragment">
                 <div class="container messagePanel">
