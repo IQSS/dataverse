@@ -1,0 +1,96 @@
+{
+  "pageTitle": "Dataset Templates",
+  "infoAlert": {
+    "title": "Manage Dataset Templates",
+    "text": "Create a template prefilled with metadata fields standard values, such as Author Affiliation, or add instructions in the metadata fields to give depositors more information on what metadata is expected."
+  },
+  "actions": {
+    "create": "Create Dataset Template",
+    "makeDefault": "Make Default",
+    "default": "Default",
+    "view": "View",
+    "copy": "Copy",
+    "edit": "Edit Template",
+    "delete": "Delete",
+    "deleteDisabledTip": "This template is already used by datasets and cannot be deleted."
+  },
+  "filters": {
+    "includeTemplatesFromRoot": "Include Templates from {{root}}"
+  },
+  "table": {
+    "name": "Template Name",
+    "created": "Date Created",
+    "usage": "Usage",
+    "action": "Action",
+    "templateCreatedAt": "Template created at {{alias}}"
+  },
+  "emptyState": {
+    "whyTitle": "Why Use Templates?",
+    "whyBullets": [
+      "Templates are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in.",
+      "Templates can be used to input instructions for those uploading datasets into your dataverse if you have a specific way you want a metadata field to be filled out."
+    ],
+    "howTitle": "How To Use Templates?",
+    "howBullets": [
+      "Templates are created at the dataverse level, can be deleted (so it does not show for future datasets), set to default (not required), and can be copied so you do not have to start over when creating a new template with similar metadata from another template. When a template is deleted, it does not impact the datasets that have used the template already."
+    ],
+    "howNote": "Please note that the ability to choose which metadata fields are hidden, required, or optional is done on the <anchor>General Information</anchor> page for this dataverse.",
+    "footer": "To get started, click on the Create Dataset Template button above. To learn more about templates, visit the <anchor>Dataset Templates</anchor> section of the User Guide."
+  },
+  "deleteModal": {
+    "title": "Delete Template",
+    "message": "Are you sure you want to delete this template? A new dataset will not be able to use this template."
+  },
+  "alerts": {
+    "deleteSuccess": "Template deleted.",
+    "deleteError": "Something went wrong deleting the template. Try again later.",
+    "copySuccess": "Template copied.",
+    "copyError": "Something went wrong copying the template. Try again later."
+  },
+  "copyNamePrefix": "copy {{name}}",
+  "preview": {
+    "title": "Dataset Template Preview",
+    "templateLabel": "Dataset Template",
+    "sections": {
+      "metadata": "Citation Metadata",
+      "terms": "Dataset Terms",
+      "access": "Restricted Files + Terms of Access"
+    },
+    "noMetadata": "No citation metadata is available for this template.",
+    "error": "Something went wrong loading the template preview. Please try again."
+  },
+  "createTemplate": {
+    "pageTitle": "Create Dataset Template",
+    "breadcrumb": "Create",
+    "templateName": "Template Name",
+    "requiredInfo": "Asterisks indicate metadata fields that users will be required to fill out while adding a dataset to this dataverse.",
+    "citationMissing": "Citation metadata is not available for this template.",
+    "saveAddTerms": "Save + Add Terms",
+    "cancel": "Cancel",
+    "alerts": {
+      "success": "Success! Template has been created."
+    },
+    "errors": {
+      "nameRequired": "Please add in a name for the dataset template.",
+      "saveFailed": "Something went wrong creating the template. Try again later."
+    },
+    "customInstructions": {
+      "label": "Custom Instructions:",
+      "none": "(None - click to add)",
+      "addAria": "Add custom instructions",
+      "editAria": "Edit custom instructions",
+      "inputAriaLabel": "Custom instructions",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "terms": {
+      "datasetTermsTitle": "Dataset Terms",
+      "licenseLabel": "License/Data Use Agreement",
+      "restrictedTitle": "Restricted Files + Terms of Access",
+      "requestAccessLabel": "Request Access",
+      "requestAccessHelp": "Enable access request",
+      "termsOfAccessLabel": "Terms of Access for Restricted Files",
+      "dataAccessPlaceLabel": "Data Access Place"
+    }
+  }
+}

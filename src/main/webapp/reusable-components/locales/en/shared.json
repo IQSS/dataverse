@@ -7,6 +7,7 @@
   "files": "Files",
   "page": "Page",
   "asterisksIndicateRequiredFields": "Asterisks indicate required fields",
+  "asterisksRequiredDatasetFields": "Asterisks indicate metadata fields that users will be required to fill out while adding a dataset to this dataverse.",
   "remove": "Remove",
   "add": "Add",
   "yes": "Yes",

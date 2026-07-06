@@ -332,6 +332,9 @@
     },
     "defaultGetDownloadCountError": "Algo salió mal al obtener el conteo de descargas del dataset. Intenta nuevamente más tarde."
   },
+  "reviews": {
+    "title": "Reseñas del dataset"
+  },
   "persistentId": {
     "name": "Identificador persistente",
     "description": "El identificador persistente único del Dataset, ya sea un DOI o Handle"

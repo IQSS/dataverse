@@ -330,6 +330,9 @@
     },
     "defaultGetDownloadCountError": "Something went wrong while getting the dataset download count. Try again later."
   },
+  "reviews": {
+    "title": "Dataset Reviews"
+  },
   "persistentId": {
     "name": "Persistent Identifier",
     "description": "The Dataset's unique persistent identifier, either a DOI or Handle"

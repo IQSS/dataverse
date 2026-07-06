@@ -7,6 +7,7 @@
   "files": "Ficheros",
   "page": "Página",
   "asterisksIndicateRequiredFields": "Los asteriscos indican los campos obligatorios",
+  "asterisksRequiredDatasetFields": "Los asteriscos indican los campos de metadatos que los usuarios deberán completar al agregar un conjunto de datos a este dataverse.",
   "remove": "Eliminar",
   "add": "Agregar",
   "yes": "Sí",

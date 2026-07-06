@@ -1,0 +1,95 @@
+{
+  "pageTitle": "Plantillas de conjuntos de datos",
+  "infoAlert": {
+    "title": "Gestionar plantillas de conjuntos de datos",
+    "text": "Cree una plantilla precargada con valores estándar de campos de metadatos, como Afiliación del autor, o agregue instrucciones en los campos de metadatos para dar a los depositantes más información sobre qué metadatos se esperan."
+  },
+  "actions": {
+    "create": "Crear plantilla de conjunto de datos",
+    "makeDefault": "Hacer predeterminada",
+    "default": "Predeterminada",
+    "view": "Ver",
+    "copy": "Copiar",
+    "edit": "Editar plantilla",
+    "delete": "Eliminar"
+  },
+  "filters": {
+    "includeTemplatesFromRoot": "Incluir plantillas de {{root}}"
+  },
+  "table": {
+    "name": "Nombre de la plantilla",
+    "created": "Fecha de creación",
+    "usage": "Uso",
+    "action": "Acción",
+    "templateCreatedAt": "Plantilla creada en {{alias}}"
+  },
+  "emptyState": {
+    "whyTitle": "¿Por qué usar plantillas?",
+    "whyBullets": [
+      "Las plantillas son útiles cuando tienes varios conjuntos de datos que tienen la misma información en múltiples campos de metadatos y preferirías no tener que seguir escribiéndola manualmente.",
+      "Las plantillas se pueden usar para incluir instrucciones para quienes cargan conjuntos de datos en tu dataverse si tienes una forma específica en la que quieres que se complete un campo de metadatos."
+    ],
+    "howTitle": "Cómo usar plantillas",
+    "howBullets": [
+      "Las plantillas se crean a nivel de dataverse, se pueden eliminar (para que no aparezcan en futuros conjuntos de datos), establecer como predeterminadas (no obligatorias) y copiar para que no tengas que empezar de cero al crear una nueva plantilla con metadatos similares a otra. Cuando se elimina una plantilla, no afecta a los conjuntos de datos que ya la hayan usado."
+    ],
+    "howNote": "Ten en cuenta que la capacidad de elegir qué campos de metadatos están ocultos, son obligatorios u opcionales se configura en la página de <anchor>Información General</anchor> de este dataverse.",
+    "footer": "Para comenzar, haz clic en el botón Crear plantilla de conjunto de datos de arriba. Para obtener más información sobre las plantillas, visita la sección <anchor>Plantillas de conjuntos de datos</anchor> de la Guía del usuario."
+  },
+  "deleteModal": {
+    "title": "Eliminar plantilla",
+    "message": "¿Está seguro de que desea eliminar esta plantilla? Un nuevo conjunto de datos no podrá usar esta plantilla."
+  },
+  "alerts": {
+    "deleteSuccess": "Plantilla eliminada.",
+    "deleteError": "Algo salió mal al eliminar la plantilla. Inténtelo de nuevo más tarde.",
+    "copySuccess": "Plantilla copiada.",
+    "copyError": "Algo salió mal al copiar la plantilla. Inténtelo de nuevo más tarde."
+  },
+  "copyNamePrefix": "copia {{name}}",
+  "preview": {
+    "title": "Vista previa de plantilla de conjunto de datos",
+    "templateLabel": "Plantilla de conjunto de datos",
+    "sections": {
+      "metadata": "Metadatos de citación",
+      "terms": "Términos del conjunto de datos",
+      "access": "Archivos restringidos + términos de acceso"
+    },
+    "noMetadata": "No hay metadatos de citación disponibles para esta plantilla.",
+    "error": "No se pudo cargar la vista previa de la plantilla. Inténtelo de nuevo más tarde."
+  },
+  "createTemplate": {
+    "pageTitle": "Crear plantilla de conjunto de datos",
+    "breadcrumb": "Crear",
+    "templateName": "Nombre de la plantilla",
+    "requiredInfo": "Los asteriscos indican los campos de metadatos que los usuarios deberán completar al agregar un conjunto de datos a este dataverse.",
+    "citationMissing": "Los metadatos de citación no están disponibles para esta plantilla.",
+    "saveAddTerms": "Guardar + agregar términos",
+    "cancel": "Cancelar",
+    "alerts": {
+      "success": "¡Éxito! La plantilla ha sido creada."
+    },
+    "errors": {
+      "nameRequired": "Por favor, añade un nombre para la plantilla del conjunto de datos.",
+      "saveFailed": "Algo salió mal al crear la plantilla. Inténtelo de nuevo más tarde."
+    },
+    "customInstructions": {
+      "label": "Instrucciones personalizadas:",
+      "none": "(Ninguna: haz clic para añadir)",
+      "addAria": "Agregar instrucciones personalizadas",
+      "editAria": "Editar instrucciones personalizadas",
+      "inputAriaLabel": "Instrucciones personalizadas",
+      "save": "Guardar",
+      "cancel": "Cancelar"
+    },
+    "terms": {
+      "datasetTermsTitle": "Términos del conjunto de datos",
+      "licenseLabel": "Licencia/Acuerdo de uso de datos",
+      "restrictedTitle": "Archivos restringidos + términos de acceso",
+      "requestAccessLabel": "Solicitar acceso",
+      "requestAccessHelp": "Habilitar solicitud de acceso",
+      "termsOfAccessLabel": "Términos de acceso para archivos restringidos",
+      "dataAccessPlaceLabel": "Lugar de acceso a los datos"
+    }
+  }
+}
