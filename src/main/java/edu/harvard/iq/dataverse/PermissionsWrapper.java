@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -32,6 +33,9 @@ public class PermissionsWrapper implements java.io.Serializable {
 
     @EJB
     PermissionServiceBean permissionService;
+
+    @EJB
+    DatasetVersionServiceBean  datasetVersionService;
 
     @Inject
     DataverseSession session;
@@ -257,35 +261,42 @@ public class PermissionsWrapper implements java.io.Serializable {
     // PUBLISH DATASET
     public boolean canIssuePublishDatasetCommand(DvObject dvo){
         User u = session.getUser();
-        if (u != null && u.isSuperuser()) {
+        if (dvo == null || u == null || u instanceof GuestUser || !(dvo instanceof Dataset)) {
+            return false; // guests can not publish
+        }
+        if (u.isSuperuser()) {
             return true;
         }
         // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
-        if (dvo.isInstanceofDataset()) {
-            Dataverse dv =((Dataset)dvo).getOwner();
-            if (dv != null) {
-                List<FileMetadata> metadataList = ((Dataset) dvo).getLatestVersion().getFileMetadatas();
-                if (metadataList.size() == 0 && dv.getEffectiveRequiresFilesToPublishDataset()) {
-                    return false;
-                }
-            }
+        Dataset ds = (Dataset)dvo;
+        Dataverse dv = ds.getOwner();
+        if (dv != null && !datasetVersionHasFiles(ds.getLatestVersion()) && dv.getEffectiveRequiresFilesToPublishDataset()) {
+            return false;
         }
-        return canIssueCommand(dvo, PublishDatasetCommand.class);
+        return canIssueCommand(ds, PublishDatasetCommand.class);
     }
 
     // SUBMIT DATASET FOR REVIEW
-    public boolean canIssueSubmitDatasetForReviewCommand(DvObject dvo){
-        // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
-        if (dvo.isInstanceofDataset()) {
-            Dataverse dv =((Dataset)dvo).getOwner();
-            if (dv != null) {
-                List<FileMetadata> metadataList = ((Dataset) dvo).getLatestVersion().getFileMetadatas();
-                if (metadataList.size() == 0 && dv.getEffectiveRequiresFilesToPublishDataset()) {
-                    return false;
-                }
-            }
+    public boolean canIssueSubmitDatasetForReviewCommand(DvObject dvo) {
+        User u = session.getUser();
+        if (dvo == null || u == null || u instanceof GuestUser || !(dvo instanceof Dataset)) {
+            return false; // guests can not submit for review
         }
-        return canIssueCommand(dvo, SubmitDatasetForReviewCommand.class);
+        // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
+        Dataset ds = (Dataset)dvo;
+        Dataverse dv = ds.getOwner();
+        if (dv != null && !datasetVersionHasFiles(ds.getLatestVersion()) && dv.getEffectiveRequiresFilesToPublishDataset()) {
+            return false;
+        }
+        return canIssueCommand(ds, SubmitDatasetForReviewCommand.class);
+    }
+
+    // cache the hasFiles in the ds version for performance reasons
+    private boolean datasetVersionHasFiles(DatasetVersion dsv) {
+        if (dsv.hasFiles() == null) {
+            dsv.setHasFiles(datasetVersionService.hasFiles(dsv.getId()));
+        }
+        return dsv.hasFiles();
     }
 
     // For the dataverse_header fragment (and therefore, most of the pages),
