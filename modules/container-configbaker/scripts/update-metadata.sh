@@ -48,9 +48,11 @@ echo "Waiting for ${DATAVERSE_URL} to become ready in max ${TIMEOUT}."
 wait4x http "${DATAVERSE_URL}/api/info/version" -i 8s -t "$TIMEOUT" --expect-status-code 200 --expect-body-json data.version
 
 # Only update an instance that has been bootstrapped before - on a fresh instance, bootstrap.sh
-# loads the metadata blocks anyway, so there is nothing to update yet.
-echo "Waiting for ${DATAVERSE_URL} to be bootstrapped in max ${TIMEOUT}."
-if ! wait4x http "${DATAVERSE_URL}/api/metadatablocks" -i 8s -t "$TIMEOUT" --expect-status-code 200 --expect-body-json data.0; then
+# loads the metadata blocks anyway, so there is nothing to update (and waiting for the
+# concurrently running bootstrap here would only reload the same TSV files a second time).
+# Same check as in bootstrap.sh.
+BLOCK_COUNT=$(curl -sSf "${DATAVERSE_URL}/api/metadatablocks" | jq ".data | length")
+if [[ $BLOCK_COUNT -eq 0 ]]; then
   echo "Your instance has not been bootstrapped (yet?), skipping metadata update."
   exit 0
 fi

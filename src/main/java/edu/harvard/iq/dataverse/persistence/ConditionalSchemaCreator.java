@@ -1,16 +1,20 @@
 package edu.harvard.iq.dataverse.persistence;
 
-import org.eclipse.persistence.descriptors.ClassDescriptor;
-import org.eclipse.persistence.internal.helper.DatabaseTable;
 import org.eclipse.persistence.queries.DataReadQuery;
+import org.eclipse.persistence.sequencing.Sequence;
+import org.eclipse.persistence.sequencing.TableSequence;
 import org.eclipse.persistence.sessions.DatabaseSession;
 import org.eclipse.persistence.sessions.Session;
 import org.eclipse.persistence.sessions.SessionEvent;
 import org.eclipse.persistence.sessions.SessionEventAdapter;
+import org.eclipse.persistence.tools.schemaframework.DefaultTableGenerator;
 import org.eclipse.persistence.tools.schemaframework.SchemaManager;
+import org.eclipse.persistence.tools.schemaframework.TableCreator;
+import org.eclipse.persistence.tools.schemaframework.TableDefinition;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -46,25 +50,37 @@ public class ConditionalSchemaCreator extends SessionEventAdapter {
         missingTables.removeAll(getExistingTables(session));
 
         if (missingTables.isEmpty()) {
-            logger.fine("All entity tables present in the database, skipping DDL generation.");
+            logger.fine("All expected tables present in the database, skipping DDL generation.");
             return;
         }
 
-        logger.info("Found " + missingTables.size() + " entity table(s) missing from the database "
-            + "(empty database or newly added entities). Creating missing tables, indexes and sequences...");
+        logger.info("Found " + missingTables.size() + " table(s) missing from the database "
+            + "(empty database or newly added entities/mappings). Creating missing tables, indexes and sequences...");
         SchemaManager schemaManager = new SchemaManager((DatabaseSession) session);
         schemaManager.createDefaultTables(true);
         logger.info("Schema creation done.");
     }
 
     /**
-     * All table names (lowercased) the entity mappings of this persistence unit expect to exist.
+     * All table names (lowercased) the schema framework would create for this persistence unit:
+     * entity (and secondary) tables, relation tables of {@code @ManyToMany} mappings, collection
+     * tables of {@code @ElementCollection} mappings, and the sequence table (used by
+     * {@code GenerationType.AUTO}). Computed with the same {@link DefaultTableGenerator} that
+     * {@link SchemaManager#createDefaultTables} uses, so detection and creation stay consistent.
      */
     private Set<String> getExpectedTables(Session session) {
         Set<String> expectedTables = new HashSet<>();
-        for (ClassDescriptor descriptor : session.getDescriptors().values()) {
-            for (DatabaseTable table : descriptor.getTables()) {
-                expectedTables.add(table.getName().toLowerCase());
+        TableCreator tableCreator =
+            new DefaultTableGenerator(session.getProject(), true).generateDefaultTableCreator();
+        for (TableDefinition tableDefinition : tableCreator.getTableDefinitions()) {
+            expectedTables.add(tableDefinition.getName().toLowerCase(Locale.ROOT));
+        }
+        // The sequence table is not part of the table definitions above - createDefaultTables
+        // creates it separately (see TableCreator.createTables), so expect it separately as well.
+        if (session.getProject().usesSequencing()) {
+            Sequence sequence = session.getLogin().getDefaultSequence();
+            if (sequence instanceof TableSequence tableSequence) {
+                expectedTables.add(tableSequence.getTableName().toLowerCase(Locale.ROOT));
             }
         }
         return expectedTables;

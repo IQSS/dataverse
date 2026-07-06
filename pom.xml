@@ -1371,6 +1371,11 @@
             <id>frd</id>
             <properties>
                 <skipUnitTests>true</skipUnitTests>
+                <!-- Also skip compiling tests - they are never run in a redeploy cycle. -->
+                <maven.test.skip>true</maven.test.skip>
+                <!-- Name of the running application container to redeploy into
+                     (see docker-compose-dev.yml). Override with -Dfrd.container=... -->
+                <frd.container>dev_dataverse</frd.container>
             </properties>
             <build>
                 <plugins>
@@ -1423,7 +1428,7 @@
                                     <executable>docker</executable>
                                     <arguments>
                                         <argument>exec</argument>
-                                        <argument>dev_dataverse</argument>
+                                        <argument>${frd.container}</argument>
                                         <argument>redeploy.sh</argument>
                                     </arguments>
                                 </configuration>

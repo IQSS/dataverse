@@ -17,5 +17,8 @@ trap 'rm -f "${PASSWORD_FILE}"' EXIT
 echo "AS_ADMIN_PASSWORD=${PAYARA_ADMIN_PASSWORD}" > "${PASSWORD_FILE}"
 
 echo "Redeploying application from ${DEPLOY_DIR}/dataverse..."
+# Include ${DEPLOY_PROPS} (unquoted, may hold multiple options) so the redeploy uses the same
+# deployment options as the initial deployment, see init_1_generate_deploy_commands.sh.
+# shellcheck disable=SC2086
 "${PAYARA_DIR}/bin/asadmin" --user="${PAYARA_ADMIN_USER}" --passwordfile="${PASSWORD_FILE}" \
-    deploy --force --upload=false "${DEPLOY_DIR}/dataverse"
+    deploy ${DEPLOY_PROPS:-} --force --upload=false "${DEPLOY_DIR}/dataverse"
