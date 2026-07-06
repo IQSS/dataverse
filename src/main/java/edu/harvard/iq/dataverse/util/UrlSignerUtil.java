@@ -111,29 +111,45 @@ public class UrlSignerUtil {
     }
 
     /**
-     * Removes the reserved signing parameters from the query, preserving the exact bytes of the path
-     * and of every other parameter (unlike URIBuilder, which would re-encode and break the MAC).
+     * Removes the reserved signing parameters from the query, preserving the exact bytes of the path,
+     * of every other parameter - including empty segments such as {@code ?&a=b} or {@code a=b&&} - and
+     * of any fragment (unlike URIBuilder, which would re-encode and break the MAC). Note that while
+     * fragments are preserved byte-for-byte, a fragment is never sent to the server, so a
+     * fragment-bearing URL cannot produce a signed URL that validates - as was the case before 6.10.
      */
     static String stripReservedParameters(String baseUrl) {
-        int queryStart = baseUrl.indexOf('?');
+        // Split off the fragment first: everything from the first '#' on is the fragment (a '?'
+        // inside it is not a query) and survives the query surgery byte-for-byte, even when the
+        // fragment is attached to a reserved parameter that gets stripped.
+        String fragment = "";
+        String prefix = baseUrl;
+        int fragmentStart = baseUrl.indexOf('#');
+        if (fragmentStart >= 0) {
+            fragment = baseUrl.substring(fragmentStart);
+            prefix = baseUrl.substring(0, fragmentStart);
+        }
+        int queryStart = prefix.indexOf('?');
         if (queryStart < 0) {
             return baseUrl;
         }
-        String path = baseUrl.substring(0, queryStart);
-        String query = baseUrl.substring(queryStart + 1);
+        String path = prefix.substring(0, queryStart);
+        String query = prefix.substring(queryStart + 1);
         StringBuilder kept = new StringBuilder();
-        for (String pair : query.split("&")) {
+        boolean anyKept = false;
+        // limit -1 so empty segments (leading '&', '&&', trailing '&') are preserved, not collapsed
+        for (String pair : query.split("&", -1)) {
             int equals = pair.indexOf('=');
             String name = (equals < 0) ? pair : pair.substring(0, equals);
             if (reservedParameters.contains(name)) {
                 continue;
             }
-            if (kept.length() > 0) {
+            if (anyKept) {
                 kept.append('&');
             }
             kept.append(pair);
+            anyKept = true;
         }
-        return kept.length() > 0 ? path + "?" + kept : path;
+        return anyKept ? path + "?" + kept + fragment : path + fragment;
     }
 
     /**

@@ -3350,15 +3350,17 @@ are time limited and only allow the action of the API call in the URL. See :ref:
 
 The key used to sign a URL is created from the API token of the creating user plus a signing-secret provided by an administrator.
 **A non-empty signing-secret is required to request signed URLs through the API.** If it is not configured, the
-``/api/admin/requestSignedUrl`` endpoint (see :ref:`api-native-signed-url`) returns an error instead of issuing a
-weakly-signed URL. (The setting otherwise defaults to an empty string.) A non-empty signing-secret makes it impossible for
+``/api/admin/requestSignedUrl`` endpoint (see :ref:`api-native-signed-url`) and the ``POST`` guestbook-response download
+endpoints under ``/api/access`` return an error instead of issuing a weakly-signed URL, and internally generated links
+(external tool callbacks, Globus transfers, the permissions-history CSV downloads) are sent unsigned or omitted, with a
+warning logged. (The setting otherwise defaults to an empty string.) A non-empty signing-secret makes it impossible for
 someone who only knows an API token to forge signed URLs, and provides extra security by making the overall signing key longer.
 
 **WARNING**:
 *Since the signing-secret is sensitive, you should treat it like a password.*
 *See* :ref:`secure-password-storage` *to learn about ways to safeguard it.*
 
-Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_SIGNATURE_SECRET`` (although you shouldn't use environment variables for passwords) .
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_SIGNING_SECRET`` (although you shouldn't use environment variables for passwords) .
 
 .. _dataverse.api.allow-incomplete-metadata:
 

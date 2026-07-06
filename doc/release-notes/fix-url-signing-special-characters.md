@@ -7,7 +7,7 @@ for URLs whose query contained special characters — most notably persistent ID
 non-ASCII characters. In 6.10 the signing step began re-encoding/normalizing the URL (for example
 percent-encoding `:` and `/`) before computing the signature, while the request is validated against
 the URL the caller actually presents back. The re-encoded signature no longer matched, so validation
-failed with authentication / "signature does not match" errors.
+failed with 401 "Bad signed URL" authentication errors.
 
 Signing no longer re-encodes the URL: it is signed exactly as provided, with only the reserved
 signing parameters (`until`, `user`, `method`, `token`, `key`, `signed`) stripped out; the rest of
@@ -27,11 +27,15 @@ signed using only the user's API token (or, for a guest, a value derived from th
 is too weak to be a signing key. A non-empty `dataverse.api.signing-secret` is now required wherever
 URLs are signed with a key based on a user's API token:
 
-- The endpoints that issue a signed URL on request - `/api/admin/requestSignedUrl` and the
-  guestbook-response file download (`POST /api/access/datafile/{id}`) - return an error instead of
-  issuing a weakly-signed URL.
-- Signed callbacks and links built internally (external tool launches, Globus transfers, the
-  permission-history CSV links) are sent unsigned, with a warning logged, rather than weakly signed.
+- The endpoints that issue a signed URL on request - `/api/admin/requestSignedUrl` and the `POST`
+  guestbook-response download endpoints under `/api/access` (`datafile/{id}`, `datafiles/{ids}`,
+  `dataset/{id}` and `dataset/{id}/versions/{versionId}`) - return an error instead of issuing a
+  weakly-signed URL.
+- Signed callbacks built internally (external tool launches, Globus transfers) are sent unsigned,
+  with a warning logged, rather than weakly signed; such unsigned URLs cannot be used to access
+  draft datasets or restricted files.
+- The permissions-history CSV download links on the permission management pages are not offered
+  (a warning is logged).
 
 Remote and Globus overlay stores are unaffected: they sign with their own per-store secret key, not
 `dataverse.api.signing-secret`.

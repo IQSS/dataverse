@@ -244,6 +244,30 @@ public class ExternalToolHandlerTest {
 
     @Test
     @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
+    public void testGetToolUrlWithAllowedApiCallsNoSigningSecret() {
+        // Without dataverse.api.signing-secret configured, the URL must be sent unsigned (no signing
+        // parameters at all) instead of weakly signed - and no IllegalStateException may escape.
+        Dataset ds = new Dataset();
+        ds.setId(1L);
+        ApiToken at = new ApiToken();
+        AuthenticatedUser au = new AuthenticatedUser();
+        au.setUserIdentifier("dataverseAdmin");
+        at.setAuthenticatedUser(au);
+        at.setTokenString("1234");
+        ExternalTool et = ExternalToolServiceBeanTest.getAllowedApiCallsTool();
+        URLTokenUtil externalToolHandler = new ExternalToolHandler(et, ds, at, null);
+        JsonObject jo = externalToolHandler
+                .createPostBody(externalToolHandler.getParams(JsonUtil.getJsonObject(et.getToolParameters())), JsonUtil.getJsonArray(et.getAllowedApiCalls())).build();
+        String signedUrl = jo.getJsonArray("signedUrls").getJsonObject(0).getString("signedUrl");
+        assertEquals("https://librascholar.org/api/v1/datasets/1", signedUrl);
+        assertFalse(signedUrl.contains("until="));
+        assertFalse(signedUrl.contains("user="));
+        assertFalse(signedUrl.contains("method="));
+        assertFalse(signedUrl.contains("token="));
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
     public void testDatasetConfigureTool() {
         List<ExternalToolType> externalToolTypes = new ArrayList<>();
         var externalToolType = new ExternalToolType();

@@ -408,6 +408,10 @@ public class Access extends AbstractApiBean {
     public Response datafileWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId,
                                                   @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, String jsonBody) {
 
+        Response requireSecretError = requireSigningSecretForSignedUrl();
+        if (requireSecretError != null) {
+            return requireSecretError;
+        }
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         fileId = normalizeFileId(fileId, req);
         return processDatafileWithGuestbookResponse(crc, req, headers, fileId, uriInfo, gbrecs, jsonBody);
@@ -440,6 +444,22 @@ public class Access extends AbstractApiBean {
     // for bundle arg list
     private List<String> getGuestbookIdFromDatafile(DataFile df) {
          return df != null && df.getOwner() != null && df.getOwner().getGuestbook() != null ? List.of(df.getOwner().getGuestbook().getId().toString()) : List.of();
+    }
+
+    // Gate for the endpoints whose outcome is a signed download URL. It must run before
+    // processDatafileWithGuestbookResponse so no guestbook-response or MakeDataCount records are
+    // persisted for a download URL that is never issued - but it must NOT sit inside that method,
+    // which is also called purely for its guestbook side effects (with the response discarded) by
+    // endpoints that never issue signed URLs. Without the secret the key would be only the user's
+    // API token (or, for a guest, a guessable value derived from the URL), which is too weak. The
+    // response is reachable by unauthenticated users, so the message stays generic and the
+    // actionable detail goes to the server log. Mirrors Admin.getSignedUrl.
+    private Response requireSigningSecretForSignedUrl() {
+        if (UrlSignerUtil.isSigningSecretConfigured()) {
+            return null;
+        }
+        logger.warning("Cannot issue a signed download URL: no signing secret configured. Please set the dataverse.api.signing-secret JVM option.");
+        return error(INTERNAL_SERVER_ERROR, "Signed URLs are not available on this server.");
     }
 
     // Process the guestbook response from JSON and return a signedUrl to the matching GET call
@@ -528,11 +548,13 @@ public class Access extends AbstractApiBean {
     }
 
     private Response returnSignedUrl(ContainerRequestContext crc, UriInfo uriInfo, User user, String id, String gbrids) {
-        // Require a signing secret: without it the key is only the user's API token (or, for a guest,
-        // a guessable value derived from the URL), which is too weak. Mirrors Admin.getSignedUrl.
+        // The signed-URL endpoints already check this before any guestbook side effects (see
+        // requireSigningSecretForSignedUrl). This check protects the callers that invoke
+        // processDatafileWithGuestbookResponse only for its guestbook side effects and discard this
+        // response: on a server without a signing secret they must not trip the IllegalStateException
+        // in signUrlWithApiKey below. No warning is logged here - for those callers this is routine.
         if (!UrlSignerUtil.isSigningSecretConfigured()) {
-            return error(INTERNAL_SERVER_ERROR,
-                    "Requesting signed URLs requires a signing secret to be configured. Please set the dataverse.api.signing-secret JVM option.");
+            return error(INTERNAL_SERVER_ERROR, "Signed URLs are not available on this server.");
         }
         // Create the signed URL
         String userIdentifier = null;
@@ -870,6 +892,10 @@ public class Access extends AbstractApiBean {
     @Path("dataset/{id}")
     @Produces({"application/zip"})
     public Response downloadAllFromLatestWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("id") String datasetIdOrPersistentId, @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, String jsonBody) throws WebApplicationException {
+        Response requireSecretError = requireSigningSecretForSignedUrl();
+        if (requireSecretError != null) {
+            return requireSecretError;
+        }
         try {
             User user = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(user);
@@ -932,6 +958,10 @@ public class Access extends AbstractApiBean {
     public Response downloadAllFromVersionWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("id") String datasetIdOrPersistentId, @PathParam("versionId") String versionId,
                                                                 @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, String jsonBody,
                                                                 @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+        Response requireSecretError = requireSigningSecretForSignedUrl();
+        if (requireSecretError != null) {
+            return requireSecretError;
+        }
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             DatasetVersion dsv = getDatasetVersionFromVersion(crc, datasetIdOrPersistentId, versionId);
@@ -1016,6 +1046,10 @@ public class Access extends AbstractApiBean {
     public Response datafilesWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("fileIds") String fileIds, @QueryParam("gbrecs") boolean gbrecs,
                                                    @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, String jsonBody) throws WebApplicationException {
 
+        Response requireSecretError = requireSigningSecretForSignedUrl();
+        if (requireSecretError != null) {
+            return requireSecretError;
+        }
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         return processDatafileWithGuestbookResponse(crc, req, headers, fileIds, uriInfo, gbrecs, jsonBody);
     }

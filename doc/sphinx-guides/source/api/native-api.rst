@@ -9094,8 +9094,9 @@ A curl example using allowing access to a dataset's metadata
 
   curl -H "X-Dataverse-key:$API_KEY" -H 'Content-Type:application/json' -d "$JSON" "$SERVER_URL/api/admin/requestSignedUrl"
 
-Please see :ref:`dataverse.api.signing-secret` for the configuration option to add a shared secret, enabling extra
-security.
+Note that a non-empty :ref:`dataverse.api.signing-secret` must be configured on the server for this endpoint to work:
+the key used to sign the URL is created from the user's API token plus the signing-secret, and without the secret the
+endpoint returns an error instead of issuing a weakly-signed URL.
 
 .. _send-feedback-admin:
 

@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
 import org.junit.jupiter.api.Test;
@@ -10,8 +13,10 @@ import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@LocalJvmSettings
 public class UrlSignerUtilTest {
 
     @Test
@@ -150,5 +155,90 @@ public class UrlSignerUtilTest {
         String reEncoded = signedUrl.replace("doi:10.5072/FK2/ABC123", "doi%3A10.5072%2FFK2%2FABC123");
         assertFalse(UrlSignerUtil.isValidUrl(reEncoded, user, method, key),
                 "a re-encoded variant must not validate (byte-exact contract)");
+    }
+
+    @Test
+    public void testStripReservedParametersEdgeCases() {
+        // Empty query segments are part of the byte-exact contract and must survive unchanged.
+        assertEquals("http://x/api?&a=b", UrlSignerUtil.stripReservedParameters("http://x/api?&a=b"));
+        assertEquals("http://x/api?a=1&", UrlSignerUtil.stripReservedParameters("http://x/api?a=1&"));
+        assertEquals("http://x/api?a=1&&b=2", UrlSignerUtil.stripReservedParameters("http://x/api?a=1&&b=2"));
+        assertEquals("http://x/api?a=b&&", UrlSignerUtil.stripReservedParameters("http://x/api?a=b&&"));
+        assertEquals("http://x/api?", UrlSignerUtil.stripReservedParameters("http://x/api?"));
+
+        // A reserved name with no '=' is still stripped.
+        assertEquals("http://x/api", UrlSignerUtil.stripReservedParameters("http://x/api?until"));
+        assertEquals("http://x/api?a=1", UrlSignerUtil.stripReservedParameters("http://x/api?until&a=1"));
+
+        // Fragments survive byte-for-byte, even when attached to a stripped reserved parameter.
+        assertEquals("http://x/api?a=1#frag", UrlSignerUtil.stripReservedParameters("http://x/api?a=1#frag"));
+        assertEquals("http://x/api?a=1#frag", UrlSignerUtil.stripReservedParameters("http://x/api?a=1&token=y#frag"));
+        assertEquals("http://x/api#frag", UrlSignerUtil.stripReservedParameters("http://x/api?token=y#frag"));
+
+        // A '?' inside the fragment is not a query: nothing to strip, returned unchanged.
+        assertEquals("http://x/api#frag?until=1", UrlSignerUtil.stripReservedParameters("http://x/api#frag?until=1"));
+
+        // Non-reserved names that merely contain a reserved name are kept.
+        assertEquals("http://x/api?tokens=1&xtoken=2&user2=3",
+                UrlSignerUtil.stripReservedParameters("http://x/api?tokens=1&xtoken=2&user2=3"));
+    }
+
+    @Test
+    public void testSignAndValidateEmptyQuerySegments() {
+        // Degenerate-but-legal query shapes must round-trip byte-exactly through sign + validate,
+        // so suffix-reconstructing clients (signed.substring(base.length())) keep working.
+        final String user = "Alice";
+        final String method = "GET";
+        final String key = "abracadabara open sesame";
+        String[] baseUrls = new String[] {
+            "http://localhost:8080/api/v1/x?&a=b",
+            "http://localhost:8080/api/v1/x?a=1&",
+            "http://localhost:8080/api/v1/x?a=1&&b=2",
+        };
+        for (String baseUrl : baseUrls) {
+            String signedUrl = UrlSignerUtil.signUrl(baseUrl, 1000, user, method, key);
+            assertTrue(signedUrl.startsWith(baseUrl + "&"),
+                    "base URL must be preserved byte-for-byte: " + signedUrl);
+            assertTrue(UrlSignerUtil.isValidUrl(signedUrl, user, method, key),
+                    "signed URL should validate when used verbatim: " + signedUrl);
+        }
+    }
+
+    @Test
+    public void testIsSigningSecretConfiguredWithoutSecret() {
+        assertFalse(UrlSignerUtil.isSigningSecretConfigured());
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = "test-only-signing-secret")
+    public void testIsSigningSecretConfiguredWithSecret() {
+        assertTrue(UrlSignerUtil.isSigningSecretConfigured());
+    }
+
+    @Test
+    public void testSignUrlWithApiKeyRequiresSecret() {
+        // Without a signing secret the API-token-based signing entry point must refuse to produce
+        // a weakly-keyed URL.
+        assertThrows(IllegalStateException.class,
+                () -> UrlSignerUtil.signUrlWithApiKey("http://localhost:8080/api/test1", 1000, "Alice", "GET", "some-api-token"));
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = "test-only-signing-secret")
+    public void testSignUrlWithApiKeySignsWithSecretPrependedToApiKey() {
+        final String baseUrl = "http://localhost:8080/api/v1/datasets/:persistentId?persistentId=doi:10.5072/FK2/ABC123";
+        final String user = "Alice";
+        final String method = "GET";
+        final String apiKey = "some-api-token";
+
+        String signedUrl = UrlSignerUtil.signUrlWithApiKey(baseUrl, 1000, user, method, apiKey);
+
+        // SignedUrlAuthMechanism reconstructs the key as <signing-secret> + <api token>; the
+        // signature must validate against exactly that combination and nothing weaker.
+        assertTrue(UrlSignerUtil.isValidUrl(signedUrl, user, method, "test-only-signing-secret" + apiKey));
+        assertFalse(UrlSignerUtil.isValidUrl(signedUrl, user, method, apiKey),
+                "the API token alone must not validate a URL signed with the secret");
+        assertFalse(UrlSignerUtil.isValidUrl(signedUrl, user, method, "test-only-signing-secret"),
+                "the secret alone must not validate a URL signed with secret+token");
     }
 }

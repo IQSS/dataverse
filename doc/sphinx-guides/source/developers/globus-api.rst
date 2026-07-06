@@ -78,6 +78,7 @@ Note that while Dataverse will not add files that violate the size or quota rule
 they intend to transfer before submitting a transfer request to Globus.
 
 The getDatasetMetadata and getFileListing URLs are just signed versions of the standard Dataset metadata and file listing API calls. The other two are Globus specific.
+Note that these URLs are only signed when a non-empty :ref:`dataverse.api.signing-secret` is configured on the Dataverse installation; without it, they are sent unsigned (a warning is logged) and cannot be used to access draft datasets or restricted files.
 
 If called for a dataset using a store that is configured with a remote Globus endpoint(s), the return response is similar but the response includes a
 the "managed" parameter will be false, the "endpoint" parameter is replaced with a JSON array of "referenceEndpointsWithPaths" and the
@@ -112,7 +113,7 @@ Once the user identifies which files are to be added, the requestGlobusTransferP
 
   curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:application/json" -X POST  -d "$JSON_DATA" "$SERVER_URL/api/datasets/:persistentId/requestGlobusUploadPaths?persistentId=$PERSISTENT_IDENTIFIER"
 
-Note that when using the dataverse-globus app or the return from the previous call, the URL for this call will be signed and no API_TOKEN is needed. 
+Note that when using the dataverse-globus app or the return from the previous call, the URL for this call will be signed (provided a non-empty :ref:`dataverse.api.signing-secret` is configured, as noted above) and no API_TOKEN is needed.
   
 In the managed case, the JSON body sent must include the id of the Globus user that will perform the transfer and the number of files that will be transferred:
 

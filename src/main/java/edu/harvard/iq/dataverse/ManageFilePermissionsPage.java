@@ -639,8 +639,11 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                     key = apiToken.getTokenString();
                 }
             }
-            if (key != null && UrlSignerUtil.isSigningSecretConfigured()) {
-                return UrlSignerUtil.signUrlWithApiKey(fullApiPath, 10, userId, "GET", key);
+            if (key != null) {
+                if (UrlSignerUtil.isSigningSecretConfigured()) {
+                    return UrlSignerUtil.signUrlWithApiKey(fullApiPath, 10, userId, "GET", key);
+                }
+                logger.warning("Cannot sign the permissions-history CSV link: no signing secret configured (dataverse.api.signing-secret). The download link will not be shown.");
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error generating signed URL for permissions history CSV: " + e.getMessage(), e);
