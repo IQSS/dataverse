@@ -48,13 +48,17 @@ extensions = [
     'sphinx_tabs.tabs',
     'sphinx_substitution_extensions',
     'sphinx_reredirects',
+    'sphinx_design'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".md": "markdown",
+}
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
@@ -71,7 +75,7 @@ copyright = u'%d, The President & Fellows of Harvard College' % datetime.now().y
 # built documents.
 #
 # The short X.Y version.
-version = '6.10.1'
+version = '6.11'
 # The full version, including alpha/beta/rc tags.
 release = version
 

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -43,13 +44,17 @@ import jakarta.inject.Named;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.component.UIInput;
 import org.primefaces.model.DualListModel;
@@ -122,6 +127,8 @@ public class DataversePage implements java.io.Serializable {
     PidProviderFactoryBean pidProviderFactoryBean;
     @EJB
     CacheFactoryBean cacheFactory;
+    @EJB
+    RoleAssigneeServiceBean roleAssigneeService;
 
     private Dataverse dataverse = new Dataverse();  
 
@@ -141,6 +148,7 @@ public class DataversePage implements java.io.Serializable {
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
     private List<ControlledVocabularyValue> selectedSubjects;
+    private List<RoleAssignee> locallyFAIRRoleAssigneesList;
 
     public List<ControlledVocabularyValue> getSelectedSubjects() {
         return selectedSubjects;
@@ -340,13 +348,17 @@ public class DataversePage implements java.io.Serializable {
                 }
             }
 
-            // check if dv exists and user has permission
-            if (dataverse == null) {
-                return permissionsWrapper.notFound();
-            }
-            if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
-                // the permission lookup above should probably be moved into the permissionsWrapper -- L.A. 5.7
-                return permissionsWrapper.notAuthorized();
+            // Check permissions for unreleased dataverse and Locally FAIR permissions for released dataverses
+            boolean releasedAndCanView = dataverse.isReleased() && (!dataverse.isLocallyFAIR() || permissionsWrapper
+                    .hasLocallyFAIRAccess(dvRequestService.getDataverseRequest(), dataverse));
+
+            if (!releasedAndCanView && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
+                // Return notFound for FAIR-restricted content, notAuthorized otherwise
+                if (dataverse.isLocallyFAIR()) {
+                    return permissionsWrapper.notFound();
+                } else {
+                    return permissionsWrapper.notAuthorized();
+                }
             }
 
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
@@ -1346,6 +1358,20 @@ public class DataversePage implements java.io.Serializable {
             }
         }
     }
+    /**
+     * Returns role assignees matching the search query, while excluding any assignees
+     * that are already associated with this dataverse through locally FAIR role assignment.
+     *
+     * @param query search text used to filter possible role assignees
+     * @return matching role assignees that can still be added to the dataverse
+     */
+    public List<RoleAssignee> completeRoleAssignee( String query ) {
+        List<RoleAssignee> existingAssignees = dataverse.getLocallyFAIRRoleAssigneeIdentifiers().stream()
+                .map(id -> roleAssigneeService.getRoleAssignee(id))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        return roleAssigneeService.filterRoleAssignees(query, dataverse, existingAssignees);
+    }
 
     private void saveInputLevels(List<DataverseFieldTypeInputLevel> listDFTIL, DatasetFieldType dsft, Dataverse dataverse) {
         // If the field already has an input level, update it
@@ -1367,5 +1393,23 @@ public class DataversePage implements java.io.Serializable {
                 dsft.getLocalDisplayOnCreate()
             ));
         }
+    }
+    
+    /* Get/set methods to keep the local locallyFARIRoleAssigneesList in sync with the Dataverse's locallyFAIRRoleAssigneeIdentifiers set.
+     */
+    public List<RoleAssignee> getLocallyFAIRRoleAssigneesList() {
+        if (locallyFAIRRoleAssigneesList == null) {
+            locallyFAIRRoleAssigneesList = dataverse.getLocallyFAIRRoleAssigneeIdentifiers().stream()
+                    .map(roleAssigneeService::getRoleAssignee)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        }
+        return locallyFAIRRoleAssigneesList;
+    }
+
+    public void setLocallyFAIRRoleAssigneesList(List<RoleAssignee> assignees) {
+        locallyFAIRRoleAssigneesList = (assignees == null) ? Collections.emptyList() : assignees;
+        dataverse.setLocallyFAIRRoleAssigneeIdentifiers(
+                locallyFAIRRoleAssigneesList.stream().map(RoleAssignee::getIdentifier).collect(Collectors.toSet()));
     }
 }
