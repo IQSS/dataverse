@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import io.restassured.RestAssured;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import jakarta.json.Json;
@@ -47,7 +48,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class DatasetVersionTreeKeysetIT {
 
     private static final String DRAFT = ":draft";
-    private static final String TEST_FILE = "src/test/java/edu/harvard/iq/dataverse/util/irclog.tsv";
 
     @BeforeAll
     public static void setUp() {
@@ -133,7 +133,11 @@ public class DatasetVersionTreeKeysetIT {
         upload(datasetId, "img-002.png", "media", apiToken);
         upload(datasetId, "img-003.png", "media", apiToken);
 
-        // Apply the access-state sentinels.
+        // Apply the access-state sentinels. Embargo creation requires the
+        // installation-level opt-in; ITs set it themselves (same pattern as
+        // FilesIT) because a fresh CI stack ships without it.
+        UtilIT.setSetting(SettingsServiceBean.Key.MaxEmbargoDurationInMonths, "-1")
+                .then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.restrictFile(restrictedId1.toString(), true, apiToken)
                 .then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.restrictFile(restrictedId2.toString(), true, apiToken)
@@ -157,10 +161,28 @@ public class DatasetVersionTreeKeysetIT {
         if (directoryLabel != null) {
             metadata.add("directoryLabel", directoryLabel);
         }
-        Response response = UtilIT.uploadFileViaNative(datasetId.toString(), TEST_FILE,
-                metadata.build(), apiToken);
+        Response response = UtilIT.uploadFileViaNative(datasetId.toString(),
+                uniqueContentFile(label, directoryLabel), metadata.build(), apiToken);
         response.then().assertThat().statusCode(OK.getStatusCode());
         return JsonPath.from(response.asString()).getInt("data.files[0].dataFile.id");
+    }
+
+    /**
+     * Every fixture file gets unique bytes: the server rejects a second
+     * upload with the same content as an existing file in the dataset
+     * (400, "This file has the same content as ..."), so reusing one
+     * source file for the whole tree stopped working.
+     */
+    private static String uniqueContentFile(String label, String directoryLabel) {
+        try {
+            java.nio.file.Path tmp = java.nio.file.Files.createTempFile("tree-fixture-", ".txt");
+            java.nio.file.Files.writeString(tmp, "tree fixture " + directoryLabel + "/" + label
+                    + " " + java.util.UUID.randomUUID());
+            tmp.toFile().deleteOnExit();
+            return tmp.toString();
+        } catch (java.io.IOException e) {
+            throw new java.io.UncheckedIOException(e);
+        }
     }
 
     // ---- Oracle / paged-walk plumbing -----------------------------------

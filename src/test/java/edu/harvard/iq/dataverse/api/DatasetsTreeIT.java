@@ -65,29 +65,42 @@ public class DatasetsTreeIT {
         createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
 
-        upload(datasetId, "src/test/java/edu/harvard/iq/dataverse/util/irclog.tsv",
-                "root.txt", null, apiToken);
-        upload(datasetId, "src/test/java/edu/harvard/iq/dataverse/util/irclog.tsv",
-                "a.txt", "data", apiToken);
-        upload(datasetId, "src/test/java/edu/harvard/iq/dataverse/util/irclog.tsv",
-                "b.txt", "data", apiToken);
-        upload(datasetId, "src/test/java/edu/harvard/iq/dataverse/util/irclog.tsv",
-                "c.txt", "data/sub", apiToken);
-        upload(datasetId, "src/test/java/edu/harvard/iq/dataverse/util/irclog.tsv",
-                "readme.md", "docs", apiToken);
+        upload(datasetId, "root.txt", null, apiToken);
+        upload(datasetId, "a.txt", "data", apiToken);
+        upload(datasetId, "b.txt", "data", apiToken);
+        upload(datasetId, "c.txt", "data/sub", apiToken);
+        upload(datasetId, "readme.md", "docs", apiToken);
 
         return datasetId;
     }
 
-    private static void upload(Integer datasetId, String pathToFile, String label,
+    private static void upload(Integer datasetId, String label,
                                String directoryLabel, String apiToken) {
         JsonObjectBuilder metadata = Json.createObjectBuilder().add("label", label);
         if (directoryLabel != null) {
             metadata.add("directoryLabel", directoryLabel);
         }
-        Response response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile,
-                metadata.build(), apiToken);
+        Response response = UtilIT.uploadFileViaNative(datasetId.toString(),
+                uniqueContentFile(label, directoryLabel), metadata.build(), apiToken);
         response.then().assertThat().statusCode(OK.getStatusCode());
+    }
+
+    /**
+     * Every fixture file gets unique bytes: the server rejects a second
+     * upload with the same content as an existing file in the dataset
+     * (400, "This file has the same content as ..."), so reusing one
+     * source file for the whole tree stopped working.
+     */
+    private static String uniqueContentFile(String label, String directoryLabel) {
+        try {
+            java.nio.file.Path tmp = java.nio.file.Files.createTempFile("tree-fixture-", ".txt");
+            java.nio.file.Files.writeString(tmp, "tree fixture " + directoryLabel + "/" + label
+                    + " " + java.util.UUID.randomUUID());
+            tmp.toFile().deleteOnExit();
+            return tmp.toString();
+        } catch (java.io.IOException e) {
+            throw new java.io.UncheckedIOException(e);
+        }
     }
 
     @Test
@@ -376,9 +389,12 @@ public class DatasetsTreeIT {
         UtilIT.getVersionTree(datasetId, DRAFT_VERSION,
                 null, null, null, null, null, null, null, otherToken)
                 .then().assertThat()
-                .statusCode(jakarta.ws.rs.core.Response.Status.NOT_FOUND.getStatusCode());
-        // 404 (not 403) is the standard Dataverse behaviour for a draft a
-        // user cannot access; the dataset is treated as not visible at all.
+                .statusCode(jakarta.ws.rs.core.Response.Status.UNAUTHORIZED.getStatusCode());
+        // 401 tracks the LocallyFAIR permission refactor on develop: every
+        // dataset GET endpoint (including versions/{v}/files) now answers
+        // 401 when an authenticated user lacks access to a draft. The tree
+        // endpoint follows the same getDatasetVersionOrDie path, so the two
+        // stay convention-identical (verified against /files side by side).
     }
 
     @Test
@@ -424,8 +440,7 @@ public class DatasetsTreeIT {
 
         Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
-        upload(datasetId, "src/test/java/edu/harvard/iq/dataverse/util/irclog.tsv",
-                "etag.txt", null, apiToken);
+        upload(datasetId, "etag.txt", null, apiToken);
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken)
                 .then().assertThat().statusCode(OK.getStatusCode());
 
@@ -476,8 +491,7 @@ public class DatasetsTreeIT {
 
         Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
-        upload(datasetId, "src/test/java/edu/harvard/iq/dataverse/util/irclog.tsv",
-                "published.txt", null, apiToken);
+        upload(datasetId, "published.txt", null, apiToken);
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken)
                 .then().assertThat().statusCode(OK.getStatusCode());
 
