@@ -160,5 +160,104 @@
       "reportMessage": "no fue exitosa. {{reportMessage}}",
       "reportMessageDefault": "no fue exitosa. La ingesta falló. No hay más información disponible."
     }
+  },
+  "tree": {
+    "label": "Archivos del dataset",
+    "toolbar": {
+      "label": "Acciones de la selección"
+    },
+    "head": {
+      "name": "Nombre",
+      "size": "Tamaño",
+      "count": "Archivos",
+      "actions": "Acciones",
+      "access": "Acceso",
+      "selectAll": "Seleccionar todo lo visible"
+    },
+    "row": {
+      "expandFolder": "Expandir {{name}}",
+      "collapseFolder": "Contraer {{name}}",
+      "selectFolder": "Seleccionar carpeta {{name}}",
+      "selectFile": "Seleccionar archivo {{name}}",
+      "downloadFolder": "Descargar carpeta {{name}}",
+      "downloadFile": "Descargar archivo {{name}}"
+    },
+    "access": {
+      "public": "Público",
+      "restricted": "Restringido",
+      "embargoed": "Embargado",
+      "retentionExpired": "Retención expirada",
+      "count": {
+        "restricted_one": "{{count}} restringido",
+        "restricted_other": "{{count}} restringidos",
+        "embargoed_one": "{{count}} embargado",
+        "embargoed_other": "{{count}} embargados",
+        "retentionExpired_one": "{{count}} con retención expirada",
+        "retentionExpired_other": "{{count}} con retención expirada"
+      }
+    },
+    "selection": {
+      "none": "Ningún archivo seleccionado",
+      "fileCount_one": "archivo",
+      "fileCount_other": "archivos",
+      "includesFolders": "carpetas incluidas",
+      "clear": "Limpiar"
+    },
+    "download": {
+      "button": "Descargar zip",
+      "enumerating": "Listando archivos…",
+      "preparing": "Preparando zip…",
+      "streaming": "Transfiriendo…",
+      "tray": {
+        "label": "Progreso de la descarga zip",
+        "preparing": "Preparando zip…",
+        "streaming": "Añadiendo archivos al zip…",
+        "paused": "Descarga en pausa — un archivo falló",
+        "firstPass_one": "Primera pasada completa — {{count}} archivo falló",
+        "firstPass_other": "Primera pasada completa — {{count}} archivos fallaron",
+        "complete": "Descarga completa",
+        "completeWithSkipped_one": "Descarga completa — {{count}} omitido",
+        "completeWithSkipped_other": "Descarga completa — {{count}} omitidos",
+        "completeWithVerificationFailures_one": "Descarga completa — {{count}} archivo no superó la verificación de suma",
+        "completeWithVerificationFailures_other": "Descarga completa — {{count}} archivos no superaron la verificación de suma",
+        "error": "La descarga falló",
+        "cancelled": "Descarga cancelada",
+        "files": "archivos",
+        "pass2": "pasada 2 de 2",
+        "now": {
+          "paused": "En pausa",
+          "awaiting": "Esperando decisión de reintento",
+          "done": "Hecho",
+          "cancelled": "Cancelada"
+        },
+        "failed": "No se pudo obtener el archivo",
+        "retry": "Reintentar este archivo",
+        "skip": "Omitir",
+        "deferToEnd": "Omitir y reintentar al final",
+        "skipAll": "Omitir todos los fallos restantes",
+        "notIncluded_one": "{{count}} archivo no se incluyó en el zip",
+        "notIncluded_other": "{{count}} archivos no se incluyeron en el zip",
+        "twopassHint": "Primera pasada terminada. El zip se finalizará tras reintentar los fallos en una segunda pasada.",
+        "retryFailed_one": "Descargar {{count}} archivo pendiente",
+        "retryFailed_other": "Descargar {{count}} archivos pendientes",
+        "done": "Hecho",
+        "skipped_one": "{{count}} archivo omitido",
+        "skipped_other": "{{count}} archivos omitidos",
+        "skippedManifest": "Se añadió un manifest.txt con los archivos omitidos en la raíz del zip.",
+        "hint": "Se genera localmente en un único zip — sin ZIP en el servidor.",
+        "cancel": "Cancelar",
+        "close": "Cerrar"
+      }
+    },
+    "state": {
+      "loading": "Cargando el índice de archivos…",
+      "loadingFolder": "Cargando carpeta…",
+      "loadingMore": "Cargando…",
+      "loadMore": "Cargar más",
+      "error": "No se pudo cargar el índice de archivos",
+      "retry": "Reintentar",
+      "empty": "Este dataset no tiene archivos",
+      "noMatches": "Ningún archivo coincide con \"{{query}}\""
+    }
   }
 }

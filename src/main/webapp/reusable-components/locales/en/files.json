@@ -18,7 +18,9 @@
       "name": "Name",
       "size": "Size",
       "count": "Files",
-      "actions": "Actions"
+      "actions": "Actions",
+      "access": "Access",
+      "selectAll": "Select all visible"
     },
     "row": {
       "expandFolder": "Expand {{name}}",
@@ -50,6 +52,8 @@
         "complete": "Download complete",
         "completeWithSkipped_one": "Download complete — {{count}} skipped",
         "completeWithSkipped_other": "Download complete — {{count}} skipped",
+        "completeWithVerificationFailures_one": "Download complete — {{count}} file failed checksum verification",
+        "completeWithVerificationFailures_other": "Download complete — {{count}} files failed checksum verification",
         "error": "Download failed",
         "cancelled": "Download cancelled",
         "files": "files",
@@ -88,9 +92,22 @@
       "retry": "Retry",
       "empty": "This dataset has no files",
       "noMatches": "No files match \"{{query}}\""
+    },
+    "access": {
+      "public": "Public",
+      "restricted": "Restricted",
+      "embargoed": "Embargoed",
+      "retentionExpired": "Retention expired",
+      "count": {
+        "restricted_one": "{{count}} restricted",
+        "restricted_other": "{{count}} restricted",
+        "embargoed_one": "{{count}} embargoed",
+        "embargoed_other": "{{count}} embargoed",
+        "retentionExpired_one": "{{count}} retention expired",
+        "retentionExpired_other": "{{count}} retention expired"
+      }
     }
   },
-
   "errorUnkownGetFilesFromDataset": "There was an error getting the files total download size",
   "errorUnkownGetFilesCountInfo": "There was an error getting the files count info",
   "errorUnkownGetFilesTotalDownloadSize": "There was an error getting the files total download size",
