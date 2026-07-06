@@ -78,7 +78,7 @@ Note that while Dataverse will not add files that violate the size or quota rule
 they intend to transfer before submitting a transfer request to Globus.
 
 The getDatasetMetadata and getFileListing URLs are just signed versions of the standard Dataset metadata and file listing API calls. The other two are Globus specific.
-Note that these URLs are only signed when a non-empty :ref:`dataverse.api.signing-secret` is configured on the Dataverse installation; without it, they are sent unsigned (a warning is logged) and cannot be used to access draft datasets or restricted files.
+Note that these URLs are only signed when a non-empty :ref:`dataverse.api.signing-secret` is configured on the Dataverse installation. Without it the callbacks are sent unsigned (a warning is logged), and because the Globus callback endpoints (``globusUploadParameters``, ``requestGlobusUploadPaths``, ``addGlobusFiles``, and the download equivalents for restricted or unpublished files) require an authenticated, signed request, the Globus transfer flow fails with an authorization error; only anonymous download of public files can proceed. In practice, Globus transfer support requires ``dataverse.api.signing-secret`` to be set.
 
 If called for a dataset using a store that is configured with a remote Globus endpoint(s), the return response is similar but the response includes a
 the "managed" parameter will be false, the "endpoint" parameter is replaced with a JSON array of "referenceEndpointsWithPaths" and the

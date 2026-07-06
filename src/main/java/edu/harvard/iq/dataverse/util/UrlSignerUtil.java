@@ -80,6 +80,15 @@ public class UrlSignerUtil {
     }
 
     /**
+     * The configured API signing secret ({@code dataverse.api.signing-secret}), or an empty string if
+     * unset. This is the single definition of what "the signing secret" is; everything else derives
+     * from it so the sign side and the validation side cannot drift apart.
+     */
+    private static String signingSecret() {
+        return JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("");
+    }
+
+    /**
      * Whether a non-empty API signing secret ({@code dataverse.api.signing-secret}) is configured.
      * Every signed URL whose key is derived from a user's API token must be guarded by this: without
      * the secret the signing key would be only the caller-supplied value (for a guest, even a value
@@ -87,7 +96,17 @@ public class UrlSignerUtil {
      * signing when this returns false, so a weakly-signed URL is never emitted.
      */
     public static boolean isSigningSecretConfigured() {
-        return !JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("").isEmpty();
+        return !signingSecret().isEmpty();
+    }
+
+    /**
+     * Composes the full signing key (the configured API signing secret + the given per-user key,
+     * typically a user's API token). This is the one place that defines how the two are combined, so
+     * the signing side ({@link #signUrlWithApiKey}) and the validation side (SignedUrlAuthMechanism)
+     * stay in lockstep.
+     */
+    public static String getApiSigningKey(String apiKey) {
+        return signingSecret() + apiKey;
     }
 
     /**
@@ -99,15 +118,30 @@ public class UrlSignerUtil {
      * the exception and must keep calling {@link #signUrl} directly with that secret.
      *
      * @throws IllegalStateException if no signing secret is configured - callers should normally
-     *                               guard with {@link #isSigningSecretConfigured()} first
+     *                               guard with {@link #isSigningSecretConfigured()} first, or use
+     *                               {@link #trySignUrlWithApiKey} to degrade to an unsigned URL
      */
     public static String signUrlWithApiKey(String baseUrl, Integer timeout, String user, String method, String apiKey) {
-        String secret = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("");
-        if (secret.isEmpty()) {
+        if (!isSigningSecretConfigured()) {
             throw new IllegalStateException(
                     "Cannot sign a URL: no signing secret is configured. Please set the dataverse.api.signing-secret JVM option.");
         }
-        return signUrl(baseUrl, timeout, user, method, secret + apiKey);
+        return signUrl(baseUrl, timeout, user, method, getApiSigningKey(apiKey));
+    }
+
+    /**
+     * Signs the URL like {@link #signUrlWithApiKey} when a signing secret is configured; otherwise logs
+     * a warning naming {@code context} and returns the URL unsigned. This is the single home for the
+     * "sign if we can, otherwise degrade to an unsigned URL" policy used by the internal callback
+     * signers (external tools, Globus, allowed API calls), so a caller can never forget the guard and
+     * trip the {@link IllegalStateException} at runtime.
+     */
+    public static String trySignUrlWithApiKey(String baseUrl, Integer timeout, String user, String method, String apiKey, String context) {
+        if (!isSigningSecretConfigured()) {
+            logger.warning("Cannot sign " + context + ": no signing secret configured (dataverse.api.signing-secret). Sending an unsigned URL.");
+            return baseUrl;
+        }
+        return signUrlWithApiKey(baseUrl, timeout, user, method, apiKey);
     }
 
     /**

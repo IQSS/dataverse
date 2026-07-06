@@ -110,12 +110,8 @@ public class ExternalToolHandler extends URLTokenUtil {
                             + externalTool.getId();
                 }
                 if (apiToken != null) {
-                    if (UrlSignerUtil.isSigningSecretConfigured()) {
-                        callback = UrlSignerUtil.signUrlWithApiKey(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(),
-                                HttpMethod.GET, apiToken.getTokenString());
-                    } else {
-                        logger.warning("Cannot sign external tool callback: no signing secret configured (dataverse.api.signing-secret). Sending an unsigned callback.");
-                    }
+                    callback = UrlSignerUtil.trySignUrlWithApiKey(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(),
+                            HttpMethod.GET, apiToken.getTokenString(), "external tool callback");
                 }
                 paramsString= "?callback=" + Base64.getEncoder().encodeToString(StringUtils.getBytesUtf8(callback));
                 if (getLocaleCode() != null) {

@@ -226,12 +226,8 @@ public class URLTokenUtil {
                 // Sign if apiToken exists, otherwise send unsigned URL (i.e. for guest users)
                 ApiToken apiToken = getApiToken();
                 if (apiToken != null) {
-                    if (UrlSignerUtil.isSigningSecretConfigured()) {
-                        url = UrlSignerUtil.signUrlWithApiKey(apiPath, timeout, apiToken.getAuthenticatedUser().getUserIdentifier(),
-                                httpmethod, apiToken.getTokenString());
-                    } else {
-                        logger.warning("Cannot sign URL: no signing secret configured (dataverse.api.signing-secret). Sending an unsigned URL.");
-                    }
+                    url = UrlSignerUtil.trySignUrlWithApiKey(apiPath, timeout, apiToken.getAuthenticatedUser().getUserIdentifier(),
+                            httpmethod, apiToken.getTokenString(), "URL for external tool");
                 }
                 logger.fine("Signed URL: " + url);
                 apisBuilder.add(Json.createObjectBuilder().add(NAME, name).add(HTTP_METHOD, httpmethod)

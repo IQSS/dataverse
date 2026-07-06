@@ -19,6 +19,12 @@ they did before 6.10 keep working unchanged, signatures are computed the same wa
 regression, and URLs containing special characters validate again. No client-side changes are
 required.
 
+Note that, as before 6.10, the `url` submitted to `/api/admin/requestSignedUrl` (and any URL consumed
+as a signed URL) must be in its URL-decoded form: the signature is computed over the URL exactly as
+provided, but the server validates it against the URL-decoded request. Passing a percent-encoded URL
+(e.g. `persistentId=doi%3A10.5072%2FFK2%2FABC` instead of `persistentId=doi:10.5072/FK2/ABC`) and then
+using it verbatim will therefore fail validation.
+
 ### A signing secret is now required for signed URLs
 
 Separately from the fix above, Dataverse no longer falls back to a weak signing key when
@@ -31,9 +37,13 @@ URLs are signed with a key based on a user's API token:
   guestbook-response download endpoints under `/api/access` (`datafile/{id}`, `datafiles/{ids}`,
   `dataset/{id}` and `dataset/{id}/versions/{versionId}`) - return an error instead of issuing a
   weakly-signed URL.
-- Signed callbacks built internally (external tool launches, Globus transfers) are sent unsigned,
-  with a warning logged, rather than weakly signed; such unsigned URLs cannot be used to access
-  draft datasets or restricted files.
+- External tool launches send their callback unsigned (with a warning logged) rather than weakly
+  signed. Such an unsigned callback only allows anonymous access to public data; it cannot be used to
+  access draft datasets or restricted files.
+- Globus transfers are effectively disabled without a signing secret: the callbacks the
+  dataverse-globus app relies on require an authenticated, signed request, so Globus upload (and
+  download of restricted or unpublished files) fails with an authorization error. Installations that
+  use Globus must set `dataverse.api.signing-secret`.
 - The permissions-history CSV download links on the permission management pages are not offered
   (a warning is logged).
 

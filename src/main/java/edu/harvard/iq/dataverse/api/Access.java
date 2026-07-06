@@ -548,6 +548,13 @@ public class Access extends AbstractApiBean {
     }
 
     private Response returnSignedUrl(ContainerRequestContext crc, UriInfo uriInfo, User user, String id, String gbrids) {
+        // Record the guestbook-response id for the side-effect-only callers
+        // (datafileBundleWithGuestbookResponse, postDownloadDatafiles) that discard the Response we
+        // return and then read this property to drive the actual download. This must happen even when
+        // no signing secret is configured and we bail out below, otherwise those downloads lose the
+        // guestbook response that processDatafileWithGuestbookResponse just saved (leading to a
+        // spurious "guestbookResponseMissing" 400 or a duplicate guestbook/MakeDataCount entry).
+        crc.setProperty("gbrids", gbrids);
         // The signed-URL endpoints already check this before any guestbook side effects (see
         // requireSigningSecretForSignedUrl). This check protects the callers that invoke
         // processDatafileWithGuestbookResponse only for its guestbook side effects and discard this
@@ -587,7 +594,6 @@ public class Access extends AbstractApiBean {
             builder.replaceQueryParam("gbrids", gbrids);
         }
         builder.replaceQueryParam("persistentId", null); // remove this as a parm and add the id to the path
-        crc.setProperty("gbrids", gbrids);
         String baseUrlEncoded = builder.build().toString();
         String baseUrl = URLDecoder.decode(baseUrlEncoded, StandardCharsets.UTF_8);
         baseUrl = baseUrl.replace(":persistentId", id);
