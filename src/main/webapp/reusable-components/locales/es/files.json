@@ -240,6 +240,7 @@
         "twopassHint": "Primera pasada terminada. El zip se finalizará tras reintentar los fallos en una segunda pasada.",
         "retryFailed_one": "Descargar {{count}} archivo pendiente",
         "retryFailed_other": "Descargar {{count}} archivos pendientes",
+        "finishWithout": "Finalizar sin ellos",
         "done": "Hecho",
         "skipped_one": "{{count}} archivo omitido",
         "skipped_other": "{{count}} archivos omitidos",

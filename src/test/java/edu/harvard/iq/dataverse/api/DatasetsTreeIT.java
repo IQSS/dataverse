@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import io.restassured.RestAssured;
+import static io.restassured.RestAssured.given;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import jakarta.json.Json;
@@ -390,11 +391,56 @@ public class DatasetsTreeIT {
                 null, null, null, null, null, null, null, otherToken)
                 .then().assertThat()
                 .statusCode(jakarta.ws.rs.core.Response.Status.UNAUTHORIZED.getStatusCode());
-        // 401 tracks the LocallyFAIR permission refactor on develop: every
-        // dataset GET endpoint (including versions/{v}/files) now answers
-        // 401 when an authenticated user lacks access to a draft. The tree
-        // endpoint follows the same getDatasetVersionOrDie path, so the two
-        // stay convention-identical (verified against /files side by side).
+        // 401 matches what develop's own endpoints return for this case:
+        // /versions/{v}/files answers 401 for an authenticated user who
+        // lacks access to another owner's draft (verified side by side).
+        // The tree endpoint resolves the version through the same
+        // getDatasetVersionOrDie path, so the two stay identical.
+    }
+
+    @Test
+    public void locallyFairDatasetIsHiddenFromNonAssignees() {
+        // The tree endpoint must apply the same LocallyFAIR visibility
+        // gate as every other dataset GET endpoint (it resolves the
+        // dataset via findDatasetUserCanSeeOrDie). Without the gate, a
+        // published LF dataset would 404 on /versions/{v}/files but leak
+        // its full file listing through /versions/{v}/tree.
+        Response createAdmin = UtilIT.createRandomUser();
+        String adminToken = UtilIT.getApiTokenFromResponse(createAdmin);
+        String adminUsername = UtilIT.getUsernameFromResponse(createAdmin);
+        UtilIT.setSuperuserStatus(adminUsername, true)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDataverse = UtilIT.createRandomDataverse(adminToken);
+        createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, adminToken);
+        createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        upload(datasetId, "fair.txt", null, adminToken);
+
+        // Restrict the collection to the admin only, then publish both.
+        given().header("X-Dataverse-key", adminToken)
+                .contentType("application/json")
+                .body("[\"@" + adminUsername + "\"]")
+                .put("/api/dataverses/" + dataverseAlias + "/locallyFairRoleAssignees")
+                .then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, adminToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", adminToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        // Assignee sees the tree; a non-assignee gets the same 404 the
+        // files endpoint gives — existence must not leak.
+        UtilIT.getVersionTree(datasetId, LATEST,
+                null, null, null, null, null, null, null, adminToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+        String otherToken = UtilIT.createRandomUserGetToken();
+        UtilIT.getVersionTree(datasetId, LATEST,
+                null, null, null, null, null, null, null, otherToken)
+                .then().assertThat()
+                .statusCode(jakarta.ws.rs.core.Response.Status.NOT_FOUND.getStatusCode());
     }
 
     @Test

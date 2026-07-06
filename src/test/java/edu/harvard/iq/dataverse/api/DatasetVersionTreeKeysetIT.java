@@ -6,6 +6,7 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -52,6 +53,14 @@ public class DatasetVersionTreeKeysetIT {
     @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+    }
+
+    @AfterAll
+    public static void tearDown() {
+        // The fixture enables embargoes installation-wide; put the
+        // default back so suites running after this class see a stock
+        // configuration.
+        UtilIT.deleteSetting(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
     }
 
     /**

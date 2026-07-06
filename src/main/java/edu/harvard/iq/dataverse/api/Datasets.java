@@ -667,7 +667,11 @@ public class Datasets extends AbstractApiBean {
             } catch (InvalidQueryException ex) {
                 return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.tree.invalid.query", List.of(ex.getMessage())));
             }
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId, false), uriInfo, headers, includeDeaccessioned);
+            // findDatasetUserCanSeeOrDie (not findDatasetOrDie): the tree is a
+            // dataset GET endpoint and must apply the same LocallyFAIR
+            // visibility gate as its siblings (/versions/{v}/files etc.) —
+            // see the LF check in AbstractApiBean#findDatasetUserCanSeeOrDie.
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), uriInfo, headers, includeDeaccessioned);
             // ETag for released, non-deaccessioned versions only. Drafts and
             // deaccessioned versions can change in place, so they get no
             // caching headers at all.

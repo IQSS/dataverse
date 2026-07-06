@@ -74,6 +74,7 @@
         "twopassHint": "First pass finished. The zip will be finalised after a second-pass retry of the failures.",
         "retryFailed_one": "Download {{count}} missing file",
         "retryFailed_other": "Download {{count}} missing files",
+        "finishWithout": "Finish without them",
         "done": "Done",
         "skipped_one": "{{count}} file skipped",
         "skipped_other": "{{count}} files skipped",
