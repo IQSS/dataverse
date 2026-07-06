@@ -208,11 +208,11 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
             // If no other logo we attempt to auto-select via the optimized, native
             // query-based method
             // from the DatasetVersionService:
-            if (!hasDatasetLogo && datasetVersionService.getThumbnailByVersionId(versionId) == null) {
+            if (!hasDatasetLogo && (!autoselect || datasetVersionService.getThumbnailByVersionId(versionId) == null)) {
                 return null;
             }
         }
-        String url = SystemConfig.getDataverseSiteUrlStatic() + "/api/datasets/" + dataset.getId() + "/logo";
+        String url = dataset.getThumbnailUrl();
         logger.fine("getDatasetCardImageAsUrl: " + url);
         this.dvobjectThumbnailsMap.put(datasetId,url);
         return url;
