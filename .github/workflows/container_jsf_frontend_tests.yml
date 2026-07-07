@@ -36,8 +36,6 @@ jobs:
 
     permissions:
       contents: read
-      checks: write
-      pull-requests: write
 
     steps:
 
@@ -45,8 +43,7 @@ jobs:
       # CHECKOUT
       # ---------------------------
       - name: Checkout repository
-        uses: actions/checkout@v6
-
+        uses: actions/checkout@v7
       # ---------------------------
       # VERIFY DOCKER
       # ---------------------------
@@ -215,8 +212,7 @@ jobs:
       # CHECKOUT KUNAI-RUNNER
       # ---------------------------
       - name: Checkout kunai-runner
-        uses: actions/checkout@v6
-        with:
+        uses: actions/checkout@v7
           repository: uncch-rdmc/kunai-runner
           path: kunai-runner
 
@@ -249,16 +245,14 @@ jobs:
       # ---------------------------
       - name: Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
+        uses: actions/upload-artifact@v7
           name: playwright-report
           path: kunai-runner/playwright-report/
           retention-days: 14
 
       - name: Upload Playwright test results (traces, videos, screenshots)
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
+        uses: actions/upload-artifact@v7
           name: playwright-test-results
           path: kunai-runner/test-results/
           retention-days: 14
@@ -297,8 +291,7 @@ jobs:
       # ---------------------------
       - name: Upload Docker logs
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
+        uses: actions/upload-artifact@v7
           name: docker-logs
           path: docker-logs/
           retention-days: 14
