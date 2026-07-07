@@ -179,35 +179,6 @@ jobs:
         with:
           node-version: "24"
 
-    #   # ---------------------------
-    #   # CREATE PLAYWRIGHT TEST USER
-    #   # ---------------------------
-    #   - name: Create Playwright test user via Dataverse API
-    #     run: |
-    #       set -euo pipefail
-
-    #       echo "Creating builtin test user..."
-    #       CREATE_RESPONSE=$(curl --fail-with-body -sS -X POST \
-    #         -H "Content-Type: application/json" \
-    #         "http://localhost:8080/api/builtin-users?key=burrito&sendEmailNotification=false" \
-    #         -d '{
-    #           "userName":    "playwright",
-    #           "displayName": "Playwright Runner",
-    #           "firstName":   "Playwright",
-    #           "lastName":    "Runner",
-    #           "affiliation": "CI",
-    #           "position":    "Automated Test Account",
-    #           "email":       "playwright@mailinator.com",
-    #           "password":    "Playwright1!"
-    #         }')
-    #       echo "Create response: $CREATE_RESPONSE"
-
-    #       echo "Promoting to superuser..."
-    #       docker exec dev_dataverse curl --fail-with-body -sS -X POST \
-    #         "http://localhost:8080/api/admin/superuser/playwright"
-
-    #       echo "Test user ready."
-
       # ---------------------------
       # CHECKOUT KUNAI-RUNNER
       # ---------------------------
@@ -250,14 +221,6 @@ jobs:
         with:
           name: playwright-report
           path: kunai-runner/playwright-report/
-          retention-days: 14
-
-      - name: Upload Playwright test results (traces, videos, screenshots)
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: playwright-test-results
-          path: kunai-runner/test-results/
           retention-days: 14
 
       # ---------------------------
