@@ -1462,6 +1462,10 @@ You may provide the values for these via any `supported MicroProfile Config API 
 Reported Working S3-Compatible Storage
 ######################################
 
+`Ceph Object Gateway <https://docs.ceph.com/en/reef/radosgw/#ceph-object-gateway>`_ (added July 2026/Dataverse v6.12)
+Set ``dataverse.files.<id>.disable-multipart-download-for-indirect-download=true`` if not using direct download. 
+(This forces the S3 server to handle part reassembly and avoid incompatible headers that cause `412` errors from the Ceph Gateway.)
+
 `Minio v2018-09-12 <https://minio.io>`_
   Set ``dataverse.files.<id>.path-style-access=true``, as Minio works path-based. Works pretty smooth, easy to setup.
   **Can be used for quick testing, too:** just use the example values above. Uses the public (read: unsecure and
