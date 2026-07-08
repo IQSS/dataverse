@@ -140,23 +140,6 @@ public class SolrIndexServiceBean {
         return new DvObjectSolrDoc(fileProxy.getFileId().toString(), solrId, versionId, fileProxy.getName(), perms);
     }
 
-private List<DvObjectSolrDoc> constructDatafileSolrDocsFromDataset(Dataset dataset) {
-    List<DvObjectSolrDoc> datafileSolrDocs = new ArrayList<>();
-    for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersionsToBuildCardsFor(dataset)) {
-        List<String> perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
-
-        for (FileMetadata fileMetadata : datasetVersionFileIsAttachedTo.getFileMetadatas()) {
-            Long fileId = fileMetadata.getDataFile().getId();
-            String solrIdStart = IndexServiceBean.solrDocIdentifierFile + fileId;
-            String solrIdEnd = getDatasetOrDataFileSolrEnding(datasetVersionFileIsAttachedTo.getVersionState());
-            String solrId = solrIdStart + solrIdEnd;
-            DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(fileId.toString(), solrId, datasetVersionFileIsAttachedTo.getId(), fileMetadata.getLabel(), perms);
-            logger.finest("adding fileid " + fileId);
-            datafileSolrDocs.add(dataFileSolrDoc);
-        }
-    }
-    return datafileSolrDocs;
-}
     /** Find the versions to index. The overall logic is
      *  If there is only one version, or no released version (all non-draft versions are deaccessioned)
      *    then index it regardless of it's versionstate
@@ -202,18 +185,18 @@ private List<DvObjectSolrDoc> constructDatafileSolrDocsFromDataset(Dataset datas
         }
     }
 
-    public boolean isIndexingPermissionsInProgress() {
-        return indexingInProgress.get();
+    public boolean asyncIndexAllPermissions() {
+        if (!indexingInProgress.compareAndSet(false, true)) {
+            logger.info("Asynchronous indexing of all permissions is already in progress. Skipping this invocation.");
+            return false;
+        }
+        self.doAsyncIndexAllPermissions();
+        return true;
     }
 
     @Asynchronous
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void asyncIndexAllPermissions() {
-        if (!indexingInProgress.compareAndSet(false, true)) {
-            logger.info("Asynchronous indexing of all permissions is already in progress. Skipping this invocation.");
-            return;
-        }
-
+    public void doAsyncIndexAllPermissions() {
         logger.info("Starting asynchronous indexing of all permissions");
         long startTime = System.currentTimeMillis();
 

@@ -379,10 +379,9 @@ public class Index extends AbstractApiBean {
             if (!user.isSuperuser()) {
                 return error(Status.FORBIDDEN, "Superusers only.");
             }
-            if (solrIndexService.isIndexingPermissionsInProgress()) {
+            if (!solrIndexService.asyncIndexAllPermissions()) {
                 return conflict("Asynchronous indexing of all permissions is already in progress.");
             }
-            solrIndexService.asyncIndexAllPermissions();
             return ok("Asynchronous indexing of all permissions has been started. Check the server logs for progress.");
         } catch (WrappedResponse wr) {
             return wr.getResponse();
