@@ -95,22 +95,32 @@
                                                 <h:outputText value="#{dsf.getDisplayValue(mdLangCode)}"
                                                     rendered="#{!dsf.datasetFieldType.allowMultiples and !cvocOnDsf}"
                                                     escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
-                                                <ui:repeat value="#{dsf.getValues_nondisplay()}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples and cvocOnDsf}">
-                                                    <h:outputText value="#{loop.first?'':'; '}"/>
-                                                    <h:outputText value="#{ value }"
-                                                                  escape="#{dsf.datasetFieldType.isEscapeOutputText()}">
-                                                        <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(dsf.datasetFieldType.id).getString('languages'))}" />
-                                                        <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('cvoc-url','')}" />
-                                                        <f:passThroughAttribute name="data-cvoc-headers" value="#{cvocConf.get(dsf.datasetFieldType.id).containsKey('headers') ? cvocConf.get(dsf.datasetFieldType.id).get('headers').toString() : '{}'}"/>
-                                                        <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('protocol','')}" />
-                                                        <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvocConf.get(dsf.datasetFieldType.id).get('managed-fields').toString()}" />
-                                                    </h:outputText>
-                                                </ui:repeat>
-                                                <ui:repeat value="#{dsf.getValues(mdLangCode)}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples and !cvocOnDsf}">
-                                                    <h:outputText value="#{loop.first?'':'; '}#{ value }"
-                                                                  escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
-                                                </ui:repeat>
-                                            </ui:fragment>
+                                                <ui:fragment rendered="#{dsf.datasetFieldType.allowMultiples and cvocOnDsf}">
+                                                    <ul class="list-unstyled" style="margin-bottom: 0;">
+                                                        <ui:repeat value="#{dsf.getValues_nondisplay()}" var="value" varStatus="loop">
+                                                            <li>
+                                                                <h:outputText value="#{ value }"
+                                                                              escape="#{dsf.datasetFieldType.isEscapeOutputText()}">
+                                                                    <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(dsf.datasetFieldType.id).getString('languages'))}" />
+                                                                    <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('cvoc-url','')}" />
+                                                                    <f:passThroughAttribute name="data-cvoc-headers" value="#{cvocConf.get(dsf.datasetFieldType.id).containsKey('headers') ? cvocConf.get(dsf.datasetFieldType.id).get('headers').toString() : '{}'}"/>
+                                                                    <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('protocol','')}" />
+                                                                    <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvocConf.get(dsf.datasetFieldType.id).get('managed-fields').toString()}" />
+                                                                </h:outputText>
+                                                            </li>
+                                                        </ui:repeat>
+                                                    </ul>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{dsf.datasetFieldType.allowMultiples and !cvocOnDsf}">
+                                                    <ul class="list-unstyled" style="margin-bottom: 0;">
+                                                        <ui:repeat value="#{dsf.getValues(mdLangCode)}" var="value" varStatus="loop">
+                                                            <li>
+                                                                <h:outputText value="#{ value }"
+                                                                              escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
+                                                            </li>
+                                                        </ui:repeat>
+                                                    </ul>
+                                                </ui:fragment>
                                             <!-- Compound datasetFields -->
                                             <ui:fragment rendered="#{dsf.datasetFieldType.compound}">
                                                 <ui:fragment rendered="#{dsf.datasetFieldType.name == 'datasetContact'}">
