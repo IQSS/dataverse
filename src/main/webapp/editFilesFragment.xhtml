@@ -459,7 +459,7 @@
                                             <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
                                                 #{bundle.description}
                                             </label>
-                                            <p:inputTextarea id="fileDescription" rows="2" cols="40" value="#{fileMetadata.description}" style="width:60%; margin-top:.5em;"/> 
+                                            <p:inputTextarea id="fileDescription" rows="2" cols="40" value="#{MarkupChecker:sanitizeBasicHTML(fileMetadata.description)}" escape="false" style="width:60%; margin-top:.5em;"/>
                                             <p:watermark for="fileDescription" value="#{bundle['file.addDescription']}"/>
                                             <p:message for="fileDescription"/>
                                         </div>
