@@ -417,19 +417,19 @@ public abstract class AbstractApiBean {
         return template;
     }
     
-    protected DataverseLinkingDataverse findDataverseLinkingDataverseOrDie(String dataverseId, String linkedDataverseId) throws WrappedResponse {
+    protected DataverseLinkingDataverse findDataverseLinkingDataverseOrDie(String linkingDataverseId, String linkedDataverseId) throws WrappedResponse {
         DataverseLinkingDataverse dvld;
-        Dataverse dataverse = findDataverseOrDie(dataverseId);
+        Dataverse linkingDataverse = findDataverseOrDie(linkingDataverseId);
         Dataverse linkedDataverse = findDataverseOrDie(linkedDataverseId);
         try {
-            dvld = dvLinkingService.findDataverseLinkingDataverse(dataverse.getId(), linkedDataverse.getId());
+            dvld = dvLinkingService.findDataverseLinkingDataverse(linkingDataverse.getId(), linkedDataverse.getId());
             if (dvld == null) {
-                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.ids", Arrays.asList(dataverseId, linkedDataverseId))));
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.ids", Arrays.asList(linkingDataverseId, linkedDataverseId))));
             }
             return dvld;
         } catch (NumberFormatException nfe) {
             throw new WrappedResponse(
-                    badRequest(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.bad.ids", Arrays.asList(dataverseId, linkedDataverseId))));
+                    badRequest(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.bad.ids", Arrays.asList(linkingDataverseId, linkedDataverseId))));
         }
     }
 

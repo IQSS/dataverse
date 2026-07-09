@@ -859,7 +859,7 @@ public class Dataverses extends AbstractApiBean {
     public Response deleteDataverseLinkingDataverse(@Context ContainerRequestContext crc, @PathParam("linkingDataverseId") String linkingDataverseId, @PathParam("linkedDataverseId") String linkedDataverseId) {
         boolean index = true;
         return response(req -> {
-            execCommand(new DeleteDataverseLinkingDataverseCommand(req, findDataverseOrDie(linkingDataverseId), findDataverseLinkingDataverseOrDie(linkingDataverseId, linkedDataverseId), index));
+            execCommand(new DeleteDataverseLinkingDataverseCommand(req, findDataverseOrDie(linkedDataverseId), findDataverseLinkingDataverseOrDie(linkingDataverseId, linkedDataverseId), index));
             return ok("Link from Dataverse " + linkingDataverseId + " to linked Dataverse " + linkedDataverseId + " deleted");
         }, getRequestUser(crc));
     }

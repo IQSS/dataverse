@@ -278,7 +278,7 @@ public class SavedSearchServiceBean {
                 Dataverse linkedDataverse = (Dataverse) dvObjectThatDefinitionPointWillLinkTo;
                 DataverseLinkingDataverse dvld = dvLinkingService.findDataverseLinkingDataverse(linkingDataverse.getId(), linkedDataverse.getId());
                 if(dvld != null) {
-                    Dataverse dv = commandEngine.submitInNewTransaction(new DeleteDataverseLinkingDataverseCommand(dvReq, linkingDataverse, dvld, true));
+                    Dataverse dv = commandEngine.submitInNewTransaction(new DeleteDataverseLinkingDataverseCommand(dvReq, linkedDataverse, dvld, true));
                 }
             } else if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataset()) {
                 Dataset linkedDataset = (Dataset) dvObjectThatDefinitionPointWillLinkTo;
