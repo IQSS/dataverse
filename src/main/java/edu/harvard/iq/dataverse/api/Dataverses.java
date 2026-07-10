@@ -953,7 +953,7 @@ public class Dataverses extends AbstractApiBean {
 
     @DELETE
     @AuthRequired
-    @Path("{linkingDataverseId}/deleteLink/{linkedDataverseId}")
+    @Path("{linkedDataverseId}/deleteLink/{linkingDataverseId}")
     @Operation(summary = "Remove a dataverse link",
             description = "Deletes a link from one dataverse to another linked dataverse.")
     public Response deleteDataverseLinkingDataverse(@Context ContainerRequestContext crc,
