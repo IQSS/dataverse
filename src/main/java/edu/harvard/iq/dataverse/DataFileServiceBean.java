@@ -283,14 +283,20 @@ public class DataFileServiceBean implements java.io.Serializable {
                     .getResultList();
     }
 
+    public List<Long> findDataFileIdsByDatasetVersionId(Long datasetVersionId) {
+        return findDataFileIdsByDatasetVersionIdLabelSearchTerm(datasetVersionId, null, null, null);
+    }
+
     public List<Long> findDataFileIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String userSuppliedSearchTerm, String userSuppliedSortField, String userSuppliedSortOrder) {
-        FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
         String searchTerm = !StringUtils.isBlank(userSuppliedSearchTerm) ? "%"+userSuppliedSearchTerm.trim().toLowerCase()+"%" : null;
 
         String selectClause = "select o.datafile_id from FileMetadata o where o.datasetversion_id = " + datasetVersionId;
         String searchClause = searchTerm != null ? " and (lower(o.label) like ? or lower(o.description) like ?)" : "";
-        String orderByClause = " order by o." + sortFieldAndOrder.getSortField() + " " + sortFieldAndOrder.getSortOrder();
-
+        String orderByClause = "";
+        if(StringUtils.isNotBlank(userSuppliedSortField) || StringUtils.isNotBlank(userSuppliedSortOrder)) {
+            FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
+            orderByClause = " order by o." + sortFieldAndOrder.getSortField() + " " + sortFieldAndOrder.getSortOrder();
+        }
         Query query = em.createNativeQuery(selectClause + searchClause + orderByClause);
         if (searchTerm != null) {
             query.setParameter(1, searchTerm);
