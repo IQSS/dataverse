@@ -764,7 +764,7 @@ public class Admin extends AbstractApiBean {
      */
     @POST
     @Path("authenticatedUsers")
-    @Operation(summary = "Provision an authenticated user",
+    @Operation(summary = "Create an authenticated user",
             description = "Creates an authenticated user account from provider id, persistent id, identifier, name, and email fields.")
     public Response createAuthenicatedUser(@RequestBody(description = "User creation JSON containing authenticationProviderId, persistentUserId, identifier, firstName, lastName, and email.")
             JsonObject jsonObject) {
@@ -1204,7 +1204,7 @@ public class Admin extends AbstractApiBean {
 
     @Path("roles")
     @POST
-    @Operation(summary = "Provision a built-in role",
+    @Operation(summary = "Create a built-in role",
             description = "Creates a built-in Dataverse role from the supplied role definition.")
     public Response createNewBuiltinRole(@RequestBody(description = "Role definition containing alias, name, description, and permissions.")
             RoleDTO roleDto) {

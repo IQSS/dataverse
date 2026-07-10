@@ -134,7 +134,7 @@ public class Dataverses extends AbstractApiBean {
     
     @POST
     @AuthRequired
-    @Operation(summary = "Provision the root dataverse",
+    @Operation(summary = "Create the root dataverse",
             description = "Creates the root dataverse from a Dataverse JSON payload.")
     public Response addRoot(@Context ContainerRequestContext crc,
             @RequestBody(description = "Dataverse JSON for the root collection.")
@@ -146,7 +146,7 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}")
-    @Operation(summary = "Provision a child dataverse",
+    @Operation(summary = "Create a child dataverse",
             description = "Creates a dataverse under the selected parent and returns the created collection metadata.")
     public Response addDataverse(@Context ContainerRequestContext crc,
             @RequestBody(description = "Dataverse JSON including alias, name, contact, metadata block, input level, and facet settings.")
@@ -406,7 +406,7 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/datasets")
     @Consumes("application/json")
-    @Operation(summary = "Provision a dataset from JSON",
+    @Operation(summary = "Create a dataset from JSON",
             description = "Creates a draft dataset in the selected dataverse and returns its id and persistent identifier.")
     public Response createDataset(@Context ContainerRequestContext crc,
             @RequestBody(description = "Dataset JSON containing at least one dataset version.")
@@ -491,7 +491,7 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/datasets")
     @Consumes("application/ld+json, application/json-ld")
-    @Operation(summary = "Provision a dataset from JSON-LD",
+    @Operation(summary = "Create a dataset from JSON-LD",
             description = "Creates a draft dataset in the selected dataverse from JSON-LD metadata.")
     public Response createDatasetFromJsonLd(@Context ContainerRequestContext crc,
             @RequestBody(description = "JSON-LD dataset metadata.")
@@ -1543,7 +1543,7 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/roles")
-    @Operation(summary = "Provision a dataverse role",
+    @Operation(summary = "Create a dataverse role",
             description = "Creates a role scoped to the selected dataverse.")
     public Response createRole(@Context ContainerRequestContext crc,
             @RequestBody(description = "Role definition containing alias, name, description, and permissions.")
@@ -1662,7 +1662,7 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/groups/")
-    @Operation(summary = "Provision an explicit group",
+    @Operation(summary = "Create an explicit group",
             description = "Creates an explicit group owned by a dataverse.")
     public Response createExplicitGroup(@Context ContainerRequestContext crc,
             @RequestBody(description = "Explicit group definition.")
@@ -2109,7 +2109,7 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("{identifier}/featuredItems")
-    @Operation(summary = "Provision a dataverse featured item",
+    @Operation(summary = "Create a dataverse featured item",
             description = "Creates a featured item with text, optional linked object, display order, and optional image.")
     @RequestBody(description = "Multipart featured item creation request with text, ordering, optional linked object, and optional image.")
     public Response createFeaturedItem(@Context ContainerRequestContext crc,
@@ -2319,7 +2319,7 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/templates")
-    @Operation(summary = "Provision a metadata template",
+    @Operation(summary = "Create a metadata template",
             description = "Creates a metadata template owned by a dataverse.")
     public Response createTemplate(@Context ContainerRequestContext crc,
             @RequestBody(description = "Template JSON containing template metadata fields and settings.")
