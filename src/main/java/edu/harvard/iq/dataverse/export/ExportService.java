@@ -9,8 +9,10 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
+import io.gdcc.spi.export.MultiDatasetExporter;
 import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -49,7 +51,7 @@ import java.util.logging.Logger;
 import jakarta.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 
@@ -128,6 +130,54 @@ public class ExportService {
             retList.add(temp);
         });
         return retList;
+    }
+    
+    /**
+     * Checks if the specified format name is supported.
+     *
+     * @param formatName the name of the format to check for support.
+     * @return {@code true} if the format is supported; {@code false} otherwise.
+     */
+    public static boolean isSupported(String formatName) {
+        return getInstance().exporterMap.containsKey(formatName);
+    }
+    
+    /**
+     * Checks whether the specified format name is supported for the given request size.
+     *
+     * @param formatName the name of the format to check for support.
+     * @param requestSize the size of the request. A value less than 1 will always return false.
+     * @return {@code true} if the format is supported and the request size meets the conditions; {@code false} otherwise.
+     */
+    public static boolean isSupported(String formatName, int requestSize) {
+        if (!isSupported(formatName) || requestSize < 1) {
+            return false;
+        }
+        if (requestSize > 1) {
+            return getInstance().exporterMap.get(formatName) instanceof MultiDatasetExporter;
+        }
+        return true;
+    }
+    
+    public void writeExports(String format, Set<DatasetVersion> datasetVersions, OutputStream stream) throws ExportException, IOException {
+        // Make sure the request is supported (should have been checked beforehand, but don't assume)
+        if (!isSupported(format, datasetVersions.size())) {
+            throw new ExportException("Unsupported format (%s) or number of datasets (%s)".formatted(format, datasetVersions.size()));
+        }
+        
+        // Single version case: copy to output stream
+        if (datasetVersions.size() == 1) {
+            getExport(datasetVersions.iterator().next(), format).transferTo(stream);
+        // Multiple version case: transform the versions into ExportDataProviders
+        } else {
+            List<ExportDataProvider> providers = datasetVersions.stream()
+                .map(InternalExportDataProvider::new)
+                .collect(Collectors.toList());
+            
+            MultiDatasetExporter exporter = (MultiDatasetExporter) getInstance().exporterMap.get(format);
+            
+            exporter.exportMultiple(providers, stream);
+        }
     }
 
     public InputStream getExport(DatasetVersion datasetVersion, String formatName) throws ExportException, IOException {

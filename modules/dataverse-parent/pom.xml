@@ -167,6 +167,7 @@
         
         <!-- NEW gdcc XOAI library implementation -->
         <gdcc.xoai.version>5.3.0</gdcc.xoai.version>
+        <gdcc.spi.version>2.2.0-SNAPSHOT</gdcc.spi.version>
     
         <!-- Testing dependencies -->
         <testcontainers.version>2.0.2</testcontainers.version>
@@ -425,20 +426,20 @@
         </repository>
         <!-- Uncomment when using snapshot releases from Maven Central -->
         <!-- Note the new - as of Sept. 2025 sonatype url -->
-        <!--
         <repository>
             <id>central-portal-snapshots</id>
             <name>Central Portal Snapshots</name>
             <url>
                 https://central.sonatype.com/repository/maven-snapshots/
             </url>
-	    <releases>
-	      <enabled>false</enabled>
-	    </releases>
+            <releases>
+              <enabled>false</enabled>
+            </releases>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        <!--
         <repository>
             <id>s01-oss-sonatype</id>
             <name>s01-oss-sonatype</name>

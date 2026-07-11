@@ -2,7 +2,10 @@ package edu.harvard.iq.dataverse.export;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.gdcc.spi.export.DatasetExportQuery;
 import io.gdcc.spi.export.ExportDataProvider;
+import io.gdcc.spi.export.FileExportQuery;
+import io.gdcc.spi.export.PageRequest;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
@@ -23,9 +26,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.w3c.dom.Document;
 
 public class CroissantExporterTest {
 
@@ -51,6 +57,11 @@ public class CroissantExporterTest {
         dataProviderMinimal =
                 new ExportDataProvider() {
                     @Override
+                    public JsonObject getDatasetJson(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
+                    @Override
                     public JsonObject getDatasetJson() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/minimal/in/datasetJson.json";
@@ -61,7 +72,12 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public JsonObject getDatasetORE(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
                     @Override
                     public JsonObject getDatasetORE() {
                         String pathToJsonFile =
@@ -73,7 +89,17 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery fileExportQuery, PageRequest pageRequest) {
+                        return Stream.empty();
+                    }
+                    
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery fileExportQuery) {
+                        return Stream.empty();
+                    }
+                    
                     @Override
                     public JsonArray getDatasetFileDetails() {
                         String pathToJsonFile =
@@ -85,7 +111,12 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public JsonObject getDatasetSchemaDotOrg(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
                     @Override
                     public JsonObject getDatasetSchemaDotOrg() {
                         String pathToJsonFile =
@@ -97,7 +128,12 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public Document getDataCiteXml(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
                     @Override
                     public String getDataCiteXml() {
                         try {
@@ -115,6 +151,11 @@ public class CroissantExporterTest {
         dataProviderMax =
                 new ExportDataProvider() {
                     @Override
+                    public JsonObject getDatasetJson(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
+                    @Override
                     public JsonObject getDatasetJson() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/max/in/datasetJson.json";
@@ -125,7 +166,12 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public JsonObject getDatasetORE(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
                     @Override
                     public JsonObject getDatasetORE() {
                         String pathToJsonFile =
@@ -137,7 +183,17 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery fileExportQuery, PageRequest pageRequest) {
+                        return Stream.empty();
+                    }
+                    
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery fileExportQuery) {
+                        return Stream.empty();
+                    }
+                    
                     @Override
                     public JsonArray getDatasetFileDetails() {
                         String pathToJsonFile =
@@ -149,7 +205,12 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public JsonObject getDatasetSchemaDotOrg(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
                     @Override
                     public JsonObject getDatasetSchemaDotOrg() {
                         String pathToJsonFile =
@@ -161,7 +222,12 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public Document getDataCiteXml(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
                     @Override
                     public String getDataCiteXml() {
                         try {
@@ -179,6 +245,11 @@ public class CroissantExporterTest {
         dataProviderCars =
                 new ExportDataProvider() {
                     @Override
+                    public JsonObject getDatasetJson(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
+                    @Override
                     public JsonObject getDatasetJson() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/cars/in/datasetJson.json";
@@ -189,7 +260,12 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public JsonObject getDatasetORE(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
                     @Override
                     public JsonObject getDatasetORE() {
                         String pathToJsonFile =
@@ -201,7 +277,17 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery fileExportQuery, PageRequest pageRequest) {
+                        return Stream.empty();
+                    }
+                    
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery fileExportQuery) {
+                        return Stream.empty();
+                    }
+                    
                     @Override
                     public JsonArray getDatasetFileDetails() {
                         String pathToJsonFile =
@@ -213,7 +299,12 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public JsonObject getDatasetSchemaDotOrg(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
                     @Override
                     public JsonObject getDatasetSchemaDotOrg() {
                         String pathToJsonFile =
@@ -225,7 +316,12 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public Document getDataCiteXml(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
                     @Override
                     public String getDataCiteXml() {
                         try {
@@ -243,6 +339,11 @@ public class CroissantExporterTest {
         dataProviderRestricted =
                 new ExportDataProvider() {
                     @Override
+                    public JsonObject getDatasetJson(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
+                    @Override
                     public JsonObject getDatasetJson() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/restricted/in/datasetJson.json";
@@ -253,7 +354,12 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public JsonObject getDatasetORE(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
                     @Override
                     public JsonObject getDatasetORE() {
                         String pathToJsonFile =
@@ -265,7 +371,17 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery fileExportQuery, PageRequest pageRequest) {
+                        return Stream.empty();
+                    }
+                    
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery fileExportQuery) {
+                        return Stream.empty();
+                    }
+                    
                     @Override
                     public JsonArray getDatasetFileDetails() {
                         String pathToJsonFile =
@@ -277,7 +393,12 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public JsonObject getDatasetSchemaDotOrg(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
                     @Override
                     public JsonObject getDatasetSchemaDotOrg() {
                         String pathToJsonFile =
@@ -289,7 +410,12 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public Document getDataCiteXml(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
                     @Override
                     public String getDataCiteXml() {
                         try {
@@ -307,6 +433,11 @@ public class CroissantExporterTest {
         dataProviderJunk =
                 new ExportDataProvider() {
                     @Override
+                    public JsonObject getDatasetJson(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
+                    @Override
                     public JsonObject getDatasetJson() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/junk/in/datasetJson.json";
@@ -317,7 +448,12 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public JsonObject getDatasetORE(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
                     @Override
                     public JsonObject getDatasetORE() {
                         String pathToJsonFile =
@@ -329,7 +465,17 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery fileExportQuery, PageRequest pageRequest) {
+                        return Stream.empty();
+                    }
+                    
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery fileExportQuery) {
+                        return Stream.empty();
+                    }
+                    
                     @Override
                     public JsonArray getDatasetFileDetails() {
                         String pathToJsonFile =
@@ -341,7 +487,12 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public JsonObject getDatasetSchemaDotOrg(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
                     @Override
                     public JsonObject getDatasetSchemaDotOrg() {
                         String pathToJsonFile =
@@ -353,7 +504,12 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public Document getDataCiteXml(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
                     @Override
                     public String getDataCiteXml() {
                         try {
@@ -371,6 +527,11 @@ public class CroissantExporterTest {
         dataProviderDraft =
                 new ExportDataProvider() {
                     @Override
+                    public JsonObject getDatasetJson(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
+                    @Override
                     public JsonObject getDatasetJson() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/draft/in/datasetJson.json";
@@ -381,7 +542,12 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public JsonObject getDatasetORE(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
                     @Override
                     public JsonObject getDatasetORE() {
                         String pathToJsonFile =
@@ -393,7 +559,17 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery fileExportQuery, PageRequest pageRequest) {
+                        return Stream.empty();
+                    }
+                    
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery fileExportQuery) {
+                        return Stream.empty();
+                    }
+                    
                     @Override
                     public JsonArray getDatasetFileDetails() {
                         String pathToJsonFile =
@@ -405,7 +581,12 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public JsonObject getDatasetSchemaDotOrg(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
                     @Override
                     public JsonObject getDatasetSchemaDotOrg() {
                         String pathToJsonFile =
@@ -417,7 +598,12 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-
+                    
+                    @Override
+                    public Document getDataCiteXml(DatasetExportQuery datasetExportQuery) {
+                        return null;
+                    }
+                    
                     @Override
                     public String getDataCiteXml() {
                         try {

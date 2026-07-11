@@ -6,7 +6,9 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.dto.CustomTermsDTO;
 import edu.harvard.iq.dataverse.api.dto.LicenseUpdateRequest;
+import edu.harvard.iq.dataverse.api.dto.MultiDatasetExportRequest;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
+import edu.harvard.iq.dataverse.api.util.JsonResponseBuilder;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -64,6 +66,7 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import io.gdcc.spi.export.ExportException;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
@@ -71,6 +74,8 @@ import jakarta.json.*;
 import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
@@ -80,6 +85,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -306,6 +312,147 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.FORBIDDEN, "Export Failed");
         }
     }
+    
+    /**
+     * Exports metadata for one or multiple dataset versions based on a request containing persistent identifiers
+     * and version specifications.
+     * <p>
+     * This method validates the exporter, checks for supported multi-dataset exports when applicable,
+     * resolves dataset and version references, ensures access permissions, and aggregates errors encountered
+     * during resolution before proceeding with export (if no errors occurred).
+     * <p>
+     * {@code @AuthRequested} triggers {@link edu.harvard.iq.dataverse.api.auth.AuthFilter} to inject a user entity
+     * into the {@code ContainerRequestContext}.
+     *
+     * @param request the request body containing the exporter name and a list of dataset export specifications
+     *                (persistent ID and version), using JSON-B to inject and Bean Validation to vet.
+     * @param uriInfo contextual information about the request URI
+     * @param headers HTTP headers of the request
+     * @param crc container request context providing access to the authenticated user and other request-scoped data
+     * @return a JAX-RS Response indicating success, client errors (e.g., invalid or unsupported request), or (TODO)
+     * @implNote In regard to the HTTP method: as it is retrieval of data, it should be GET, not POST.
+     *           A GET request would become a nightmare to code on the client side fast with the amount of parameters.
+     *           A nice concise JSON format is much easier to handle.
+     *           But, GET should have no body according to RFC 9110, yet the QUERY method is still a draft
+     *           (https://httpwg.org/http-extensions/draft-ietf-httpbis-safe-method-w-body.html).
+     *           Thus, POST is the only viable option (https://roy.gbiv.com/untangled/2009/it-is-okay-to-use-post).
+     */
+    @POST
+    @AuthRequired
+    @Consumes("application/json")
+    @Path("export")
+    @Operation(summary = "Export metadata for one or multiple dataset versions")
+    @APIResponse(responseCode = "400", description = "Invalid JSON or not following schema (syntactical error), or valid JSON, but not processable (semantical error).")
+    public Response exportMultiple(@RequestBody(content = @Content(schema = @Schema(implementation = MultiDatasetExportRequest.class)))
+                                   // TODO: Extend capturing capabilities for exceptions to provide clean error messages
+                                   //       JsonbException, ProcessingException, UnexpectedTypeException, IllegalArgumentException, ...
+                                   @NotNull(message = "request body may not be absent") @Valid MultiDatasetExportRequest request,
+                                   @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context ContainerRequestContext crc) {
+        
+        // Verify the exporter exists and supports multiple datasets (when given more than one)
+        if (!ExportService.isSupported(request.exporter())) {
+            return error(BAD_REQUEST, "Requested export format "+request.exporter()+" is not supported");
+        }
+        if (request.datasets().size() > 1 && !ExportService.isSupported(request.exporter(), request.datasets().size())) {
+            return error(BAD_REQUEST, "Requested export format "+request.exporter()+" does not support multi-dataset exports");
+        }
+        
+        // Lookup the HTTP request enhanced with the authenticated user from context (resolved by the AuthFilter/AuthRequired mechanism)
+        DataverseRequest userScopedHttpRequest = createDataverseRequest(getRequestUser(crc));
+        
+        // Instead of bailing out on the first error, keep going and record any problems before reporting back
+        List<String> errors = new ArrayList<>();
+        // Note: The set automatically avoids duplicate requests, linked set preserves insertion order.
+        //       (As an API user may rely on keeping the order as given in the request.)
+        Set<DatasetVersion> versions = new LinkedHashSet<>();
+        
+        // Get all the requested DatasetVersions (requiring permission checks)
+        // TODO: This should not be a part of the API code, but a distinct service, owning the business logic
+        for (MultiDatasetExportRequest.ExportItem requested : request.datasets()) {
+            // First, lookup the dataset itself to verify it exists
+            Dataset dataset = datasetService.findByGlobalId(requested.persistentId());
+            if (dataset == null) {
+                // Record if absent and move on to next request
+                errors.add("No such dataset " + requested.persistentId());
+                continue;
+            }
+            
+            // Second, if the requested version is a version number (and not a "draft", "latest published" or
+            //         "latest" (= draft or latest published)), lookup the version number of the "latest published"
+            //         for comparison. Reason: Only this latest-published version is cached and supportable for retrieval!
+            if (!DS_VERSION_RESERVED_IDENTIFIERS.contains(requested.version())) {
+                try {
+                    // Note: this lookup includes a permission check for the user being able to access the lastest published version
+                    DatasetVersion latestPublished = commandEngine.submit(new GetLatestPublishedDatasetVersionCommand(userScopedHttpRequest, dataset));
+                    // Specific (published) version requested by id but none found
+                    if (latestPublished == null) {
+                        // Record error and move on to next request
+                        errors.add("Dataset %s has no published versions, try %s.".formatted(requested.persistentId(), DS_VERSION_DRAFT));
+                        continue;
+                    // Specific (published) version requested by does not match the "latest-published" one
+                    } else if (!requested.version().equals(latestPublished.getFriendlyVersionNumber())) {
+                        // Record error and move on to next request
+                        errors.add("Requested version number %s for dataset %s is not supported for export, only %s (equivalent to %s)."
+                            .formatted(requested.version(), requested.persistentId(), latestPublished.getFriendlyVersionNumber(), DS_VERSION_LATEST_PUBLISHED));
+                        continue;
+                    }
+                } catch (CommandException e) {
+                    // For a command exception to appear, something must have been going very wrong here.
+                    // Only report an internal error appeared, for security details in logs only.
+                    String incidentId = UUID.randomUUID().toString();
+                    String message = "While looking up %s's version %s, an internal error occured. incidentId=%s"
+                        .formatted(requested.persistentId(), requested.version(), incidentId);
+                    errors.add(message);
+                    logger.log(Level.WARNING, message, e);
+                    // Now move on to the next request
+                    continue;
+                }
+            }
+            
+            try {
+                // Third, lookup the dataset version (potentially again) as requested.
+                // Note: this lookup includes the permission check for the user being able to access the requested version
+                versions.add(getDatasetVersionOrDie(userScopedHttpRequest, requested.version(), dataset, uriInfo, headers));
+            } catch (WrappedResponse e) {
+                // If not found (most likely because not authorized), record an error and move on to the next request
+                errors.add("Unable to look up dataset %s based on version %s. Try %s."
+                    .formatted(requested.persistentId(), requested.version(), DS_VERSION_LATEST_PUBLISHED));
+            }
+        }
+        
+        // In case of errors, stop here. Otherwise, hand over to ExportService.
+        if (!errors.isEmpty()) {
+            return JsonResponseBuilder.error(BAD_REQUEST)
+                // TODO: align with error messages from validation (keep a consistent output!), make it more granular
+                .message("The following errors were found in your request:" + StringUtils.join("\n", errors))
+                .build();
+        }
+        
+        // Retrieve the export service and prepare the export
+        // TODO: the service should be an injected EJB singleton, aligned with how the rest of the API works
+        ExportService instance = ExportService.getInstance();
+        String mediaType = instance.getMediaType(request.exporter());
+        String exportId = UUID.randomUUID().toString();
+        
+        // Streaming Lambda to write the serialized exporter output to the client
+        // TODO: Make Data Count still needs a notification for released datasets
+        StreamingOutput stream = output -> {
+            try {
+                instance.writeExports(request.exporter(), versions, output);
+                output.flush();
+            } catch (ExportException | IOException e) {
+                logger.log(Level.WARNING, e,
+                    () -> "Internal error occurred during streaming multi-dataset export response. exportId=" + exportId);
+                throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
+            }
+        };
+        
+        return Response.ok(stream)
+            .type(mediaType)
+            // Include this header to provide an individual marker for tracking purposes in case of exceptions
+            .header("X-Dataverse-Export-Id", exportId)
+            .build();
+    }
 
     @DELETE
     @AuthRequired
@@ -484,8 +631,8 @@ public class Datasets extends AbstractApiBean {
 
         return response( req -> {
             Dataset dataset = findDatasetUserCanSeeOrDie(id, req, false);
-            Boolean deepLookup = excludeFiles == null ? true : !excludeFiles;
-            Boolean includeMetadataBlocks = excludeMetadataBlocks == null ? true : !excludeMetadataBlocks;
+            Boolean deepLookup = excludeFiles == null || !excludeFiles;
+            Boolean includeMetadataBlocks = excludeMetadataBlocks == null || !excludeMetadataBlocks;
 
             return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, deepLookup) )
                                 .stream()
@@ -508,8 +655,8 @@ public class Datasets extends AbstractApiBean {
                                @Context UriInfo uriInfo,
                                @Context HttpHeaders headers) {
         return response( req -> {
-            boolean includeMetadataBlocks = excludeMetadataBlocks == null ? true : !excludeMetadataBlocks;
-            boolean includeFiles = excludeFiles == null ? true : !excludeFiles;
+            boolean includeMetadataBlocks = excludeMetadataBlocks == null || !excludeMetadataBlocks;
+            boolean includeFiles = excludeFiles == null || !excludeFiles;
             boolean ignoreSettingExcludeEmailFromExport = ignoreSettingToExcludeEmailFromExport != null ? ignoreSettingToExcludeEmailFromExport : false;
 
             //If excludeFiles is null the default is to provide the files and because of this we need to check permissions.
@@ -807,7 +954,7 @@ public class Datasets extends AbstractApiBean {
         return response(req -> {
             Dataset dataset = findDatasetOrDie(id);
             execCommand(new UpdateDvObjectPIDMetadataCommand(dataset, req));
-            List<String> args = Arrays.asList(dataset.getIdentifier());
+            List<String> args = Collections.singletonList(dataset.getIdentifier());
             return ok(BundleUtil.getStringFromBundle("datasets.api.updatePIDMetadata.success.for.single.dataset", args));
         }, getRequestUser(crc));
     }
@@ -1330,7 +1477,7 @@ public class Datasets extends AbstractApiBean {
                                 successMsg = BundleUtil.getStringFromBundle("datasetversion.archive.inprogress");
                             } catch (CommandException ex) {
                                 successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure")
-                                        + " - " + ex.toString();
+                                        + " - " + ex;
                                 logger.severe(ex.getMessage());
                             }
                         } else if (status.equals(DatasetVersion.ARCHIVAL_STATUS_SUCCESS)) {
@@ -1340,7 +1487,7 @@ public class Datasets extends AbstractApiBean {
                         }
                     }
                 } catch (CommandException ex) {
-                    errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex.toString();
+                    errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex;
                     logger.severe(ex.getMessage());
                 }
                 if (errorMsg != null) {
@@ -1411,7 +1558,7 @@ public class Datasets extends AbstractApiBean {
                     }
                     // Release User is only set in FinalizeDatasetPublicationCommand if the pub date
                     // is null, so set it here.
-                    ds.setReleaseUser((AuthenticatedUser) user);
+                    ds.setReleaseUser(user);
                 }
             } catch (Exception e) {
                 logger.fine(e.getMessage());
@@ -1441,7 +1588,7 @@ public class Datasets extends AbstractApiBean {
                     ds = commandEngine.submit(cmd);
                 }
             } catch (CommandException ex) {
-                errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex.toString();
+                errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex;
                 logger.severe(ex.getMessage());
             }
 
@@ -2249,7 +2396,7 @@ public class Datasets extends AbstractApiBean {
                 // concurrent update
                 return error(Status.CONFLICT, BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.has.role.error"));
             }
-            List<String> args = Arrays.asList(ex.getMessage());
+            List<String> args = Collections.singletonList(ex.getMessage());
             logger.log(Level.WARNING, BundleUtil.getStringFromBundle("datasets.api.grant.role.cant.create.assignment.error", args));
             return ex.getResponse();
         }
@@ -2271,7 +2418,7 @@ public class Datasets extends AbstractApiBean {
                 return ex.getResponse();
             }
         } else {
-            List<String> args = Arrays.asList(Long.toString(assignmentId));
+            List<String> args = List.of(Long.toString(assignmentId));
             return error(Status.NOT_FOUND, BundleUtil.getStringFromBundle("datasets.api.revoke.role.not.found.error", args));
         }
     }
@@ -2539,7 +2686,7 @@ public class Datasets extends AbstractApiBean {
 
                     ImportMode importMode = ImportMode.MERGE;
                     try {
-                        JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromFileSystemCommand(createDataverseRequest(getRequestUser(crc)), dataset, uploadFolder, new Long(totalSize), importMode));
+                        JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromFileSystemCommand(createDataverseRequest(getRequestUser(crc)), dataset, uploadFolder, Long.valueOf(totalSize), importMode));
                         long jobId = jsonFromImportJobKickoff.getInt("executionId");
                         String message = jsonFromImportJobKickoff.getString("message");
                         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -2557,7 +2704,7 @@ public class Datasets extends AbstractApiBean {
 
                         //Where the lifting is actually done, moving the s3 files over and having dataverse know of the existance of the package
                         s3PackageImporter.copyFromS3(dataset, uploadFolder);
-                        DataFile packageFile = s3PackageImporter.createPackageDataFile(dataset, uploadFolder, new Long(totalSize));
+                        DataFile packageFile = s3PackageImporter.createPackageDataFile(dataset, uploadFolder, Long.valueOf(totalSize));
 
                         if (packageFile == null) {
                             logger.log(Level.SEVERE, "S3 File package import failed.");
@@ -2599,7 +2746,7 @@ public class Datasets extends AbstractApiBean {
             } else if ("validation failed".equals(statusMessageFromDcm)) {
                 Map<String, AuthenticatedUser> distinctAuthors = permissionService.getDistinctUsersWithPermissionOn(Permission.EditDataset, dataset);
                 distinctAuthors.values().forEach((value) -> {
-                    userNotificationService.sendNotification((AuthenticatedUser) value, new Timestamp(new Date().getTime()), UserNotification.Type.CHECKSUMFAIL, dataset.getId());
+                    userNotificationService.sendNotification(value, new Timestamp(new Date().getTime()), UserNotification.Type.CHECKSUMFAIL, dataset.getId());
                 });
                 List<AuthenticatedUser> superUsers = authenticationServiceBean.findSuperUsers();
                 if (superUsers != null && !superUsers.isEmpty()) {
@@ -2810,7 +2957,7 @@ public class Datasets extends AbstractApiBean {
                     int uploadedFileCount = datasetService.getDataFileCountByOwner(dataset.getId());
                     if (uploadedFileCount >= effectiveDatasetFileCountLimit) {
                         return error(Response.Status.BAD_REQUEST,
-                                BundleUtil.getStringFromBundle("file.add.count_exceeds_limit", Arrays.asList(String.valueOf(effectiveDatasetFileCountLimit))));
+                                BundleUtil.getStringFromBundle("file.add.count_exceeds_limit", Collections.singletonList(String.valueOf(effectiveDatasetFileCountLimit))));
                     }
                 }
             }
@@ -3510,9 +3657,9 @@ public class Datasets extends AbstractApiBean {
                 StringJoiner reasonJoiner = new StringJoiner(", ");
                 for (Reason r: Reason.values()) {
                     reasonJoiner.add(r.name());
-                };
+                }
                 String errorMessage = "Invalid lock type value: " + lockType +
-                        "; valid lock types: " + reasonJoiner.toString();
+                        "; valid lock types: " + reasonJoiner;
                 return error(Response.Status.BAD_REQUEST, errorMessage);
             }
         }
@@ -3992,13 +4139,11 @@ public class Datasets extends AbstractApiBean {
                 // If the modification/permissionmodification time is
                 // set and the index time is null or is before the mod time, the relevant index is stale
                 timestamps.add("hasStaleIndex",
-                        (dataset.getModificationTime() != null && (dataset.getIndexTime() == null
-                                || (dataset.getIndexTime().compareTo(dataset.getModificationTime()) <= 0))) ? true
-                                : false);
+                    dataset.getModificationTime() != null && (dataset.getIndexTime() == null
+                        || (dataset.getIndexTime().compareTo(dataset.getModificationTime()) <= 0)));
                 timestamps.add("hasStalePermissionIndex",
-                        (dataset.getPermissionModificationTime() != null && (dataset.getIndexTime() == null
-                                || (dataset.getIndexTime().compareTo(dataset.getModificationTime()) <= 0))) ? true
-                                : false);
+                    dataset.getPermissionModificationTime() != null && (dataset.getIndexTime() == null
+                        || (dataset.getIndexTime().compareTo(dataset.getModificationTime()) <= 0)));
             }
             // More detail if you can see a draft
             if (canSeeDraft) {
@@ -4547,12 +4692,11 @@ public class Datasets extends AbstractApiBean {
                         id = ((JsonString) fileVal).getString();
                         break;
                     case NUMBER:
-                        id = ((JsonNumber) fileVal).toString();
+                        id = fileVal.toString();
                         break;
                     default:
                         return badRequest("fileIds must be numeric or string (ids/PIDs)");
                     }
-                    ;
                     fileIds.add(id);
                 }
             } else {
@@ -4952,7 +5096,7 @@ public class Datasets extends AbstractApiBean {
 
                 if (IngestUtil.conflictsWithExistingFilenames(pathPlusFilename, fmdListMinusCurrentFile)) {
                     return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile",
-                            Arrays.asList(pathPlusFilename)));
+                        Collections.singletonList(pathPlusFilename)));
                 }
 
                 // Apply optional params
