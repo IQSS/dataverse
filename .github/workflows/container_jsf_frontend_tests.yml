@@ -180,9 +180,9 @@ jobs:
           node-version: "24"
 
       # ---------------------------
-      # CHECKOUT KUNAI-RUNNER
+      # CHECKOUT dataverse-jsf-tests
       # ---------------------------
-      - name: Checkout kunai-runner
+      - name: Checkout dataverse-jsf-tests
         uses: actions/checkout@v7
         with:
           repository: gdcc/dataverse-jsf-tests
