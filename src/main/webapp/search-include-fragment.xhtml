@@ -6,7 +6,8 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:of="http://omnifaces.org/functions"
-                xmlns:jsf="http://xmlns.jcp.org/jsf" xmlns:Strings="http://omnifaces.org/functions">
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:Strings="http://omnifaces.org/functions">
 
     <c:set var="page" value="/dataverse/#{DataversePage.dataverse.alias}"/>
     <c:set var="cvocConf" value="#{settingsWrapper.getCVocConf(true)}"/>
@@ -539,7 +540,7 @@
 
                         <hr style="margin:.5em;border:0;"/>
 
-                        <h:outputText value="#{Strings:abbreviate(MarkupChecker:sanitizeBasicHTML(result.descriptionNoSnippet), descriptionAbbreviationThreshold)}" escape="false" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+                        <h:outputText value="#{Strings:abbreviate(MarkupChecker:stripAllTags(result.descriptionNoSnippet), descriptionAbbreviationThreshold)}" escape="false" rendered="#{result.descriptionSnippets.size() eq 0}"/>
 
                         <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
                                    rendered="#{result.descriptionSnippets.size() gt 0}">
@@ -607,7 +608,7 @@
                             <h:outputText value="#{result.citationHtml != null ? result.citationHtml : result.citation}" escape="false"/>
                         </div>
                         
-                        <h:outputText value="#{Strings:abbreviate(MarkupChecker:sanitizeBasicHTML(result.descriptionNoSnippet), descriptionAbbreviationThreshold)}" escape="false" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+                        <h:outputText value="#{Strings:abbreviate(MarkupChecker:stripAllTags(result.descriptionNoSnippet), descriptionAbbreviationThreshold)}" escape="false" rendered="#{result.descriptionSnippets.size() eq 0}"/>
 
                         <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
                                    rendered="#{result.descriptionSnippets.size() gt 0}">
@@ -721,7 +722,7 @@
                             </ui:repeat>
                         </div>
 
-                        <h:outputText value="#{Strings:abbreviate(MarkupChecker:sanitizeBasicHTML(result.descriptionNoSnippet), descriptionAbbreviationThreshold)}" escape="false" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+                        <h:outputText value="#{Strings:abbreviate(MarkupChecker:stripAllTags(result.descriptionNoSnippet), descriptionAbbreviationThreshold)}" escape="false" rendered="#{result.descriptionSnippets.size() eq 0}"/>
 
                         <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
                                    rendered="#{result.descriptionSnippets.size() gt 0}">
