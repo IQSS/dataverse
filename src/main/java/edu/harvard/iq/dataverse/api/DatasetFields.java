@@ -7,6 +7,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 
 import java.util.List;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonDatasetFieldTypes;
 
@@ -15,6 +17,7 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonDatasetFieldTyp
  */
 @Path("datasetfields")
 @Produces("application/json")
+@Tag(name = "Dataset Fields", description = "Dataset field type, controlled vocabulary, and metadata block loading operations.")
 public class DatasetFields extends AbstractApiBean {
 
     @EJB
@@ -22,6 +25,8 @@ public class DatasetFields extends AbstractApiBean {
 
     @GET
     @Path("facetables")
+    @Operation(summary = "Lists facetable dataset fields",
+            description = "Lists all facetable dataset fields defined in the installation.")
     public Response listAllFacetableDatasetFields() {
         List<DatasetFieldType> datasetFieldTypes = datasetFieldService.findAllFacetableFieldTypes();
         return ok(jsonDatasetFieldTypes(datasetFieldTypes));
