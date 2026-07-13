@@ -321,7 +321,6 @@ public class Datasets extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{id}")
-    public Response deleteDataset(@Context ContainerRequestContext crc, @PathParam("id") String id) {
     @Operation(summary = "Deletes a dataset",
             description = "Deletes the latest draft version or destroys an unpublished single-version dataset after checking delete permissions.")
     public Response deleteDataset(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
