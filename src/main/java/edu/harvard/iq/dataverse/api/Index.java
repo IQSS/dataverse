@@ -59,6 +59,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.QueryParam;
@@ -67,8 +68,12 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("admin/index")
+@Tag(name = "Admin", description = "Administrative Dataverse operations.")
 public class Index extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Index.class.getCanonicalName());
@@ -104,13 +109,29 @@ public class Index extends AbstractApiBean {
     public static String permsIndexed = "permsIndexed";
 
     @GET
-    public Response indexAllOrSubset(@QueryParam("numPartitions") Long numPartitionsSelected, @QueryParam("partitionIdToProcess") Long partitionIdToProcess, @QueryParam("previewOnly") boolean previewOnly) {
+    @Operation(summary = "Starts indexing all content",
+            description = "Starts indexing all dataverses and datasets or one selected partition, with an option to preview the selected workload.")
+    public Response indexAllOrSubset(
+            @Parameter(description = "Number of index partitions to divide the workload into.")
+            @QueryParam("numPartitions") Long numPartitionsSelected,
+            @Parameter(description = "Partition id to process when the workload is divided into partitions.")
+            @QueryParam("partitionIdToProcess") Long partitionIdToProcess,
+            @Parameter(description = "Preview the selected indexing workload without starting indexing.")
+            @QueryParam("previewOnly") boolean previewOnly) {
         return indexAllOrSubset(numPartitionsSelected, partitionIdToProcess, false, previewOnly);
     }
 
     @GET
     @Path("continue")
-    public Response indexAllOrSubsetContinue(@QueryParam("numPartitions") Long numPartitionsSelected, @QueryParam("partitionIdToProcess") Long partitionIdToProcess, @QueryParam("previewOnly") boolean previewOnly) {
+    @Operation(summary = "Continues indexing unindexed content",
+            description = "Starts indexing one selected partition while skipping content that has already been indexed, with an option to preview the selected workload.")
+    public Response indexAllOrSubsetContinue(
+            @Parameter(description = "Number of index partitions to divide the workload into.")
+            @QueryParam("numPartitions") Long numPartitionsSelected,
+            @Parameter(description = "Partition id to process when the workload is divided into partitions.")
+            @QueryParam("partitionIdToProcess") Long partitionIdToProcess,
+            @Parameter(description = "Preview the selected indexing workload without starting indexing.")
+            @QueryParam("previewOnly") boolean previewOnly) {
         return indexAllOrSubset(numPartitionsSelected, partitionIdToProcess, true, previewOnly);
     }
 
@@ -208,6 +229,8 @@ public class Index extends AbstractApiBean {
 
     @GET
     @Path("clear")
+    @Operation(summary = "Clears the Solr index",
+            description = "Clears all Solr documents and resets stored index timestamps.")
     public Response clearSolrIndex() {
         try {
             JsonObjectBuilder response = SolrIndexService.deleteAllFromSolrAndResetIndexTimes();
@@ -219,7 +242,13 @@ public class Index extends AbstractApiBean {
     
     @GET
     @Path("{type}/{id}")
-    public Response indexTypeById(@PathParam("type") String type, @PathParam("id") Long id) {
+    @Operation(summary = "Starts indexing one object",
+            description = "Starts reindexing a dataverse, dataset, or file by numeric id, or removes a stale Solr document when the object is missing.")
+    public Response indexTypeById(
+            @Parameter(description = "Object type to index: dataverses, datasets, or files.", required = true)
+            @PathParam("type") String type,
+            @Parameter(description = "Numeric id of the object to index.", required = true)
+            @PathParam("id") Long id) {
         try {
             if (type.equals("dataverses")) {
                 Dataverse dataverse = dataverseService.find(id);
@@ -296,7 +325,11 @@ public class Index extends AbstractApiBean {
 
     @GET
     @Path("dataset")
-    public Response indexDatasetByPersistentId(@QueryParam("persistentId") String persistentId) {
+    @Operation(summary = "Starts indexing a dataset by PID",
+            description = "Looks up a dataset by persistent identifier, starts dataset indexing, and returns version identifiers for the dataset.")
+    public Response indexDatasetByPersistentId(
+            @Parameter(description = "Persistent identifier of the dataset to index.", required = true)
+            @QueryParam("persistentId") String persistentId) {
         if (persistentId == null) {
             return error(Status.BAD_REQUEST, "No persistent id given.");
         }
@@ -337,7 +370,11 @@ public class Index extends AbstractApiBean {
      */
     @DELETE
     @Path("datasets/{id}")
-    public Response clearDatasetFromIndex(@PathParam("id") Long id) {
+    @Operation(summary = "Clears a dataset from the Solr index",
+            description = "Removes the Solr document for the specified dataset id, even when the dataset no longer exists in the database.")
+    public Response clearDatasetFromIndex(
+            @Parameter(description = "Numeric id of the dataset to remove from Solr.", required = true)
+            @PathParam("id") Long id) {
         Dataset dataset = datasetService.find(id);
         // We'll attempt to delete the Solr document regardless of whether the 
         // dataset exists in the database: 
@@ -355,7 +392,9 @@ public class Index extends AbstractApiBean {
      */
     @GET
     @Path("mod")
-    public Response indexMod(@QueryParam("partitions") long partitions, @QueryParam("which") long which) {
+    @Operation(summary = "Tests index partition assignment",
+            description = "Returns the object ids assigned to an indexing partition for a requested partition count and partition number.")
+    public Response indexMod(@Parameter(description = "Number of indexing partitions.") @QueryParam("partitions") long partitions, @Parameter(description = "Indexing partition to process.") @QueryParam("which") long which) {
         long numObjectToConsider = 100;
         List<Long> dvObjectsIds = new ArrayList<>();
         for (long i = 1; i <= numObjectToConsider; i++) {
@@ -369,22 +408,46 @@ public class Index extends AbstractApiBean {
         return ok(response);
     }
 
-    @GET
+    @POST
+    @AuthRequired
     @Path("perms")
-    public Response indexAllPermissions() {
-        IndexResponse indexResponse = solrIndexService.indexAllPermissions();
-        return ok(indexResponse.getMessage());
+    @Operation(summary = "Indexes all permissions",
+            description = "Rebuilds Solr permission documents for all indexed dataverse objects.")
+    public Response indexAllPermissions(@Context ContainerRequestContext crc) {
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Superusers only.");
+            }
+            if (!solrIndexService.asyncIndexAllPermissions()) {
+                return conflict("Asynchronous indexing of all permissions is already in progress.");
+            }
+            return ok("Asynchronous indexing of all permissions has been started. Check the server logs for progress.");
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
     }
 
-    @GET
+    @POST
+    @AuthRequired
     @Path("perms/{id}")
-    public Response indexPermissions(@PathParam("id") Long id) {
-        DvObject dvObject = dvObjectService.findDvObject(id);
-        if (dvObject == null) {
-            return error(Status.BAD_REQUEST, "Could not find DvObject based on id " + id);
-        } else {
-            IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(dvObject);
-            return ok(indexResponse.getMessage());
+    @Operation(summary = "Indexes permissions for an object",
+            description = "Rebuilds Solr permission documents for one dataverse object.")
+    public Response indexPermissions(@Context ContainerRequestContext crc, @Parameter(description = "Resource id") @PathParam("id") Long id) {
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Superusers only.");
+            }
+            DvObject dvObject = dvObjectService.findDvObject(id);
+            if (dvObject == null) {
+                return error(Status.BAD_REQUEST, "Could not find DvObject based on id " + id);
+            } else {
+                IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(dvObject);
+                return ok(indexResponse.getMessage());
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
     }
     /**
@@ -396,7 +459,9 @@ public class Index extends AbstractApiBean {
      */
     @GET
     @Path("status")
-    public Response indexStatus(@QueryParam("sync") String sync) {
+    @Operation(summary = "Checks index status",
+            description = "Checks consistency between the database and Solr index and returns status by content type.")
+    public Response indexStatus(@Parameter(description = "Whether to run the indexing task synchronously.") @QueryParam("sync") String sync) {
         Future<JsonObjectBuilder> result = indexBatchService.indexStatus();
         if (sync != null) {
             try {
@@ -417,6 +482,8 @@ public class Index extends AbstractApiBean {
      */
     @GET
     @Path("clear-orphans")
+    @Operation(summary = "Clears orphaned index documents",
+            description = "Removes Solr documents that no longer correspond to database records.")
     /**
      * Checks whether there are inconsistencies between the Solr index and the
      * database, and reports back the status by content type
@@ -426,7 +493,7 @@ public class Index extends AbstractApiBean {
      * server.log
      * @return
      */
-    public Response clearOrphans(@QueryParam("sync") String sync) {
+    public Response clearOrphans(@Parameter(description = "Whether to run the indexing task synchronously.") @QueryParam("sync") String sync) {
         Future<JsonObjectBuilder> result = indexBatchService.clearOrphans();
         if (sync != null) {
             try {
@@ -449,6 +516,8 @@ public class Index extends AbstractApiBean {
      */
     @GET
     @Path("solr/schema")
+    @Operation(summary = "Returns the Solr schema",
+            description = "Generates the Solr schema definition from configured dataset field types.")
     public String getSolrSchema() {
 
         StringBuilder sb = new StringBuilder();
@@ -544,10 +613,12 @@ public class Index extends AbstractApiBean {
      */
     @GET
     @Path("test")
+    @Operation(summary = "Runs a search debug query",
+            description = "Runs a search debug query for integration testing and returns matching result labels.")
     public Response searchDebug(
-            @QueryParam("key") String apiToken,
-            @QueryParam("q") String query,
-            @QueryParam("fq") final List<String> filterQueries) {
+            @Parameter(description = "Legacy API token query value.") @QueryParam("key") String apiToken,
+            @Parameter(description = "Search query string.") @QueryParam("q") String query,
+            @Parameter(description = "Filter query.") @QueryParam("fq") final List<String> filterQueries) {
 
         User user = findUserByApiToken(apiToken);
         if (user == null) {
@@ -584,9 +655,11 @@ public class Index extends AbstractApiBean {
      */
     @GET
     @Path("permsDebug")
+    @Operation(summary = "Returns permission index debug data",
+            description = "Returns Solr permission document, timestamp, and role assignment data for one dataverse object.")
     public Response searchPermsDebug(
-            @QueryParam("key") String apiToken,
-            @QueryParam("id") Long dvObjectId) {
+            @Parameter(description = "Legacy API token query value.") @QueryParam("key") String apiToken,
+            @Parameter(description = "Resource id or persistent identifier.") @QueryParam("id") Long dvObjectId) {
 
         User user = findUserByApiToken(apiToken);
         if (user == null) {
@@ -635,6 +708,8 @@ public class Index extends AbstractApiBean {
 
     @DELETE
     @Path("timestamps")
+    @Operation(summary = "Clears all index timestamps",
+            description = "Clears index timestamp fields for all dataverse objects.")
     public Response deleteAllTimestamps() {
         int numItemsCleared = dvObjectService.clearAllIndexTimes();
         return ok("cleared: " + numItemsCleared);
@@ -642,7 +717,9 @@ public class Index extends AbstractApiBean {
 
     @DELETE
     @Path("timestamps/{dvObjectId}")
-    public Response deleteTimestamp(@PathParam("dvObjectId") long dvObjectId) {
+    @Operation(summary = "Clears an index timestamp",
+            description = "Clears index timestamp fields for one dataverse object.")
+    public Response deleteTimestamp(@Parameter(description = "Dataverse object id.") @PathParam("dvObjectId") long dvObjectId) {
         int numItemsCleared = dvObjectService.clearIndexTimes(dvObjectId);
         return ok("cleared: " + numItemsCleared);
     }
@@ -650,7 +727,9 @@ public class Index extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("filesearch")
-    public Response filesearch(@Context ContainerRequestContext crc, @QueryParam("persistentId") String persistentId, @QueryParam("semanticVersion") String semanticVersion, @QueryParam("q") String userSuppliedQuery) {
+    @Operation(summary = "Searches files in a dataset",
+            description = "Searches files within a dataset and returns file search results, facets, filters, and dataset version context.")
+    public Response filesearch(@Context ContainerRequestContext crc, @Parameter(description = "Persistent identifier.") @QueryParam("persistentId") String persistentId, @Parameter(description = "Semantic version filter.") @QueryParam("semanticVersion") String semanticVersion, @Parameter(description = "Search query string.") @QueryParam("q") String userSuppliedQuery) {
         Dataset dataset = datasetService.findByGlobalId(persistentId);
         if (dataset == null) {
             return error(Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
@@ -713,11 +792,13 @@ public class Index extends AbstractApiBean {
 
     @GET
     @Path("filemetadata/{dataset_id}")
+    @Operation(summary = "Lists file metadata by dataset version",
+            description = "Returns file metadata rows for a dataset version with optional result limit and sorting.")
     public Response getFileMetadataByDatasetId(
-            @PathParam("dataset_id") long datasetIdToLookUp,
-            @QueryParam("maxResults") int maxResults,
-            @QueryParam("sort") String sortField,
-            @QueryParam("order") String sortOrder
+            @Parameter(description = "Dataset id.") @PathParam("dataset_id") long datasetIdToLookUp,
+            @Parameter(description = "Maximum number of results to return.") @QueryParam("maxResults") int maxResults,
+            @Parameter(description = "Sort field.") @QueryParam("sort") String sortField,
+            @Parameter(description = "Sort order.") @QueryParam("order") String sortOrder
     ) {
         JsonArrayBuilder data = Json.createArrayBuilder();
         List<FileMetadata> fileMetadatasFound = new ArrayList<>();

@@ -80,6 +80,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -120,6 +121,7 @@ import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 
 @Path("datasets")
+@Tag(name = "Datasets", description = "Manage datasets, versions, files, metadata, publication, and dataset administration.")
 public class Datasets extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Datasets.class.getCanonicalName());
@@ -222,7 +224,14 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}")
-    public Response getDataset(@Context ContainerRequestContext crc, @PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,  @QueryParam("returnOwners") boolean returnOwners) {
+    @Operation(summary = "Read dataset details",
+            description = "Returns dataset metadata and the latest accessible version, and records metrics for released dataset access.")
+    public Response getDataset(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String id,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,
+            @Parameter(description = "Whether to include owner information in the response.")
+            @QueryParam("returnOwners") boolean returnOwners) {
         return response( req -> {
             final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetUserCanSeeOrDie(id, req, true)));
             final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
@@ -240,8 +249,10 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("/export")
     @Produces({"application/xml", "application/json", "application/html", "application/ld+json", "*/*" })
-    public Response exportDataset(@Context ContainerRequestContext crc, @QueryParam("persistentId") String persistentId,
-            @QueryParam("version") String versionId, @QueryParam("exporter") String exporter,
+    @Operation(summary = "Export dataset metadata",
+            description = "Exports dataset metadata by persistent id using the requested version and exporter.")
+    public Response exportDataset(@Context ContainerRequestContext crc, @Parameter(description = "Persistent identifier.") @QueryParam("persistentId") String persistentId,
+            @Parameter(description = "Dataset version selector.") @QueryParam("version") String versionId, @Parameter(description = "Exporter option.") @QueryParam("exporter") String exporter,
             @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
         try {
@@ -311,6 +322,19 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}")
     public Response deleteDataset(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+    @Operation(summary = "Deletes a dataset",
+            description = "Deletes the latest draft version or destroys an unpublished single-version dataset after checking delete permissions.")
+    public Response deleteDataset(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
+        // Internally, "DeleteDatasetCommand" simply redirects to "DeleteDatasetVersionCommand"
+        // (and there's a comment that says "TODO: remove this command")
+        // do we need an exposed API call for it?
+        // And DeleteDatasetVersionCommand further redirects to DestroyDatasetCommand,
+        // if the dataset only has 1 version... In other words, the functionality
+        // currently provided by this API is covered between the "deleteDraftVersion" and
+        // "destroyDataset" API calls.
+        // (The logic below follows the current implementation of the underlying
+        // commands!)
+
         User u = getRequestUser(crc);
         return response( req -> {
             Dataset doomed = findDatasetOrDie(id);
@@ -345,7 +369,9 @@ public class Datasets extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{id}/destroy")
-    public Response destroyDataset(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+    @Operation(summary = "Destroys a dataset",
+            description = "Permanently destroys a dataset and finalizes physical file deletion when the requester is authorized.")
+    public Response destroyDataset(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
 
         User u = getRequestUser(crc);
         return response(req -> {
@@ -385,7 +411,9 @@ public class Datasets extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{id}/versions/{versionId}")
-    public Response deleteDraftVersion(@Context ContainerRequestContext crc, @PathParam("id") String id,  @PathParam("versionId") String versionId ){
+    @Operation(summary = "Deletes a draft dataset version",
+            description = "Deletes the draft version of a dataset and finalizes physical file deletion for removed files.")
+    public Response deleteDraftVersion(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id,  @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId ){
         if (!DS_VERSION_DRAFT.equals(versionId)) {
             return badRequest("Only the " + DS_VERSION_DRAFT + " version can be deleted");
         }
@@ -423,7 +451,9 @@ public class Datasets extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{datasetId}/deleteLink/{linkedDataverseId}")
-    public Response deleteDatasetLinkingDataverse(@Context ContainerRequestContext crc, @PathParam("datasetId") String datasetId, @PathParam("linkedDataverseId") String linkedDataverseId) {
+    @Operation(summary = "Deletes a dataset link",
+            description = "Removes a link from a dataverse to a dataset and reindexes the dataset.")
+    public Response deleteDatasetLinkingDataverse(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id.") @PathParam("datasetId") String datasetId, @Parameter(description = "Dataverse id containing the dataset link.") @PathParam("linkedDataverseId") String linkedDataverseId) {
                 boolean index = true;
         return response(req -> {
             execCommand(new DeleteDatasetLinkingDataverseCommand(req, findDatasetOrDie(datasetId), findDatasetLinkingDataverseOrDie(datasetId, linkedDataverseId), index));
@@ -434,7 +464,12 @@ public class Datasets extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{id}/citationdate")
-    public Response setCitationDate(@Context ContainerRequestContext crc, @PathParam("id") String id, String dsfTypeName) {
+    @Operation(summary = "Sets the dataset citation date field",
+            description = "Sets the dataset field type used as the dataset citation date.")
+    @RequestBody(description = "Dataset field type name to use as the citation date, or :publicationDate for the default publication date.")
+    public Response setCitationDate(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id,
+            @RequestBody(description = "Dataset field type name to use as the citation date, or :publicationDate for the default publication date.")
+            String dsfTypeName) {
         return response( req -> {
             if ( dsfTypeName.trim().isEmpty() ){
                 return badRequest("Please provide a dataset field type in the requst body.");
@@ -455,7 +490,9 @@ public class Datasets extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{id}/citationdate")
-    public Response useDefaultCitationDate(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+    @Operation(summary = "Restores the default citation date",
+            description = "Restores the dataset citation date to use the default publication date.")
+    public Response useDefaultCitationDate(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
         return response( req -> {
             execCommand(new SetDatasetCitationDateCommand(req, findDatasetOrDie(id), null));
             return ok("Citation Date for dataset " + id + " set to default");
@@ -465,7 +502,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions")
-    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("excludeFiles") Boolean excludeFiles,@QueryParam("excludeMetadataBlocks") Boolean excludeMetadataBlocks, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
+    @Operation(summary = "Lists dataset versions",
+            description = "Lists versions for a dataset with optional file, metadata block, limit, and offset controls.")
+    public Response listVersions(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id, @Parameter(description = "Whether files are excluded from the returned dataset version metadata.") @QueryParam("excludeFiles") Boolean excludeFiles,@Parameter(description = "Whether metadata blocks are excluded from the returned dataset version metadata.") @QueryParam("excludeMetadataBlocks") Boolean excludeMetadataBlocks, @Parameter(description = "Maximum number of results to return.") @QueryParam("limit") Integer limit, @Parameter(description = "Result offset.") @QueryParam("offset") Integer offset) {
 
         return response( req -> {
             Dataset dataset = findDatasetUserCanSeeOrDie(id, req, false);
@@ -482,14 +521,16 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}")
+    @Operation(summary = "Returns a dataset version",
+            description = "Returns metadata for a selected dataset version with optional file, metadata block, owner, and deaccession controls.")
     public Response getVersion(@Context ContainerRequestContext crc,
-                               @PathParam("id") String datasetId,
-                               @PathParam("versionId") String versionId,
-                               @QueryParam("excludeFiles") Boolean excludeFiles,
-                               @QueryParam("excludeMetadataBlocks") Boolean excludeMetadataBlocks,
-                               @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
-                               @QueryParam("returnOwners") boolean returnOwners,
-                               @QueryParam("ignoreSettingExcludeEmailFromExport") Boolean ignoreSettingToExcludeEmailFromExport,
+                               @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
+                               @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId,
+                               @Parameter(description = "Whether files are excluded from the returned dataset version metadata.") @QueryParam("excludeFiles") Boolean excludeFiles,
+                               @Parameter(description = "Whether metadata blocks are excluded from the returned dataset version metadata.") @QueryParam("excludeMetadataBlocks") Boolean excludeMetadataBlocks,
+                               @Parameter(description = "Whether deaccessioned dataset versions are included.") @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                               @Parameter(description = "Whether owner information is included in the response.") @QueryParam("returnOwners") boolean returnOwners,
+                               @Parameter(description = "Whether the configured email-exclusion setting is ignored for the export.") @QueryParam("ignoreSettingExcludeEmailFromExport") Boolean ignoreSettingToExcludeEmailFromExport,
                                @Context UriInfo uriInfo,
                                @Context HttpHeaders headers) {
         return response( req -> {
@@ -533,18 +574,20 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/files")
+    @Operation(summary = "Lists files in a dataset version",
+            description = "Lists file metadata for a dataset version with pagination, text search, category, tag, content type, access status, and ordering filters.")
     public Response getVersionFiles(@Context ContainerRequestContext crc,
-                                    @PathParam("id") String datasetId,
-                                    @PathParam("versionId") String versionId,
-                                    @QueryParam("limit") Integer limit,
-                                    @QueryParam("offset") Integer offset,
-                                    @QueryParam("contentType") String contentType,
-                                    @QueryParam("accessStatus") String accessStatus,
-                                    @QueryParam("categoryName") String categoryName,
-                                    @QueryParam("tabularTagName") String tabularTagName,
-                                    @QueryParam("searchText") String searchText,
-                                    @QueryParam("orderCriteria") String orderCriteria,
-                                    @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                    @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
+                                    @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId,
+                                    @Parameter(description = "Maximum number of results to return.") @QueryParam("limit") Integer limit,
+                                    @Parameter(description = "Result offset.") @QueryParam("offset") Integer offset,
+                                    @Parameter(description = "File content type filter.") @QueryParam("contentType") String contentType,
+                                    @Parameter(description = "File access status filter.") @QueryParam("accessStatus") String accessStatus,
+                                    @Parameter(description = "File category name filter.") @QueryParam("categoryName") String categoryName,
+                                    @Parameter(description = "Tabular data tag filter.") @QueryParam("tabularTagName") String tabularTagName,
+                                    @Parameter(description = "File search text filter.") @QueryParam("searchText") String searchText,
+                                    @Parameter(description = "File ordering criteria.") @QueryParam("orderCriteria") String orderCriteria,
+                                    @Parameter(description = "Whether deaccessioned dataset versions are included.") @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                     @Context UriInfo uriInfo,
                                     @Context HttpHeaders headers) {
         return response(req -> {
@@ -575,15 +618,17 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/files/counts")
+    @Operation(summary = "Counts files in a dataset version",
+            description = "Returns total file counts for a dataset version and count breakdowns by content type, category, tabular tag, and access status.")
     public Response getVersionFileCounts(@Context ContainerRequestContext crc,
-                                         @PathParam("id") String datasetId,
-                                         @PathParam("versionId") String versionId,
-                                         @QueryParam("contentType") String contentType,
-                                         @QueryParam("accessStatus") String accessStatus,
-                                         @QueryParam("categoryName") String categoryName,
-                                         @QueryParam("tabularTagName") String tabularTagName,
-                                         @QueryParam("searchText") String searchText,
-                                         @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                         @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
+                                         @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId,
+                                         @Parameter(description = "File content type filter.") @QueryParam("contentType") String contentType,
+                                         @Parameter(description = "File access status filter.") @QueryParam("accessStatus") String accessStatus,
+                                         @Parameter(description = "File category name filter.") @QueryParam("categoryName") String categoryName,
+                                         @Parameter(description = "Tabular data tag filter.") @QueryParam("tabularTagName") String tabularTagName,
+                                         @Parameter(description = "File search text filter.") @QueryParam("searchText") String searchText,
+                                         @Parameter(description = "Whether deaccessioned dataset versions are included.") @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                          @Context UriInfo uriInfo,
                                          @Context HttpHeaders headers) {
         return response(req -> {
@@ -613,9 +658,11 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/download/count")
+    @Operation(summary = "Returns dataset download count",
+            description = "Returns the download count for a dataset, with optional inclusion of Make Data Count values.")
     public Response getDownloadCountByDatasetId(@Context ContainerRequestContext crc,
-                                     @PathParam("id") String datasetId,
-                                     @QueryParam("includeMDC") Boolean includeMDC) {
+                                     @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
+                                     @Parameter(description = "Whether Make Data Count values are included.") @QueryParam("includeMDC") Boolean includeMDC) {
         Long id;
         Long count;
         LocalDate date = includeMDC == null || !includeMDC ? getMDCStartDate() : null;
@@ -650,7 +697,9 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/dirindex")
     @Produces("text/html")
-    public Response getFileAccessFolderView(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @QueryParam("version") String versionId, @QueryParam("folder") String folderName, @QueryParam("original") Boolean originals, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
+    @Operation(summary = "Returns a dataset folder listing",
+            description = "Returns an HTML folder listing for files in a dataset version, optionally scoped to a folder and original filenames.")
+    public Response getFileAccessFolderView(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId, @Parameter(description = "Dataset version selector.") @QueryParam("version") String versionId, @Parameter(description = "Folder path filter.") @QueryParam("folder") String folderName, @Parameter(description = "Whether original file names are returned.") @QueryParam("original") Boolean originals, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
         folderName = folderName == null ? "" : folderName;
         versionId = versionId == null ? DS_VERSION_LATEST_PUBLISHED : versionId;
@@ -686,7 +735,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/metadata")
-    public Response getVersionMetadata(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    @Operation(summary = "Returns dataset version metadata",
+            description = "Returns metadata fields grouped by metadata block for a selected dataset version.")
+    public Response getVersionMetadata(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId, @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return response( req -> ok(
                     jsonByBlocks(
                         getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), uriInfo, headers )
@@ -696,10 +747,12 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionNumber}/metadata/{block}")
+    @Operation(summary = "Returns a metadata block for a dataset version",
+            description = "Returns metadata fields from one named metadata block in a selected dataset version.")
     public Response getVersionMetadataBlock(@Context ContainerRequestContext crc,
-                                            @PathParam("id") String datasetId,
-                                            @PathParam("versionNumber") String versionNumber,
-                                            @PathParam("block") String blockName,
+                                            @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
+                                            @Parameter(description = "Dataset version selector.") @PathParam("versionNumber") String versionNumber,
+                                            @Parameter(description = "Metadata block name.") @PathParam("block") String blockName,
                                             @Context UriInfo uriInfo,
                                             @Context HttpHeaders headers) {
 
@@ -727,7 +780,13 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/linkset")
-    public Response getLinkset(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId,
+    @Operation(summary = "Build a dataset version linkset",
+            description = "Generates signposting linkset JSON for a released dataset version.")
+    public Response getLinkset(@Context ContainerRequestContext crc,
+           @Parameter(description = "Dataset id or persistent identifier.", required = true)
+           @PathParam("id") String datasetId,
+           @Parameter(description = "Dataset version id or version label.", required = true)
+           @PathParam("versionId") String versionId,
            @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         if (DS_VERSION_DRAFT.equals(versionId)) {
             return badRequest("Signposting is not supported on the " + DS_VERSION_DRAFT + " version");
@@ -752,7 +811,11 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/modifyRegistration")
-    public Response updateDatasetTargetURL(@Context ContainerRequestContext crc, @PathParam("id") String id ) {
+    @Operation(summary = "Refresh a dataset registration target URL",
+            description = "Updates the target URL stored with the persistent identifier provider for one dataset.")
+    public Response updateDatasetTargetURL(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String id ) {
         return response( req -> {
             execCommand(new UpdateDatasetTargetURLCommand(findDatasetOrDie(id), req));
             return ok("Dataset " + id + " target url updated");
@@ -762,6 +825,8 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("/modifyRegistrationAll")
+    @Operation(summary = "Refresh registration target URLs for all datasets",
+            description = "Updates persistent identifier target URLs for every dataset.")
     public Response updateDatasetTargetURLAll(@Context ContainerRequestContext crc) {
         return response( req -> {
             datasetService.findAll().forEach( ds -> {
@@ -778,7 +843,11 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/modifyRegistrationMetadata")
-    public Response updateDatasetPIDMetadata(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+    @Operation(summary = "Refresh persistent identifier metadata for a dataset",
+            description = "Updates provider metadata for the persistent identifier associated with one released dataset.")
+    public Response updateDatasetPIDMetadata(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String id) {
 
         try {
             Dataset dataset = findDatasetOrDie(id);
@@ -800,6 +869,8 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("/modifyRegistrationPIDMetadataAll")
+    @Operation(summary = "Refresh persistent identifier metadata for all datasets",
+            description = "Updates provider metadata for persistent identifiers associated with all released datasets.")
     public Response updateDatasetPIDMetadataAll(@Context ContainerRequestContext crc) {
         return response( req -> {
             datasetService.findAll().forEach( ds -> {
@@ -824,7 +895,15 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/versions/{versionId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateDraftVersion(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id, @PathParam("versionId") String versionId) {
+    @Operation(summary = "Replace draft version metadata",
+            description = "Updates the draft dataset version from the supplied JSON dataset-version payload.")
+    public Response updateDraftVersion(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Dataset version JSON used to replace draft metadata.")
+            String jsonBody,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String id,
+            @Parameter(description = "Dataset version id; only :draft is accepted.", required = true)
+            @PathParam("versionId") String versionId) {
         if (!DS_VERSION_DRAFT.equals(versionId)) {
             return error( Response.Status.BAD_REQUEST, "Only the " + DS_VERSION_DRAFT + " version can be updated");
         }
@@ -886,7 +965,14 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/versions/{versionId}/metadata")
     @Produces("application/ld+json, application/json-ld")
-    public Response getVersionJsonLDMetadata(@Context ContainerRequestContext crc, @PathParam("id") String id, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    @Operation(summary = "Read JSON-LD metadata for a dataset version",
+            description = "Exports JSON-LD metadata for the requested dataset version.")
+    public Response getVersionJsonLDMetadata(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String id,
+            @Parameter(description = "Dataset version id or version label.", required = true)
+            @PathParam("versionId") String versionId,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(id, req, false), uriInfo, headers);
@@ -908,7 +994,12 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/metadata")
     @Produces("application/ld+json, application/json-ld")
-    public Response getJsonLDMetadata(@Context ContainerRequestContext crc, @PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    @Operation(summary = "Read latest JSON-LD metadata",
+            description = "Exports JSON-LD metadata for the latest accessible dataset version.")
+    public Response getJsonLDMetadata(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String id,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return getVersionJsonLDMetadata(crc, id, DS_VERSION_LATEST, uriInfo, headers);
     }
 
@@ -916,7 +1007,15 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/metadata")
     @Consumes("application/ld+json, application/json-ld")
-    public Response updateVersionMetadata(@Context ContainerRequestContext crc, String jsonLDBody, @PathParam("id") String id, @DefaultValue("false") @QueryParam("replace") boolean replaceTerms) {
+    @Operation(summary = "Apply JSON-LD metadata to a dataset",
+            description = "Updates or creates a draft dataset version from JSON-LD metadata.")
+    public Response updateVersionMetadata(@Context ContainerRequestContext crc,
+            @RequestBody(description = "JSON-LD metadata to apply to the dataset draft.")
+            String jsonLDBody,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String id,
+            @Parameter(description = "When true, replace existing terms instead of merging supplied values.")
+            @DefaultValue("false") @QueryParam("replace") boolean replaceTerms) {
 
         try {
             Dataset ds = findDatasetOrDie(id);
@@ -950,7 +1049,13 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/metadata/delete")
     @Consumes("application/ld+json, application/json-ld")
-    public Response deleteMetadata(@Context ContainerRequestContext crc, String jsonLDBody, @PathParam("id") String id) {
+    @Operation(summary = "Remove JSON-LD metadata from a dataset",
+            description = "Deletes dataset metadata values described by the supplied JSON-LD payload.")
+    public Response deleteMetadata(@Context ContainerRequestContext crc,
+            @RequestBody(description = "JSON-LD metadata values to remove from the dataset draft.")
+            String jsonLDBody,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String id) {
         try {
             Dataset ds = findDatasetOrDie(id);
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
@@ -980,7 +1085,13 @@ public class Datasets extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{id}/deleteMetadata")
-    public Response deleteVersionMetadata(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id) throws WrappedResponse {
+    @Operation(summary = "Remove metadata fields from a dataset draft",
+            description = "Deletes metadata fields or field values from the dataset draft using the supplied JSON payload.")
+    public Response deleteVersionMetadata(@Context ContainerRequestContext crc,
+            @RequestBody(description = "JSON metadata fields or values to remove from the dataset draft.")
+            String jsonBody,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String id) throws WrappedResponse {
 
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
 
@@ -1134,8 +1245,16 @@ public class Datasets extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{id}/editMetadata")
-    public Response editVersionMetadata(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id,
+    @Operation(summary = "Edit dataset draft metadata",
+            description = "Adds, merges, or replaces dataset metadata fields on the draft version.")
+    public Response editVersionMetadata(@Context ContainerRequestContext crc,
+                                        @RequestBody(description = "JSON metadata fields to add, merge, or replace.")
+                                        String jsonBody,
+                                        @Parameter(description = "Dataset id or persistent identifier.", required = true)
+                                        @PathParam("id") String id,
+                                        @Parameter(description = "When true, replace matching field values instead of merging.")
                                         @QueryParam("replace") boolean replaceData,
+                                        @Parameter(description = "Source last-update timestamp used by external integrations.")
                                         @QueryParam("sourceLastUpdateTime") String sourceLastUpdateTime) {
         try {
             Dataset dataset = findDatasetOrDie(id);
@@ -1169,7 +1288,14 @@ public class Datasets extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{id}/access")
-    public Response editVersionTermsOfAccess(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id,
+    @Operation(summary = "Edit dataset terms of access",
+            description = "Updates terms of use and access settings on the dataset draft.")
+    public Response editVersionTermsOfAccess(@Context ContainerRequestContext crc,
+                                        @RequestBody(description = "JSON terms-of-access payload for the dataset draft.")
+                                        String jsonBody,
+                                        @Parameter(description = "Dataset id or persistent identifier.", required = true)
+                                        @PathParam("id") String id,
+                                        @Parameter(description = "Source last-update timestamp used by external integrations.")
                                         @QueryParam("sourceLastUpdateTime") String sourceLastUpdateTime) {
         try {
 
@@ -1209,7 +1335,13 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/actions/:publish")
     @Deprecated
-    public Response publishDataseUsingGetDeprecated(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("type") String type ) {
+    @Operation(summary = "Publish a dataset through the deprecated GET route",
+            description = "Publishes a dataset version using the legacy GET endpoint retained for compatibility.")
+    public Response publishDataseUsingGetDeprecated(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String id,
+            @Parameter(description = "Publication type: major, minor, or updatecurrent.", required = true)
+            @QueryParam("type") String type ) {
         logger.info("publishDataseUsingGetDeprecated called on id " + id + ". Encourage use of POST rather than GET, which is deprecated.");
         return publishDataset(crc, id, type, false);
     }
@@ -1217,7 +1349,15 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/actions/:publish")
-    public Response publishDataset(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("type") String type, @QueryParam("assureIsIndexed") boolean mustBeIndexed) {
+    @Operation(summary = "Publishes a dataset",
+            description = "Publishes a dataset version as a major, minor, or current-version update and optionally waits for indexing.")
+    public Response publishDataset(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String id,
+            @Parameter(description = "Publication type: major, minor, or updatecurrent.", required = true)
+            @QueryParam("type") String type,
+            @Parameter(description = "When true, require the dataset to be indexed before publication completes.")
+            @QueryParam("assureIsIndexed") boolean mustBeIndexed) {
         try {
             if (type == null) {
                 return error(Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major','minor', or 'updatecurrent').");
@@ -1353,7 +1493,12 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/actions/:releasemigrated")
     @Consumes("application/ld+json, application/json-ld")
-    public Response publishMigratedDataset(@Context ContainerRequestContext crc, String jsonldBody, @PathParam("id") String id, @DefaultValue("false") @QueryParam ("updatepidatprovider") boolean contactPIDProvider) {
+    @Operation(summary = "Publishes a migrated dataset",
+            description = "Publishes a migrated dataset using supplied JSON-LD publication metadata when the requester is a superuser.")
+    @RequestBody(description = "JSON-LD metadata containing the migrated dataset publication date.")
+    public Response publishMigratedDataset(@Context ContainerRequestContext crc,
+            @RequestBody(description = "JSON-LD metadata containing the migrated dataset publication date.")
+            String jsonldBody, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id, @DefaultValue("false") @Parameter(description = "Whether PID provider metadata should be updated.") @QueryParam ("updatepidatprovider") boolean contactPIDProvider) {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
@@ -1444,7 +1589,9 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/move/{targetDataverseAlias}")
-    public Response moveDataset(@Context ContainerRequestContext crc, @PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {
+    @Operation(summary = "Moves a dataset",
+            description = "Moves a dataset to another dataverse and reports warnings unless the move is forced.")
+    public Response moveDataset(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id, @Parameter(description = "Alias of the destination dataverse.") @PathParam("targetDataverseAlias") String targetDataverseAlias, @Parameter(description = "Whether to force moving the dataset when warnings exist.") @QueryParam("forceMove") Boolean force) {
         try {
             User u = getRequestUser(crc);
             Dataset ds = findDatasetOrDie(id);
@@ -1470,7 +1617,12 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/files/actions/:set-embargo")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createFileEmbargo(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
+    @Operation(summary = "Embargoes dataset files",
+            description = "Applies embargo settings to the specified dataset files after checking dataset edit permissions.")
+    @RequestBody(description = "JSON payload identifying dataset files and embargo settings to apply.")
+    public Response createFileEmbargo(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id,
+            @RequestBody(description = "JSON payload identifying dataset files and embargo settings to apply.")
+            String jsonBody){
 
         // user is authenticated
         AuthenticatedUser authenticatedUser = null;
@@ -1642,7 +1794,12 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/files/actions/:unset-embargo")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response removeFileEmbargo(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
+    @Operation(summary = "Removes file embargoes",
+            description = "Removes embargoes from the specified dataset files after checking dataset edit permissions.")
+    @RequestBody(description = "JSON payload identifying the dataset files whose embargoes should be removed.")
+    public Response removeFileEmbargo(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id,
+            @RequestBody(description = "JSON payload identifying the dataset files whose embargoes should be removed.")
+            String jsonBody){
 
         // user is authenticated
         AuthenticatedUser authenticatedUser = null;
@@ -1752,7 +1909,12 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/files/actions/:set-retention")
-    public Response createFileRetention(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
+    @Operation(summary = "Sets retention on dataset files",
+            description = "Sets retention information on selected files in a dataset.")
+    @RequestBody(description = "JSON retention payload identifying files and retention settings.")
+    public Response createFileRetention(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id,
+            @RequestBody(description = "JSON retention payload identifying files and retention settings.")
+            String jsonBody){
 
         // user is authenticated
         AuthenticatedUser authenticatedUser = null;
@@ -1932,7 +2094,12 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/files/actions/:unset-retention")
-    public Response removeFileRetention(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
+    @Operation(summary = "Removes file retention periods",
+            description = "Removes retention periods from the specified dataset files after checking dataset edit permissions.")
+    @RequestBody(description = "JSON payload identifying the dataset files whose retention periods should be removed.")
+    public Response removeFileRetention(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id,
+            @RequestBody(description = "JSON payload identifying the dataset files whose retention periods should be removed.")
+            String jsonBody){
 
         // user is authenticated
         AuthenticatedUser authenticatedUser = null;
@@ -2053,9 +2220,11 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/files/uploadlimit/{limit}")
+    @Operation(summary = "Sets dataset file upload limit",
+            description = "Sets the file count upload limit for a dataset when the requester is a superuser.")
     public Response updateDatasetFilesLimits(@Context ContainerRequestContext crc,
-                                                @PathParam("id") String id,
-                                                @PathParam("limit") int datasetFileCountLimit) {
+                                                @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id,
+                                                @Parameter(description = "Maximum number of results or configured limit value.") @PathParam("limit") int datasetFileCountLimit) {
 
         // user is authenticated
         AuthenticatedUser authenticatedUser = null;
@@ -2083,8 +2252,10 @@ public class Datasets extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{id}/files/uploadlimit")
+    @Operation(summary = "Clears dataset file upload limit",
+            description = "Removes the file count upload limit from a dataset when the requester is a superuser.")
     public Response deleteDatasetFilesLimits(@Context ContainerRequestContext crc,
-                                             @PathParam("id") String id) {
+                                             @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
         // user is authenticated
         AuthenticatedUser authenticatedUser = null;
         try {
@@ -2111,7 +2282,9 @@ public class Datasets extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{linkedDatasetId}/link/{linkingDataverseAlias}")
-    public Response linkDataset(@Context ContainerRequestContext crc, @PathParam("linkedDatasetId") String linkedDatasetId, @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {
+    @Operation(summary = "Links a dataset to a dataverse",
+            description = "Creates a link from a dataverse to an existing dataset.")
+    public Response linkDataset(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id to link.") @PathParam("linkedDatasetId") String linkedDatasetId, @Parameter(description = "Alias of the dataverse that links to the dataset.") @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {
         try {
             User u = getRequestUser(crc);
             Dataset linked = findDatasetOrDie(linkedDatasetId);
@@ -2133,7 +2306,9 @@ public class Datasets extends AbstractApiBean {
 
     @GET
     @Path("{id}/versions/{versionId}/customlicense")
-    public Response getCustomTermsTab(@PathParam("id") String id, @PathParam("versionId") String versionId,
+    @Operation(summary = "Redirects to custom license terms",
+            description = "Redirects to the dataset page terms tab for a dataset version that uses custom license terms.")
+    public Response getCustomTermsTab(@Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id, @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         //ToDo - should this use @AuthRequired and get the user from the crc?
         User user = session.getUser();
@@ -2158,7 +2333,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/links")
-    public Response getLinks(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied ) {
+    @Operation(summary = "Lists dataset links",
+            description = "Lists dataverses that link to the dataset and are visible to the requester.")
+    public Response getLinks(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied ) {
         try {
             User u = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(u);
@@ -2199,7 +2376,12 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/assignments")
-    public Response createAssignment(@Context ContainerRequestContext crc, RoleAssignmentDTO ra, @PathParam("identifier") String id, @QueryParam("key") String apiKey) {
+    @Operation(summary = "Creates a dataset role assignment",
+            description = "Assigns a role to a user or group on a dataset.")
+    @RequestBody(description = "Role assignment payload with assignee identifier and role alias.")
+    public Response createAssignment(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Role assignment payload with assignee identifier and role alias.")
+            RoleAssignmentDTO ra, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String id, @Parameter(description = "Legacy API token query value.") @QueryParam("key") String apiKey) {
         try {
             Dataset dataset = findDatasetOrDie(id);
 
@@ -2244,7 +2426,9 @@ public class Datasets extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{identifier}/assignments/{id}")
-    public Response deleteAssignment(@Context ContainerRequestContext crc, @PathParam("id") long assignmentId, @PathParam("identifier") String dsId) {
+    @Operation(summary = "Deletes a dataset role assignment",
+            description = "Revokes a role assignment from a dataset.")
+    public Response deleteAssignment(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") long assignmentId, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dsId) {
         RoleAssignment ra = em.find(RoleAssignment.class, assignmentId);
         if (ra != null) {
             try {
@@ -2264,7 +2448,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/assignments")
-    public Response getAssignments(@Context ContainerRequestContext crc, @PathParam("identifier") String id) {
+    @Operation(summary = "Lists dataset role assignments",
+            description = "Lists role assignments directly applied to a dataset.")
+    public Response getAssignments(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String id) {
         return response(req ->
                 ok(execCommand(
                         new ListRoleAssignments(req, findDatasetUserCanSeeOrDie(id, req, false)))
@@ -2275,7 +2461,9 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Deprecated(forRemoval = true, since = "2024-10-17")
     @Path("{id}/privateUrl")
-    public Response getPrivateUrlData(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+    @Operation(summary = "Returns private URL data",
+            description = "Returns private URL data for a dataset through the deprecated private URL route.")
+    public Response getPrivateUrlData(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied) {
         return getPreviewUrlData(crc, idSupplied);
     }
 
@@ -2283,7 +2471,9 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Deprecated(forRemoval = true, since = "2024-10-17")
     @Path("{id}/privateUrl")
-    public Response createPrivateUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @DefaultValue("false") @QueryParam("anonymizedAccess") boolean anonymizedAccess) {
+    @Operation(summary = "Creates a private URL",
+            description = "Creates a private URL for a dataset through the deprecated private URL route.")
+    public Response createPrivateUrl(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied, @DefaultValue("false") @Parameter(description = "Whether the generated URL hides requester identity details.") @QueryParam("anonymizedAccess") boolean anonymizedAccess) {
         return createPreviewUrl(crc, idSupplied, anonymizedAccess);
     }
 
@@ -2291,14 +2481,18 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Deprecated(forRemoval = true, since = "2024-10-17")
     @Path("{id}/privateUrl")
-    public Response deletePrivateUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+    @Operation(summary = "Deletes a private URL",
+            description = "Deletes the private URL for a dataset through the deprecated private URL route.")
+    public Response deletePrivateUrl(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied) {
         return deletePreviewUrl(crc, idSupplied);
     }
 
     @GET
     @AuthRequired
     @Path("{id}/previewUrl")
-    public Response getPreviewUrlData(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+    @Operation(summary = "Returns preview URL data",
+            description = "Returns preview URL data for a dataset.")
+    public Response getPreviewUrlData(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied) {
         return response( req -> {
             PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(req, findDatasetUserCanSeeOrDie(idSupplied, req, false)));
             return (privateUrl != null) ? ok(json(privateUrl))
@@ -2309,7 +2503,9 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/previewUrl")
-    public Response createPreviewUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied,@DefaultValue("false") @QueryParam ("anonymizedAccess") boolean anonymizedAccess) {
+    @Operation(summary = "Creates a preview URL",
+            description = "Creates a preview URL for a dataset draft, optionally with anonymized access when configured.")
+    public Response createPreviewUrl(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied,@DefaultValue("false") @Parameter(description = "Whether the generated URL hides requester identity details.") @QueryParam ("anonymizedAccess") boolean anonymizedAccess) {
         if(anonymizedAccess && settingsSvc.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames)==null) {
             throw new NotAcceptableException("Anonymized Access not enabled");
         }
@@ -2321,7 +2517,9 @@ public class Datasets extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{id}/previewUrl")
-    public Response deletePreviewUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+    @Operation(summary = "Deletes a preview URL",
+            description = "Deletes the preview URL for a dataset when one exists.")
+    public Response deletePreviewUrl(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied) {
         return response( req -> {
             Dataset dataset = findDatasetOrDie(idSupplied);
             PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(req, dataset));
@@ -2338,7 +2536,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/thumbnail/candidates")
-    public Response getDatasetThumbnailCandidates(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+    @Operation(summary = "Lists dataset thumbnail candidates",
+            description = "Lists images that can be selected as the dataset thumbnail when the requester may update the thumbnail.")
+    public Response getDatasetThumbnailCandidates(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req, false);
@@ -2372,7 +2572,9 @@ public class Datasets extends AbstractApiBean {
     @Produces({"image/png"})
     @Path("{id}/thumbnail")
     @AuthRequired
-    public Response getDatasetThumbnail(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+    @Operation(summary = "Returns a dataset thumbnail",
+            description = "Returns the dataset thumbnail image when one is available.")
+    public Response getDatasetThumbnail(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req, false);
@@ -2390,7 +2592,9 @@ public class Datasets extends AbstractApiBean {
     @Produces({ "image/png" })
     @Path("{id}/logo")
     @AuthRequired
-    public Response getDatasetLogo(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+    @Operation(summary = "Returns a dataset logo",
+            description = "Returns the dataset logo image when one is available.")
+    public Response getDatasetLogo(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req, false);
@@ -2408,7 +2612,9 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/thumbnail/{dataFileId}")
-    public Response setDataFileAsThumbnail(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @PathParam("dataFileId") long dataFileIdSupplied) {
+    @Operation(summary = "Sets a dataset thumbnail from a file",
+            description = "Uses an existing data file image as the dataset thumbnail.")
+    public Response setDataFileAsThumbnail(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied, @Parameter(description = "Data file id.") @PathParam("dataFileId") long dataFileIdSupplied) {
         try {
             DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(getRequestUser(crc)), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, dataFileIdSupplied, null));
             return ok("Thumbnail set to " + datasetThumbnail.getBase64image());
@@ -2428,8 +2634,9 @@ public class Datasets extends AbstractApiBean {
                description = "Dataset logo uploaded successfully")
     @Tag(name = "uploadDatasetLogo",
          description = "Uploads a logo for a dataset")
-    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))
-    public Response uploadDatasetLogo(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @FormDataParam("file") InputStream inputStream) {
+    @RequestBody(description = "Multipart dataset logo upload containing the image file.",
+            content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))
+    public Response uploadDatasetLogo(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied, @Parameter(description = "Uploaded file content.") @FormDataParam("file") InputStream inputStream) {
         try {
             DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(getRequestUser(crc)), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.setNonDatasetFileAsThumbnail, null, inputStream));
             return ok("Thumbnail is now " + datasetThumbnail.getBase64image());
@@ -2441,7 +2648,9 @@ public class Datasets extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{id}/thumbnail")
-    public Response removeDatasetLogo(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+    @Operation(summary = "Removes a dataset thumbnail",
+            description = "Removes the custom thumbnail or logo assigned to a dataset.")
+    public Response removeDatasetLogo(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied) {
         try {
             execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(getRequestUser(crc)), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.removeThumbnail, null, null));
             return ok("Dataset thumbnail removed.");
@@ -2454,7 +2663,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/dataCaptureModule/rsync")
-    public Response getRsync(@Context ContainerRequestContext crc, @PathParam("identifier") String id) {
+    @Operation(summary = "Returns an rsync upload script",
+            description = "Returns an rsync upload script for a dataset and locks the dataset for Data Capture Module upload.")
+    public Response getRsync(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String id) {
         //TODO - does it make sense to switch this to dataset identifier for consistency with the rest of the DCM APIs?
         if (!DataCaptureModuleUtil.rsyncSupportEnabled(settingsSvc.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
             return error(Response.Status.METHOD_NOT_ALLOWED, SettingsServiceBean.Key.UploadMethods + " does not contain " + SystemConfig.FileUploadMethods.RSYNC + ".");
@@ -2497,7 +2708,12 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/dataCaptureModule/checksumValidation")
-    public Response receiveChecksumValidationResults(@Context ContainerRequestContext crc, @PathParam("identifier") String id, JsonObject jsonFromDcm) {
+    @Operation(summary = "Receives checksum validation results",
+            description = "Processes Data Capture Module checksum validation results and creates a package file when validation succeeds.")
+    @RequestBody(description = "JSON checksum validation result from the Data Capture Module.")
+    public Response receiveChecksumValidationResults(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String id,
+            @RequestBody(description = "JSON checksum validation result from the Data Capture Module.")
+            JsonObject jsonFromDcm) {
         logger.log(Level.FINE, "jsonFromDcm: {0}", jsonFromDcm);
         AuthenticatedUser authenticatedUser = null;
         try {
@@ -2605,7 +2821,9 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/submitForReview")
-    public Response submitForReview(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+    @Operation(summary = "Submits a dataset for review",
+            description = "Submits a dataset for review and returns the resulting review state.")
+    public Response submitForReview(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied) {
         try {
             Dataset updatedDataset = execCommand(new SubmitDatasetForReviewCommand(createDataverseRequest(getRequestUser(crc)), findDatasetOrDie(idSupplied)));
             JsonObjectBuilder result = Json.createObjectBuilder();
@@ -2623,7 +2841,12 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/returnToAuthor")
-    public Response returnToAuthor(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, String jsonBody) {
+    @Operation(summary = "Returns a dataset to authors",
+            description = "Returns a dataset under review to its authors with a supplied reason.")
+    @RequestBody(description = "JSON payload containing the reason for returning the dataset to authors.")
+    public Response returnToAuthor(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied,
+            @RequestBody(description = "JSON payload containing the reason for returning the dataset to authors.")
+            String jsonBody) {
 
         if (jsonBody == null || jsonBody.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "You must supply JSON to this API endpoint and it must contain a reason for returning the dataset (field: reasonForReturn).");
@@ -2652,8 +2875,10 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/availableFileCategories")
+    @Operation(summary = "Lists available file categories",
+            description = "Lists file category names already used by files in a dataset.")
     public Response getAvailableFileCategories(@Context ContainerRequestContext crc,
-            @PathParam("id") String idSupplied) {
+            @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied) {
 
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
@@ -2675,9 +2900,11 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/curationStatus")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Returns dataset curation status",
+            description = "Returns the current or historical curation status for a dataset when the requester may view it.")
     public Response getCurationStatus(@Context ContainerRequestContext crc,
-            @PathParam("id") String idSupplied,
-            @QueryParam("includeHistory") boolean includeHistory) {
+            @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied,
+            @Parameter(description = "Whether historical records are included.") @QueryParam("includeHistory") boolean includeHistory) {
         try {
             User user = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(user);
@@ -2730,7 +2957,9 @@ public class Datasets extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{id}/curationStatus")
-    public Response setCurationStatus(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @QueryParam("label") String label) {
+    @Operation(summary = "Sets dataset curation status",
+            description = "Sets the curation status label for a dataset when the requester may publish the dataset.")
+    public Response setCurationStatus(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied, @Parameter(description = "Curation status label.") @QueryParam("label") String label) {
         Dataset ds = null;
         User u = null;
         try {
@@ -2751,7 +2980,9 @@ public class Datasets extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{id}/curationStatus")
-    public Response deleteCurationStatus(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+    @Operation(summary = "Deletes dataset curation status",
+            description = "Deletes the current curation status from a dataset when the requester may publish the dataset.")
+    public Response deleteCurationStatus(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied) {
         Dataset ds = null;
         User u = null;
         try {
@@ -2771,7 +3002,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/uploadurls")
-    public Response getMPUploadUrls(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @QueryParam("size") long fileSize) {
+    @Operation(summary = "Returns multipart upload URLs",
+            description = "Returns temporary direct-upload URLs for adding a file to a dataset after checking upload permissions, limits, and quotas.")
+    public Response getMPUploadUrls(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied, @Parameter(description = "Requested file size in bytes.") @QueryParam("size") long fileSize) {
         try {
             User user = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(user);
@@ -2837,7 +3070,9 @@ public class Datasets extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("mpupload")
-    public Response abortMPUpload(@Context ContainerRequestContext crc, @QueryParam("globalid") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId) {
+    @Operation(summary = "Aborts a multipart upload",
+            description = "Cancels an active multipart upload after checking that the requester may update the dataset.")
+    public Response abortMPUpload(@Context ContainerRequestContext crc, @Parameter(description = "Dataset persistent identifier.") @QueryParam("globalid") String idSupplied, @Parameter(description = "Storage identifier.") @QueryParam("storageidentifier") String storageidentifier, @Parameter(description = "Multipart upload id.") @QueryParam("uploadid") String uploadId) {
         try {
             Dataset dataset = datasetSvc.findByGlobalId(idSupplied);
             //Allow the API to be used within a session (e.g. for direct upload in the UI)
@@ -2892,7 +3127,15 @@ public class Datasets extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("mpupload")
-    public Response completeMPUpload(@Context ContainerRequestContext crc, String partETagBody, @QueryParam("globalid") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId) {
+    @Operation(summary = "Completes a multipart upload",
+            description = "Finalizes an active multipart upload from the supplied part ETags after checking that the requester may update the dataset.")
+    @RequestBody(description = "JSON object mapping uploaded part numbers to ETag values.")
+    public Response completeMPUpload(@Context ContainerRequestContext crc,
+                                     @RequestBody(description = "JSON object mapping uploaded part numbers to ETag values.")
+                                     String partETagBody,
+                                     @Parameter(description = "Dataset persistent identifier.") @QueryParam("globalid") String idSupplied,
+                                     @Parameter(description = "Storage identifier.") @QueryParam("storageidentifier") String storageidentifier,
+                                     @Parameter(description = "Multipart upload id.") @QueryParam("uploadid") String uploadId) {
         try {
             Dataset dataset = datasetSvc.findByGlobalId(idSupplied);
             //Allow the API to be used within a session (e.g. for direct upload in the UI)
@@ -2989,13 +3232,14 @@ public class Datasets extends AbstractApiBean {
                description = "File uploaded successfully to dataset")
     @Tag(name = "addFileToDataset",
          description = "Uploads a file for a dataset")
-    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))
+    @RequestBody(description = "Multipart request containing one uploaded file and JSON metadata for the dataset.",
+            content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))
     public Response addFileToDataset(@Context ContainerRequestContext crc,
-                    @PathParam("id") String idSupplied,
-                    @FormDataParam("jsonData") String jsonData,
-                    @FormDataParam("file") InputStream fileInputStream,
-                    @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-                    @FormDataParam("file") final FormDataBodyPart formDataBodyPart
+                    @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied,
+                    @Parameter(description = "JSON metadata payload.") @FormDataParam("jsonData") String jsonData,
+                    @Parameter(description = "Uploaded file content.") @FormDataParam("file") InputStream fileInputStream,
+                    @Parameter(description = "Featured item image file.") @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+                    @Parameter(description = "Uploaded file content.") @FormDataParam("file") final FormDataBodyPart formDataBodyPart
                     ){
 
         if (!systemConfig.isHTTPUpload()) {
@@ -3165,7 +3409,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/cleanStorage")
-    public Response cleanStorage(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @QueryParam("dryrun") Boolean dryrun) {
+    @Operation(summary = "Cleans dataset storage",
+            description = "Finds and optionally deletes storage objects that are no longer referenced by files in a dataset.")
+    public Response cleanStorage(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied, @Parameter(description = "Whether to validate the request without applying changes.") @QueryParam("dryrun") Boolean dryrun) {
         // get user and dataset
         User authUser = getRequestUser(crc);
     DataverseRequest req = createDataverseRequest(authUser);
@@ -3206,10 +3452,12 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId1}/compare/{versionId2}")
-    public Response getCompareVersions(@Context ContainerRequestContext crc, @PathParam("id") String id,
-                                      @PathParam("versionId1") String versionId1,
-                                      @PathParam("versionId2") String versionId2,
-                                      @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+    @Operation(summary = "Compares dataset versions",
+            description = "Compares two dataset versions and returns the metadata and file differences between them.")
+    public Response getCompareVersions(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id,
+                                      @Parameter(description = "First dataset version selector to compare.") @PathParam("versionId1") String versionId1,
+                                      @Parameter(description = "Second dataset version selector to compare.") @PathParam("versionId2") String versionId2,
+                                      @Parameter(description = "Whether deaccessioned dataset versions are included.") @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                       @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
@@ -3228,10 +3476,12 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/compareSummary")
+    @Operation(summary = "Lists dataset version comparison summaries",
+            description = "Lists comparison summaries for dataset versions with optional limit and offset controls.")
     public Response getCompareVersionsSummary(@Context ContainerRequestContext crc,
-                                              @PathParam("id") String id,
-                                              @QueryParam("limit") Integer limit,
-                                              @QueryParam("offset") Integer offset) {
+                                              @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id,
+                                              @Parameter(description = "Maximum number of results or configured limit value.") @QueryParam("limit") Integer limit,
+                                              @Parameter(description = "Result offset.") @QueryParam("offset") Integer offset) {
         return response(req -> {
             try {
                 Dataset dataset = findDatasetUserCanSeeOrDie(id, req, false);
@@ -3351,7 +3601,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{identifier}/locks")
     @AuthRequired
-    public Response getLocksForDataset(@Context ContainerRequestContext crc, @PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
+    @Operation(summary = "Lists locks for a dataset",
+            description = "Lists current locks on a dataset, optionally filtered by lock type.")
+    public Response getLocksForDataset(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String id, @Parameter(description = "Resource type filter.") @QueryParam("type") DatasetLock.Reason lockType) {
 
         Dataset dataset = null;
         try {
@@ -3380,7 +3632,9 @@ public class Datasets extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{identifier}/locks")
-    public Response deleteLocks(@Context ContainerRequestContext crc, @PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
+    @Operation(summary = "Deletes dataset locks",
+            description = "Removes all locks or a selected lock type from a dataset and reindexes the dataset when locks change.")
+    public Response deleteLocks(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String id, @Parameter(description = "Resource type filter.") @QueryParam("type") DatasetLock.Reason lockType) {
 
         return response(req -> {
             try {
@@ -3431,7 +3685,9 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/lock/{type}")
-    public Response lockDataset(@Context ContainerRequestContext crc, @PathParam("identifier") String id, @PathParam("type") DatasetLock.Reason lockType) {
+    @Operation(summary = "Locks a dataset",
+            description = "Adds a lock of the selected type to a dataset and reindexes the dataset.")
+    public Response lockDataset(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String id, @Parameter(description = "Resource type filter.") @PathParam("type") DatasetLock.Reason lockType) {
         return response(req -> {
             try {
                 AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
@@ -3461,7 +3717,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("locks")
-    public Response listLocks(@Context ContainerRequestContext crc, @QueryParam("type") String lockType, @QueryParam("userIdentifier") String userIdentifier) { //DatasetLock.Reason lockType) {
+    @Operation(summary = "Lists dataset locks",
+            description = "Lists dataset locks visible to a superuser, optionally filtered by lock type and user identifier.")
+    public Response listLocks(@Context ContainerRequestContext crc, @Parameter(description = "Resource type filter.") @QueryParam("type") String lockType, @Parameter(description = "User identifier filter.") @QueryParam("userIdentifier") String userIdentifier) { //DatasetLock.Reason lockType) {
         // This API is here, under /datasets, and not under /admin, because we
         // likely want it to be accessible to admin users who may not necessarily
         // have localhost access, that would be required to get to /api/admin in
@@ -3519,7 +3777,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{id}/makeDataCount/citations")
     @AuthRequired
-    public Response getMakeDataCountCitations(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+    @Operation(summary = "Lists dataset external citations",
+            description = "Lists external citation URLs recorded for a dataset.")
+    public Response getMakeDataCountCitations(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied) {
 
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
@@ -3549,7 +3809,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{id}/makeDataCount/{metric}")
     @AuthRequired
-    public Response getMakeDataCountMetricCurrentMonth(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @PathParam("metric") String metricSupplied, @QueryParam("country") String country) {
+    @Operation(summary = "Returns a current Make Data Count metric",
+            description = "Returns one Make Data Count metric for a dataset for the current reporting period, optionally filtered by country.")
+    public Response getMakeDataCountMetricCurrentMonth(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied, @Parameter(description = "Make Data Count metric name.") @PathParam("metric") String metricSupplied, @Parameter(description = "Country filter for metric results.") @QueryParam("country") String country) {
         String nullCurrentMonth = null;
         return getMakeDataCountMetric(crc, idSupplied, metricSupplied, nullCurrentMonth, country);
     }
@@ -3557,7 +3819,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/storagesize")
-    public Response getStorageSize(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("includeCached") boolean includeCached) {
+    @Operation(summary = "Returns dataset storage size",
+            description = "Returns the storage size for files in a dataset, optionally including cached values.")
+    public Response getStorageSize(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf, @Parameter(description = "Whether cached values may be included.") @QueryParam("includeCached") boolean includeCached) {
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.storage"),
                 execCommand(new GetDatasetStorageSizeCommand(req, findDatasetUserCanSeeOrDie(dvIdtf, req, false), includeCached, GetDatasetStorageSizeCommand.Mode.STORAGE, null)))), getRequestUser(crc));
     }
@@ -3565,16 +3829,18 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/versions/{versionId}/downloadsize")
+    @Operation(summary = "Returns dataset version download size",
+            description = "Returns the calculated download size for files in a dataset version with optional file filters and calculation mode.")
     public Response getDownloadSize(@Context ContainerRequestContext crc,
-                                    @PathParam("identifier") String dvIdtf,
-                                    @PathParam("versionId") String version,
-                                    @QueryParam("contentType") String contentType,
-                                    @QueryParam("accessStatus") String accessStatus,
-                                    @QueryParam("categoryName") String categoryName,
-                                    @QueryParam("tabularTagName") String tabularTagName,
-                                    @QueryParam("searchText") String searchText,
-                                    @QueryParam("mode") String mode,
-                                    @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                    @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
+                                    @Parameter(description = "Dataset version selector.") @PathParam("versionId") String version,
+                                    @Parameter(description = "File content type filter.") @QueryParam("contentType") String contentType,
+                                    @Parameter(description = "File access status filter.") @QueryParam("accessStatus") String accessStatus,
+                                    @Parameter(description = "File category name filter.") @QueryParam("categoryName") String categoryName,
+                                    @Parameter(description = "Tabular data tag filter.") @QueryParam("tabularTagName") String tabularTagName,
+                                    @Parameter(description = "File search text filter.") @QueryParam("searchText") String searchText,
+                                    @Parameter(description = "Download size calculation mode.") @QueryParam("mode") String mode,
+                                    @Parameter(description = "Whether deaccessioned dataset versions are included.") @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                     @Context UriInfo uriInfo,
                                     @Context HttpHeaders headers) {
 
@@ -3610,7 +3876,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{id}/makeDataCount/{metric}/{yyyymm}")
     @AuthRequired
-    public Response getMakeDataCountMetric(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @PathParam("metric") String metricSupplied, @PathParam("yyyymm") String yyyymm, @QueryParam("country") String country) {
+    @Operation(summary = "Returns a monthly Make Data Count metric",
+            description = "Returns one Make Data Count metric for a dataset in a selected month, optionally filtered by country.")
+    public Response getMakeDataCountMetric(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied, @Parameter(description = "Make Data Count metric name.") @PathParam("metric") String metricSupplied, @Parameter(description = "Metric month in YYYYMM format.") @PathParam("yyyymm") String yyyymm, @Parameter(description = "Country filter for metric results.") @QueryParam("country") String country) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req, false);
@@ -3721,7 +3989,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/storageDriver")
-    public Response getFileStore(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+    @Operation(summary = "Returns the dataset storage driver",
+            description = "Returns the effective storage driver configured for a dataset.")
+    public Response getFileStore(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
 
         Dataset dataset;
@@ -3739,7 +4009,11 @@ public class Datasets extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{identifier}/storageDriver")
-    public Response setFileStore(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+    @Operation(summary = "Sets the dataset storage driver",
+            description = "Sets a dataset-specific storage driver by label when the requester is a superuser.")
+    @RequestBody(description = "Storage driver label to assign to the dataset.")
+    public Response setFileStore(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
+            @RequestBody(description = "Storage driver label to assign to the dataset.")
             String storageDriverLabel,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
 
@@ -3777,7 +4051,9 @@ public class Datasets extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{identifier}/storageDriver")
-    public Response resetFileStore(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+    @Operation(summary = "Resets the dataset storage driver",
+            description = "Removes a dataset-specific storage driver so the dataset uses the default storage configuration.")
+    public Response resetFileStore(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
 
         // Superuser-only:
@@ -3807,7 +4083,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/curationLabelSet")
-    public Response getCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+    @Operation(summary = "Returns the dataset curation label set",
+            description = "Returns the effective curation label set name for a dataset when the requester is a superuser.")
+    public Response getCurationLabelSet(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
         AuthenticatedUser user = null;
         try {
@@ -3834,9 +4112,11 @@ public class Datasets extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{identifier}/curationLabelSet")
+    @Operation(summary = "Sets the dataset curation label set",
+            description = "Sets the curation label set for a dataset when the requester is a superuser.")
     public Response setCurationLabelSet(@Context ContainerRequestContext crc,
-                                        @PathParam("identifier") String dvIdtf,
-                                        @QueryParam("name") String curationLabelSet,
+                                        @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
+                                        @Parameter(description = "Curation label set name.") @QueryParam("name") String curationLabelSet,
                                         @Context UriInfo uriInfo,
                                         @Context HttpHeaders headers) throws WrappedResponse {
 
@@ -3878,7 +4158,9 @@ public class Datasets extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{identifier}/curationLabelSet")
-    public Response resetCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+    @Operation(summary = "Resets the dataset curation label set",
+            description = "Clears the dataset-specific curation label set so the dataset uses the effective default.")
+    public Response resetCurationLabelSet(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
 
         // Superuser-only:
@@ -3908,8 +4190,10 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/allowedCurationLabels")
+    @Operation(summary = "Lists allowed curation labels",
+            description = "Lists the curation labels allowed for a dataset when the requester may publish the dataset.")
     public Response getAllowedCurationLabels(@Context ContainerRequestContext crc,
-                                             @PathParam("identifier") String dvIdtf,
+                                             @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
                                              @Context UriInfo uriInfo,
                                              @Context HttpHeaders headers) throws WrappedResponse {
         AuthenticatedUser user = null;
@@ -3939,7 +4223,9 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/timestamps")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTimestamps(@Context ContainerRequestContext crc, @PathParam("identifier") String id) {
+    @Operation(summary = "Returns dataset timestamps",
+            description = "Returns creation, publication, export, index, and update timestamps visible to the requester for a dataset.")
+    public Response getTimestamps(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String id) {
 
         Dataset dataset = null;
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
@@ -4054,8 +4340,10 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/globusUploadParameters")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getGlobusUploadParams(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
-            @QueryParam(value = "locale") String locale) {
+    @Operation(summary = "Returns Globus upload parameters",
+            description = "Returns signed parameters and allowed callback URLs for a Globus upload or reference workflow for a dataset.")
+    public Response getGlobusUploadParams(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
+            @Parameter(description = "Locale for localized Globus metadata.") @QueryParam(value = "locale") String locale) {
         // -------------------------------------
         // (1) Get the user from the ContainerRequestContext
         // -------------------------------------
@@ -4168,7 +4456,11 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/requestGlobusUploadPaths")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response requestGlobusUpload(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
+    @Operation(summary = "Requests Globus upload paths",
+            description = "Creates upload path assignments and permissions for a Globus user to upload files to a dataset.")
+    @RequestBody(description = "Globus upload request with the transfer principal and number of files.")
+    public Response requestGlobusUpload(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
+            @RequestBody(description = "Globus upload request with the transfer principal and number of files.")
             String jsonBody) throws IOException, ExecutionException, InterruptedException {
 
         logger.info(" ====  (api allowGlobusUpload) jsonBody   ====== " + jsonBody);
@@ -4266,10 +4558,11 @@ public class Datasets extends AbstractApiBean {
                description = "Globus file uploaded successfully to dataset")
     @Tag(name = "addGlobusFilesToDataset",
          description = "Uploads a Globus file for a dataset")
-    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))
+    @RequestBody(description = "Multipart request containing Globus file metadata and transfer task information.",
+            content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))
     public Response addGlobusFilesToDataset(@Context ContainerRequestContext crc,
-                                            @PathParam("id") String datasetId,
-                                            @FormDataParam("jsonData") String jsonData,
+                                            @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
+                                            @Parameter(description = "JSON metadata payload.") @FormDataParam("jsonData") String jsonData,
                                             @Context UriInfo uriInfo
     ) throws IOException, ExecutionException, InterruptedException {
 
@@ -4386,8 +4679,10 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/globusDownloadParameters")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getGlobusDownloadParams(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
-            @QueryParam(value = "locale") String locale, @QueryParam(value = "downloadId") String downloadId) {
+    @Operation(summary = "Returns Globus download parameters",
+            description = "Returns signed parameters and allowed callback URLs for a Globus download workflow for a dataset.")
+    public Response getGlobusDownloadParams(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
+            @Parameter(description = "Locale for localized Globus metadata.") @QueryParam(value = "locale") String locale, @Parameter(description = "Globus download request id.") @QueryParam(value = "downloadId") String downloadId) {
         // -------------------------------------
         // (1) Get the user from the ContainerRequestContext
         // -------------------------------------
@@ -4485,8 +4780,13 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/requestGlobusDownload")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response requestGlobusDownload(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
-            @QueryParam(value = "downloadId") String downloadId, String jsonBody)
+    @Operation(summary = "Requests a Globus download",
+            description = "Creates temporary Globus download permissions and returns endpoint path information for dataset files.")
+    @RequestBody(description = "Globus download request with transfer principal and optional file id list.")
+    public Response requestGlobusDownload(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
+            @Parameter(description = "Globus download request id.") @QueryParam(value = "downloadId") String downloadId,
+            @RequestBody(description = "Globus download request with transfer principal and optional file id list.")
+            String jsonBody)
             throws IOException, ExecutionException, InterruptedException {
 
         logger.info(" ====  (api allowGlobusDownload) jsonBody   ====== " + jsonBody);
@@ -4627,7 +4927,11 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/monitorGlobusDownload")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response monitorGlobusDownload(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
+    @Operation(summary = "Monitors a Globus download",
+            description = "Starts monitoring a Globus transfer task and removes temporary permissions when the transfer completes.")
+    @RequestBody(description = "Globus transfer monitor request containing the task identifier.")
+    public Response monitorGlobusDownload(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
+            @RequestBody(description = "Globus transfer monitor request containing the task identifier.")
             String jsonData) throws IOException, ExecutionException, InterruptedException {
 
         logger.info(" ====  (api deleteglobusRule) jsonData   ====== " + jsonData);
@@ -4688,9 +4992,10 @@ public class Datasets extends AbstractApiBean {
                description = "Files uploaded successfully to dataset")
     @Tag(name = "addFilesToDataset",
          description = "Uploads a set of files to a dataset")
-    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))
-    public Response addFilesToDataset(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied,
-            @FormDataParam("jsonData") String jsonData) {
+    @RequestBody(description = "Multipart request containing file content and JSON metadata for files to add.",
+            content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))
+    public Response addFilesToDataset(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied,
+            @Parameter(description = "JSON metadata payload.") @FormDataParam("jsonData") String jsonData) {
 
         if (!systemConfig.isHTTPUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
@@ -4763,10 +5068,11 @@ public class Datasets extends AbstractApiBean {
                description = "Files replaced successfully to dataset")
     @Tag(name = "replaceFilesInDataset",
          description = "Replace a set of files to a dataset")
-    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))
+    @RequestBody(description = "Multipart request containing replacement file content and JSON metadata.",
+            content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))
     public Response replaceFilesInDataset(@Context ContainerRequestContext crc,
-                                          @PathParam("id") String idSupplied,
-                                          @FormDataParam("jsonData") String jsonData) {
+                                          @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied,
+                                          @Parameter(description = "JSON metadata payload.") @FormDataParam("jsonData") String jsonData) {
 
         if (!systemConfig.isHTTPUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
@@ -4825,8 +5131,13 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/files/metadata")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateMultipleFileMetadata(@Context ContainerRequestContext crc, String jsonData,
-            @PathParam("id") String datasetId) {
+    @Operation(summary = "Updates metadata for multiple files",
+            description = "Updates file metadata entries in a dataset after checking dataset edit permissions.")
+    @RequestBody(description = "JSON metadata updates for one or more files in the dataset.")
+    public Response updateMultipleFileMetadata(@Context ContainerRequestContext crc,
+            @RequestBody(description = "JSON metadata updates for one or more files in the dataset.")
+            String jsonData,
+            @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Dataset dataset = findDatasetOrDie(datasetId);
@@ -4989,8 +5300,10 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("/listCurationStates")
     @Produces("text/csv")
+    @Operation(summary = "Lists dataset curation states",
+            description = "Returns a CSV report of draft dataset curation statuses and users who can publish datasets.")
     public Response getCurationStates(@Context ContainerRequestContext crc,
-                                      @QueryParam("includeHistory") @DefaultValue("false") boolean includeHistory) throws WrappedResponse {
+                                      @Parameter(description = "Whether historical records are included.") @QueryParam("includeHistory") @DefaultValue("false") boolean includeHistory) throws WrappedResponse {
 
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
@@ -5070,9 +5383,11 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/{version}/archivalStatus")
+    @Operation(summary = "Returns archival status for a dataset version",
+            description = "Returns stored archival status information for a dataset version when the requester is a superuser.")
     public Response getDatasetVersionArchivalStatus(@Context ContainerRequestContext crc,
-                                                    @PathParam("id") String datasetId,
-                                                    @PathParam("version") String versionNumber,
+                                                    @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
+                                                    @Parameter(description = "Dataset version selector.") @PathParam("version") String versionNumber,
                                                     @Context UriInfo uriInfo,
                                                     @Context HttpHeaders headers) {
 
@@ -5100,9 +5415,13 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/{id}/{version}/archivalStatus")
+    @Operation(summary = "Sets dataset version archival status",
+            description = "Sets the archival status payload for a dataset version when the requester is a superuser.")
+    @RequestBody(description = "JSON archival status payload to store for the dataset version.")
     public Response setDatasetVersionArchivalStatus(@Context ContainerRequestContext crc,
-                                                    @PathParam("id") String datasetId,
-                                                    @PathParam("version") String versionNumber,
+                                                    @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
+                                                    @Parameter(description = "Dataset version selector.") @PathParam("version") String versionNumber,
+                                                    @RequestBody(description = "JSON archival status payload to store for the dataset version.")
                                                     String newStatus,
                                                     @Context UriInfo uriInfo,
                                                     @Context HttpHeaders headers) {
@@ -5158,9 +5477,11 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/{version}/archivalStatus")
+    @Operation(summary = "Deletes archival status for a dataset version",
+            description = "Removes stored archival status information from a dataset version when the requester is a superuser.")
     public Response deleteDatasetVersionArchivalStatus(@Context ContainerRequestContext crc,
-                                                       @PathParam("id") String datasetId,
-                                                       @PathParam("version") String versionNumber,
+                                                       @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
+                                                       @Parameter(description = "Dataset version selector.") @PathParam("version") String versionNumber,
                                                        @Context UriInfo uriInfo,
                                                        @Context HttpHeaders headers) {
 
@@ -5232,8 +5553,13 @@ public class Datasets extends AbstractApiBean {
 @AuthRequired
 @Path("{id}/externalTool/{tid}/toolUrl")
 @Consumes(MediaType.APPLICATION_JSON)
-public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
-        @PathParam("tid") long externalToolId, String jsonBody) {
+@Operation(summary = "Creates a dataset external tool URL",
+        description = "Returns launch URL details for a dataset-scoped external tool after checking tool configuration and dataset permissions.")
+@RequestBody(description = "External tool launch options such as preview mode and locale.")
+public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
+        @Parameter(description = "External tool id.") @PathParam("tid") long externalToolId,
+        @RequestBody(description = "External tool launch options such as preview mode and locale.")
+        String jsonBody) {
 
     boolean preview = false;
     String locale = null;
@@ -5334,11 +5660,13 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @GET
     @AuthRequired
     @Path("{id}/versions/{version}/toolparams/{tid}")
+    @Operation(summary = "Returns dataset external tool parameters",
+            description = "Returns dataset-version parameters and allowed API calls for a dataset-scoped external tool.")
     public Response getExternalToolDVParams(@Context ContainerRequestContext crc,
-                                            @PathParam("tid") long externalToolId,
-                                            @PathParam("id") String datasetId,
-                                            @PathParam("version") String version,
-                                            @QueryParam(value = "locale") String locale) {
+                                            @Parameter(description = "External tool id.") @PathParam("tid") long externalToolId,
+                                            @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
+                                            @Parameter(description = "Dataset version selector.") @PathParam("version") String version,
+                                            @Parameter(description = "Locale for localized Globus metadata.") @QueryParam(value = "locale") String locale) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             DatasetVersion target = getDatasetVersionOrDie(req, version, findDatasetUserCanSeeOrDie(datasetId, req, false), null, null);
@@ -5366,6 +5694,8 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
 
     @GET
     @Path("summaryFieldNames")
+    @Operation(summary = "Lists dataset summary fields",
+            description = "Returns the dataset field names configured for dataset summary display.")
     public Response getDatasetSummaryFieldNames() {
         String customFieldNames = settingsService.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
         String[] fieldNames = DatasetUtil.getDatasetSummaryFieldNames(customFieldNames);
@@ -5378,7 +5708,9 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
 
     @GET
     @Path("privateUrlDatasetVersion/{privateUrlToken}")
-    public Response getPrivateUrlDatasetVersion(@PathParam("privateUrlToken") String privateUrlToken, @QueryParam("returnOwners") boolean returnOwners) {
+    @Operation(summary = "Returns a private URL dataset version",
+            description = "Returns draft dataset version metadata for a private URL token, applying anonymized access rules when configured.")
+    public Response getPrivateUrlDatasetVersion(@Parameter(description = "Private URL token.") @PathParam("privateUrlToken") String privateUrlToken, @Parameter(description = "Whether owner information is included in the response.") @QueryParam("returnOwners") boolean returnOwners) {
         PrivateUrlUser privateUrlUser = privateUrlService.getPrivateUrlUserFromToken(privateUrlToken);
         if (privateUrlUser == null) {
             return notFound("Private URL user not found");
@@ -5405,7 +5737,9 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
 
     @GET
     @Path("previewUrlDatasetVersion/{previewUrlToken}")
-    public Response getPreviewUrlDatasetVersion(@PathParam("previewUrlToken") String previewUrlToken, @QueryParam("returnOwners") boolean returnOwners) {
+    @Operation(summary = "Returns a preview URL dataset version",
+            description = "Returns draft dataset version metadata for a preview URL token, applying anonymized access rules when configured.")
+    public Response getPreviewUrlDatasetVersion(@Parameter(description = "Preview URL token.") @PathParam("previewUrlToken") String previewUrlToken, @Parameter(description = "Whether owner information is included in the response.") @QueryParam("returnOwners") boolean returnOwners) {
         PrivateUrlUser privateUrlUser = privateUrlService.getPrivateUrlUserFromToken(previewUrlToken);
         if (privateUrlUser == null) {
             return notFound("Private URL user not found");
@@ -5433,7 +5767,9 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
 
     @GET
     @Path("privateUrlDatasetVersion/{privateUrlToken}/citation")
-    public Response getPrivateUrlDatasetVersionCitation(@PathParam("privateUrlToken") String privateUrlToken) {
+    @Operation(summary = "Returns a private URL citation",
+            description = "Returns the draft dataset citation available through a private URL token.")
+    public Response getPrivateUrlDatasetVersionCitation(@Parameter(description = "Private URL token.") @PathParam("privateUrlToken") String privateUrlToken) {
         PrivateUrlUser privateUrlUser = privateUrlService.getPrivateUrlUserFromToken(privateUrlToken);
         if (privateUrlUser == null) {
             return notFound("Private URL user not found");
@@ -5445,7 +5781,9 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
 
     @GET
     @Path("previewUrlDatasetVersion/{previewUrlToken}/citation")
-    public Response getPreviewUrlDatasetVersionCitation(@PathParam("previewUrlToken") String previewUrlToken) {
+    @Operation(summary = "Returns a preview URL citation",
+            description = "Returns the internal draft dataset citation available through a preview URL token.")
+    public Response getPreviewUrlDatasetVersionCitation(@Parameter(description = "Preview URL token.") @PathParam("previewUrlToken") String previewUrlToken) {
         PrivateUrlUser privateUrlUser = privateUrlService.getPrivateUrlUserFromToken(previewUrlToken);
         if (privateUrlUser == null) {
             return notFound("Private URL user not found");
@@ -5458,9 +5796,11 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/citation")
+    @Operation(summary = "Returns an internal dataset version citation",
+            description = "Returns the internal citation text for a selected dataset version.")
     public Response getDatasetVersionInternalCitation(@Context ContainerRequestContext crc,
-            @PathParam("id") String datasetId, @PathParam("versionId") String versionId,
-            @QueryParam("includeDeaccessioned") boolean includeDeaccessioned, @Context UriInfo uriInfo,
+            @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId, @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId,
+            @Parameter(description = "Whether deaccessioned dataset versions are included.") @QueryParam("includeDeaccessioned") boolean includeDeaccessioned, @Context UriInfo uriInfo,
             @Context HttpHeaders headers) {
         try {
             return ok(getDatasetVersionCitationAsString(crc, datasetId, versionId, DataCitation.Format.Internal, includeDeaccessioned,
@@ -5484,9 +5824,11 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/citation/{format}")
-    public Response getDatasetVersionCitation(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
-            @PathParam("versionId") String versionId, @PathParam("format") String formatString,
-            @QueryParam("includeDeaccessioned") boolean includeDeaccessioned, @Context UriInfo uriInfo,
+    @Operation(summary = "Returns a formatted dataset version citation",
+            description = "Returns citation text for a selected dataset version in the requested citation format.")
+    public Response getDatasetVersionCitation(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
+            @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId, @Parameter(description = "Citation format to return.") @PathParam("format") String formatString,
+            @Parameter(description = "Whether deaccessioned dataset versions are included.") @QueryParam("includeDeaccessioned") boolean includeDeaccessioned, @Context UriInfo uriInfo,
             @Context HttpHeaders headers) {
 
         DataCitation.Format format;
@@ -5519,7 +5861,12 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @POST
     @AuthRequired
     @Path("{id}/versions/{versionId}/deaccession")
-    public Response deaccessionDataset(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, String jsonBody, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    @Operation(summary = "Deaccessions a dataset version",
+            description = "Deaccessions a published dataset version using the supplied reason and optional forwarding URL.")
+    @RequestBody(description = "JSON deaccession payload containing deaccessionReason and optional deaccessionForwardURL.")
+    public Response deaccessionDataset(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId, @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId,
+            @RequestBody(description = "JSON deaccession payload containing deaccessionReason and optional deaccessionForwardURL.")
+            String jsonBody, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         if (DS_VERSION_DRAFT.equals(versionId) || DS_VERSION_LATEST.equals(versionId)) {
             return badRequest(BundleUtil.getStringFromBundle("datasets.api.deaccessionDataset.invalid.version.identifier.error", List.of(DS_VERSION_LATEST_PUBLISHED)));
         }
@@ -5550,7 +5897,9 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @GET
     @AuthRequired
     @Path("{identifier}/guestbookEntryAtRequest")
-    public Response getGuestbookEntryOption(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+    @Operation(summary = "Returns the dataset guestbook-entry policy",
+            description = "Returns whether a dataset requires guestbook entry at request time or falls back to the effective default.")
+    public Response getGuestbookEntryOption(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
                                             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
 
         Dataset dataset;
@@ -5571,7 +5920,11 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @PUT
     @AuthRequired
     @Path("{identifier}/guestbookEntryAtRequest")
-    public Response setguestbookEntryAtRequest(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+    @Operation(summary = "Sets the dataset guestbook-entry policy",
+            description = "Sets whether a dataset requires guestbook entry at request time when the requester is a superuser.")
+    @RequestBody(description = "Boolean guestbook-entry-at-request value to store for the dataset.")
+    public Response setguestbookEntryAtRequest(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
+                                               @RequestBody(description = "Boolean guestbook-entry-at-request value to store for the dataset.")
                                                boolean gbAtRequest,
                                                @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
 
@@ -5606,7 +5959,9 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @DELETE
     @AuthRequired
     @Path("{identifier}/guestbookEntryAtRequest")
-    public Response resetGuestbookEntryAtRequest(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+    @Operation(summary = "Resets the dataset guestbook-entry policy",
+            description = "Clears the dataset-specific guestbook-entry-at-request value so the dataset uses the effective default.")
+    public Response resetGuestbookEntryAtRequest(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
                                                  @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
 
         // Superuser-only:
@@ -5636,7 +5991,9 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @GET
     @AuthRequired
     @Path("{id}/userPermissions")
-    public Response getUserPermissionsOnDataset(@Context ContainerRequestContext crc, @PathParam("id") String datasetId) {
+    @Operation(summary = "Returns user permissions on a dataset",
+            description = "Returns selected dataset permissions for the requesting user.")
+    public Response getUserPermissionsOnDataset(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId) {
         Dataset dataset;
         User requestUser = getRequestUser(crc);
         try {
@@ -5658,10 +6015,12 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/canDownloadAtLeastOneFile")
+    @Operation(summary = "Checks whether any file can be downloaded",
+            description = "Returns whether the requester can download at least one file from a selected dataset version.")
     public Response getCanDownloadAtLeastOneFile(@Context ContainerRequestContext crc,
-                                                 @PathParam("id") String datasetId,
-                                                 @PathParam("versionId") String versionId,
-                                                 @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                                 @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
+                                                 @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId,
+                                                 @Parameter(description = "Whether deaccessioned dataset versions are included.") @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                                  @Context UriInfo uriInfo,
                                                  @Context HttpHeaders headers) {
         return response(req -> {
@@ -5673,7 +6032,9 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @PUT
     @AuthRequired
     @Path("{identifier}/pidReconcile")
-    public Response reconcilePid(@Context ContainerRequestContext crc, @PathParam("identifier") String datasetId) throws WrappedResponse {
+    @Operation(summary = "Reconciles a dataset persistent identifier",
+            description = "Reconciles a dataset persistent identifier with its effective PID provider when the requester is a superuser.")
+    public Response reconcilePid(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String datasetId) throws WrappedResponse {
 
         // Superuser-only:
         AuthenticatedUser user;
@@ -5708,7 +6069,9 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @GET
     @AuthRequired
     @Path("{identifier}/pidGenerator")
-    public Response getPidGenerator(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+    @Operation(summary = "Returns the dataset PID generator",
+            description = "Returns the effective PID generator id for a dataset.")
+    public Response getPidGenerator(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
             @Context HttpHeaders headers) throws WrappedResponse {
 
         Dataset dataset;
@@ -5731,7 +6094,11 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @PUT
     @AuthRequired
     @Path("{identifier}/pidGenerator")
-    public Response setPidGenerator(@Context ContainerRequestContext crc, @PathParam("identifier") String datasetId,
+    @Operation(summary = "Sets the dataset PID generator",
+            description = "Sets a managed PID generator for a dataset when the requester is a superuser.")
+    @RequestBody(description = "Managed PID generator id to assign to the dataset.")
+    public Response setPidGenerator(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String datasetId,
+            @RequestBody(description = "Managed PID generator id to assign to the dataset.")
             String generatorId, @Context HttpHeaders headers) throws WrappedResponse {
 
         // Superuser-only:
@@ -5765,7 +6132,9 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @DELETE
     @AuthRequired
     @Path("{identifier}/pidGenerator")
-    public Response resetPidGenerator(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+    @Operation(summary = "Resets the dataset PID generator",
+            description = "Clears the dataset-specific PID generator so the dataset uses the effective default.")
+    public Response resetPidGenerator(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
             @Context HttpHeaders headers) throws WrappedResponse {
 
         // Superuser-only:
@@ -5794,7 +6163,11 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
 
     @GET
     @Path("datasetTypes")
-    public Response getDatasetTypes(@HeaderParam(ACCEPT_LANGUAGE) String acceptLanguage) {
+    @Operation(summary = "Present configured dataset types",
+            description = "Provides all dataset types configured for datasets.",
+            operationId = "Datasets_listDatasetTypes")
+    public Response getDatasetTypes(@Parameter(description = "Language preference for localized dataset type labels.")
+            @HeaderParam(ACCEPT_LANGUAGE) String acceptLanguage) {
         Locale locale = I18nUtil.parseAcceptLanguageHeader(acceptLanguage);
         JsonArrayBuilder jab = Json.createArrayBuilder();
         for (DatasetType datasetType : datasetTypeSvc.listAll()) {
@@ -5805,7 +6178,14 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
 
     @GET
     @Path("datasetTypes/{idOrName}")
-    public Response getDatasetTypes(@PathParam("idOrName") String idOrName, @HeaderParam(ACCEPT_LANGUAGE) String acceptLanguage) {
+    @Operation(summary = "Present a dataset type",
+            description = "Provides one dataset type by numeric id or name.",
+            operationId = "Datasets_getDatasetType")
+    public Response getDatasetTypes(
+            @Parameter(description = "Dataset type numeric id or name.", required = true)
+            @PathParam("idOrName") String idOrName,
+            @Parameter(description = "Language preference for localized dataset type labels.")
+            @HeaderParam(ACCEPT_LANGUAGE) String acceptLanguage) {
         Locale locale = I18nUtil.parseAcceptLanguageHeader(acceptLanguage);
         DatasetType datasetType = null;
         if (StringUtils.isNumeric(idOrName)) {
@@ -5828,7 +6208,11 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @POST
     @AuthRequired
     @Path("datasetTypes")
-    public Response addDatasetType(@Context ContainerRequestContext crc, String jsonIn) {
+    @Operation(summary = "Creates a dataset type",
+            description = "Creates a dataset type from its name, display name, description, linked metadata blocks, and available licenses.")
+    public Response addDatasetType(@Context ContainerRequestContext crc,
+                                   @RequestBody(description = "Dataset type definition with name, displayName, optional description, linkedMetadataBlocks, and availableLicenses.")
+                                   String jsonIn) {
         AuthenticatedUser user;
         try {
             user = getRequestAuthenticatedUserOrDie(crc);
@@ -5923,7 +6307,11 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @DELETE
     @AuthRequired
     @Path("datasetTypes/{id}")
-    public Response deleteDatasetType(@Context ContainerRequestContext crc, @PathParam("id") String doomed) {
+    @Operation(summary = "Remove a dataset type",
+            description = "Deletes a non-default dataset type by database id.")
+    public Response deleteDatasetType(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset type database id.", required = true)
+            @PathParam("id") String doomed) {
         AuthenticatedUser user;
         try {
             user = getRequestAuthenticatedUserOrDie(crc);
@@ -5969,7 +6357,13 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @AuthRequired
     @PUT
     @Path("datasetTypes/{idOrName}")
-    public Response updateDatasetTypeLinksWithMetadataBlocks(@Context ContainerRequestContext crc, @PathParam("idOrName") String idOrName, String jsonBody) {
+    @Operation(summary = "Link metadata blocks to a dataset type",
+            description = "Replaces the metadata blocks linked to a dataset type.")
+    public Response updateDatasetTypeLinksWithMetadataBlocks(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset type id or name.", required = true)
+            @PathParam("idOrName") String idOrName,
+            @RequestBody(description = "JSON array of metadata block names to link to the dataset type.")
+            String jsonBody) {
         DatasetType datasetType = null;
         if (StringUtils.isNumeric(idOrName)) {
             try {
@@ -6017,7 +6411,13 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @AuthRequired
     @PUT
     @Path("datasetTypes/{idOrName}/licenses")
-    public Response updateDatasetTypeWithLicenses(@Context ContainerRequestContext crc, @PathParam("idOrName") String idOrName, String jsonBody) {
+    @Operation(summary = "Configure licenses for a dataset type",
+            description = "Replaces the licenses available for a dataset type.")
+    public Response updateDatasetTypeWithLicenses(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset type id or name.", required = true)
+            @PathParam("idOrName") String idOrName,
+            @RequestBody(description = "JSON array of license names or URIs available for the dataset type.")
+            String jsonBody) {
         DatasetType datasetType = null;
         if (StringUtils.isNumeric(idOrName)) {
             try {
@@ -6065,7 +6465,13 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @AuthRequired
     @PUT
     @Path("{identifier}/guestbook")
-    public Response updateDatasetGuestbook(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, String body) {
+    @Operation(summary = "Assign a guestbook to a dataset",
+            description = "Sets the guestbook used by the selected dataset.")
+    public Response updateDatasetGuestbook(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("identifier") String identifier,
+            @RequestBody(description = "Guestbook database id to assign to the dataset.")
+            String body) {
         return response(req -> {
             Dataset dataset = findDatasetOrDie(identifier);
             Long guestbookId = null;
@@ -6091,7 +6497,11 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @AuthRequired
     @DELETE
     @Path("{identifier}/guestbook")
-    public Response deleteDatasetGuestbook(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) {
+    @Operation(summary = "Clear a dataset guestbook",
+            description = "Removes the guestbook assignment from the selected dataset.")
+    public Response deleteDatasetGuestbook(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("identifier") String identifier) {
         return response(req -> {
             Dataset dataset = findDatasetOrDie(identifier);
             if (dataset.getGuestbook() != null) {
@@ -6114,7 +6524,12 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @AuthRequired
     @Path("{id}/deleteFiles")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response deleteDatasetFiles(@Context ContainerRequestContext crc, @PathParam("id") String id,
+    @Operation(summary = "Remove files from a dataset draft",
+            description = "Deletes selected files from the dataset draft and removes physical files that have never been released.")
+    public Response deleteDatasetFiles(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String id,
+            @RequestBody(description = "JSON array of data file ids to delete from the dataset draft.")
             JsonArray fileIds) {
         try {
             getRequestAuthenticatedUserOrDie(crc);
@@ -6177,7 +6592,14 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/versionNote")
-    public Response getVersionCreationNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+    @Operation(summary = "Read a dataset version note",
+            description = "Returns the note stored on the requested dataset version.")
+    public Response getVersionCreationNote(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String datasetId,
+            @Parameter(description = "Dataset version id or version label.", required = true)
+            @PathParam("versionId") String versionId,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
 
         return response(req -> {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), uriInfo, headers);
@@ -6192,7 +6614,16 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @PUT
     @AuthRequired
     @Path("{id}/versions/{versionId}/versionNote")
-    public Response addVersionNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, String note, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+    @Operation(summary = "Store a dataset version note",
+            description = "Adds or replaces the note on a draft or superuser-selected published dataset version.")
+    public Response addVersionNote(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String datasetId,
+            @Parameter(description = "Dataset version id or version label.", required = true)
+            @PathParam("versionId") String versionId,
+            @RequestBody(description = "Plain text note to store on the dataset version.")
+            String note,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
         if (!FeatureFlags.VERSION_NOTE.enabled()) {
             return notFound(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.notEnabled"));
         }
@@ -6225,7 +6656,14 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @DELETE
     @AuthRequired
     @Path("{id}/versions/{versionId}/versionNote")
-    public Response deleteVersionNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+    @Operation(summary = "Clear a dataset version note",
+            description = "Deletes the note from a draft or superuser-selected published dataset version.")
+    public Response deleteVersionNote(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("id") String datasetId,
+            @Parameter(description = "Dataset version id or version label.", required = true)
+            @PathParam("versionId") String versionId,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
         if(!FeatureFlags.VERSION_NOTE.enabled()) {
             return notFound(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.notEnabled"));
         }
@@ -6248,7 +6686,12 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @AuthRequired
     @Path("{identifier}/assignments/history")
     @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
-    public Response getRoleAssignmentHistory(@Context ContainerRequestContext crc, @PathParam("identifier") String id, @Context HttpHeaders headers) {
+    @Operation(summary = "Read dataset role assignment history",
+            description = "Returns dataset role assignment history as JSON or CSV.")
+    public Response getRoleAssignmentHistory(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("identifier") String id,
+            @Context HttpHeaders headers) {
         return response(req -> {
             Dataset dataset = findDatasetUserCanSeeOrDie(id, req, false);
 
@@ -6263,7 +6706,10 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @AuthRequired
     @Path("{identifier}/files/assignments/history")
     @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
+    @Operation(summary = "Read file role assignment history",
+            description = "Returns file-level role assignment history for a dataset as JSON or CSV.")
     public Response getFilesRoleAssignmentHistory(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
             @PathParam("identifier") String id,
             @Context HttpHeaders headers) {
         return response(req -> {
@@ -6279,8 +6725,12 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @PUT
     @AuthRequired
     @Path("{id}/license")
+    @Operation(summary = "Change a dataset license",
+            description = "Updates the dataset license by name or URI, or applies custom terms.")
     public Response updateLicense(@Context ContainerRequestContext crc,
+                                  @Parameter(description = "Dataset id or persistent identifier.", required = true)
                                   @PathParam("id") String datasetId,
+                                  @RequestBody(description = "License update request containing a license name, URI, or custom terms.")
                                   LicenseUpdateRequest requestBody) {
         return response(req -> {
             Dataset dataset = findDatasetOrDie(datasetId);
@@ -6306,7 +6756,11 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @AuthRequired
     @Path("{identifier}/reviews")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getReviews(@Context ContainerRequestContext crc, @PathParam("identifier") String id) {
+    @Operation(summary = "Returns dataset reviews",
+            description = "Returns review metadata stored for a dataset.")
+    public Response getReviews(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("identifier") String id) {
         return response(req -> {
             Dataset dataset = findDatasetOrDie(id);
             try {
@@ -6329,7 +6783,13 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @GET
     @AuthRequired
     @Path("{identifier}/storage/quota")
-    public Response getDatasetQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("showInherited") boolean showInherited) throws WrappedResponse {
+    @Operation(summary = "Read dataset storage quota",
+            description = "Returns the storage quota for a dataset, optionally including inherited quota values.")
+    public Response getDatasetQuota(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
+            @Parameter(description = "Whether to include inherited quota settings in the response.")
+            @QueryParam("showInherited") boolean showInherited) throws WrappedResponse {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Long bytesAllocated = execCommand(new GetDatasetQuotaCommand(req, findDatasetUserCanSeeOrDie(dvIdtf, req, false), showInherited));
@@ -6345,7 +6805,13 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @PUT
     @AuthRequired
     @Path("{identifier}/storage/quota")
-    public Response setDatasetQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String value) throws WrappedResponse {
+    @Operation(summary = "Assign dataset storage quota",
+            description = "Sets the dataset storage quota in bytes.")
+    public Response setDatasetQuota(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
+            @RequestBody(description = "Quota value in bytes.")
+            String value) throws WrappedResponse {
         try {
             Long bytesAllocated; 
             try {
@@ -6363,7 +6829,11 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @DELETE
     @AuthRequired
     @Path("{identifier}/storage/quota")
-    public Response deleteDatasetQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) throws WrappedResponse {
+    @Operation(summary = "Clear dataset storage quota",
+            description = "Deletes the explicit storage quota for a dataset.")
+    public Response deleteDatasetQuota(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) throws WrappedResponse {
         try {
             execCommand(new DeleteDatasetQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDatasetOrDie(dvIdtf)));
             return ok(BundleUtil.getStringFromBundle("dataset.storage.quota.deleted"));
@@ -6384,7 +6854,11 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @GET
     @AuthRequired
     @Path("{identifier}/storage/use")
-    public Response getDatasetStorageUse(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) throws WrappedResponse {
+    @Operation(summary = "Read dataset storage use",
+            description = "Returns the recorded storage use for a dataset.")
+    public Response getDatasetStorageUse(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("identifier") String identifier) throws WrappedResponse {
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataset.storage.use"),
                 execCommand(new GetDatasetStorageUseCommand(req, findDatasetUserCanSeeOrDie(identifier, req, false))))), getRequestUser(crc));
     }
@@ -6392,7 +6866,11 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @GET
     @AuthRequired
     @Path("{identifier}/uploadlimits")
-    public Response getUploadLimits(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+    @Operation(summary = "Read dataset upload limits",
+            description = "Returns upload size limits that apply to the selected dataset.")
+    public Response getUploadLimits(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo,
             @Context HttpHeaders headers) throws WrappedResponse {
 

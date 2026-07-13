@@ -23,10 +23,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+import jakarta.ejb.Asynchronous;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
@@ -46,6 +48,8 @@ import org.apache.solr.common.SolrInputDocument;
 public class SolrIndexServiceBean {
 
     private static final Logger logger = Logger.getLogger(SolrIndexServiceBean.class.getCanonicalName());
+
+    private static final AtomicBoolean indexingInProgress = new AtomicBoolean(false);
 
     @EJB
     private SolrIndexServiceBean self; // Self-injection to allow calling methods in new transactions (from other methods in this bean)
@@ -103,20 +107,6 @@ public class SolrIndexServiceBean {
         return solrDocs;
     }
 
-    private List<DvObjectSolrDoc> determineSolrDocsForFilesFromDataset(Map.Entry<Long, List<Long>> datasetHash) {
-        List<DvObjectSolrDoc> emptyList = new ArrayList<>();
-        List<DvObjectSolrDoc> solrDocs = emptyList;
-        DvObject dvObject = dvObjectService.findDvObject(datasetHash.getKey());
-        if (dvObject == null) {
-            return emptyList;
-        }
-        if (dvObject.isInstanceofDataset()) {
-            Dataset dataset = (Dataset) dvObject;
-            solrDocs.addAll(constructDatafileSolrDocsFromDataset(dataset));
-        }
-        return solrDocs;
-    }
-
     /**
      * @todo should this method return a List? The equivalent methods for
      * datasets and files return lists.
@@ -148,24 +138,6 @@ public class SolrIndexServiceBean {
             perms = cachedPerms;
         }
         return new DvObjectSolrDoc(fileProxy.getFileId().toString(), solrId, versionId, fileProxy.getName(), perms);
-    }
-
-    private List<DvObjectSolrDoc> constructDatafileSolrDocsFromDataset(Dataset dataset) {
-        List<DvObjectSolrDoc> datafileSolrDocs = new ArrayList<>();
-        for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersionsToBuildCardsFor(dataset)) {
-            List<String> perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
-
-            for (FileMetadata fileMetadata : datasetVersionFileIsAttachedTo.getFileMetadatas()) {
-                Long fileId = fileMetadata.getDataFile().getId();
-                String solrIdStart = IndexServiceBean.solrDocIdentifierFile + fileId;
-                String solrIdEnd = getDatasetOrDataFileSolrEnding(datasetVersionFileIsAttachedTo.getVersionState());
-                String solrId = solrIdStart + solrIdEnd;
-                DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(fileId.toString(), solrId, datasetVersionFileIsAttachedTo.getId(), fileMetadata.getLabel(), perms);
-                logger.finest("adding fileid " + fileId);
-                datafileSolrDocs.add(dataFileSolrDoc);
-            }
-        }
-        return datafileSolrDocs;
     }
 
     /** Find the versions to index. The overall logic is
@@ -213,60 +185,70 @@ public class SolrIndexServiceBean {
         }
     }
 
-    public IndexResponse indexAllPermissions() {
-        Collection<SolrInputDocument> docs = new ArrayList<>();
-
-        List<DvObjectSolrDoc> definitionPoints = new ArrayList<>();
-        Map<Long, List<Long>> filesPerDataset = new HashMap<>();
-        List<DvObject> allExceptFiles = dvObjectService.findAll();
-        for (DvObject dvObject : allExceptFiles) {
-            logger.fine("determining definition points for dvobject id " + dvObject.getId());
-            if (dvObject.isInstanceofDataFile()) {
-                Long dataset = dvObject.getOwner().getId();
-                Long datafile = dvObject.getId();
-
-                List<Long> files = filesPerDataset.get(dataset);
-                if (files == null) {
-                    files = new ArrayList<>();
-                    filesPerDataset.put(dataset, files);
-                }
-                files.add(datafile);
-            } else {
-                definitionPoints.addAll(determineSolrDocs(dvObject));
-            }
+    public boolean asyncIndexAllPermissions() {
+        if (!indexingInProgress.compareAndSet(false, true)) {
+            logger.info("Asynchronous indexing of all permissions is already in progress. Skipping this invocation.");
+            return false;
         }
+        self.doAsyncIndexAllPermissions();
+        return true;
+    }
 
-        List<DvObject> all = allExceptFiles;
-        for (Map.Entry<Long, List<Long>> filePerDataset : filesPerDataset.entrySet()) {
-            definitionPoints.addAll(determineSolrDocsForFilesFromDataset(filePerDataset));
-            for (long fileId : filePerDataset.getValue()) {
-                DvObject file = dvObjectService.findDvObject(fileId);
-                if (file != null) {
-                    all.add(file);
-                }
-            }
-        }
+    @Asynchronous
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void doAsyncIndexAllPermissions() {
+        logger.info("Starting asynchronous indexing of all permissions");
+        long startTime = System.currentTimeMillis();
 
-        for (DvObjectSolrDoc dvObjectSolrDoc : definitionPoints) {
-            logger.fine("creating solr doc in memory for " + dvObjectSolrDoc.getSolrId());
-            SolrInputDocument solrInputDocument = SearchUtil.createSolrDoc(dvObjectSolrDoc);
-            logger.fine("adding to list of docs to index " + dvObjectSolrDoc.getSolrId());
-            docs.add(solrInputDocument);
-        }
         try {
-            persistToSolr(docs);
-            /**
-             * @todo Do we need a separate permissionIndexTime timestamp?
-             * Probably. Update it here.
-             */
-            for (DvObject dvObject : all) {
-                dvObjectService.updatePermissionIndexTime(dvObject);
-            }
-            return new IndexResponse("indexed all permissions");
-        } catch (SolrServerException | IOException ex) {
-            return new IndexResponse("problem indexing");
-        }
 
+            // Get ALL dataverses in the system
+            List<Long> allDataverseIds = em.createQuery(
+                "SELECT d.id FROM Dataverse d ORDER BY d.id", Long.class)
+                .getResultList();
+
+            logger.info("Found " + allDataverseIds.size() + " dataverses to index (each will index its datasets and files)");
+
+            int processedCount = 0;
+
+            // Index each dataverse (which will automatically index all its datasets and files)
+            for (Long dataverseId : allDataverseIds) {
+                try {
+                    Dataverse dataverse = dataverseService.find(dataverseId);
+                    if (dataverse == null) {
+                        logger.warning("Dataverse not found: " + dataverseId);
+                        continue;
+                    }
+
+                    logger.fine("Indexing permissions for Dataverse " + dataverseId +
+                               " (" + dataverse.getName() + ") and all its datasets/files");
+
+                    // This will index the dataverse itself and all its direct dataset children (with their files)
+                    IndexResponse response = indexPermissionsOnSelfAndChildren(dataverse);
+                    processedCount++;
+
+                    logger.fine("Indexed Dataverse " + dataverseId + ": " + response.getMessage());
+
+                    // Clear persistence context periodically to free memory
+                    if (processedCount % 10 == 0) {
+                        em.clear();
+                        logger.info("Processed " + processedCount + "/" + allDataverseIds.size() + " dataverses");
+                    }
+
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "Error indexing permissions for dataverse " + dataverseId, e);
+                }
+            }
+
+            long duration = System.currentTimeMillis() - startTime;
+            logger.info("Completed asynchronous indexing of all permissions. Processed " +
+                        processedCount + " dataverses (with all their datasets and files) in " + duration + "ms");
+
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error during asynchronous permission indexing", e);
+        } finally {
+            indexingInProgress.set(false);
+        }
     }
 
     public IndexResponse indexPermissionsForOneDvObject(DvObject dvObject) {
