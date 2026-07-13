@@ -185,23 +185,23 @@ jobs:
       - name: Checkout kunai-runner
         uses: actions/checkout@v7
         with:
-          repository: uncch-rdmc/kunai-runner
-          path: kunai-runner
+          repository: gdcc/dataverse-jsf-tests
+          path: dataverse-jsf-tests
 
-      - name: Install kunai-runner dependencies
+      - name: Install dataverse-jsf-tests dependencies
         run: npm ci
-        working-directory: kunai-runner
+        working-directory: dataverse-jsf-tests
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
-        working-directory: kunai-runner
+        working-directory: dataverse-jsf-tests
 
       # ---------------------------
       # RUN PLAYWRIGHT FRONTEND TESTS
       # ---------------------------
       - name: Run Playwright frontend tests
         run: npx playwright test
-        working-directory: kunai-runner
+        working-directory: dataverse-jsf-tests
         env:
           BASE_URL:       "http://localhost:8080"
           LOGIN_ADAPTER:  "builtin"
@@ -220,7 +220,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report
-          path: kunai-runner/playwright-report/
+          path: dataverse-jsf-tests/playwright-report/
           retention-days: 14
 
       # ---------------------------
