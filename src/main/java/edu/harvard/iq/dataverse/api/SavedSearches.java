@@ -28,13 +28,20 @@ import jakarta.ws.rs.core.Response;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("admin/savedsearches")
+@Tag(name = "Admin", description = "Administrative Dataverse operations.")
 public class SavedSearches extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(SavedSearches.class.getCanonicalName());
 
     @GET
+    @Operation(summary = "Lists saved-search endpoints",
+            description = "Returns a simple list of supported saved-search administration endpoint patterns.")
     public Response meta() {
         JsonArrayBuilder endpoints = Json.createArrayBuilder();
         endpoints.add("GET");
@@ -47,6 +54,8 @@ public class SavedSearches extends AbstractApiBean {
 
     @GET
     @Path("list")
+    @Operation(summary = "Lists saved searches",
+            description = "Returns all saved searches with query, filter queries, id, definition point, and creator id.")
     public Response list() {
         JsonArrayBuilder savedSearchesBuilder = Json.createArrayBuilder();
         List<SavedSearch> savedSearches = savedSearchSvc.findAll();
@@ -61,7 +70,11 @@ public class SavedSearches extends AbstractApiBean {
 
     @GET
     @Path("{id}")
-    public Response show(@PathParam("id") long id) {
+    @Operation(summary = "Returns a saved search",
+            description = "Returns one saved search with query, filter queries, id, definition point, and creator id.")
+    public Response show(
+            @Parameter(description = "Numeric id of the saved search to return.", required = true)
+            @PathParam("id") long id) {
         SavedSearch savedSearch = savedSearchSvc.find(id);
         if (savedSearch != null) {
             JsonObjectBuilder response = toJson(savedSearch);
@@ -89,7 +102,11 @@ public class SavedSearches extends AbstractApiBean {
     }
 
     @POST
-    public Response add(JsonObject body) {
+    @Operation(summary = "Creates a saved search",
+            description = "Creates a saved search from query, creator id, definition point id, and optional filter queries.")
+    public Response add(
+            @RequestBody(description = "Saved-search JSON containing creatorId, query, definitionPointId, and optional filterQueries.")
+            JsonObject body) {
         if (body == null) {
             return error(BAD_REQUEST, "JSON is expected.");
         }
@@ -172,7 +189,13 @@ public class SavedSearches extends AbstractApiBean {
 
     @DELETE
     @Path("{id}")
-    public Response delete(@PathParam("id") long doomedId, @QueryParam("unlink") boolean unlink) {
+    @Operation(summary = "Deletes a saved search",
+            description = "Deletes the specified saved search and optionally unlinks generated links.")
+    public Response delete(
+            @Parameter(description = "Numeric id of the saved search to delete.", required = true)
+            @PathParam("id") long doomedId,
+            @Parameter(description = "Remove links created from the saved search.")
+            @QueryParam("unlink") boolean unlink) {
         SavedSearch doomed = savedSearchSvc.find(doomedId);
         if (doomed == null) {
             return error(NOT_FOUND, "Could not find saved search id " + doomedId);
@@ -193,7 +216,11 @@ public class SavedSearches extends AbstractApiBean {
 
     @PUT
     @Path("makelinks/all")
-    public Response makeLinksForAllSavedSearches(@QueryParam("debug") boolean debug) {
+    @Operation(summary = "Creates links for all saved searches",
+            description = "Processes all saved searches and creates links for matching results.")
+    public Response makeLinksForAllSavedSearches(
+            @Parameter(description = "Include debug information in the link creation response.")
+            @QueryParam("debug") boolean debug) {
         JsonObjectBuilder makeLinksResponse;
         try {
             makeLinksResponse = savedSearchSvc.makeLinksForAllSavedSearches(debug);
@@ -207,7 +234,13 @@ public class SavedSearches extends AbstractApiBean {
 
     @PUT
     @Path("makelinks/{id}")
-    public Response makeLinksForSingleSavedSearch(@PathParam("id") long savedSearchIdToLookUp, @QueryParam("debug") boolean debug) {
+    @Operation(summary = "Creates links for a saved search",
+            description = "Processes one saved search and creates links for matching results.")
+    public Response makeLinksForSingleSavedSearch(
+            @Parameter(description = "Numeric id of the saved search to process.", required = true)
+            @PathParam("id") long savedSearchIdToLookUp,
+            @Parameter(description = "Include debug information in the link creation response.")
+            @QueryParam("debug") boolean debug) {
         SavedSearch savedSearchToMakeLinksFor = savedSearchSvc.find(savedSearchIdToLookUp);
         if (savedSearchToMakeLinksFor == null) {
             return error(BAD_REQUEST, "Count not find saved search id " + savedSearchIdToLookUp);

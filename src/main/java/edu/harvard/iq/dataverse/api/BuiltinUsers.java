@@ -29,6 +29,10 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import java.util.Date;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
  * REST API bean for managing {@link BuiltinUser}s.
@@ -36,6 +40,7 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
  * @author michael
  */
 @Path("builtin-users")
+@Tag(name = "Users", description = "User account and authenticated user operations.")
 public class BuiltinUsers extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(BuiltinUsers.class.getName());
@@ -45,7 +50,13 @@ public class BuiltinUsers extends AbstractApiBean {
 
     @GET
     @Path("{username}/api-token")
-    public Response getApiToken( @PathParam("username") String username, @QueryParam("password") String password ) {
+    @Operation(summary = "Returns a builtin user's API token",
+            description = "Returns the API token for a builtin user when token lookup is enabled and the supplied password is valid.")
+    public Response getApiToken(
+            @Parameter(description = "Builtin username whose API token is requested.", required = true)
+            @PathParam("username") String username,
+            @Parameter(description = "Builtin account password used to verify token lookup.")
+            @QueryParam("password") String password) {
         boolean disabled = true;
         boolean lookupAllowed = settingsSvc.isTrueForKey(SettingsServiceBean.Key.AllowApiTokenLookupViaApi, false);
         if (lookupAllowed) {
@@ -80,7 +91,17 @@ public class BuiltinUsers extends AbstractApiBean {
     //and use the values to create BuiltinUser/AuthenticatedUser.
     //--MAD 4.9.3
     @POST
-    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key, @QueryParam("sendEmailNotification") Boolean sendEmailNotification) {   
+    @Operation(summary = "Creates a builtin user",
+            description = "Creates a builtin user, matching authenticated user, and API token when the builtin-users management key is valid.")
+    public Response save(
+            @RequestBody(description = "Builtin user account data used to create the builtin and authenticated user records.")
+            BuiltinUser user,
+            @Parameter(description = "Password assigned to the builtin user.")
+            @QueryParam("password") String password,
+            @Parameter(description = "Builtin-users management key required to create the account.")
+            @QueryParam("key") String key,
+            @Parameter(description = "Send a create-account email notification to the new user.")
+            @QueryParam("sendEmailNotification") Boolean sendEmailNotification) {
         if( sendEmailNotification == null )
             sendEmailNotification = true;
         
@@ -100,7 +121,15 @@ public class BuiltinUsers extends AbstractApiBean {
      */
     @POST
     @Path("{password}/{key}")
-    public Response create(BuiltinUser user, @PathParam("password") String password, @PathParam("key") String key) {
+    @Operation(summary = "Creates a builtin user with path credentials",
+            description = "Creates a builtin user, matching authenticated user, and API token using password and management key path values.")
+    public Response create(
+            @RequestBody(description = "Builtin user account data used to create the builtin and authenticated user records.")
+            BuiltinUser user,
+            @Parameter(description = "Password assigned to the builtin user.", required = true)
+            @PathParam("password") String password,
+            @Parameter(description = "Builtin-users management key required to create the account.", required = true)
+            @PathParam("key") String key) {
         return internalSave(user, password, key);
     }
     
@@ -117,7 +146,17 @@ public class BuiltinUsers extends AbstractApiBean {
      */
     @POST
     @Path("{password}/{key}/{sendEmailNotification}")
-    public Response createWithNotification(BuiltinUser user, @PathParam("password") String password, @PathParam("key") String key, @PathParam("sendEmailNotification") Boolean sendEmailNotification) {
+    @Operation(summary = "Creates a builtin user with notification control",
+            description = "Creates a builtin user, matching authenticated user, and API token while controlling whether a create-account notification is sent.")
+    public Response createWithNotification(
+            @RequestBody(description = "Builtin user account data used to create the builtin and authenticated user records.")
+            BuiltinUser user,
+            @Parameter(description = "Password assigned to the builtin user.", required = true)
+            @PathParam("password") String password,
+            @Parameter(description = "Builtin-users management key required to create the account.", required = true)
+            @PathParam("key") String key,
+            @Parameter(description = "Send a create-account email notification to the new user.", required = true)
+            @PathParam("sendEmailNotification") Boolean sendEmailNotification) {
         return internalSave(user, password, key, sendEmailNotification);
     }
     
