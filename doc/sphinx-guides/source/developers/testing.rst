@@ -531,11 +531,6 @@ Future Work on Integration Tests
 - Consistent logging of API Tests. Show test name at the beginning and end and status codes returned.
 - expected passing and known/expected failing integration tests: https://github.com/IQSS/dataverse/issues/4438
 
-Browser-Based Testing
-~~~~~~~~~~~~~~~~~~~~~
-
-- Revisit Selenium/Open Sauce: https://github.com/IQSS/dataverse/commit/8a26404 and https://saucelabs.com/u/esodvn and https://saucelabs.com/u/wdjs and http://sauceio.com/index.php/2013/05/a-browser-matrix-widget-for-the-open-source-community/
-
 Installation Testing
 ~~~~~~~~~~~~~~~~~~~~
 
