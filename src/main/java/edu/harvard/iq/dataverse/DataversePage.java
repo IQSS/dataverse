@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -43,13 +44,17 @@ import jakarta.inject.Named;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.component.UIInput;
 import org.primefaces.model.DualListModel;
@@ -122,6 +127,8 @@ public class DataversePage implements java.io.Serializable {
     PidProviderFactoryBean pidProviderFactoryBean;
     @EJB
     CacheFactoryBean cacheFactory;
+    @EJB
+    RoleAssigneeServiceBean roleAssigneeService;
 
     private Dataverse dataverse = new Dataverse();  
 
@@ -141,6 +148,7 @@ public class DataversePage implements java.io.Serializable {
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
     private List<ControlledVocabularyValue> selectedSubjects;
+    private List<RoleAssignee> locallyFAIRRoleAssigneesList;
 
     public List<ControlledVocabularyValue> getSelectedSubjects() {
         return selectedSubjects;
@@ -207,18 +215,31 @@ public class DataversePage implements java.io.Serializable {
     }
     
     public boolean showLinkingPopup() {
-        String testquery = "";
-        if (session.getUser() == null) {
+        // Must be logged in
+        AuthenticatedUser au = getAuthenticatedUser();
+        if (au == null) {
             return false;
         }
         if (dataverse == null) {
             return false;
         }
-        if (query != null) {
-            testquery = query;
+
+        // If there is an active search query, that's all that matters (plus having permission on ANY collection)
+        if (query != null && !query.isEmpty()) {
+            List<Dataverse> permitted = permissionService.findPermittedCollections(dvRequestService.getDataverseRequest(), au, Permission.LinkDataverse);
+            return permitted != null && !permitted.isEmpty();
         }
 
-        return (session.getUser().isSuperuser() && (dataverse.getOwner() != null || !testquery.isEmpty()));
+        // Otherwise (no active search), check if there is at least one OTHER eligible collection
+        // Eligible means: not the current collection and not in the parent tree
+        // Technically, eligible also means "not already linked", but in that case, we show the Link button anyway and have the Link dialog display a message about all eligible collections already being linked
+        List<Dataverse> dvsWithLinkPermission = permissionService.findPermittedCollections(dvRequestService.getDataverseRequest(), au, Permission.LinkDataverse);
+        if (dvsWithLinkPermission != null && !dvsWithLinkPermission.isEmpty()) {
+            List<Dataverse> eligibleDataverses = dataverseService.removeUnlinkableDataverses(dvsWithLinkPermission, dataverse, false);
+            return !eligibleDataverses.isEmpty();
+        }
+
+        return false;
     }
     
     public void setupLinkingPopup (String popupSetting){
@@ -233,35 +254,18 @@ public class DataversePage implements java.io.Serializable {
     public void updateLinkableDataverses() {
         dataversesForLinking = new ArrayList<>();
         linkingDVSelectItems = new ArrayList<>();
-        
-        //Since only a super user function add all dvs
-        dataversesForLinking = dataverseService.findAll();// permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.PublishDataverse);
-        
-        /*
-        List<DataverseRole> roles = dataverseRoleServiceBean.getDataverseRolesByPermission(Permission.PublishDataverse, dataverse.getId());
-        List<String> types = new ArrayList();
-        types.add("Dataverse");
-        for (Long dvIdAsInt : permissionService.getDvObjectIdsUserHasRoleOn(session.getUser(), roles, types, false)) {
-            dataversesForLinking.add(dataverseService.find(dvIdAsInt));
-        }*/
-        
-        //for linking - make sure the link hasn't occurred and its not int the tree
-        if (this.linkMode.equals(LinkMode.LINKDATAVERSE)) {
-        
-            // remove this and it's parent tree
-            dataversesForLinking.remove(dataverse);
-            Dataverse testDV = dataverse;
-            while(testDV.getOwner() != null){
-                dataversesForLinking.remove(testDV.getOwner());
-                testDV = testDV.getOwner();
-            }                
-            
-            for (Dataverse removeLinked : linkingService.findLinkingDataverses(dataverse.getId())) {
-                dataversesForLinking.remove(removeLinked);
-            }
-        } else{
-            //for saved search add all
 
+
+        List<Dataverse> dvsWithLinkPermission = permissionService.findPermittedCollections(dvRequestService.getDataverseRequest(), getAuthenticatedUser(), Permission.LinkDataverse, "");
+
+        if (dvsWithLinkPermission != null && !dvsWithLinkPermission.isEmpty()) {
+            // for linking - make sure the link hasn't occurred and it's not in the tree
+            if (this.linkMode.equals(LinkMode.LINKDATAVERSE)) {
+                dataversesForLinking = dataverseService.removeUnlinkableDataverses(dvsWithLinkPermission, dataverse);
+            } else {
+                // for saved search, add all
+                dataversesForLinking = dvsWithLinkPermission;
+            }
         }
 
         for (Dataverse selectDV : dataversesForLinking) {
@@ -340,13 +344,17 @@ public class DataversePage implements java.io.Serializable {
                 }
             }
 
-            // check if dv exists and user has permission
-            if (dataverse == null) {
-                return permissionsWrapper.notFound();
-            }
-            if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
-                // the permission lookup above should probably be moved into the permissionsWrapper -- L.A. 5.7
-                return permissionsWrapper.notAuthorized();
+            // Check permissions for unreleased dataverse and Locally FAIR permissions for released dataverses
+            boolean releasedAndCanView = dataverse.isReleased() && (!dataverse.isLocallyFAIR() || permissionsWrapper
+                    .hasLocallyFAIRAccess(dvRequestService.getDataverseRequest(), dataverse));
+
+            if (!releasedAndCanView && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
+                // Return notFound for FAIR-restricted content, notAuthorized otherwise
+                if (dataverse.isLocallyFAIR()) {
+                    return permissionsWrapper.notFound();
+                } else {
+                    return permissionsWrapper.notAuthorized();
+                }
             }
 
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
@@ -1346,6 +1354,20 @@ public class DataversePage implements java.io.Serializable {
             }
         }
     }
+    /**
+     * Returns role assignees matching the search query, while excluding any assignees
+     * that are already associated with this dataverse through locally FAIR role assignment.
+     *
+     * @param query search text used to filter possible role assignees
+     * @return matching role assignees that can still be added to the dataverse
+     */
+    public List<RoleAssignee> completeRoleAssignee( String query ) {
+        List<RoleAssignee> existingAssignees = dataverse.getLocallyFAIRRoleAssigneeIdentifiers().stream()
+                .map(id -> roleAssigneeService.getRoleAssignee(id))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        return roleAssigneeService.filterRoleAssignees(query, dataverse, existingAssignees);
+    }
 
     private void saveInputLevels(List<DataverseFieldTypeInputLevel> listDFTIL, DatasetFieldType dsft, Dataverse dataverse) {
         // If the field already has an input level, update it
@@ -1367,5 +1389,23 @@ public class DataversePage implements java.io.Serializable {
                 dsft.getLocalDisplayOnCreate()
             ));
         }
+    }
+    
+    /* Get/set methods to keep the local locallyFARIRoleAssigneesList in sync with the Dataverse's locallyFAIRRoleAssigneeIdentifiers set.
+     */
+    public List<RoleAssignee> getLocallyFAIRRoleAssigneesList() {
+        if (locallyFAIRRoleAssigneesList == null) {
+            locallyFAIRRoleAssigneesList = dataverse.getLocallyFAIRRoleAssigneeIdentifiers().stream()
+                    .map(roleAssigneeService::getRoleAssignee)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        }
+        return locallyFAIRRoleAssigneesList;
+    }
+
+    public void setLocallyFAIRRoleAssigneesList(List<RoleAssignee> assignees) {
+        locallyFAIRRoleAssigneesList = (assignees == null) ? Collections.emptyList() : assignees;
+        dataverse.setLocallyFAIRRoleAssigneeIdentifiers(
+                locallyFAIRRoleAssigneesList.stream().map(RoleAssignee::getIdentifier).collect(Collectors.toSet()));
     }
 }

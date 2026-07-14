@@ -222,15 +222,21 @@ public class FilePage implements java.io.Serializable {
                 }
             }
             
-            // If this DatasetVersion is unpublished and permission is doesn't have permissions:
-            //  > Go to the Login page
-            //
             // Check permissions
-            Boolean authorized = (fileMetadata.getDatasetVersion().isReleased())
-                    || (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset());
-
-            if (!authorized) {
-                return permissionsWrapper.notAuthorized();
+            DatasetVersion datasetVersion = fileMetadata.getDatasetVersion();
+            Dataset dataset = datasetVersion.getDataset();
+            
+            // Check Locally FAIR permissions for released datasets
+            boolean releasedAndCanView = datasetVersion.isReleased() && (!file.isLocallyFAIR() ||
+                    permissionsWrapper.hasLocallyFAIRAccess(dvRequestService.getDataverseRequest(), file));
+            
+            if (!releasedAndCanView && !canViewUnpublishedDataset()) {
+                // Return notFound for FAIR-restricted content, notAuthorized otherwise
+                if (file.isLocallyFAIR()) {
+                    return permissionsWrapper.notFound();
+                } else {
+                    return permissionsWrapper.notAuthorized();
+                }
             }
             
             //termsOfAccess = fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();
