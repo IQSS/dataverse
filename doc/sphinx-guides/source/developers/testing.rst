@@ -502,7 +502,7 @@ Browser-Based Testing
 Browser-Based Testing of JSF
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The JSF frontend is being testing with Playwright via a GitHub Action that runs a test suite from https://github.com/gdcc/dataverse-jsf-tests (see https://github.com/IQSS/dataverse/pull/12526).
+The JSF frontend is being tested with Playwright via a GitHub Action that runs a test suite from https://github.com/gdcc/dataverse-jsf-tests (see https://github.com/IQSS/dataverse/pull/12526).
 
 Browser-Based Testing of the SPA
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
