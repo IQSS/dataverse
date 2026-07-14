@@ -496,6 +496,19 @@ Developers who contribute front-end UI code are responsible for understanding th
 
 There are browser developer tools such as the `Wave toolbar <https://wave.webaim.org/extension/>`__ by WebAIM (available for Chrome, Firefox) and the `Siteimprove Accessibility Checker <https://siteimprove.com/en-us/core-platform/integrations/browser-extensions/>`__  (available for Chrome, Firefox) that will generate reports for a single page. It is required that developers utilize these tools to catch any accessibility issues with pages or features that are being added to the application UI.
 
+Browser-Based Testing
+---------------------
+
+Browser-Based Testing of JSF
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The JSF frontend is being testing with Playwright via a GitHub Action that runs a test suite from https://github.com/gdcc/dataverse-jsf-tests (see https://github.com/IQSS/dataverse/pull/12526).
+
+Browser-Based Testing of the SPA
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+https://github.com/IQSS/dataverse-frontend uses Cypress.
+
 Future Work
 -----------
 
