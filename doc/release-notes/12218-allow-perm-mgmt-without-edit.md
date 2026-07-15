@@ -1,1 +1,3 @@
 Users without permission to edit a dataset or dataverse were not able to access the permission and group management pages via the dataset/dataverse page menus even if they had the relevant ManagePermissions permission. See #3981 and #12218 for details.
+
+With this change, users with a custom role granting some/all of the Manage<Dataverse, Dataset, File>Permissions permissions without the corresponding Edit permissions can now use the user interface to change permissions (only API changes worked previously).
