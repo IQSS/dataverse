@@ -7,7 +7,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:o="http://omnifaces.org/ui"
       xmlns:of="http://omnifaces.org/functions"
-      xmlns:jsf="http://xmlns.jcp.org/jsf">
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:dataverse="http://xmlns.jcp.org/jsf/composite/dataverse">
     <h:head>
     </h:head>
     <h:body>
@@ -298,6 +299,22 @@
                                             <p:message for="dsPidProviderOption" display="text"/>
                                         </div>
                                     </div>
+                                    <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
+                                    <ui:param name="allowLocallyFAIR" value="#{FeatureFlags.ALLOW_LOCALLY_FAIR_DATA.enabled()}"/>
+                                    <div class="col-xs-12 form-group" jsf:rendered="#{dataverseSession.user.superuser and (allowLocallyFAIR or not empty DataversePage.locallyFAIRRoleAssigneesList)}">
+                                        <h:outputLabel for="locallyFAIRRoleAssignees" styleClass="control-label">
+                                            #{bundle['dataverse.locallyfair.label']}
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.locallyfair.title']}"></span>
+                                        </h:outputLabel>
+                                        <div class="form-col-container">
+                                            <dataverse:userGroupSelect id="userGroupNameAssign"
+                                                   value="#{DataversePage.locallyFAIRRoleAssigneesList}"
+                                                   completeMethod="#{DataversePage.completeRoleAssignee}"
+                                                   disabled="#{!allowLocallyFAIR}"
+                                                   requiredMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.requiredMsg']}"/>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -501,7 +518,8 @@
                                     <!-- Edit/Publish Button Group -->
                                     <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated and
                                                              (permissionsWrapper.canIssueUpdateDataverseCommand(DataversePage.dataverse)
-                                                             or permissionsWrapper.canIssuePublishDataverseCommand(DataversePage.dataverse))}">
+                                                             or permissionsWrapper.canIssuePublishDataverseCommand(DataversePage.dataverse)
+                                                             or DataversePage.showLinkingPopup())}">
                                             <!-- Publish Button -->
                                             <ui:fragment rendered="#{permissionsWrapper.canIssuePublishDataverseCommand(DataversePage.dataverse)}">
                                                 <button type="button" class="btn btn-default btn-access" onclick="PF('confirmation').show()"
@@ -823,7 +841,7 @@
                                     </div>
                                 </div>
                                 <div class="button-block">
-                                    <p:commandButton styleClass="btn btn-default" value="#{bundle['dataverse.link.save']}" onclick="PF('linkDataverseForm').hide()" actionListener="#{DataversePage.saveLinkedDataverse()}"/>
+                                    <p:commandButton styleClass="btn btn-default" value="#{bundle['dataverse.link.save']}" action="#{DataversePage.saveLinkedDataverse}"/>
                                     <button class="btn btn-link" onclick="PF('linkDataverseForm').hide();" type="button">                              
                                     #{bundle.cancel}
                                     </button>
@@ -831,7 +849,7 @@
                             </ui:fragment>
                             <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 0}">
                                 <p class="text-danger">
-                                    <span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataverse.link.no.linkable']}
+                                    <span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataverse.link.no.linkable.remaining']}
                                 </p>
                                 <div class="button-block">
                                     <button class="btn btn-default" onclick="PF('linkDataverseForm').hide();" type="button">                              

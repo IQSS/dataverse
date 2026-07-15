@@ -40,7 +40,7 @@ Once a dataset has been published, its metadata can be exported in a variety of 
 
 Additional formats can be enabled. See :ref:`inventory-of-external-exporters` in the Installation Guide. For example:
 
-- RO-Crate
+- RO-Crate: See also https://www.researchobject.org/ro-crate/dataverse
 
 Each of these metadata exports contains the metadata of the most recently published version of the dataset.
 
@@ -726,7 +726,7 @@ Preview URL to Review Unpublished Dataset
 
 Creating a Preview URL for a draft version of your dataset allows you to share your dataset (for viewing and downloading files, including :ref:`restricted <restricted-files>` and :ref:`embargoed <embargoes>` files) before it is published to a wide group of people who might not have a user account on the Dataverse installation. Anyone you send the Preview URL to will not have to log in to the Dataverse installation to view the unpublished dataset. Once a dataset has been published, you may create new General Preview URLs for subsequent draft versions, but the Anonymous Preview URL will no longer be available.
 
-**Note:** To create a Preview URL, you must have the *ManageDatasetPermissions* permission for your draft dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*.
+**Note:** To create a Preview URL, you must have the *ManageDatasetPermissions* permission for your draft dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*. Take into account that before being able to create an Anonymous Preview URL, your system administrator much configure :ref:`a setting <:AnonymizedFieldTypeNames>` that indicates which fields will be withheld (Author Name, for example) when dataset access occurs via a Preview Url with Anonymized Access.
 
 #. Go to your unpublished dataset
 #. Select the “Edit” button
@@ -763,6 +763,8 @@ Once a dataset with embargoed files has been published, no further action is nee
 - "Rolling" embargoes on time-series data can be supported by publishing multiple dataset versions and adding new embargoes on the files added in that version. For example, every year, files containing the prior year's results can be added to a dataset and given an embargo ending one year later than the embargoes set in the last dataset version, and the new dataset version can then be published. The datafiles published in the different versions will become available when their individual embargoes expire at yearly intervals.
 
 As the primary use case of embargoes is to make the existence of data known now, with a promise (to a journal, project team, etc.) that the data itself will become available at a given future date, users cannot change an embargo once a dataset version is published. Dataverse instance administrators do have the ability to correct mistakes and make changes if/when circumstances warrant.
+
+.. _retention-periods:
 
 Retention Periods
 =================
