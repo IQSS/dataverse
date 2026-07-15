@@ -216,6 +216,7 @@ By default, Payara doesn't send the SameSite cookie attribute, which browsers sh
 Dataverse installations are explicity set to "Lax" out of the box by the installer (in the case of a "classic" installation) or through the base image (in the case of a Docker installation). For classic, see :ref:`http.cookie-same-site-value` and :ref:`http.cookie-same-site-enabled` for how to change the values. For Docker, you must rebuild the :doc:`base image </container/base-image>`. See also Payara's `documentation <https://docs.payara.fish/community/docs/6.2024.6/Technical%20Documentation/Payara%20Server%20Documentation/General%20Administration/Administering%20HTTP%20Connectivity.html>`_ for the settings above.
 
 To inspect cookie attributes like SameSite, you can use ``curl -s -I http://localhost:8080 | grep JSESSIONID``, for example, looking for the "Set-Cookie" header.
+For session-cookie API hardening guidance (including how to verify and set ``Secure``/``HttpOnly`` for ``JSESSIONID``), see :ref:`session-cookie-hardening-guidance`.
 
 
 .. _dataverse.cors:
@@ -3973,7 +3974,92 @@ To check the status of feature flags via API, see :ref:`list-all-feature-flags` 
 dataverse.feature.api-session-auth
 ++++++++++++++++++++++++++++++++++
 
-Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and for the feature to be removed in the future.
+Enables API authentication via session cookie (JSESSIONID). This is needed for some JSF/SAML-oriented integrations where bearer tokens are not used.
+
+.. warning::
+
+   Enabling this flag without also enabling :ref:`dataverse.feature.api-session-auth-hardening` exposes the installation to CSRF risks.
+   Always enable both flags together in production.
+
+By itself, this feature flag does not enable CSRF protections. For stricter protections, also enable :ref:`dataverse.feature.api-session-auth-hardening`.
+
+.. _dataverse.feature.api-session-auth-hardening:
+
+dataverse.feature.api-session-auth-hardening
+++++++++++++++++++++++++++++++++++++++++++++
+
+Enables additional hardening for session-cookie API usage. This flag only has an effect when ``dataverse.feature.api-session-auth`` is also enabled.
+The rules are based on request authentication mechanism (session cookie), not on the identity provider used to create the session
+(``builtin``, Shibboleth, OAuth, OIDC, etc.).
+
+When enabled, Dataverse requires API requests authenticated via session cookie (from a fully-authenticated session) to satisfy:
+
+- Any ``Origin`` or ``Referer`` header the request carries must match the site origin. Requests carrying neither header — for example same-origin ``GET`` requests from a page served with ``Referrer-Policy: no-referrer`` — are not rejected on that basis; the CSRF token below then decides. This keeps the hardening usable on installations that suppress referrer information, without weakening the protection: cross-site ``fetch``/XHR/form submissions always carry ``Origin``, and a cross-site page can neither read nor set the CSRF header.
+- The ``X-Dataverse-CSRF-Token`` header matching the token obtained from ``GET /api/users/:csrf-token``.
+
+The only per-endpoint exception is the CSRF bootstrap call itself (``GET /api/users/:csrf-token``), which by design cannot send the token it is obtaining (its response carries ``Cache-Control: no-store``). These requirements apply to all HTTP methods (``GET``, ``POST``, ``PUT``, ``DELETE``, etc.) on all ``@AuthRequired`` API endpoints — the set the authentication filter runs on. That is every endpoint whose request user is resolved by the filter, including ones that also read the JSF session directly (such as the multipart direct-upload helpers ``GET {id}/uploadurls``, ``PUT``/``DELETE /api/datasets/mpupload``) and ``POST /api/logout``. A session-cookie client must therefore send ``X-Dataverse-CSRF-Token`` on those calls too — including logout and the direct-upload flow — once hardening is enabled.
+The per-method simplicity is intentional: session-cookie API auth
+is only used by same-origin front-end clients that always have the CSRF token available.
+Some ``GET`` endpoints in the codebase have side effects, so exempting reads would leave gaps.
+
+Guest sessions and private-URL preview sessions (``PrivateUrlUser``) are exempt: a guest holds no privileges worth forging, and a private-URL preview is read-only (no state to forge, and its responses are not readable cross-origin), so the checks would add no protection. This also keeps anonymous preview-link file downloads — which are served through the JSF preview flow that has no way to obtain a token — working with hardening enabled.
+
+The CSRF token is **session-lifetime**: it is minted on first request to the bootstrap endpoint, reused for the duration of the session, and invalidated whenever the session identity changes (login, logout, or the account being deleted/deactivated). There is no per-request rotation. Treat the token like other session-scoped secrets — do not log it, and refresh it (by logging in again) if you suspect it has leaked.
+
+Clients not on the same origin should use bearer-token authentication instead.
+
+.. _session-cookie-hardening-guidance:
+
+Session-cookie hardening deployment guidance
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Use HTTPS end-to-end (or trusted TLS termination before Dataverse).
+- Ensure JSESSIONID cookies are set with ``Secure`` and ``HttpOnly``.
+- Use ``SameSite=Lax`` (recommended default) or ``SameSite=Strict`` if your login/redirect flow supports it.
+  ``SameSite=Strict`` can break some cross-site IdP/login return flows.
+
+How to verify and set ``JSESSIONID`` cookie flags (Payara)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Verify cookie flags from a response header:
+
+  ``curl -s -I https://<your-dataverse-host>/ | grep -i "set-cookie: JSESSIONID"``
+
+  The ``Set-Cookie`` header should include ``HttpOnly``, ``Secure``, and your expected ``SameSite`` value.
+
+- Verify current Payara virtual-server settings:
+
+  ``./asadmin get "configs.config.server-config.http-service.virtual-server.*.session-cookie-http-only"``
+
+  ``./asadmin get "configs.config.server-config.http-service.virtual-server.*.session-cookie-secure"``
+
+- Set ``JSESSIONID`` flags on the default virtual server (``server``):
+
+  ``./asadmin set configs.config.server-config.http-service.virtual-server.server.session-cookie-http-only=true``
+
+  ``./asadmin set configs.config.server-config.http-service.virtual-server.server.session-cookie-secure=true``
+
+- If you use SSO cookie flows (``JSESSIONIDSSO``), set those too:
+
+  ``./asadmin set configs.config.server-config.http-service.virtual-server.server.sso-cookie-http-only=true``
+
+  ``./asadmin set configs.config.server-config.http-service.virtual-server.server.sso-cookie-secure=true``
+
+After changing these settings, restart Payara and re-check the response headers.
+
+Session-Cookie Hardening vs Bearer Token Auth
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Session-cookie auth and bearer-token auth use different trust models. Session cookie
+  (``JSESSIONID``) is automatically sent by browsers, while bearer token is sent only when the
+  client explicitly includes it.
+- Because of browser auto-send behavior, session-cookie auth requires anti-CSRF controls for
+  state-changing API calls.
+  With this hardening track enabled, Dataverse enforces Origin/Referer and CSRF token checks, which brings session-cookie browser usage into a security posture comparable to bearer for first-party, same-origin UI calls.
+- Bearer remains preferable for non-browser and cross-origin API clients.
+- Neither model protects against stolen credentials by itself (session hijack via stolen
+  ``JSESSIONID`` or bearer-token theft). For both, use HTTPS, secure cookie/token handling, short
+  lifetimes where possible, and strong XSS prevention.
 
 .. _dataverse.feature.api-bearer-auth:
 

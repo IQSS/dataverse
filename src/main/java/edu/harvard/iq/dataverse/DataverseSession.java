@@ -14,9 +14,12 @@ import edu.harvard.iq.dataverse.util.SessionUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
@@ -88,6 +91,7 @@ public class DataverseSession implements Serializable{
      * leave the state alone (see setDebug()).
      */
     private Boolean debug;
+    private String apiCsrfToken;
     
     public User getUser() {
         return getUser(false);
@@ -111,15 +115,50 @@ public class DataverseSession implements Serializable{
             AuthenticatedUser auFreshLookup = authenticationService.findByID(auFromSession.getId());
             if (auFreshLookup == null) {
                 logger.fine("getUser found user no longer exists (was deleted). Returning GuestUser.");
-                user = GuestUser.get();
+                demoteToGuest();
             } else {
                 if (auFreshLookup.isDeactivated()) {
                     logger.fine("getUser found user is deactivated. Returning GuestUser.");
-                    user = GuestUser.get();
+                    demoteToGuest();
                 }
             }
         }
         return user;
+    }
+
+    /**
+     * Demotes the session to guest after discovering the authenticated user was
+     * deleted or deactivated. The CSRF token is dropped along with the identity
+     * it was minted for — {@code setUser} does the same on login/logout, and a
+     * token must never outlive its user.
+     */
+    private void demoteToGuest() {
+        user = GuestUser.get();
+        clearApiCsrfToken();
+    }
+
+    /**
+     * Returns a CSRF token scoped to the current Dataverse session.
+     * The token is lazily created and reused until it is explicitly cleared.
+     */
+    public synchronized String getOrCreateApiCsrfToken() {
+        if (apiCsrfToken == null || apiCsrfToken.isBlank()) {
+            apiCsrfToken = UUID.randomUUID().toString();
+        }
+        return apiCsrfToken;
+    }
+
+    public synchronized boolean matchesApiCsrfToken(String token) {
+        if (token == null || apiCsrfToken == null) {
+            return false;
+        }
+        return MessageDigest.isEqual(
+                token.getBytes(StandardCharsets.UTF_8),
+                apiCsrfToken.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public synchronized void clearApiCsrfToken() {
+        apiCsrfToken = null;
     }
 
     /**
@@ -136,6 +175,7 @@ public class DataverseSession implements Serializable{
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("deactivated.error"));
             return;
         }
+        clearApiCsrfToken();
         FacesContext context = FacesContext.getCurrentInstance();
 		// Log the login/logout and Change the session id if we're using the UI and have
 		// a session, versus an API call with no session - (i.e. /admin/submitToArchive()

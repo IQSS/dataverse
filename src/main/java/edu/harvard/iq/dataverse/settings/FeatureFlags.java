@@ -25,11 +25,33 @@ import java.util.Objects;
 public enum FeatureFlags {
 
     /**
-     * Enables API authentication via session cookie (JSESSIONID). Caution: Enabling this feature flag may expose the installation to CSRF risks
+     * Enables API authentication via session cookie (JSESSIONID).
+     * Needed for JSF/SAML-oriented integrations where bearer tokens are not used.
+     * <p><b>Caution:</b> Enabling this flag without also enabling
+     * {@link #API_SESSION_AUTH_HARDENING} exposes the installation to CSRF risks.</p>
+     * By itself this flag does not enable CSRF protections; for stricter protections,
+     * also enable {@link #API_SESSION_AUTH_HARDENING}.
+     *
      * @apiNote Raise flag by setting "dataverse.feature.api-session-auth"
      * @since Dataverse 5.14
      */
     API_SESSION_AUTH("api-session-auth"),
+    /**
+     * Enables additional hardening for session-cookie API authentication on
+     * {@code @AuthRequired} endpoints. When enabled, a session-cookie request
+     * from a fully-authenticated session must carry the {@code X-Dataverse-CSRF-Token}
+     * header (obtained from {@code GET /api/users/:csrf-token}), and any
+     * {@code Origin}/{@code Referer} headers it carries must match the site
+     * origin. Requests carrying neither header — e.g. same-origin GETs under
+     * {@code Referrer-Policy: no-referrer} — are decided by the CSRF token
+     * alone.
+     * This feature only works when the feature flag {@link #API_SESSION_AUTH}
+     * is also enabled; a startup warning is logged otherwise.
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-session-auth-hardening"
+     * @since Dataverse 6.11
+     */
+    API_SESSION_AUTH_HARDENING("api-session-auth-hardening"),
     /**
      * Enables API authentication via Bearer Token.
      * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth"

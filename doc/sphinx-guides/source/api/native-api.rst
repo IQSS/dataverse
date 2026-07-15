@@ -6518,8 +6518,43 @@ Delete a Token
 In order to delete a token use::
 
 	curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/users/token"
-	
-	
+
+Get CSRF Token for Session-Cookie API Auth
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When both ``dataverse.feature.api-session-auth`` and
+``dataverse.feature.api-session-auth-hardening`` are enabled, clients using
+session-cookie API authentication can fetch a CSRF token from this endpoint::
+
+    GET /api/users/:csrf-token
+
+This endpoint requires a fully-authenticated session-cookie request and returns
+a token that must be sent in the ``X-Dataverse-CSRF-Token`` header for all
+subsequent session-cookie API requests protected by the hardening rules.
+(Guest and private-URL preview sessions are exempt from the hardening and are
+not issued a token.) Any ``Origin``
+or ``Referer`` header those requests carry must match the site origin;
+requests carrying neither header are accepted on the strength of the token.
+The response is marked ``Cache-Control: no-store`` — treat the token like a
+session secret.
+
+Example::
+
+  curl -b cookies.txt -H "Origin:$SERVER_URL" "$SERVER_URL/api/users/:csrf-token"
+
+Example response::
+
+  {
+    "status": "OK",
+    "data": {
+      "csrfToken": "9f2a8f8c-7e1f-4bf1-8fd6-4c3e3b522f3f"
+    }
+  }
+
+To use this token in a subsequent API request::
+
+  curl -b cookies.txt -H "Origin:$SERVER_URL" -H "X-Dataverse-CSRF-Token:$CSRF_TOKEN" -X POST "$SERVER_URL/api/datasets/$ID/actions/:publish?type=minor"
+
 
 Builtin Users
 -------------
@@ -9322,4 +9357,3 @@ A curl example listing collections:
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve/collectionList"
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve/collectionList?userIdentifier=anotherUser"
-
