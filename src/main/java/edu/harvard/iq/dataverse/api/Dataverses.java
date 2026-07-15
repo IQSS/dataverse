@@ -73,10 +73,14 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import jakarta.ws.rs.core.StreamingOutput;
-
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -87,6 +91,7 @@ import javax.xml.stream.XMLStreamException;
  */
 @Stateless
 @Path("dataverses")
+@Tag(name = "Dataverses", description = "Dataverse collection metadata, datasets, roles, groups, links, templates, storage, and featured content.")
 public class Dataverses extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Dataverses.class.getCanonicalName());
@@ -129,7 +134,11 @@ public class Dataverses extends AbstractApiBean {
     
     @POST
     @AuthRequired
-    public Response addRoot(@Context ContainerRequestContext crc, String body) {
+    @Operation(summary = "Create the root dataverse",
+            description = "Creates the root dataverse from a Dataverse JSON payload.")
+    public Response addRoot(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Dataverse JSON for the root collection.")
+            String body) {
         logger.info("Creating root dataverse");
         return addDataverse(crc, body, "");
     }
@@ -137,7 +146,13 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}")
-    public Response addDataverse(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String parentIdtf) {
+    @Operation(summary = "Create a child dataverse",
+            description = "Creates a dataverse under the selected parent and returns the created collection metadata.")
+    public Response addDataverse(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Dataverse JSON including alias, name, contact, metadata block, input level, and facet settings.")
+            String body,
+            @Parameter(description = "Parent dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String parentIdtf) {
         Dataverse newDataverse;
         try {
             newDataverse = parseAndValidateAddDataverseRequestBody(body);
@@ -187,7 +202,13 @@ public class Dataverses extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{identifier}")
-    public Response updateDataverse(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String identifier) {
+    @Operation(summary = "Revise a dataverse",
+            description = "Updates dataverse metadata and optional metadata block, input level, and facet settings.")
+    public Response updateDataverse(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Dataverse update JSON with metadata and optional configuration sections.")
+            String body,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String identifier) {
         Dataverse dataverse;
         try {
             dataverse = findDataverseOrDie(identifier);
@@ -341,7 +362,13 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/validateDatasetJson")
     @Consumes("application/json")
-    public Response validateDatasetJson(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String idtf) {
+    @Operation(summary = "Validate dataset JSON",
+            description = "Validates a dataset JSON payload against the selected dataverse.")
+    public Response validateDatasetJson(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Dataset JSON to validate.")
+            String body,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String idtf) {
         User u = getRequestUser(crc);
         try {
             String validationMessage = execCommand(new ValidateDatasetJsonCommand(createDataverseRequest(u), findDataverseOrDie(idtf), body));
@@ -356,11 +383,15 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/datasetSchema")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getDatasetSchema(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf) {
-        User u = getRequestUser(crc);
+    @Operation(summary = "Read dataset schema for a dataverse",
+            description = "Returns the dataset JSON schema generated for the selected dataverse.")
+    public Response getDatasetSchema(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String idtf) {
+        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
 
         try {
-            String datasetSchema = execCommand(new GetDatasetSchemaCommand(createDataverseRequest(u), findDataverseOrDie(idtf)));
+            String datasetSchema = execCommand(new GetDatasetSchemaCommand(req, findDataverseUserCanSeeOrDie(idtf, req)));
             JsonObject jsonObject = JsonUtil.getJsonObject(datasetSchema);
             return Response.ok(jsonObject).build();
         } catch (WrappedResponse ex) {
@@ -375,7 +406,15 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/datasets")
     @Consumes("application/json")
-    public Response createDataset(@Context ContainerRequestContext crc, String jsonBody, @PathParam("identifier") String parentIdtf, @QueryParam("doNotValidate") String doNotValidateParam) {
+    @Operation(summary = "Create a dataset from JSON",
+            description = "Creates a draft dataset in the selected dataverse and returns its id and persistent identifier.")
+    public Response createDataset(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Dataset JSON containing at least one dataset version.")
+            String jsonBody,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier for the dataset owner.", required = true)
+            @PathParam("identifier") String parentIdtf,
+            @Parameter(description = "When true and incomplete metadata is allowed, skip full metadata validation.")
+            @QueryParam("doNotValidate") String doNotValidateParam) {
         try {
             logger.fine("Json is: " + jsonBody);
             User u = getRequestUser(crc);
@@ -452,7 +491,13 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/datasets")
     @Consumes("application/ld+json, application/json-ld")
-    public Response createDatasetFromJsonLd(@Context ContainerRequestContext crc, String jsonLDBody, @PathParam("identifier") String parentIdtf) {
+    @Operation(summary = "Create a dataset from JSON-LD",
+            description = "Creates a draft dataset in the selected dataverse from JSON-LD metadata.")
+    public Response createDatasetFromJsonLd(@Context ContainerRequestContext crc,
+            @RequestBody(description = "JSON-LD dataset metadata.")
+            String jsonLDBody,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier for the dataset owner.", required = true)
+            @PathParam("identifier") String parentIdtf) {
         try {
             User u = getRequestUser(crc);
             Dataverse owner = findDataverseOrDie(parentIdtf);
@@ -496,7 +541,17 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/datasets/:import")
-    public Response importDataset(@Context ContainerRequestContext crc, String jsonBody, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam) {
+    @Operation(summary = "Import a dataset from JSON",
+            description = "Imports a dataset into the selected dataverse, optionally assigning a supplied PID and release state.")
+    public Response importDataset(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Dataset JSON to import.")
+            String jsonBody,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier for the dataset owner.", required = true)
+            @PathParam("identifier") String parentIdtf,
+            @Parameter(description = "Persistent identifier to assign to the imported dataset.")
+            @QueryParam("pid") String pidParam,
+            @Parameter(description = "When true, import the dataset as released.")
+            @QueryParam("release") String releaseParam) {
         try {
             User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
@@ -577,7 +632,17 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/datasets/:importddi")
-    public Response importDatasetDdi(@Context ContainerRequestContext crc, String xml, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam) {
+    @Operation(summary = "Import a dataset from DDI XML",
+            description = "Converts DDI XML to dataset metadata and imports it into the selected dataverse.")
+    public Response importDatasetDdi(@Context ContainerRequestContext crc,
+            @RequestBody(description = "DDI XML document to import.")
+            String xml,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier for the dataset owner.", required = true)
+            @PathParam("identifier") String parentIdtf,
+            @Parameter(description = "Persistent identifier to assign to the imported dataset.")
+            @QueryParam("pid") String pidParam,
+            @Parameter(description = "When true, import the dataset as released.")
+            @QueryParam("release") String releaseParam) {
         try {
             User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
@@ -653,7 +718,13 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/datasets/:startmigration")
     @Consumes("application/ld+json, application/json-ld")
-    public Response recreateDataset(@Context ContainerRequestContext crc, String jsonLDBody, @PathParam("identifier") String parentIdtf) {
+    @Operation(summary = "Start migrated dataset recreation",
+            description = "Creates a draft dataset from published JSON-LD metadata for a migration workflow.")
+    public Response recreateDataset(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Published dataset JSON-LD metadata to recreate as a draft.")
+            String jsonLDBody,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier for the dataset owner.", required = true)
+            @PathParam("identifier") String parentIdtf) {
         try {
             User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
@@ -717,14 +788,19 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}")
+    @Operation(summary = "Read a dataverse",
+            description = "Returns dataverse metadata with optional owner and child-count information.")
     public Response getDataverse(@Context ContainerRequestContext crc,
+                                 @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
                                  @PathParam("identifier") String idtf,
+                                 @Parameter(description = "Whether to include owner information.")
                                  @QueryParam("returnOwners") boolean returnOwners,
+                                 @Parameter(description = "Whether to include the number of child objects.")
                                  @QueryParam("returnChildCount") boolean returnChildCount,
+                                 @Parameter(description = "Whether to include email fields when the caller has permission to ignore the email-exclusion setting.")
                                  @QueryParam("ignoreSettingExcludeEmailFromExport") Boolean ignoreSettingToExcludeEmailFromExport) {
         return response(req -> {
-            Dataverse dataverse = execCommand(new GetDataverseCommand(req, findDataverseOrDie(idtf)));
-
+            Dataverse dataverse = execCommand(new GetDataverseCommand(req, findDataverseUserCanSeeOrDie(idtf, req)));
             boolean hideEmail = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false);
 
             // Check to see if the caller wants to ignore the ExcludeEmailFromExport setting and that they have permission to do so
@@ -740,7 +816,11 @@ public class Dataverses extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{identifier}")
-    public Response deleteDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf) {
+    @Operation(summary = "Remove a dataverse",
+            description = "Deletes the selected dataverse collection.")
+    public Response deleteDataverse(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String idtf) {
         return response(req -> {
             execCommand(new DeleteDataverseCommand(req, findDataverseOrDie(idtf)));
             return ok("Dataverse " + idtf + " deleted");
@@ -757,8 +837,15 @@ public class Dataverses extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{identifier}/attribute/{attribute}")
-    public Response updateAttribute(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier,
-                                    @PathParam("attribute") String attribute, @QueryParam("value") String value) {
+    @Operation(summary = "Change a dataverse attribute",
+            description = "Updates one supported dataverse attribute value.")
+    public Response updateAttribute(@Context ContainerRequestContext crc,
+                                    @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+                                    @PathParam("identifier") String identifier,
+                                    @Parameter(description = "Dataverse attribute name to change.", required = true)
+                                    @PathParam("attribute") String attribute,
+                                    @Parameter(description = "New attribute value.")
+                                    @QueryParam("value") String value) {
         try {
             Dataverse dataverse = findDataverseOrDie(identifier);
             Object formattedValue = formatAttributeValue(attribute, value);
@@ -779,10 +866,15 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/inputLevels")
-    public Response getInputLevels(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) {
+    @Operation(summary = "Read dataverse input levels",
+            description = "Returns dataset field input-level settings for a dataverse.")
+    public Response getInputLevels(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String identifier) {
         try {
-            Dataverse dataverse = findDataverseOrDie(identifier);
-            List<DataverseFieldTypeInputLevel> inputLevels = execCommand(new ListDataverseInputLevelsCommand(createDataverseRequest(getRequestUser(crc)), dataverse));
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            Dataverse dataverse = findDataverseUserCanSeeOrDie(identifier, req);
+            List<DataverseFieldTypeInputLevel> inputLevels = execCommand(new ListDataverseInputLevelsCommand(req, dataverse));
             return ok(jsonDataverseInputLevels(inputLevels));
         } catch (WrappedResponse e) {
             return e.getResponse();
@@ -792,7 +884,13 @@ public class Dataverses extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{identifier}/inputLevels")
-    public Response updateInputLevels(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, String jsonBody) {
+    @Operation(summary = "Assign dataverse input levels",
+            description = "Replaces dataset field input-level settings for a dataverse.")
+    public Response updateInputLevels(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String identifier,
+            @RequestBody(description = "JSON array of input-level settings for dataset fields.")
+            String jsonBody) {
         try {
             Dataverse dataverse = findDataverseOrDie(identifier);
             List<DataverseFieldTypeInputLevel> newInputLevels = parseInputLevels(Json.createReader(new StringReader(jsonBody)).readArray(), dataverse);
@@ -855,8 +953,14 @@ public class Dataverses extends AbstractApiBean {
 
     @DELETE
     @AuthRequired
-    @Path("{linkingDataverseId}/deleteLink/{linkedDataverseId}")
-    public Response deleteDataverseLinkingDataverse(@Context ContainerRequestContext crc, @PathParam("linkingDataverseId") String linkingDataverseId, @PathParam("linkedDataverseId") String linkedDataverseId) {
+    @Path("{linkedDataverseId}/deleteLink/{linkingDataverseId}")
+    @Operation(summary = "Remove a dataverse link",
+            description = "Deletes a link from one dataverse to another linked dataverse.")
+    public Response deleteDataverseLinkingDataverse(@Context ContainerRequestContext crc,
+            @Parameter(description = "Alias or id of the dataverse containing the link.", required = true)
+            @PathParam("linkingDataverseId") String linkingDataverseId,
+            @Parameter(description = "Alias or id of the linked dataverse to remove.", required = true)
+            @PathParam("linkedDataverseId") String linkedDataverseId) {
         boolean index = true;
         return response(req -> {
             execCommand(new DeleteDataverseLinkingDataverseCommand(req, findDataverseOrDie(linkingDataverseId), findDataverseLinkingDataverseOrDie(linkingDataverseId, linkedDataverseId), index));
@@ -867,17 +971,24 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/metadatablocks")
+    @Operation(summary = "Read dataverse metadata blocks",
+            description = "Lists metadata blocks configured for a dataverse, optionally including dataset field types.")
     public Response listMetadataBlocks(@Context ContainerRequestContext crc,
+                                       @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
                                        @PathParam("identifier") String dvIdtf,
+                                       @Parameter(description = "When true, include only metadata blocks displayed on dataset creation.")
                                        @QueryParam("onlyDisplayedOnCreate") boolean onlyDisplayedOnCreate,
+                                       @Parameter(description = "Whether to include dataset field type definitions.")
                                        @QueryParam("returnDatasetFieldTypes") boolean returnDatasetFieldTypes,
+                                       @Parameter(description = "Dataset type name used to filter metadata blocks.")
                                        @QueryParam("datasetType") String datasetTypeIn) {
         try {
-            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            Dataverse dataverse = findDataverseUserCanSeeOrDie(dvIdtf, req);
             DatasetType datasetType = datasetTypeSvc.getByName(datasetTypeIn);
             final List<MetadataBlock> metadataBlocks = execCommand(
                     new ListMetadataBlocksCommand(
-                            createDataverseRequest(getRequestUser(crc)),
+                            req,
                             dataverse,
                             onlyDisplayedOnCreate,
                             datasetType
@@ -893,7 +1004,13 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/metadatablocks")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setMetadataBlocks(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String blockIds) {
+    @Operation(summary = "Assign metadata blocks to a dataverse",
+            description = "Replaces the metadata blocks configured directly on a dataverse.")
+    public Response setMetadataBlocks(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
+            @RequestBody(description = "JSON array of metadata block ids or names.")
+            String blockIds) {
 
         List<MetadataBlock> blocks = new LinkedList<>();
         try {
@@ -922,7 +1039,11 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/metadatablocks/:isRoot")
-    public Response getMetadataRoot_legacy(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+    @Operation(summary = "Read metadata-block root status through legacy route",
+            description = "Returns whether a dataverse is a metadata-block root using the legacy route.")
+    public Response getMetadataRoot_legacy(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) {
         return getMetadataRoot(crc, dvIdtf);
     }
 
@@ -930,9 +1051,13 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/metadatablocks/isRoot")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getMetadataRoot(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+    @Operation(summary = "Read metadata-block root status",
+            description = "Returns whether a dataverse is a metadata-block root.")
+    public Response getMetadataRoot(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) {
         return response(req -> {
-            final Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            final Dataverse dataverse = findDataverseUserCanSeeOrDie(dvIdtf, req);
             if (permissionSvc.request(req)
                     .on(dataverse)
                     .has(Permission.EditDataverse)) {
@@ -948,7 +1073,14 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/metadatablocks/:isRoot")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.WILDCARD)
-    public Response setMetadataRoot_legacy(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String body) {
+    @Operation(summary = "Set metadata-block root status through legacy route",
+            description = "Changes whether a dataverse is a metadata-block root using the legacy route.")
+    @RequestBody(description = "Boolean text indicating whether the dataverse is a metadata-block root.")
+    public Response setMetadataRoot_legacy(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
+            @RequestBody(description = "Boolean text indicating whether the dataverse is a metadata-block root.")
+            String body) {
         return setMetadataRoot(crc, dvIdtf, body);
     }
 
@@ -957,7 +1089,14 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/metadatablocks/isRoot")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.WILDCARD)
-    public Response setMetadataRoot(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String body) {
+    @Operation(summary = "Assign metadata-block root status",
+            description = "Changes whether a dataverse is a metadata-block root.")
+    @RequestBody(description = "Boolean text indicating whether the dataverse is a metadata-block root.")
+    public Response setMetadataRoot(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
+            @RequestBody(description = "Boolean text indicating whether the dataverse is a metadata-block root.")
+            String body) {
         return response(req -> {
             final boolean root = parseBooleanOrDie(body);
             final Dataverse dataverse = findDataverseOrDie(dvIdtf);
@@ -972,13 +1111,17 @@ public class Dataverses extends AbstractApiBean {
     /**
      * return list of facets for the dataverse with alias `dvIdtf`
      */
+    @Operation(summary = "Read dataverse facets",
+            description = "Lists dataset field facets configured for a dataverse, optionally including detailed facet metadata.")
     public Response listFacets(@Context ContainerRequestContext crc,
+                               @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
                                @PathParam("identifier") String dvIdtf,
+                               @Parameter(description = "Whether to include detailed facet metadata.")
                                @QueryParam("returnDetails") boolean returnDetails) {
         try {
             User user = getRequestUser(crc);
             DataverseRequest request = createDataverseRequest(user);
-            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            Dataverse dataverse = findDataverseUserCanSeeOrDie(dvIdtf, request);
             List<DataverseFacet> dataverseFacets = execCommand(new ListFacetsCommand(request, dataverse));
 
             if (returnDetails) {
@@ -1002,12 +1145,18 @@ public class Dataverses extends AbstractApiBean {
     Allows user to get the collections that are featured by a given collection
     probably more for SPA than end user
     */
-    public Response getFeaturedDataverses(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,  String dvAliases) {
+    @Operation(summary = "Read featured dataverses",
+            description = "Lists aliases for dataverses featured by the selected dataverse.")
+    public Response getFeaturedDataverses(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
+            @RequestBody(description = "Unused request body accepted by the endpoint.")
+            String dvAliases) {
 
         try {
             User u = getRequestUser(crc);
             DataverseRequest r = createDataverseRequest(u);
-            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            Dataverse dataverse = findDataverseUserCanSeeOrDie(dvIdtf, r);
             JsonArrayBuilder fs = Json.createArrayBuilder();
             for (Dataverse f : execCommand(new ListFeaturedCollectionsCommand(r, dataverse))) {
                 fs.add(f.getAlias());
@@ -1026,7 +1175,13 @@ public class Dataverses extends AbstractApiBean {
      * Allows user to set featured dataverses - must have edit dataverse permission
      *
      */
-    public Response setFeaturedDataverses(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,  String dvAliases) {
+    @Operation(summary = "Assign featured dataverses",
+            description = "Adds eligible child or linked dataverses to the featured list for a dataverse.")
+    public Response setFeaturedDataverses(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
+            @RequestBody(description = "JSON array of dataverse aliases to feature.")
+            String dvAliases) {
         List<Dataverse> dvsFromInput = new LinkedList<>();
 
 
@@ -1088,7 +1243,11 @@ public class Dataverses extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{identifier}/featured")
-    public Response deleteFeaturedCollections(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) throws WrappedResponse {
+    @Operation(summary = "Clear featured dataverses",
+            description = "Removes all featured dataverses from the selected dataverse.")
+    public Response deleteFeaturedCollections(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) throws WrappedResponse {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             List<Dataverse> featuredTarget = new ArrayList<>();
@@ -1110,7 +1269,13 @@ public class Dataverses extends AbstractApiBean {
      * where foo.json contains a list of datasetField names, works as expected
      * (judging by the UI). This triggers a 500 when '-d @foo.json' is used.
      */
-    public Response setFacets(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String facetIds) {
+    @Operation(summary = "Assign dataverse facets",
+            description = "Replaces the dataset field facets configured directly on a dataverse.")
+    public Response setFacets(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
+            @RequestBody(description = "JSON array of dataset field type names to use as facets.")
+            String facetIds) {
         JsonArray jsonArray = Util.asJsonArray(facetIds);
         List<DatasetFieldType> facets;
         try {
@@ -1134,11 +1299,15 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/metadatablockfacets")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response listMetadataBlockFacets(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+    @Operation(summary = "Read metadata block facets",
+            description = "Returns metadata block facet settings for a dataverse.")
+    public Response listMetadataBlockFacets(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) {
         try {
             User u = getRequestUser(crc);
             DataverseRequest request = createDataverseRequest(u);
-            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            Dataverse dataverse = findDataverseUserCanSeeOrDie(dvIdtf, request);
             List<DataverseMetadataBlockFacet> metadataBlockFacets = Optional.ofNullable(execCommand(new ListMetadataBlockFacetsCommand(request, dataverse))).orElse(Collections.emptyList());
             List<DataverseMetadataBlockFacetDTO.MetadataBlockDTO> metadataBlocksDTOs = metadataBlockFacets.stream()
                     .map(item -> new DataverseMetadataBlockFacetDTO.MetadataBlockDTO(item.getMetadataBlock().getName(), item.getMetadataBlock().getLocaleDisplayFacet()))
@@ -1155,7 +1324,13 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/metadatablockfacets")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setMetadataBlockFacets(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, List<String> metadataBlockNames) {
+    @Operation(summary = "Assign metadata block facets",
+            description = "Replaces metadata block facets on a dataverse that is a metadata-block-facet root.")
+    public Response setMetadataBlockFacets(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
+            @RequestBody(description = "JSON array of metadata block names to use as facets.")
+            List<String> metadataBlockNames) {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
 
@@ -1189,7 +1364,14 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/metadatablockfacets/isRoot")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateMetadataBlockFacetsRoot(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String body) {
+    @Operation(summary = "Assign metadata block facet root status",
+            description = "Changes whether a dataverse is a metadata-block-facet root.")
+    @RequestBody(description = "Boolean text indicating whether the dataverse is a metadata-block-facet root.")
+    public Response updateMetadataBlockFacetsRoot(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
+            @RequestBody(description = "Boolean text indicating whether the dataverse is a metadata-block-facet root.")
+            String body) {
         try {
             final boolean blockFacetsRoot = parseBooleanOrDie(body);
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
@@ -1212,7 +1394,11 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/contents")
-    public Response listContent(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) throws WrappedResponse {
+    @Operation(summary = "Read dataverse contents",
+            description = "Lists direct child dataverses and datasets for a dataverse.")
+    public Response listContent(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) throws WrappedResponse {
 
         DvObject.Visitor<JsonObjectBuilder> ser = new DvObject.Visitor<JsonObjectBuilder>() {
             @Override
@@ -1234,7 +1420,7 @@ public class Dataverses extends AbstractApiBean {
         };
 
         return response(req -> ok(
-                execCommand(new ListDataverseContentCommand(req, findDataverseOrDie(dvIdtf)))
+                execCommand(new ListDataverseContentCommand(req, findDataverseUserCanSeeOrDie(dvIdtf, req)))
                         .stream()
                         .map(dvo -> (JsonObjectBuilder) dvo.accept(ser))
                         .collect(toJsonArray())
@@ -1244,18 +1430,31 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/storagesize")
-    public Response getStorageSize(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("includeCached") boolean includeCached) throws WrappedResponse {
+    @Operation(summary = "Read dataverse storage size",
+            description = "Returns the storage size for a dataverse, optionally including cached size data.")
+    public Response getStorageSize(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
+            @Parameter(description = "Whether to include cached storage size values.")
+            @QueryParam("includeCached") boolean includeCached) throws WrappedResponse {
                 
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.datasize"),
-                execCommand(new GetDataverseStorageSizeCommand(req, findDataverseOrDie(dvIdtf), includeCached)))), getRequestUser(crc));
+                execCommand(new GetDataverseStorageSizeCommand(req, findDataverseUserCanSeeOrDie(dvIdtf, req), includeCached)))), getRequestUser(crc));
     }
     
     @GET
     @AuthRequired
     @Path("{identifier}/storage/quota")
-    public Response getCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("showInherited") boolean showInherited) throws WrappedResponse {
+    @Operation(summary = "Read dataverse storage quota",
+            description = "Returns the storage quota for a dataverse, optionally including inherited quota values.")
+    public Response getCollectionQuota(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
+            @Parameter(description = "Whether to include inherited quota settings in the response.")
+            @QueryParam("showInherited") boolean showInherited) throws WrappedResponse {
         try {
-            Long bytesAllocated = execCommand(new GetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf), showInherited));
+            DataverseRequest request = createDataverseRequest(getRequestUser(crc));
+            Long bytesAllocated = execCommand(new GetCollectionQuotaCommand(request, findDataverseUserCanSeeOrDie(dvIdtf, request), showInherited));
             if (bytesAllocated != null) {
                 return ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.storage.quota.allocation"),bytesAllocated));
             }
@@ -1268,7 +1467,13 @@ public class Dataverses extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{identifier}/storage/quota")
-    public Response setCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String value) throws WrappedResponse {
+    @Operation(summary = "Assign dataverse storage quota",
+            description = "Sets the dataverse storage quota in bytes.")
+    public Response setCollectionQuota(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
+            @RequestBody(description = "Quota value in bytes.")
+            String value) throws WrappedResponse {
         try {
             Long bytesAllocated; 
             try {
@@ -1286,7 +1491,11 @@ public class Dataverses extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{identifier}/storage/quota")
-    public Response deleteCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) throws WrappedResponse {
+    @Operation(summary = "Clear dataverse storage quota",
+            description = "Deletes the explicit storage quota for a dataverse.")
+    public Response deleteCollectionQuota(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) throws WrappedResponse {
         try {
             execCommand(new DeleteCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf)));
             return ok(BundleUtil.getStringFromBundle("dataverse.storage.quota.deleted"));
@@ -1307,17 +1516,25 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/storage/use")
-    public Response getCollectionStorageUse(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) throws WrappedResponse {
+    @Operation(summary = "Read dataverse storage use",
+            description = "Returns the recorded storage use for a dataverse.")
+    public Response getCollectionStorageUse(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String identifier) throws WrappedResponse {
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.storage.use"),
-                execCommand(new GetCollectionStorageUseCommand(req, findDataverseOrDie(identifier))))), getRequestUser(crc));
+                execCommand(new GetCollectionStorageUseCommand(req, findDataverseUserCanSeeOrDie(identifier, req))))), getRequestUser(crc));
     }
 
     @GET
     @AuthRequired
     @Path("{identifier}/roles")
-    public Response listRoles(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+    @Operation(summary = "Read dataverse roles",
+            description = "Lists roles available on a dataverse.")
+    public Response listRoles(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) {
         return response(req -> ok(
-                execCommand(new ListRolesCommand(req, findDataverseOrDie(dvIdtf)))
+                execCommand(new ListRolesCommand(req, findDataverseUserCanSeeOrDie(dvIdtf, req)))
                         .stream().map(r -> json(r))
                         .collect(toJsonArray())
         ), getRequestUser(crc));
@@ -1326,16 +1543,26 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/roles")
-    public Response createRole(@Context ContainerRequestContext crc, RoleDTO roleDto, @PathParam("identifier") String dvIdtf) {
+    @Operation(summary = "Create a dataverse role",
+            description = "Creates a role scoped to the selected dataverse.")
+    public Response createRole(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Role definition containing alias, name, description, and permissions.")
+            RoleDTO roleDto,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) {
         return response(req -> ok(json(execCommand(new CreateRoleCommand(roleDto.asRole(), req, findDataverseOrDie(dvIdtf))))), getRequestUser(crc));
     }
 
     @GET
     @AuthRequired
     @Path("{identifier}/assignments")
-    public Response listAssignments(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+    @Operation(summary = "Read dataverse role assignments",
+            description = "Lists role assignments defined on a dataverse.")
+    public Response listAssignments(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) {
         return response(req -> ok(
-                execCommand(new ListRoleAssignments(req, findDataverseOrDie(dvIdtf)))
+                execCommand(new ListRoleAssignments(req, findDataverseUserCanSeeOrDie(dvIdtf, req)))
                         .stream()
                         .map(a -> json(a))
                         .collect(toJsonArray())
@@ -1345,7 +1572,15 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/assignments")
-    public Response createAssignment(@Context ContainerRequestContext crc, RoleAssignmentDTO ra, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey) {
+    @Operation(summary = "Grant a dataverse role assignment",
+            description = "Assigns a role to a role assignee on a dataverse.")
+    public Response createAssignment(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Role assignment containing assignee identifier and role alias.")
+            RoleAssignmentDTO ra,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
+            @Parameter(hidden = true)
+            @QueryParam("key") String apiKey) {
 
         try {
             final DataverseRequest req = createDataverseRequest(getRequestUser(crc));
@@ -1384,7 +1619,13 @@ public class Dataverses extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{identifier}/assignments/{id}")
-    public Response deleteAssignment(@Context ContainerRequestContext crc, @PathParam("id") long assignmentId, @PathParam("identifier") String dvIdtf) {
+    @Operation(summary = "Remove a dataverse role assignment",
+            description = "Revokes a role assignment from the selected dataverse.")
+    public Response deleteAssignment(@Context ContainerRequestContext crc,
+            @Parameter(description = "Role assignment database id.", required = true)
+            @PathParam("id") long assignmentId,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) {
         RoleAssignment ra = em.find(RoleAssignment.class, assignmentId);
         if (ra != null) {
             try {
@@ -1404,7 +1645,11 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/actions/:publish")
-    public Response publishDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+    @Operation(summary = "Publish a dataverse",
+            description = "Publishes the selected dataverse collection.")
+    public Response publishDataverse(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) {
         try {
             Dataverse dv = findDataverseOrDie(dvIdtf);
             return ok(json(execCommand(new PublishDataverseCommand(createDataverseRequest(getRequestAuthenticatedUserOrDie(crc)), dv))));
@@ -1417,7 +1662,13 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/groups/")
-    public Response createExplicitGroup(@Context ContainerRequestContext crc, ExplicitGroupDTO dto, @PathParam("identifier") String dvIdtf) {
+    @Operation(summary = "Create an explicit group",
+            description = "Creates an explicit group owned by a dataverse.")
+    public Response createExplicitGroup(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Explicit group definition.")
+            ExplicitGroupDTO dto,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) {
         return response(req -> {
             ExplicitGroupProvider prv = explicitGroupSvc.getProvider();
             ExplicitGroup newGroup = dto.apply(prv.makeGroup());
@@ -1432,9 +1683,15 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/groups/")
-    public Response listGroups(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey) {
+    @Operation(summary = "Read explicit groups",
+            description = "Lists explicit groups owned by a dataverse.")
+    public Response listGroups(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
+            @Parameter(hidden = true)
+            @QueryParam("key") String apiKey) {
         return response(req -> ok(
-                execCommand(new ListExplicitGroupsCommand(req, findDataverseOrDie(dvIdtf)))
+                execCommand(new ListExplicitGroupsCommand(req, findDataverseUserCanSeeOrDie(dvIdtf, req)))
                         .stream().map(eg -> json(eg))
                         .collect(toJsonArray())
         ), getRequestUser(crc));
@@ -1443,10 +1700,14 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/groups/{aliasInOwner}")
+    @Operation(summary = "Read an explicit group",
+            description = "Returns one explicit group owned by a dataverse.")
     public Response getGroupByOwnerAndAliasInOwner(@Context ContainerRequestContext crc,
+                                                   @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
                                                    @PathParam("identifier") String dvIdtf,
+                                                   @Parameter(description = "Group alias within the dataverse.", required = true)
                                                    @PathParam("aliasInOwner") String grpAliasInOwner) {
-        return response(req -> ok(json(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf),
+        return response(req -> ok(json(findExplicitGroupOrDie(findDataverseUserCanSeeOrDie(dvIdtf, req),
                 req,
                 grpAliasInOwner))), getRequestUser(crc));
     }
@@ -1454,14 +1715,20 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/guestbookResponses/")
-    public Response getGuestbookResponsesByDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+    @Operation(summary = "Export guestbook responses for a dataverse",
+            description = "Streams guestbook response data for datasets in a dataverse as CSV.")
+    public Response getGuestbookResponsesByDataverse(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
+            @Parameter(description = "Guestbook database id used to filter responses.")
             @QueryParam("guestbookId") Long gbId, @Context HttpServletResponse response) {
 
         Dataverse dv;
         try {
-            dv = findDataverseOrDie(dvIdtf);
             User u = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(u);
+            dv = findDataverseUserCanSeeOrDie(dvIdtf, req);
+
             if (permissionSvc.request(req)
                     .on(dv)
                     .has(Permission.EditDataverse)) {
@@ -1496,8 +1763,14 @@ public class Dataverses extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{identifier}/groups/{aliasInOwner}")
-    public Response updateGroup(@Context ContainerRequestContext crc, ExplicitGroupDTO groupDto,
+    @Operation(summary = "Revise an explicit group",
+            description = "Updates an explicit group owned by a dataverse.")
+    public Response updateGroup(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Explicit group definition to apply.")
+            ExplicitGroupDTO groupDto,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("identifier") String dvIdtf,
+            @Parameter(description = "Group alias within the dataverse.", required = true)
             @PathParam("aliasInOwner") String grpAliasInOwner) {
         return response(req -> ok(json(execCommand(
                 new UpdateExplicitGroupCommand(req,
@@ -1507,9 +1780,13 @@ public class Dataverses extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{identifier}/defaultContributorRole/{roleAlias}")
+    @Operation(summary = "Assign a default contributor role",
+            description = "Sets the default contributor role used for datasets created in a dataverse.")
     public Response updateDefaultContributorRole(
             @Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("identifier") String dvIdtf,
+            @Parameter(description = "Role alias to use as the default contributor role, or none.", required = true)
             @PathParam("roleAlias") String roleAlias) {
 
         DataverseRole defaultRole;
@@ -1555,8 +1832,11 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/defaultContributorRole")
+    @Operation(summary = "Read the default contributor role",
+            description = "Returns the default contributor role configured for a dataverse.")
     public Response getDefaultContributorRole(
             @Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("identifier") String dvIdtf) {
 
         return response(req -> ok(
@@ -1570,8 +1850,12 @@ public class Dataverses extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{identifier}/groups/{aliasInOwner}")
+    @Operation(summary = "Remove an explicit group",
+            description = "Deletes an explicit group owned by a dataverse.")
     public Response deleteGroup(@Context ContainerRequestContext crc,
+                                @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
                                 @PathParam("identifier") String dvIdtf,
+                                @Parameter(description = "Group alias within the dataverse.", required = true)
                                 @PathParam("aliasInOwner") String grpAliasInOwner) {
         return response(req -> {
             execCommand(new DeleteExplicitGroupCommand(req,
@@ -1584,9 +1868,14 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/groups/{aliasInOwner}/roleAssignees")
     @Consumes("application/json")
+    @Operation(summary = "Append role assignees to an explicit group",
+            description = "Adds multiple role assignee identifiers to an explicit group.")
     public Response addRoleAssingees(@Context ContainerRequestContext crc,
+                                     @RequestBody(description = "JSON array of role assignee identifiers to add.")
                                      List<String> roleAssingeeIdentifiers,
+                                     @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
                                      @PathParam("identifier") String dvIdtf,
+                                     @Parameter(description = "Group alias within the dataverse.", required = true)
                                      @PathParam("aliasInOwner") String grpAliasInOwner) {
         return response(req -> ok(
                 json(
@@ -1599,9 +1888,14 @@ public class Dataverses extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{identifier}/groups/{aliasInOwner}/roleAssignees/{roleAssigneeIdentifier: .*}")
+    @Operation(summary = "Append one role assignee to an explicit group",
+            description = "Adds one role assignee identifier to an explicit group.")
     public Response addRoleAssingee(@Context ContainerRequestContext crc,
+                                    @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
                                     @PathParam("identifier") String dvIdtf,
+                                    @Parameter(description = "Group alias within the dataverse.", required = true)
                                     @PathParam("aliasInOwner") String grpAliasInOwner,
+                                    @Parameter(description = "Role assignee identifier to add to the group.", required = true)
                                     @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
         return addRoleAssingees(crc, Collections.singletonList(roleAssigneeIdentifier), dvIdtf, grpAliasInOwner);
     }
@@ -1609,9 +1903,14 @@ public class Dataverses extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{identifier}/groups/{aliasInOwner}/roleAssignees/{roleAssigneeIdentifier: .*}")
+    @Operation(summary = "Remove one role assignee from an explicit group",
+            description = "Removes one role assignee identifier from an explicit group.")
     public Response deleteRoleAssingee(@Context ContainerRequestContext crc,
+                                       @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
                                        @PathParam("identifier") String dvIdtf,
+                                       @Parameter(description = "Group alias within the dataverse.", required = true)
                                        @PathParam("aliasInOwner") String grpAliasInOwner,
+                                       @Parameter(description = "Role assignee identifier to remove from the group.", required = true)
                                        @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
         return response(req -> ok(json(execCommand(
                 new RemoveRoleAssigneesFromExplicitGroupCommand(req,
@@ -1630,10 +1929,15 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/links")
-    public Response listLinks(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+    @Operation(summary = "Read dataverse links",
+            description = "Returns dataverses and datasets linked from a dataverse and dataverses linking to it.")
+    public Response listLinks(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) {
         try {
             User u = getRequestUser(crc);
-            Dataverse dv = findDataverseOrDie(dvIdtf);
+            DataverseRequest req = createDataverseRequest(u);
+            Dataverse dv = findDataverseUserCanSeeOrDie(dvIdtf, req);
             if (!u.isSuperuser()) {
                 return error(Status.FORBIDDEN, "Not a superuser");
             }
@@ -1681,7 +1985,15 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/move/{targetDataverseAlias}")
-    public Response moveDataverse(@Context ContainerRequestContext crc, @PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {
+    @Operation(summary = "Move a dataverse",
+            description = "Moves a dataverse collection to a different parent dataverse.")
+    public Response moveDataverse(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier to move.", required = true)
+            @PathParam("id") String id,
+            @Parameter(description = "Alias of the target parent dataverse.", required = true)
+            @PathParam("targetDataverseAlias") String targetDataverseAlias,
+            @Parameter(description = "Whether to force the move when warnings would otherwise block it.")
+            @QueryParam("forceMove") Boolean force) {
         try {
             User u = getRequestUser(crc);
             Dataverse dv = findDataverseOrDie(id);
@@ -1701,7 +2013,13 @@ public class Dataverses extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{linkedDataverseAlias}/link/{linkingDataverseAlias}")
-    public Response linkDataverse(@Context ContainerRequestContext crc, @PathParam("linkedDataverseAlias") String linkedDataverseAlias, @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {
+    @Operation(summary = "Link one dataverse from another",
+            description = "Creates a link from one dataverse to another dataverse.")
+    public Response linkDataverse(@Context ContainerRequestContext crc,
+            @Parameter(description = "Alias of the dataverse being linked.", required = true)
+            @PathParam("linkedDataverseAlias") String linkedDataverseAlias,
+            @Parameter(description = "Alias of the dataverse that will contain the link.", required = true)
+            @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {
         try {
             User u = getRequestUser(crc);
             Dataverse linked = findDataverseOrDie(linkedDataverseAlias);
@@ -1725,7 +2043,17 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{identifier}/{type}/linkingDataverses")
-    public Response getLinkingDataverseList(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("searchTerm") String searchTerm, @QueryParam("alreadyLinking") boolean alreadyLinking, @PathParam("type") String type) {
+    @Operation(summary = "Search dataverses for linking",
+            description = "Lists dataverses that can be linked to the selected dataverse object, optionally filtered by search text and existing link status.")
+    public Response getLinkingDataverseList(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse object id or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
+            @Parameter(description = "Search text used to filter dataverses.")
+            @QueryParam("searchTerm") String searchTerm,
+            @Parameter(description = "Whether to return dataverses already linking to the object.")
+            @QueryParam("alreadyLinking") boolean alreadyLinking,
+            @Parameter(description = "Dataverse object type used to resolve the identifier.", required = true)
+            @PathParam("type") String type) {
 
         try {
 
@@ -1754,7 +2082,11 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/userPermissions")
-    public Response getUserPermissionsOnDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+    @Operation(summary = "Read user permissions on a dataverse",
+            description = "Returns booleans for the requesting user's key dataverse permissions.")
+    public Response getUserPermissionsOnDataverse(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) {
         Dataverse dataverse;
         try {
             dataverse = findDataverseOrDie(dvIdtf);
@@ -1777,13 +2109,23 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("{identifier}/featuredItems")
+    @Operation(summary = "Create a dataverse featured item",
+            description = "Creates a featured item with text, optional linked object, display order, and optional image.")
+    @RequestBody(description = "Multipart featured item creation request with text, ordering, optional linked object, and optional image.")
     public Response createFeaturedItem(@Context ContainerRequestContext crc,
+                                       @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
                                        @PathParam("identifier") String dvIdtf,
+                                       @Parameter(description = "Featured item type used to resolve an optional linked object.")
                                        @FormDataParam("type") String type,
+                                       @Parameter(description = "Identifier of the optional dataverse object linked by this featured item.")
                                        @FormDataParam("dvObjectIdentifier") String dvObjectIdtf,
+                                       @Parameter(description = "Featured item text or link content.")
                                        @FormDataParam("content") String content,
+                                       @Parameter(description = "Display order for the featured item.")
                                        @FormDataParam("displayOrder") int displayOrder,
+                                       @Parameter(description = "Featured item image file.")
                                        @FormDataParam("file") InputStream imageFileInputStream,
+                                       @Parameter(description = "Uploaded image file metadata.")
                                        @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
         Dataverse dataverse;
         DvObject dvObject = null;
@@ -1811,7 +2153,11 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/featuredItems")
-    public Response listFeaturedItems(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+    @Operation(summary = "Read dataverse featured items",
+            description = "Lists featured items configured on a dataverse.")
+    public Response listFeaturedItems(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             List<DataverseFeaturedItem> featuredItems = execCommand(new ListDataverseFeaturedItemsCommand(createDataverseRequest(getRequestUser(crc)), dataverse));
@@ -1825,16 +2171,28 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("{dataverseId}/featuredItems")
+    @Operation(summary = "Replace dataverse featured items",
+            description = "Creates, updates, reorders, and removes featured items for a dataverse from multipart form lists.")
+    @RequestBody(description = "Multipart featured item list update with ids, text, ordering, linked objects, keep-image flags, and uploaded images.")
     public Response updateFeaturedItems(
             @Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("dataverseId") String dvIdtf,
+            @Parameter(description = "Featured item ids; use 0 for new items.")
             @FormDataParam("id") List<Long> ids,
+            @Parameter(description = "Featured item text or link content values.")
             @FormDataParam("content") List<String> contents,
+            @Parameter(description = "Featured item type values.")
             @FormDataParam("type") List<String> types,
+            @Parameter(description = "Optional linked dataverse object identifiers.")
             @FormDataParam("dvObjectIdentifier") List<String> dvObjectIdtf,
+            @Parameter(description = "Display order values.")
             @FormDataParam("displayOrder") List<Integer> displayOrders,
+            @Parameter(description = "Flags indicating whether to keep each existing image.")
             @FormDataParam("keepFile") List<Boolean> keepFiles,
+            @Parameter(description = "File names used to match uploaded images to featured items.")
             @FormDataParam("fileName") List<String> fileNames,
+            @Parameter(description = "Uploaded image file parts.")
             @FormDataParam("file") List<FormDataBodyPart> files) {
         try {
             if (ids == null || contents == null || displayOrders == null || keepFiles == null || fileNames == null) {
@@ -1909,7 +2267,11 @@ public class Dataverses extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{identifier}/featuredItems")
-    public Response deleteFeaturedItems(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+    @Operation(summary = "Clear dataverse featured items",
+            description = "Removes all featured items from a dataverse.")
+    public Response deleteFeaturedItems(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             execCommand(new UpdateDataverseFeaturedItemsCommand(createDataverseRequest(getRequestUser(crc)), dataverse, new ArrayList<>(), new ArrayMap<>()));
@@ -1922,7 +2284,11 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/templates")
-    public Response getTemplates(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+    @Operation(summary = "Read dataverse templates",
+            description = "Lists metadata templates available in a dataverse.")
+    public Response getTemplates(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             return ok(jsonTemplates(execCommand(new ListDataverseTemplatesCommand(createDataverseRequest(getRequestUser(crc)), dataverse))));
@@ -1934,7 +2300,11 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/template/")
-    public Response getTemplate(@Context ContainerRequestContext crc, @PathParam("id") Long templateId) {
+    @Operation(summary = "Read a metadata template",
+            description = "Returns one metadata template by database id.")
+    public Response getTemplate(@Context ContainerRequestContext crc,
+            @Parameter(description = "Template database id.", required = true)
+            @PathParam("id") Long templateId) {
         try {
             Template template = templateService.find(templateId);
             if (template == null){
@@ -1949,7 +2319,13 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/templates")
-    public Response createTemplate(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String dvIdtf) {
+    @Operation(summary = "Create a metadata template",
+            description = "Creates a metadata template owned by a dataverse.")
+    public Response createTemplate(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Template JSON containing template metadata fields and settings.")
+            String body,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             TemplateDTO newTemplateDTO;
@@ -1966,17 +2342,25 @@ public class Dataverses extends AbstractApiBean {
             return e.getResponse();
         }
     }
-    
+
     @PUT
     @AuthRequired
     @Path("{templateId}/metadata")
-    public Response updateTemplateMetadata(@Context ContainerRequestContext crc, String body, @PathParam("templateId") Long templateId, @QueryParam("replace") boolean replaceData) {
+    @Operation(summary = "Revise metadata template fields",
+            description = "Updates a template name, field values, and field instructions.")
+    public Response updateTemplateMetadata(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Template metadata JSON containing name, fields, and optional instructions.")
+            String body,
+            @Parameter(description = "Template database id.", required = true)
+            @PathParam("templateId") Long templateId,
+            @Parameter(description = "When true, replace matching field values instead of merging.")
+            @QueryParam("replace") boolean replaceData) {
         try {
             Template template = findTemplateOrDie(templateId);
             Dataverse dataverse = template.getDataverse();
             boolean nameOnly = false;
             JsonObject json = JsonUtil.getJsonObject(body);
-            
+
             /*
             You can also set a new name for your template in the json
             */
@@ -1984,21 +2368,21 @@ public class Dataverses extends AbstractApiBean {
                 template.setName(json.getString("name"));
                 nameOnly = true;
             }
-            
+
             List<DatasetField> updatedFields = new ArrayList<>();
-            //if it doesn't contain fields, instructions or name it better have a single dataset field 
-            //to be updated
+            // if it doesn't contain fields, instructions or name it better have a single dataset field
+            // to be updated
             if (json.getJsonArray("fields") == null) {
                 if (!json.containsKey("instructions") && !json.containsKey("name")) {
                     updatedFields.add(jsonParser().parseField(json, Boolean.FALSE, replaceData));
                 }
             } else {
                 updatedFields = jsonParser().parseMultipleFields(json, replaceData);
-            }       
-            
+            }
+
             Map<String, String> instructionsMap = jsonParser().parseRequestBodyInstructionsMap(json);
 
-            //if we're only updating the name then return the metadata and instructions to previous            
+            // if we're only updating the name then return the metadata and instructions to previous
             nameOnly = nameOnly && updatedFields.isEmpty() && instructionsMap == null;
 
             if (nameOnly) {
@@ -2017,22 +2401,30 @@ public class Dataverses extends AbstractApiBean {
             return e.getResponse();
         }
     }
-    
+
     @PUT
     @AuthRequired
     @Path("{templateId}/licenseTerms")
-    public Response updateTemplateLicenseTerms(@Context ContainerRequestContext crc, LicenseUpdateRequest requestBody, @PathParam("templateId") Long templateId, @QueryParam("replace") boolean replaceData) {
+    @Operation(summary = "Revise metadata template license terms",
+            description = "Updates the license or custom terms configured on a metadata template.")
+    public Response updateTemplateLicenseTerms(@Context ContainerRequestContext crc,
+            @RequestBody(description = "License update request containing a license name, URI, or custom terms.")
+            LicenseUpdateRequest requestBody,
+            @Parameter(description = "Template database id.", required = true)
+            @PathParam("templateId") Long templateId,
+            @Parameter(description = "Unused replace flag accepted by the endpoint.")
+            @QueryParam("replace") boolean replaceData) {
         try {
             Template template = findTemplateOrDie(templateId);
             Dataverse dataverse = template.getDataverse();
-            
+
             if (requestBody.getName() != null && !requestBody.getName().isBlank()) {
                 String licenseName = requestBody.getName();
                 License license = licenseSvc.getByNameOrUri(licenseName);
                 if (license == null) {
                     return notFound(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNotFound", List.of(licenseName)));
                 }
-                
+
                 execCommand(new UpdateTemplateLicenseCommand(createDataverseRequest(getRequestUser(crc)), template, dataverse, license));
                 return ok(BundleUtil.getStringFromBundle("dataverses.api.update.template.license.success"));
             } else if (requestBody.getCustomTerms() != null) {
@@ -2042,16 +2434,22 @@ public class Dataverses extends AbstractApiBean {
             } else {
                 return badRequest(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNameIsEmpty"));
             }
-        
+
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
     }
-    
+
     @PUT
     @AuthRequired
     @Path("{templateId}/access")
-    public Response updateTemplateTermsOfAccess(@Context ContainerRequestContext crc, String jsonBody, @PathParam("templateId") Long templateId) {
+    @Operation(summary = "Revise metadata template terms of access",
+            description = "Updates terms of use and access settings on a metadata template.")
+    public Response updateTemplateTermsOfAccess(@Context ContainerRequestContext crc,
+            @RequestBody(description = "JSON terms-of-access payload for the metadata template.")
+            String jsonBody,
+            @Parameter(description = "Template database id.", required = true)
+            @PathParam("templateId") Long templateId) {
         try {
 
             boolean publicInstall = settingsSvc.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false);
@@ -2082,8 +2480,12 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}/template/default/{templateId}")
+    @Operation(summary = "Assign the default metadata template",
+            description = "Sets the default metadata template for a dataverse.")
     public Response setDefaultTemplate(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("identifier") String dvId,
+            @Parameter(description = "Template database id.", required = true)
             @PathParam("templateId") Long templateId) {
 
         try {
@@ -2105,7 +2507,10 @@ public class Dataverses extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{identifier}/template/default")
+    @Operation(summary = "Clear the default metadata template",
+            description = "Removes the default metadata template setting from a dataverse.")
     public Response removeDefaultTemplate(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("identifier") String dvId) {
         try {
             Dataverse dataverse = findDataverseOrDie(dvId);
@@ -2121,7 +2526,11 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/allowedMetadataLanguages")
-    public Response getMetadataLanguage(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+    @Operation(summary = "Read allowed metadata language",
+            description = "Returns the metadata language configured for a dataverse.")
+    public Response getMetadataLanguage(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) {
         return response(req -> {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             return ok(jsonLanguage(execCommand(
@@ -2132,7 +2541,13 @@ public class Dataverses extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{identifier}/allowedMetadataLanguages/{metadataLanguage}")
-    public Response setMetadataLanguage(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("metadataLanguage") String lang) {
+    @Operation(summary = "Assign allowed metadata language",
+            description = "Sets the metadata language configured for a dataverse.")
+    public Response setMetadataLanguage(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf,
+            @Parameter(description = "Metadata language code to assign.", required = true)
+            @PathParam("metadataLanguage") String lang) {
         return response(req -> {
             Map<String, String> langMap = settingsService.getBaseMetadataLanguageMap(null, true);
             if (langMap.isEmpty()) {
@@ -2149,7 +2564,11 @@ public class Dataverses extends AbstractApiBean {
     @Path("{id}/template")
     @AuthRequired
     @DELETE
-    public Response deleteTemplate(@Context ContainerRequestContext crc, @PathParam("id") long id) {
+    @Operation(summary = "Remove a metadata template",
+            description = "Deletes a metadata template and clears default-template references that point to it.")
+    public Response deleteTemplate(@Context ContainerRequestContext crc,
+            @Parameter(description = "Template database id.", required = true)
+            @PathParam("id") long id) {
 
         Template doomed = templateService.find(id);
         if (doomed == null) {
@@ -2171,7 +2590,10 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/assignments/history")
     @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
+    @Operation(summary = "Read dataverse role assignment history",
+            description = "Returns dataverse role assignment history as JSON or CSV.")
     public Response getRoleAssignmentHistory(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("identifier") String id,
             @Context HttpHeaders headers) {
         return response(req -> {
@@ -2192,22 +2614,32 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/storageDriver")
-    public Response getStorageDriver(@Context ContainerRequestContext crc, @PathParam("identifier") String id,
+    @Operation(summary = "Read dataverse storage driver",
+            description = "Returns the storage driver configured for a dataverse, optionally resolving the effective inherited driver.")
+    public Response getStorageDriver(@Context ContainerRequestContext crc,
+                                     @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+                                     @PathParam("identifier") String id,
+                                     @Parameter(description = "Whether to resolve the effective inherited storage driver.")
                                      @QueryParam("getEffective") Boolean getEffective) throws WrappedResponse {
 
         Dataverse dataverse = findDataverseOrDie(id);
-        
+
         return response(req -> {
             String storageDriver = execCommand(new GetDataverseStorageDriverCommand(req, dataverse, getEffective));
             return ok(JsonPrinter.jsonStorageDriver(storageDriver));
         }, getRequestUser(crc));
     }
-    
+
     @PUT
     @AuthRequired
     @Path("{identifier}/storageDriver")
-    public Response setStorageDriver(@Context ContainerRequestContext crc, 
-                                     @PathParam("identifier") String id, String label) throws WrappedResponse {
+    @Operation(summary = "Assign dataverse storage driver",
+            description = "Sets the storage driver for a dataverse by driver label.")
+    public Response setStorageDriver(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String id,
+            @RequestBody(description = "Storage driver label to assign.")
+            String label) throws WrappedResponse {
         Dataverse dataverse = findDataverseOrDie(id);
 
         try {
@@ -2231,8 +2663,12 @@ public class Dataverses extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{identifier}/storageDriver")
-    public Response resetStorageDriver(@Context ContainerRequestContext crc, @PathParam("identifier") String id) throws WrappedResponse {
-        
+    @Operation(summary = "Reset dataverse storage driver",
+            description = "Clears the explicit storage driver setting so the dataverse uses the default driver.")
+    public Response resetStorageDriver(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String id) throws WrappedResponse {
+
         Dataverse dataverse = findDataverseOrDie(id);
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
@@ -2244,19 +2680,22 @@ public class Dataverses extends AbstractApiBean {
         }
         dataverse.setStorageDriverId("");
         return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
-        
     }
 
     @GET
     @AuthRequired
     @Path("{identifier}/allowedStorageDrivers")
-    public Response listStorageDrivers(@Context ContainerRequestContext crc, @PathParam("identifier") String id) throws WrappedResponse {
-        
+    @Operation(summary = "Read allowed storage drivers",
+            description = "Returns storage drivers available for the selected dataverse.")
+    public Response listStorageDrivers(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String id) throws WrappedResponse {
+
         Dataverse dv = findDataverseOrDie(id);
 
         /*
-         * TODO: This endpoint ad GetDataverseAllowedStorageDriverCommand needs to be completed implementing 
-         * the request from Jim Myers, which is to return the list of storage drivers that the dataverse can use. 
+         * TODO: This endpoint ad GetDataverseAllowedStorageDriverCommand needs to be completed implementing
+         * the request from Jim Myers, which is to return the list of storage drivers that the dataverse can use.
          * Currently it will return the full list of drivers available.
          */
         try {
@@ -2266,7 +2705,142 @@ public class Dataverses extends AbstractApiBean {
             return ok(execCommand(getAllowedStorageDriversCommand));
         } catch (WrappedResponse wr) {
             return handleWrappedResponse(wr);
-        } 
+        }
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/locallyFairRoleAssignees")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Lists locally FAIR role assignees",
+            description = "Lists role assignee identifiers configured for locally FAIR metadata access in a dataverse.")
+    public Response listLocallyFairRoleAssignees(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+            @PathParam("identifier") String dvIdtf) {
+        try {
+            User user = getRequestUser(crc);
+            if (!user.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
+
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            JsonArrayBuilder assignees = Json.createArrayBuilder();
+            dataverse.getLocallyFAIRRoleAssigneeIdentifiers().stream()
+                    .sorted()
+                    .forEach(assignees::add);
+            return ok(assignees);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/locallyFairRoleAssignees")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Replaces locally FAIR role assignees",
+            description = "Replaces the full locally FAIR role assignee identifier set for a dataverse and reindexes the dataverse.")
+    @RequestBody(description = "JSON array of role assignee identifiers to configure for locally FAIR metadata access.")
+    public Response setLocallyFairRoleAssignees(@Context ContainerRequestContext crc,
+                                                @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+                                                @PathParam("identifier") String dvIdtf,
+                                                @RequestBody(description = "JSON array of role assignee identifiers to configure for locally FAIR metadata access.")
+                                                List<String> roleAssigneeIdentifiers) {
+        try {
+            User user = getRequestUser(crc);
+            if (!user.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
+
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            Set<String> validatedIdentifiers = validateLocallyFairRoleAssigneeIdentifiers(roleAssigneeIdentifiers);
+            dataverse.setLocallyFAIRRoleAssigneeIdentifiers(validatedIdentifiers);
+            dataverseService.save(dataverse);
+            dataverseService.index(dataverse, true);
+
+            return ok(String.format("Locally FAIR role assignees updated for dataverse %s.", dvIdtf), jsonLocallyFairRoleAssignees(dataverse));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/locallyFairRoleAssignees/{roleAssigneeIdentifier: .*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Adds a locally FAIR role assignee",
+            description = "Adds one role assignee identifier to the locally FAIR metadata access set for a dataverse and reindexes the dataverse.")
+    public Response addLocallyFairRoleAssignee(@Context ContainerRequestContext crc,
+                                               @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+                                               @PathParam("identifier") String dvIdtf,
+                                               @Parameter(description = "Role assignee identifier to add, such as a user or group identifier.", required = true)
+                                               @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
+        try {
+            User user = getRequestUser(crc);
+            if (!user.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
+
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            if (findAssignee(roleAssigneeIdentifier) == null) {
+                return badRequest("Invalid role assignee identifier: " + roleAssigneeIdentifier);
+            }
+
+            dataverse.addLocallyFAIRRoleAssignee(roleAssigneeIdentifier);
+            dataverseService.save(dataverse);
+            dataverseService.index(dataverse, true);
+
+            return ok(String.format("Locally FAIR role assignee added to dataverse %s.", dvIdtf), jsonLocallyFairRoleAssignees(dataverse));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("{identifier}/locallyFairRoleAssignees/{roleAssigneeIdentifier: .*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Removes a locally FAIR role assignee",
+            description = "Removes one role assignee identifier from the locally FAIR metadata access set for a dataverse and reindexes the dataverse.")
+    public Response deleteLocallyFairRoleAssignee(@Context ContainerRequestContext crc,
+                                                  @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
+                                                  @PathParam("identifier") String dvIdtf,
+                                                  @Parameter(description = "Role assignee identifier to remove from locally FAIR metadata access.", required = true)
+                                                  @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
+        try {
+            User user = getRequestUser(crc);
+            if (!user.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
+
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            if(StringUtils.isBlank(roleAssigneeIdentifier) || !dataverse.getLocallyFAIRRoleAssigneeIdentifiers().contains(roleAssigneeIdentifier)) {
+                return badRequest("Invalid role assignee identifier: " + roleAssigneeIdentifier);
+            }
+            dataverse.removeLocallyFAIRRoleAssignee(roleAssigneeIdentifier);
+            dataverseService.save(dataverse);
+            dataverseService.index(dataverse, true);
+
+            return ok(String.format("Locally FAIR role assignee removed from dataverse %s.", dvIdtf), jsonLocallyFairRoleAssignees(dataverse));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    private Set<String> validateLocallyFairRoleAssigneeIdentifiers(List<String> roleAssigneeIdentifiers) throws WrappedResponse {
+        if (roleAssigneeIdentifiers == null) {
+            return Collections.emptySet();
+        }
+
+        Set<String> validatedIdentifiers = new TreeSet<>();
+        for (String identifier : roleAssigneeIdentifiers) {
+            if (findAssignee(identifier) == null) {
+                throw new WrappedResponse(badRequest("Invalid role assignee identifier: " + identifier));
+            }
+            validatedIdentifiers.add(identifier);
+        }
+        return validatedIdentifiers;
     }
 
 }

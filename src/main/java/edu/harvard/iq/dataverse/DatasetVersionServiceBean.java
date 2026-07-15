@@ -1340,6 +1340,15 @@ w
         return em.createQuery(cq).getSingleResult();
     }
 
+    public boolean hasFiles(Long datasetVersionId) {
+        Query query = em.createNativeQuery("SELECT id FROM fileMetadata WHERE datasetversion_id="+datasetVersionId+" LIMIT 1");
+        try {
+            query.getSingleResult();
+            return true;
+        } catch (NoResultException e) {
+            return false;
+        }
+    }
 
     /**
      * Update the archival copy location for a specific version of a dataset.

@@ -2141,9 +2141,15 @@ public class DatasetPage implements java.io.Serializable {
                 return permissionsWrapper.notFound();
             }
 
-            // Check permisisons
-            if (!(workingVersion.isReleased() || workingVersion.isDeaccessioned()) && !this.canViewUnpublishedDataset()) {
-                return permissionsWrapper.notAuthorized();
+            // Check permissions
+            boolean releasedAndCanView = workingVersion.isReleased() && (!dataset.isLocallyFAIR() || permissionsWrapper
+                    .hasLocallyFAIRAccess(dvRequestService.getDataverseRequest(), dataset));
+            if (!(releasedAndCanView || workingVersion.isDeaccessioned()) && !this.canViewUnpublishedDataset()) {
+                if (dataset.isLocallyFAIR()) {
+                    return permissionsWrapper.notFound();
+                } else {
+                    return permissionsWrapper.notAuthorized();
+                }
             }
 
             if (retrieveDatasetVersionResponse != null && !retrieveDatasetVersionResponse.wasRequestedVersionRetrieved()) {

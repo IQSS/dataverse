@@ -31,6 +31,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.MailUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import jakarta.ejb.EJB;
@@ -426,7 +427,9 @@ public class JsonPrinter {
             if (gbResponse.getDataFile().getGlobalId() != null) {
                 guestbookResponseObject.add("filePid", gbResponse.getDataFile().getGlobalId().asString());
             }
-            guestbookResponseObject.add("userName", gbResponse.getAuthenticatedUser() != null ? gbResponse.getAuthenticatedUser().getUserIdentifier() : "Guest");
+            if (!StringUtil.isEmpty(gbResponse.getName())) {
+                guestbookResponseObject.add("name", gbResponse.getName());
+            }
             if (gbResponse.getEmail() != null) {
                 guestbookResponseObject.add("email", gbResponse.getEmail());
             }
@@ -1350,6 +1353,18 @@ public class JsonPrinter {
             }
         }
         return tabularTags;
+    }
+
+    public static JsonObjectBuilder jsonLocallyFairRoleAssignees(Dataverse dataverse) {
+        JsonArrayBuilder assignees = Json.createArrayBuilder();
+        dataverse.getLocallyFAIRRoleAssigneeIdentifiers().stream()
+                .sorted()
+                .forEach(assignees::add);
+
+        return Json.createObjectBuilder()
+                .add("dataverseId", dataverse.getId())
+                .add("dataverseAlias", dataverse.getAlias())
+                .add("locallyFairRoleAssignees", assignees);
     }
 
     private static class DatasetFieldsToJson implements DatasetFieldWalker.Listener {
