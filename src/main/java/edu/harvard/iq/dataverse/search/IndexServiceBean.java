@@ -69,7 +69,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
@@ -112,8 +111,6 @@ import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Timer;
 import org.eclipse.microprofile.metrics.annotation.Metric;
@@ -124,7 +121,6 @@ import org.xml.sax.ContentHandler;
 public class IndexServiceBean {
 
     private static final Logger logger = Logger.getLogger(IndexServiceBean.class.getCanonicalName());
-    private static final Config config = ConfigProvider.getConfig();
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -179,7 +175,6 @@ public class IndexServiceBean {
     public static final String discoverabilityPermissionSuffix = "_permission";
     private static final String groupPrefix = "group_";
     private static final String groupPerUserPrefix = "group_user";
-    private static final String publicGroupIdString = "public";
     private static final String publicGroupString = groupPrefix + "public";
     public static final String PUBLISHED_STRING = "Published";
     private static final String UNPUBLISHED_STRING = "Unpublished";
@@ -188,8 +183,6 @@ public class IndexServiceBean {
     private static final String DEACCESSIONED_STRING = "Deaccessioned";
     public static final String HARVESTED = "Harvested";
     private Dataverse rootDataverseCached;
-
-    private VariableMetadataUtil variableMetadataUtil;
 
     @TransactionAttribute(REQUIRES_NEW)
     public Future<String> indexDataverseInNewTransaction(Dataverse dataverse) throws SolrServerException, IOException{
@@ -229,9 +222,14 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dataverse.getName());
         solrInputDocument.addField(SearchFields.DATAVERSE_ALIAS, dataverse.getAlias());
         solrInputDocument.addField(SearchFields.DATAVERSE_CATEGORY, dataverse.getIndexableCategoryName());
+        boolean isLocallyFAIR = dataverse.isLocallyFAIR();
+        if(isLocallyFAIR) {
+            solrInputDocument.addField(SearchFields.LOCALLY_FAIR, isLocallyFAIR);
+        }
         if (dataverse.isReleased()) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
-            if (FeatureFlags.ADD_PUBLICOBJECT_SOLR_FIELD.enabled()) {
+
+            if (FeatureFlags.ADD_PUBLICOBJECT_SOLR_FIELD.enabled() && !isLocallyFAIR) {
                 solrInputDocument.addField(SearchFields.PUBLIC_OBJECT, true);
             }
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getPublicationDate());
@@ -1027,10 +1025,14 @@ public class IndexServiceBean {
             }
         }
         solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, datasetSortByDate);
-
+        boolean isLocallyFAIR = dataset.isLocallyFAIR();
+        if(isLocallyFAIR) {
+            solrInputDocument.addField(SearchFields.LOCALLY_FAIR, isLocallyFAIR);
+        }
         if (state.equals(DatasetState.PUBLISHED)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
-            if (FeatureFlags.ADD_PUBLICOBJECT_SOLR_FIELD.enabled()) {
+
+            if (FeatureFlags.ADD_PUBLICOBJECT_SOLR_FIELD.enabled() && !isLocallyFAIR) {
                 solrInputDocument.addField(SearchFields.PUBLIC_OBJECT, true);
             }
             // solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE,
@@ -1611,7 +1613,7 @@ public class IndexServiceBean {
 
                     String filenameCompleteFinal = "";
                     if (fileMetadata != null) {
-                        String filenameComplete = fileMetadata.getLabel();
+                        String filenameComplete = fileMetadata.getLabelForOriginal();
                         if (filenameComplete != null) {
                             String filenameWithoutExtension = "";
                             // String extension = "";
@@ -1706,8 +1708,13 @@ public class IndexServiceBean {
 
                     String fileSolrDocId = solrDocIdentifierFile + fileEntityId;
                     indexableDataset.getDatasetState();
+                    // Use isLocallyFAIR for dataset (versus re-calc for each file)
+                    if(isLocallyFAIR) {
+                        datafileSolrInputDocument.addField(SearchFields.LOCALLY_FAIR, isLocallyFAIR);
+                    }
                     if (datasetPublicationStatuses.contains(PUBLISHED_STRING)) {
-                        if (FeatureFlags.ADD_PUBLICOBJECT_SOLR_FIELD.enabled()) {
+
+                        if (FeatureFlags.ADD_PUBLICOBJECT_SOLR_FIELD.enabled() && !isLocallyFAIR) {
                             datafileSolrInputDocument.addField(SearchFields.PUBLIC_OBJECT, true);
                         }
                         addDatasetReleaseDateToSolrDoc(datafileSolrInputDocument, dataset);
@@ -2116,7 +2123,7 @@ public class IndexServiceBean {
 
             sid.removeField(SearchFields.SUBTREE);
             sid.addField(SearchFields.SUBTREE, paths);
-            UpdateResponse addResponse = solrClientIndexService.getSolrClient().add(sid);
+            solrClientIndexService.getSolrClient().add(sid);
             if (object.isInstanceofDataset()) {
                 for (DataFile df : dataset.getFiles()) {
                     solrQuery.setQuery(SearchUtil.constructQuery(SearchFields.ENTITY_ID, df.getId().toString()));
@@ -2129,7 +2136,7 @@ public class IndexServiceBean {
                         }
                         sid.removeField(SearchFields.SUBTREE);
                         sid.addField(SearchFields.SUBTREE, paths);
-                        addResponse = solrClientIndexService.getSolrClient().add(sid);
+                        solrClientIndexService.getSolrClient().add(sid);
                     }
                 }
             }

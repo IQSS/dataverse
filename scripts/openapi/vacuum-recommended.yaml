@@ -1,0 +1,19 @@
+description: Dataverse OpenAPI recommended rules with legacy/noisy rules disabled.
+extends: [[vacuum:oas, recommended]]
+rules:
+  # Endpoint paths are historically camel case, and we won't change those for OpenAPI conformance
+  paths-kebab-case: false
+  # We do have duplications, because the same parameters as `id` will be used in multiple endpoints
+  description-duplication: false
+  # We don't have examples
+  oas3-missing-example: false
+  # We have /pids/{id}/delete --> see edu.harvard.iq.dataverse.api.Pids#deletePid
+  # The HTTP verb there is DELETE so actually we don't need to have the verb in the path,
+  # could be fixed.
+  no-http-verbs-in-path: false
+  # These endpoints have an unused `body` parameter, probably because of copy-paste.
+  # no-request-body: false would not report them, but rather we should fix them to remove `body`
+  # GET /files/{id}/prov-freeform
+  # GET /files/{id}/prov-json
+  # GET /files/{id}/prov-json
+  #no-request-body: false

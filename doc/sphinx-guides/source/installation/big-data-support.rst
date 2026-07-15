@@ -1,7 +1,7 @@
 Big Data Support
 ================
 
-Big data support includes some experimental options. Eventually more of this content will move to the Installation Guide.
+Big data support includes some experimental options.
 
 .. contents:: |toctitle|
         :local:
@@ -49,54 +49,75 @@ The following features are disabled when S3 direct upload is enabled.
 - Creation of NcML auxiliary files (See :ref:`netcdf-and-hdf5`.)
 - Extraction of a geospatial bounding box from NetCDF and HDF5 files (see :ref:`netcdf-and-hdf5`) unless :ref:`dataverse.netcdf.geo-extract-s3-direct-upload` is set to true.
 
+
 .. _cors-s3-bucket:
 
 Allow CORS for S3 Buckets
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**IMPORTANT:** One additional step that is required to enable direct uploads via a Dataverse installation and for direct download to work with previewers and direct upload to work with dvwebloader (:ref:`folder-upload`) is to allow cross site (CORS) requests on your S3 store.
-The example below shows how to enable CORS rules (to support upload and download) on a bucket using the AWS CLI command line tool. Note that you may want to limit the AllowedOrigins and/or AllowedHeaders further.  https://github.com/gdcc/dataverse-previewers/wiki/Using-Previewers-with-download-redirects-from-S3 has some additional information about doing this.
+**IMPORTANT:** This additional step of allowing cross-site request to your S3 buckets is required to enable direct uploads via a Dataverse installation, direct download to work with :ref:`file previewers <file-previews>`, or direct upload to work with :ref:`DVWebloader <folder-upload>`.
 
-Dataverse itself will only emit the necessary ``Access-Control-*`` headers to browsers when CORS has been explicitly enabled via the JVM/MicroProfile setting :ref:`dataverse.cors.origin <dataverse.cors.origin>`. You must both:
+To successfully enable direct uploads (e.g. :ref:`folder-upload`) or direct downloads (e. g. consumed by previewers), you must both:
 
-* Configure an appropriate ``dataverse.cors.origin`` value (single origin, comma-separated list, or ``*``) on the Dataverse application server; and
-* Configure a matching/compatible CORS policy on each S3 bucket (and any CDN/proxy in front of it) that will be used for direct upload or for redirect (download-redirect) operations consumed by previewers.
+- Enable CORS in Dataverse (see :ref:`dataverse.cors`).
+- Configure a matching/compatible CORS policy on each S3 bucket (and any CDN/proxy in front of it) that will be used.
 
-If you specify multiple origins in ``dataverse.cors.origin`` Dataverse will echo back the requesting origin (when it matches) and will include ``Vary: Origin`` so that shared caches do not serve one origin's response to another. If you configure ``*`` Dataverse will respond with ``Access-Control-Allow-Origin: *`` (note that browsers will not allow credentialed requests with a wildcard).
+**NOTE:** Make sure the bucket's CORS configuration ``AllowedOrigins`` is at least as permissive as the origins you configure in :ref:`dataverse.cors.origin`.
+If the bucket allows the wildcard ``*`` but the Dataverse application only allows a subset, the browser will still enforce the more restrictive application response!
 
-Make sure the bucket CORS configuration ``AllowedOrigins`` is at least as permissive as the origins you configure in ``dataverse.cors.origin``. If the bucket allows ``*`` but the Dataverse application only allows a subset, the browser will still enforce the more restrictive application response.
+Detailed information for the most common S3 admin tools around CORS:
+
+- `AWS <https://docs.aws.amazon.com/AmazonS3/latest/userguide/enabling-cors-examples.html>`_
+- `s3cmd <https://servicedesk.surf.nl/wiki/spaces/WIKI/pages/215253125/Object+Store+S3+CORS+Policies>`_
+
+Get Current CORS Policy on Bucket
++++++++++++++++++++++++++++++++++
 
 If you'd like to check the CORS configuration on your bucket before making changes:
 
-``aws s3api get-bucket-cors --bucket <BUCKET_NAME>``
+.. tabs::
+   .. group-tab:: AWS CLI
+      :code:`aws s3api get-bucket-cors --bucket <BUCKET_NAME>`
 
-To proceed with making changes:
+Set CORS Policy on Bucket
++++++++++++++++++++++++++
 
-``aws s3api put-bucket-cors --bucket <BUCKET_NAME> --cors-configuration file://cors.json``
+The examples below shows how to enable CORS rules (to support upload and download) on a bucket.
 
-with the contents of the file cors.json as follows:
+**Note:** You may want to limit the ``AllowedOrigins`` and/or ``AllowedHeaders`` further.
+`GDCC/dataverse-previewers <https://github.com/gdcc/dataverse-previewers/wiki/Using-Previewers-with-download-redirects-from-S3>`_ has some additional information about doing this.
 
-.. code-block:: json
+Both JSON and XML format are explained in detail in `AWS Docs <https://docs.aws.amazon.com/AmazonS3/latest/userguide/ManageCorsUsing.html#cors-example-1>`_.
 
-        {
-          "CORSRules": [
-             {
-                "AllowedOrigins": ["*"],
-                "AllowedHeaders": ["*"],
-                "AllowedMethods": ["PUT", "GET"],
-                "ExposeHeaders": ["ETag", "Accept-Ranges", "Content-Encoding", "Content-Range"]
-             }
-          ]
-        }
+.. tabs::
+  .. group-tab:: AWS CLI
+    Create a file :download:`cors.json </_static/installation/cors/cors.json>` as follows:
 
-Alternatively, you can enable CORS using the AWS S3 web interface, using json-encoded rules as in the example above. 
+    .. literalinclude:: /_static/installation/cors/cors.json
+        :name: aws-cors
+        :language: json
+
+    Proceed with making the changes:
+
+    :code:`aws s3api put-bucket-cors --bucket <BUCKET_NAME> --cors-configuration file://cors.json`
+
+    Alternatively, you can enable CORS using the AWS S3 web interface, using json-encoded rules as in the example above.
+
+    .. literalinclude:: /_static/installation/cors/cors.xml
+        :name: xml-cors
+        :language: xml
+
+    Proceed with making the changes:
+
+    :code:`mc cors set <STORE_NAME>/<BUCKET_NAME> ./cors.xml`
+
 
 .. _s3-tags-and-direct-upload:
 
 S3 Tags and Direct Upload
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Since the direct upload mechanism creates the final file rather than an intermediate temporary file, user actions, such as neither saving or canceling an upload session before closing the browser page, can leave an abandoned file in the store. The direct upload mechanism attempts to use S3 tags to aid in identifying/removing such files. Upon upload, files are given a "dv-state":"temp" tag which is removed when the dataset changes are saved and new files are added in the Dataverse installation. Note that not all S3 implementations support tags. Minio, for example, does not. With such stores, direct upload may not work and you might need to disable tagging. For details, see :ref:`s3-tagging` in the Installation Guide.
+Since the direct upload mechanism creates the final file rather than an intermediate temporary file, user actions, such as neither saving or canceling an upload session before closing the browser page, can leave an abandoned file in the store. The direct upload mechanism attempts to use S3 tags to aid in identifying/removing such files. Upon upload, files are given a "dv-state":"temp" tag which is removed when the dataset changes are saved and new files are added in the Dataverse installation. Note that not all S3 implementations support tags. With such stores, direct upload may not work and you might need to disable tagging. For details, see :ref:`s3-tagging` in the Installation Guide.
 
 Trusted Remote Storage with the ``remote`` Store Type
 -----------------------------------------------------

@@ -938,7 +938,7 @@ public class BagGenerator {
                         info.append(CRLF);
 
                     } else {
-                        if (contactNameTerm != null) {
+                        if (contactNameTerm != null && ((JsonObject) person).has(contactNameTerm.getLabel())) {
                             info.append(multilineWrap(CONTACT_NAME + ((JsonObject) person).get(contactNameTerm.getLabel()).getAsString()));
                             info.append(CRLF);
                         }

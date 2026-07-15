@@ -553,6 +553,9 @@ public class JsonParser {
 
     public Guestbook parseGuestbook(JsonObject obj, Guestbook gb) throws JsonParseException {
         try {
+            if (obj.containsKey("id")) {
+                gb.setId(Long.valueOf(obj.getInt("id")));
+            }
             gb.setName(obj.getString("name", null));
             gb.setEnabled(obj.getBoolean("enabled"));
             gb.setEmailRequired(obj.getBoolean("emailRequired"));
@@ -573,6 +576,9 @@ public class JsonParser {
             customQuestions.forEach(q -> {
                 JsonObject obj = q.asJsonObject();
                 CustomQuestion cq = new CustomQuestion();
+                if (obj.containsKey("id")) {
+                    cq.setId(Long.valueOf(obj.getInt("id")));
+                }
                 cq.setQuestionString(obj.getString("question"));
                 cq.setRequired(obj.getBoolean("required"));
                 cq.setDisplayOrder(obj.getInt("displayOrder"));
@@ -586,6 +592,9 @@ public class JsonParser {
                     optionValues.forEach(v -> {
                         JsonObject ov = v.asJsonObject();
                         CustomQuestionValue cqv = new CustomQuestionValue();
+                        if (ov.containsKey("id")) {
+                            cqv.setId(Long.valueOf(ov.getInt("id")));
+                        }
                         cqv.setValueString(ov.getString("value"));
                         cqv.setDisplayOrder(ov.getInt("displayOrder"));
                         cqv.setCustomQuestion(cq);
@@ -650,8 +659,15 @@ public class JsonParser {
                     throw new JsonParseException(BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookresponseQuestionIdNotFound", List.of(cqId.toString())));
                 } else if (cq.getQuestionType().equalsIgnoreCase("textarea")) {
                     String lineFeed = String.valueOf((char) 10);
-                    JsonArray jsonArray = answer.getJsonArray("value");
-                    List<JsonString> lines = jsonArray.getValuesAs(JsonString.class);
+                    List<JsonString> lines = new ArrayList<>();
+                    try {
+                        // Assume it's an array but fall back to string if it isn't
+                        JsonArray jsonArray = answer.getJsonArray("value");
+                        lines = jsonArray.getValuesAs(JsonString.class);
+                    } catch (Exception ex) {
+                        // if not an array try to get a string and add it to the list
+                        lines.add(answer.getJsonString("value"));
+                    }
                     response = lines.stream().map(JsonString::getString).collect(Collectors.joining(lineFeed));
                 } else if (cq.getQuestionType().equalsIgnoreCase("options")) {
                     String option = answer.getString("value");
@@ -749,6 +765,21 @@ public class JsonParser {
         }
         return fields;
     }
+    
+    public Map<String, String> parseRequestBodyInstructionsMap(JsonObject jsonObject) {
+        Map<String, String> instructionsMap = new HashMap<>();
+        JsonArray instructionsJsonArray = jsonObject.getJsonArray("instructions");
+        if (instructionsJsonArray == null) {
+            return null;
+        }
+        for (JsonObject instructionJsonObject : instructionsJsonArray.getValuesAs(JsonObject.class)) {
+            instructionsMap.put(
+                    instructionJsonObject.getString("instructionField"),
+                    instructionJsonObject.getString("instructionText")
+            );
+        }
+        return instructionsMap;
+    }
 
     public List<DatasetField> parseMultipleFields(JsonObject json) throws JsonParseException {
         return parseMultipleFields(json, false);
@@ -756,7 +787,10 @@ public class JsonParser {
 
     public List<DatasetField> parseMultipleFields(JsonObject json, boolean replaceData) throws JsonParseException {
         JsonArray fieldsJson = json.getJsonArray("fields");
-        List<DatasetField> fields = parseFieldsFromArray(fieldsJson, false, replaceData);
+        List<DatasetField> fields = new ArrayList();
+        if (fieldsJson != null) {
+            fields = parseFieldsFromArray(fieldsJson, false, replaceData);
+        }
         return fields;
     }
 

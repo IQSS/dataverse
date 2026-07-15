@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -142,6 +143,20 @@ public class FileAccessRequest implements Serializable{
             return "rejected";
         }
         return null; 
+    }
+
+    // For use by UI to allow for internationalization
+    public String getStateLabelNationalized() {
+        if(isStateCreated()) {
+            return BundleUtil.getStringFromBundle("permission.fileAccess.created");
+        }
+        if(isStateGranted()) {
+            return BundleUtil.getStringFromBundle("permission.fileAccess.granted");
+        }
+        if(isStateRejected()) {
+            return BundleUtil.getStringFromBundle("permission.fileAccess.rejected");
+        }
+        return null;
     }
     
     public void setStateCreated() {

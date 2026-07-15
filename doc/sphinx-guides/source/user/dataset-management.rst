@@ -28,7 +28,7 @@ Supported Metadata Export Formats
 
 Once a dataset has been published, its metadata can be exported in a variety of other metadata standards and formats, which help make datasets more :doc:`discoverable </admin/discoverability>` and usable in other systems, such as other data repositories. On each dataset page's metadata tab, the following exports are available:
 
-- Croissant
+- Croissant (example: :download:`max-croissant.json <../../../../src/test/resources/croissant/max/expected/max-croissant.json>`)
 - Dublin Core
 - DDI (Data Documentation Initiative Codebook 2.5)
 - DDI HTML Codebook (A more human-readable, HTML version of the DDI Codebook 2.5 metadata export)
@@ -40,7 +40,7 @@ Once a dataset has been published, its metadata can be exported in a variety of 
 
 Additional formats can be enabled. See :ref:`inventory-of-external-exporters` in the Installation Guide. For example:
 
-- RO-Crate
+- RO-Crate: See also https://www.researchobject.org/ro-crate/dataverse
 
 Each of these metadata exports contains the metadata of the most recently published version of the dataset.
 
@@ -439,6 +439,7 @@ Go to the dataset you would like to edit, where you will see the listing of file
 - Restrict the selected files
 - Unrestrict the selected files (only if the selected files are restricted)
 - Add tags to the selected files
+- Embargo the selected files
 
 You will not have to leave the dataset page to complete these action, except for editing file metadata, which will bring you to the Edit Files page. There you will have to click the "Save Changes" button to apply your edits and return to the dataset page.
 
@@ -725,7 +726,7 @@ Preview URL to Review Unpublished Dataset
 
 Creating a Preview URL for a draft version of your dataset allows you to share your dataset (for viewing and downloading files, including :ref:`restricted <restricted-files>` and :ref:`embargoed <embargoes>` files) before it is published to a wide group of people who might not have a user account on the Dataverse installation. Anyone you send the Preview URL to will not have to log in to the Dataverse installation to view the unpublished dataset. Once a dataset has been published, you may create new General Preview URLs for subsequent draft versions, but the Anonymous Preview URL will no longer be available.
 
-**Note:** To create a Preview URL, you must have the *ManageDatasetPermissions* permission for your draft dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*.
+**Note:** To create a Preview URL, you must have the *ManageDatasetPermissions* permission for your draft dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*. Take into account that before being able to create an Anonymous Preview URL, your system administrator much configure :ref:`a setting <:AnonymizedFieldTypeNames>` that indicates which fields will be withheld (Author Name, for example) when dataset access occurs via a Preview Url with Anonymized Access.
 
 #. Go to your unpublished dataset
 #. Select the “Edit” button
@@ -762,6 +763,8 @@ Once a dataset with embargoed files has been published, no further action is nee
 - "Rolling" embargoes on time-series data can be supported by publishing multiple dataset versions and adding new embargoes on the files added in that version. For example, every year, files containing the prior year's results can be added to a dataset and given an embargo ending one year later than the embargoes set in the last dataset version, and the new dataset version can then be published. The datafiles published in the different versions will become available when their individual embargoes expire at yearly intervals.
 
 As the primary use case of embargoes is to make the existence of data known now, with a promise (to a journal, project team, etc.) that the data itself will become available at a given future date, users cannot change an embargo once a dataset version is published. Dataverse instance administrators do have the ability to correct mistakes and make changes if/when circumstances warrant.
+
+.. _retention-periods:
 
 Retention Periods
 =================
@@ -934,6 +937,8 @@ Review Datasets can only be created via API. You have the following options:
 - :ref:`import-dataset-with-type`
 
 When creating a review dataset you will likely need to fill in required fields like ``itemReviewedUrl`` as well as fields from one or more "rubric" metadata blocks, as described above under :ref:`review-datasets-overview`.
+
+If you point ``itemReviewedUrl`` at the URL form of a dataset (e.g. https://doi.org/10.5072/FK2/ABCDEF) that is in the same Dataverse installation as the review dataset, the review dataset is considered a local review and can be listed using the :ref:`api-list-reviews` API endpoint. These reviews appear in the Croissant metadata export if you enable the :ref:`dataverse.feature.croissant-with-local-reviews` feature flag.
 
 .. _dataset-types-datacite:
 

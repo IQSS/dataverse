@@ -36,8 +36,8 @@ import org.xml.sax.SAXException;
 class SiteMapUtilTest {
 
     // see https://www.sitemaps.org/protocol.html#validating
-    final String xsdSitemap = "https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd";
-    final String xsdSitemapIndex = "https://www.sitemaps.org/schemas/sitemap/0.9/siteindex.xsd";
+    private static final String XSD_SITEMAP = "xml/xsd/sitemap-0.9/sitemap.xsd";
+    private static final String XSD_SITEINDEX = "xml/xsd/sitemap-0.9/siteindex.xsd";
 
     @TempDir
     Path tempDir;
@@ -112,7 +112,7 @@ class SiteMapUtilTest {
         // then
         String pathToSiteMap = tempDocroot.resolve("sitemap").resolve("sitemap.xml").toString();
         assertDoesNotThrow(() -> XmlValidator.validateXmlWellFormed(pathToSiteMap));
-        assertTrue(XmlValidator.validateXmlSchema(pathToSiteMap, new URL(xsdSitemap)));
+        assertTrue(XmlValidator.validateXmlSchema(pathToSiteMap, getTestResource(XSD_SITEMAP)));
 
         File sitemapFile = new File(pathToSiteMap);
         String sitemapString = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(sitemapFile.getAbsolutePath()))));
@@ -166,7 +166,7 @@ class SiteMapUtilTest {
 
         // validate sitemap_index.xml file with XSD
         assertDoesNotThrow(() -> XmlValidator.validateXmlWellFormed(pathToSiteMapIndexFile));
-        assertTrue(XmlValidator.validateXmlSchema(pathToSiteMapIndexFile, new URL(xsdSitemapIndex)));
+        assertTrue(XmlValidator.validateXmlSchema(pathToSiteMapIndexFile, getTestResource(XSD_SITEINDEX)));
 
         // verify sitemap_index.xml content
         File sitemapFile = new File(pathToSiteMapIndexFile);
@@ -194,11 +194,11 @@ class SiteMapUtilTest {
 
         // validate sitemap1.xml file with XSD
         assertDoesNotThrow(() -> XmlValidator.validateXmlWellFormed(pathToSiteMap1File));
-        assertTrue(XmlValidator.validateXmlSchema(pathToSiteMap1File, new URL(xsdSitemap)));
+        assertTrue(XmlValidator.validateXmlSchema(pathToSiteMap1File, getTestResource(XSD_SITEMAP)));
 
         // validate sitemap2.xml file with XSD
         assertDoesNotThrow(() -> XmlValidator.validateXmlWellFormed(pathToSiteMap2File));
-        assertTrue(XmlValidator.validateXmlSchema(pathToSiteMap2File, new URL(xsdSitemap)));
+        assertTrue(XmlValidator.validateXmlSchema(pathToSiteMap2File, getTestResource(XSD_SITEMAP)));
 
         // verify sitemap2.xml content
         sitemapFile = new File(pathToSiteMap2File);
@@ -227,4 +227,9 @@ class SiteMapUtilTest {
         assertTrue(isContainsLastmodTag, "Sitemap file must contains <lastmod> tag");
     }
 
+    private URL getTestResource(String resourcePath) {
+        URL resource = SiteMapUtilTest.class.getClassLoader().getResource(resourcePath);
+        assertNotNull(resource, "Missing test resource: " + resourcePath);
+        return resource;
+    }
 }

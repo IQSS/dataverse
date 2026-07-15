@@ -93,7 +93,7 @@ Developers express the need for an addition to release notes by creating a "rele
 The task at or near release time is to collect these snippets into a single file.
 
 - Find the issue in GitHub that tracks the work of creating release notes for the upcoming release.
-- Create a branch, add a .md file for the release (ex. 5.10.1 Release Notes) in ``/doc/release-notes`` and write the release notes, making sure to pull content from the release note snippets mentioned above. Snippets may not include any issue number or pull request number in the text so be sure to copy the number from the filename of the snippet into the final release note.
+- Create a branch, add a .md file for the release (ex. 6.10.1 Release Notes) in ``/doc/release-notes`` and write the release notes, making sure to pull content from the release note snippets mentioned above. Snippets may not include any issue number or pull request number in the text so be sure to copy the number from the filename of the snippet into the final release note.
 - Delete (``git rm``) the release note snippets as the content is added to the main release notes file.
 - Include instructions describing the steps required to upgrade the application from the previous version. These must be customized for release numbers and special circumstances such as changes to metadata blocks and infrastructure. These instructions are required for the next steps (deploying to various environments) so try to prioritize them over finding just the right words in release highlights (which you can do later).
 - Make a pull request. Here's an example: https://github.com/IQSS/dataverse/pull/11613
@@ -101,22 +101,19 @@ The task at or near release time is to collect these snippets into a single file
 
 For a hotfix, don't worry about release notes yet.
 
+Build Release Candidate
+-----------------------
+
+|dedicated|
+
+Go to https://github.com/IQSS/dataverse/actions/workflows/generate_war_file.yml click "run workflow". For a regular release, make sure the branch is "develop". For a hotfix, you will use whatever branch name is used for the hotfix. Leave the custom label blank and click "run workflow". This will create an action that should result in a zip file. Inside that zip is another zip that contains the war file.
+
 Deploy Release Candidate to Internal
 ------------------------------------
 
 |dedicated|
 
-First, build the release candidate. For a regular release, you will use the "develop" branch, as shown below. For a hotfix, you will use whatever branch name is used for the hotfix.
-
-Go to https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ and make the following adjustments to the config:
-
-- Repository URL: ``https://github.com/IQSS/dataverse.git``
-- Branch Specifier (blank for 'any'): ``*/develop``
-- Execute shell: Update version in filenames to ``dataverse-5.10.war`` (for example)
-
-Click "Save" then "Build Now". The release candidate war file will be available at https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ws/target/
-
-ssh into the dataverse-internal server and download the release candidate war file from the URL above.
+ssh into the dataverse-internal server and download the release candidate war file you built above.
 
 Go to /doc/release-notes, open the release-notes.md file for the release we're working on, and perform all the steps under "Upgrade Instructions". Note that for regular releases, we haven't bumped the version yet so you won't be able to follow the steps exactly. (For hotfix releases, the version will be bumped already.)
 
@@ -197,7 +194,7 @@ Create a release branch named after the issue that tracks bumping the version wi
 
 Make the following changes in the release branch.
 
-Increment the version number to the milestone (e.g. 5.10.1) in the following two files:
+Increment the version number to the milestone (e.g. 6.10.1) in the following two files:
 
 - modules/dataverse-parent/pom.xml -> ``<properties>`` -> ``<revision>`` (e.g. `pom.xml commit <https://github.com/IQSS/dataverse/commit/3943aa0>`_)
 - doc/sphinx-guides/source/conf.py
@@ -227,7 +224,14 @@ Merge "develop" into "master" (non-hotfix only)
 
 If this is a regular (non-hotfix) release, create a pull request to merge the "develop" branch into the "master" branch using this "compare" link: https://github.com/IQSS/dataverse/compare/master...develop
 
-Allow time for important tests (compile, unit tests, etc.) to pass. Don't worry about style tests failing such as for shell scripts. It's ok to skip code review.
+Allow time for important tests pass:
+
+- Unit tests: Maven Tests
+- API tests: Container Integration Tests Workflow
+
+Don't worry about style tests failing such as for shell scripts.
+
+It's ok to skip code review.
 
 When merging the pull request, be sure to choose "create a merge commit" and not "squash and merge" or "rebase and merge". We suspect that choosing squash or rebase may have led to `lots of merge conflicts <https://github.com/IQSS/dataverse/pull/11647#issuecomment-3085289132>`_ when we tried to perform this "merge develop to master" step, forcing us to `re-do <https://docs.google.com/document/d/1oit6LLDUWpNpV_uWveOMvdwDsaUey-74ehvzCZp1f3k/edit?usp=sharing>`_ the previous release before we could proceed with the current release.
 
@@ -243,20 +247,9 @@ If the GitHub UI tells you there would be merge conflicts, something has gone ho
 Add Milestone to Pull Requests and Issues
 -----------------------------------------
 
-Often someone is making sure that the proper milestone (e.g. 5.10.1) is being applied to pull requests and issues, but sometimes this falls between the cracks.
+Often someone is making sure that the proper milestone (e.g. 6.10.1) is being applied to pull requests and issues, but sometimes this falls between the cracks.
 
 Check for merged pull requests that have no milestone by going to https://github.com/IQSS/dataverse/pulls and entering `is:pr is:merged no:milestone <https://github.com/IQSS/dataverse/pulls?q=is%3Apr+is%3Amerged+no%3Amilestone>`_ as a query. If you find any, first check if those pull requests are against open pull requests. If so, do nothing. Otherwise, add the milestone to the pull request and any issues it closes. This includes the "merge develop into master" pull request above.
-
-(Optional) Test Docker Images
------------------------------
-
-After the "master" branch has been updated and the GitHub Action to build and push Docker images has run (see `PR #9776 <https://github.com/IQSS/dataverse/pull/9776>`_), go to https://hub.docker.com/u/gdcc and make sure the "latest" tag for the following images has been updated:
-
-- https://hub.docker.com/r/gdcc/base
-- https://hub.docker.com/r/gdcc/dataverse
-- https://hub.docker.com/r/gdcc/configbaker
-
-TODO: Get https://github.com/gdcc/api-test-runner working.
 
 .. _build-guides:
 
@@ -267,86 +260,65 @@ Go to https://jenkins.dataverse.org/job/guides.dataverse.org/ and make the follo
 
 - Repository URL: ``https://github.com/IQSS/dataverse.git``
 - Branch Specifier (blank for 'any'): ``*/master``
-- ``VERSION`` (under "Build Steps"): bump to the next release. Don't prepend a "v". Use ``5.10.1`` (for example)
+- ``VERSION`` (under "Build Steps"): bump to the next release. Don't prepend a "v". Use ``6.10.1`` (for example)
 
 Click "Save" then "Build Now".
 
-Make sure the guides directory appears in the expected location such as https://guides.dataverse.org/en/5.10.1/
+Make sure the guides directory appears in the expected location such as https://guides.dataverse.org/en/6.10.1/
 
 As described below, we'll soon point the "latest" symlink to that new directory.
-
-Create a Draft Release on GitHub
---------------------------------
-
-Go to https://github.com/IQSS/dataverse/releases/new to start creating a draft release.
-
-- Under "Choose a tag" you will be creating a new tag. Have it start with a "v" such as ``v5.10.1``. Click "Create new tag on publish".
-- Under "Target", choose "master". This commit will appear in ``/api/info/version`` from a running installation.
-- Under "Release title" use the same name as the tag such as ``v5.10.1``.
-- In the description, copy and paste the content from the release notes .md file created in the "Write Release Notes" steps above.
-- Click "Save draft" because we do not want to publish the release yet.
-
-At this point you can send around the draft release for any final feedback. Links to the guides for this release should be working now, since you build them above.
-
-Make corrections to the draft, if necessary. It will be out of sync with the .md file, but that's ok (`#7988 <https://github.com/IQSS/dataverse/issues/7988>`_ is tracking this).
 
 .. _run-build-create-war:
 
 Run a Build to Create the War File
 ----------------------------------
 
-ssh into the dataverse-internal server and undeploy the current war file.
+Go to https://github.com/IQSS/dataverse/actions/workflows/generate_war_file.yml click "run workflow". For a regular release, change the branch to "master". For a hotfix release, use whatever branch name is used for the hotfix. Leave the custom label blank and click "run workflow". This will create an action that should result in a zip file. Inside that zip is another zip that contains the war file. Download it.
 
-Go to https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ and make the following adjustments to the config:
-
-- Repository URL: ``https://github.com/IQSS/dataverse.git``
-- Branch Specifier (blank for 'any'): ``*/master``
-- Execute shell: Update version in filenames to ``dataverse-5.10.1.war`` (for example)
-
-Click "Save" then "Build Now".
-
-This will build the war file, and then automatically deploy it on dataverse-internal. Verify that the application has deployed successfully. 
-
-The build number will appear in ``/api/info/version`` (along with the commit mentioned above) from a running installation (e.g. ``{"version":"5.10.1","build":"907-b844672``). 
-
-Note that the build number comes from the following script in an early Jenkins build step...
-
-.. code-block:: bash
-
-  COMMIT_SHA1=`echo $GIT_COMMIT | cut -c-7`
-  echo "build.number=${BUILD_NUMBER}-${COMMIT_SHA1}" > $WORKSPACE/src/main/java/BuildNumber.properties
-
-... but we can explore alternative methods of specifying the build number, as described in :ref:`auto-custom-build-number`.
+The build number will appear in ``/api/info/version`` (along with the commit mentioned above) from a running installation (e.g. ``{"version":"6.10.1","build":"master-300d5b5"}``).
 
 Build Installer (dvinstall.zip)
 -------------------------------
 
-ssh into the dataverse-internal server and do the following:
+In a git checkout of the source, switch to the master branch and pull the latest.
 
-- In a git checkout of the dataverse source switch to the master branch and pull the latest.
-- Copy the war file from the previous step to the ``target`` directory in the root of the repo (create it, if necessary):
-- ``mkdir target``
-- ``cp /tmp/dataverse-5.10.1.war target``
-- ``cd scripts/installer``
-- ``make clean``
-- ``make``
+Unzip the zip file from the previous step.
+
+Copy the war file to the ``target`` directory in the root of the repo (create the ``target`` directory, if necessary):
+
+.. code-block:: bash
+
+  cp ~/Downloads/built-app.zip .
+  unzip built-app.zip
+  rm built-app.zip
+  mkdir -p target
+  mv dataverse-*.war target
+
+Then, create the installer:
+
+.. code-block:: bash
+
+  cd scripts/installer
+  make clean
+  make
 
 A zip file called ``dvinstall.zip`` should be produced.
 
-Alternatively, you can build the installer on your own dev. instance. But make sure you use the war file produced in the step above, not a war file build from master on your own system! That's because we want the released application war file to contain the build number described above. Download the war file directly from Jenkins, or from dataverse-internal. 
+Create a Draft Release on GitHub
+--------------------------------
 
-Make Artifacts Available for Download
--------------------------------------
+Go to https://github.com/IQSS/dataverse/releases/new to start creating a draft release.
 
-Upload the following artifacts to the draft release you created:
+- Under "Select tag" you will be creating a new tag. Have it start with a "v" such as ``v6.10.1``. Click "Create new tag". Don't worry, the tag won't be created until you publish.
+- Under "Target", choose "master". This commit will appear in ``/api/info/version`` from a running installation.
+- Under "Release title" use the same name as the tag such as ``v6.10.1``.
+- In the description, copy and paste the content from the release notes .md file created in the "Write Release Notes" steps above.
+- Under "attach binaries", upload the war file and installer you created above.
+- Click "Save draft" because we do not want to publish the release yet.
 
-- the war file (e.g. ``dataverse-5.10.1.war``, from above)
-- the installer (``dvinstall.zip``, from above)
-- other files as needed:
+At this point you can send around the draft release for any final feedback. Links to the guides for this release should be working now, since you build them above.
 
-  - updated Solr schema
-  - metadata block tsv files
-  - config files
+Make corrections to the draft, if necessary. It will be out of sync with the .md file, but that's ok (`#7988 <https://github.com/IQSS/dataverse/issues/7988>`_ is tracking this).
 
 Publish the Release
 -------------------
@@ -356,16 +328,37 @@ Click the "Publish release" button.
 Update Guides Link
 ------------------
 
-"latest" at https://guides.dataverse.org/en/latest/ is a symlink to the directory with the latest release. That directory (e.g. ``5.10.1``) was put into place by the Jenkins "guides" job described above.
+"latest" at https://guides.dataverse.org/en/latest/ is a symlink to the directory with the latest release. That directory (e.g. ``6.10.1``) was put into place by the Jenkins "guides" job described above.
 
 ssh into the guides server and update the symlink to point to the latest release, as in the example below.
 
 .. code-block:: bash
 
   cd /var/www/html/en
-  ln -s 5.10.1 latest
+  ln -s 6.10.1 latest
 
 This step could be done before publishing the release if you'd like to double check that links in the release notes work.
+
+Test Docker Images
+------------------
+
+Publishing the release should have trigged the "Container Images Scheduled Maintenance" GitHub Action. Allow it to finish and then go to https://hub.docker.com/u/gdcc and navigate to "gdcc/dataverse".
+
+Click on "tags" and look at the "latest" tag. Was it just updated? Good! If not, we plan to address this is https://github.com/IQSS/dataverse/issues/12514 but for now, as a workaround, run the action again. Go to https://github.com/IQSS/dataverse/actions/workflows/container_maintenance.yml and click the "run workflow" dropdown. Make sure the branch is set to "develop" and click "run workflow" button.
+
+Wait for the action to finish and then check again that the "latest" tag has been updated.
+
+Locally, delete old images and spin up the "latest" tag.
+
+.. code-block:: bash
+
+  docker rmi gdcc/dataverse:latest
+  docker rmi gdcc/configbaker:latest
+  cd docker/compose/demo
+  rm -rf data
+  docker compose up
+
+Wait for the bootstrapping process to complete. Then, look at http://localhost:8080/api/info/version to make sure "version" shows the version that you just released. Note that it's normal for "build" to be null for our Docker images.
 
 Close Milestone on GitHub and Create a New One
 ----------------------------------------------
@@ -374,7 +367,7 @@ You can find our milestones at https://github.com/IQSS/dataverse/milestones
 
 Now that we've published the release, close the milestone and create a new one for the **next** release, the release **after** the one we're working on, that is.
 
-Note that for milestones we use just the number without the "v" (e.g. "5.10.1").
+Note that for milestones we use just the number without the "v" (e.g. "6.10.1").
 
 On the project board at https://github.com/orgs/IQSS/projects/34 edit the tab (view) that shows the milestone to show the next milestone.
 
@@ -389,7 +382,17 @@ Create a new branch (any name is fine but ``prepare-next-iteration`` is suggeste
 
 - modules/dataverse-parent/pom.xml -> ``<profiles>`` -> profile "ct" -> ``<properties>`` -> Set ``<base.image.version>`` to ``${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}``
 
-Create a pull request and put it through code review, like usual. Give it a milestone of the next release, the one **after** the one we're working on. Once the pull request has been approved, merge it. It should be the first PR merged of the next release.
+Create a pull request.
+
+Wait for checks to complete. It's ok (even expected) for the following check to fail:
+
+- main-integration-tests-workflow from container_integration_tests.yml
+
+  - If you see an error like ``Error:  DOCKER> Unable to pull 'gdcc/base:6.12-noble-p7.2026.2-j21' : {"message":"manifest for gdcc/base:6.12-noble-p7.2026.2-j21 not found: manifest unknown: manifest unknown"} (Not Found: 404) [{"message":"manifest for gdcc/base:6.12-noble-p7.2026.2-j21 not found: manifest unknown: manifest unknown"} (Not Found: 404)]`` it's telling you that the Docker image can't be spun up for API testing because it doesn't exist yet. (The error above was just after the 6.11 release.) The image will exist once the pull request is approved and merged.
+
+Put the pull request through code review, like usual, but make sure reviewers know it's ok to ignore the check above.
+
+Give it a milestone of the next release, the one **after** the one we're working on. Once the pull request has been approved, merge it. It should be the first PR merged of the next release.
 
 For more background, see :ref:`base-image-supported-tags`. For an example, see https://github.com/IQSS/dataverse/pull/10896
 
