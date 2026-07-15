@@ -17,6 +17,10 @@ import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
  *
@@ -24,6 +28,7 @@ import jakarta.ws.rs.core.Response;
  */
 @Stateless
 @Path("datatags")
+@Tag(name = "Datasets", description = "Dataset metadata, versions, files, and publishing operations.")
 public class DataTagsAPI extends AbstractApiBean { 
     
     private static final String TAGGING_SERVER_ENDPOINT = "http://datatags.org/api/1/interviewLink";
@@ -76,7 +81,13 @@ public class DataTagsAPI extends AbstractApiBean {
     
     @POST
     @Path("receiveTags/{uniqueCacheId}")
-    public Response receiveTags(JsonObject tags, @PathParam("uniqueCacheId") String uniqueCacheId) {
+    @Operation(summary = "Receives DataTags results",
+            description = "Stores returned DataTags JSON in the callback cache and returns the Dataverse redirect URL.")
+    public Response receiveTags(
+            @RequestBody(description = "DataTags result JSON returned by the external tagging interview.")
+            JsonObject tags,
+            @Parameter(description = "Callback cache identifier associated with the DataTags interview.", required = true)
+            @PathParam("uniqueCacheId") String uniqueCacheId) {
         
         // store json tags in the DataTagsContainer holding the dataset name
         container.setTag(tags);

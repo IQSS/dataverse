@@ -68,7 +68,6 @@ If the bucket allows the wildcard ``*`` but the Dataverse application only allow
 Detailed information for the most common S3 admin tools around CORS:
 
 - `AWS <https://docs.aws.amazon.com/AmazonS3/latest/userguide/enabling-cors-examples.html>`_
-- `Minio mc <https://docs.min.io/enterprise/aistor-object-store/reference/cli/mc-cors>`_
 - `s3cmd <https://servicedesk.surf.nl/wiki/spaces/WIKI/pages/215253125/Object+Store+S3+CORS+Policies>`_
 
 Get Current CORS Policy on Bucket
@@ -79,9 +78,6 @@ If you'd like to check the CORS configuration on your bucket before making chang
 .. tabs::
    .. group-tab:: AWS CLI
       :code:`aws s3api get-bucket-cors --bucket <BUCKET_NAME>`
-
-   .. group-tab:: Minio Client (mc)
-      :code:`mc cors get <STORE_NAME>/<BUCKET_NAME>`
 
 Set CORS Policy on Bucket
 +++++++++++++++++++++++++
@@ -107,9 +103,6 @@ Both JSON and XML format are explained in detail in `AWS Docs <https://docs.aws.
 
     Alternatively, you can enable CORS using the AWS S3 web interface, using json-encoded rules as in the example above.
 
-  .. group-tab:: Minio Client (mc)
-    Create a file :download:`cors.xml </_static/installation/cors/cors.xml>` as follows:
-
     .. literalinclude:: /_static/installation/cors/cors.xml
         :name: xml-cors
         :language: xml
@@ -124,7 +117,7 @@ Both JSON and XML format are explained in detail in `AWS Docs <https://docs.aws.
 S3 Tags and Direct Upload
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Since the direct upload mechanism creates the final file rather than an intermediate temporary file, user actions, such as neither saving or canceling an upload session before closing the browser page, can leave an abandoned file in the store. The direct upload mechanism attempts to use S3 tags to aid in identifying/removing such files. Upon upload, files are given a "dv-state":"temp" tag which is removed when the dataset changes are saved and new files are added in the Dataverse installation. Note that not all S3 implementations support tags. Minio, for example, does not. With such stores, direct upload may not work and you might need to disable tagging. For details, see :ref:`s3-tagging` in the Installation Guide.
+Since the direct upload mechanism creates the final file rather than an intermediate temporary file, user actions, such as neither saving or canceling an upload session before closing the browser page, can leave an abandoned file in the store. The direct upload mechanism attempts to use S3 tags to aid in identifying/removing such files. Upon upload, files are given a "dv-state":"temp" tag which is removed when the dataset changes are saved and new files are added in the Dataverse installation. Note that not all S3 implementations support tags. With such stores, direct upload may not work and you might need to disable tagging. For details, see :ref:`s3-tagging` in the Installation Guide.
 
 Trusted Remote Storage with the ``remote`` Store Type
 -----------------------------------------------------

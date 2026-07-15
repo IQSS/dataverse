@@ -25,12 +25,17 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
  * API Endpoint for managing workflows.
  * @author michael
  */
 @Path("admin/workflows")
+@Tag(name = "Workflows", description = "Workflow administration operations.")
 public class WorkflowsAdmin extends AbstractApiBean {
     
     public static final String IP_SEPARATOR = ";";
@@ -40,7 +45,11 @@ public class WorkflowsAdmin extends AbstractApiBean {
     WorkflowServiceBean workflows;
     
     @POST
-    public Response addWorkflow(JsonObject jsonWorkflow) {
+    @Operation(summary = "Creates a workflow",
+            description = "Parses a workflow definition, saves it, and returns the created workflow.")
+    public Response addWorkflow(
+            @RequestBody(description = "Workflow definition to parse and persist.")
+            JsonObject jsonWorkflow) {
         JsonParser jp = new JsonParser();
         try {
             Workflow wf = jp.parseWorkflow(jsonWorkflow);
@@ -53,6 +62,8 @@ public class WorkflowsAdmin extends AbstractApiBean {
     }
     
     @GET
+    @Operation(summary = "Lists workflows",
+            description = "Returns brief JSON entries for all configured workflows.")
     public Response listWorkflows() {
         return ok( workflows.listWorkflows().stream()
                             .map(wf->brief.json(wf)).collect(toJsonArray()) );
@@ -60,7 +71,13 @@ public class WorkflowsAdmin extends AbstractApiBean {
     
     @Path("default/{triggerType}")
     @PUT
-    public Response setDefault(@PathParam("triggerType") String triggerType, String identifier) {
+    @Operation(summary = "Sets a default workflow",
+            description = "Sets the workflow id used by default for the specified workflow trigger type.")
+    public Response setDefault(
+            @Parameter(description = "Workflow trigger type that receives the default workflow.", required = true)
+            @PathParam("triggerType") String triggerType,
+            @RequestBody(description = "Numeric workflow id to use as the default for the trigger type.")
+            String identifier) {
         try {
             long idtf = Long.parseLong(identifier.trim());
             TriggerType tt = TriggerType.valueOf(triggerType);
@@ -80,6 +97,8 @@ public class WorkflowsAdmin extends AbstractApiBean {
     
     @Path("default/")
     @GET
+    @Operation(summary = "Lists default workflows",
+            description = "Returns each workflow trigger type with its configured default workflow or null when no default is set.")
     public Response listDefaults() {
         JsonObjectBuilder bld = Json.createObjectBuilder();
         for ( TriggerType tp : TriggerType.values() ) {
@@ -93,7 +112,11 @@ public class WorkflowsAdmin extends AbstractApiBean {
     
     @Path("default/{triggerType}")
     @GET
-    public Response getDefault(@PathParam("triggerType") String triggerType) {
+    @Operation(summary = "Returns a default workflow",
+            description = "Returns the default workflow configured for the specified trigger type.")
+    public Response getDefault(
+            @Parameter(description = "Workflow trigger type whose default workflow is requested.", required = true)
+            @PathParam("triggerType") String triggerType) {
         try {
             return workflows.getDefaultWorkflow(TriggerType.valueOf(triggerType))
                             .map( wf -> ok(json(wf)) )
@@ -105,7 +128,11 @@ public class WorkflowsAdmin extends AbstractApiBean {
     
     @Path("default/{triggerType}")
     @DELETE
-    public Response deleteDefault(@PathParam("triggerType") String triggerType) {
+    @Operation(summary = "Clears a default workflow",
+            description = "Removes the default workflow assignment for the specified trigger type.")
+    public Response deleteDefault(
+            @Parameter(description = "Workflow trigger type whose default assignment is removed.", required = true)
+            @PathParam("triggerType") String triggerType) {
         try {
             workflows.setDefaultWorkflowId(TriggerType.valueOf(triggerType), null);
             return ok("default workflow for trigger " + triggerType + " unset.");
@@ -116,7 +143,11 @@ public class WorkflowsAdmin extends AbstractApiBean {
     
     @Path("/{id}")
     @GET
-    public Response getWorkflow(@PathParam("id") String identifier ) {
+    @Operation(summary = "Returns a workflow",
+            description = "Returns the workflow with the specified numeric id.")
+    public Response getWorkflow(
+            @Parameter(description = "Numeric id of the workflow to return.", required = true)
+            @PathParam("id") String identifier ) {
         try {
             long idtf = Long.parseLong(identifier);
             return workflows.getWorkflow(idtf)
@@ -129,7 +160,11 @@ public class WorkflowsAdmin extends AbstractApiBean {
     
     @Path("/{id}")
     @DELETE
-    public Response deleteWorkflow(@PathParam("id") String id ) {
+    @Operation(summary = "Deletes a workflow",
+            description = "Deletes the workflow with the specified numeric id unless it is configured as a default workflow.")
+    public Response deleteWorkflow(
+            @Parameter(description = "Numeric id of the workflow to delete.", required = true)
+            @PathParam("id") String id ) {
         try {
             long idtf = Long.parseLong(id);
             return workflows.deleteWorkflow(idtf) ? ok("Workflow " + idtf + " deleted") 
@@ -155,13 +190,19 @@ public class WorkflowsAdmin extends AbstractApiBean {
     
     @Path("/ip-whitelist")
     @GET
+    @Operation(summary = "Returns the workflow IP allowlist",
+            description = "Returns the semicolon-separated IP addresses allowed to resume external workflow steps.")
     public Response getIpWhitelist() {
         return ok( settingsSvc.getValueForKey(WorkflowsAdminIpWhitelist, DEFAULT_IP_ALLOWLIST) );
     }
     
     @Path("/ip-whitelist")
     @PUT
-    public Response setIpWhitelist(String body) {
+    @Operation(summary = "Sets the workflow IP allowlist",
+            description = "Validates and stores the semicolon-separated IP addresses allowed to resume external workflow steps.")
+    public Response setIpWhitelist(
+            @RequestBody(description = "Semicolon-separated IP addresses allowed to resume external workflow steps.")
+            String body) {
         String ipList = body.trim();
         String[] ips = ipList.split(IP_SEPARATOR);
         boolean allIpsOk = Arrays.stream(ips).allMatch(ip->{
@@ -182,6 +223,8 @@ public class WorkflowsAdmin extends AbstractApiBean {
     
     @Path("/ip-whitelist")
     @DELETE
+    @Operation(summary = "Resets the workflow IP allowlist",
+            description = "Deletes the configured workflow IP allowlist so the default localhost allowlist is used.")
     public Response deleteIpWhitelist() {
         settingsSvc.deleteValueForKey(WorkflowsAdminIpWhitelist);
         return ok( "Restored whitelist to default (127.0.0.1;::1)" );

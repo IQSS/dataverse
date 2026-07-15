@@ -30,7 +30,7 @@ FROM $BASE_IMAGE
 ENV MP_CONFIG_PROFILE=ct
 
 # Workaround to configure upload directories by default to useful place until we can have variable lookups in
-# defaults for glassfish-web.xml and other places.
+# defaults for payara-web.xml and other places.
 ENV DATAVERSE_FILES_UPLOADS="${STORAGE_DIR}/uploads"
 ENV DATAVERSE_FILES_DOCROOT="${STORAGE_DIR}/docroot"
 
