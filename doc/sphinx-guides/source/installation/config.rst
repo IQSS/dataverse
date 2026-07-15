@@ -3920,6 +3920,19 @@ Instead of Croissant, use the legacy format (Schema.org JSON-LD) in the head of 
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_LEGACY_SCHEMAORG_IN_HTML_HEAD``.
 
+.. _dataverse.exports.schema-dot-org.max-files-for-download-entries:
+
+dataverse.exports.schema-dot-org.max-files-for-download-entries
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+To improve scalability for datasets with many files, you can limit the number of files included in the Schema.org JSON-LD output (both in the export format and the HTML header). When the number of files in a dataset version exceeds this threshold, individual file entries in the ``distribution`` field are replaced with a more compact ``potentialAction`` structure that search engines like Google can use to discover how to download files.
+
+By default, all files are included (effectively ``Integer.MAX_VALUE``).
+
+``./asadmin create-jvm-options '-Ddataverse.exports.schema-dot-org.max-files-for-download-entries=1000'``
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_EXPORTS_SCHEMA_DOT_ORG_MAX_FILES_FOR_DOWNLOAD_ENTRIES``.
+
 .. dataverse.ldn
 
 Linked Data Notifications (LDN) Allowed Hosts
