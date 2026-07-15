@@ -259,7 +259,7 @@ public enum FeatureFlags {
      * and it will graduate to the new default later.
      *
      * @apiNote Raise flag by setting "dataverse.feature.unify-api-response-message-style"
-     * @since Dataverse 6.10
+     * @since Dataverse 6.12
      */
     UNIFY_API_RESPONSE_MESSAGE_STYLE("unify-api-response-message-style"),
     
