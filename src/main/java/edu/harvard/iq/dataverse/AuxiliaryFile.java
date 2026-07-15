@@ -14,6 +14,7 @@ import jakarta.persistence.NamedNativeQueries;
 import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
  *
@@ -38,6 +39,7 @@ import jakarta.persistence.NamedQuery;
             query = "select distinct type from auxiliaryfile where datafile_id = ?1")
 })
 @Entity
+@Schema(description = "Metadata for an auxiliary file associated with a data file, including format, origin, visibility, size, checksum, and type.")
 public class AuxiliaryFile implements Serializable {
     
     @Id

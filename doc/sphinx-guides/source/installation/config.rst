@@ -1218,7 +1218,7 @@ You can configure this redirect properly in your cloud environment to generate a
 Amazon S3 Storage (or Compatible)
 +++++++++++++++++++++++++++++++++
 
-The Dataverse Software supports Amazon S3 storage as well as other S3-compatible stores (like Minio, Ceph RADOS S3 Gateway and many more) for files uploaded to your Dataverse installation.
+The Dataverse Software supports Amazon S3 storage as well as other S3-compatible stores (like Ceph RADOS S3 Gateway and many more) for files uploaded to your Dataverse installation.
 
 The Dataverse Software S3 driver supports multi-part upload for large files (over 1 GB by default - see the min-part-size option in the table below to change this).
 
@@ -1264,7 +1264,7 @@ Please make note of the following details:
 
 - **Endpoint URL** - consult the documentation of your service on how to find it.
 
-  * Example: https://play.minio.io:9000
+  * Example: http://localhost.localstack.cloud:4566
 
 - **Region:** Optional, but some services might use it. Consult your service documentation.
 
@@ -1460,11 +1460,6 @@ You may provide the values for these via any `supported MicroProfile Config API 
 
 Reported Working S3-Compatible Storage
 ######################################
-
-`Minio v2018-09-12 <https://minio.io>`_
-  Set ``dataverse.files.<id>.path-style-access=true``, as Minio works path-based. Works pretty smooth, easy to setup.
-  **Can be used for quick testing, too:** just use the example values above. Uses the public (read: unsecure and
-  possibly slow) https://play.minio.io:9000 service.
 
 `StorJ Object Store <https://www.storj.io>`_
  StorJ is a distributed object store that can be configured with an S3 gateway. Per the S3 Storage instructions above, you'll first set up the StorJ S3 store by defining the id, type, and label. After following the general installation, set the following configuration to use a StorJ object store: ``dataverse.files.<id>.chunked-encoding=false``. For step-by-step instructions see https://docs.storj.io/dcs/how-tos/dataverse-integration-guide/

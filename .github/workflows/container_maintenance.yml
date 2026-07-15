@@ -199,7 +199,7 @@ jobs:
       - configbaker-image
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       ### BASE IMAGE
       - name: Render README for base image
