@@ -1,4 +1,4 @@
-name: Container JSF Frontend Tests Workflow
+name: Dataverse JSF Frontend Tests Workflow
 
 on:
   workflow_dispatch:
@@ -22,11 +22,11 @@ on:
       - ".github/*.md"
 
 concurrency:
-  group: "container-jsf-frontend-tests-${{ github.ref }}"
+  group: "dataverse-jsf-frontend-tests-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
-  main-jsf-frontend-tests-workflow:
+  main-jsf-tests-workflow:
     runs-on: ubuntu-latest
     timeout-minutes: 90
 
