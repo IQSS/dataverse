@@ -14,7 +14,7 @@
       "isVisibleInUserInterface": true,
       "XMLNameSpace": "http://datacite.org/schema/kernel-4",
       "XMLSchemaLocation": "http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4.7/metadata.xsd",
-      "XMLSchemaVersion": "4.5"
+      "XMLSchemaVersion": "4.7"
     },
     "oai_dc": {
       "displayName": "Dublin Core",
