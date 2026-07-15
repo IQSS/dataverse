@@ -15,6 +15,8 @@ v6.12
 
   - **/api/admin/index/perms/{id}**
 
+- Whether file extensions are included in the "Content-disposition" header returned when downloading auxiliary files depends on whether the relevant format is one of the Mimetypes supported in Tika. A recent update to the version of Tika has added new mimetypes, including "text/markdown", and auxiliary files with these types now have a a file extension included (e.g. ".md" in this case) in the header.
+
 v6.11
 -----
 - The GET /api/mydata/retrieve, if the search returns no data, now includes the "data" block with 0 results. The message that was returned in "error_message" will be returned in "message" and the "success" will be `true`. All other errors will continue to reply with "success":false and the error message in "error_message".
