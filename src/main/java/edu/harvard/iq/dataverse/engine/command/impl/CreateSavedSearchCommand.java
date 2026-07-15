@@ -14,7 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.json.JsonObjectBuilder;
 
-@RequiredPermissions(Permission.PublishDataverse)
+@RequiredPermissions(Permission.LinkDataverse)
 public class CreateSavedSearchCommand extends AbstractCommand<SavedSearch> {
 
     private static final Logger logger = Logger.getLogger(SavedSearchServiceBean.class.getCanonicalName());

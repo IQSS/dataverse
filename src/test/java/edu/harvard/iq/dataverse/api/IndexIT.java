@@ -8,6 +8,7 @@ import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.ArrayList;
 import java.util.logging.Logger;
+import static jakarta.ws.rs.core.Response.Status.CONFLICT;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
 import org.junit.jupiter.api.AfterAll;
@@ -100,6 +101,36 @@ public class IndexIT {
       
     }
    
+    @Test
+    public void testIndexAllPermissionsConflict() {
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        UtilIT.makeSuperUser(username);
+
+        // Start indexing
+        Response startResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/admin/index/perms");
+        
+        // It might return 200 OK or 409 Conflict if someone else is already running it in the background
+        if (startResponse.getStatusCode() == OK.getStatusCode()) {
+            // Immediately try again
+            Response secondResponse = given()
+                    .header(API_TOKEN_HTTP_HEADER, apiToken)
+                    .post("/api/admin/index/perms");
+            
+            assertEquals(CONFLICT.getStatusCode(), secondResponse.getStatusCode());
+            secondResponse.then().assertThat()
+                    .body("message", equalTo("Asynchronous indexing of all permissions is already in progress."));
+        } else {
+            // If it was already in progress (e.g. from a previous test run or concurrent test), it should be 409
+            assertEquals(CONFLICT.getStatusCode(), startResponse.getStatusCode());
+        }
+        
+        UtilIT.deleteUser(username);
+    }
+
     @AfterEach
     public void tearDownDataverse() {
         }

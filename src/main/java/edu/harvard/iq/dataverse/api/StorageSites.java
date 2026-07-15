@@ -13,11 +13,18 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("admin/storageSites")
+@Tag(name = "Admin", description = "Administrative Dataverse operations.")
 public class StorageSites extends AbstractApiBean {
 
     @GET
+    @Operation(summary = "Lists storage sites",
+            description = "Returns all configured storage sites as JSON.")
     public Response listAll() {
         List<StorageSite> storageSites = storageSiteSvc.findAll();
         if (storageSites != null && !storageSites.isEmpty()) {
@@ -33,7 +40,11 @@ public class StorageSites extends AbstractApiBean {
 
     @GET
     @Path("{id}")
-    public Response get(@PathParam("id") long id) {
+    @Operation(summary = "Returns a storage site",
+            description = "Returns the configured storage site with the specified numeric id.")
+    public Response get(
+            @Parameter(description = "Numeric id of the storage site to return.", required = true)
+            @PathParam("id") long id) {
         StorageSite storageSite = storageSiteSvc.find(id);
         if (storageSite == null) {
             return error(Response.Status.NOT_FOUND, "Could not find a storage site based on id " + id + ".");
@@ -42,7 +53,11 @@ public class StorageSites extends AbstractApiBean {
     }
 
     @POST
-    public Response addSite(JsonObject jsonObject) {
+    @Operation(summary = "Creates a storage site",
+            description = "Parses and persists a storage site definition after validating that only one site is primary.")
+    public Response addSite(
+            @RequestBody(description = "Storage site definition to parse and persist.")
+            JsonObject jsonObject) {
         StorageSite toPersist = null;
         try {
             toPersist = StorageSiteUtil.parse(jsonObject);
@@ -65,7 +80,13 @@ public class StorageSites extends AbstractApiBean {
 
     @PUT
     @Path("{id}/primaryStorage")
-    public Response setPrimary(@PathParam("id") long id, String input) {
+    @Operation(summary = "Sets primary storage for a site",
+            description = "Updates the primary-storage flag for the specified storage site after validating the primary-site constraint.")
+    public Response setPrimary(
+            @Parameter(description = "Numeric id of the storage site to update.", required = true)
+            @PathParam("id") long id,
+            @RequestBody(description = "Boolean text indicating whether the storage site is primary.")
+            String input) {
         StorageSite toModify = storageSiteSvc.find(id);
         if (toModify == null) {
             return error(Response.Status.NOT_FOUND, "Could not find a storage site based on id " + id + ".");
@@ -84,7 +105,11 @@ public class StorageSites extends AbstractApiBean {
 
     @DELETE
     @Path("{id}")
-    public Response delete(@PathParam("id") long id) {
+    @Operation(summary = "Deletes a storage site",
+            description = "Deletes the configured storage site with the specified numeric id.")
+    public Response delete(
+            @Parameter(description = "Numeric id of the storage site to delete.", required = true)
+            @PathParam("id") long id) {
         boolean deleted = storageSiteSvc.delete(id);
         if (deleted) {
             return ok("Storage site id  " + id + " has been deleted.");

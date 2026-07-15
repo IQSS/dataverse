@@ -60,6 +60,7 @@ public class UtilIT {
 
     public static final String API_TOKEN_HTTP_HEADER = "X-Dataverse-key";
     private static final String USERNAME_KEY = "userName";
+    private static final String PERSISTENTUSERID_KEY = "persistentUserId";
     private static final String EMAIL_KEY = "email";
     private static final String API_TOKEN_KEY = "apiToken";
     private static final String BUILTIN_USER_KEY = "burrito";
@@ -310,6 +311,11 @@ public class UtilIT {
         JsonPath createdUser = JsonPath.from(createUserResponse.body().asString());
         String username = createdUser.getString("data.user." + USERNAME_KEY);
         logger.info("Username found in create user response: " + username);
+        //Support for when user is created via a call to /api/users/:me which doesn't return username
+        if( username == null ) {
+            username = createdUser.getString("data." + PERSISTENTUSERID_KEY);
+            logger.info("Username found via persistentUserId in create user response: " + username);
+        }
         return username;
     }
 
@@ -611,6 +617,13 @@ public class UtilIT {
         return requestSpec.get("/api/guestbooks/" + guestbookId );
     }
 
+    static Response updateGuestbook(Long guestbookId, String guestbookAsJson, String apiToken) {
+        RequestSpecification requestSpec = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(guestbookAsJson);
+        return requestSpec.put("/api/guestbooks/" + guestbookId );
+    }
+
     static Response getGuestbooks(String dataverseAlias, String apiToken) {
         return getGuestbooks(dataverseAlias, apiToken, false,null);
     }
@@ -625,6 +638,20 @@ public class UtilIT {
             requestSpec.queryParam("includeInherited", includeInherited);
         }
         return requestSpec.get("/api/guestbooks/" + dataverseAlias + "/list");
+    }
+
+    static Response getGuestbooksResponses(Long guestbookId, Integer offset, Integer limit, String apiToken) {
+        RequestSpecification requestSpec = given();
+        if (apiToken != null) {
+            requestSpec.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (offset != null) {
+            requestSpec.queryParam("offset", offset);
+        }
+        if (limit != null) {
+            requestSpec.queryParam("limit", limit);
+        }
+        return requestSpec.get("/api/guestbooks/" + guestbookId + "/responses");
     }
 
     static Response enableGuestbook(String dataverseAlias, Long guestbookId, String apiToken, String enable) {
@@ -1501,11 +1528,6 @@ public class UtilIT {
         return request.get("/api/files/" + fileId + "/versionDifferences");
     }
 
-    static Response testIngest(String fileName, String fileType) {
-        return given()
-                .get("/api/ingest/test/file?fileName=" + fileName + "&fileType=" + fileType);
-    }
-
     static Response redetectFileType(String fileId, boolean dryRun, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -2009,9 +2031,11 @@ public class UtilIT {
     }
     
     static Response getDataverseWithOwners(String alias,  String apiToken, boolean returnOwners) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/dataverses/"
+        RequestSpecification rs = given();
+        if(apiToken != null) {
+            rs = rs.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return rs.get("/api/dataverses/"
                         + alias
                         + (returnOwners ? "/?returnOwners=true" : ""));
     }
@@ -5422,7 +5446,25 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/dataverses/" + templateId + "/template");
     }
-    
+
+    static Response getReviews(String datasetIdOrPersistentId) {
+        return getReviews(datasetIdOrPersistentId, null);
+    }
+
+    static Response getReviews(String datasetIdOrPersistentId, String apiToken) {
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+        RequestSpecification responseSpec = given();
+        if (apiToken != null) {
+            responseSpec.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return responseSpec.get("/api/datasets/" + idInPath + "/reviews" + optionalQueryParam);
+    }
+
     /**
      * Gets the tool URL for a dataset with optional parameters
      * @param datasetId The ID of the dataset
@@ -5580,6 +5622,7 @@ public class UtilIT {
         gb.getCustomQuestions().get(0).setId(jsonPath.getLong("data.customQuestions[0].id"));
         gb.getCustomQuestions().get(1).setId(jsonPath.getLong("data.customQuestions[1].id"));
         gb.getCustomQuestions().get(2).setId(jsonPath.getLong("data.customQuestions[2].id"));
+        gb.getCustomQuestions().get(3).setId(jsonPath.getLong("data.customQuestions[3].id"));
 
         // Add the Guestbook to the Dataset
         if (persistentId != null) {
@@ -5594,11 +5637,14 @@ public class UtilIT {
         String guestbookAsJson = new String(Files.readAllBytes(Paths.get(guestbookJson.getAbsolutePath())));
 
         List<Long> cqIDs = new ArrayList<>();
-        gb.getCustomQuestions().stream().forEach(cq -> cqIDs.add(cq.getId()));
+        // Try to match the IDs. This is no easy task as the custom questions are not added to the db in order by id.
+        // We will use "displayOrder" to help match them up
+        gb.getCustomQuestions().stream().sorted(Comparator.comparing(CustomQuestion::getDisplayOrder)).forEach(cq -> cqIDs.add(cq.getId()));
 
         return guestbookAsJson.replace("@ID", gb.getId().toString())
                 .replace("@QID1", cqIDs.get(0).toString())
                 .replace("@QID2", cqIDs.get(1).toString())
-                .replace("@QID3", cqIDs.get(2).toString());
+                .replace("@QID3", cqIDs.get(2).toString())
+                .replace("@QID4", cqIDs.get(3).toString());
     }
 }

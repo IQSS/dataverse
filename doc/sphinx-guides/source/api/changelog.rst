@@ -7,9 +7,16 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.12
+-----
+- The permission reindexing endpoints have been updated to use ``POST`` and require superuser access. They are now documented in the :doc:`/admin/solr-search-index` guide.
+
+  - **/api/admin/index/perms**
+
+  - **/api/admin/index/perms/{id}**
+
 v6.11
 -----
-
 - The GET /api/mydata/retrieve, if the search returns no data, now includes the "data" block with 0 results. The message that was returned in "error_message" will be returned in "message" and the "success" will be `true`. All other errors will continue to reply with "success":false and the error message in "error_message".
 - The endpoints GET, PUT AND DELETE for `/api/admin/dataverse/{alias}/storageDriver` have been moved to `/api/dataverses/{alias}/storageDriver`.
 - The endpoint `/api/admin/dataverse/storageDrivers` has been moved and renamed to `/api/dataverses/{alias}/allowedStorageDrivers`. Regarding the change of the name, this endpoint will in the future only display the storageDrivers that are allowed on the specified collection, as of now, it will display the entire list of available Drivers on the installation.
@@ -17,6 +24,7 @@ v6.11
 
   - **/api/datasets/{Id}/submitForReview**
 
+- The ``GET /api/access/datafile/{id}/userPermissions`` endpoint now requires authentication.
 - The Croissant :ref:`metadata export format <metadata-export-formats>` has been updated from version 1.0 to 1.1, which is reflected in the ``conformsTo`` property. The unused ``wd`` property has been dropped.
 
 v6.10
