@@ -34,16 +34,16 @@ services:
       - "8686:8686" # JMX
     networks:
       - dataverse
-    # depends_on:
-    #  - postgres
-    #  - solr
-    #  - dv_initializer
+    depends_on:
+      - postgres
+      - solr
+      - dv_initializer
     volumes:
       - ./data/app/data:/dv
       - ./data/app/secrets:/secrets
-    # tmpfs:
-    #  - /dumps:mode=770,size=2052M,uid=1000,gid=1000
-    #  - /tmp:mode=770,size=2052M,uid=1000,gid=1000
+    tmpfs:
+      - /dumps:mode=1777,size=2052M
+      - /tmp:mode=1777,size=2052M
     mem_limit: 2147483648 # 2 GiB
     mem_reservation: 1024m
     privileged: false
@@ -103,7 +103,7 @@ services:
       - REMOVE_EXISTING=True
     command:
       - deploy
-    restart: "no"
+    restart: no
 
   postgres:
     container_name: "postgres"
@@ -113,8 +113,8 @@ services:
     environment:
       - POSTGRES_USER=dataverse
       - POSTGRES_PASSWORD=secret
-    # ports:
-    #  - "5432:5432"
+    ports:
+      - "5432:5432"
     networks:
       - dataverse
     volumes:
@@ -136,8 +136,8 @@ services:
     container_name: "solr"
     hostname: "solr"
     image: solr:9.8.0
-    # depends_on:
-    #  - solr_initializer
+    depends_on:
+      - solr_initializer
     restart: on-failure
     ports:
       - "8983:8983"
@@ -158,9 +158,9 @@ services:
     hostname: "smtp"
     image: maildev/maildev:2.0.5
     restart: on-failure
-    # ports:
-    #  - "25:25" # smtp server
-    #  - "1080:1080" # web ui
+    ports:
+      - "25:25" # smtp server
+      - "1080:1080" # web ui
     environment:
       - MAILDEV_SMTP_PORT=25
       - MAILDEV_MAIL_DIRECTORY=/mail
@@ -169,8 +169,7 @@ services:
     #volumes:
     #  - ./data/smtp/data:/mail
     tmpfs:
-    #  - /mail:mode=770,size=128M,uid=1000,gid=1000
-    - /mail:mode=770,size=128M
+      - /mail:mode=1777,size=128M
 
 networks:
   dataverse:
