@@ -77,7 +77,7 @@ Benefits: S3 offers several advantages over file storage:
 
 Challenges:
 
-- One additional step that is required to enable direct uploads via a Dataverse installation and for direct download to work with previewers and direct upload to work with DVWebloader (:ref:`folder-upload`) is to allow cross site (CORS) requests on your S3 store.
+- One additional step that is required to enable direct uploads via a Dataverse installation and for direct download to work with previewers and direct upload to work with DVWebloader (:ref:`folder-upload`) is to allow :ref:`cross site (CORS) requests on your S3 store <cors-s3-bucket>`.
 - Cost: S3 offers a pricing model that allows you to pay for the storage and transfer of data based on current usage (versus long term demand) but commercial 
   providers charge more per TB than the equivalent cost of a local disk (though commercial S3 storage is cheaper than commercial file storage).
   There can also be egress and other charges. Overall, S3 storage is generally more expensive than local file storage but cheaper than cloud file storage.

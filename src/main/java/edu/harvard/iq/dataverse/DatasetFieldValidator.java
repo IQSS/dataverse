@@ -59,10 +59,26 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
         }
 
         // if value is not primitive or not empty
-        if (!dsfType.isPrimitive() || !StringUtils.isBlank(value.getValue())) {
+        // For controlled vocabulary fields, check that actual CV values are selected,
+        // not just that datasetFieldValues contains something (which might be an invalid N/A placeholder)
+        // See https://github.com/IQSS/dataverse/issues/11900
+        if (!dsfType.isPrimitive()) {
             return true;
         }
-       
+
+        if (dsfType.isControlledVocabulary()) {
+            // For CV fields, check if there are actual controlled vocabulary values selected
+            if (value.getControlledVocabularyValues() != null && !value.getControlledVocabularyValues().isEmpty()) {
+                return true;
+            }
+            // If no CV values, fall through to required field check below
+        } else {
+            // For non-CV primitive fields, check if value is not blank
+            if (!StringUtils.isBlank(value.getValue())) {
+                return true;
+            }
+        }
+
         if (value.isRequired()) { 
             String errorMessage = null;
             DatasetFieldCompoundValue parent = value.getParentDatasetFieldCompoundValue();

@@ -19,6 +19,7 @@ import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @Table(indexes = {@Index(columnList="token")
 		, @Index(columnList="builtinuser_id")})
@@ -33,8 +34,10 @@ import jakarta.persistence.Table;
             query="DELETE FROM PasswordResetData prd WHERE prd.builtinUser = :user"),
 })
 @Entity
+@Schema(description = "Password reset token data used during built-in user account recovery and password compliance flows.")
 public class PasswordResetData implements Serializable {
      
+    @Schema(description = "Reason a password reset token was created.")
     public enum Reason {
         FORGOT_PASSWORD,
         NON_COMPLIANT_PASSWORD,
@@ -58,6 +61,7 @@ public class PasswordResetData implements Serializable {
      */
     @OneToOne
     @JoinColumn(nullable = false)
+    @Schema(hidden = true)
     private BuiltinUser builtinUser;
 
     @Column(nullable = false)
@@ -102,6 +106,7 @@ public class PasswordResetData implements Serializable {
         return token;
     }
 
+    @Schema(hidden = true)
     public BuiltinUser getBuiltinUser() {
         return builtinUser;
     }

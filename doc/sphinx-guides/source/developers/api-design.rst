@@ -14,13 +14,39 @@ OpenAPI
 
 As you add API endpoints, please be conscious that we are exposing these endpoints as an OpenAPI document at ``/openapi`` (e.g. http://localhost:8080/openapi ). See :ref:`openapi` in the API Guide for the user-facing documentation.
 
-We've played around with validation tools such as https://quobix.com/vacuum/ and https://pb33f.io/doctor/ only to discover that our OpenAPI output is less than ideal, generating various warnings and errors.
+OpenAPI Annotations
+~~~~~~~~~~~~~~~~~~~
+
+To keep our OpenAPI document at a reasonable quality, you must add annotations to API endpoints you are adding and editing. Here's an example:
+
+.. code-block:: java
+
+    @POST
+    @AuthRequired
+    @Path("/")
+    @Operation(summary = "Creates a license", description = "Creates a license when the authenticated user is a superuser and returns the created license location.")
+    @APIResponse(responseCode = "201", description = "License created with a Location header pointing to the new license.")
+    public Response addLicense(@Context ContainerRequestContext crc,
+            @RequestBody(description = "License definition to persist, including name, URI, active state, and sort order.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = SchemaType.OBJECT,
+                                    description = "License definition accepted by the license administration API.")))
+            License license) {
+    ...
+    }
+
+If you are looking for a reference about the annotations used to generate the OpenAPI document, you can find it in the `MicroProfile OpenAPI Specification <https://download.eclipse.org/microprofile/microprofile-open-api-3.1/microprofile-openapi-spec-3.1.html#_detailed_usage_of_key_annotations>`_.
+
+OpenAPI Quality
+~~~~~~~~~~~~~~~
+
+To use `vacuum <https://quobix.com/vacuum/>`_ with our recommended settings to check the quality of our OpenAPI document, see the :download:`README.md <../../../../scripts/openapi/README.md>` under ``scripts/openapi``.
 
 You can prevent additional problems in our OpenAPI document by observing the following practices:
 
 - When creating a method name within an API class, make it unique.
-
-If you are looking for a reference about the annotations used to generate the OpenAPI document, you can find it in the `MicroProfile OpenAPI Specification <https://download.eclipse.org/microprofile/microprofile-open-api-3.1/microprofile-openapi-spec-3.1.html#_detailed_usage_of_key_annotations>`_.
+- Check that HTTP GET and DELETE operations do not accept request bodies.
+- Various notes under :download:`vacuum-recommended.yaml <../../../../scripts/openapi/vacuum-recommended.yaml>`.
 
 Paths
 -----

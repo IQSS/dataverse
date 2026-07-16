@@ -254,6 +254,31 @@ public enum FeatureFlags {
      * flag makes a reason required, both in the UI and API.
      */
     REQUIRE_EMBARGO_REASON("require-embargo-reason"),
+
+    /**
+     * The croissant and croissantSlim metadata export formats can include an extra
+     * "reviews" array if local reviews exist.
+     */
+    CROISSANT_WITH_LOCAL_REVIEWS("croissant-with-local-reviews"),
+
+    /**
+     * Experimental: Allow Locally FAIR Data. With Locally FAIR, access to a
+     * collection and published data in it are restricited to people/groups
+     * specified. For a non-privileged user, the collection, datasets, and files
+     * will not be returned in search results, requests to access the relevant pages
+     * will fail with 404 responses, etc. This functionality is explicitly
+     * experimental at present and will be confusing and/or ineffective if other
+     * settings for the collection, datasets, files are not appopriate for Locally
+     * FAIR data. For example, using DataCite DOIs results in the datasets (and
+     * files is configured) being reported to DataCite and thus the fact of their
+     * existence and their metadata would be visible despite the Locally FAIR
+     * restriction. See the Guides for further considerations.
+     *
+     * @apiNote Raise flag by setting
+     *          "dataverse.feature.allow-locally-fair-data"
+     * @since Dataverse 6.10
+     */
+    ALLOW_LOCALLY_FAIR_DATA("allow-locally-fair-data"),
     ;
     
     final String flag;

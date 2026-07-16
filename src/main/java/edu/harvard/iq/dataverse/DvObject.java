@@ -11,6 +11,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import jakarta.persistence.*;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
  * Base of the object hierarchy for "anything that can be inside a dataverse".
@@ -58,6 +59,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     
     private static final Logger logger = Logger.getLogger(DvObject.class.getCanonicalName());
     
+    @Schema(description = "Dataverse object type discriminator for dataverses, datasets, and data files.")
     public enum DType {
         Dataverse("Dataverse"), Dataset("Dataset"),DataFile("DataFile");
        
@@ -519,5 +521,23 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
 
     @OneToMany(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     List<RoleAssignment> roleAssignments;
-    
+
+    /** Whether this object is locally FAIR which is determined by whether it is in a locallyFAIR collection.
+     * @return {@code true} if this object is locally FAIR and not publicly visible, {@code false} otherwise.
+     */
+    public boolean isLocallyFAIR() {
+        if( getOwner() != null ) {
+            return getOwner().isLocallyFAIR();
+        } else {
+            return false;
+        }
+    }
+
+    public Set<String> getLocallyFAIRRoleAssigneeIdentifiers() {
+        if(getOwner() != null) {
+            return getOwner().getLocallyFAIRRoleAssigneeIdentifiers();
+        } else {
+            return Collections.emptySet();
+        }
+    }
 }

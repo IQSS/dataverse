@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class DataRetrieverApiIT {
 
     private static final String ERR_MSG_FORMAT = "{\n    \"success\": false,\n    \"error_message\": \"%s\"\n}";
+    private static final String MSG_FORMAT = "{\n    \"success\": true,\n    \"message\": \"%s\"\n}";
 
     @BeforeAll
     public static void setUpClass() {
@@ -53,7 +54,9 @@ public class DataRetrieverApiIT {
         Response createSecondUserResponse = UtilIT.createRandomUser();
         String userIdentifier = UtilIT.getUsernameFromResponse(createSecondUserResponse);
         Response validUserIdentifierResponse = UtilIT.retrieveMyDataAsJsonString(superUserApiToken, userIdentifier, emptyRoleIdsList);
-        assertEquals(prettyPrintError("myDataFinder.error.result.no.role", null), validUserIdentifierResponse.prettyPrint());
+        String resp = validUserIdentifierResponse.prettyPrint();
+        assertTrue(resp.contains("\"success\": true"));
+        assertTrue(resp.contains(prettyPrintMessage("myDataFinder.error.result.no.role", null)));
         assertEquals(OK.getStatusCode(), validUserIdentifierResponse.getStatusCode());
 
         // Call as normal user with one valid role and no results
@@ -61,12 +64,16 @@ public class DataRetrieverApiIT {
         String normalUserUsername = UtilIT.getUsernameFromResponse(createNormalUserResponse);
         String normalUserApiToken = UtilIT.getApiTokenFromResponse(createNormalUserResponse);
         Response noResultwithOneRoleResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(5L)));
-        assertEquals(prettyPrintError("myDataFinder.error.result.role.empty", Arrays.asList("Dataset Creator")), noResultwithOneRoleResponse.prettyPrint());
+        resp = noResultwithOneRoleResponse.prettyPrint();
+        assertTrue(resp.contains("\"success\": true"));
+        assertTrue(resp.contains(prettyPrintMessage("myDataFinder.error.result.role.empty", Arrays.asList("Dataset Creator"))));
         assertEquals(OK.getStatusCode(), noResultwithOneRoleResponse.getStatusCode());
 
         // Call as normal user with multiple valid roles and no results
         Response noResultWithMultipleRoleResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(5L, 6L)));
-        assertEquals(prettyPrintError("myDataFinder.error.result.roles.empty", Arrays.asList("Dataset Creator, Contributor")), noResultWithMultipleRoleResponse.prettyPrint());
+        resp = noResultWithMultipleRoleResponse.prettyPrint();
+        assertTrue(resp.contains("\"success\": true"));
+        assertTrue(resp.contains(prettyPrintMessage("myDataFinder.error.result.roles.empty", Arrays.asList("Dataset Creator, Contributor"))));
         assertEquals(OK.getStatusCode(), noResultWithMultipleRoleResponse.getStatusCode());
 
         // Call as normal user with one valid dataset role and one dataset result
@@ -77,7 +84,7 @@ public class DataRetrieverApiIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, normalUserApiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
-        UtilIT.sleepForReindex(datasetId.toString(), normalUserApiToken, 4);
+        UtilIT.sleepForDatasetIndex(datasetId.toString(), normalUserApiToken);
         Response oneDatasetResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(6L)));
         assertEquals(OK.getStatusCode(), oneDatasetResponse.getStatusCode());
         JsonPath jsonPathOneDataset = oneDatasetResponse.getBody().jsonPath();
@@ -113,7 +120,6 @@ public class DataRetrieverApiIT {
     // Test getting a list of collections that the user can add datasets to
     @Test
     public void testRetrieveMyDataCollections() throws InterruptedException {
-        int rootCount = 1; // everyone has access to this dataverse
         List<Map<String, String>> items;
         Response createDataverseResponse;
         Response retrieveMyCollectionListResponse;
@@ -136,6 +142,11 @@ public class DataRetrieverApiIT {
         createUserResponse = UtilIT.createRandomUser();
         String User3Username = UtilIT.getUsernameFromResponse(createUserResponse);
         String User3ApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        // Get the base number of collections since it's not always 1 for root.
+        // There may be others left from another test that everyone can access
+        retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(User1ApiToken, null);
+        int rootCount = retrieveMyCollectionListResponse.getBody().jsonPath().getList("data.items").size();
 
         // User1 creates 15 Dataverses and adds a role to each allowing User2 access
         List<String> dataverses = new ArrayList<>();
@@ -176,10 +187,14 @@ public class DataRetrieverApiIT {
         // The count should show the list size to be only Root Dataverse count
         items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("data.items");
         assertEquals(rootCount, items.size());
-        // Verify the name and alias of the Root Dataverse. We don't know the id so just make sure it's in the response
-        assertNotNull(items.get(0).get("id"));
-        assertEquals("Root", items.get(0).get("name"));
-        assertEquals("root", items.get(0).get("alias"));
+        // Verify the alias of the Root Dataverse is in the response
+        boolean found = false;
+        for  (int i = 0; i < items.size(); i++) {
+            if ("root".equalsIgnoreCase(items.get(i).get("alias"))) {
+                found = true;
+            }
+        }
+        assertTrue(found, "Root dataverse not found in my collection list");
 
         // Superuser gets the list of Dataverses/Collections it has access to
         retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(superUserApiToken, null);
@@ -252,7 +267,10 @@ public class DataRetrieverApiIT {
 
         // Call as regular user with no result
         Response myDataEmptyResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
-        assertEquals(prettyPrintError("myDataFinder.error.result.role.empty", Arrays.asList("Contributor")), myDataEmptyResponse.prettyPrint());
+        //assertEquals(prettyPrintError("myDataFinder.error.result.role.empty", Arrays.asList("Contributor")), myDataEmptyResponse.prettyPrint());
+        String resp = myDataEmptyResponse.prettyPrint();
+        assertTrue(resp.contains("\"success\": true"));
+        assertTrue(resp.contains(prettyPrintMessage("myDataFinder.error.result.role.empty", Arrays.asList("Contributor"))));
         assertEquals(OK.getStatusCode(), myDataEmptyResponse.getStatusCode());
 
         // Create and publish a dataverse
@@ -272,13 +290,13 @@ public class DataRetrieverApiIT {
         createDatasetOneResponse.prettyPrint();
         Integer datasetOneId = UtilIT.getDatasetIdFromResponse(createDatasetOneResponse);
         String datasetOnePid = UtilIT.getDatasetPersistentIdFromResponse(createDatasetOneResponse);
-        UtilIT.sleepForReindex(datasetOneId.toString(), userApiToken, 4);
+        UtilIT.sleepForDatasetIndex(datasetOneId.toString(), userApiToken);
 
         Response createDatasetTwoResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, userApiToken);
         createDatasetTwoResponse.prettyPrint();
         Integer datasetTwoId = UtilIT.getDatasetIdFromResponse(createDatasetTwoResponse);
         String datasetTwoPid = UtilIT.getDatasetPersistentIdFromResponse(createDatasetTwoResponse);
-        UtilIT.sleepForReindex(datasetTwoId.toString(), userApiToken, 4);
+        UtilIT.sleepForDatasetIndex(datasetTwoId.toString(), userApiToken);
 
         // Request datasets belonging to user
         Response twoDatasetsInReviewResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
@@ -296,13 +314,13 @@ public class DataRetrieverApiIT {
         Response publishDatasetOne = UtilIT.publishDatasetViaNativeApi(datasetOneId, "major", superUserApiToken);
         publishDatasetOne.prettyPrint();
         publishDatasetOne.then().assertThat().statusCode(OK.getStatusCode());
-        UtilIT.sleepForReindex(datasetOneId.toString(), userApiToken, 4);
+        UtilIT.sleepForDatasetIndex(datasetOneId.toString(), userApiToken);
 
         // Publish dataset 2
         Response publishDatasetTwo = UtilIT.publishDatasetViaNativeApi(datasetTwoId, "major", superUserApiToken);
         publishDatasetTwo.prettyPrint();
         publishDatasetTwo.then().assertThat().statusCode(OK.getStatusCode());
-        UtilIT.sleepForReindex(datasetTwoId.toString(), userApiToken, 4);
+        UtilIT.sleepForDatasetIndex(datasetTwoId.toString(), userApiToken);
 
         // Request datasets belonging to user
         Response twoPublishedDatasetsResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
@@ -317,11 +335,11 @@ public class DataRetrieverApiIT {
         assertEquals("RELEASED", jsonPathTwoPublishedDatasets.getString("data.items[1].versionState"));
 
         // Create new draft version of dataset 1 by updating metadata
-        String pathToJsonFilePostPub= "doc/sphinx-guides/source/_static/api/dataset-add-metadata-after-pub.json";
+        String pathToJsonFilePostPub = "doc/sphinx-guides/source/_static/api/dataset-add-metadata-after-pub.json";
         Response addDataToPublishedVersion = UtilIT.addDatasetMetadataViaNative(datasetOnePid, pathToJsonFilePostPub, userApiToken);
         addDataToPublishedVersion.prettyPrint();
         addDataToPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
-        UtilIT.sleepForReindex(datasetOneId.toString(), userApiToken, 4);
+        UtilIT.sleepForDatasetIndex(datasetOneId.toString(), userApiToken);
 
         // Request datasets belonging to user
         Response twoPublishedDatasetsOneDraftResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
@@ -345,7 +363,7 @@ public class DataRetrieverApiIT {
         Response uploadImage = UtilIT.uploadFileViaNative(datasetTwoId.toString(), pathToFile, userApiToken);
         uploadImage.prettyPrint();
         uploadImage.then().assertThat().statusCode(OK.getStatusCode());
-        UtilIT.sleepForReindex(datasetTwoId.toString(), userApiToken, 4);
+        UtilIT.sleepForDatasetIndex(datasetTwoId.toString(), userApiToken);
 
         // Request datasets belonging to user
         Response twoPublishedDatasetsTwoDraftsResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
@@ -368,7 +386,7 @@ public class DataRetrieverApiIT {
         Response publishDatasetOneMinor = UtilIT.publishDatasetViaNativeApi(datasetOneId, "minor", superUserApiToken);
         publishDatasetOneMinor.prettyPrint();
         publishDatasetOneMinor.then().assertThat().statusCode(OK.getStatusCode());
-        UtilIT.sleepForReindex(datasetOneId.toString(), userApiToken, 4);
+        UtilIT.sleepForDatasetIndex(datasetOneId.toString(), userApiToken);
 
         // Request datasets belonging to user
         Response oneMinorOneMajorOneDraftDatasetResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
@@ -424,7 +442,7 @@ public class DataRetrieverApiIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         String datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse).toString();
         
-        UtilIT.sleepForReindex(datasetId, apiToken, 5);
+        UtilIT.sleepForDatasetIndex(datasetId, apiToken);
         
         Response myDataWithAuthor = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&metadata_fields=citation:author");
         myDataWithAuthor.prettyPrint();
@@ -477,7 +495,7 @@ public class DataRetrieverApiIT {
 
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
 
-        UtilIT.sleepForReindex(datasetPid, apiToken, 5);
+        UtilIT.sleepForDatasetIndex(datasetPid, apiToken);
         
         // Test that the Dataverse collection that the dataset was created in is returned
         Response myDataResponse = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&show_collections=true");
@@ -501,7 +519,7 @@ public class DataRetrieverApiIT {
 
         UtilIT.linkDataset(datasetPid, dataverse2Alias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
 
-        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
+        UtilIT.sleepForDatasetIndex(String.valueOf(datasetId), apiToken);
 
         // Test that the Dataverse collection that the dataset was linked to is also returned
         myDataResponse = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&show_collections=true");
@@ -524,5 +542,15 @@ public class DataRetrieverApiIT {
             errorMessage = BundleUtil.getStringFromBundle(resourceBundleKey, params);
         }
         return String.format(ERR_MSG_FORMAT, errorMessage.replaceAll("\"", "\\\\\""));
+    }
+
+    private static String prettyPrintMessage(String resourceBundleKey, List<String> params) {
+        final String message;
+        if (params == null || params.isEmpty()) {
+            message = BundleUtil.getStringFromBundle(resourceBundleKey);
+        } else {
+            message = BundleUtil.getStringFromBundle(resourceBundleKey, params);
+        }
+        return  message.replaceAll("\"", "\\\\\"");
     }
 }
