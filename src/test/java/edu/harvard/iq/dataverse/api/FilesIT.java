@@ -3874,7 +3874,6 @@ public class FilesIT {
     @Test
     public void testDownloadFileWithGuestbookResponse() throws IOException, JsonParseException {
         msgt("testDownloadFileWithGuestbookResponse");
-        UtilIT.enableSetting(SettingsServiceBean.Key.FilePIDsEnabled);
         // Create superuser
         Response createUserResponse = UtilIT.createRandomUser();
         assertEquals(200, createUserResponse.getStatusCode());
@@ -3882,8 +3881,16 @@ public class FilesIT {
         String superusername = UtilIT.getUsernameFromResponse(createUserResponse);
         UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
 
+        // Create Parent Dataverse
+        String parentDataverseAlias = createDataverseGetAlias(ownerApiToken);
+        Response publishResponse = UtilIT.publishDataverseViaNativeApi(parentDataverseAlias, ownerApiToken);
+        assertEquals(200, publishResponse.getStatusCode());
+        // Create a Parent Guestbook
+        Guestbook parentGuestbook = UtilIT.createRandomGuestbook(parentDataverseAlias, null, ownerApiToken);
+
         // Create Dataverse
         String dataverseAlias = createDataverseGetAlias(ownerApiToken);
+        UtilIT.moveDataverse(dataverseAlias, parentDataverseAlias, null, ownerApiToken);
 
         // Create user with no permission
         createUserResponse = UtilIT.createRandomUser();
@@ -3919,6 +3926,10 @@ public class FilesIT {
         getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken);
         getGuestbooksResponse.then().assertThat().statusCode(200);
         assertEquals(1, getGuestbooksResponse.getBody().jsonPath().getList("data").size());
+        // Get the list of Guestbooks including Parent Guestbook
+        getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, false, Boolean.TRUE);
+        getGuestbooksResponse.then().assertThat().statusCode(200);
+        assertEquals(2, getGuestbooksResponse.getBody().jsonPath().getList("data").size());
 
         // Upload files
         JsonObjectBuilder json1 = Json.createObjectBuilder().add("description", "my description1").add("directoryLabel", directoryLabel).add("categories", Json.createArrayBuilder().add("Data"));
@@ -3936,6 +3947,8 @@ public class FilesIT {
         uploadResponse.prettyPrint();
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
         Integer fileId3 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        UtilIT.enableSetting(SettingsServiceBean.Key.FilePIDsEnabled);
         JsonObjectBuilder json4 = Json.createObjectBuilder().add("description", "my description4").add("directoryLabel", directoryLabel).add("categories", Json.createArrayBuilder().add("Data"));
         uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/Robot-Icon_2.png", json4.build(), ownerApiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -3995,6 +4008,7 @@ public class FilesIT {
                 .statusCode(BAD_REQUEST.getStatusCode());
         String guestbookResponseForGuest = guestbookResponse.replace("\"guestbookResponse\": {",
                 "\"guestbookResponse\": { \"name\":\"My Name\", \"email\":\"myemail@example.com\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
+
         // With GuestbookResponse. Guest user doesn't have the required Name, etc. So we will add those to the Guestbook Response
         downloadResponse = UtilIT.postDownloadFile(fileId4, guestbookResponseForGuest);
         downloadResponse.prettyPrint();
@@ -4019,6 +4033,12 @@ public class FilesIT {
         downloadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+
+        // Verify that the Guestbook Response is persisted
+        Response guestbookResponseResponse = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), ownerApiToken);
+        guestbookResponseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(guestbookResponseResponse.prettyPrint().contains("What color car do you drive,Yellow"));
 
         // Download the file using the signed url
         signedUrlResponse = get(signedUrl);
@@ -4078,6 +4098,42 @@ public class FilesIT {
         // verify that the signed url is good
         signedUrlResponse = get(signedUrl);
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+
+        // Verify that the guestbook has proper stats
+        Response guestbookListResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, true, null);
+        guestbookListResponse.prettyPrint();
+        guestbookListResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].usageCount", is(1))
+                .body("data[0].responseCount", is(17));
+
+        // Test Get All Responses
+        Response guestbookListResponses = UtilIT.getGuestbooksResponses(guestbook.getId(), null, null, ownerApiToken);
+        guestbookListResponses.prettyPrint();
+        guestbookListResponses.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        JsonPath jsonPath = JsonPath.from(guestbookListResponses.body().asString());
+        int totalCount = jsonPath.getList("data.responses").size();
+        assertTrue(totalCount > 0);
+        assertNotNull(jsonPath.getString("data.responses[0].name"));
+
+        // Test Get Responses with pagination
+        int pages = 4; // total should be 17. set to 4 pages
+        int limit = (totalCount / pages) + 1; // should be 5 per page. we should see 5, 5, 5, 2
+        int pagedTotalCount = 0;
+        int totalCountFromJson = 0;
+        for (int i = 0; i < pages; i++) {
+            int offset = limit * i;
+            guestbookListResponses = UtilIT.getGuestbooksResponses(guestbook.getId(), offset, limit, ownerApiToken);
+            guestbookListResponses.prettyPrint();
+            jsonPath = JsonPath.from(guestbookListResponses.body().asString());
+            pagedTotalCount += jsonPath.getList("data.responses").size();
+            totalCountFromJson = jsonPath.getInt("data.pagination.totalResponses");
+            // 'No duplicate ids' was manually verified. Just make sure the count is good. If there were duplicates the count would be high
+        }
+        // verify all counts are good and equal
+        assertEquals(totalCount, pagedTotalCount);
+        assertEquals(pagedTotalCount, totalCountFromJson);
     }
 
     @Test

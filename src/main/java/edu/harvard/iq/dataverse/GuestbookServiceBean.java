@@ -33,6 +33,17 @@ public class GuestbookServiceBean implements java.io.Serializable {
             return List.of();
         }
     }
+    // Get all guestbooks for this collection and it's parent collections
+    public List<Guestbook> findEffectiveGuestbooksForGivenDataverse(Dataverse dataverse) {
+        List<Guestbook> guestbooks = findGuestbooksForGivenDataverse(dataverse);
+        if (dataverse != null) {
+            List<Dataverse> parentDataverses = dataverse.getOwners();
+            for (Dataverse dv : parentDataverses) {
+                guestbooks.addAll(findGuestbooksForGivenDataverse(dv));
+            }
+        }
+        return guestbooks;
+    }
 
     public Long findCountUsages(Long guestbookId, Long dataverseId) {
         String queryString = "";

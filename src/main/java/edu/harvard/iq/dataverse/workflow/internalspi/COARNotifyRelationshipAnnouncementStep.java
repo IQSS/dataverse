@@ -205,7 +205,7 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
      */
     JsonArray getObjects(WorkflowContext ctxt, Map<String, DatasetField> fields) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
-        Map<String, String> localContext = new HashMap<String, String>();
+        Map<String, JsonValue> localContext = new HashMap<>();
         Map<Long, JsonObject> emptyCvocMap = new HashMap<Long, JsonObject>();
 
         Dataset d = ctxt.getDataset();
@@ -238,7 +238,7 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
     }
 
     private JsonObject getRelationshipObject(DatasetFieldType dft, JsonValue jval, Dataset d,
-            Map<String, String> localContext) {
+            Map<String, JsonValue> localContext) {
         if (logger.isLoggable(Level.FINE)) {
             if (jval.getValueType().equals(jakarta.json.JsonValue.ValueType.OBJECT)) {
                 logger.fine("Parsing : " + JsonUtil.prettyPrint(jval.asJsonObject()));

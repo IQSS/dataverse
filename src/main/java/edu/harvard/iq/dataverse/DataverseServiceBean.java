@@ -551,28 +551,30 @@ public class DataverseServiceBean implements java.io.Serializable {
         return dataverseList;
     }
 
-    public List<Dataverse> removeUnlinkableDataverses(List<Dataverse> allWithPerms, DvObject dvo) {
+    public List<Dataverse> removeUnlinkableDataverses(List<Dataverse> allWithPerms, DvObject dvo, boolean removeAlreadyLinked) {
         List<Dataverse> dataverseList = new ArrayList<>();
         Dataset linkedDataset = null;
         Dataverse linkedDataverse = null;
-        List<Object> alreadyLinkeddv_ids;
-
-        if ((dvo instanceof Dataset)) {
-            linkedDataset = (Dataset) dvo;
-            alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id FROM datasetlinkingdataverse WHERE dataset_id = " + linkedDataset.getId()).getResultList();
-        } else {
-            linkedDataverse = (Dataverse) dvo;
-            alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id FROM dataverselinkingdataverse WHERE dataverse_id = " + linkedDataverse.getId()).getResultList();
-        }
 
         List<Dataverse> remove = new ArrayList<>();
 
-        if (alreadyLinkeddv_ids != null && !alreadyLinkeddv_ids.isEmpty()) {
-            alreadyLinkeddv_ids.stream().map((testDVId) -> this.find(testDVId)).forEachOrdered((removeIt) -> {
-                remove.add(removeIt);
-            });
+        if (removeAlreadyLinked) {
+            List<Object> alreadyLinkeddv_ids;
+
+            if ((dvo instanceof Dataset)) {
+                linkedDataset = (Dataset) dvo;
+                alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id FROM datasetlinkingdataverse WHERE dataset_id = " + linkedDataset.getId()).getResultList();
+            } else {
+                linkedDataverse = (Dataverse) dvo;
+                alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id FROM dataverselinkingdataverse WHERE dataverse_id = " + linkedDataverse.getId()).getResultList();
+            }
+
+            if (alreadyLinkeddv_ids != null && !alreadyLinkeddv_ids.isEmpty()) {
+                alreadyLinkeddv_ids.stream().map((testDVId) -> this.find(testDVId)).forEachOrdered((removeIt) -> {
+                    remove.add(removeIt);
+                });
+            }
         }
-        
 
         if (dvo instanceof Dataverse dataverse) {
             remove.add(dataverse);
@@ -596,8 +598,11 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         return dataverseList;
     }
-    
-  
+
+    public List<Dataverse> removeUnlinkableDataverses(List<Dataverse> allWithPerms, DvObject dvo) {
+        return removeUnlinkableDataverses(allWithPerms, dvo, true);
+    }
+
     public List<Dataverse> filterDataversesForUnLinking(String query, DataverseRequest req, Dataset dataset) {
         List<Object> alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id FROM datasetlinkingdataverse WHERE dataset_id = " + dataset.getId()).getResultList();
         List<Dataverse> dataverseList = new ArrayList<>();
