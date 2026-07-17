@@ -6,18 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Logger;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonException;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
-import jakarta.json.JsonValue;
-import jakarta.json.JsonWriter;
-import jakarta.json.JsonWriterFactory;
+
+import jakarta.json.*;
 import jakarta.json.stream.JsonGenerator;
 
 public class JsonUtil {
@@ -162,5 +154,28 @@ public class JsonUtil {
                 }
             }
         }
+    }
+
+    /**
+     * Caches builderFactory for creating JSON object and array builders
+     * Avoids a repeatedly classpath scan for JsonObjectBuilder and JsonArrayBuilder
+     * by initializing the builderFactory once
+     */
+    private static final JsonBuilderFactory builderFactory = Json.createBuilderFactory(Map.of());
+
+    /**
+     * Creates a new JSON ObjectBuilder
+     * @return the ObjectBuilder
+     */
+    public static JsonObjectBuilder createObjectBuilder() {
+        return builderFactory.createObjectBuilder();
+    }
+
+    /**
+     * Creates a new JSON ArrayBuilder
+     * @return the ArrayBuilder
+     */
+    public static JsonArrayBuilder createArrayBuilder() {
+        return builderFactory.createArrayBuilder();
     }
 }
