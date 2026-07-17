@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -255,7 +256,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     // PUBLISH DATASET
     public boolean canIssuePublishDatasetCommand(DvObject dvo){
         User u = session.getUser();
-        if (u != null && u.isSuperuser()) {
+        if (u instanceof AuthenticatedUser && permissionService.isPowerUser((AuthenticatedUser) u, dvo)) {
             return true;
         }
         // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
@@ -316,7 +317,12 @@ public class PermissionsWrapper implements java.io.Serializable {
     public boolean authUsersCanCreateDataversesInDataverse(Dataverse dataverse) {
         return authenticatedUsersCanIssueCommand(dataverse, CreateDataverseCommand.class);
     }
-    
+
+    public boolean isPowerUserOn(DvObject dvo) {
+        User u = session.getUser();
+        return (u instanceof AuthenticatedUser && permissionService.isPowerUser((AuthenticatedUser) u, dvo));
+    }
+
     // todo: move any calls to this to call NavigationWrapper   
     @Inject NavigationWrapper navigationWrapper;
     

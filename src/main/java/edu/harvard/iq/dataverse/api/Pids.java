@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePidCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReservePidCommand;
@@ -48,7 +49,7 @@ public class Pids extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPid(@Context ContainerRequestContext crc, @QueryParam("persistentId") String persistentId) {
         User user = getRequestUser(crc);
-        if (!user.isSuperuser()) {
+        if (!user.isAuthenticated() || permissionSvc.isPowerUser((AuthenticatedUser) user,)) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
         }
 

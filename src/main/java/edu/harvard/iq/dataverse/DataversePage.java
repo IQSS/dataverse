@@ -208,7 +208,7 @@ public class DataversePage implements java.io.Serializable {
     
     public boolean showLinkingPopup() {
         String testquery = "";
-        if (session.getUser() == null) {
+        if (session.getUser() == null || !session.getUser().isAuthenticated()) {
             return false;
         }
         if (dataverse == null) {
@@ -218,7 +218,7 @@ public class DataversePage implements java.io.Serializable {
             testquery = query;
         }
 
-        return (session.getUser().isSuperuser() && (dataverse.getOwner() != null || !testquery.isEmpty()));
+        return (permissionService.isPowerUser((AuthenticatedUser) session.getUser(), dataverse) && (dataverse.getOwner() != null || !testquery.isEmpty()));
     }
     
     public void setupLinkingPopup (String popupSetting){

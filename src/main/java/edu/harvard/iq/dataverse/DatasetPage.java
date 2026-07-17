@@ -1512,16 +1512,13 @@ public class DatasetPage implements java.io.Serializable {
      * For use in the Dataset page
      * @return
      */
-    public boolean isSuperUser(){
+    public boolean isPowerUserOnDataset(){
 
         if (!this.isSessionUserAuthenticated()){
             return false;
         }
 
-        if (this.session.getUser().isSuperuser()){
-            return true;
-        }
-        return false;
+        return permissionService.isPowerUser((AuthenticatedUser) session.getUser(), dataset);
     }
     /**
      * Check Dataset related permissions
@@ -4161,7 +4158,7 @@ public class DatasetPage implements java.io.Serializable {
                     // have been created in the dataset.
                     dataset = datasetService.find(dataset.getId());
 
-                    boolean ignoreUploadFileLimits = this.session.getUser() != null ? this.session.getUser().isSuperuser() : false;
+                    boolean ignoreUploadFileLimits = isPowerUserOnDataset();
                     List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getOrCreateEditVersion(), newFiles, null, true, ignoreUploadFileLimits);
                     if (filesAdded.size() < nNewFiles) {
                         // Not all files were saved
@@ -6611,7 +6608,7 @@ public class DatasetPage implements java.io.Serializable {
             }
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
                 for (FileMetadata fm : embargoFMs) {
-                    if (fm.getDataFile().equals(fmd.getDataFile()) && (isSuperUser()||!fmd.getDataFile().isReleased())) {
+                    if (fm.getDataFile().equals(fmd.getDataFile()) && (isPowerUserOnDataset()||!fmd.getDataFile().isReleased())) {
                         Embargo emb = fmd.getDataFile().getEmbargo();
                         if (emb != null) {
                             logger.fine("Before: " + emb.getDataFiles().size());
@@ -6806,7 +6803,7 @@ public class DatasetPage implements java.io.Serializable {
             }
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
                 for (FileMetadata fm : retentionFMs) {
-                    if (fm.getDataFile().equals(fmd.getDataFile()) && (isSuperUser()||!fmd.getDataFile().isReleased())) {
+                    if (fm.getDataFile().equals(fmd.getDataFile()) && (isPowerUserOnDataset()||!fmd.getDataFile().isReleased())) {
                         Retention ret = fmd.getDataFile().getRetention();
                         if (ret != null) {
                             logger.fine("Before: " + ret.getDataFiles().size());

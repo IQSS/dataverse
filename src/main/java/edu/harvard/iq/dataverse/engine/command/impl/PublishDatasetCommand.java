@@ -96,7 +96,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         // Perform any optional validation steps, if defined:
         if (ctxt.systemConfig().isExternalDatasetValidationEnabled()) {
             // For admins, an override of the external validation step may be enabled: 
-            if (!(getUser().isSuperuser() && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
+            if (!(ctxt.permissions().isPowerUser((AuthenticatedUser) getUser(), theDataset) && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
                 String executable = ctxt.systemConfig().getDatasetValidationExecutable();
                 boolean result = validateDatasetMetadataExternally(theDataset, executable, getRequest());
             
@@ -233,7 +233,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             }
 
             List<FileMetadata> files = getDataset().getLatestVersion().getFileMetadatas();
-            if ((files == null || files.isEmpty()) && getEffectiveRequiresFilesToPublishDataset()) {
+            if ((files == null || files.isEmpty()) && getRequiresFilesToPublishOrReviewDataset(ctxt)) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.mayNotPublish.FilesRequired"), this);
             }
         }

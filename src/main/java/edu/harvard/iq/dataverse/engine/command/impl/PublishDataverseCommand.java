@@ -46,7 +46,7 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
         // Perform any optional validation steps, if defined:
         if (ctxt.systemConfig().isExternalDataverseValidationEnabled()) {
             // For admins, an override of the external validation step may be enabled: 
-            if (!(getUser().isSuperuser() && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
+            if (!(ctxt.permissions().isPowerUser((AuthenticatedUser) getUser(), dataverse) && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
                 String executable = ctxt.systemConfig().getDataverseValidationExecutable();
                 boolean result = validateDataverseMetadataExternally(dataverse, executable, getRequest());
             

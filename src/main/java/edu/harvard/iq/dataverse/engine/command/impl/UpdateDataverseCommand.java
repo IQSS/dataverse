@@ -57,7 +57,7 @@ public class UpdateDataverseCommand extends AbstractWriteDataverseCommand {
         // Perform any optional validation steps, if defined:
         if (ctxt.systemConfig().isExternalDataverseValidationEnabled()) {
             // For admins, an override of the external validation step may be enabled:
-            if (!(getUser().isSuperuser() && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
+            if (!(getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUser((AuthenticatedUser) getUser(), dataverse) && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
                 String executable = ctxt.systemConfig().getDataverseValidationExecutable();
                 boolean result = validateDataverseMetadataExternally(dataverse, executable, getRequest());
 
@@ -67,7 +67,7 @@ public class UpdateDataverseCommand extends AbstractWriteDataverseCommand {
                 }
             }
         }
-        if (!getUser().isSuperuser() && updatedDataverseDTO != null) {
+        if (!(getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUser((AuthenticatedUser) getUser(), dataverse)) && updatedDataverseDTO != null) {
             // default if not set
             if (updatedDataverseDTO.getDatasetFileCountLimit() == null) {
                 updatedDataverseDTO.setDatasetFileCountLimit(dataverse.getDatasetFileCountLimit());

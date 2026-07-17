@@ -1594,7 +1594,7 @@ public class AddReplaceFileHelper{
         }
         
         int nFiles = finalFileList.size();
-        boolean ignoreUploadFileLimits = dvRequest.getAuthenticatedUser() != null ? dvRequest.getAuthenticatedUser().isSuperuser() : false;
+        boolean ignoreUploadFileLimits = dvRequest.getAuthenticatedUser() != null ? permissionService.isPowerUser(dvRequest.getAuthenticatedUser(), workingVersion.getDataset()) : false;
         finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace, tabIngest, ignoreUploadFileLimits);
 
         if (nFiles != finalFileList.size()) {
@@ -2065,7 +2065,7 @@ public class AddReplaceFileHelper{
                 workingVersion = dataset.getOrCreateEditVersion();
                 clone = workingVersion.cloneDatasetVersion();
 
-                if (!authUser.isSuperuser()) {
+                if (!(authUser instanceof AuthenticatedUser) || !permissionService.isPowerUser((AuthenticatedUser) authUser, dataset)) {
                     Integer effectiveDatasetFileCountLimit = dataset.getEffectiveDatasetFileCountLimit();
                     boolean hasFileCountLimit = dataset.isDatasetFileCountLimitSet(effectiveDatasetFileCountLimit);
                     if (hasFileCountLimit) {

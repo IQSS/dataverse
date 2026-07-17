@@ -63,8 +63,8 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         boolean removeGuestbook = false, removeTemplate = false, removeFeatDv = false, removeMetadataBlock = false, removeLinkDv = false, removeLinkDs = false;
         
         // first check if user is a superuser
-        if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
-            throw new PermissionException(BundleUtil.getStringFromBundle("command.exception.only.superusers", Arrays.asList(this.toString())),
+        if (!(getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUser((AuthenticatedUser) getUser(), moved))) {
+            throw new PermissionException(BundleUtil.getStringFromBundle("command.exception.only.powerusers", Arrays.asList(this.toString())),
                     this, Collections.singleton(Permission.DeleteDataverse), moved);
         }
 

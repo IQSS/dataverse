@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
 import java.io.IOException;
@@ -48,8 +49,8 @@ public class UningestFileCommand extends AbstractVoidCommand  {
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         
         // first check if user is a superuser
-        if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
-            throw new PermissionException("Uningest File can only be called by Superusers.", this,
+        if (!(getUser() instanceof AuthenticatedUser) || !ctxt.permissions().isPowerUser((AuthenticatedUser) getUser(), uningest)) {
+            throw new PermissionException(BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"), this,
                     Collections.singleton(Permission.EditDataset), uningest);
         }
         

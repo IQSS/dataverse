@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -52,8 +53,8 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-        if (!getUser().isSuperuser()) {
-            throw new IllegalCommandException("Only superusers can curate published dataset versions", this);
+        if (!(getUser() instanceof AuthenticatedUser) || !ctxt.permissions().isPowerUser((AuthenticatedUser) getUser(), getDataset())) {
+            throw new IllegalCommandException("Only superusers or those with scopedPowerAdmin permission on the dataset can curate published dataset versions", this);
         }
         Dataset savedDataset = null;
         // Merge the dataset into our JPA context

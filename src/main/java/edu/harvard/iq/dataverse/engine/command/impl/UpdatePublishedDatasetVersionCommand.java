@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -34,9 +35,9 @@ public class UpdatePublishedDatasetVersionCommand extends AbstractCommand<Datase
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-        // Check if the user is a superuser
-        if (!getUser().isSuperuser()) {
-            throw new IllegalCommandException("Only superusers can update published dataset versions", this);
+        // Check if the user is a superuser or power user
+        if (!(getUser() instanceof AuthenticatedUser) || !ctxt.permissions().isPowerUser((AuthenticatedUser) getUser(), datasetVersion.getDataset())) {
+            throw new IllegalCommandException("Only superusers or power users can update published dataset versions", this);
         }
 
         // Ensure the version is published

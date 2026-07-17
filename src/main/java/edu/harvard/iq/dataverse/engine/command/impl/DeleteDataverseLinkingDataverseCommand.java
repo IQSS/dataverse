@@ -42,8 +42,8 @@ public class DeleteDataverseLinkingDataverseCommand extends AbstractCommand<Data
 
     @Override
     public Dataverse execute(CommandContext ctxt) throws CommandException {
-        if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
-            throw new PermissionException("Delete dataverse linking dataverse can only be called by superusers.",
+        if (!(getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUser((AuthenticatedUser) getUser(), editedDv))) {
+            throw new PermissionException("Delete dataverse linking dataverse can only be called by superusers or power users.",
                     this, Collections.singleton(Permission.DeleteDataverse), editedDv);
         }
         Dataverse merged = ctxt.em().merge(editedDv);

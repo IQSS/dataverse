@@ -729,8 +729,9 @@ public class Files extends AbstractApiBean {
         AuthenticatedUser u;
         try {
             u = getRequestAuthenticatedUserOrDie(crc);
-            if (!u.isSuperuser()) {
-                return error(FORBIDDEN, "This API call can be used by superusers only");
+            DataFile dataFile = findDataFileOrDie(id);
+            if (!permissionSvc.isPowerUser(u, dataFile)) {
+                return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -820,12 +821,10 @@ public class Files extends AbstractApiBean {
     public Response extractNcml(@Context ContainerRequestContext crc, @PathParam("id") String id) {
         try {
             AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
-            if (!au.isSuperuser()) {
-                // We can always make a command in the future if there's a need
-                // for non-superusers to call this API.
-                return error(FORBIDDEN, "This API call can be used by superusers only");
-            }
             DataFile dataFileIn = findDataFileOrDie(id);
+            if (!permissionSvc.isPowerUser(au, dataFileIn)) {
+                return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+            }
             java.nio.file.Path tempLocationPath = null;
             boolean successOrFail = ingestService.extractMetadataNcml(dataFileIn, tempLocationPath);
             NullSafeJsonBuilder result = NullSafeJsonBuilder.jsonObjectBuilder()

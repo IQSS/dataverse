@@ -157,15 +157,6 @@ public class HarvestingClients extends AbstractApiBean {
         // Per the discussion during the QA of PR #9174, we decided to make 
         // the create/edit APIs superuser-only (the delete API was already so)
         try {
-            User u = getRequestUser(crc);
-            if ((!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
-                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can create harvesting clients."));
-            }
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
- 
-        try {
             JsonObject json = JsonUtil.getJsonObject(jsonBody);
             
             // Check that the client with this name doesn't exist yet: 
@@ -199,6 +190,11 @@ public class HarvestingClients extends AbstractApiBean {
             Dataverse ownerDataverse = dataverseSvc.findByAlias(dataverseAlias);
             if (ownerDataverse == null) {
                 return error(Response.Status.BAD_REQUEST, "No such dataverse: " + dataverseAlias);
+            }
+
+            User u = getRequestUser(crc);
+            if (!(u instanceof AuthenticatedUser && permissionSvc.isPowerUser((AuthenticatedUser) u, ownerDataverse))) {
+                return error(Response.Status.UNAUTHORIZED, "Only superusers or power users can create harvesting clients.");
             }
             
             // The nickname supplied as part of the Rest path takes precedence: 
@@ -241,29 +237,16 @@ public class HarvestingClients extends AbstractApiBean {
     public Response modifyHarvestingClient(@Context ContainerRequestContext crc, String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
         try {
             User u = getRequestUser(crc);
-            if ((!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
-                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can modify harvesting clients."));
+            HarvestingClient harvestingClient = harvestingClientService.findByNickname(nickName);
+            if (harvestingClient == null) {
+                return error( Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
             }
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        
-        HarvestingClient harvestingClient = null; 
-        try {
-            harvestingClient = harvestingClientService.findByNickname(nickName);
-        } catch (Exception ex) {
-            // We don't care what happened; we'll just assume we couldn't find it. 
-            harvestingClient = null;  
-        }
-        
-        if (harvestingClient == null) {
-            return error( Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
-        }
-        
-        String ownerDataverseAlias = harvestingClient.getDataverse().getAlias();
-        
-        try {
-            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            if (!(u instanceof AuthenticatedUser && permissionSvc.isPowerUser((AuthenticatedUser) u, harvestingClient.getDataverse()))) {
+                return error(Response.Status.UNAUTHORIZED, "Only superusers or power users can modify harvesting clients.");
+            }
+            
+            String ownerDataverseAlias = harvestingClient.getDataverse().getAlias();
+            DataverseRequest req = createDataverseRequest(u);
             JsonObject json = JsonUtil.getJsonObject(jsonBody);
             
             HarvestingClient newHarvestingClient = new HarvestingClient(); 
@@ -329,46 +312,35 @@ public class HarvestingClients extends AbstractApiBean {
         
         try {
             User u = getRequestUser(crc);
-            if ((!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
-                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can delete harvesting clients."));
+            HarvestingClient harvestingClient = harvestingClientService.findByNickname(nickName);
+            if (harvestingClient == null) {
+                return error(Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
             }
+            if (!(u instanceof AuthenticatedUser && permissionSvc.isPowerUser((AuthenticatedUser) u, harvestingClient.getDataverse()))) {
+                return error(Response.Status.UNAUTHORIZED, "Only superusers or power users can delete harvesting clients.");
+            }
+            
+            // Check if the client is in a state where it can be safely deleted: 
+            if (harvestingClient.isDeleteInProgress()) {
+                return error( Response.Status.BAD_REQUEST, "Harvesting client " + nickName + " is already being deleted (in progress)");
+            }
+            
+            if (harvestingClient.isHarvestingNow()) {
+                return error( Response.Status.BAD_REQUEST, "It is not safe to delete client " + nickName + " while a harvesting job is in progress");
+            }
+            
+            // Finally, delete it (asynchronously): 
+            try {
+                harvestingClientService.deleteClient(harvestingClient.getId());
+            } catch (Exception ex) {
+                return error( Response.Status.BAD_REQUEST, "Internal error: failed to delete harvesting client " + nickName);
+            }
+            
+            return ok("Harvesting Client " + nickName + ": delete in progress");
+            
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        
-        HarvestingClient harvestingClient = null; 
-       
-        try {
-            harvestingClient = harvestingClientService.findByNickname(nickName);
-        } catch (Exception ex) {
-            logger.warning("Exception caught looking up harvesting client " + nickName + ": " + ex.getMessage());
-            return error( Response.Status.BAD_REQUEST, "Internal error: failed to look up harvesting client " + nickName);
-        }
-        
-        if (harvestingClient == null) {
-            return error(Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
-        }
-        
-        // Check if the client is in a state where it can be safely deleted: 
-        
-        if (harvestingClient.isDeleteInProgress()) {
-            return error( Response.Status.BAD_REQUEST, "Harvesting client " + nickName + " is already being deleted (in progress)");
-        }
-        
-        if (harvestingClient.isHarvestingNow()) {
-            return error( Response.Status.BAD_REQUEST, "It is not safe to delete client " + nickName + " while a harvesting job is in progress");
-        }
-        
-        // Finally, delete it (asynchronously): 
-        
-        try {
-            harvestingClientService.deleteClient(harvestingClient.getId());
-        } catch (Exception ex) {
-            return error( Response.Status.BAD_REQUEST, "Internal error: failed to delete harvesting client " + nickName);
-        }
-        
-        
-        return ok("Harvesting Client " + nickName + ": delete in progress");
     }
     
     
@@ -390,14 +362,14 @@ public class HarvestingClients extends AbstractApiBean {
                 return error(Response.Status.UNAUTHORIZED, "Authentication required to use this API method");
             }
             
-            if (authenticatedUser == null || !authenticatedUser.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Only admin users can run harvesting jobs");
-            }
-            
             HarvestingClient harvestingClient = harvestingClientService.findByNickname(clientNickname);
             
             if (harvestingClient == null) {
                 return error(Response.Status.NOT_FOUND, "No such client: "+clientNickname);
+            }
+            
+            if (!permissionSvc.isPowerUser(authenticatedUser, harvestingClient.getDataverse())) {
+                return error(Response.Status.FORBIDDEN, "Only admin or power users can run harvesting jobs");
             }
             
             DataverseRequest dataverseRequest = createDataverseRequest(authenticatedUser);
