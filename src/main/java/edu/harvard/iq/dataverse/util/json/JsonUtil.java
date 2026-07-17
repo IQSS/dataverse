@@ -172,7 +172,7 @@ public class JsonUtil {
      * This is a thread-safe, static, and final instance to manage JSON builder creation.
      *
      * <p>Using a one-time initialized factory avoids a classpath-scan on every invocation of
-     * {@code Json.createArrayBuilder()} or {@code Json.createObjectBuilder()}, creating non-neglible performance issues.
+     * {@code JsonUtil.createArrayBuilder()} or {@code JsonUtil.createObjectBuilder()}, creating non-neglible performance issues.
      * </p>
      *
      * <p>See also <a href="https://github.com/jakartaee/jsonp-api/issues/26">JSON-P #26</a>,

@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.json.Json;
@@ -369,14 +371,14 @@ public class MetricsServiceBean implements Serializable {
                 + " WHERE dv.versionstate = 'RELEASED' "
                 + ((d == null) ? "" : "AND ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ") ")
                 + "GROUP BY df.contenttype;");
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
         try {
             List<Object[]> results = query.getResultList();
             for (Object[] result : results) {
                 if((BigDecimal)result[2]==BigDecimal.ZERO) {
                     logger.warning("File(s) of type " + (String) result[0] + " are reported as having 0 total size");
                 }
-                JsonObject stats = Json.createObjectBuilder().add(MetricsUtil.CONTENTTYPE, (String) result[0]).add(MetricsUtil.COUNT, (long) result[1]).add(MetricsUtil.SIZE, (BigDecimal) result[2]).build();
+                JsonObject stats = JsonUtil.createObjectBuilder().add(MetricsUtil.CONTENTTYPE, (String) result[0]).add(MetricsUtil.COUNT, (long) result[1]).add(MetricsUtil.SIZE, (BigDecimal) result[2]).build();
                 jab.add(stats);
             }
 
@@ -509,11 +511,11 @@ public class MetricsServiceBean implements Serializable {
                 + "group by gb.datafile_id, ob.id, ob.protocol, ob.authority, ob.identifier order by count desc;");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
         try {
             List<Object[]> results = query.getResultList();
             for (Object[] result : results) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                 job.add(MetricsUtil.ID, (int) result[0]);
                 if(result[1]!=null) {
                     job.add(MetricsUtil.PID, (String) result[1]);
@@ -552,11 +554,11 @@ public class MetricsServiceBean implements Serializable {
                 + " and date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
                 + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + "group by gb.dataset_id, ob.protocol, ob.authority, ob.identifier order by count(distinct email) desc;");
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
         try {
             List<Object[]> results = query.getResultList();
             for (Object[] result : results) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                 job.add(MetricsUtil.PID, (String) result[0]);
                 job.add(MetricsUtil.COUNT, (long) result[1]);
                 jab.add(job);
@@ -643,7 +645,7 @@ public class MetricsServiceBean implements Serializable {
         // if(sum==null) {
         // sum = BigDecimal.ZERO;
         // }
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add(metricType.toString(), sum.longValue());
         return job.build();
     }
@@ -858,7 +860,7 @@ public class MetricsServiceBean implements Serializable {
             int depth = (int) result[1];
             long ownerId = (long) result[4];
             long id = (int) result[0];
-            JsonObjectBuilder node = Json.createObjectBuilder()
+            JsonObjectBuilder node = JsonUtil.createObjectBuilder()
                     .add("id", id)
                     .add("ownerId", ownerId)
                     .add("alias", (String) result[2])
@@ -869,7 +871,7 @@ public class MetricsServiceBean implements Serializable {
                 if (children != null) {
                     subtrees.put(currentOwnerId, children.build());
                 }
-                children = Json.createArrayBuilder();
+                children = JsonUtil.createArrayBuilder();
                 currentOwnerId = ownerId;
             }
             if (subtrees.containsKey(id)) {

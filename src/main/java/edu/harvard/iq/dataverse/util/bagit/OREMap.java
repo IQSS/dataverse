@@ -19,6 +19,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
@@ -96,9 +97,9 @@ public class OREMap {
 
         Dataset dataset = version.getDataset();
         String id = dataset.getGlobalId().asURL();
-        JsonArrayBuilder fileArray = Json.createArrayBuilder();
+        JsonArrayBuilder fileArray = JsonUtil.createArrayBuilder();
         // The map describes an aggregation
-        JsonObjectBuilder aggBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder aggBuilder = JsonUtil.createObjectBuilder();
         List<DatasetField> fields = version.getDatasetFields();
         // That has it's own metadata
         Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(true);
@@ -115,7 +116,7 @@ public class OREMap {
         // Add metadata related to the Dataset/DatasetVersion
         aggBuilder.add("@id", id)
                 .add("@type",
-                        Json.createArrayBuilder().add(JsonLDTerm.ore("Aggregation").getLabel())
+                        JsonUtil.createArrayBuilder().add(JsonLDTerm.ore("Aggregation").getLabel())
                                 .add(JsonLDTerm.schemaOrg("Dataset").getLabel()))
                 .add(JsonLDTerm.schemaOrg("version").getLabel(), version.getFriendlyVersionNumber())
                 .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getTitle())
@@ -126,7 +127,7 @@ public class OREMap {
         //Add version state info - DRAFT, RELEASED, DEACCESSIONED, ARCHIVED with extra info for DEACCESIONED
         VersionState vs = version.getVersionState();
         if(vs.equals(VersionState.DEACCESSIONED)) {
-            JsonObjectBuilder deaccBuilder = Json.createObjectBuilder();
+            JsonObjectBuilder deaccBuilder = JsonUtil.createObjectBuilder();
             deaccBuilder.add(JsonLDTerm.schemaOrg("name").getLabel(), vs.name());
             // Reason is supposed to not be null, but historically this has not been enforced (in the API)
             addIfNotNull(deaccBuilder, JsonLDTerm.DVCore("reason"), version.getDeaccessionNote());
@@ -152,7 +153,7 @@ public class OREMap {
             addIfNotNull(aggBuilder, JsonLDTerm.disclaimer, terms.getDisclaimer());
         }
         // Add fileTermsofAccess as an object since it is compound
-        JsonObjectBuilder fAccess = Json.createObjectBuilder();
+        JsonObjectBuilder fAccess = JsonUtil.createObjectBuilder();
         addIfNotNull(fAccess, JsonLDTerm.termsOfAccess, terms.getTermsOfAccess());
         addIfNotNull(fAccess, JsonLDTerm.fileRequestAccess, terms.isFileAccessRequest());
         addIfNotNull(fAccess, JsonLDTerm.dataAccessPlace, terms.getDataAccessPlace());
@@ -177,12 +178,12 @@ public class OREMap {
         
         // The aggregation aggregates aggregatedresources (Datafiles) which each have
         // their own entry and metadata
-        JsonArrayBuilder aggResArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder aggResArrayBuilder = JsonUtil.createArrayBuilder();
         if (!aggregationOnly) {
 
             for (FileMetadata fmd : version.getFileMetadatas()) {
                 DataFile df = fmd.getDataFile();
-                JsonObjectBuilder aggRes = Json.createObjectBuilder();
+                JsonObjectBuilder aggRes = JsonUtil.createObjectBuilder();
 
                 if (fmd.getDescription() != null) {
                     aggRes.add(JsonLDTerm.schemaOrg("description").getLabel(), fmd.getDescription());
@@ -220,7 +221,7 @@ public class OREMap {
                 if(embargo!=null) {
                     String date = embargo.getFormattedDateAvailable();
                     String reason= embargo.getReason();
-                    JsonObjectBuilder embargoObject = Json.createObjectBuilder();
+                    JsonObjectBuilder embargoObject = JsonUtil.createObjectBuilder();
                     embargoObject.add(JsonLDTerm.DVCore("dateAvailable").getLabel(), date);
                     if(reason!=null) {
                         embargoObject.add(JsonLDTerm.DVCore("reason").getLabel(), reason);
@@ -231,7 +232,7 @@ public class OREMap {
                 if(retention!=null) {
                     String date = retention.getFormattedDateUnavailable();
                     String reason= retention.getReason();
-                    JsonObjectBuilder retentionObject = Json.createObjectBuilder();
+                    JsonObjectBuilder retentionObject = JsonUtil.createObjectBuilder();
                     retentionObject.add(JsonLDTerm.DVCore("dateUnavailable").getLabel(), date);
                     if(reason!=null) {
                         retentionObject.add(JsonLDTerm.DVCore("reason").getLabel(), reason);
@@ -245,7 +246,7 @@ public class OREMap {
                 if (fmd != null) {
                     List<String> categories = fmd.getCategoriesByName();
                     if (categories.size() > 0) {
-                        JsonArrayBuilder jab = Json.createArrayBuilder();
+                        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
                         for (String s : categories) {
                             jab.add(s);
                         }
@@ -279,7 +280,7 @@ public class OREMap {
                 JsonObject checksum = null;
                 // Add checksum. RDA recommends SHA-512
                 if (df.getChecksumType() != null && df.getChecksumValue() != null) {
-                    checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toUri())
+                    checksum = JsonUtil.createObjectBuilder().add("@type", df.getChecksumType().toUri())
                             .add("@value", df.getChecksumValue()).build();
                     aggRes.add(JsonLDTerm.checksum.getLabel(), checksum);
                 }
@@ -294,7 +295,7 @@ public class OREMap {
             }
         }
         // Build the '@context' object for json-ld based on the localContext entries
-        JsonObjectBuilder contextBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder contextBuilder = JsonUtil.createObjectBuilder();
         for (Entry<String, JsonValue> e : localContext.entrySet()) {
             contextBuilder.add(e.getKey(), e.getValue());
         }
@@ -304,14 +305,14 @@ public class OREMap {
             // Now create the overall map object with it's metadata
             
             //Start with a reference to the Dataverse software
-            JsonObjectBuilder dvSoftwareBuilder = Json.createObjectBuilder()
+            JsonObjectBuilder dvSoftwareBuilder = JsonUtil.createObjectBuilder()
                     .add("@type", JsonLDTerm.schemaOrg("SoftwareApplication").getLabel())
                     .add(JsonLDTerm.schemaOrg("name").getLabel(), DATAVERSE_SOFTWARE_NAME)
                     .add(JsonLDTerm.schemaOrg("version").getLabel(), systemConfig.getVersion(true))
                     .add(JsonLDTerm.schemaOrg("url").getLabel(), DATAVERSE_SOFTWARE_URL);
             
             //Now the OREMAP object itself
-            JsonObjectBuilder oremapBuilder = Json.createObjectBuilder()
+            JsonObjectBuilder oremapBuilder = JsonUtil.createObjectBuilder()
                     .add(JsonLDTerm.dcTerms("modified").getLabel(), LocalDate.now().toString())
                     .add(JsonLDTerm.dcTerms("creator").getLabel(), BrandingUtil.getInstallationBrandName())
                     .add("@type", JsonLDTerm.ore("ResourceMap").getLabel())
@@ -336,7 +337,7 @@ public class OREMap {
 
     private JsonObjectBuilder getDataverseDescription(Dataverse dv) {
         //Schema.org is already in local context, no updates needed as long as we only use chemaOrg and "@id" here
-        JsonObjectBuilder dvjob = Json.createObjectBuilder().add(JsonLDTerm.schemaOrg("name").getLabel(), dv.getCurrentName()).add("@id", dv.getLocalURL());
+        JsonObjectBuilder dvjob = JsonUtil.createObjectBuilder().add(JsonLDTerm.schemaOrg("name").getLabel(), dv.getCurrentName()).add("@id", dv.getLocalURL());
         addIfNotNull(dvjob, JsonLDTerm.schemaOrg("description"), dv.getDescription());
         Dataverse owner = dv.getOwner();
         if(owner!=null) {
@@ -429,7 +430,7 @@ public class OREMap {
         } else {
             localContext2.putIfAbsent(fieldName.getLabel(), Json.createValue(fieldName.getUrl()));
         }
-        JsonArrayBuilder vals = Json.createArrayBuilder();
+        JsonArrayBuilder vals = JsonUtil.createArrayBuilder();
         if (!dfType.isCompound()) {
             for (String val : field.getValues_nondisplay()) {
                 if (cvocMap.containsKey(dfType.getId())) {
@@ -442,7 +443,7 @@ public class OREMap {
             // ToDo: Needs to be recursive (as in JsonPrinter?)
             for (DatasetFieldCompoundValue dscv : field.getDatasetFieldCompoundValues()) {
                 // compound values are of different types
-                JsonObjectBuilder child = Json.createObjectBuilder();
+                JsonObjectBuilder child = JsonUtil.createObjectBuilder();
 
                 for (DatasetField dsf : dscv.getChildDatasetFields()) {
                     DatasetFieldType dsft = dsf.getDatasetFieldType();
@@ -468,7 +469,7 @@ public class OREMap {
 
                             List<String> values = dsf.getValues_nondisplay();
 
-                            JsonArrayBuilder childVals = Json.createArrayBuilder();
+                            JsonArrayBuilder childVals = JsonUtil.createArrayBuilder();
 
                             for (String val : dsf.getValues_nondisplay()) {
                                 logger.fine("Child name: " + dsft.getName());
