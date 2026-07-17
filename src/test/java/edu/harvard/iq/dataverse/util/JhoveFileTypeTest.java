@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
@@ -13,7 +15,7 @@ import org.junit.jupiter.api.Test;
 public class JhoveFileTypeTest {
 
     static JhoveFileType jhoveFileType;
-    static String baseDirForConfigFiles = "/tmp";
+    static Path baseDirForConfigFiles;
     static File png;
     static File gif;
     static File jpg;
@@ -25,11 +27,18 @@ public class JhoveFileTypeTest {
     static File ipynb;
 
     @BeforeAll
-    public static void setUpClass() {
-        System.setProperty("com.sun.aas.instanceRoot", baseDirForConfigFiles);
-        jhoveFileType = new JhoveFileType();
-        copyConfigIntoPlace();
+    public static void setUpClass() throws IOException {
+        baseDirForConfigFiles = Files.createTempDirectory("dataverse-test-");
+        System.setProperty("com.sun.aas.instanceRoot", baseDirForConfigFiles.toString());
 
+        Path configDir = baseDirForConfigFiles.resolve("config");
+        Files.createDirectories(configDir);
+
+        Files.copy(
+            Path.of("conf", "jhove", "jhove.conf"),
+            configDir.resolve("jhove.conf")
+        );
+        jhoveFileType = new JhoveFileType();
         png = new File("src/test/resources/images/coffeeshop.png");
         gif = new File("src/main/webapp/resources/images/ajax-loading.gif");
         jpg = new File("src/main/webapp/resources/images/dataverseproject_logo.jpg");
@@ -78,13 +87,7 @@ public class JhoveFileTypeTest {
     }
 
     private static void copyConfigIntoPlace() {
-        String testFile1Src = "conf/jhove/jhove.conf";
-        String testFile1Tmp = baseDirForConfigFiles + "/config/jhove.conf";
-        try {
-            FileUtils.copyFile(new File(testFile1Src), new File(testFile1Tmp));
-        } catch (IOException ex) {
-            Logger.getLogger(JhoveFileTypeTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        // Not needed anymore due to new setup
     }
 
 }
