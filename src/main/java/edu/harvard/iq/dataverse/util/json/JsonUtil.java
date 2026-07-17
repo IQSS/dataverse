@@ -157,23 +157,31 @@ public class JsonUtil {
     }
 
     /**
-     * Caches builderFactory for creating JSON object and array builders
-     * Avoids a repeatedly classpath scan for JsonObjectBuilder and JsonArrayBuilder
-     * by initializing the builderFactory once
+     * A factory to create Jakarta JSON-P Builders such as {@code JsonObjectBuilder} and {@code JsonArrayBuilder}.
+     * This is a thread-safe, static, and final instance to manage JSON builder creation.
+     *
+     * <p>Using a one-time initialized factory avoids a classpath-scan on every invocation of
+     * {@code Json.createArrayBuilder()} or {@code Json.createObjectBuilder()}, creating non-neglible performance issues.
+     * </p>
+     *
+     * <p>See also <a href="https://github.com/jakartaee/jsonp-api/issues/26">JSON-P #26</a>,
+     * <a href="https://github.com/eclipse-ee4j/yasson/issues/698">Yasson #698</a> and others.</p>
      */
     private static final JsonBuilderFactory builderFactory = Json.createBuilderFactory(Map.of());
 
     /**
-     * Creates a new JSON ObjectBuilder
-     * @return the ObjectBuilder
+     * Create a new {@link JsonObjectBuilder} from a cached provider instance.
+     * {@link Json#createObjectBuilder()} drop-in replacement, avoiding classpath-rescan on invocation.
+     * @return the JSON Object Builder
      */
     public static JsonObjectBuilder createObjectBuilder() {
         return builderFactory.createObjectBuilder();
     }
 
     /**
-     * Creates a new JSON ArrayBuilder
-     * @return the ArrayBuilder
+     * Create a new {@link JsonArrayBuilder} from a cached provider instance.
+     * {@link Json#createArrayBuilder()} drop-in replacement, avoiding classpath-rescan on invocation.
+     * @return the JSON Array Builder
      */
     public static JsonArrayBuilder createArrayBuilder() {
         return builderFactory.createArrayBuilder();
