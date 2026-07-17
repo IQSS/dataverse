@@ -1863,16 +1863,16 @@ public class DatasetVersion implements Serializable {
         if (jsonLd != null) {
             return jsonLd;
         }
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("@context", "http://schema.org");
         job.add("@type", "Dataset");
         // Note that whenever you use "@id" you should also use "identifier" and vice versa.
         job.add("@id", this.getDataset().getPersistentURL());
         job.add("identifier", this.getDataset().getPersistentURL());
         job.add("name", this.getTitle());
-        JsonArrayBuilder authors = Json.createArrayBuilder();
+        JsonArrayBuilder authors = JsonUtil.createArrayBuilder();
         for (DatasetAuthor datasetAuthor : this.getDatasetAuthors()) {
-            JsonObjectBuilder author = Json.createObjectBuilder();
+            JsonObjectBuilder author = JsonUtil.createObjectBuilder();
             String name = datasetAuthor.getName().getDisplayValue();
             String identifierAsUrl = datasetAuthor.getIdentifierAsUrl();
             DatasetField authorAffiliation = datasetAuthor.getAffiliation();
@@ -1894,7 +1894,7 @@ public class DatasetVersion implements Serializable {
                     author.add("familyName", familyName);
                 }
                 if (!StringUtil.isEmpty(affiliation)) {
-                    author.add("affiliation", Json.createObjectBuilder().add("@type", "Organization").add("name", affiliation));
+                    author.add("affiliation", JsonUtil.createObjectBuilder().add("@type", "Organization").add("name", affiliation));
                 }
                 //Currently all possible identifier URLs are for people not Organizations
                 if(identifierAsUrl != null) {
@@ -1908,7 +1908,7 @@ public class DatasetVersion implements Serializable {
                 // Organization
                 author.add("@type", "Organization");
                 if (!StringUtil.isEmpty(affiliation)) {
-                    author.add("parentOrganization", Json.createObjectBuilder().add("@type", "Organization").add("name", affiliation));
+                    author.add("parentOrganization", JsonUtil.createObjectBuilder().add("@type", "Organization").add("name", affiliation));
                 }
             }
             // Both cases
@@ -1963,7 +1963,7 @@ public class DatasetVersion implements Serializable {
          * metadata fields for the version. -- L.A. 
          * (see #2243 for details/discussion/feedback from Google)
          */
-        JsonArrayBuilder keywords = Json.createArrayBuilder();
+        JsonArrayBuilder keywords = JsonUtil.createArrayBuilder();
         
         for (String subject : this.getDatasetSubjects()) {
             keywords.add(subject);
@@ -1993,7 +1993,7 @@ public class DatasetVersion implements Serializable {
          */
         List<DatasetRelPublication> relatedPublications = getRelatedPublications();
         if (!relatedPublications.isEmpty()) {
-            JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+            JsonArrayBuilder jsonArrayBuilder = JsonUtil.createArrayBuilder();
             for (DatasetRelPublication relatedPub : relatedPublications) {
                 boolean addToArray = false;
                 String pubCitation = relatedPub.getText();
@@ -2001,7 +2001,7 @@ public class DatasetVersion implements Serializable {
                 if (pubCitation != null || pubUrl != null) {
                     addToArray = true;
                 }
-                JsonObjectBuilder citationEntry = Json.createObjectBuilder();
+                JsonObjectBuilder citationEntry = JsonUtil.createObjectBuilder();
                 citationEntry.add("@type", "CreativeWork");
                 if (pubCitation != null) {
                     citationEntry.add("name", pubCitation);
@@ -2028,7 +2028,7 @@ public class DatasetVersion implements Serializable {
         
         List<String> timePeriodsCovered = this.getTimePeriodsCovered();
         if (timePeriodsCovered.size() > 0) {
-            JsonArrayBuilder temporalCoverage = Json.createArrayBuilder();
+            JsonArrayBuilder temporalCoverage = JsonUtil.createArrayBuilder();
             for (String timePeriod : timePeriodsCovered) {
                 temporalCoverage.add(timePeriod);
             }
@@ -2053,7 +2053,7 @@ public class DatasetVersion implements Serializable {
         
         String installationBrandName = BrandingUtil.getInstallationBrandName();
         
-        job.add("includedInDataCatalog", Json.createObjectBuilder()
+        job.add("includedInDataCatalog", JsonUtil.createObjectBuilder()
                 .add("@type", "DataCatalog")
                 .add("name", installationBrandName)
                 .add("url", SystemConfig.getDataverseSiteUrlStatic())
@@ -2063,18 +2063,18 @@ public class DatasetVersion implements Serializable {
          * Both "publisher" and "provider" are included but they have the same
          * values. Some services seem to prefer one over the other.
          */
-        job.add("publisher", Json.createObjectBuilder()
+        job.add("publisher", JsonUtil.createObjectBuilder()
                 .add("@type", "Organization")
                 .add("name", installationBrandName)
         );
-        job.add("provider", Json.createObjectBuilder()
+        job.add("provider", JsonUtil.createObjectBuilder()
                 .add("@type", "Organization")
                 .add("name", installationBrandName)
         );
 
         List<String> funderNames = getFunders();
         if (!funderNames.isEmpty()) {
-            JsonArrayBuilder funderArray = Json.createArrayBuilder();
+            JsonArrayBuilder funderArray = JsonUtil.createArrayBuilder();
             for (String funderName : funderNames) {
                 JsonObjectBuilder funder = NullSafeJsonBuilder.jsonObjectBuilder();
                 funder.add("@type", "Organization");
@@ -2087,7 +2087,7 @@ public class DatasetVersion implements Serializable {
         boolean commaSeparated = true;
         List<String> spatialCoverages = getSpatialCoverages(commaSeparated);
         if (!spatialCoverages.isEmpty()) {
-            JsonArrayBuilder spatialArray = Json.createArrayBuilder();
+            JsonArrayBuilder spatialArray = JsonUtil.createArrayBuilder();
             for (String spatialCoverage : spatialCoverages) {
                 spatialArray.add(spatialCoverage);
             }
@@ -2096,7 +2096,7 @@ public class DatasetVersion implements Serializable {
 
         List<FileMetadata> fileMetadatasSorted = getFileMetadatasSorted();
         if (fileMetadatasSorted != null && !fileMetadatasSorted.isEmpty()) {
-            JsonArrayBuilder fileArray = Json.createArrayBuilder();
+            JsonArrayBuilder fileArray = JsonUtil.createArrayBuilder();
             String dataverseSiteUrl = SystemConfig.getDataverseSiteUrlStatic();
             for (FileMetadata fileMetadata : fileMetadatasSorted) {
                 JsonObjectBuilder fileObject = NullSafeJsonBuilder.jsonObjectBuilder();

@@ -671,19 +671,19 @@ public class JsonParserTest {
 
     @Test
     public void testparseFiles() throws JsonParseException {
-        JsonArrayBuilder metadatasJsonBuilder = Json.createArrayBuilder();
-        JsonObjectBuilder fileMetadataGood = Json.createObjectBuilder();
+        JsonArrayBuilder metadatasJsonBuilder = JsonUtil.createArrayBuilder();
+        JsonObjectBuilder fileMetadataGood = JsonUtil.createObjectBuilder();
         fileMetadataGood.add("label", "myLabel");
-        JsonObjectBuilder fileGood = Json.createObjectBuilder();
+        JsonObjectBuilder fileGood = JsonUtil.createObjectBuilder();
         fileMetadataGood.add("dataFile", fileGood);
-        fileMetadataGood.add("categories", Json.createArrayBuilder()
+        fileMetadataGood.add("categories", JsonUtil.createArrayBuilder()
                 .add("Documentation")
         );
-        JsonObjectBuilder fileMetadataBad = Json.createObjectBuilder();
+        JsonObjectBuilder fileMetadataBad = JsonUtil.createObjectBuilder();
         fileMetadataBad.add("label", "bad");
-        JsonObjectBuilder fileBad = Json.createObjectBuilder();
+        JsonObjectBuilder fileBad = JsonUtil.createObjectBuilder();
         fileMetadataBad.add("dataFile", fileBad);
-        fileMetadataBad.add("categories", Json.createArrayBuilder()
+        fileMetadataBad.add("categories", JsonUtil.createArrayBuilder()
                 .add(BigDecimal.ONE)
         );
         metadatasJsonBuilder.add(fileMetadataGood);
@@ -697,7 +697,7 @@ public class JsonParserTest {
         assertEquals("myLabel", fileMetadatas.get(0).getLabel());
         assertEquals("Documentation", fileMetadatas.get(0).getCategories().get(0).getName());
         assertEquals(null, fileMetadatas.get(1).getCategories());
-        List<FileMetadata> codeCoverage = new JsonParser().parseFiles(Json.createArrayBuilder().add(Json.createObjectBuilder().add("label", "myLabel").add("dataFile", Json.createObjectBuilder().add("categories", JsonValue.NULL))).build(), dsv);
+        List<FileMetadata> codeCoverage = new JsonParser().parseFiles(JsonUtil.createArrayBuilder().add(JsonUtil.createObjectBuilder().add("label", "myLabel").add("dataFile", JsonUtil.createObjectBuilder().add("categories", JsonValue.NULL))).build(), dsv);
         assertEquals(null, codeCoverage.get(0).getCategories());
     }
 
@@ -783,7 +783,7 @@ public class JsonParserTest {
 
     @Test
     public void testEnum() throws JsonParseException {
-        JsonArrayBuilder arr = Json.createArrayBuilder();
+        JsonArrayBuilder arr = JsonUtil.createArrayBuilder();
         for (Type entry : Arrays.asList(Type.REVOKEROLE, Type.ASSIGNROLE)) {
             arr.add(entry.name());
         }

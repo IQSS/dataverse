@@ -851,9 +851,9 @@ public abstract class AbstractApiBean {
         }
         
         // Or Json by default
-        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
+        JsonArrayBuilder jsonArray = JsonUtil.createArrayBuilder();
         for (DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry entry : history) {
-            JsonObjectBuilder job = Json.createObjectBuilder()
+            JsonObjectBuilder job = JsonUtil.createObjectBuilder()
                     .add("definedOn", entry.getDefinitionPointIdsAsString())
                     .add("assigneeIdentifier", entry.getAssigneeIdentifier())
                     .add("roleName", entry.getRoleName());
@@ -1016,7 +1016,7 @@ public abstract class AbstractApiBean {
         String incidentId = UUID.randomUUID().toString();
         logger.log(Level.SEVERE, "API internal error " + incidentId +": " + ex.getMessage(), ex);
         return Response.status(500)
-                .entity(Json.createObjectBuilder()
+                .entity(JsonUtil.createObjectBuilder()
                         .add("status", "ERROR")
                         .add("code", 500)
                         .add("message", "Internal server error. More details available at the server logs.")
@@ -1069,7 +1069,7 @@ public abstract class AbstractApiBean {
         if (FeatureFlags.UNIFY_API_RESPONSE_MESSAGE_STYLE.enabled()) {
             return ok(null, Json.createValue(msg), null);
         } else {
-            return ok(Json.createObjectBuilder().add("message", msg).build(), null, null);
+            return ok(JsonUtil.createObjectBuilder().add("message", msg).build(), null, null);
         }
     }
     
@@ -1078,7 +1078,7 @@ public abstract class AbstractApiBean {
         // This is a scarcely used way to build a response, mostly relevant to admins, which is why we make it opt-out.
         // TODO: This will be removed in a future version.
         if (JvmSettings.LEGACY_API_RESPONSE_MESSAGE_STYLE.lookupOptional(Boolean.class).orElse(false)) {
-            return ok(bld.build(), Json.createObjectBuilder().add(ApiConstants.MESSAGE_FIELD, msg).build(), null);
+            return ok(bld.build(), JsonUtil.createObjectBuilder().add(ApiConstants.MESSAGE_FIELD, msg).build(), null);
         } else {
             return ok(bld.build(), Json.createValue(msg), null);
         }
@@ -1113,7 +1113,7 @@ public abstract class AbstractApiBean {
 
     protected Response created( String uri, JsonObjectBuilder bld ) {
         return Response.created( URI.create(uri) )
-                .entity( Json.createObjectBuilder()
+                .entity( JsonUtil.createObjectBuilder()
                 .add(ApiConstants.STATUS_FIELD, ApiConstants.STATUS_OK)
                 .add(ApiConstants.DATA_FIELD, bld).build())
                 .type(MediaType.APPLICATION_JSON)
@@ -1122,7 +1122,7 @@ public abstract class AbstractApiBean {
     
     protected Response accepted(JsonObjectBuilder bld) {
         return Response.accepted()
-                .entity(Json.createObjectBuilder()
+                .entity(JsonUtil.createObjectBuilder()
                         .add(ApiConstants.STATUS_FIELD, ApiConstants.STATUS_WF_IN_PROGRESS)
                         .add(ApiConstants.DATA_FIELD, bld).build()
                 ).build();
@@ -1130,7 +1130,7 @@ public abstract class AbstractApiBean {
     
     protected Response accepted() {
         return Response.accepted()
-                .entity(Json.createObjectBuilder()
+                .entity(JsonUtil.createObjectBuilder()
                         .add(ApiConstants.STATUS_FIELD, ApiConstants.STATUS_WF_IN_PROGRESS).build()
                 ).build();
     }

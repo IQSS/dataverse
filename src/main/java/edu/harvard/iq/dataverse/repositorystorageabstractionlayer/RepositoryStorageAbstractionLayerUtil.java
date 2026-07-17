@@ -8,6 +8,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
@@ -88,7 +90,7 @@ public class RepositoryStorageAbstractionLayerUtil {
      */
     @Deprecated(forRemoval = true, since = "2024-07-07")
     static JsonArray getStorageSitesAsJson(List<StorageSite> storageSites) {
-        JsonArrayBuilder arraybuilder = Json.createArrayBuilder();
+        JsonArrayBuilder arraybuilder = JsonUtil.createArrayBuilder();
         if (storageSites == null || storageSites.isEmpty()) {
             return arraybuilder.build();
         }
@@ -98,7 +100,7 @@ public class RepositoryStorageAbstractionLayerUtil {
             if (storageSite.isPrimaryStorage()) {
                 countOfPrimarySites++;
             }
-            arraybuilder.add(Json.createObjectBuilder()
+            arraybuilder.add(JsonUtil.createObjectBuilder()
                     .add("fqdn", storageSite.getHostname())
                     .add("name", storageSite.getName()));
         }

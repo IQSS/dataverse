@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.Asynchronous;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -568,7 +569,7 @@ public class SolrIndexServiceBean {
     }
 
     public JsonObjectBuilder deleteAllFromSolrAndResetIndexTimes() throws SolrServerException, IOException {
-        JsonObjectBuilder response = Json.createObjectBuilder();
+        JsonObjectBuilder response = JsonUtil.createObjectBuilder();
         logger.fine("attempting to delete all Solr documents before a complete re-index");
         solrClientService.getSolrClient().deleteByQuery("*:*");
         int numRowsAffected = dvObjectService.clearAllIndexTimes();

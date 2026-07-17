@@ -70,7 +70,7 @@ public class JSONLDUtil {
      */
 
     public static JsonObject getContext(Map<String, String> contextMap) {
-        JsonObjectBuilder contextBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder contextBuilder = JsonUtil.createObjectBuilder();
         for (Entry<String, String> e : contextMap.entrySet()) {
             contextBuilder.add(e.getKey(), e.getValue());
         }
@@ -498,7 +498,7 @@ public class JSONLDUtil {
                 valArray = (JsonArray) val;
             }
         } else {
-            valArray = Json.createArrayBuilder().add(val).build();
+            valArray = JsonUtil.createArrayBuilder().add(val).build();
         }
         return valArray;
     }
@@ -547,7 +547,7 @@ public class JSONLDUtil {
                 JsonObject jsonld = jsonReader.readObject();
                 JsonDocument doc = JsonDocument.of(jsonld);
                 JsonArray array = JsonLd.expand(doc).get();
-                jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(Json.createObjectBuilder().build())).get();
+                jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(JsonUtil.createObjectBuilder().build())).get();
                 // jsonld = array.getJsonObject(0);
                 logger.fine("Decontextualized object: " + jsonld);
                 return jsonld;

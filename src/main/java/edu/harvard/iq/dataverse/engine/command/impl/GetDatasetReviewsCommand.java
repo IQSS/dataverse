@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
@@ -39,7 +40,7 @@ public class GetDatasetReviewsCommand extends AbstractCommand<JsonObjectBuilder>
 
     @Override
     public JsonObjectBuilder execute(CommandContext ctxt) throws CommandException {
-        JsonObjectBuilder reviews = Json.createObjectBuilder();
+        JsonObjectBuilder reviews = JsonUtil.createObjectBuilder();
         List<Dataverse> dataverses = new ArrayList<>();
         // Putting PID as URL in quotes to avoid hits we don't want
         String query = "itemReviewedUrl:\"" + dataset.getGlobalId().asURL() + "\"";
@@ -56,7 +57,7 @@ public class GetDatasetReviewsCommand extends AbstractCommand<JsonObjectBuilder>
             SolrQueryResponse solrQueryResponse = ctxt.search().getDefaultSearchService().search(getRequest(),
                     dataverses, query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe,
                     numResultsPerPage);
-            JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
+            JsonArrayBuilder itemsArrayBuilder = JsonUtil.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
             for (SolrSearchResult solrSearchResult : solrSearchResults) {
                 // Construct a JSON object intentionally rather than simply returning the
@@ -84,19 +85,19 @@ public class GetDatasetReviewsCommand extends AbstractCommand<JsonObjectBuilder>
                 String datePublished = searchResultObject.getString("published_at", "");
                 String description = searchResultObject.getString("description");
                 JsonObject rubricMetadataBlocksFromSolr = searchResultObject.getJsonObject("metadataBlocks");
-                JsonArrayBuilder rubricMetadataBlocks = Json.createArrayBuilder();
+                JsonArrayBuilder rubricMetadataBlocks = JsonUtil.createArrayBuilder();
                 for (String key : rubricMetadataBlocksFromSolr.keySet()) {
                     String displayName = rubricMetadataBlocksFromSolr.getJsonObject(key).getString("displayName");
                     JsonArray fieldsFromJson = rubricMetadataBlocksFromSolr.getJsonObject(key).getJsonArray("fields");
-                    JsonObjectBuilder block = Json.createObjectBuilder();
+                    JsonObjectBuilder block = JsonUtil.createObjectBuilder();
                     block.add("name", key);
                     block.add("displayName", displayName);
-                    JsonArrayBuilder fieldAccumulator = Json.createArrayBuilder();
+                    JsonArrayBuilder fieldAccumulator = JsonUtil.createArrayBuilder();
                     for (JsonValue fieldJsonValue : fieldsFromJson) {
                         JsonObject fieldObject = fieldJsonValue.asJsonObject();
                         String typeName = fieldObject.getString("typeName");
                         String value = fieldObject.getString("value");
-                        JsonObjectBuilder fieldToAdd = Json.createObjectBuilder();
+                        JsonObjectBuilder fieldToAdd = JsonUtil.createObjectBuilder();
                         fieldToAdd.add("typeName", typeName);
                         fieldToAdd.add("value", value);
                         fieldAccumulator.add(fieldToAdd);
@@ -104,7 +105,7 @@ public class GetDatasetReviewsCommand extends AbstractCommand<JsonObjectBuilder>
                     block.add("fields", fieldAccumulator);
                     rubricMetadataBlocks.add(block);
                 }
-                JsonObjectBuilder review = Json.createObjectBuilder()
+                JsonObjectBuilder review = JsonUtil.createObjectBuilder()
                         .add("title", title)
                         .add("authors", authors)
                         .add("persistentId", pid)

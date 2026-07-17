@@ -370,7 +370,7 @@ public class DatasetsIT {
         Response updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, adminApiToken);
         updateDataverseResponse.prettyPrint();
 
-        JsonArrayBuilder metadataBlocks = Json.createArrayBuilder();
+        JsonArrayBuilder metadataBlocks = JsonUtil.createArrayBuilder();
         metadataBlocks.add("citation");
         metadataBlocks.add("journal");
         metadataBlocks.add("socialscience");
@@ -482,7 +482,7 @@ public class DatasetsIT {
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        JsonArrayBuilder metadataBlocks = Json.createArrayBuilder();
+        JsonArrayBuilder metadataBlocks = JsonUtil.createArrayBuilder();
         metadataBlocks.add("citation");
         metadataBlocks.add("journal");
         metadataBlocks.add("socialscience");
@@ -2768,7 +2768,7 @@ public class DatasetsIT {
         /*
         Can't find dataset - give bad dataset ID
          */
-        JsonObjectBuilder wrongDataset = Json.createObjectBuilder();
+        JsonObjectBuilder wrongDataset = JsonUtil.createObjectBuilder();
         String fakeDatasetId = "78921457982457921";
         wrongDataset.add("status", "validation passed");
         Response createSuperuser = UtilIT.createRandomUser();
@@ -2782,7 +2782,7 @@ public class DatasetsIT {
                 .statusCode(404)
                 .body("message", equalTo("Dataset with ID " + fakeDatasetId + " not found."));
 
-        JsonObjectBuilder badNews = Json.createObjectBuilder();
+        JsonObjectBuilder badNews = JsonUtil.createObjectBuilder();
         // Status options are documented at https://github.com/sbgrid/data-capture-module/blob/master/doc/api.md#post-upload
         badNews.add("status", "validation failed");
         Response uploadFailed = UtilIT.dataCaptureModuleChecksumValidation(datasetPersistentId, badNews.build(), superuserApiToken);
@@ -2850,7 +2850,7 @@ public class DatasetsIT {
          *
          * @todo How can we test that the email notification looks ok?
          */
-        JsonObjectBuilder goodNews = Json.createObjectBuilder();
+        JsonObjectBuilder goodNews = JsonUtil.createObjectBuilder();
         goodNews.add("status", "validation passed");
         goodNews.add("uploadFolder", uploadFolder);
         goodNews.add("totalSize", totalSize);
@@ -3062,7 +3062,7 @@ public class DatasetsIT {
         // This should return an empty list, as the dataset should have no locks just yet:
         Response checkDatasetLocks = UtilIT.checkDatasetLocks(datasetId.longValue(), null, apiToken);
         checkDatasetLocks.prettyPrint();
-        JsonArray emptyArray = Json.createArrayBuilder().build();
+        JsonArray emptyArray = JsonUtil.createArrayBuilder().build();
         checkDatasetLocks.then().assertThat()
                 .body("data", equalTo(emptyArray))
                 .statusCode(200);
@@ -4064,7 +4064,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Path pathtoScript = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "run.sh");
         java.nio.file.Files.write(pathtoScript, "#!/bin/bash\necho hello".getBytes());
 
-        JsonObjectBuilder json1 = Json.createObjectBuilder()
+        JsonObjectBuilder json1 = JsonUtil.createObjectBuilder()
                 .add("description", "A script to reproduce results.")
                 .add("directoryLabel", "code");
 
@@ -4154,7 +4154,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data.fileAccessRequest", equalTo(true));
 
         String pathToTestFile = "src/test/resources/images/coffeeshop.png";
-        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId2), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId2), pathToTestFile, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         String fileId = JsonPath.from(uploadResponse.body().asString()).getString("data.files[0].dataFile.id");
@@ -4283,7 +4283,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Path pathtoScript = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "run.sh");
         java.nio.file.Files.write(pathtoScript, "#!/bin/bash\necho hello".getBytes());
 
-        JsonObjectBuilder json1 = Json.createObjectBuilder()
+        JsonObjectBuilder json1 = JsonUtil.createObjectBuilder()
                 .add("description", "A script to reproduce results.")
                 .add("directoryLabel", "code");
 
@@ -5177,33 +5177,33 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
         Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverse);
 
-        JsonObjectBuilder datasetJson = Json.createObjectBuilder()
-                .add("datasetVersion", Json.createObjectBuilder()
-                        .add("license", Json.createObjectBuilder()
+        JsonObjectBuilder datasetJson = JsonUtil.createObjectBuilder()
+                .add("datasetVersion", JsonUtil.createObjectBuilder()
+                        .add("license", JsonUtil.createObjectBuilder()
                                 .add("name", "CC0 1.0")
                                 .add("uri", "http://creativecommons.org/publicdomain/zero/1.0")
                         )
-                        .add("metadataBlocks", Json.createObjectBuilder()
-                                .add("citation", Json.createObjectBuilder()
-                                        .add("fields", Json.createArrayBuilder()
-                                                .add(Json.createObjectBuilder()
+                        .add("metadataBlocks", JsonUtil.createObjectBuilder()
+                                .add("citation", JsonUtil.createObjectBuilder()
+                                        .add("fields", JsonUtil.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
                                                         .add("typeName", "title")
                                                         .add("value", "Test dataset")
                                                         .add("typeClass", "primitive")
                                                         .add("multiple", false)
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("authorName",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "Simpson, Homer")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
                                                                                         .add("typeName", "authorName")
                                                                         )
                                                                         .add("authorAffiliation",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "https://ror.org/03vek6s52")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -5215,11 +5215,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                                                         .add("multiple", true)
                                                         .add("typeName", "author")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("datasetContactEmail",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "hsimpson@mailinator.com")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -5230,11 +5230,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                                                         .add("multiple", true)
                                                         .add("typeName", "datasetContact")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("dsDescriptionValue",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "Just a test dataset.")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -5245,26 +5245,26 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                                                         .add("multiple", true)
                                                         .add("typeName", "dsDescription")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
                                                                 .add("Other")
                                                         )
                                                         .add("typeClass", "controlledVocabulary")
                                                         .add("multiple", true)
                                                         .add("typeName", "subject")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("authorName",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "https://ror.org/01cwqze88") // NIH
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
                                                                                         .add("typeName", "grantNumberAgency")
                                                                         )
                                                                         .add("authorAffiliation",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "12345")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -5636,7 +5636,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Test Tabular Tag Name
         String pathToTabularTestFile = "src/test/resources/tab/test.tab";
-        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         String tabularFileId = uploadTabularFileResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
@@ -5692,7 +5692,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Creating a categorized test file
         String pathToTestFile = "src/test/resources/images/coffeeshop.png";
-        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
         String dataFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
         String testCategory = "testCategory";
@@ -5815,7 +5815,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Test tabular tag name criteria
         String pathToTabularTestFile = "src/test/resources/tab/test.tab";
-        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         String tabularFileId = uploadTabularFileResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
@@ -5904,7 +5904,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Creating a categorized test file
         String pathToTestFile = "src/test/resources/images/coffeeshop.png";
-        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
         String dataFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
         String testCategory = "testCategory";
@@ -6032,7 +6032,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Upload test tabular file
         String pathToTabularTestFile = "src/test/resources/tab/test.tab";
-        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         int tabularOriginalSize = 157;
@@ -6071,7 +6071,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("message", equalTo("Invalid mode: " + invalidMode));
 
         // Upload second test tabular file (same source as before)
-        uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         // Ensure tabular file is ingested
@@ -6350,7 +6350,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Upload file
         String pathToTestFile = "src/test/resources/images/coffeeshop.png";
-        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         String fileId = JsonPath.from(uploadResponse.body().asString()).getString("data.files[0].dataFile.id");
@@ -6468,10 +6468,10 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String identifier = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.identifier");
         String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
         // used for all added files
-        JsonObjectBuilder json = Json.createObjectBuilder()
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder()
                 .add("description", "my description")
                 .add("directoryLabel", "/data/subdir1/")
-                .add("categories", Json.createArrayBuilder()
+                .add("categories", JsonUtil.createArrayBuilder()
                         .add("Data")
                 );
         JsonObject jsonObj = json.build();
@@ -6613,10 +6613,10 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String identifier = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.identifier");
         String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
         // used for all added files
-        JsonObjectBuilder json = Json.createObjectBuilder()
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder()
                 .add("description", "my description")
                 .add("directoryLabel", "/data/subdir1/")
-                .add("categories", Json.createArrayBuilder()
+                .add("categories", JsonUtil.createArrayBuilder()
                         .add("Data")
                 );
         JsonObject jsonObj = json.build();
@@ -6905,7 +6905,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String pathToFile4 = "scripts/api/data/licenses/licenseCC-BY-NC-ND-4.0.json";
         String pathToFile5 = "scripts/api/data/licenses/licenseCC-BY-ND-4.0.json";
 
-        JsonObjectBuilder json = Json.createObjectBuilder();
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder();
         json.add("description", "File 1");
         Response addFile1Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, json.build(), apiToken);
         Long file1Id = JsonPath.from(addFile1Response.body().asString()).getLong("data.files[0].dataFile.id");
@@ -6927,7 +6927,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Long file5Id = JsonPath.from(addFile5Response.body().asString()).getLong("data.files[0].dataFile.id");
 
         // Delete files 1 and 2
-        JsonArrayBuilder fileIdsToDelete = Json.createArrayBuilder();
+        JsonArrayBuilder fileIdsToDelete = JsonUtil.createArrayBuilder();
         fileIdsToDelete.add(file1Id);
         fileIdsToDelete.add(file2Id);
 
@@ -6957,7 +6957,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode());
 
         // Delete files 3 and 4 from the published dataset
-        fileIdsToDelete = Json.createArrayBuilder();
+        fileIdsToDelete = JsonUtil.createArrayBuilder();
         fileIdsToDelete.add(file3Id);
         fileIdsToDelete.add(file4Id);
 
@@ -6977,7 +6977,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Test error conditions
 
         // Try to delete a non-existent file
-        fileIdsToDelete = Json.createArrayBuilder();
+        fileIdsToDelete = JsonUtil.createArrayBuilder();
         fileIdsToDelete.add(999999L);
 
         deleteFilesResponse = UtilIT.deleteDatasetFiles(datasetId.toString(), fileIdsToDelete.build(), apiToken);
@@ -6997,7 +6997,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String unauthorizedUserApiToken = UtilIT.getApiTokenFromResponse(createSecondUser);
 
         //Reset to a valid file id
-        fileIdsToDelete = Json.createArrayBuilder();
+        fileIdsToDelete = JsonUtil.createArrayBuilder();
         fileIdsToDelete.add(file5Id);
         deleteFilesResponse = UtilIT.deleteDatasetFiles(datasetId.toString(), fileIdsToDelete.build(), unauthorizedUserApiToken);
         deleteFilesResponse.then().assertThat()
@@ -7041,17 +7041,17 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String pathToFile2 = "scripts/api/data/licenses/licenseCC-BY-4.0.json";
         String pathToFile3 = "scripts/search/ds.tsv";
 
-        JsonObjectBuilder json = Json.createObjectBuilder();
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder();
         json.add("description", "File 1");
         Response addFile1Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, json.build(), apiToken);
         Integer file1Id = UtilIT.getDataFileIdFromResponse(addFile1Response);
 
-        json = Json.createObjectBuilder();
+        json = JsonUtil.createObjectBuilder();
         json.add("description", "File 2");
         Response addFile2Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile2, json.build(), apiToken);
         Integer file2Id = UtilIT.getDataFileIdFromResponse(addFile2Response);
 
-        json = Json.createObjectBuilder();
+        json = JsonUtil.createObjectBuilder();
         json.add("description", "File 3");
         Response addFile3Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile3, json.build(), apiToken);
         Integer file3Id = UtilIT.getDataFileIdFromResponse(addFile3Response);
@@ -7059,22 +7059,22 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration for " + pathToFile3);
         
         // Prepare JSON for updating file metadata
-        JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
-        filesArrayBuilder.add(Json.createObjectBuilder()
+        JsonArrayBuilder filesArrayBuilder = JsonUtil.createArrayBuilder();
+        filesArrayBuilder.add(JsonUtil.createObjectBuilder()
                 .add("dataFileId", file1Id)
                 .add("label", "Updated File 1")
                 .add("directoryLabel", "dir1/")
                 .add("description", "Updated description for File 1")
-                .add("categories", Json.createArrayBuilder().add("Category 1").add("Category 2"))
+                .add("categories", JsonUtil.createArrayBuilder().add("Category 1").add("Category 2"))
                 .add("provFreeForm", "Updated provenance for File 1")
                 .add("restrict", true));
 
-        filesArrayBuilder.add(Json.createObjectBuilder()
+        filesArrayBuilder.add(JsonUtil.createObjectBuilder()
                 .add("dataFileId", file2Id)
                 .add("label", "Updated File 2")
                 .add("directoryLabel", "dir2/")
                 .add("description", "Updated description for File 2")
-                .add("categories", Json.createArrayBuilder().add("Category 3"))
+                .add("categories", JsonUtil.createArrayBuilder().add("Category 3"))
                 .add("provFreeForm", "Updated provenance for File 2"));
 
         // Test updating file metadata
@@ -7120,8 +7120,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         }
 
         // Test updating the same file with the same restrict value
-        JsonArrayBuilder sameRestrictValueArrayBuilder = Json.createArrayBuilder();
-        sameRestrictValueArrayBuilder.add(Json.createObjectBuilder()
+        JsonArrayBuilder sameRestrictValueArrayBuilder = JsonUtil.createArrayBuilder();
+        sameRestrictValueArrayBuilder.add(JsonUtil.createObjectBuilder()
                 .add("dataFileId", file1Id)
                 .add("restrict", true));
 
@@ -7131,8 +7131,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("message", containsString("is already restricted"));
 
         // Test updating a file not in the dataset
-        JsonArrayBuilder invalidFilesArrayBuilder = Json.createArrayBuilder();
-        invalidFilesArrayBuilder.add(Json.createObjectBuilder()
+        JsonArrayBuilder invalidFilesArrayBuilder = JsonUtil.createArrayBuilder();
+        invalidFilesArrayBuilder.add(JsonUtil.createObjectBuilder()
                 .add("dataFileId", 999999)
                 .add("label", "Invalid File"));
 
@@ -7148,8 +7148,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         publishDatasetResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        JsonArrayBuilder postPublishFilesArrayBuilder = Json.createArrayBuilder();
-        postPublishFilesArrayBuilder.add(Json.createObjectBuilder()
+        JsonArrayBuilder postPublishFilesArrayBuilder = JsonUtil.createArrayBuilder();
+        postPublishFilesArrayBuilder.add(JsonUtil.createObjectBuilder()
                 .add("dataFileId", file3Id)
                 .add("label", "Updated File 3 After Publication")
                 .add("description", "Updated description for File 3 after publication"));
@@ -7173,10 +7173,10 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         }
 
      // Test adding dataFileTags to a non-tabular file (should fail)
-        JsonArrayBuilder nonTabularTagsArrayBuilder = Json.createArrayBuilder();
-        nonTabularTagsArrayBuilder.add(Json.createObjectBuilder()
+        JsonArrayBuilder nonTabularTagsArrayBuilder = JsonUtil.createArrayBuilder();
+        nonTabularTagsArrayBuilder.add(JsonUtil.createObjectBuilder()
                 .add("dataFileId", file1Id)
-                .add("dataFileTags", Json.createArrayBuilder().add("Survey")));
+                .add("dataFileTags", JsonUtil.createArrayBuilder().add("Survey")));
 
         Response nonTabularTagsResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), nonTabularTagsArrayBuilder.build(), apiToken);
         nonTabularTagsResponse.then().assertThat()
@@ -7184,10 +7184,10 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("message", containsString(BundleUtil.getStringFromBundle("file.metadata.datafiletag.not_tabular")));
 
         // Test adding valid dataFileTags to a tabular file (file3 is ds.tsv, which is tabular)
-        JsonArrayBuilder validTagsArrayBuilder = Json.createArrayBuilder();
-        validTagsArrayBuilder.add(Json.createObjectBuilder()
+        JsonArrayBuilder validTagsArrayBuilder = JsonUtil.createArrayBuilder();
+        validTagsArrayBuilder.add(JsonUtil.createObjectBuilder()
                 .add("dataFileId", file3Id)
-                .add("dataFileTags", Json.createArrayBuilder().add(DataFileTag.TagType.Survey.toString()).add(DataFileTag.TagType.Survey.toString())));
+                .add("dataFileTags", JsonUtil.createArrayBuilder().add(DataFileTag.TagType.Survey.toString()).add(DataFileTag.TagType.Survey.toString())));
 
         Response validTagsResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), validTagsArrayBuilder.build(), apiToken);
         validTagsResponse.then().assertThat()
@@ -7213,10 +7213,10 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertTrue(foundValidTags);
 
         // Test adding an invalid dataFileTag to a tabular file
-        JsonArrayBuilder invalidTagsArrayBuilder = Json.createArrayBuilder();
-        invalidTagsArrayBuilder.add(Json.createObjectBuilder()
+        JsonArrayBuilder invalidTagsArrayBuilder = JsonUtil.createArrayBuilder();
+        invalidTagsArrayBuilder.add(JsonUtil.createObjectBuilder()
                 .add("dataFileId", file3Id)
-                .add("dataFileTags", Json.createArrayBuilder().add("InvalidTag")));
+                .add("dataFileTags", JsonUtil.createArrayBuilder().add("InvalidTag")));
 
         Response invalidTagsResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), invalidTagsArrayBuilder.build(), apiToken);
         invalidTagsResponse.then().assertThat()
@@ -7229,8 +7229,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUser);
 
         // Attempt to update file metadata with the second user
-        JsonArrayBuilder unauthorizedFilesArrayBuilder = Json.createArrayBuilder();
-        unauthorizedFilesArrayBuilder.add(Json.createObjectBuilder()
+        JsonArrayBuilder unauthorizedFilesArrayBuilder = JsonUtil.createArrayBuilder();
+        unauthorizedFilesArrayBuilder.add(JsonUtil.createObjectBuilder()
                 .add("dataFileId", file3Id)
                 .add("label", "Unauthorized Update")
                 .add("description", "This update should not be allowed"));

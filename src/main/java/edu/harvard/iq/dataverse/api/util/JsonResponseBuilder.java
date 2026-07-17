@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api.util;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonValue;
@@ -22,7 +23,7 @@ import java.util.logging.Logger;
 
 public class JsonResponseBuilder {
     
-    private JsonObjectBuilder entityBuilder = Json.createObjectBuilder();
+    private JsonObjectBuilder entityBuilder = JsonUtil.createObjectBuilder();
     private Response.ResponseBuilder jerseyResponseBuilder;
     private boolean alreadyLogged = false;
     

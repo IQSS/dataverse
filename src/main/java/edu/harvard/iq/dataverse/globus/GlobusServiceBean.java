@@ -225,7 +225,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         permissions.setPath(endpoint.getBasePath() + "/");
         permissions.setPermissions("rw");
         
-        JsonObjectBuilder response = Json.createObjectBuilder();
+        JsonObjectBuilder response = JsonUtil.createObjectBuilder();
         //Try to create the directory (202 status) if it does not exist (502-already exists)
         int mkDirStatus = makeDirs(endpoint, dataset);
         if (!(mkDirStatus== 202 || mkDirStatus == 502)) {
@@ -259,7 +259,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         response.add("status", requestPermStatus);
         if (requestPermStatus == 201) {
             String driverId = dataset.getEffectiveStorageDriverId();
-            JsonObjectBuilder paths = Json.createObjectBuilder();
+            JsonObjectBuilder paths = JsonUtil.createObjectBuilder();
             for (int i = 0; i < numberOfPaths; i++) {
                 String storageIdentifier = DataAccess.getNewStorageIdentifier(driverId);
                 int lastIndex = Math.max(storageIdentifier.lastIndexOf("/"), storageIdentifier.lastIndexOf(":"));
@@ -431,7 +431,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         String driverId = dataset.getEffectiveStorageDriverId();
         JsonArray endpoints = GlobusAccessibleStore.getReferenceEndpointsWithPaths(driverId);
 
-        JsonObjectBuilder fileMap = Json.createObjectBuilder();
+        JsonObjectBuilder fileMap = JsonUtil.createObjectBuilder();
         referencedFiles.forEach(value -> {
             if (value.getValueType() != ValueType.STRING) {
                 throw new JsonParsingException("ReferencedFiles must be strings", null);
@@ -1125,7 +1125,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         JsonArray newfilesJsonArray = newfilesJsonObject.getJsonArray("files");
         logger.fine("Size: " + newfilesJsonArray.size());
         logger.fine("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
-        JsonArrayBuilder addFilesJsonData = Json.createArrayBuilder();
+        JsonArrayBuilder addFilesJsonData = JsonUtil.createArrayBuilder();
 
         for (JsonObject fileJsonObject : filesJsonArray.getValuesAs(JsonObject.class)) {
 
@@ -1478,7 +1478,7 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         JsonArrayBuilder filesObject = (JsonArrayBuilder) completableFuture.get();
         
-        JsonObject output = Json.createObjectBuilder().add("files", filesObject).build();
+        JsonObject output = JsonUtil.createObjectBuilder().add("files", filesObject).build();
 
         return output;
 
@@ -1736,7 +1736,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                     return;
                 }
 
-                JsonArrayBuilder filesJsonArrayBuilder = Json.createArrayBuilder();
+                JsonArrayBuilder filesJsonArrayBuilder = JsonUtil.createArrayBuilder();
 
                 for (ExternalFileUploadInProgress pendingFile : fileUploadsInProgress) {
                     String jsonInfoString = pendingFile.getFileInfo();

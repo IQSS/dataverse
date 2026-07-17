@@ -142,7 +142,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
             token = ctxt.authentication().generateApiTokenForUser(user);
         }
         if (!preconditionsMet(version, token, requestedSettings)) {
-            JsonObjectBuilder statusObjectBuilder = Json.createObjectBuilder();
+            JsonObjectBuilder statusObjectBuilder = JsonUtil.createObjectBuilder();
             statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
             statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE,
                     "Successful archiving of earlier versions is required.");
@@ -192,7 +192,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
 
                 WorkflowStepResult s3Result = super.performArchiveSubmission(dv, dataciteXml, ore, terms, token, requestedSettings);
 
-                JsonObjectBuilder statusObject = Json.createObjectBuilder();
+                JsonObjectBuilder statusObject = JsonUtil.createObjectBuilder();
                 statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
                 statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
 
@@ -204,7 +204,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                     // Now contact DRS
                     boolean trustCert = drsConfigObject.getBoolean(TRUST_CERT, false);
                     int jwtTimeout = drsConfigObject.getInt(TIMEOUT, 5);
-                    JsonObjectBuilder job = Json.createObjectBuilder();
+                    JsonObjectBuilder job = JsonUtil.createObjectBuilder();
 
                     job.add(S3_BUCKET_NAME, adminMetadata.getString(S3_BUCKET_NAME));
 

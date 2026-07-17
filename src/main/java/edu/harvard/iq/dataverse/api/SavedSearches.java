@@ -11,6 +11,8 @@ import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJBException;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -43,7 +45,7 @@ public class SavedSearches extends AbstractApiBean {
     @Operation(summary = "Lists saved-search endpoints",
             description = "Returns a simple list of supported saved-search administration endpoint patterns.")
     public Response meta() {
-        JsonArrayBuilder endpoints = Json.createArrayBuilder();
+        JsonArrayBuilder endpoints = JsonUtil.createArrayBuilder();
         endpoints.add("GET");
         endpoints.add("GET /list");
         endpoints.add("GET /id");
@@ -57,13 +59,13 @@ public class SavedSearches extends AbstractApiBean {
     @Operation(summary = "Lists saved searches",
             description = "Returns all saved searches with query, filter queries, id, definition point, and creator id.")
     public Response list() {
-        JsonArrayBuilder savedSearchesBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder savedSearchesBuilder = JsonUtil.createArrayBuilder();
         List<SavedSearch> savedSearches = savedSearchSvc.findAll();
         for (SavedSearch savedSearch : savedSearches) {
             JsonObjectBuilder thisSavedSearch = toJson(savedSearch);
             savedSearchesBuilder.add(thisSavedSearch);
         }
-        JsonObjectBuilder response = Json.createObjectBuilder();
+        JsonObjectBuilder response = JsonUtil.createObjectBuilder();
         response.add("savedSearches", savedSearchesBuilder);
         return ok(response);
     }
@@ -85,10 +87,10 @@ public class SavedSearches extends AbstractApiBean {
     }
 
     private JsonObjectBuilder toJson(SavedSearch savedSearch) {
-        JsonObjectBuilder savedSearchJson = Json.createObjectBuilder();
+        JsonObjectBuilder savedSearchJson = JsonUtil.createObjectBuilder();
         long savedSearchId = savedSearch.getId();
         Dataverse definitionPoint = savedSearch.getDefinitionPoint();
-        JsonArrayBuilder fqBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder fqBuilder = JsonUtil.createArrayBuilder();
         for (SavedSearchFilterQuery fq : savedSearch.getSavedSearchFilterQueries()) {
             fqBuilder.add(fq.getFilterQuery());
         }
@@ -175,7 +177,7 @@ public class SavedSearches extends AbstractApiBean {
 
         try {
             SavedSearch persistedSavedSearch = savedSearchSvc.add(toPersist);
-            return ok("Added: " + persistedSavedSearch, Json.createObjectBuilder().add("id", persistedSavedSearch.getId()));
+            return ok("Added: " + persistedSavedSearch, JsonUtil.createObjectBuilder().add("id", persistedSavedSearch.getId()));
         } catch (EJBException ex) {
             StringBuilder errors = new StringBuilder();
             Throwable throwable = ex.getCause();
@@ -208,7 +210,7 @@ public class SavedSearches extends AbstractApiBean {
         }
 
         if (wasDeleted) {
-            return ok(Json.createObjectBuilder().add("Deleted", doomedId));
+            return ok(JsonUtil.createObjectBuilder().add("Deleted", doomedId));
         } else {
             return error(INTERNAL_SERVER_ERROR, "Problem deleting id " + doomedId);
         }

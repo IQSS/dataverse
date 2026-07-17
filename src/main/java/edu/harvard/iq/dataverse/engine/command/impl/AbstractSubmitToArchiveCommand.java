@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
@@ -83,7 +84,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
             token = ctxt.authentication().generateApiTokenForUser(user);
         }
         if (!preconditionsMet(version, token, requestedSettings)) {
-            JsonObjectBuilder statusObjectBuilder = Json.createObjectBuilder();
+            JsonObjectBuilder statusObjectBuilder = JsonUtil.createObjectBuilder();
             statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
             statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE,
                     "Successful archiving of earlier versions is required.");

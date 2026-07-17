@@ -11,6 +11,8 @@ import java.io.StringReader;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
@@ -106,7 +108,7 @@ public class DataCaptureModuleServiceBeanIT {
     }
 
     private static JsonObject startFileSystemImportJob(HttpResponse<JsonNode> uploadRequest) {
-        JsonObjectBuilder jab = Json.createObjectBuilder();
+        JsonObjectBuilder jab = JsonUtil.createObjectBuilder();
         jab.add("status", uploadRequest.getStatus());
         int status = uploadRequest.getStatus();
         JsonNode body = uploadRequest.getBody();

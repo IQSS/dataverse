@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.Stateless;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -91,13 +92,13 @@ public class Pids extends AbstractApiBean {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
         }
 
-        JsonArrayBuilder unreserved = Json.createArrayBuilder();
+        JsonArrayBuilder unreserved = JsonUtil.createArrayBuilder();
         for (Dataset dataset : datasetSvc.findAll()) {
             if (dataset.isReleased()) {
                 continue;
             }
             if (dataset.getGlobalIdCreateTime() == null) {
-                unreserved.add(Json.createObjectBuilder()
+                unreserved.add(JsonUtil.createObjectBuilder()
                         .add("id", dataset.getId())
                         .add("pid", dataset.getGlobalId().asString())
                 );
@@ -105,7 +106,7 @@ public class Pids extends AbstractApiBean {
         }
         JsonArray finalUnreserved = unreserved.build();
         int size = finalUnreserved.size();
-        return ok(Json.createObjectBuilder()
+        return ok(JsonUtil.createObjectBuilder()
                 .add("numUnreserved", size)
                 .add("count", finalUnreserved)
         );
