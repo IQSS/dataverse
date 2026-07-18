@@ -1218,7 +1218,7 @@ You can configure this redirect properly in your cloud environment to generate a
 Amazon S3 Storage (or Compatible)
 +++++++++++++++++++++++++++++++++
 
-The Dataverse Software supports Amazon S3 storage as well as other S3-compatible stores (like Minio, Ceph RADOS S3 Gateway and many more) for files uploaded to your Dataverse installation.
+The Dataverse Software supports Amazon S3 storage as well as other S3-compatible stores (like Ceph RADOS S3 Gateway and many more) for files uploaded to your Dataverse installation.
 
 The Dataverse Software S3 driver supports multi-part upload for large files (over 1 GB by default - see the min-part-size option in the table below to change this).
 
@@ -1264,7 +1264,7 @@ Please make note of the following details:
 
 - **Endpoint URL** - consult the documentation of your service on how to find it.
 
-  * Example: https://play.minio.io:9000
+  * Example: http://localhost.localstack.cloud:4566
 
 - **Region:** Optional, but some services might use it. Consult your service documentation.
 
@@ -1460,11 +1460,6 @@ You may provide the values for these via any `supported MicroProfile Config API 
 
 Reported Working S3-Compatible Storage
 ######################################
-
-`Minio v2018-09-12 <https://minio.io>`_
-  Set ``dataverse.files.<id>.path-style-access=true``, as Minio works path-based. Works pretty smooth, easy to setup.
-  **Can be used for quick testing, too:** just use the example values above. Uses the public (read: unsecure and
-  possibly slow) https://play.minio.io:9000 service.
 
 `StorJ Object Store <https://www.storj.io>`_
  StorJ is a distributed object store that can be configured with an S3 gateway. Per the S3 Storage instructions above, you'll first set up the StorJ S3 store by defining the id, type, and label. After following the general installation, set the following configuration to use a StorJ object store: ``dataverse.files.<id>.chunked-encoding=false``. For step-by-step instructions see https://docs.storj.io/dcs/how-tos/dataverse-integration-guide/
@@ -3433,6 +3428,31 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
    This setting will be ignored unless the :ref:`dataverse.api.blocked.policy` is set to ``unblock-key``.  Otherwise the deprecated :ref:`:BlockedApiKey` will be used
 
 
+.. _dataverse.legacy.api-response-message-style:
+
+dataverse.legacy.api-response-message-style
++++++++++++++++++++++++++++++++++++++++++++
+
+Opt-out of no longer nesting an object in the "message" field, carrying the actual notification in its "message" field.
+Enabling this will re-activate the legacy message style using ``{"message":{"message":"..."}}``, instead of the aligned format ``{"message": "..."}``.
+
+This option is provided as a temporary workaround for integrations that may have implemented
+workarounds for the buggy behavior. The following endpoints are affected:
+
+- ``POST /api/datasets/{id}/add`` (just the duplicate file warning)
+- ``PUT /api/admin/settings``
+- ``PUT /api/dataverses/{id}``
+- ``PUT /api/dataverses/{id}/inputLevels``
+- ``POST /api/admin/savedsearches``
+- ``PUT /api/harvest/clients/{nickName}``
+- ``PUT /api/harvest/server/oaisets/{specname}``
+
+Please update your integrations to expect the corrected message format and deactivate this setting.
+In a future version of Dataverse, the legacy format is expected to be removed completely.
+See also :ref:`dataverse.feature.unify-api-response-message-style`.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_LEGACY_API_RESPONSE_MESSAGE_STYLE``.
+
 .. _dataverse.ui.show-validity-label-when-published:
 
 dataverse.ui.show-validity-label-when-published
@@ -4024,6 +4044,19 @@ dataverse.feature.api-bearer-auth-use-oauth-user-on-id-match
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Allows the use of an OAuth user account (GitHub, Google, or ORCID) when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing OAuth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
+
+.. _dataverse.feature.unify-api-response-message-style:
+
+dataverse.feature.unify-api-response-message-style
+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+When activated, the "message" in API responses will no longer be nested in the "data" field.
+For any response carrying a notification, these will be found within a top-level "message" field of the JSON returned.
+This affects about 230 endpoints and is likely to break existing integrations and clients.
+It is mandatory to test instance clients and integrations thoroughly and it is not recommended to be used in production.
+In a future Dataverse version, the (currently) experimental response message style will be made the only supported one.
+
+See also :ref:`dataverse.legacy.api-response-message-style`.
 
 .. _dataverse.feature.avoid-expensive-solr-join:
 

@@ -45,8 +45,8 @@ services:
       - ./data/app/data:/dv
       - ./data/app/secrets:/secrets
     tmpfs:
-      - /dumps:mode=770,size=2052M,uid=1000,gid=1000
-      - /tmp:mode=770,size=2052M,uid=1000,gid=1000
+      - /dumps:mode=1777,size=2052M
+      - /tmp:mode=1777,size=2052M
     mem_limit: 2147483648 # 2 GiB
     mem_reservation: 1024m
     privileged: false
@@ -172,7 +172,7 @@ services:
     #volumes:
     #  - ./data/smtp/data:/mail
     tmpfs:
-      - /mail:mode=770,size=128M,uid=1000,gid=1000
+      - /mail:mode=1777,size=128M
 
 networks:
   dataverse:

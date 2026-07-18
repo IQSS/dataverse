@@ -29,8 +29,13 @@ import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("guestbooks")
+@Tag(name = "Guestbooks", description = "Guestbook definitions and guestbook response operations.")
 public class Guestbooks extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Guestbooks.class.getCanonicalName());
@@ -43,7 +48,11 @@ public class Guestbooks extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}")
-    public Response getGuestbook(@Context ContainerRequestContext crc, @PathParam("id") Long id) {
+    @Operation(summary = "Returns a guestbook",
+            description = "Returns the guestbook with the specified numeric id.")
+    public Response getGuestbook(@Context ContainerRequestContext crc,
+            @Parameter(description = "Numeric id of the guestbook to return.", required = true)
+            @PathParam("id") Long id) {
         return response( req -> {
             final Guestbook retrieved = guestbookService.find(id);
             if (retrieved != null) {
@@ -58,7 +67,15 @@ public class Guestbooks extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/list")
-    public Response getGuestbooks(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, @QueryParam("includeInherited") boolean includeInherited, @QueryParam("includeStats") boolean includeStats) {
+    @Operation(summary = "Lists guestbooks for a dataverse",
+            description = "Returns guestbooks configured for a dataverse, optionally including inherited guestbooks and usage statistics.")
+    public Response getGuestbooks(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias whose guestbooks are listed.", required = true)
+            @PathParam("identifier") String identifier,
+            @Parameter(description = "Include guestbooks inherited from parent dataverses.")
+            @QueryParam("includeInherited") boolean includeInherited,
+            @Parameter(description = "Include guestbook usage and response counts.")
+            @QueryParam("includeStats") boolean includeStats) {
         return response( req -> {
             Dataverse dataverse = findDataverseOrDie(identifier);
             final Long dataverseId = dataverse.getId();
@@ -85,7 +102,13 @@ public class Guestbooks extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{identifier}")
-    public Response createGuestbook(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, String jsonBody) {
+    @Operation(summary = "Creates a guestbook",
+            description = "Creates a guestbook in the specified dataverse when the requester can edit that dataverse.")
+    public Response createGuestbook(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias where the guestbook is created.", required = true)
+            @PathParam("identifier") String identifier,
+            @RequestBody(description = "Guestbook JSON definition to parse and create.")
+            String jsonBody) {
 
         try {
             Dataverse dataverse = findDataverseOrDie(identifier);
@@ -120,7 +143,13 @@ public class Guestbooks extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{id}")
-    public Response updateGuestbook(@Context ContainerRequestContext crc, @PathParam("id") Long id, String jsonBody) {
+    @Operation(summary = "Updates a guestbook",
+            description = "Updates a guestbook definition from JSON when the requester may edit the owning dataverse.")
+    public Response updateGuestbook(@Context ContainerRequestContext crc,
+            @Parameter(description = "Numeric id of the guestbook to update.", required = true)
+            @PathParam("id") Long id,
+            @RequestBody(description = "Guestbook JSON definition to parse and apply.")
+            String jsonBody) {
         return response( req -> {
             Guestbook guestbook = guestbookService.find(id);
             if (guestbook != null) {
@@ -142,8 +171,15 @@ public class Guestbooks extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/{id}/responses")
-    public Response getResponses(@Context ContainerRequestContext crc, @PathParam("id") Long id,
-                                 @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
+    @Operation(summary = "Lists guestbook responses",
+            description = "Returns guestbook metadata and response records, with pagination links when a limit is supplied.")
+    public Response getResponses(@Context ContainerRequestContext crc,
+                                 @Parameter(description = "Numeric id of the guestbook whose responses are listed.", required = true)
+                                 @PathParam("id") Long id,
+                                 @Parameter(description = "Maximum number of response records to return.")
+                                 @QueryParam("limit") Integer limit,
+                                 @Parameter(description = "Response record offset.")
+                                 @QueryParam("offset") Integer offset) {
 
         return response( req -> {
             Guestbook guestbook = guestbookService.find(id);
@@ -194,7 +230,15 @@ public class Guestbooks extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{identifier}/{id}/enabled")
-    public Response enableGuestbook(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, @PathParam("id") String id, String body) {
+    @Operation(summary = "Sets guestbook enabled state",
+            description = "Updates whether a guestbook in the specified dataverse is enabled.")
+    public Response enableGuestbook(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse alias containing the guestbook.", required = true)
+            @PathParam("identifier") String identifier,
+            @Parameter(description = "Numeric id of the guestbook to update.", required = true)
+            @PathParam("id") String id,
+            @RequestBody(description = "Boolean text indicating whether the guestbook is enabled.")
+            String body) {
         body = body.trim();
         if (!Util.isBoolean(body)) {
             return badRequest("Illegal value '" + body + "'. Use 'true' or 'false'");
