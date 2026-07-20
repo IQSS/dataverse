@@ -9,18 +9,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
@@ -30,9 +18,15 @@ import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import jakarta.persistence.StoredProcedureQuery;
 import jakarta.persistence.TypedQuery;
 import org.apache.commons.text.StringEscapeUtils;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.logging.Logger;
 /**
  *
  * @author skraffmiller
@@ -117,10 +111,19 @@ public class GuestbookResponseServiceBean {
     }
 
     public List<GuestbookResponse> findAllByGuestbookId(Long guestbookId) {
+        return findAllByGuestbookId(guestbookId, null, null);
+    }
+    public List<GuestbookResponse> findAllByGuestbookId(Long guestbookId, Integer offset, Integer limit) {
+        if (guestbookId != null) {
+            TypedQuery<GuestbookResponse> query = em.createQuery("select o from GuestbookResponse as o where o.guestbook.id = " + guestbookId + " order by o.responseTime desc", GuestbookResponse.class);
+            if (offset != null) {
+                query.setFirstResult(offset);
+            }
+            if (limit != null) {
+                query.setMaxResults(limit);
+            }
 
-        if (guestbookId == null) {
-        } else {
-            return em.createQuery("select o from GuestbookResponse as o where o.guestbook.id = " + guestbookId + " order by o.responseTime desc", GuestbookResponse.class).getResultList();
+            return query.getResultList();
         }
         return null;
     }
@@ -488,17 +491,25 @@ public class GuestbookResponseServiceBean {
         return (Long) query.getSingleResult();
     }
 
-    public Long findCountAll() {
-        return findCountAll(null);
-    }
-
     public Long findCountAll(Long dataverseId) {
-        String queryString;
-        if (dataverseId != null) {
-            queryString = "select count(o.id) from GuestbookResponse  o,  DvObject v where o.dataset_id = v.id and v.owner_id = " + dataverseId + " ";
-        } else {
-            queryString = "select count(o.id) from GuestbookResponse  o ";
+      
+        if (dataverseId == null) {
+            return null;
         }
+        
+        // Note that this method used to support NULL dataverseId, 
+        // in which case it counted ALL the guestbookresponse rows
+        // for the entire instance: 
+        // queryString = "select count(o.id) from GuestbookResponse  o ";
+        // I removed this code (it was not being used, thankfully) since
+        // the query can be insanely expensive on a large production table. 
+        // That's why we use a stored procedure to "estimate" its size, in 
+        // the dedicated getTotalDownloadCount() method further below, for 
+        // example, when we need to show the total number of downloads on 
+        // the homepage. (L.A.)
+        
+        String queryString = "select count(o.id) from GuestbookResponse  o, DvObject v, Dataset d where o.dataset_id = v.id and v.id = d.id and v.owner_id = " + dataverseId + " ";
+            
 
         Query query = em.createNativeQuery(queryString);
         return (Long) query.getSingleResult();
@@ -762,49 +773,17 @@ public class GuestbookResponseServiceBean {
         }
     }
     
-    private void setUserDefaultResponses(GuestbookResponse guestbookResponse, DataverseSession session, User userIn) {
-        User user;
-        User sessionUser = session.getUser();
-        
-        if (userIn != null){
-            user = userIn;
-        } else{
-            user = sessionUser;
-        }
-         
-        if (user != null) {
-            guestbookResponse.setEmail(getUserEMail(user));
-            guestbookResponse.setName(getUserName(user));
-            guestbookResponse.setInstitution(getUserInstitution(user));
-            guestbookResponse.setPosition(getUserPosition(user));
-            guestbookResponse.setAuthenticatedUser(getAuthenticatedUser(user));
-        } else {
-            guestbookResponse.setEmail("");
-            guestbookResponse.setName("");
-            guestbookResponse.setInstitution("");
-            guestbookResponse.setPosition("");
-            guestbookResponse.setAuthenticatedUser(null);
-        }
-        guestbookResponse.setSessionId(session.toString());
+    private void setUserDefaultResponses(GuestbookResponse guestbookResponse, DataverseSession session, User user) {
+        guestbookResponse.setEmail(getUserEMail(user));
+        guestbookResponse.setName(getUserName(user));
+        guestbookResponse.setInstitution(getUserInstitution(user));
+        guestbookResponse.setPosition(getUserPosition(user));
+        guestbookResponse.setAuthenticatedUser(getAuthenticatedUser(user));
+        guestbookResponse.setSessionId(session != null ? session.toString() : "");
     }
     
     private void setUserDefaultResponses(GuestbookResponse guestbookResponse, DataverseSession session) {
-        User user = session.getUser();
-        
-        if (user != null) {
-            guestbookResponse.setEmail(getUserEMail(user));
-            guestbookResponse.setName(getUserName(user));
-            guestbookResponse.setInstitution(getUserInstitution(user));
-            guestbookResponse.setPosition(getUserPosition(user));
-            guestbookResponse.setAuthenticatedUser(getAuthenticatedUser(user));
-        } else {
-            guestbookResponse.setEmail("");
-            guestbookResponse.setName("");
-            guestbookResponse.setInstitution("");
-            guestbookResponse.setPosition("");
-            guestbookResponse.setAuthenticatedUser(null);
-        }
-        guestbookResponse.setSessionId(session.toString());
+        setUserDefaultResponses(guestbookResponse, session, session.getUser());
     }
 
     public GuestbookResponse initDefaultGuestbookResponse(Dataset dataset, DataFile dataFile, DataverseSession session) {
@@ -839,7 +818,7 @@ public class GuestbookResponseServiceBean {
         }        
         guestbookResponse.setDataset(dataset);
         guestbookResponse.setResponseTime(new Date());
-        guestbookResponse.setSessionId(session.toString());
+        guestbookResponse.setSessionId(session != null ? session.toString() : "");
         guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
         setUserDefaultResponses(guestbookResponse, session, user);
         return guestbookResponse;
@@ -951,16 +930,12 @@ public class GuestbookResponseServiceBean {
         // somehow. -- L.A. 5.6
         
         
-        try {        
-            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("GuestbookResponse.estimateGuestBookResponseTableSize");
-            query.execute();
-            Long totalCount = (Long) query.getOutputParameterValue(1);
-        
-            if (totalCount != null) {
-                return totalCount;
-            }
-        } catch (IllegalArgumentException iae) {
-            // Don't do anything, we'll fall back to using "SELECT COUNT()"
+     // In GuestbookResponseServiceBean.java
+        try {
+            Query query = em.createNativeQuery("SELECT estimateGuestBookResponseTableSize()");
+            return ((Number) query.getSingleResult()).longValue();
+        } catch (Exception e) {
+            // Fall back to using "SELECT COUNT()"
         }
         Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o where eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"';");
         return (Long) query.getSingleResult();

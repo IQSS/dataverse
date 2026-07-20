@@ -2,16 +2,22 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.InvalidFieldsCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Command to update an existing Dataverse attribute.
@@ -25,6 +31,7 @@ public class UpdateDataverseAttributeCommand extends AbstractCommand<Dataverse> 
     private static final String ATTRIBUTE_AFFILIATION = "affiliation";
     private static final String ATTRIBUTE_FILE_PIDS_ENABLED = "filePIDsEnabled";
     private static final String ATTRIBUTE_REQUIRE_FILES_TO_PUBLISH_DATASET = "requireFilesToPublishDataset";
+    private static final String ATTRIBUTE_ALLOWED_DATASET_TYPES = "allowedDatasetTypes";
     private final Dataverse dataverse;
     private final String attributeName;
     private final Object attributeValue;
@@ -48,6 +55,9 @@ public class UpdateDataverseAttributeCommand extends AbstractCommand<Dataverse> 
             case ATTRIBUTE_REQUIRE_FILES_TO_PUBLISH_DATASET:
             case ATTRIBUTE_FILE_PIDS_ENABLED:
                 setBooleanAttribute(ctxt, true);
+                break;
+            case ATTRIBUTE_ALLOWED_DATASET_TYPES:
+                setAllowedDatasetTypes(ctxt, attributeValue);
                 break;
             default:
                 throw new IllegalCommandException("'" + attributeName + "' is not a supported attribute", this);
@@ -116,4 +126,39 @@ public class UpdateDataverseAttributeCommand extends AbstractCommand<Dataverse> 
                 throw new IllegalCommandException("Unsupported boolean attribute: " + attributeName, this);
         }
     }
+
+    private void setAllowedDatasetTypes(CommandContext ctxt, Object allowedDatasetTypesIn) throws CommandException {
+        if (!getRequest().getUser().isSuperuser()) {
+            throw new PermissionException("You must be a superuser to change this setting",
+                    this, null, dataverse);
+        }
+        if (!(allowedDatasetTypesIn instanceof String stringValue)) {
+            throw new IllegalCommandException("'" + ATTRIBUTE_ALLOWED_DATASET_TYPES + "' requires a string value",
+                    this);
+        }
+
+        List<DatasetType> allowedDatasetTypes = new ArrayList<>();
+        List<String> invalidDatasetTypes = new ArrayList<>();
+
+        String[] allowedDatasetTypeNames = stringValue.split(",");
+        for (String datasetTypeName : allowedDatasetTypeNames) {
+            DatasetType datasetType = ctxt.datasetTypes().getByName(datasetTypeName.trim());
+            if (datasetType == null) {
+                invalidDatasetTypes.add(datasetTypeName);
+            } else {
+                allowedDatasetTypes.add(datasetType);
+            }
+        }
+
+        if (!invalidDatasetTypes.isEmpty()) {
+            Map<String, String> fieldErrors = new HashMap<>();
+            fieldErrors.put(ATTRIBUTE_ALLOWED_DATASET_TYPES, "The following dataset types do not exist: "
+                    + String.join(", ", invalidDatasetTypes));
+            throw new InvalidFieldsCommandException("The collection could not be updated because "
+                    + ATTRIBUTE_ALLOWED_DATASET_TYPES + " is invalid.", this, fieldErrors);
+        }
+
+        dataverse.setAllowedDatasetTypes(allowedDatasetTypes);
+    }
+
 }

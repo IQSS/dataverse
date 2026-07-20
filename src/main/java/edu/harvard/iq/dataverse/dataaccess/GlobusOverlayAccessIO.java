@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.globus.AccessToken;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
@@ -392,24 +393,24 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
     }
     
     private static String[] getAllowedEndpoints(String driverId) throws IOException {
-        String[] allowedEndpoints = null;
         if (GlobusAccessibleStore.isDataverseManaged(driverId)) {
-            allowedEndpoints = new String[1];
-            allowedEndpoints[0] = getConfigParamForDriver(driverId, TRANSFER_ENDPOINT_WITH_BASEPATH);
-            if (allowedEndpoints[0] == null) {
-                throw new IOException(
-                        "dataverse.files." + driverId + "." + TRANSFER_ENDPOINT_WITH_BASEPATH + " is required");
+            final String endpoint = getConfigParamForDriver(driverId, TRANSFER_ENDPOINT_WITH_BASEPATH);
+            if (endpoint == null) {
+                throw new IOException("dataverse.files." + driverId + "." + TRANSFER_ENDPOINT_WITH_BASEPATH + " is required");
             }
-        } else {
-            String rawEndpoints = getConfigParamForDriver(driverId, REFERENCE_ENDPOINTS_WITH_BASEPATHS);
-            if (rawEndpoints != null) {
-                allowedEndpoints = getConfigParamForDriver(driverId, REFERENCE_ENDPOINTS_WITH_BASEPATHS).split("\\s*,\\s*");
-            }
-            if (rawEndpoints == null || allowedEndpoints.length == 0) {
-                throw new IOException("dataverse.files." + driverId + ".base-url is required");
-            }
+            return new String[] { endpoint };
         }
-        return allowedEndpoints;
+
+        final String rawEndpoints = getConfigParamForDriver(driverId, REFERENCE_ENDPOINTS_WITH_BASEPATHS);
+        if (rawEndpoints == null) {
+            throw new IOException("dataverse.files." + driverId + ".base-url is required");
+        }
+
+        final List<String> allowedEndpoints = ListSplitUtil.split(rawEndpoints);
+        if (allowedEndpoints.isEmpty()) {
+            throw new IOException("dataverse.files." + driverId + ".base-url is required");
+        }
+        return allowedEndpoints.toArray(new String[0]);
     }
 
 

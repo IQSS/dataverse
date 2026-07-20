@@ -54,7 +54,7 @@ body .ui-widget {font-size: inherit;}
 
 footer {height:0px; color:#767676;}
 #dvfooter {padding-top:60px;}
-#dvfooter.widget-view {position:fixed; left:0; bottom:0; margin:0; padding:4px 0 0 0; min-height:44p; height:auto; background:#fff;}
+#dvfooter.widget-view {position:fixed; left:0; bottom:0; margin:0; padding:4px 0 0 0; min-height:44px; height:auto; background:#fff;}
 #dvfooter .poweredbylogo {text-align:right;}
 #dvfooter .poweredbylogo span {font-size:.85em;margin-right:.3em;}
 #dvfooter .version {vertical-align:bottom;white-space:nowrap;}
@@ -228,7 +228,7 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
 #dataverseHeader .dataverseHeaderCell.dataverseHeaderLogo img {max-width:100px; max-height:100px;}
 #dataverseHeader .dataverseHeaderName {padding:2em 1em 2em 0em;}
 #dataverseHeader .dataverseHeaderName .dataverseHeaderDataverseName {font-size: 1.3em;}
-#dataverseHeader .dataverseHeaderName span.label.label-unpublished {vertical-align:text-top; line-height: normal; margin-left:1em;}
+#dataverseHeader .dataverseHeaderName span.label {line-height: normal; margin-left:.5em;}
 #dataverseHeader .dataverseHeaderTagline {padding-left:2em; font-size:1.3em;}
 #dataverseHeader .dataverseHeaderLink {padding-left:2em;}
 #dataverseHeader .dataverseHeaderName .dataverseHeaderDataverseName h1 {
@@ -936,6 +936,9 @@ div.dvnDifferanceTable .versionValue {
 }
 div[id$="versionsTable"] tbody {word-break:break-word;}
 
+.archive-submit-link {
+    display: block;
+}
 
 /* DATATABLE + DROPDOWN BUTTON + OVERFLOW VISIBLE */
 thead.ui-datatable-scrollable-theadclone {display:none}

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.CreateDataFilesMaxErrorsToDisplay;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import org.apache.commons.text.StringEscapeUtils;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 @Stateless
 public class EditDataFilesPageHelper {
 
-    public static final String MAX_ERRORS_TO_DISPLAY_SETTING = ":CreateDataFilesMaxErrorsToDisplay";
+    public static final String MAX_ERRORS_TO_DISPLAY_SETTING = CreateDataFilesMaxErrorsToDisplay.toString();
     public static final Integer MAX_ERRORS_TO_DISPLAY = 5;
 
     @Inject

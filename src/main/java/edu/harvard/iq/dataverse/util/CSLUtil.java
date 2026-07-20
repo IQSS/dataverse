@@ -87,7 +87,7 @@ public class CSLUtil {
      * Adapted from private retrieveStyle method in de.undercouch.citeproc.CSL
      * Retrieves a CSL style from the classpath. For example, if the given name is
      * <code>ieee</code> this method will load the file <code>/ieee.csl</code>
-     * 
+     *
      * @param styleName the style's name
      * @return the serialized XML representation of the style
      * @throws IOException if the style could not be loaded
@@ -119,8 +119,9 @@ public class CSLUtil {
 
     private static String[] getCommonStyles() {
         if (commonStyles == null) {
-            commonStyles = JvmSettings.CSL_COMMON_STYLES.lookupOptional().orElse("chicago-author-date, ieee")
-                    .split("\\s*,\\s*");
+            commonStyles = ListSplitUtil.split(
+                JvmSettings.CSL_COMMON_STYLES.lookupOptional().orElse("chicago-author-date, ieee")
+            ).toArray(new String[0]);
         }
         return commonStyles;
     }

@@ -14,19 +14,29 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import jakarta.persistence.CacheRetrieveMode;
+import jakarta.persistence.CacheStoreMode;
+import jakarta.persistence.ConnectionConsumer;
+import jakarta.persistence.ConnectionFunction;
 import jakarta.persistence.EntityGraph;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.FindOption;
 import jakarta.persistence.FlushModeType;
 import jakarta.persistence.Id;
 import jakarta.persistence.LockModeType;
+import jakarta.persistence.LockOption;
 import jakarta.persistence.Query;
+import jakarta.persistence.RefreshOption;
 import jakarta.persistence.StoredProcedureQuery;
 import jakarta.persistence.TypedQuery;
+import jakarta.persistence.TypedQueryReference;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.CriteriaSelect;
 import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.metamodel.Metamodel;
 
@@ -206,6 +216,11 @@ public class TestEntityManager implements EntityManager {
     public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+    
+    @Override
+    public <T> TypedQuery<T> createQuery(TypedQueryReference<T> reference) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
     @Override
     public Query createNativeQuery(String sqlString) {
@@ -312,4 +327,74 @@ public class TestEntityManager implements EntityManager {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
+    @Override
+    public <C, T> T callWithConnection(ConnectionFunction<C, T> function) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public <C> void runWithConnection(ConnectionConsumer<C> action) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public <T> T find(Class<T> entityClass, Object primaryKey, FindOption... options) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public <T> T find(EntityGraph<T> entityGraph, Object primaryKey, FindOption... options) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public <T> T getReference(T entity) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void lock(Object entity, LockModeType lockMode, LockOption... options) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void refresh(Object entity, RefreshOption... options) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void setCacheRetrieveMode(CacheRetrieveMode cacheRetrieveMode) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void setCacheStoreMode(CacheStoreMode cacheStoreMode) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public CacheRetrieveMode getCacheRetrieveMode() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public CacheStoreMode getCacheStoreMode() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public <T> TypedQuery<T> createQuery(CriteriaSelect<T> selectQuery) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

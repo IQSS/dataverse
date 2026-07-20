@@ -1,0 +1,62 @@
+{
+  "dcterms:modified": "2024-05-01",
+  "dcterms:creator": "Root",
+  "@type": "ore:ResourceMap",
+  "schema:additionalType": "Dataverse OREMap Format v1.0.0",
+  "dvcore:generatedBy": {
+    "@type": "schema:SoftwareApplication",
+    "schema:name": "Dataverse",
+    "schema:version": "6.2 build develop-e615050",
+    "schema:url": "https://github.com/iqss/dataverse"
+  },
+  "@id": "https://beta.dataverse.org/api/datasets/export?exporter=OAI_ORE&persistentId=https://doi.org/10.5072/FK2/4C0JYC",
+  "ore:describes": {
+    "citation:dsDescription": {
+      "citation:dsDescriptionValue": "Minimal metadata and no files."
+    },
+    "author": {
+      "citation:authorName": "Durbin, Philip"
+    },
+    "citation:datasetContact": {
+      "citation:datasetContactEmail": "philip_durbin@harvard.edu"
+    },
+    "title": "Minimal",
+    "subject": "Other",
+    "@id": "https://doi.org/10.5072/FK2/4C0JYC",
+    "@type": [
+      "ore:Aggregation",
+      "schema:Dataset"
+    ],
+    "schema:version": "1.0",
+    "schema:name": "Minimal",
+    "schema:dateModified": "2024-05-01 14:27:17.719",
+    "schema:datePublished": "2024-05-01",
+    "schema:creativeWorkStatus": "RELEASED",
+    "schema:license": "http://creativecommons.org/publicdomain/zero/1.0",
+    "dvcore:fileTermsOfAccess": {
+      "dvcore:fileRequestAccess": true
+    },
+    "schema:includedInDataCatalog": "Root",
+    "schema:isPartOf": {
+      "schema:name": "Philip Durbin Dataverse",
+      "@id": "https://beta.dataverse.org/dataverse/pdurbin",
+      "schema:isPartOf": {
+        "schema:name": "Root",
+        "@id": "https://beta.dataverse.org/dataverse/root",
+        "schema:description": "The root dataverse."
+      }
+    },
+    "ore:aggregates": [],
+    "schema:hasPart": []
+  },
+  "@context": {
+    "author": "http://purl.org/dc/terms/creator",
+    "citation": "https://dataverse.org/schema/citation/",
+    "dcterms": "http://purl.org/dc/terms/",
+    "dvcore": "https://dataverse.org/schema/core#",
+    "ore": "http://www.openarchives.org/ore/terms/",
+    "schema": "http://schema.org/",
+    "subject": "http://purl.org/dc/terms/subject",
+    "title": "http://purl.org/dc/terms/title"
+  }
+}

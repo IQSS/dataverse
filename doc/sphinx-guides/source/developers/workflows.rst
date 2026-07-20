@@ -27,6 +27,8 @@ If a step in a workflow fails, the Dataverse installation makes an effort to rol
   provider offers two steps for sending and receiving customizable HTTP requests.
   *http/sr* and *http/authExt*, detailed below, with the latter able to use the API to make changes to the dataset being processed. (Both lock the dataset to prevent other processes from changing the dataset between the time the step is launched to when the external process responds to the Dataverse instance.)
 
+.. _workflow_admin:
+
 Administration
 ~~~~~~~~~~~~~~
 
@@ -36,6 +38,8 @@ At the moment, defining a workflow for each trigger is done for the entire insta
 
 In order to prevent unauthorized resuming of workflows, the Dataverse installation maintains a "white list" of IP addresses from which resume requests are honored. This list is maintained using the ``/api/admin/workflows/ip-whitelist`` endpoint of the :doc:`/api/native-api`. By default, the Dataverse installation honors resume requests from localhost only (``127.0.0.1;::1``), so set-ups that use a single server work with no additional configuration.
 
+Note: these settings are also exposed and manageable via the Settings API.
+See :ref:`:WorkflowsAdminIpWhitelist`, :ref:`:PrePublishDatasetWorkflowId` and :ref:`:PostPublishDatasetWorkflowId`
 
 Available Steps
 ~~~~~~~~~~~~~~~
@@ -202,16 +206,16 @@ Note - the example step includes two settings required for any archiver, three (
   }
 
 
-ldnannounce
-+++++++++++
+coarNotifyRelationshipAnnouncement
+++++++++++++++++++++++++++++++++++
 
-An experimental step that sends a Linked Data Notification (LDN) message to a specific LDN Inbox announcing the publication/availability of a dataset meeting certain criteria. 
+A step that sends a `COAR Notify Relationship Announcement <https://coar-notify.net/catalogue/workflows/repository-relationship-repository/>`_ message, using the `Linked Data Notification (LDN) <https://www.w3.org/TR/ldn/>`_ message standard,
+to a specific set of LDN Inboxes announcing a relationship between a newly published/available dataset and an external resource (e.g. one managed by the recipient). 
 
 The two parameters are
-* ``:LDNAnnounceRequiredFields`` - a list of metadata fields that must exist to trigger the message. Currently, the message also includes the values for these fields but future versions may only send the dataset's persistent identifier (making the receiver responsible for making a call-back to get any metadata).
-* ``:LDNTarget`` - a JSON object containing an ``inbox`` key whose value is the URL of the target LDN inbox to which messages should be sent, e.g. ``{"id": "https://dashv7-dev.lib.harvard.edu","inbox": "https://dashv7-api-dev.lib.harvard.edu/server/ldn/inbox","type": "Service"}`` ).
-
-The supported message format is desribed by `our preliminary specification <https://docs.google.com/document/d/1dqj8_vEcIBeyDIZCaPQvp0FM1eSGO_5CSNCdXOpoUz0/edit?usp=sharing>`_. The format is expected to change in the near future to match the standard for relationship announcements being developed as part of `the COAR Notify Project <https://notify.coar-repositories.org/>`_. 
+* ``:COARNotifyRelationshipAnnouncementTriggerFields`` - a list of metadata field types that can trigger messages. Separate messages will be sent for each field (whether of the same type or not).
+* ``:COARNotifyRelationshipAnnouncementTargets`` - a JSON Array of JSON objects containing ``id``, ``inbox``, and ``type`` fields as required by the `COAR Notify Relationship Announcement specification <https://coar-notify.net/catalogue/workflows/repository-relationship-repository/2/>`_ .
+The ``inbox`` value should be the full URL of the target LDN inbox to which messages should be sent, e.g. ``{"id": "https://dashv7-dev.lib.harvard.edu","inbox": "https://dashv7-api-dev.lib.harvard.edu/server/ldn/inbox","type": ["Service"]}`` ).
 
 
 .. code:: json
@@ -219,13 +223,13 @@ The supported message format is desribed by `our preliminary specification <http
 
   {
     "provider":":internal",
-    "stepType":"ldnannounce",
+    "stepType":"coarNotifyRelationshipAnnouncement",
     "parameters": {
-      "stepName":"LDN Announce"
+      "stepName":"COAR Notify Relationship Announcement"
     },
     "requiredSettings": {
-      ":LDNAnnounceRequiredFields": "string",
-      ":LDNTarget": "string"
+      ":COARNotifyRelationshipAnnouncementTriggerFields": "string",
+      ":COARNotifyRelationshipAnnouncementTargets": "string"
     }
   }
 

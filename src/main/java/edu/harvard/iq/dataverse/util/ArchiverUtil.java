@@ -71,5 +71,16 @@ public class ArchiverUtil {
 
         return someVersionArchived;
     }
+    
+    /**
+     * Checks if a version has been successfully archived.
+     * 
+     * @param version the version to check
+     * @return true if the version has been successfully archived, false otherwise
+     */
+    public static boolean isVersionArchived(DatasetVersion version) {
+        String status = version.getArchivalCopyLocationStatus();
+        return status != null && status.equals(DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
+    }
 
 }

@@ -28,6 +28,8 @@ import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
@@ -889,7 +891,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
                 if (thumbnailFileId != null) {
                     logger.fine("obtained file id: " + thumbnailFileId);
-                    DataFile thumbnailFile = datafileService.find(thumbnailFileId);
+                    DataFile thumbnailFile = getDataFileById(thumbnailFileId);
                     if (thumbnailFile != null) {
                         if (datafileService.isThumbnailAvailable(thumbnailFile)) {
                             assignDatasetThumbnailByNativeQuery(versionId, thumbnailFileId);
@@ -922,7 +924,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 }
 
                 if (thumbnailFileId != null) {
-                    DataFile thumbnailFile = datafileService.find(thumbnailFileId);
+                    DataFile thumbnailFile = getDataFileById(thumbnailFileId);
                     if (thumbnailFile != null) {
                         if (datafileService.isThumbnailAvailable(thumbnailFile)) {
                             assignDatasetThumbnailByNativeQuery(versionId, thumbnailFileId);
@@ -934,7 +936,11 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         }
         return null;
     }
-    
+
+    public DataFile getDataFileById(Long id) {
+        return datafileService.find(id);
+    }
+
     private void assignDatasetThumbnailByNativeQuery(Long versionId, Long dataFileId) {
         try {
             em.createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFileId + " WHERE id in (SELECT dataset_id FROM datasetversion WHERE id=" + versionId + ")").executeUpdate();
@@ -1332,5 +1338,25 @@ w
                 .where(predicates.toArray(new Predicate[0]));
 
         return em.createQuery(cq).getSingleResult();
+    }
+
+
+    /**
+     * Update the archival copy location for a specific version of a dataset.
+     * Archiving can be long-running and other parallel updates to the datasetversion have likely occurred
+     * so this method will just re-find the version rather than risking an
+     * OptimisticLockException and then having to retry in yet another transaction (since the OLE rolls this one back).
+     *
+     * @param dv
+     *            The dataset version whose archival copy location we want to update. Must not be {@code null}.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void persistArchivalCopyLocation(DatasetVersion dv) {
+        DatasetVersion currentVersion = find(dv.getId());
+        if (currentVersion != null) {
+            currentVersion.setArchivalCopyLocation(dv.getArchivalCopyLocation());
+        } else {
+            logger.log(Level.SEVERE, "Could not find DatasetVersion with id={0} to retry persisting archival copy location after OptimisticLockException.", dv.getId());
+        }
     }
 }

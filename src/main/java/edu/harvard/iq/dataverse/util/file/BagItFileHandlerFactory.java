@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.util.file;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.BagItHandlerEnabled;
 import edu.harvard.iq.dataverse.util.bagit.BagValidator;
 import edu.harvard.iq.dataverse.util.bagit.BagValidator.BagValidatorSettings;
 import edu.harvard.iq.dataverse.util.bagit.ManifestReader;
@@ -25,7 +26,7 @@ public class BagItFileHandlerFactory implements Serializable {
 
     private static final Logger logger = Logger.getLogger(BagItFileHandlerFactory.class.getCanonicalName());
 
-    public static final String BAGIT_HANDLER_ENABLED_SETTING = ":BagItHandlerEnabled";
+    public static final String BAGIT_HANDLER_ENABLED_SETTING = BagItHandlerEnabled.toString();
 
     @EJB
     private SettingsServiceBean settingsService;

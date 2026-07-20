@@ -1,0 +1,156 @@
+{
+  "id": 3,
+  "identifier": "FK2/OO7TEP",
+  "persistentUrl": "https://doi.org/10.5072/FK2/OO7TEP",
+  "protocol": "doi",
+  "authority": "10.5072",
+  "separator": "/",
+  "publisher": "Root",
+  "storageIdentifier": "local://10.5072/FK2/OO7TEP",
+  "datasetType": "dataset",
+  "datasetVersion": {
+    "id": 1,
+    "datasetId": 3,
+    "datasetPersistentId": "doi:10.5072/FK2/OO7TEP",
+    "storageIdentifier": "local://10.5072/FK2/OO7TEP",
+    "internalVersionNumber": 2,
+    "versionState": "DRAFT",
+    "latestVersionPublishingState": "DRAFT",
+    "lastUpdateTime": "2025-04-14T13:27:47Z",
+    "createTime": "2025-04-14T13:26:41Z",
+    "license": {
+      "name": "CC0 1.0",
+      "uri": "http://creativecommons.org/publicdomain/zero/1.0",
+      "iconUri": "https://licensebuttons.net/p/zero/1.0/88x31.png",
+      "rightsIdentifier": "CC0-1.0",
+      "rightsIdentifierScheme": "SPDX",
+      "schemeUri": "https://spdx.org/licenses/",
+      "languageCode": "en"
+    },
+    "fileAccessRequest": true,
+    "metadataBlocks": {
+      "citation": {
+        "displayName": "Citation Metadata",
+        "name": "citation",
+        "fields": [
+          {
+            "typeName": "title",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "Draft Dataset"
+          },
+          {
+            "typeName": "author",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "authorName": {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Punk, Draft"
+                },
+                "authorAffiliation": {
+                  "typeName": "authorAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "French house"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "datasetContact",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "datasetContactName": {
+                  "typeName": "datasetContactName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Admin, Dataverse"
+                },
+                "datasetContactAffiliation": {
+                  "typeName": "datasetContactAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Dataverse.org"
+                },
+                "datasetContactEmail": {
+                  "typeName": "datasetContactEmail",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "dataverse@mailinator.com"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "dsDescription",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "dsDescriptionValue": {
+                  "typeName": "dsDescriptionValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "This dataset hasn't been published yet."
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "subject",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "value": [
+              "Other"
+            ]
+          },
+          {
+            "typeName": "depositor",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "Admin, Dataverse"
+          },
+          {
+            "typeName": "dateOfDeposit",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "2025-04-14"
+          }
+        ]
+      }
+    },
+    "files": [
+      {
+        "label": "data.txt",
+        "restricted": false,
+        "version": 1,
+        "datasetVersionId": 1,
+        "dataFile": {
+          "id": 4,
+          "persistentId": "",
+          "filename": "data.txt",
+          "contentType": "text/plain",
+          "friendlyType": "Plain Text",
+          "filesize": 18,
+          "storageIdentifier": "local://196347bdb85-7b4820f8e4ef",
+          "rootDataFileId": -1,
+          "md5": "050644e853fdfe46a3707695ba2fe736",
+          "checksum": {
+            "type": "MD5",
+            "value": "050644e853fdfe46a3707695ba2fe736"
+          },
+          "tabularData": false,
+          "creationDate": "2025-04-14",
+          "fileAccessRequest": false
+        }
+      }
+    ],
+    "citation": "Punk, Draft, 2025, \"Draft Dataset\", https://doi.org/10.5072/FK2/OO7TEP, Root, DRAFT VERSION"
+  }
+}

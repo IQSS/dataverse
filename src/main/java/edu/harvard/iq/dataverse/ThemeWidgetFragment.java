@@ -9,16 +9,25 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.imageio.ImageIO;
+
 import jakarta.annotation.PreDestroy;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
@@ -51,7 +60,8 @@ public class ThemeWidgetFragment implements java.io.Serializable {
 
     public static final String LOGOS_SUBDIR = "logos";
     public static final String LOGOS_TEMP_SUBDIR = LOGOS_SUBDIR + File.separator + "temp";
-
+    private long maxSize = 0;
+    
     private File tempDir;
     private File uploadedFile;
     private File uploadedFileThumbnail;
@@ -65,6 +75,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     EjbDataverseEngine commandEngine;
     @EJB
     DataverseServiceBean dataverseServiceBean;
+    @EJB SystemConfig systemConfig;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     
@@ -228,6 +239,11 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             logger.finer("created tempDir");
         }
         final UploadedFile uFile = event.getFile();
+        if(!FileUtil.isUploadedFileAnImage(uFile, getMaxSize())) {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Only image files are allowed.", "Only image files under " + getMaxSize() + " bytes are allowed.");
+            FacesContext.getCurrentInstance().addMessage(null, msg);
+            return;
+        }
         try {
             this.uploadedFileThumbnail = new File(tempDir, uFile.getFileName());
             if (!this.uploadedFileThumbnail.exists()) {
@@ -258,6 +274,12 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             logger.finer("created tempDir");
         }
         UploadedFile uFile = event.getFile();
+        if (!FileUtil.isUploadedFileAnImage(uFile, getMaxSize())) {
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Only image files are allowed.", "Only image files under " + getMaxSize() + " bytes are allowed.");
+            FacesContext.getCurrentInstance().addMessage(null, msg);
+            return;
+        }
+
         try {
             uploadedFileFooter = new File(tempDir, uFile.getFileName());
             if (!uploadedFileFooter.exists()) {
@@ -283,8 +305,13 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             logger.finer("created tempDir");
         }
         UploadedFile uFile = event.getFile();
-        try {         
-            uploadedFile = new File(tempDir, uFile.getFileName());     
+        if (!FileUtil.isUploadedFileAnImage(uFile, getMaxSize())) {
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Only image files are allowed.", "Only image files under " + getMaxSize() + " bytes are allowed.");
+            FacesContext.getCurrentInstance().addMessage(null, msg);
+            return;
+        }
+        try {
+            uploadedFile = new File(tempDir, uFile.getFileName());
             if (!uploadedFile.exists()) {
                 uploadedFile.createNewFile();
             }
@@ -430,6 +457,13 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         return true;
     }
       
+    // Initialize maxSize from systemConfig
+    public long getMaxSize() {
+        if (maxSize == 0) {
+            maxSize = systemConfig.getUploadLogoSizeLimit();
+        }
+        return maxSize;
+    }
  }
 
 

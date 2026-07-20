@@ -123,8 +123,9 @@
                                 maxdate="#{settingsWrapper.maxEmbargoDate}"
                                 disabled="#{bean.removeEmbargo}"
                                 validator="#{settingsWrapper.validateEmbargoDate}" >
-                                <p:ajax process="#{updateElements}"
+                                <p:ajax process="@this embargoCheckbox" 
                                     update="#{updateElements}"
+                                    partialSubmit="true"
                                     />
                                 </p:datePicker>
                             <div>
@@ -133,12 +134,23 @@
                             </div>
                         </div>
                         <div class="p-field p-col-12 p-md-4">
-                            <p class="help-block">#{bundle['file.editEmbargoDialog.reason.tip']}</p>
+                            <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
+                            <ui:param name="embargoReasonRequired" value="#{FeatureFlags.REQUIRE_EMBARGO_REASON.enabled()}"/>
+                            <label class="help-block" for="datasetForm:fileEmbargoAddReason">
+                                #{bundle['file.editEmbargoDialog.reason.tip']} <span
+                                class="glyphicon glyphicon-asterisk text-danger"
+                                jsf:rendered="#{embargoReasonRequired and !bean.removeEmbargo}" />
+                            </label>
                             <p:inputText id="fileEmbargoAddReason" styleClass="form-control"
                                 disabled="#{bean.removeEmbargo}" type="text"
                                 value="#{bean.selectionEmbargo.reason}"
+                                validator="#{bean.validateEmbargoReason}"
                                 placeholder="#{bundle['file.editEmbargoDialog.newReason']}"
                                 onkeypress="if (event.keyCode == 13) { return false;}" />
+                            <div>
+                                <h:message for="fileEmbargoAddReason"
+                                    styleClass="bg-danger text-danger" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -153,8 +165,9 @@
                         <p:selectBooleanCheckbox value="#{bean.removeEmbargo}" id="embargoCheckbox"
                             itemLabel="#{bundle['file.editEmbargoDialog.remove']}"
                             disabled="#{facesContext.validationFailed}">
-                            <p:ajax process="#{updateElements}"
+                            <p:ajax process="@this fileEmbargoDate" 
                                 update="#{updateElements}"
+                                partialSubmit="true"
                                 />
                         </p:selectBooleanCheckbox>
                     </div>

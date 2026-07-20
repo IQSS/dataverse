@@ -5,7 +5,7 @@ SERVER=http://localhost:8080/api
 echo Setting up users on $SERVER
 echo ==============================================
 
-curl -X PUT -d burrito $SERVER/admin/settings/BuiltinUsers.KEY
+curl -X PUT -d burrito "$SERVER/admin/settings/:BuiltinUsersKey"
 
 
 peteResp=$(curl -s -H "Content-type:application/json" -X POST -d @data/userPete.json "$SERVER/builtin-users?password=pete&key=burrito")

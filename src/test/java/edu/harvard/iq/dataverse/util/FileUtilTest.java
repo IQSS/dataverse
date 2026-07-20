@@ -3,25 +3,20 @@ package edu.harvard.iq.dataverse.util;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.FileUtil.FileCitationExtension;
-
-import java.io.File;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.net.URI;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FileUtilTest {
     
@@ -248,17 +243,17 @@ public class FileUtilTest {
         public void testgetFileDownloadUrl() {
             Long fileId = 42l;
             Long fileMetadataId = 2L;
-            assertEquals("/api/access/datafile/42", FileUtil.getFileDownloadUrlPath(null, fileId, false, null));
-            assertEquals("/api/access/datafile/42", FileUtil.getFileDownloadUrlPath("", fileId, false, null));
-            assertEquals("/api/access/datafile/bundle/42", FileUtil.getFileDownloadUrlPath("bundle", fileId, false, null));
-            assertEquals("/api/access/datafile/bundle/42?fileMetadataId=2", FileUtil.getFileDownloadUrlPath("bundle", fileId, false, fileMetadataId));
-            assertEquals("/api/access/datafile/42?format=original", FileUtil.getFileDownloadUrlPath("original", fileId, false, null));
-            assertEquals("/api/access/datafile/42?format=RData", FileUtil.getFileDownloadUrlPath("RData", fileId, false, null));
-            assertEquals("/api/access/datafile/42/metadata", FileUtil.getFileDownloadUrlPath("var", fileId, false, null));
-            assertEquals("/api/access/datafile/42/metadata?fileMetadataId=2", FileUtil.getFileDownloadUrlPath("var", fileId, false, fileMetadataId));
-            assertEquals("/api/access/datafile/42?format=tab", FileUtil.getFileDownloadUrlPath("tab", fileId, false, null));
-            assertEquals("/api/access/datafile/42?format=tab&gbrecs=true", FileUtil.getFileDownloadUrlPath("tab", fileId, true, null));
-            assertEquals("/api/access/datafile/42?gbrecs=true", FileUtil.getFileDownloadUrlPath(null, fileId, true, null));
+            assertEquals("/api/access/datafile/42", FileUtil.getFileDownloadUrlPath(null, fileId, false, null, null));
+            assertEquals("/api/access/datafile/42", FileUtil.getFileDownloadUrlPath("", fileId, false, null, null));
+            assertEquals("/api/access/datafile/bundle/42", FileUtil.getFileDownloadUrlPath("bundle", fileId, false, null, null));
+            assertEquals("/api/access/datafile/bundle/42?fileMetadataId=2", FileUtil.getFileDownloadUrlPath("bundle", fileId, false, fileMetadataId, null));
+            assertEquals("/api/access/datafile/42?format=original", FileUtil.getFileDownloadUrlPath("original", fileId, false, null, null));
+            assertEquals("/api/access/datafile/42?format=RData", FileUtil.getFileDownloadUrlPath("RData", fileId, false, null, null));
+            assertEquals("/api/access/datafile/42/metadata", FileUtil.getFileDownloadUrlPath("var", fileId, false, null, null));
+            assertEquals("/api/access/datafile/42/metadata?fileMetadataId=2", FileUtil.getFileDownloadUrlPath("var", fileId, false, fileMetadataId, null));
+            assertEquals("/api/access/datafile/42?format=tab", FileUtil.getFileDownloadUrlPath("tab", fileId, false, null, null));
+            assertEquals("/api/access/datafile/42?format=tab&gbrecs=true", FileUtil.getFileDownloadUrlPath("tab", fileId, true, null, null));
+            assertEquals("/api/access/datafile/42?gbrecs=true", FileUtil.getFileDownloadUrlPath(null, fileId, true, null, null));
         }
 
         @Test

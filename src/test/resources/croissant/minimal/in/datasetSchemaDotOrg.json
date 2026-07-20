@@ -1,0 +1,44 @@
+{
+  "@context": "http://schema.org",
+  "@type": "Dataset",
+  "@id": "https://doi.org/10.5072/FK2/4C0JYC",
+  "identifier": "https://doi.org/10.5072/FK2/4C0JYC",
+  "name": "Minimal",
+  "creator": [
+    {
+      "@type": "Person",
+      "givenName": "Philip",
+      "familyName": "Durbin",
+      "name": "Durbin, Philip"
+    }
+  ],
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Philip",
+      "familyName": "Durbin",
+      "name": "Durbin, Philip"
+    }
+  ],
+  "datePublished": "2024-05-01",
+  "dateModified": "2024-05-01",
+  "version": "1",
+  "description": "Minimal metadata and no files.",
+  "keywords": [
+    "Other"
+  ],
+  "license": "http://creativecommons.org/publicdomain/zero/1.0",
+  "includedInDataCatalog": {
+    "@type": "DataCatalog",
+    "name": "Root",
+    "url": "https://beta.dataverse.org"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Root"
+  },
+  "provider": {
+    "@type": "Organization",
+    "name": "Root"
+  }
+}

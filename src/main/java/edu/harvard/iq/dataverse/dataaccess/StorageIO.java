@@ -53,10 +53,11 @@ public abstract class StorageIO<T extends DvObject> {
 
     static final String INGEST_SIZE_LIMIT = "ingestsizelimit";
     static final String PUBLIC = "public";
-    static final String TYPE = "type";
-    static final String UPLOAD_REDIRECT = "upload-redirect";
-    static final String UPLOAD_OUT_OF_BAND = "upload-out-of-band";
-    protected static final String DOWNLOAD_REDIRECT = "download-redirect";
+    public static final String TYPE = "type";
+    public static final String UPLOAD_REDIRECT = "upload-redirect";
+    public static final String UPLOAD_OUT_OF_BAND = "upload-out-of-band";
+    public static final String DOWNLOAD_REDIRECT = "download-redirect";
+    public static final String LABEL = "label";
 
 
     public StorageIO() {
@@ -675,10 +676,11 @@ public abstract class StorageIO<T extends DvObject> {
         return true;
     }
     
-    protected static String getConfigParamForDriver(String driverId, String parameterName) {
+    public static String getConfigParamForDriver(String driverId, String parameterName) {
         return getConfigParamForDriver(driverId, parameterName, null);
     }
-    protected static String getConfigParamForDriver(String driverId, String parameterName, String defaultValue) {
+    
+    public static String getConfigParamForDriver(String driverId, String parameterName, String defaultValue) {
         return System.getProperty("dataverse.files." + driverId + "." + parameterName, defaultValue);
     }
     

@@ -1,0 +1,1 @@
+Fixed a defect that caused upload of files larger than 1G to fail silently for S3 storage, unless direct upload was used. 

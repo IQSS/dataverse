@@ -9,15 +9,26 @@ PROJECT_DIR="$1"
 FILE_TO_COPY="$2"
 RELATIVE_PATH="${FILE_TO_COPY#"${PROJECT_DIR}/"}"
 
-# Check if RELATIVE_PATH starts with 'src/main/webapp', otherwise ignore
+# Only act on files under src/main/webapp
 if [[ "$RELATIVE_PATH" == "src/main/webapp"* ]]; then
-    # Extract version from POM, so we don't need to have Maven on the PATH
-    VERSION=$(grep -oPm1 "(?<=<revision>)[^<]+" "$PROJECT_DIR/modules/dataverse-parent/pom.xml")
+  POM="$PROJECT_DIR/modules/dataverse-parent/pom.xml"
 
-    # Construct the target path by cutting off the local prefix and prepend with in-container path
-    RELATIVE_PATH_WITHOUT_WEBAPP="${RELATIVE_PATH#src/main/webapp/}"
-    TARGET_PATH="/opt/payara/appserver/glassfish/domains/domain1/applications/dataverse-$VERSION/${RELATIVE_PATH_WITHOUT_WEBAPP}"
+  # Extract <revision> in a portable way
+  VERSION="$(awk -F'[<>]' '/<revision>/{print $3; exit}' "$POM")"
 
-    # Copy file to container
-    docker cp "$FILE_TO_COPY" "dev_dataverse:$TARGET_PATH"
+  if [[ -z "${VERSION:-}" ]]; then
+    echo "Error: Could not extract <revision> from $POM" >&2
+    exit 1
+  fi
+
+  CONTAINER="dev_dataverse"
+
+  # Build target path
+  RELATIVE_PATH_WITHOUT_WEBAPP="${RELATIVE_PATH#src/main/webapp/}"
+  TARGET_PATH="/opt/payara/appserver/glassfish/domains/domain1/applications/dataverse-$VERSION/${RELATIVE_PATH_WITHOUT_WEBAPP}"
+
+  # Copy file into container
+  docker cp "$FILE_TO_COPY" "$CONTAINER:$TARGET_PATH"
+
+  echo "Copied $FILE_TO_COPY → $CONTAINER:$TARGET_PATH"
 fi

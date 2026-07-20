@@ -7,7 +7,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
@@ -16,20 +15,7 @@ import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.JsfHelper;
-import edu.harvard.iq.dataverse.util.StringUtil;
-import edu.harvard.iq.dataverse.util.URLTokenUtil;
-
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-import java.util.logging.Logger;
+import edu.harvard.iq.dataverse.util.*;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.faces.context.FacesContext;
@@ -37,11 +23,14 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
-
 import org.primefaces.PrimeFaces;
+
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.*;
+import java.util.logging.Logger;
 //import org.primefaces.context.RequestContext;
 
 /**
@@ -104,6 +93,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
         
         boolean original = "original".equals(guestbookResponse.getFileFormat());
+        String gbrid = null;
 
         // Let's intercept the case where a multiple download method was called, 
         // with only 1 file on the list. We'll treat it like a single file download 
@@ -122,10 +112,10 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             if (!doNotSaveGuestbookRecord) {
                 DataFile df = datafileService.findCheapAndEasy(Long.parseLong(fileIds[0]));
                 guestbookResponse.setDataFile(df);
-                writeGuestbookResponseRecord(guestbookResponse);
+                gbrid = writeGuestbookResponseRecord(guestbookResponse);
             }
         
-            redirectToDownloadAPI(guestbookResponse.getFileFormat(), fileId, true, null);
+            redirectToDownloadAPI(guestbookResponse.getFileFormat(), fileId, true, gbrid, null);
             return;
         }
         
@@ -147,7 +137,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 if (df != null) {
                     if (!doNotSaveGuestbookRecord) {
                         guestbookResponse.setDataFile(df);
-                        writeGuestbookResponseRecord(guestbookResponse);
+                        gbrid = writeGuestbookResponseRecord(guestbookResponse);
                     }
                     
                     if (useCustomZipService) {
@@ -168,18 +158,18 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             redirectToCustomZipDownloadService(customZipDownloadUrl, zipServiceKey);
         } else {
             // Use the "normal" /api/access/datafiles/ API:
-            redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(),original);
+            redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(),original, gbrid);
         }
     }
     
-    public void writeGuestbookAndStartFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
+    public void writeGuestbookAndStartFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format, String gbrIds) {
         if(!fileMetadata.getDatasetVersion().isDraft()){
             guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
             writeGuestbookResponseRecord(guestbookResponse);
         }
         
         // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
-        redirectToDownloadAPI(format, fileMetadata.getDataFile().getId(), true, fileMetadata.getId());
+        redirectToDownloadAPI(format, fileMetadata.getDataFile().getId(), true, gbrIds, fileMetadata.getId());
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
     
@@ -188,9 +178,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             logger.warning("writeGuestbookAndStartFileDownload(GuestbookResponse) called without the DataFile in the GuestbookResponse.");
             return;
         }
-        writeGuestbookResponseRecord(guestbookResponse);
+        String gbrId = writeGuestbookResponseRecord(guestbookResponse);
         
-        redirectToDownloadAPI(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId());
+        redirectToDownloadAPI(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), gbrId);
         logger.fine("issued file download redirect for datafile "+guestbookResponse.getDataFile().getId());
     }
     
@@ -237,10 +227,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
     
-    public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse) {
+    public String writeGuestbookResponseRecord(GuestbookResponse guestbookResponse) {
+        String guestbookResponseIds = "";
         try {
             CreateGuestbookResponseCommand cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, guestbookResponse.getDataset());
             commandEngine.submit(cmd);
+            guestbookResponseIds = guestbookResponse.getId().toString();
             DatasetVersion version = guestbookResponse.getDatasetVersion();
             
             //Sometimes guestbookResponse doesn't have a version, so we grab the released version
@@ -256,6 +248,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             //if an error occurs here then download won't happen no need for response recs...
             logger.warning("Exception writing GuestbookResponse for file: " + guestbookResponse.getDataFile().getId() + " : " + e.getLocalizedMessage());
         }
+        return guestbookResponseIds;
     }
     
     public void writeGuestbookResponseRecordForRequestAccess(GuestbookResponse guestbookResponse) {
@@ -286,7 +279,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     // But note that this may change - there may be some future situations where it will 
     // become necessary again, to pass the job of creating the access record 
     // to the API.
-    private void redirectToBatchDownloadAPI(String multiFileString, Boolean guestbookRecordsAlreadyWritten, Boolean downloadOriginal){
+    private void redirectToBatchDownloadAPI(String multiFileString, Boolean guestbookRecordsAlreadyWritten, Boolean downloadOriginal, String gbrIds){
 
         String fileDownloadUrl = "/api/access/datafiles";
         if (guestbookRecordsAlreadyWritten && !downloadOriginal){
@@ -296,7 +289,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         } else if (!guestbookRecordsAlreadyWritten && downloadOriginal){
             fileDownloadUrl += "?format=original";
         }
-        
+        if (gbrIds != null && !gbrIds.isEmpty()) {
+            fileDownloadUrl += (fileDownloadUrl.contains("?") ? "&" : "?") + "gbrids=" + gbrIds;
+        }
         PrimeFaces.current().executeScript("downloadFiles('"+fileDownloadUrl + "','"+ multiFileString+"');");
 
     }
@@ -312,10 +307,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
 
-    private void redirectToDownloadAPI(String downloadType, Long fileId, boolean guestBookRecordAlreadyWritten,
-            Long fileMetadataId) {
-        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, guestBookRecordAlreadyWritten,
-                fileMetadataId);
+    private void redirectToDownloadAPI(String downloadType, Long fileId, boolean guestBookRecordAlreadyWritten, String gbrIds, Long fileMetadataId) {
+        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, guestBookRecordAlreadyWritten, fileMetadataId, gbrIds);
         if ("GlobusTransfer".equals(downloadType)) {
             PrimeFaces.current().executeScript(URLTokenUtil.getScriptForUrl(fileDownloadUrl));
         } else {
@@ -328,12 +321,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
     
-    private void redirectToDownloadAPI(String downloadType, Long fileId) {
-        redirectToDownloadAPI(downloadType, fileId, true, null);
+    private void redirectToDownloadAPI(String downloadType, Long fileId, String gbrIds) {
+        redirectToDownloadAPI(downloadType, fileId, true, gbrIds, null);
     }
     
-    private void redirectToBatchDownloadAPI(String multiFileString, Boolean downloadOriginal){
-        redirectToBatchDownloadAPI(multiFileString, true, downloadOriginal);
+    private void redirectToBatchDownloadAPI(String multiFileString, Boolean downloadOriginal, String gbrIds){
+        redirectToBatchDownloadAPI(multiFileString, true, downloadOriginal, gbrIds);
     }
 
     public void redirectToAuxFileDownloadAPI(Long fileId, String formatTag, String formatVersion) {

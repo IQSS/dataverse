@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.util.bagit;
 
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.BagValidatorJobPoolSize;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.BagValidatorJobWaitInterval;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.BagValidatorMaxErrors;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.bagit.BagValidation.FileValidationResult;
 import edu.harvard.iq.dataverse.util.bagit.ManifestReader.ManifestChecksum;
@@ -27,9 +30,9 @@ public class BagValidator {
     private static final Logger logger = Logger.getLogger(BagValidator.class.getCanonicalName());
 
     public static enum BagValidatorSettings {
-        JOB_POOL_SIZE(":BagValidatorJobPoolSize", 4),
-        MAX_ERRORS(":BagValidatorMaxErrors", 5),
-        JOB_WAIT_INTERVAL(":BagValidatorJobWaitInterval", 10);
+        JOB_POOL_SIZE(BagValidatorJobPoolSize.toString(), 4),
+        MAX_ERRORS(BagValidatorMaxErrors.toString(), 5),
+        JOB_WAIT_INTERVAL(BagValidatorJobWaitInterval.toString(), 10);
 
         private String settingsKey;
         private Integer defaultValue;

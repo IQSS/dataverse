@@ -19,6 +19,13 @@ Standard Installation
 
 Installing the Dataverse Software involves some system configuration followed by executing an installation script that will guide you through the installation process as described in :doc:`installation-main`, but reading about the :ref:`architecture` of the Dataverse Software is recommended first.
 
+.. _docker-installation:
+
+Docker Installation
++++++++++++++++++++
+
+See the :doc:`/container/index`, especially :doc:`/container/running/index` and :doc:`/container/running/production`.
+
 .. _advanced:
 
 Advanced Installation
@@ -32,7 +39,7 @@ There are some community-lead projects to use configuration management tools suc
 
 (Please note that the "dataverse-ansible" repo is used in a script that allows the Dataverse Software to be installed on Amazon Web Services (AWS) from arbitrary GitHub branches as described in the :doc:`/developers/deployment` section of the Developer Guide.)
 
-The Dataverse Project team is happy to "bless" additional community efforts along these lines (i.e. Docker, Chef, Salt, etc.) by creating a repo under https://github.com/gdcc and managing team access.
+The Dataverse Project team is happy to "bless" additional community efforts along these lines (i.e. Chef, Salt, etc.) by creating a repo under https://github.com/gdcc and managing team access.
 
 The Dataverse Software permits a fair amount of flexibility in where you choose to install the various components. The diagram below shows a load balancer, multiple proxies and web servers, redundant database servers, and offloading of potentially resource intensive work to a separate server. (Glassfish is shown rather than Payara.)
 
@@ -110,7 +117,7 @@ Decisions to Make
 
 Here are some questions to keep in the back of your mind as you test and move into production:
 
-- How much storage do I need?
+- How much storage do I need? What is the scale of data I will need to handle (see :doc:`/admin/big-data-administration`)?
 - Which features do I want based on :ref:`architecture`?
 - How do I want my users to log in to the Dataverse installation? With local accounts? With Shibboleth/SAML? With OAuth providers such as ORCID, GitHub, or Google?
 - Do I want to to run my app server on the standard web ports (80 and 443) or do I want to "front" my app server with a proxy such as Apache or nginx? See "Network Ports" in the :doc:`config` section.

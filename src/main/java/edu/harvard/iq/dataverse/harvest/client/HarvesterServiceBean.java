@@ -45,6 +45,7 @@ import static edu.harvard.iq.dataverse.harvest.client.FastGetRecord.XML_XMLNS_XS
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
@@ -85,6 +86,8 @@ public class HarvesterServiceBean {
     EjbDataverseEngine engineService;
     @EJB
     IndexServiceBean indexService;
+    @EJB
+    SystemConfig systemConfig;
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean");
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
@@ -270,6 +273,8 @@ public class HarvesterServiceBean {
     }  
     
     private void harvestOAIviaListIdentifiers(OaiHandler oaiHandler, DataverseRequest dataverseRequest, HarvestingClient harvestingClient, HttpClient httpClient, List<String> failedIdentifiers, List<String> deletedIdentifiers, List<Long> harvestedDatasetIds, Logger harvesterLogger, PrintWriter importCleanupLog) throws OaiHandlerException, StopHarvestException {
+        int sleepInterval = lookupSleepInterval(harvestingClient.getName());
+                
         for (Iterator<Header> idIter = oaiHandler.runListIdentifiers(); idIter.hasNext();) {
             // Before each iteration, check if this harvesting job needs to be aborted:
             if (checkIfStoppingJob(harvestingClient)) {
@@ -291,6 +296,8 @@ public class HarvesterServiceBean {
 
             MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
 
+            sleepIfNeeded(sleepInterval);
+
             // Retrieve and process this record with a separate GetRecord call:
             Long datasetId = processRecord(dataverseRequest, harvesterLogger, importCleanupLog, oaiHandler, identifier, getRecordErrorOccurred, deletedIdentifiers, dateStamp, httpClient);
 
@@ -307,6 +314,22 @@ public class HarvesterServiceBean {
     }
     
     private void harvestOAIviaListRecords(OaiHandler oaiHandler, DataverseRequest dataverseRequest, HarvestingClient harvestingClient, HttpClient httpClient, List<String> failedIdentifiers, List<String> deletedIdentifiers, List<Long> harvestedDatasetIds, Logger harvesterLogger, PrintWriter importCleanupLog) throws OaiHandlerException, StopHarvestException {
+        /*
+         * It is *exceptionally* unlikely that anyone will ever run into issues 
+         * with server rate limits when harvesting using the ListRecords method. 
+         * Since only one call needs to me be made in order to import multiple 
+         * datasets. The number of records served is nominally arbitrary and 
+         * varies from server to server. However, most known OAI servers will 
+         * serve 50 to 100 records at a time. If a server has a rate limit policy 
+         * of 300 calls/5 min. and their ListRecords serves 50 records per call, 
+         * Dataverse will need to import 50 datasets per second in order to run 
+         * afoul of the limit. Even with an empty database, Dataverse generally
+         * doesn't work that fast. 
+         * But, it doesn't hurt to make it possible to define the interval 
+         * regardless, in case it is called for in some exotic scenario. 
+         **/
+        int sleepInterval = lookupSleepInterval(harvestingClient.getName());
+                
         for (Iterator<Record> idIter = oaiHandler.runListRecords(); idIter.hasNext();) {
             // Before each iteration, check if this harvesting job needs to be aborted:
             if (checkIfStoppingJob(harvestingClient)) {
@@ -375,9 +398,33 @@ public class HarvesterServiceBean {
                 //can be uncommented out for testing failure handling:
                 //throw new IOException("Exception occured, stopping harvest");
             }
+
+            sleepIfNeeded(sleepInterval);
         }
     }
-    
+
+    private int lookupSleepInterval(String clientName) {
+        int sleepMilliseconds = 0;
+        float clientIntervalValue = systemConfig.getHarvestingClientRequestInterval(clientName);
+
+        sleepMilliseconds = (int) (clientIntervalValue * 1000);
+        logger.info("Sleep interval in milliseconds: " + sleepMilliseconds);
+
+        return sleepMilliseconds;
+    }
+
+    private void sleepIfNeeded(int sleepInterval) {
+        if (sleepInterval > 0) {
+            logger.fine("Sleeping for " + sleepInterval + " milliseconds...");
+            try {
+                Thread.sleep(sleepInterval);
+            } catch (InterruptedException iex) {
+                logger.warning("InterruptedException trying to sleep for " + sleepInterval + " milliseconds");
+            }
+        }
+
+    }
+
     private Long processRecord(DataverseRequest dataverseRequest, Logger hdLogger, PrintWriter importCleanupLog, OaiHandler oaiHandler, String identifier, MutableBoolean recordErrorOccurred, List<String> deletedIdentifiers, Date dateStamp, HttpClient httpClient) {
         String errMessage = null;
         Dataset harvestedDataset = null;

@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -17,7 +18,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import com.beust.jcommander.Strings;
 
 public abstract class AbstractPidProvider implements PidProvider {
 
@@ -61,10 +61,10 @@ public abstract class AbstractPidProvider implements PidProvider {
         this.identifierGenerationStyle = identifierGenerationStyle;
         this.datafilePidFormat = datafilePidFormat;
         if(!managedList.isEmpty()) {
-            this.managedSet.addAll(Arrays.asList(managedList.split(",\\s")));
+            this.managedSet.addAll(ListSplitUtil.split(managedList));
         }
         if(!excludedList.isEmpty()) {
-            this.excludedSet.addAll(Arrays.asList(excludedList.split(",\\s")));
+            this.excludedSet.addAll(ListSplitUtil.split(excludedList));
         }
         if (logger.isLoggable(Level.FINE)) {
             Iterator<String> iter = managedSet.iterator();
@@ -577,8 +577,8 @@ public abstract class AbstractPidProvider implements PidProvider {
         providerSpecification.add("shoulder", shoulder);
         providerSpecification.add("identifierGenerationStyle", identifierGenerationStyle);
         providerSpecification.add("datafilePidFormat", datafilePidFormat);
-        providerSpecification.add("managedSet", Strings.join(",", managedSet.toArray()));
-        providerSpecification.add("excludedSet", Strings.join(",", excludedSet.toArray()));
+        providerSpecification.add("managedSet", String.join(",", managedSet));
+        providerSpecification.add("excludedSet", String.join(",", excludedSet));
         return providerSpecification.build();
     }
     

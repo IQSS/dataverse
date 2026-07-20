@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.JsonObject;
 
@@ -58,7 +59,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         this.apiUrl = apiUrl;
         this.username = username;
         this.password = password;
-        doiDataCiteRegisterService = new DOIDataCiteRegisterService(mdsUrl, username, password);
+        doiDataCiteRegisterService = new DOIDataCiteRegisterService(mdsUrl, apiUrl, username, password);
     }
 
     @Override
@@ -217,7 +218,11 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         metadata.put("datacite.publicationyear", generateYear(dvObject));
         metadata.put("_target", getTargetUrl(dvObject));
         try {
-            doiDataCiteRegisterService.registerIdentifier(identifier, metadata, dvObject);
+            if (FeatureFlags.ONLY_UPDATE_DATACITE_WHEN_NEEDED.enabled()) {
+                doiDataCiteRegisterService.reRegisterIdentifier(identifier, metadata, dvObject);
+            } else {
+                doiDataCiteRegisterService.registerIdentifier(identifier, metadata, dvObject);
+            }
             return true;
         } catch (Exception e) {
             logger.log(Level.WARNING, "modifyMetadata failed: " + e.getMessage(), e);
@@ -344,7 +349,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
                 logger.info(identifier + "updated: " + updated );
                 return true;
             } else {
-                logger.info("No updated needed for " + identifier);
+                logger.info("No update needed for " + identifier);
                 return false; //No update needed
             }
         } catch (Exception e) {

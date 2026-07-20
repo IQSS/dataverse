@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource xmlns="http://datacite.org/schema/kernel-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4.5/metadata.xsd">
+  <identifier identifierType="DOI">10.5072/FK2/0CNXUJ</identifier>
+  <creators>
+    <creator>
+      <creatorName nameType="Personal">Ritter, Sylvester</creatorName>
+      <givenName>Sylvester</givenName>
+      <familyName>Ritter</familyName>
+      <affiliation>WWF</affiliation>
+    </creator>
+  </creators>
+  <titles>
+    <title>:unav</title>
+  </titles>
+  <publisher>Root</publisher>
+  <publicationYear>2025</publicationYear>
+  <subjects>
+    <subject>Other</subject>
+  </subjects>
+  <dates>
+    <date dateType="Submitted">2025-03-13</date>
+    <date dateType="Available">2025-03-13</date>
+  </dates>
+  <resourceType resourceTypeGeneral="Dataset"/>
+  <version>1.0</version>
+  <rightsList>
+    <rights rightsURI="info:eu-repo/semantics/openAccess"/>
+    <rights rightsURI="http://creativecommons.org/publicdomain/zero/1.0" rightsIdentifier="CC0-1.0" rightsIdentifierScheme="SPDX" schemeURI="https://spdx.org/licenses/" xml:lang="en">Creative Commons CC0 1.0 Universal Public Domain Dedication.</rights>
+  </rightsList>
+  <descriptions>
+    <description descriptionType="Abstract">A junk dataset.</description>
+  </descriptions>
+</resource>

@@ -1,0 +1,228 @@
+{
+    "id": 6,
+    "identifier": "FK2/CY7BWA",
+    "persistentUrl": "https://doi.org/10.5072/FK2/CY7BWA",
+    "protocol": "doi",
+    "authority": "10.5072",
+    "separator": "/",
+    "publisher": "Root",
+    "publicationDate": "2025-05-16",
+    "storageIdentifier": "local://10.5072/FK2/CY7BWA",
+    "datasetType": "dataset",
+    "datasetVersion": {
+        "id": 3,
+        "datasetId": 6,
+        "datasetPersistentId": "doi:10.5072/FK2/CY7BWA",
+        "storageIdentifier": "local://10.5072/FK2/CY7BWA",
+        "versionNumber": 1,
+        "internalVersionNumber": 10,
+        "versionMinorNumber": 0,
+        "versionState": "RELEASED",
+        "latestVersionPublishingState": "RELEASED",
+        "UNF": "UNF:6:RPd9EWHSZwqUvRZuKTJMqg==",
+        "lastUpdateTime": "2025-05-16T16:33:18Z",
+        "releaseTime": "2025-05-16T16:33:18Z",
+        "createTime": "2025-05-16T16:33:13Z",
+        "publicationDate": "2025-05-16",
+        "citationDate": "2025-05-16",
+        "license": {
+            "name": "CC0 1.0",
+            "uri": "http://creativecommons.org/publicdomain/zero/1.0",
+            "iconUri": "https://licensebuttons.net/p/zero/1.0/88x31.png",
+            "rightsIdentifier": "CC0-1.0",
+            "rightsIdentifierScheme": "SPDX",
+            "schemeUri": "https://spdx.org/licenses/",
+            "languageCode": "en"
+        },
+        "fileAccessRequest": true,
+        "metadataBlocks": {
+            "citation": {
+                "displayName": "Citation Metadata",
+                "name": "citation",
+                "fields": [
+                    {
+                        "typeName": "title",
+                        "multiple": false,
+                        "typeClass": "primitive",
+                        "value": "Cars"
+                    },
+                    {
+                        "typeName": "author",
+                        "multiple": true,
+                        "typeClass": "compound",
+                        "value": [
+                            {
+                                "authorName": {
+                                    "typeName": "authorName",
+                                    "multiple": false,
+                                    "typeClass": "primitive",
+                                    "value": "Durbin, Philip"
+                                },
+                                "authorAffiliation": {
+                                    "typeName": "authorAffiliation",
+                                    "multiple": false,
+                                    "typeClass": "primitive",
+                                    "value": "Harvard"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "typeName": "datasetContact",
+                        "multiple": true,
+                        "typeClass": "compound",
+                        "value": [
+                            {
+                                "datasetContactName": {
+                                    "typeName": "datasetContactName",
+                                    "multiple": false,
+                                    "typeClass": "primitive",
+                                    "value": "Durbin, Philip"
+                                },
+                                "datasetContactAffiliation": {
+                                    "typeName": "datasetContactAffiliation",
+                                    "multiple": false,
+                                    "typeClass": "primitive",
+                                    "value": "Harvard"
+                                },
+                                "datasetContactEmail": {
+                                    "typeName": "datasetContactEmail",
+                                    "multiple": false,
+                                    "typeClass": "primitive",
+                                    "value": "dataverse@mailinator.com"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "typeName": "dsDescription",
+                        "multiple": true,
+                        "typeClass": "compound",
+                        "value": [
+                            {
+                                "dsDescriptionValue": {
+                                    "typeName": "dsDescriptionValue",
+                                    "multiple": false,
+                                    "typeClass": "primitive",
+                                    "value": "This dataset is about cars."
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "typeName": "subject",
+                        "multiple": true,
+                        "typeClass": "controlledVocabulary",
+                        "value": [
+                            "Other"
+                        ]
+                    },
+                    {
+                        "typeName": "depositor",
+                        "multiple": false,
+                        "typeClass": "primitive",
+                        "value": "Durbin, Philip"
+                    },
+                    {
+                        "typeName": "dateOfDeposit",
+                        "multiple": false,
+                        "typeClass": "primitive",
+                        "value": "2024-03-13"
+                    }
+                ]
+            }
+        },
+        "files": [
+            {
+                "description": "",
+                "label": "compute.py",
+                "restricted": false,
+                "directoryLabel": "code",
+                "version": 2,
+                "datasetVersionId": 3,
+                "dataFile": {
+                    "id": 7,
+                    "persistentId": "",
+                    "filename": "compute.py",
+                    "contentType": "text/x-python",
+                    "friendlyType": "Python Source Code",
+                    "filesize": 15,
+                    "description": "",
+                    "storageIdentifier": "local://196d9f154f7-8cadf34ee905",
+                    "rootDataFileId": -1,
+                    "md5": "d84985e94dde671f318076bd7a137f15",
+                    "checksum": {
+                        "type": "MD5",
+                        "value": "d84985e94dde671f318076bd7a137f15"
+                    },
+                    "tabularData": false,
+                    "creationDate": "2025-05-16",
+                    "publicationDate": "2025-05-16",
+                    "fileAccessRequest": true
+                }
+            },
+            {
+                "description": "",
+                "label": "README.md",
+                "restricted": false,
+                "directoryLabel": "doc",
+                "version": 2,
+                "datasetVersionId": 3,
+                "dataFile": {
+                    "id": 8,
+                    "persistentId": "",
+                    "filename": "README.md",
+                    "contentType": "text/markdown",
+                    "friendlyType": "Markdown Text",
+                    "filesize": 28,
+                    "description": "",
+                    "storageIdentifier": "local://196d9f15664-1d4bb4e96a97",
+                    "rootDataFileId": -1,
+                    "md5": "a2e484d07ee5590cc32182dc2c6ccc83",
+                    "checksum": {
+                        "type": "MD5",
+                        "value": "a2e484d07ee5590cc32182dc2c6ccc83"
+                    },
+                    "tabularData": false,
+                    "creationDate": "2025-05-16",
+                    "publicationDate": "2025-05-16",
+                    "fileAccessRequest": true
+                }
+            },
+            {
+                "description": "",
+                "label": "stata13-auto.tab",
+                "restricted": true,
+                "directoryLabel": "data",
+                "version": 4,
+                "datasetVersionId": 3,
+                "dataFile": {
+                    "id": 9,
+                    "persistentId": "",
+                    "filename": "stata13-auto.tab",
+                    "contentType": "text/tab-separated-values",
+                    "friendlyType": "Tab-Delimited",
+                    "filesize": 4026,
+                    "description": "",
+                    "storageIdentifier": "local://196d9f15719-2270bfca2b48",
+                    "originalFileFormat": "application/x-stata-13",
+                    "originalFormatLabel": "Stata 13 Binary",
+                    "originalFileSize": 6443,
+                    "originalFileName": "stata13-auto.dta",
+                    "UNF": "UNF:6:RPd9EWHSZwqUvRZuKTJMqg==",
+                    "rootDataFileId": -1,
+                    "md5": "7b1201ce6b469796837a835377338c5a",
+                    "checksum": {
+                        "type": "MD5",
+                        "value": "7b1201ce6b469796837a835377338c5a"
+                    },
+                    "tabularData": true,
+                    "creationDate": "2025-05-16",
+                    "publicationDate": "2025-05-16",
+                    "fileAccessRequest": true
+                }
+            }
+        ],
+        "citation": "Durbin, Philip, 2025, \"Cars\", https://doi.org/10.5072/FK2/CY7BWA, Root, V1, UNF:6:RPd9EWHSZwqUvRZuKTJMqg== [fileUNF]"
+    }
+}

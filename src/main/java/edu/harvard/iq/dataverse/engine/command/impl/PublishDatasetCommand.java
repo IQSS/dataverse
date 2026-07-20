@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetLock;
-import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -12,11 +10,14 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 
 import jakarta.persistence.OptimisticLockException;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 import static edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult.Status;
@@ -106,20 +107,17 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             } 
         }
         
-        //ToDo - should this be in onSuccess()? May relate to todo above 
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
-        if ( prePubWf.isPresent() ) {
+        if (prePubWf.isPresent()) {
             // We start a workflow
             try {
                 theDataset = ctxt.em().merge(theDataset);
                 ctxt.em().flush();
-                ctxt.workflows().start(prePubWf.get(),
-                        buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased), true);
+
                 return new PublishDatasetResult(theDataset, Status.Workflow);
             } catch (OptimisticLockException e) {
                 throw new CommandException(e.getMessage(), e, this);
             }
-            
         } else{
             // We will skip trying to register the global identifiers for datafiles 
             // if "dependent" file-level identifiers are requested, AND the naming 
@@ -131,7 +129,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             // than the configured limit number of files, then call Finalize 
             // asychronously (default is 10)
             // ...
-            // Additionaly in 4.9.3 we have added a system variable to disable 
+            // Additionally in 4.9.3 we have added a system variable to disable 
             // registering file PIDs on the installation level.
             boolean registerGlobalIdsForFiles = 
                     ctxt.systemConfig().isFilePIDsEnabledForCollection(getDataset().getOwner()) &&
@@ -234,17 +232,10 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 throw new IllegalCommandException("Cannot release as minor version. Re-try as major release.", this);
             }
 
-            if (getDataset().getFiles().isEmpty() && getEffectiveRequiresFilesToPublishDataset()) {
+            List<FileMetadata> files = getDataset().getLatestVersion().getFileMetadatas();
+            if ((files == null || files.isEmpty()) && getEffectiveRequiresFilesToPublishDataset()) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.mayNotPublish.FilesRequired"), this);
             }
-        }
-    }
-    private boolean getEffectiveRequiresFilesToPublishDataset() {
-        if (getUser().isSuperuser()) {
-            return false;
-        } else {
-            Dataverse dv = getDataset().getOwner();
-            return dv != null &&  dv.getEffectiveRequiresFilesToPublishDataset();
         }
     }
     
@@ -257,10 +248,22 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             dataset  = ((PublishDatasetResult) r).getDataset();
         }
 
+        final Dataset ds = dataset;
+
         if (dataset != null) {
+            
             Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
-            //A pre-publication workflow will call FinalizeDatasetPublicationCommand itself when it completes
-            if (! prePubWf.isPresent() ) {
+            // A pre-publication workflow will call FinalizeDatasetPublicationCommand itself when it completes
+            if (prePubWf.isPresent()) {
+                WorkflowContext context = buildContext(ds, TriggerType.PrePublishDataset, datasetExternallyReleased);
+                try {
+                    ctxt.workflows().start(prePubWf.get(), context, true);
+                } catch (CommandException e) {
+                    logger.log(Level.SEVERE, "Error invoking pre-publish workflow: " + e.getMessage(), e);
+                    return false;
+                }
+            }
+            else {
                 logger.fine("From onSuccess, calling FinalizeDatasetPublicationCommand for dataset " + dataset.getGlobalId().asString());
                 ctxt.datasets().callFinalizePublishCommandAsynchronously(dataset.getId(), ctxt, request, datasetExternallyReleased);
             } 

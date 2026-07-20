@@ -32,26 +32,26 @@ We will be "fronting" the app server with Apache so that we can make use of the 
 
 We include the ``mod_ssl`` package to enforce HTTPS per below.
 
-``yum install httpd mod_ssl``
+``dnf install httpd mod_ssl``
 
 Install Shibboleth
 ~~~~~~~~~~~~~~~~~~
 
 Installing Shibboleth will give us both the ``shibd`` service and the ``mod_shib`` Apache module.
 
-Install Shibboleth Yum Repo
+Install Shibboleth DNF Repo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Shibboleth project now provides `a web form <https://shibboleth.net/downloads/service-provider/RPMS/>`_ to generate an appropriate package repository for use with YUM/DNF.
+The Shibboleth project now provides `a web form <https://shibboleth.net/downloads/service-provider/RPMS/>`_ to generate an appropriate package repository for use with DNF.
 
 You'll want to copy-paste the form results into ``/etc/yum.repos.d/shibboleth.repo`` or wherever is most appropriate for your operating system.
 
-Install Shibboleth Via Yum
+Install Shibboleth Via DNF
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Please note that during the installation it's ok to import GPG keys from the Shibboleth project. We trust them.
 
-``yum install shibboleth``
+``dnf install shibboleth``
 
 Configure Payara
 ----------------
@@ -122,7 +122,7 @@ Near the bottom of ``/etc/httpd/conf.d/ssl.conf`` but before the closing ``</Vir
 
 You can download a :download:`sample ssl.conf file <../_static/installation/files/etc/httpd/conf.d/ssl.conf>` to compare it against the file you edited.
 
-Note that ``/etc/httpd/conf.d/shib.conf`` and ``/etc/httpd/conf.d/shibboleth-ds.conf`` are expected to be present from installing Shibboleth via yum.
+Note that ``/etc/httpd/conf.d/shib.conf`` and ``/etc/httpd/conf.d/shibboleth-ds.conf`` are expected to be present from installing Shibboleth via dnf.
 
 You may wish to also add a timeout directive to the ProxyPass line within ssl.conf. This is especially useful for larger file uploads as apache may prematurely kill the connection before the upload is processed. 
 
@@ -159,7 +159,7 @@ Rather than or in addition to specifying individual Identity Providers (see :ref
 
 For example, in the United States, you would register your Dataverse installation with `InCommon <https://incommon.org>`_. For a list of federations around the world, see `REFEDS (the Research and Education FEDerations group) <https://refeds.org/federations>`_. The details of how to register with an identity federation are out of scope for this document.
 
-If you are planning to use InCommon, please note that ``shibd`` needs to be configured to use the new MDQ protocol and WayFinder `service <https://spaces.at.internet2.edu/display/federation/incommon-wayfinder-announcement>`_ `announced <https://lists.incommon.org/sympa/arc/inc-ops-notifications/2024-04/msg00000.html>`_ `by <https://incommon.org/news/incommon-federation-service-enhancements/>`_ InCommon. The sample ``shibboleth2.xml`` provided already contains commented-out sections pre-configured to work with this new InCommon framework. Please see https://spaces.at.internet2.edu/display/MDQ/how-to-configure-shib-sp-to-use-mdq and https://spaces.at.internet2.edu/display/federation/how-to-configure-service-to-use-wayfinder for more information. You will also need to set the feature flag ``dataverse.feature.shibboleth-use-wayfinder=true`` (see :ref:`feature-flags`). 
+If you are planning to use InCommon, please note that ``shibd`` needs to be configured to use the new MDQ protocol and WayFinder `service <https://spaces.at.internet2.edu/display/federation/incommon-wayfinder-announcement>`_ `announced <https://lists.incommon.org/sympa/arc/inc-ops-notifications/2024-04/msg00000.html>`_ `by <https://incommon.org/news/incommon-federation-service-enhancements/>`_ InCommon. The sample ``shibboleth2.xml`` provided already contains commented-out sections pre-configured to work with this new InCommon framework. Please see https://spaces.at.internet2.edu/display/MDQ/how-to-configure-shib-sp-to-use-mdq and https://spaces.at.internet2.edu/display/federation/how-to-configure-service-to-use-wayfinder for more information. You will also need to set the :ref:`dataverse.feature.shibboleth-use-wayfinder` feature flag to true.
 
 For a successful login to Dataverse, certain :ref:`shibboleth-attributes` must be released by the Identity Provider (IdP). Otherwise, in the federation context, users will have the frustrating experience of selecting their IdP in the list but then getting an error like ``Problem with Identity Provider – The SAML assertion for "eppn" was null``. We definitely want to prevent this! There's even some guidance about this problem in the User Guide under the heading :ref:`fix-shib-login` that links back here.
 

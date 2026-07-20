@@ -83,7 +83,7 @@ Here is an example using SDKMAN, which is not required, but it is recommended fo
 
 .. code-block:: bash
 
-   sdk install java 17.0.7-tem
+   sdk install java 21
 
 .. code-block:: bash
 

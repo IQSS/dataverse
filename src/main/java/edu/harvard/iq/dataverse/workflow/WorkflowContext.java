@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.workflow;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 
 import java.util.Map;
@@ -20,7 +21,17 @@ import java.util.UUID;
 public class WorkflowContext {
     
     public enum TriggerType {
-        PrePublishDataset, PostPublishDataset
+        PrePublishDataset(Key.PrePublishDatasetWorkflowId),
+        PostPublishDataset(Key.PostPublishDatasetWorkflowId);
+        
+        final Key key;
+        TriggerType(Key key) {
+            this.key = key;
+        }
+        
+        Key getKey() {
+            return key;
+        }
     }
     
     private final DataverseRequest request;

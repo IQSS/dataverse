@@ -9,8 +9,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.GetUserPermittedCollectionsCommand;
-import edu.harvard.iq.dataverse.search.SolrQueryResponse;
-import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.search.*;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -18,11 +17,6 @@ import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.search.SearchConstants;
-import edu.harvard.iq.dataverse.search.SearchException;
-import edu.harvard.iq.dataverse.search.SearchFields;
-import edu.harvard.iq.dataverse.search.SearchServiceFactory;
-import edu.harvard.iq.dataverse.search.SortBy;
 
 import java.util.Arrays;
 import java.util.List;
@@ -90,6 +84,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
     public static final String JSON_SUCCESS_FIELD_NAME = "success";
     public static final String JSON_ERROR_MSG_FIELD_NAME = "error_message";
+    public static final String JSON_MSG_FIELD_NAME = "message";
     public static final String JSON_DATA_FIELD_NAME = "data";
 
     /**
@@ -154,13 +149,18 @@ public class DataRetrieverAPI extends AbstractApiBean {
     public String retrieveMyDataAsJsonString(
             @Context ContainerRequestContext crc,
             @QueryParam("dvobject_types") List<DvObject.DType> dvobject_types,
-            @QueryParam("published_states") List<String> published_states, 
+            @QueryParam("published_states") List<String> published_states,
+            @QueryParam("metadata_fields") List<String> metadataFields,
             @QueryParam("selected_page") Integer selectedPage, 
             @QueryParam("mydata_search_term") String searchTerm,             
             @QueryParam("role_ids") List<Long> roleIds, 
             @QueryParam("userIdentifier") String userIdentifier,
             @QueryParam("filter_validities") Boolean filterValidities,
-            @QueryParam("dataset_valid") List<Boolean> datasetValidities) {
+            @QueryParam("dataset_valid") List<Boolean> datasetValidities,
+            @QueryParam("show_collections") boolean showCollections,
+            @QueryParam("sort") String sortField,
+            @QueryParam("order") String sortOrder,
+            @QueryParam("fq") final List<String> filterQueries) {
         boolean otherUser;
 
         String noMsgResultsFound = BundleUtil.getStringFromBundle("dataretrieverAPI.noMsgResultsFound");
@@ -191,26 +191,18 @@ public class DataRetrieverAPI extends AbstractApiBean {
         }
         
         // ---------------------------------
-        // (1) Initialize filterParams and check for Errors 
+        // (1) Initialize filterParams and MyDataFinder and check for Errors
         // ---------------------------------
         DataverseRequest dataverseRequest = createDataverseRequest(authUser);
-
-        
         MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, dtypes, pub_states, roleIds, searchTerm, validities);
-        if (filterParams.hasError()){
-            return this.getJSONErrorString(filterParams.getErrorMessage(), filterParams.getErrorMessage());
+        myDataFinder = new MyDataFinder(rolePermissionHelper, roleAssigneeService, dvObjectServiceBean, groupService);
+        myDataFinder.runFindDataSteps(filterParams);
+
+        if (filterParams.hasError()) {
+            return myDataAsJson(filterParams.getErrorMessage()).build().toString();
         }
-       
-        // ---------------------------------
-        // (2) Initialize MyDataFinder and check for Errors 
-        // ---------------------------------
-        myDataFinder = new MyDataFinder(rolePermissionHelper,
-                                        roleAssigneeService,
-                                        dvObjectServiceBean, 
-                                        groupService);
-        this.myDataFinder.runFindDataSteps(filterParams);
-        if (myDataFinder.hasError()){
-            return this.getJSONErrorString(myDataFinder.getErrorMessage(), myDataFinder.getErrorMessage());
+        if (myDataFinder.hasError()) {
+            return myDataAsJson(myDataFinder.getErrorMessage()).build().toString();
         }
 
         // ---------------------------------
@@ -224,10 +216,18 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
         //msg("search with user: " + searchUser.getIdentifier());
 
-        List<String> filterQueries = this.myDataFinder.getSolrFilterQueries();
-        if (filterQueries==null){
+        List<String> defaultFilterQueries = this.myDataFinder.getSolrFilterQueries();
+        if (defaultFilterQueries==null){
             logger.fine("No ids found for this search");
-            return this.getJSONErrorString(noMsgResultsFound, null);
+            return myDataAsJson(noMsgResultsFound).build().toString();
+        }
+        filterQueries.addAll(defaultFilterQueries);
+
+        SortBy sortBy;
+        try {
+            sortBy = SearchUtil.getSortBy(sortField, sortOrder, SearchFields.RELEASE_OR_CREATE_DATE);
+        } catch (Exception ex) {
+            return this.getJSONErrorString(ex.getLocalizedMessage(), null);
         }
 
         try {
@@ -236,15 +236,21 @@ public class DataRetrieverAPI extends AbstractApiBean {
                         null, // subtree, default it to Dataverse for now
                         filterParams.getSearchTerm(),  //"*", //
                         filterQueries,//filterQueries,
-                        //SearchFields.NAME_SORT, SortBy.ASCENDING,
-                        SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
+                        sortBy.getField(),
+                        sortBy.getOrder(),
                         solrCardStart, //paginationStart,
                         true, // dataRelatedToMe
-                        SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
+                        SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE, //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
+                        true,
+                        null,
+                        null,
+                        true,
+                        true,
+                        showCollections
                 );
 
             if (this.solrQueryResponse.getNumResultsFound()==0){
-                return this.getJSONErrorString(noMsgResultsFound, null);
+                return myDataAsJson(noMsgResultsFound).build().toString();
             }
 
         } catch (SearchException ex) {
@@ -268,9 +274,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
         //      - DvObject counts
         // ---------------------------------
 
-        // Initialize JSON response
-        JsonObjectBuilder jsonData = Json.createObjectBuilder();
-
         Pager pager = new Pager(solrQueryResponse.getNumResultsFound().intValue(),
                 SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE,
                 paginationStart);
@@ -278,20 +281,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         RoleTagRetriever roleTagRetriever = new RoleTagRetriever(this.rolePermissionHelper, this.roleAssigneeSvc, this.dvObjectServiceBean);
         roleTagRetriever.loadRoles(dataverseRequest, solrQueryResponse);
 
-
-        jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, true)
-                .add(DataRetrieverAPI.JSON_DATA_FIELD_NAME,
-                        Json.createObjectBuilder()
-                                .add("pagination", pager.asJsonObjectBuilderUsingCardTerms())
-                                //.add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, filterParams, this.myDataFinder))
-                                .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, roleTagRetriever))
-                                .add(SearchConstants.SEARCH_API_TOTAL_COUNT, solrQueryResponse.getNumResultsFound())
-                                .add(SearchConstants.SEARCH_API_START, solrQueryResponse.getResultsStart())
-                                .add("search_term",  filterParams.getSearchTerm())
-                                .add("dvobject_counts", this.getDvObjectTypeCounts(solrQueryResponse))
-                                .add("pubstatus_counts", this.getPublicationStatusCounts(solrQueryResponse))
-                                .add("selected_filters", this.myDataFinder.getSelectedFilterParamsAsJSON())
-                );
+        JsonObjectBuilder jsonData = myDataAsJson(null, pager, roleTagRetriever, metadataFields);
 
         // ---------------------------------------------------------
         // We're doing ~another~ solr query here
@@ -305,6 +295,32 @@ public class DataRetrieverAPI extends AbstractApiBean {
         }
 
         return jsonData.build().toString();
+    }
+
+    // For empty data to prevent null pointer exceptions in all the dependencies
+    private JsonObjectBuilder myDataAsJson(String message) {
+        solrQueryResponse = new SolrQueryResponse(null);
+        return myDataAsJson(message, new Pager(0, SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE, 1),
+                new RoleTagRetriever(this.rolePermissionHelper, this.roleAssigneeSvc, this.dvObjectServiceBean), List.of());
+    }
+
+    private JsonObjectBuilder myDataAsJson(String message, Pager pager, RoleTagRetriever roleTagRetriever, List<String> metadataFields) {
+        JsonObjectBuilder jsonData = Json.createObjectBuilder().add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, true);
+        if (message != null) {
+            jsonData.add(DataRetrieverAPI.JSON_MSG_FIELD_NAME, message);
+        }
+        jsonData.add(DataRetrieverAPI.JSON_DATA_FIELD_NAME,
+                Json.createObjectBuilder()
+                        .add("pagination", pager.asJsonObjectBuilderUsingCardTerms())
+                        .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, roleTagRetriever, metadataFields))
+                        .add(SearchConstants.SEARCH_API_TOTAL_COUNT, solrQueryResponse.getNumResultsFound())
+                        .add(SearchConstants.SEARCH_API_START, solrQueryResponse.getResultsStart())
+                        .add("search_term",  myDataFinder.filterParams.getSearchTerm())
+                        .add("dvobject_counts", this.getDvObjectTypeCounts(solrQueryResponse))
+                        .add("pubstatus_counts", this.getPublicationStatusCounts(solrQueryResponse))
+                        .add("selected_filters", this.myDataFinder.getSelectedFilterParamsAsJSON())
+                );
+        return jsonData;
     }
 
     @GET
@@ -347,7 +363,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
      * @param roleTagRetriever
      * @return 
      */
-    private JsonArrayBuilder formatSolrDocs(SolrQueryResponse solrResponse, RoleTagRetriever roleTagRetriever ){
+    private JsonArrayBuilder formatSolrDocs(SolrQueryResponse solrResponse, RoleTagRetriever roleTagRetriever, List<String> metadataFields){
         if (solrResponse == null){
             throw new NullPointerException("DataRetrieverAPI.formatSolrDocs:  solrResponse should not be null");     
         }
@@ -365,7 +381,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
             // (a) Get core card data from solr
             // -------------------------------------------
             
-            myDataCardInfo = doc.getJsonForMyData(isValid(doc));
+            myDataCardInfo = doc.getJsonForMyData(isValid(doc), metadataFields);
             
             if (doc.getEntity() != null && !doc.getEntity().isInstanceofDataFile()){
                 String parentAlias = dataverseService.getParentAliasString(doc);

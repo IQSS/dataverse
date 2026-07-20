@@ -1,0 +1,62 @@
+{
+  "dcterms:modified": "2025-03-13",
+  "dcterms:creator": "Root",
+  "@type": "ore:ResourceMap",
+  "schema:additionalType": "Dataverse OREMap Format v1.0.1",
+  "dvcore:generatedBy": {
+    "@type": "schema:SoftwareApplication",
+    "schema:name": "Dataverse",
+    "schema:version": "6.5",
+    "schema:url": "https://github.com/iqss/dataverse"
+  },
+  "@id": "http://localhost:8080/api/datasets/export?exporter=OAI_ORE&persistentId=https://doi.org/10.5072/FK2/0CNXUJ",
+  "ore:describes": {
+    "citation:dsDescription": {
+      "citation:dsDescriptionValue": "A junk dataset."
+    },
+    "author": {
+      "citation:authorName": "Ritter, Sylvester",
+      "citation:authorAffiliation": "WWF"
+    },
+    "citation:datasetContact": {
+      "citation:datasetContactEmail": "dataverse@mailinator.com"
+    },
+    "citation:depositor": "Admin, Dataverse",
+    "subject": "Other",
+    "title": "</script><script>alert(666)</script>",
+    "dateOfDeposit": "2025-03-13",
+    "@id": "https://doi.org/10.5072/FK2/0CNXUJ",
+    "@type": [
+      "ore:Aggregation",
+      "schema:Dataset"
+    ],
+    "schema:version": "1.0",
+    "schema:name": "",
+    "schema:dateModified": "Thu Mar 13 14:56:36 UTC 2025",
+    "schema:datePublished": "2025-03-13",
+    "schema:creativeWorkStatus": "RELEASED",
+    "schema:license": "http://creativecommons.org/publicdomain/zero/1.0",
+    "dvcore:fileTermsOfAccess": {
+      "dvcore:fileRequestAccess": true
+    },
+    "schema:includedInDataCatalog": "Root",
+    "schema:isPartOf": {
+      "schema:name": "Root",
+      "@id": "http://localhost:8080/dataverse/root",
+      "schema:description": "The root dataverse."
+    },
+    "ore:aggregates": [],
+    "schema:hasPart": []
+  },
+  "@context": {
+    "author": "http://purl.org/dc/terms/creator",
+    "citation": "https://dataverse.org/schema/citation/",
+    "dateOfDeposit": "http://purl.org/dc/terms/dateSubmitted",
+    "dcterms": "http://purl.org/dc/terms/",
+    "dvcore": "https://dataverse.org/schema/core#",
+    "ore": "http://www.openarchives.org/ore/terms/",
+    "schema": "http://schema.org/",
+    "subject": "http://purl.org/dc/terms/subject",
+    "title": "http://purl.org/dc/terms/title"
+  }
+}

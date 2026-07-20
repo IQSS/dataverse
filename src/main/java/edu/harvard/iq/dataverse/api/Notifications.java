@@ -27,11 +27,16 @@ public class Notifications extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/all")
-    public Response getAllNotificationsForUser(@Context ContainerRequestContext crc, @QueryParam("inAppNotificationFormat") boolean inAppNotificationFormat) {
+    public Response getAllNotificationsForUser(@Context ContainerRequestContext crc,
+                                               @QueryParam("onlyUnread") boolean onlyUnread,
+                                               @QueryParam("inAppNotificationFormat") boolean inAppNotificationFormat,
+                                               @QueryParam("limit") Integer limit,
+                                               @QueryParam("offset") Integer offset) {
         try {
             AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
-            List<UserNotification> userNotifications = userNotificationSvc.findByUser(authenticatedUser.getId());
-            return ok(Json.createObjectBuilder().add("notifications", json(userNotifications, authenticatedUser, inAppNotificationFormat)));
+            List<UserNotification> userNotifications = userNotificationSvc.findByUser(authenticatedUser.getId(), onlyUnread, limit, offset);
+            long userNotificationTotalCount = userNotificationSvc.findTotalCountByUser(authenticatedUser.getId(), onlyUnread);
+            return ok(json(userNotifications, authenticatedUser, inAppNotificationFormat), userNotificationTotalCount);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

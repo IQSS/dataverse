@@ -13,7 +13,7 @@ import java.util.logging.Logger;
  *
  * @author landreev
  */
-@RequiredPermissions(Permission.ManageDataversePermissions)
+@RequiredPermissions(Permission.EditDataverse)
 // alternatively, we could make it dynamic - public for published collections
 // and Permission.ViewUnpublishedDataverse required otherwise (?)
 public class GetCollectionStorageUseCommand extends AbstractCommand<Long> {

@@ -80,7 +80,7 @@ import jakarta.validation.constraints.NotBlank;
 public class DataFile extends DvObject implements Comparable {
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
     private static final long serialVersionUID = 1L;
-    public static final String TARGET_URL = "/file.xhtml?persistentId=";
+    public static final String TARGET_URL = "/citation?persistentId=";
     public static final char INGEST_STATUS_NONE = 65;
     public static final char INGEST_STATUS_SCHEDULED = 66;
     public static final char INGEST_STATUS_INPROGRESS = 67;
@@ -109,18 +109,22 @@ public class DataFile extends DvObject implements Comparable {
      * The list of types should be limited to the list above in the technote
      * because the string gets passed into MessageDigest.getInstance() and you
      * can't just pass in any old string.
+     * 
+     * The URIs are used in the OAI_ORE export. They are taken from the associated XML Digital Signature standards.
      */
     public enum ChecksumType {
 
-        MD5("MD5"),
-        SHA1("SHA-1"),
-        SHA256("SHA-256"),
-        SHA512("SHA-512");
+        MD5("MD5", "http://www.w3.org/2001/04/xmldsig-more#md5"),
+        SHA1("SHA-1", "http://www.w3.org/2000/09/xmldsig#sha1"),
+        SHA256("SHA-256", "http://www.w3.org/2001/04/xmlenc#sha256"),
+        SHA512("SHA-512", "http://www.w3.org/2001/04/xmlenc#sha512");
 
         private final String text;
+        private final String uri;
 
-        private ChecksumType(final String text) {
+        private ChecksumType(final String text, final String uri) {
             this.text = text;
+            this.uri = uri;
         }
 
         public static ChecksumType fromString(String text) {
@@ -131,12 +135,29 @@ public class DataFile extends DvObject implements Comparable {
                     }
                 }
             }
-            throw new IllegalArgumentException("ChecksumType must be one of these values: " + Arrays.asList(ChecksumType.values()) + ".");
+            throw new IllegalArgumentException(
+                    "ChecksumType must be one of these values: " + Arrays.asList(ChecksumType.values()) + ".");
+        }
+        
+        public static ChecksumType fromUri(String uri) {
+            if (uri != null) {
+                for (ChecksumType checksumType : ChecksumType.values()) {
+                    if (uri.equals(checksumType.uri)) {
+                        return checksumType;
+                    }
+                }
+            }
+            throw new IllegalArgumentException(
+                    "ChecksumType must be one of these values: " + Arrays.asList(ChecksumType.values()) + ".");
         }
 
         @Override
         public String toString() {
             return text;
+        }
+
+        public String toUri() {
+            return uri;
         }
     }
 
@@ -226,11 +247,31 @@ public class DataFile extends DvObject implements Comparable {
     inverseJoinColumns = @JoinColumn(name = "authenticated_user_id"))
     private List<AuthenticatedUser> fileAccessRequesters;
 
-    
-    public List<FileAccessRequest> getFileAccessRequests(){
-        return fileAccessRequests;
+    public List<FileAccessRequest> getFileAccessRequests() {
+        return getFileAccessRequests(0, 0);
     }
-    
+
+    /**
+     * Get Requests with pagination option
+     * @param numResultsPerPageRequested
+     * @param paginationStart starts at 1
+     * @return
+     */
+    public List<FileAccessRequest> getFileAccessRequests(int numResultsPerPageRequested, int paginationStart) {
+        if (numResultsPerPageRequested < 1 || paginationStart < 1) {
+            return fileAccessRequests;
+        } else {
+            int startIndex = (paginationStart - 1) * numResultsPerPageRequested;
+            int endIndex = startIndex + numResultsPerPageRequested;
+            if (startIndex >= fileAccessRequests.size()) {
+                return List.of();
+            } else if (endIndex > fileAccessRequests.size()) {
+                endIndex = fileAccessRequests.size();
+            }
+            return fileAccessRequests.subList(startIndex, endIndex);
+        }
+    }
+
     public List<FileAccessRequest> getFileAccessRequests(FileAccessRequest.RequestState state){
         return fileAccessRequests.stream().filter(far -> far.getState() == state).collect(Collectors.toList());
     }
@@ -506,6 +547,11 @@ public class DataFile extends DvObject implements Comparable {
         return null;
     }
     
+    public String getFriendlyOriginalFileSize() {
+        Long size = (getOriginalFileSize()==null) ? filesize : getOriginalFileSize();
+        return getFriendlySize(size);
+    }
+    
     public String getOriginalFileName() {
         if (isTabularData()) {
             DataTable dataTable = getDataTable();
@@ -518,7 +564,7 @@ public class DataFile extends DvObject implements Comparable {
     }
 
     
-    private String getDerivedOriginalFileName() {
+    public String getDerivedOriginalFileName() {
         FileMetadata fm = getFileMetadata();
         String filename = fm.getLabel();
         String originalExtension = FileUtil.generateOriginalExtension(getOriginalFileFormat());
@@ -668,8 +714,12 @@ public class DataFile extends DvObject implements Comparable {
      * @return 
      */
     public String getFriendlySize() {
-        if (filesize != null) {
-            return FileSizeChecker.bytesToHumanReadable(filesize);
+        return getFriendlySize(filesize);
+    }
+    
+    private String getFriendlySize(Long size) {
+        if (size != null) {
+            return FileSizeChecker.bytesToHumanReadable(size);
         } else {
             return BundleUtil.getStringFromBundle("file.sizeNotAvailable");
         }
@@ -826,6 +876,15 @@ public class DataFile extends DvObject implements Comparable {
         }
 
         this.fileAccessRequests.add(request);
+    }
+
+    public List<FileAccessRequest> getAccessRequestsForAssignee(RoleAssignee roleAssignee) {
+        if (this.fileAccessRequests == null) {
+            return null;
+        }
+
+        return this.fileAccessRequests.stream()
+                .filter(fileAccessRequest -> fileAccessRequest.getRequester().equals(roleAssignee)).toList();
     }
 
     public FileAccessRequest getAccessRequestForAssignee(RoleAssignee roleAssignee) {

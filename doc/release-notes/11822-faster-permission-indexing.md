@@ -1,1 +1,0 @@
-Permission reindexing, which occurs, e.g., after a user has been granted a role on a collection, has been made faster and less memory intensive in this release.

@@ -13,6 +13,7 @@ This guide documents the functionality only available to superusers (such as "da
 .. toctree::
    :maxdepth: 2
 
+   features
    dashboard
    external-tools
    discoverability
@@ -35,3 +36,4 @@ This guide documents the functionality only available to superusers (such as "da
    maintenance
    backups
    troubleshooting
+   big-data-administration

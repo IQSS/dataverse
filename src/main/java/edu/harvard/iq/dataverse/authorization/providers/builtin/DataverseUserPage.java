@@ -69,6 +69,7 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2LoginBackin
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -453,8 +454,13 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     
-    private String getRoleStringFromUser(AuthenticatedUser au, DvObject dvObj) {
+    private String getRoleStringFromUser(AuthenticatedUser au, DvObject dvObj, String additionalInfo) {
         // Find user's role(s) for given dataverse/dataset
+        if (additionalInfo != null && additionalInfo.contains("roleName:")) {
+            JSONObject jsonObject = new JSONObject(additionalInfo);
+            return jsonObject.getString("roleName");
+        }
+
         Set<RoleAssignment> roles = permissionService.assignmentsFor(au, dvObj);
         List<String> roleNames = new ArrayList<>();
 
@@ -481,16 +487,16 @@ public class DataverseUserPage implements java.io.Serializable {
                     // Can either be a dataverse or dataset, so search both
                     Dataverse dataverse = dataverseService.find(userNotification.getObjectId());
                     if (dataverse != null) {
-                        userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), dataverse ));
+                        userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), dataverse, userNotification.getAdditionalInfo()));
                         userNotification.setTheObject(dataverse);
                     } else {
                         Dataset dataset = datasetService.find(userNotification.getObjectId());
                         if (dataset != null){
-                            userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), dataset ));
+                            userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), dataset, userNotification.getAdditionalInfo()));
                             userNotification.setTheObject(dataset);
                         } else {
                             DataFile datafile = fileService.find(userNotification.getObjectId());
-                            userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), datafile ));
+                            userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), datafile, userNotification.getAdditionalInfo()));
                             userNotification.setTheObject(datafile);
                         }
                     }
@@ -509,6 +515,7 @@ public class DataverseUserPage implements java.io.Serializable {
                 case GRANTFILEACCESS:
                 case REJECTFILEACCESS:
                 case DATASETCREATED:
+                case DATASETMOVED:
                 case DATASETMENTIONED:
                     userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
                     break;

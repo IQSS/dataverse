@@ -101,20 +101,20 @@ jobs:
             # Depending on context, we push to different targets. Login accordingly.
             - if: github.event_name != 'pull_request'
               name: Log in to Docker Hub registry
-              uses: docker/login-action@v3
+              uses: docker/login-action@v4
               with:
                   username: ${{ secrets.DOCKERHUB_USERNAME }}
                   password: ${{ secrets.DOCKERHUB_TOKEN }}
             - if: ${{ github.event_name == 'pull_request' }}
               name: Login to Github Container Registry
-              uses: docker/login-action@v3
+              uses: docker/login-action@v4
               with:
                   registry: ghcr.io
                   username: ${{ secrets.GHCR_USERNAME }}
                   password: ${{ secrets.GHCR_TOKEN }}
 
             - name: Set up QEMU for multi-arch builds
-              uses: docker/setup-qemu-action@v3
+              uses: docker/setup-qemu-action@v4
 
             - name: Add rolling image tag when pushing to develop
               if: ${{ github.event_name == 'push' && github.ref_name == 'develop' }}
@@ -141,7 +141,7 @@ jobs:
                   ${{ env.REGISTRY }} -Ddocker.platforms=${{ env.PLATFORMS }}
                   -P ct deploy
 
-            - uses: marocchino/sticky-pull-request-comment@v2
+            - uses: marocchino/sticky-pull-request-comment@v3
               if: ${{ github.event_name == 'pull_request' }}
               with:
                   header: registry-push

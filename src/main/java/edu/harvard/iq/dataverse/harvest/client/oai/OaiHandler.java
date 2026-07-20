@@ -21,6 +21,7 @@ import io.gdcc.xoai.serviceprovider.client.JdkHttpOaiClient;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.http.HttpClient;
+import java.time.Duration;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -147,14 +148,21 @@ public class OaiHandler implements Serializable {
 
             context.withBaseUrl(baseOaiUrl);
             context.withGranularity(Granularity.Second);
-            
-            JdkHttpOaiClient.Builder xoaiClientBuilder = JdkHttpOaiClient.newBuilder().withBaseUrl(getBaseOaiUrl());
+
+            // Note that we are defaulting to HTTP/1 (JDK HttpClient defaults to
+            // HTTP/2 otherwise. By nature of OAI-PMH, HTTP/2 offers no practical 
+            // benefit. However, long-running harvests from servers supporting 
+            // HTTP/2 can fail due to a bug in JDK 17 (HttpClient does not 
+            // properly handle GoAway stream responses apparently). For example, 
+            // harvests from DataCite OAI-PMH were failing at 1 hour mark. 
+            JdkHttpOaiClient.Builder xoaiClientBuilder = (new JdkHttpOaiClient.JdkHttpBuilder(HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1))).withBaseUrl(getBaseOaiUrl());
             if (getCustomHeaders() != null) {
                 for (String headerName : getCustomHeaders().keySet()) {
                     logger.fine("adding custom header; name: "+headerName+", value: "+getCustomHeaders().get(headerName));
                 }   
                 xoaiClientBuilder = xoaiClientBuilder.withCustomHeaders(getCustomHeaders());
             }
+            xoaiClientBuilder = xoaiClientBuilder.withConnectTimeout(Duration.ofSeconds(180));
             context.withOAIClient(xoaiClientBuilder.build());
             context.withSaveUnparsedMetadata();
             serviceProvider = new ServiceProvider(context);

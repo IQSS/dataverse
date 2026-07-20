@@ -1,8 +1,11 @@
 package edu.harvard.iq.dataverse;
-import java.io.Serializable;
-import java.util.List;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -91,6 +94,12 @@ public class CustomQuestion implements Serializable {
 
     public List<CustomQuestionValue> getCustomQuestionValues() {
         return customQuestionValues;
+    }
+
+    public List<String> getCustomQuestionOptions() {
+        return customQuestionValues.stream()
+                .map(CustomQuestionValue::getValueString)
+                .collect(Collectors.toList());
     }
     
     public String getCustomQuestionValueString(){

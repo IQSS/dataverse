@@ -6,7 +6,6 @@
 
 # A recursive method to process each Dataverse
 processDV () {
-echo "Running counter_weekly.sh on $(date)"
 echo "Processing Dataverse ID#: $1"
 
 #Call the Dataverse API to get the contents of the Dataverse (without credentials, this will only list published datasets and dataverses
@@ -18,23 +17,67 @@ for subds in $(echo "${DVCONTENTS}" | jq -r '.data[] | select(.type == "dataset"
 #The authority/identifier are preceded by a protocol/host, i.e. https://doi.org/
 DOI=`expr "$subds" : '.*:\/\/\doi\.org\/\(.*\)'`
 
-# Call the Dataverse API for this dataset and get the response
-RESULT=$(curl -s -X POST "http://localhost:8080/api/admin/makeDataCount/:persistentId/updateCitationsForDataset?persistentId=doi:$DOI" )
-# Parse the status and number of citations found from the response
-STATUS=$(echo "$RESULT" | jq -j '.status' )
-CITATIONS=$(echo "$RESULT" | jq -j '.data.citationCount')
+# Call the Dataverse API for this dataset and capture both the response and HTTP status code
+HTTP_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "http://localhost:8080/api/admin/makeDataCount/:persistentId/updateCitationsForDataset?persistentId=doi:$DOI")
 
-# The status for a call that worked
-OK='OK'
+# Extract the HTTP status code from the last line
+HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tail -n1)
+# Extract the response body (everything except the last line)
+RESPONSE_BODY=$(echo "$HTTP_RESPONSE" | sed '$d')
 
-# Check the status and report
-if [ "$STATUS" = "$OK" ]; then
-        echo "Updated: $CITATIONS citations for doi:$DOI"
-else
-        echo "Failed to update citations for doi:$DOI"
-        echo "Run curl -s -X POST 'http://localhost:8080/api/admin/makeDataCount/:persistentId/updateCitationsForDataset?persistentId=doi:$DOI ' to retry/see the error message"
-fi
-#processDV $subds
+# Check the HTTP status code and report accordingly
+case $HTTP_STATUS in
+    200)
+        # Successfully queued
+        # Extract status from the nested data object
+        STATUS=$(echo "$RESPONSE_BODY" | jq -r '.data.status')
+
+        # Extract message from the nested data object
+        if echo "$RESPONSE_BODY" | jq -e '.data.message' > /dev/null 2>&1 && [ "$(echo "$RESPONSE_BODY" | jq -r '.data.message')" != "null" ]; then
+            MESSAGE=$(echo "$RESPONSE_BODY" | jq -r '.data.message')
+            echo "[SUCCESS] doi:$DOI - $STATUS: $MESSAGE"
+        else
+            # If message is missing or null, just show the status
+            echo "[SUCCESS] doi:$DOI - $STATUS: Citation update queued"
+        fi
+        ;;
+    400)
+        # Bad request
+        if echo "$RESPONSE_BODY" | jq -e '.message' > /dev/null 2>&1; then
+            ERROR=$(echo "$RESPONSE_BODY" | jq -r '.message')
+            echo "[ERROR 400] doi:$DOI - Bad request: $ERROR"
+        else
+            echo "[ERROR 400] doi:$DOI - Bad request"
+        fi
+        ;;
+    404)
+        # Not found
+        if echo "$RESPONSE_BODY" | jq -e '.message' > /dev/null 2>&1; then
+            ERROR=$(echo "$RESPONSE_BODY" | jq -r '.message')
+            echo "[ERROR 404] doi:$DOI - Not found: $ERROR"
+        else
+            echo "[ERROR 404] doi:$DOI - Not found"
+        fi
+        ;;
+    503)
+        # Service unavailable (queue full)
+        if echo "$RESPONSE_BODY" | jq -e '.message' > /dev/null 2>&1; then
+            ERROR=$(echo "$RESPONSE_BODY" | jq -r '.message')
+            echo "[ERROR 503] doi:$DOI - Service unavailable: $ERROR"
+        elif echo "$RESPONSE_BODY" | jq -e '.data.message' > /dev/null 2>&1; then
+            ERROR=$(echo "$RESPONSE_BODY" | jq -r '.data.message')
+            echo "[ERROR 503] doi:$DOI - Service unavailable: $ERROR"
+        else
+            echo "[ERROR 503] doi:$DOI - Service unavailable: Queue is full"
+        fi
+        ;;
+    *)
+        # Other error
+        echo "[ERROR $HTTP_STATUS] doi:$DOI - Unexpected error"
+        echo "Response: $RESPONSE_BODY"
+        ;;
+esac
+
 done
 
 # Now iterate over any child Dataverses and recursively process them
@@ -47,3 +90,4 @@ done
 
 # Call the function on the root dataverse to start processing
 processDV 1
+echo "Processing Dataverse Complete: $(date)"

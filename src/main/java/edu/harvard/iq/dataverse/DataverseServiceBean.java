@@ -1307,7 +1307,12 @@ public class DataverseServiceBean implements java.io.Serializable {
 "    },\n" +
 "    \"required\": [\"datasetVersion\"]\n" +
 "}\n";
-    
+
+    /**
+     * 
+     * @todo: consider moving these quota methods, and the DatasetServiceBean
+     * equivalent to DvObjectServiceBean. 
+     */    
     public void saveStorageQuota(Dataverse target, Long allocation) {
         StorageQuota storageQuota = target.getStorageQuota();
         

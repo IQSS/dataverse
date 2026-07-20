@@ -9,12 +9,16 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailComman
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -32,6 +36,9 @@ public class DatasetWidgetsPage implements java.io.Serializable {
 
     @EJB
     EjbDataverseEngine commandEngine;
+    
+    @EJB
+    SystemConfig systemConfig;
 
     @Inject
     DataverseRequestServiceBean dvRequestService;
@@ -131,6 +138,12 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     public void handleImageFileUpload(FileUploadEvent event) {
         logger.fine("handleImageFileUpload clicked");
         UploadedFile uploadedFile = event.getFile();
+        long maxSize = systemConfig.getThumbnailSizeLimitImage();
+        if (!FileUtil.isUploadedFileAnImage(uploadedFile, maxSize)) {
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Only image files are allowed.", "Only image files under " + maxSize + " bytes are allowed.");
+            FacesContext.getCurrentInstance().addMessage(null, msg);
+            return;
+        }
         try {
             updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.setNonDatasetFileAsThumbnail, null, uploadedFile.getInputStream());
         } catch (IOException ex) {

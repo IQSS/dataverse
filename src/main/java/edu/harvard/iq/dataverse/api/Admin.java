@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.settings.SettingsValidationException;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
@@ -64,6 +65,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
@@ -72,7 +74,6 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -113,6 +114,7 @@ import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
@@ -133,6 +135,11 @@ import jakarta.persistence.Query;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.StreamingOutput;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+
 import java.nio.file.Paths;
 import java.util.TreeMap;
 
@@ -194,50 +201,119 @@ public class Admin extends AbstractApiBean {
 
     public static final String listUsersPartialAPIPath = "list-users";
     public static final String listUsersFullAPIPath = "/api/admin/" + listUsersPartialAPIPath;
-
+    
     @Path("settings")
     @GET
+    @APIResponses({
+        @APIResponse(responseCode = "200",
+            description = "All database options successfully queried",
+            // The schema may be extended later to better describe what the JSON object looks like.
+            content = @Content(schema = @Schema(implementation = JsonObject.class))),
+    })
     public Response listAllSettings() {
-        JsonObjectBuilder bld = jsonObjectBuilder();
-        settingsSvc.listAll().forEach(s -> bld.add(s.getName(), s.getContent()));
-        return ok(bld);
+        return ok(settingsSvc.listAllAsJson());
     }
-
+    
+    @Path("settings")
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @APIResponses({
+        @APIResponse(responseCode = "200", description = "All database options successfully updated")
+    })
+    public Response putAllSettings(JsonObject settings) {
+        try {
+            // Basic JSON structure validation only
+            if (settings == null || settings.isEmpty()) {
+                return error(Response.Status.BAD_REQUEST, "Empty or invalid JSON object");
+            }
+            
+            // Transfer to domain objects and deeper validation to be handled by the service layer.
+            JsonObjectBuilder successfullOperations = settingsSvc.setAllFromJson(settings);
+            return ok("All database options successfully updated.", successfullOperations);
+        } catch (SettingsValidationException sve) {
+            return error(Response.Status.BAD_REQUEST, sve.getMessage());
+        }
+    }
+    
     @Path("settings/{name}")
     @PUT
     public Response putSetting(@PathParam("name") String name, String content) {
-        Setting s = settingsSvc.set(name, content);
-        return ok(jsonObjectBuilder().add(s.getName(), s.getContent()));
+        try {
+            SettingsServiceBean.validateSettingName(name);
+            
+            Setting s = settingsSvc.set(name, content);
+            return ok("Setting " + name + " added.");
+        } catch (SettingsValidationException sve) {
+            return error(Response.Status.BAD_REQUEST, sve.getMessage());
+        }
     }
 
     @Path("settings/{name}/lang/{lang}")
     @PUT
     public Response putSettingLang(@PathParam("name") String name, @PathParam("lang") String lang, String content) {
-        Setting s = settingsSvc.set(name, lang, content);
-        return ok("Setting " + name + " - " + lang + " - added.");
+        try {
+            SettingsServiceBean.validateSettingName(name);
+            SettingsServiceBean.validateSettingLang(lang);
+            
+            Setting s = settingsSvc.set(name, lang, content);
+            return ok("Setting " + name + " added for language " + lang + ".");
+        } catch (SettingsValidationException sve) {
+            return error(Response.Status.BAD_REQUEST, sve.getMessage());
+        }
     }
 
     @Path("settings/{name}")
     @GET
     public Response getSetting(@PathParam("name") String name) {
-        String s = settingsSvc.get(name);
-
-        return (s != null) ? ok(s) : notFound("Setting " + name + " not found");
+        try {
+            SettingsServiceBean.validateSettingName(name);
+            
+            String content = settingsSvc.get(name);
+            return (content != null) ? ok(content) : notFound("Setting " + name + " not found.");
+        } catch (SettingsValidationException sve) {
+            return error(Response.Status.BAD_REQUEST, sve.getMessage());
+        }
+    }
+    
+    @Path("settings/{name}/lang/{lang}")
+    @GET
+    public Response getSetting(@PathParam("name") String name, @PathParam("lang") String lang) {
+        try {
+            SettingsServiceBean.validateSettingName(name);
+            SettingsServiceBean.validateSettingLang(lang);
+            
+            String content = settingsSvc.get(name, lang, null);
+            return (content != null) ? ok(content) : notFound("Setting " + name + " for language " + lang + " not found.");
+        } catch (SettingsValidationException sve) {
+            return error(Response.Status.BAD_REQUEST, sve.getMessage());
+        }
     }
 
     @Path("settings/{name}")
     @DELETE
     public Response deleteSetting(@PathParam("name") String name) {
-        settingsSvc.delete(name);
-
-        return ok("Setting " + name + " deleted.");
+        try {
+            SettingsServiceBean.validateSettingName(name);
+            
+            settingsSvc.delete(name);
+            return ok("Setting " + name + " deleted.");
+        } catch (SettingsValidationException sve) {
+            return error(Response.Status.BAD_REQUEST, sve.getMessage());
+        }
     }
 
     @Path("settings/{name}/lang/{lang}")
     @DELETE
     public Response deleteSettingLang(@PathParam("name") String name, @PathParam("lang") String lang) {
-        settingsSvc.delete(name, lang);
-        return ok("Setting " + name + " - " + lang + " deleted.");
+        try {
+            SettingsServiceBean.validateSettingName(name);
+            SettingsServiceBean.validateSettingLang(lang);
+            
+            settingsSvc.delete(name, lang);
+            return ok("Setting " + name + " for language " + lang + " deleted.");
+        } catch (SettingsValidationException sve) {
+            return error(Response.Status.BAD_REQUEST, sve.getMessage());
+        }
     }
         
     @Path("template/{id}")
@@ -1990,6 +2066,7 @@ public class Admin extends AbstractApiBean {
             if(dv==null) {
                 return error(Status.BAD_REQUEST, "Requested version not found.");
             }
+            //ToDo - allow forcing with a non-success status for archivers that supportsDelete()
             if (dv.getArchivalCopyLocation() == null) {
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
                 // Note - the user is being sent via the createDataverseRequest(au) call to the
@@ -2055,7 +2132,7 @@ public class Admin extends AbstractApiBean {
 
         try {
             AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
-
+            //ToDo - allow forcing with a non-success status for archivers that supportsDelete()
             List<DatasetVersion> dsl = datasetversionService.getUnarchivedDatasetVersions();
             if (dsl != null) {
                 if (listonly) {
@@ -2167,7 +2244,7 @@ public class Admin extends AbstractApiBean {
         boolean inheritAllRoles = false;
         String rolesString = settingsSvc.getValueForKey(SettingsServiceBean.Key.InheritParentRoleAssignments, "");
         if (rolesString.length() > 0) {
-            ArrayList<String> rolesToInherit = new ArrayList<String>(Arrays.asList(rolesString.split("\\s*,\\s*")));
+            ArrayList<String> rolesToInherit = new ArrayList<>(ListSplitUtil.split(rolesString));
             if (!rolesToInherit.isEmpty()) {
                 if (rolesToInherit.contains("*")) {
                     inheritAllRoles = true;
@@ -2177,94 +2254,6 @@ public class Admin extends AbstractApiBean {
         }
         return error(Response.Status.BAD_REQUEST,
                 "InheritParentRoleAssignments does not list any roles on this instance");
-    }
-    
-    @GET
-    @AuthRequired
-    @Path("/dataverse/{alias}/storageDriver")
-    public Response getStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias,
-                                     @QueryParam("getEffective") Boolean getEffective) throws WrappedResponse {
-        Dataverse dataverse = dataverseSvc.findByAlias(alias);
-        if (dataverse == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
-        }
-        try {
-            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
-            if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
-            }
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-
-        if (getEffective != null && getEffective) {
-            return ok(JsonPrinter.jsonStorageDriver(dataverse.getEffectiveStorageDriverId(), null));
-        } else {
-            return ok(JsonPrinter.jsonStorageDriver(dataverse.getStorageDriverId(), null));
-        }
-    }
-    
-    @PUT
-    @AuthRequired
-    @Path("/dataverse/{alias}/storageDriver")
-    public Response setStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias, String label) throws WrappedResponse {
-        Dataverse dataverse = dataverseSvc.findByAlias(alias);
-        if (dataverse == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
-        }
-        try {
-            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
-            if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
-            }
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        for (Entry<String, String> store: DataAccess.getStorageDriverLabels().entrySet()) {
-            if(store.getKey().equals(label)) {
-                dataverse.setStorageDriverId(store.getValue());
-                return ok("Storage set to: " + store.getKey() + "/" + store.getValue());
-            }
-        }
-        return error(Response.Status.BAD_REQUEST,
-                "No Storage Driver found for : " + label);
-    }
-
-    @DELETE
-    @AuthRequired
-    @Path("/dataverse/{alias}/storageDriver")
-    public Response resetStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
-        Dataverse dataverse = dataverseSvc.findByAlias(alias);
-        if (dataverse == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
-        }
-        try {
-            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
-            if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
-            }
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        dataverse.setStorageDriverId("");
-        return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
-    }
-    
-    @GET
-    @AuthRequired
-    @Path("/dataverse/storageDrivers")
-    public Response listStorageDrivers(@Context ContainerRequestContext crc) throws WrappedResponse {
-        try {
-            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
-            if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
-            }
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        JsonObjectBuilder bld = jsonObjectBuilder();
-        DataAccess.getStorageDriverLabels().entrySet().forEach(s -> bld.add(s.getKey(), s.getValue()));
-        return ok(bld);
     }
     
     @GET
@@ -2743,4 +2732,5 @@ public class Admin extends AbstractApiBean {
         String csvData = cacheFactory.getStats(CacheFactoryBean.RATE_LIMIT_CACHE, deltaMinutesFilter != null ? String.valueOf(deltaMinutesFilter) : null);
         return Response.ok(csvData).header("Content-Disposition", "attachment; filename=\"data.csv\"").build();
     }
+
 }

@@ -116,7 +116,7 @@ public class S3AccessIT {
         String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
         String superusername = UtilIT.getUsernameFromResponse(createSuperuser);
         UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
-        Response storageDrivers = UtilIT.listStorageDrivers(superuserApiToken);
+        Response storageDrivers = UtilIT.listStorageDrivers(superuserApiToken, "root");
         storageDrivers.prettyPrint();
         // TODO where is "Local/local" coming from?
         String drivers = """
@@ -156,7 +156,7 @@ public class S3AccessIT {
         updatedStorageDriver.then().assertThat()
                 .body("data.type", CoreMatchers.notNullValue())
                 .body("data.label", CoreMatchers.notNullValue())
-                .body("data.directUpload", CoreMatchers.nullValue())
+                .body("data.directUpload", CoreMatchers.notNullValue())
                 .statusCode(200);
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
@@ -250,7 +250,7 @@ public class S3AccessIT {
         String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
         String superusername = UtilIT.getUsernameFromResponse(createSuperuser);
         UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
-        Response storageDrivers = UtilIT.listStorageDrivers(superuserApiToken);
+        Response storageDrivers = UtilIT.listStorageDrivers(superuserApiToken, "root");
         storageDrivers.prettyPrint();
         // TODO where is "Local/local" coming from?
         String drivers = """
@@ -468,7 +468,7 @@ public class S3AccessIT {
         String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
         String superusername = UtilIT.getUsernameFromResponse(createSuperuser);
         UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
-        Response storageDrivers = UtilIT.listStorageDrivers(superuserApiToken);
+        Response storageDrivers = UtilIT.listStorageDrivers(superuserApiToken, "root");
         storageDrivers.prettyPrint();
         // TODO where is "Local/local" coming from?
         String drivers = """
@@ -655,7 +655,7 @@ public class S3AccessIT {
         String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
         String superusername = UtilIT.getUsernameFromResponse(createSuperuser);
         UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
-        Response storageDrivers = UtilIT.listStorageDrivers(superuserApiToken);
+        Response storageDrivers = UtilIT.listStorageDrivers(superuserApiToken, "root");
         storageDrivers.prettyPrint();
         // TODO where is "Local/local" coming from?
         String drivers = """

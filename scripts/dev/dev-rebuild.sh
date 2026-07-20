@@ -1,5 +1,5 @@
 #!/bin/sh
-PAYARA_DIR=/usr/local/payara6
+PAYARA_DIR=/usr/local/payara7
 ASADMIN=$PAYARA_DIR/glassfish/bin/asadmin
 DB_NAME=dvndb
 DB_USER=dvnapp

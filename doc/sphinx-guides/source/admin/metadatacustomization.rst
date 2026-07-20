@@ -444,6 +444,8 @@ Please note that metadata fields share a common namespace so they must be unique
 
 We'll use this command again below to update the Solr schema to accomodate metadata fields we've added.
 
+.. _load-tsv:
+
 Loading TSV files into a Dataverse Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -547,8 +549,9 @@ You will need to reload your Solr schema via an HTTP-API call, targeting your So
 
 ``curl "http://localhost:8983/solr/admin/cores?action=RELOAD&core=collection1"``
 
-You can easily roll your own little script to automate the process (which might involve fetching the schema bits
-from some place else than your Dataverse installation).
+You can easily roll your own little script to automate the process
+(which might involve fetching the schema bits from some place else than your Dataverse installation).
+For your convenience, an example script :download:`solr-driver.sh <../../../../conf/solr/solr-driver.sh>` has been added.
 
 Please note that reconfigurations of your Solr index might require a re-index. Usually release notes indicate
 a necessary re-index, but for your custom metadata you will need to keep track on your own.
@@ -663,10 +666,6 @@ Tips from the Dataverse Community
 When creating new metadata blocks, please review the :doc:`/style/text` section of the Style Guide, which includes guidance about naming metadata fields and writing text for metadata tooltips and watermarks.
 
 If there are tips that you feel are omitted from this document, please open an issue at https://github.com/IQSS/dataverse/issues and consider making a pull request to make improvements. You can find this document at https://github.com/IQSS/dataverse/blob/develop/doc/sphinx-guides/source/admin/metadatacustomization.rst
-
-Alternatively, you are welcome to request "edit" access to this "Tips for Dataverse Software metadata blocks from the community" Google doc: https://docs.google.com/document/d/1XpblRw0v0SvV-Bq6njlN96WyHJ7tqG0WWejqBdl7hE0/edit?usp=sharing
-
-The thinking is that the tips can become issues and the issues can eventually be worked on as features to improve the Dataverse Software metadata system.
 
 Development Tasks Specific to Changing Fields in Core Metadata Blocks
 ---------------------------------------------------------------------

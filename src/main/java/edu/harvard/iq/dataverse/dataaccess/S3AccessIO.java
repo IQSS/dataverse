@@ -1208,6 +1208,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             // Create a builder for the S3AsyncClient
             S3AsyncClientBuilder s3CB = S3AsyncClient.builder().requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED);
 
+            // Always enable multipart upload. It is only used when necessary
+            s3CB.multipartEnabled(true);
+
             // Create a custom HTTP client with the desired pool size
             Integer poolSize = Integer.getInteger("dataverse.files." + driverId + ".connection-pool-size", 256);
             Builder httpClientBuilder = NettyNioAsyncHttpClient.builder().maxConcurrency(poolSize);

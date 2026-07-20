@@ -1,0 +1,1 @@
+All API endpoints that return information about role assignments (such as `/api/dataverses/$ID/assignments`) now include additional fields in their JSON responses: `assigneeName`, `roleDescription`, `definitionPointName`, `definitionPointType`, and `definitionPointGlobalId` (if available).

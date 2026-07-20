@@ -954,7 +954,8 @@ public class SwordIT {
         reindexDataset4ToFindDatabaseId.then().assertThat()
                 .statusCode(OK.getStatusCode());
         Integer datasetId4 = JsonPath.from(reindexDataset4ToFindDatabaseId.asString()).getInt("data.id");
-
+        UtilIT.sleepForReindex(datasetPersistentId4, apiToken, 5);
+        
         Response destroyDataset4 = UtilIT.destroyDataset(datasetId4, apiToken);
         destroyDataset4.prettyPrint();
         destroyDataset4.then().assertThat()

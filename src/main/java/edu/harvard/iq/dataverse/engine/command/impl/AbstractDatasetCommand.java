@@ -110,10 +110,14 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
         Set<ConstraintViolation> constraintViolations = dsv.validate();
         if (!constraintViolations.isEmpty()) {
             if (lenient) {
-                // populate invalid fields with N/A
+                // populate invalid primitive fields with N/A
+                // Note: controlled vocabulary fields should NOT get N/A values in datasetfieldvalue,
+                // as this creates an inconsistent state where the CV field appears valid but is empty.
+                // See https://github.com/IQSS/dataverse/issues/11900
                 constraintViolations.stream()
                     .filter(cv -> cv.getRootBean() instanceof DatasetField)
                     .map(cv -> ((DatasetField) cv.getRootBean()))
+                    .filter(f -> !f.getDatasetFieldType().isControlledVocabulary())
                     .forEach(f -> f.setSingleValue(DatasetField.NA_VALUE));
 
             } else {
@@ -313,6 +317,16 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
             if (ctxt.dsField().getCVocConf(true).containsKey(df.getDatasetFieldType().getId())) {
                 ctxt.dsField().registerExternalVocabValues(df);
             }
+        }
+    }
+
+    // To block Publishing dataset or Submitting dataset for review
+    protected boolean getEffectiveRequiresFilesToPublishDataset() {
+        if (getUser().isSuperuser()) {
+            return false;
+        } else {
+            Dataverse dv = getDataset().getOwner();
+            return dv != null &&  dv.getEffectiveRequiresFilesToPublishDataset();
         }
     }
 }

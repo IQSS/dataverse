@@ -50,11 +50,11 @@
                                         </p>
                                         <p:commandButton update=":themeWidgetsForm:themeWidgetsTabView" value="#{bundle.remove}" action="#{themeWidgetFragment.removeLogo()}"/>
                                     </p:column>                              
-                                    <p:fileUpload invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
+                                    <p:fileUpload invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|png)$/" update=":themeWidgetsForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
                                                   listener="#{themeWidgetFragment.handleImageFileUpload}" label="#{bundle['dataverse.theme.logo.image.upload']}"/>
                                 </p:panelGrid>
                                 <p:panelGrid rendered="#{empty themeWidgetFragment.editDv.dataverseTheme.logo}" columns="2" styleClass="noBorders">
-                                    <p:fileUpload id="uploadlogo" invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" sizeLimit="#{systemConfig.uploadLogoSizeLimit}" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
+                                    <p:fileUpload id="uploadlogo" invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" sizeLimit="#{systemConfig.uploadLogoSizeLimit}" allowTypes="/(\.|\/)(jpg|jpeg|png)$/" update=":themeWidgetsForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
                                                   listener="#{themeWidgetFragment.handleImageFileUpload}" label="#{bundle['dataverse.theme.logo.image.uploadImgFile']}" invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}"/>
                                 </p:panelGrid>
                                 <ui:fragment rendered="#{not empty themeWidgetFragment.editDv.dataverseTheme.logo}">
@@ -120,11 +120,11 @@
                                         </p>
                                         <p:commandButton update=":themeWidgetsForm:themeWidgetsTabView" value="#{bundle.remove}" action="#{themeWidgetFragment.removeLogoThumbnail()}"/>
                                     </p:column>
-                                    <p:fileUpload invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" id="changelogothumbnail" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
+                                    <p:fileUpload invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" id="changelogothumbnail" allowTypes="/(\.|\/)(jpg|jpeg|png)$/" update=":themeWidgetsForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
                                                   listener="#{themeWidgetFragment.handleImageThumbnailFileUpload}" label="#{bundle['dataverse.theme.logo.image.upload']}"/>
                                 </p:panelGrid>
                                 <p:panelGrid rendered="#{empty themeWidgetFragment.editDv.dataverseTheme.logoThumbnail}" columns="2" styleClass="noBorders">
-                                    <p:fileUpload id="uploadlogoThumbnail" invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" sizeLimit="#{systemConfig.uploadLogoSizeLimit}" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
+                                    <p:fileUpload id="uploadlogoThumbnail" invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" sizeLimit="#{systemConfig.uploadLogoSizeLimit}" allowTypes="/(\.|\/)(jpg|jpeg|png)$/" update=":themeWidgetsForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
                                                   listener="#{themeWidgetFragment.handleImageThumbnailFileUpload}" label="#{bundle['dataverse.theme.logo.image.uploadImgFile']}" invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}"/>
                                 </p:panelGrid>
                             </div>
@@ -221,11 +221,11 @@
                                             </p>
                                             <p:commandButton update=":themeWidgetsForm:themeWidgetsTabView" value="#{bundle.remove}" action="#{themeWidgetFragment.removeLogoFooter()}"/>
                                         </p:column>
-                                        <p:fileUpload invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" id="changelogoFooter" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
+                                        <p:fileUpload invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" id="changelogoFooter" allowTypes="/(\.|\/)(jpg|jpeg|png)$/" update=":themeWidgetsForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
                                                       listener="#{themeWidgetFragment.handleImageFooterFileUpload}" label="#{bundle['dataverse.theme.logo.image.upload']}"/>
                                     </p:panelGrid>
                                     <p:panelGrid rendered="#{empty themeWidgetFragment.editDv.dataverseTheme.logoFooter}" columns="2" styleClass="noBorders">
-                                        <p:fileUpload id="uploadlogoFooter" invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" sizeLimit="#{systemConfig.uploadLogoSizeLimit}" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
+                                        <p:fileUpload id="uploadlogoFooter" invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" sizeLimit="#{systemConfig.uploadLogoSizeLimit}" allowTypes="/(\.|\/)(jpg|jpeg|png)$/" update=":themeWidgetsForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
                                                       listener="#{themeWidgetFragment.handleImageFooterFileUpload}" label="#{bundle['dataverse.theme.logo.image.uploadImgFile']}" invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}"/>
                                     </p:panelGrid>
                                     <ui:fragment rendered="#{not empty themeWidgetFragment.editDv.dataverseTheme.logoFooter}">

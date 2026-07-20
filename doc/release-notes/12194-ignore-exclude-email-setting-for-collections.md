@@ -1,0 +1,2 @@
+A new query parameter (`ignoreSettingExcludeEmailFromExport`) has been added to the ["View a Dataverse Collection"](https://guides.dataverse.org/en/latest/api/native-api.html#view-a-dataverse-collection) API (`/api/dataverses/{collectionId}`).
+This query parameter prevents the contact emails from being excluded when the setting `ExcludeEmailFromExport` is set to true and the user has EditDataverse permissions.

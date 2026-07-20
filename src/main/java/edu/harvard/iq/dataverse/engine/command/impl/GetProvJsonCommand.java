@@ -38,7 +38,7 @@ public class GetProvJsonCommand extends AbstractCommand<JsonObject> {
             try (InputStream inputStream = dataAccess.getAuxFileAsInputStream(provJsonExtension)) {
                 JsonObject jsonObject = null;
                 if (null != inputStream) {
-                    jsonObject = JsonUtil.getJsonObject(inputStream);
+                    jsonObject = JsonUtil.getJsonObjectFromInputStream(inputStream);
                 }
                 return jsonObject;
             }

@@ -1,0 +1,21 @@
+{"guestbookResponse": {
+    "answers": [
+        {
+            "id": @QID1,
+            "value": "Good"
+        },
+        {
+            "id": @QID2,
+            "value": ["Multi","Line"]
+        },
+        {
+            "id": @QID3,
+            "value": "Yellow"
+        },
+        {
+            "id": @QID4,
+            "value": "Text area with a string instead of an array"
+        }
+    ]
+  }
+}

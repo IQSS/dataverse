@@ -1,41 +1,31 @@
+
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.api.ldn.COARNotifyRelationshipAnnouncement;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.pidproviders.PidProvider;
-import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
-import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.io.StringWriter;
-import java.sql.Timestamp;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.ejb.EJB;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonValue;
-import jakarta.json.JsonWriter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.ServiceUnavailableException;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.POST;
@@ -65,134 +55,114 @@ public class LDNInbox extends AbstractApiBean {
 
     @EJB
     RoleAssigneeServiceBean roleAssigneeService;
+
     @Context
     protected HttpServletRequest httpRequest;
+
+    public static final JsonLDNamespace activityStreams = JsonLDNamespace.defineNamespace("as",
+            "https://www.w3.org/ns/activitystreams#");
+    public static final String objectKey = new JsonLDTerm(activityStreams, "object").getUrl();
 
     @POST
     @Path("/")
     @Consumes("application/ld+json, application/json-ld")
     public Response acceptMessage(String body) {
-        IpAddress origin = new DataverseRequest(null, httpRequest).getSourceAddress();
-        String whitelist = settingsService.get(SettingsServiceBean.Key.LDNMessageHosts.toString(), "");
-        // Only do something if we listen to this host
-        if (whitelist.equals("*") || whitelist.contains(origin.toString())) {
-            String citingPID = null;
-            String citingType = null;
-            boolean sent = false;
+        try {
+            IpAddress origin = new DataverseRequest(null, httpRequest).getSourceAddress();
+            String allowedIPs = JvmSettings.LINKEDDATANOTIFICATION_ALLOWED_HOSTS.lookupOptional().orElse("");
+            
+            // Only process messages from whitelisted hosts
+            if (!allowedIPs.equals("*") && !allowedIPs.contains(origin.toString())) {
+                logger.fine("Ignoring message from IP address: " + origin.toString());
+                throw new ForbiddenException("The LDN Inbox does not accept messages from this address");
+            }
 
-            JsonObject jsonld = null;
-            jsonld = JSONLDUtil.decontextualizeJsonLD(body);
+            // Parse JSON-LD message
+            JsonObject jsonld = parseJsonLD(body);
             if (jsonld == null) {
-                // Kludge - something about the coar notify URL causes a
-                // LOADING_REMOTE_CONTEXT_FAILED error in the titanium library - so replace it
-                // and try with a local copy
-                body = body.replace("\"https://purl.org/coar/notify\"",
-                        "{\n" + "                \"@vocab\": \"http://purl.org/coar/notify_vocabulary/\",\n"
-                                + "                \"ietf\": \"http://www.iana.org/assignments/relation/\",\n"
-                                + "                \"coar-notify\": \"http://purl.org/coar/notify_vocabulary/\",\n"
-                                + "                \"sorg\": \"http://schema.org/\",\n"
-                                + "                \"ReviewAction\": \"coar-notify:ReviewAction\",\n"
-                                + "                \"EndorsementAction\": \"coar-notify:EndorsementAction\",\n"
-                                + "                \"IngestAction\": \"coar-notify:IngestAction\",\n"
-                                + "                \"ietf:cite-as\": {\n" + "                \"@type\": \"@id\"\n"
-                                + "                }}");
-                jsonld = JSONLDUtil.decontextualizeJsonLD(body);
-            }
-            if (jsonld == null) {
-                throw new BadRequestException("Could not parse message to find acceptable citation link to a dataset.");
-            }
-            String relationship = "isRelatedTo";
-            String name = null;
-            JsonLDNamespace activityStreams = JsonLDNamespace.defineNamespace("as",
-                    "https://www.w3.org/ns/activitystreams#");
-            JsonLDNamespace ietf = JsonLDNamespace.defineNamespace("ietf", "http://www.iana.org/assignments/relation/");
-            String objectKey = new JsonLDTerm(activityStreams, "object").getUrl();
-            if (jsonld.containsKey(objectKey)) {
-                JsonObject msgObject = jsonld.getJsonObject(objectKey);
-
-                citingPID = msgObject.getJsonObject(new JsonLDTerm(ietf, "cite-as").getUrl()).getString("@id");
-                logger.fine("Citing PID: " + citingPID);
-                if (msgObject.containsKey("@type")) {
-                    citingType = msgObject.getString("@type");
-                    if (citingType.startsWith(JsonLDNamespace.schema.getUrl())) {
-                        citingType = citingType.replace(JsonLDNamespace.schema.getUrl(), "");
-                    }
-                    if (msgObject.containsKey(JsonLDTerm.schemaOrg("name").getUrl())) {
-                        name = msgObject.getString(JsonLDTerm.schemaOrg("name").getUrl());
-                    }
-                    logger.fine("Citing Type: " + citingType);
-                    String contextKey = new JsonLDTerm(activityStreams, "context").getUrl();
-
-                    if (jsonld.containsKey(contextKey)) {
-                        JsonObject context = jsonld.getJsonObject(contextKey);
-                        for (Map.Entry<String, JsonValue> entry : context.entrySet()) {
-
-                            relationship = entry.getKey().replace("_:", "");
-                            // Assuming only one for now - should check for array and loop
-                            JsonObject citedResource = (JsonObject) entry.getValue();
-                            String pid = citedResource.getJsonObject(new JsonLDTerm(ietf, "cite-as").getUrl())
-                                    .getString("@id");
-                            if (citedResource.getString("@type").equals(JsonLDTerm.schemaOrg("Dataset").getUrl())) {
-                                logger.fine("Raw PID: " + pid);
-                                if (pid.startsWith(AbstractDOIProvider.DOI_RESOLVER_URL)) {
-                                    pid = pid.replace(AbstractDOIProvider.DOI_RESOLVER_URL, AbstractDOIProvider.DOI_PROTOCOL + ":");
-                                } else if (pid.startsWith(HandlePidProvider.HDL_RESOLVER_URL)) {
-                                    pid = pid.replace(HandlePidProvider.HDL_RESOLVER_URL, HandlePidProvider.HDL_PROTOCOL + ":");
-                                }
-                                logger.fine("Protocol PID: " + pid);
-                                Optional<GlobalId> id = PidProvider.parse(pid);
-                                Dataset dataset = datasetSvc.findByGlobalId(pid);
-                                if (dataset != null) {
-                                    JsonObject citingResource = Json.createObjectBuilder().add("@id", citingPID)
-                                            .add("@type", citingType).add("relationship", relationship)
-                                            .add("name", name).build();
-                                    StringWriter sw = new StringWriter(128);
-                                    try (JsonWriter jw = Json.createWriter(sw)) {
-                                        jw.write(citingResource);
-                                    }
-                                    String jsonstring = sw.toString();
-                                    Set<RoleAssignment> ras = roleService.rolesAssignments(dataset);
-
-                                    roleService.rolesAssignments(dataset).stream()
-                                            .filter(ra -> ra.getRole().permissions()
-                                                    .contains(Permission.PublishDataset))
-                                            .flatMap(
-                                                    ra -> roleAssigneeService
-                                                            .getExplicitUsers(roleAssigneeService
-                                                                    .getRoleAssignee(ra.getAssigneeIdentifier()))
-                                                            .stream())
-                                            .distinct() // prevent double-send
-                                            .forEach(au -> {
-
-                                                if (au.isSuperuser()) {
-                                                    userNotificationService.sendNotification(au,
-                                                            new Timestamp(new Date().getTime()),
-                                                            UserNotification.Type.DATASETMENTIONED, dataset.getId(),
-                                                            null, null, true, jsonstring);
-
-                                                }
-                                            });
-                                    sent = true;
-                                }
-                            }
-                        }
-                    }
-                }
+                throw new BadRequestException("Could not parse JSON message.");
             }
 
-            if (!sent) {
-                if (citingPID == null || citingType == null) {
-                    throw new BadRequestException(
-                            "Could not parse message to find acceptable citation link to a dataset.");
-                } else {
-                    throw new ServiceUnavailableException(
-                            "Unable to process message. Please contact the administrators.");
-                }
+            logger.fine(JsonUtil.prettyPrint(jsonld));
+
+            // Process message based on type
+            processMessage(jsonld);
+
+            return ok("Message Received");
+
+        } catch (Throwable t) {
+            logger.warning(t.getLocalizedMessage());
+            if(logger.isLoggable(Level.FINE)) {
+                t.printStackTrace();
             }
-        } else {
-            logger.info("Ignoring message from IP address: " + origin.toString());
-            throw new ForbiddenException("Inbox does not acept messages from this address");
+            throw t;
         }
-        return ok("Message Received");
+    }
+
+    /**
+     * Parse JSON-LD message with fallback for COAR Notify context issues.
+     */
+    private JsonObject parseJsonLD(String body) {
+        JsonObject jsonld = JSONLDUtil.decontextualizeJsonLD(body);
+        
+        if (jsonld == null) {
+            // The COAR Notify URL has many redirects which cause a
+            // LOADING_REMOTE_CONTEXT_FAILED error in the titanium library - so replace it
+            // with the contents of the final redirect (current as of 10/29/2025)
+            // and try again
+            body = body.replace("\"https://purl.org/coar/notify\"",
+                    """
+                    {
+                        "@vocab": "http://purl.org/coar/notify_vocabulary/",
+                        "ietf": "http://www.iana.org/assignments/relation/",
+                        "coar-notify": "http://purl.org/coar/notify_vocabulary/",
+                        "sorg": "http://schema.org/",
+                        "ReviewAction": "coar-notify:ReviewAction",
+                        "EndorsementAction": "coar-notify:EndorsementAction",
+                        "IngestAction": "coar-notify:IngestAction",
+                        "ietf:cite-as": {
+                        "@type": "@id"
+                        }
+                    }""");
+            jsonld = JSONLDUtil.decontextualizeJsonLD(body);
+        }
+        
+        return jsonld;
+    }
+
+    /**
+     * Process the message based on its type.
+     * Returns true if the message was successfully processed.
+     */
+    private void processMessage(JsonObject jsonld) throws WebApplicationException {
+        if (!jsonld.containsKey(objectKey)) {
+            throw new BadRequestException("Message does not contain an 'object' key - ignoring");
+        }
+
+        JsonObject msgObject = jsonld.getJsonObject(objectKey);
+        String messageType = msgObject.getString("@type", "");
+
+        switch (messageType) {
+            case "https://www.w3.org/ns/activitystreams#Relationship":
+                handleRelationshipAnnouncement(msgObject);
+                break;
+            
+            default:
+                throw new ServiceUnavailableException("Unsupported message type: " + messageType + " - ignoring");
+        }
+    }
+
+    /**
+     * Handle COAR Notify Relationship Announcement messages.
+     */
+    private void handleRelationshipAnnouncement(JsonObject msgObject) {
+        COARNotifyRelationshipAnnouncement handler = new COARNotifyRelationshipAnnouncement(
+                datasetService,
+                userNotificationService,
+                roleService,
+                roleAssigneeService
+        );
+        
+        handler.processMessage(msgObject);
     }
 }

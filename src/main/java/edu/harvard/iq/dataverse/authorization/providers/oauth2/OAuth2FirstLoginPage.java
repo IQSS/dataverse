@@ -37,8 +37,8 @@ import jakarta.faces.component.UIComponent;
 import jakarta.faces.component.UIInput;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.inject.Inject;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * Backing bean for {@code oauth/welcome.xhtml}, the page that greets new users

@@ -30,8 +30,9 @@ import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import org.hibernate.validator.constraints.NotBlank;
+
 
 /**
  * A group that explicitly lists {@link RoleAssignee}s that belong to it. Implementation-wise,

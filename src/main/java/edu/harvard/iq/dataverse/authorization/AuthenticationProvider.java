@@ -18,7 +18,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
  *                "authenticationProvider.name." + "ship" ->
  *            (c)  Bundle.properties entry: "authenticationProvider.name.shib=Shibboleth"
  *          
- * {@code AuthenticationPrvider}s are normally registered at startup in {@link AuthenticationServiceBean#startup()}.
+ * {@code AuthenticationProvider}s are normally registered at startup in {@link AuthenticationServiceBean#startup()}.
  * 
  * @author michael
  */
@@ -33,9 +33,13 @@ public interface AuthenticationProvider {
     default boolean isUserInfoUpdateAllowed() { return false; };
     default boolean isUserDeletionAllowed() { return false; };
     default boolean isOAuthProvider() { return false; };
-    
-    
-    
+    default boolean isEnabled() {
+        return true;
+    };
+    default boolean isHidden() {
+        return false;
+    };
+
     /**
      * Some providers (e.g organizational ones) provide verified email addresses.
      * @return {@code true} if we can treat email addresses coming from this provider as verified, {@code false} otherwise.

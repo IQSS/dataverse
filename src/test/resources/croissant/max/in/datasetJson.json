@@ -1,0 +1,376 @@
+{
+  "id": 26147,
+  "identifier": "FK2/VQTYHD",
+  "persistentUrl": "https://doi.org/10.5072/FK2/VQTYHD",
+  "protocol": "doi",
+  "authority": "10.5072",
+  "separator": "/",
+  "publisher": "Root",
+  "publicationDate": "2024-05-01",
+  "storageIdentifier": "s3://10.5072/FK2/VQTYHD",
+  "datasetType": "dataset",
+  "datasetVersion": {
+    "id": 266,
+    "datasetId": 26147,
+    "datasetPersistentId": "doi:10.5072/FK2/VQTYHD",
+    "storageIdentifier": "s3://10.5072/FK2/VQTYHD",
+    "versionNumber": 3,
+    "internalVersionNumber": 7,
+    "versionMinorNumber": 0,
+    "versionState": "RELEASED",
+    "latestVersionPublishingState": "RELEASED",
+    "UNF": "UNF:6:ngOUmEnfm08jahzBYqStQA==",
+    "lastUpdateTime": "2025-05-21T19:25:29Z",
+    "releaseTime": "2025-05-21T19:25:29Z",
+    "createTime": "2025-05-21T19:23:21Z",
+    "publicationDate": "2024-05-01",
+    "citationDate": "2024-05-01",
+    "license": {
+      "name": "CC0 1.0",
+      "uri": "http://creativecommons.org/publicdomain/zero/1.0",
+      "iconUri": "https://licensebuttons.net/p/zero/1.0/88x31.png",
+      "rightsIdentifier": "CC0-1.0",
+      "rightsIdentifierScheme": "SPDX",
+      "schemeUri": "https://spdx.org/licenses/",
+      "languageCode": "en"
+    },
+    "fileAccessRequest": true,
+    "metadataBlocks": {
+      "citation": {
+        "displayName": "Citation Metadata",
+        "name": "citation",
+        "fields": [
+          {
+            "typeName": "title",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "Max Schema.org"
+          },
+          {
+            "typeName": "author",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "authorName": {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Durbin, Philip"
+                },
+                "authorAffiliation": {
+                  "typeName": "authorAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Harvard University"
+                },
+                "authorIdentifierScheme": {
+                  "typeName": "authorIdentifierScheme",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "ORCID"
+                },
+                "authorIdentifier": {
+                  "typeName": "authorIdentifier",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "0000-0002-9528-9470"
+                }
+              },
+              {
+                "authorName": {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "IQSS"
+                },
+                "authorAffiliation": {
+                  "typeName": "authorAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Harvard University"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "datasetContact",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "datasetContactName": {
+                  "typeName": "datasetContactName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Durbin, Philip"
+                },
+                "datasetContactEmail": {
+                  "typeName": "datasetContactEmail",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "philip_durbin@harvard.edu"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "dsDescription",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "dsDescriptionValue": {
+                  "typeName": "dsDescriptionValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Exercising fields used by `schema.org` exporter."
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "subject",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "value": [
+              "Social Sciences",
+              "Other"
+            ]
+          },
+          {
+            "typeName": "keyword",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "keywordValue": {
+                  "typeName": "keywordValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "foo"
+                }
+              },
+              {
+                "keywordValue": {
+                  "typeName": "keywordValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "bar"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "publication",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "publicationCitation": {
+                  "typeName": "publicationCitation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Tykhonov, V., & Durbin, P. (2024, March 20). Croissant ML standard in the context of Dataverse, EOSC and beyond. Zenodo. https://doi.org/10.5281/zenodo.10843668"
+                },
+                "publicationIDType": {
+                  "typeName": "publicationIDType",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "doi"
+                },
+                "publicationIDNumber": {
+                  "typeName": "publicationIDNumber",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "10.5281/zenodo.10843668"
+                },
+                "publicationURL": {
+                  "typeName": "publicationURL",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "https://doi.org/10.5281/zenodo.10843668"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "contributor",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "contributorType": {
+                  "typeName": "contributorType",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Funder"
+                },
+                "contributorName": {
+                  "typeName": "contributorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "NSF"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "grantNumber",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "grantNumberAgency": {
+                  "typeName": "grantNumberAgency",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "NIH"
+                },
+                "grantNumberValue": {
+                  "typeName": "grantNumberValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "3OT2DB000004-01S3"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "depositor",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "Durbin, Philip"
+          },
+          {
+            "typeName": "dateOfDeposit",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "2024-05-01"
+          },
+          {
+            "typeName": "timePeriodCovered",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "timePeriodCoveredStart": {
+                  "typeName": "timePeriodCoveredStart",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "2023-01-01"
+                },
+                "timePeriodCoveredEnd": {
+                  "typeName": "timePeriodCoveredEnd",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "2023-12-31"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "geospatial": {
+        "displayName": "Geospatial Metadata",
+        "name": "geospatial",
+        "fields": [
+          {
+            "typeName": "geographicCoverage",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "country": {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "United States"
+                },
+                "state": {
+                  "typeName": "state",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "MA"
+                },
+                "city": {
+                  "typeName": "city",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Cambridge"
+                },
+                "otherGeographicCoverage": {
+                  "typeName": "otherGeographicCoverage",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Harvard Square"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "files": [
+      {
+        "description": "Additional documentation.",
+        "label": "README.md",
+        "restricted": false,
+        "directoryLabel": "doc",
+        "version": 1,
+        "datasetVersionId": 266,
+        "dataFile": {
+          "id": 26148,
+          "persistentId": "",
+          "filename": "README.md",
+          "contentType": "text/markdown",
+          "friendlyType": "Markdown Text",
+          "filesize": 34,
+          "description": "Additional documentation.",
+          "storageIdentifier": "s3://beta-dataverse-direct:18f35bee76a-f45ece0b0fcc",
+          "rootDataFileId": -1,
+          "md5": "ebf050ec8cce5df0a72b100cfc9f442f",
+          "checksum": {
+            "type": "MD5",
+            "value": "ebf050ec8cce5df0a72b100cfc9f442f"
+          },
+          "tabularData": false,
+          "creationDate": "2024-05-01",
+          "publicationDate": "2024-05-01",
+          "fileAccessRequest": true
+        }
+      },
+      {
+        "label": "data.tab",
+        "restricted": false,
+        "version": 3,
+        "datasetVersionId": 266,
+        "dataFile": {
+          "id": 26646,
+          "persistentId": "",
+          "filename": "data.tab",
+          "contentType": "text/tab-separated-values",
+          "friendlyType": "Tab-Delimited",
+          "filesize": 27,
+          "storageIdentifier": "s3://beta-dataverse-direct:196f44cc758-4d710ffac5d8",
+          "originalFileFormat": "text/tsv",
+          "originalFormatLabel": "Tab-Separated Values",
+          "originalFileSize": 33,
+          "originalFileName": "data.tsv",
+          "UNF": "UNF:6:ngOUmEnfm08jahzBYqStQA==",
+          "rootDataFileId": -1,
+          "md5": "3663d6a436ac00f5541a7336d6fa18c9",
+          "checksum": {
+            "type": "MD5",
+            "value": "3663d6a436ac00f5541a7336d6fa18c9"
+          },
+          "tabularData": true,
+          "creationDate": "2025-05-21",
+          "publicationDate": "2025-05-21",
+          "fileAccessRequest": true
+        }
+      }
+    ],
+    "citation": "Durbin, Philip; IQSS, 2024, \"Max Schema.org\", https://doi.org/10.5072/FK2/VQTYHD, Root, V3, UNF:6:ngOUmEnfm08jahzBYqStQA== [fileUNF]"
+  }
+}

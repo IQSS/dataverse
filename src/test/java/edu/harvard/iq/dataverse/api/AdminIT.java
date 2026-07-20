@@ -1,38 +1,47 @@
 package edu.harvard.iq.dataverse.api;
 
-import io.restassured.RestAssured;
-import io.restassured.path.json.JsonPath;
-import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-
-
-
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
-
-import static jakarta.ws.rs.core.Response.Status.*;
-import static org.hamcrest.CoreMatchers.*;
+import static io.restassured.RestAssured.given;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import io.restassured.http.ContentType;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AdminIT {
@@ -40,12 +49,148 @@ public class AdminIT {
     private static final Logger logger = Logger.getLogger(AdminIT.class.getCanonicalName());
 
     private final String testNonSuperuserApiToken = createTestNonSuperuserApiToken();
+    static final String clientId = "test";
+    static final String clientSecret = "94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8";
 
     @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
-
+    
+    @Nested
+    class SettingsAPI {
+        
+        static final SettingsServiceBean.Key harmlessSetting = SettingsServiceBean.Key.InstallationName;
+        static final String harmlessValue = "Test Instance Name";
+        static final String language = "fr";
+        static final String harmlessL10nValue = "Nom de l'instance de test";
+        
+        @AfterAll
+        static void destroy() {
+            // No leftover settings after breaking tests!
+            UtilIT.deleteSetting(harmlessSetting);
+            UtilIT.deleteSetting(harmlessSetting, language);
+        }
+        
+        @Test
+        void testSettingsRoundTrip() {
+            Assumptions.assumeTrue(UtilIT.getSetting(harmlessSetting).statusCode() == NOT_FOUND.getStatusCode(), "Harmless setting should not exist yet.");
+            Assumptions.assumeTrue(UtilIT.getSetting(harmlessSetting, language).statusCode() == NOT_FOUND.getStatusCode(), "Harmless localized setting should not exist yet.");
+            
+            // Step 0: Add a localized setting so we can make sure the put all can cope with that, too.
+            UtilIT.setSetting(harmlessSetting, harmlessL10nValue, language);
+            
+            // Step 1: Get current settings state
+            Response getResponse = UtilIT.getSettings();
+            
+            getResponse.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode())
+                .contentType("application/json")
+                .body("status", equalTo("OK"))
+                .body("data.'"+harmlessSetting+"/lang/"+language+"'", equalTo(harmlessL10nValue));
+            
+            // Store original settings as JsonObject for later restoration
+            JsonObject originalSettings = Json.createReader(getResponse.body().asInputStream())
+                .readObject()
+                .getJsonObject("data");
+            
+            // Step 2: Set our harmless test setting using UtilIT
+            Response setResponse = UtilIT.setSetting(harmlessSetting.toString(), harmlessValue);
+            setResponse.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode());
+            
+            // Step 3: Verify the harmless setting was set
+            Response verifySetResponse = UtilIT.getSetting(harmlessSetting);
+            
+            verifySetResponse.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(harmlessValue));
+            
+            // Step 4: Put back the original settings (this is what we're testing)
+            Response putResponse = UtilIT.setSettings(originalSettings.toString());
+            
+            putResponse.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("status", equalTo("OK"))
+                .body("message.message", containsString("successfully updated"));
+            
+            // Step 5: Verify the harmless setting is gone (restored to original state)
+            Response verifyRestoredResponse = UtilIT.getSetting(harmlessSetting);
+            
+            verifyRestoredResponse.then()
+                .assertThat()
+                .statusCode(NOT_FOUND.getStatusCode()); // Should not exist anymore
+            
+            // Step 6: Verify overall settings state matches original
+            Response finalGetResponse = UtilIT.getSettings();
+            
+            finalGetResponse.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode());
+            
+            // Store original settings as JsonObject for later restoration
+            JsonObject finalSettings = Json.createReader(getResponse.body().asInputStream())
+                .readObject()
+                .getJsonObject("data");
+            
+            // Verify the settings are back to original state (our test setting should be absent)
+            assertFalse(finalSettings.containsKey(harmlessSetting.toString()), "Harmless setting should not exist in restored settings");
+            
+            // Cleanup: delete the localized setting
+            UtilIT.deleteSetting(harmlessSetting, language);
+        }
+        
+        @Test
+        void testGetAllSettingsWithLocalization() {
+            int statusCode = UtilIT.getSetting(harmlessSetting, language).statusCode();
+            Assumptions.assumeTrue(statusCode == NOT_FOUND.getStatusCode(), "Harmless localized setting should not exist yet. Status Code: " + statusCode);
+            
+            // Given
+            UtilIT.setSetting(harmlessSetting, harmlessL10nValue, language);
+            
+            // When
+            Response getResponse = UtilIT.getSettings();
+            
+            // Then
+            getResponse.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode())
+                .contentType("application/json")
+                .body("status", equalTo("OK"))
+                .body("data.'"+harmlessSetting+"/lang/"+language+"'", equalTo(harmlessL10nValue));
+            
+            // Cleanup
+            UtilIT.deleteSetting(harmlessSetting, language);
+        }
+        
+        @Test
+        void testPutAllSettingsWithEmptyJson() {
+            // Test error handling for empty JSON
+            Response response = UtilIT.setSettings("{}");
+            
+            response.then()
+                .assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString("Empty or invalid JSON object"));
+        }
+        
+        @Test
+        void testPutAllSettingsWithInvalidSetting() {
+            // Test error handling for empty JSON
+            Response response = UtilIT.setSettings("{\":Test1\": \"Foobar\", \":Test2\": \"Foobar\" }");
+            
+            response.then()
+                .assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString("Invalid key(s): :Test1, :Test2"));
+        }
+    }
+    
+    
     @Test
     public void testListAuthenticatedUsers() throws Exception {
         Response anon = UtilIT.listAuthenticatedUsers(testNonSuperuserApiToken);
@@ -75,7 +220,7 @@ public class AdminIT {
 
         Response deleteSuperuser = UtilIT.deleteUser(superuserUsername);
         assertEquals(200, deleteSuperuser.getStatusCode());
-    }
+}
     
     @Test
     public void testFilterAuthenticatedUsersForbidden() throws Exception {
@@ -537,6 +682,19 @@ public class AdminIT {
         assertEquals(200, deleteUserToConvert.getStatusCode());
     }
     
+    
+    @Test
+    void testCreateUserViaAPI_WithInvalidJson() {
+        Response response = given()
+            .body("{invalid}")
+            .contentType(ContentType.JSON)
+            .post("/api/admin/authenticatedUsers");
+        
+        response.then()
+            .assertThat()
+            .statusCode(BAD_REQUEST.getStatusCode())
+            .body("message", containsString("Unexpected char"));
+    }
 
 
     @Test
@@ -960,5 +1118,49 @@ public class AdminIT {
         Response toggleSuperuser = UtilIT.setSuperuserStatus(username, status);
         toggleSuperuser.then().assertThat()
                 .statusCode(OK.getStatusCode());
+    }
+
+    // Testing creating an OIDC Provider not intended for use in JSF UI
+    @Test
+    public void testAddAuthProviders() {
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response getAuthProviders = UtilIT.getAuthProviders(superuserApiToken);
+        getAuthProviders.prettyPrint();
+
+        String factoryData = String.format("type: oidc | issuer: http://keycloak.mydomain.com:8090/realms/test | clientId: %s | clientSecret: %s", clientId, clientSecret);
+        JsonObject jsonObject = Json.createObjectBuilder()
+                .add("id", "oidc1")
+                .add("factoryAlias", "oidc")
+                .add("title", "Open ID Connect SPA")
+                .add("subtitle", "SPA OIDC Provider")
+                .add("factoryData", factoryData)
+                .add("enabled", false)
+                .build();
+        Response addAuthProviders = UtilIT.addAuthProviders(superuserApiToken, jsonObject);
+        addAuthProviders.prettyPrint();
+        addAuthProviders.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        getAuthProviders = UtilIT.getAuthProviders(superuserApiToken);
+        getAuthProviders.prettyPrint();
+        getAuthProviders.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        boolean found = false;
+        List<Map<String, Object>> providers = getAuthProviders.body().jsonPath().getList("data");
+        for (Map<String, Object> provider : providers) {
+            if ("oidc1".equalsIgnoreCase((String) provider.get("id"))) {
+                found = true;
+                assertTrue(provider.get("title") != null && provider.get("title").equals("Open ID Connect SPA"));
+                assertTrue(provider.get("enabled") != null && !(Boolean) provider.get("enabled"));
+            }
+        }
+        assertTrue(found);
     }
 }

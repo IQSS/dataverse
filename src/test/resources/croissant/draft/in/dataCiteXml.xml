@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource xmlns="http://datacite.org/schema/kernel-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4.5/metadata.xsd">
+  <identifier identifierType="DOI">10.5072/FK2/OO7TEP</identifier>
+  <creators>
+    <creator>
+      <creatorName nameType="Personal">Punk, Draft</creatorName>
+      <givenName>Draft</givenName>
+      <familyName>Punk</familyName>
+      <affiliation>French house</affiliation>
+    </creator>
+  </creators>
+  <titles>
+    <title>Draft Dataset</title>
+  </titles>
+  <publisher>Root</publisher>
+  <publicationYear>2025</publicationYear>
+  <subjects>
+    <subject>Other</subject>
+  </subjects>
+  <contributors>
+    <contributor contributorType="ContactPerson">
+      <contributorName nameType="Personal">Admin, Dataverse</contributorName>
+      <givenName>Dataverse</givenName>
+      <familyName>Admin</familyName>
+      <affiliation>Dataverse.org</affiliation>
+    </contributor>
+  </contributors>
+  <dates>
+    <date dateType="Submitted">2025-04-14</date>
+  </dates>
+  <resourceType resourceTypeGeneral="Dataset"/>
+  <sizes>
+    <size>18</size>
+  </sizes>
+  <formats>
+    <format>text/plain</format>
+  </formats>
+  <version>DRAFT</version>
+  <rightsList>
+    <rights rightsURI="info:eu-repo/semantics/openAccess"/>
+    <rights rightsURI="http://creativecommons.org/publicdomain/zero/1.0" rightsIdentifier="CC0-1.0" rightsIdentifierScheme="SPDX" schemeURI="https://spdx.org/licenses/" xml:lang="en">Creative Commons CC0 1.0 Universal Public Domain Dedication.</rights>
+  </rightsList>
+  <descriptions>
+    <description descriptionType="Abstract">This dataset hasn&amp;apos;t been published yet.</description>
+  </descriptions>
+</resource>

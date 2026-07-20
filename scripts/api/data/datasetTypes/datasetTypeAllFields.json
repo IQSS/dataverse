@@ -1,0 +1,13 @@
+{
+  "name": "foobar",
+  "displayName": "Foobar",
+  "description": "The best dataset type!",
+  "linkedMetadataBlocks": [
+    "block1",
+    "block2"
+  ],
+  "availableLicenses": [
+    "license1",
+    "license2"
+  ]
+}

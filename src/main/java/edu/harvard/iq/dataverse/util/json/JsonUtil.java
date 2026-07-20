@@ -8,12 +8,14 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Logger;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonException;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
+import jakarta.json.JsonValue;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
@@ -69,7 +71,7 @@ public class JsonUtil {
      * not catch any exceptions.
      * @param serializedJson the JSON object serialized as a {@code String}
      * @throws JsonException when parsing fails.
-     * @see #getJsonObject(InputStream)
+     * @see #getJsonObjectFromInputStream(InputStream)
      * @see #getJsonObjectFromFile(String)
      * @see #getJsonArray(String)
      */
@@ -92,7 +94,7 @@ public class JsonUtil {
      * @see #getJsonObject(String)
      * @see #getJsonObjectFromFile(String)
      */
-    public static JsonObject getJsonObject(InputStream stream) {
+    public static JsonObject getJsonObjectFromInputStream(InputStream stream) {
         try (JsonReader jsonReader = Json.createReader(stream)) {
             return jsonReader.readObject();
         }
@@ -106,7 +108,7 @@ public class JsonUtil {
      * @throws FileNotFoundException when the file cannot be opened for reading
      * @throws JsonException when parsing fails.
      * @see #getJsonObject(String)
-     * @see #getJsonObject(InputStream)
+     * @see #getJsonObjectFromInputStream(InputStream)
      */
     public static JsonObject getJsonObjectFromFile(String fileName) throws IOException {
         try (FileReader rdr = new FileReader(fileName)) {
@@ -128,6 +130,36 @@ public class JsonUtil {
         try (StringReader rdr = new StringReader(serializedJson)) {
             try (JsonReader jsonReader = Json.createReader(rdr)) {
                 return jsonReader.readArray();
+            }
+        }
+    }
+    
+    
+    /**
+     * Parses a serialized JSON string and returns it as a JsonValue.
+     * The returned JsonValue can be a JsonObject, JsonArray, or another type
+     * based on the structure of the provided serialized JSON string.
+     * This method closes its resources but does not catch any exceptions.
+     *
+     * @param serializedJson The JSON content serialized as a String
+     * @return The parsed content as a JsonValue which could be a JsonObject, JsonArray, or another JsonValue type
+     * @throws JsonException If an error occurs during parsing (null, invalid JSON, not trimmed, etc.)
+     */
+    public static JsonValue getJsonValue(String serializedJson) {
+        if (serializedJson == null) {
+            throw new JsonException("The serialized JSON string cannot be null.");
+        }
+        
+        try (StringReader rdr = new StringReader(serializedJson)) {
+            try (JsonReader jsonReader = Json.createReader(rdr)) {
+                JsonValue jsonValue = jsonReader.read();
+                if (jsonValue.getValueType() == JsonValue.ValueType.OBJECT) {
+                    return jsonValue.asJsonObject();
+                } else if (jsonValue.getValueType() == JsonValue.ValueType.ARRAY) {
+                    return jsonValue.asJsonArray();
+                } else {
+                    return jsonValue;
+                }
             }
         }
     }

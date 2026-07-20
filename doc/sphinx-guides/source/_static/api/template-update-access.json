@@ -1,0 +1,13 @@
+{
+    "customTermsOfAccess": {
+        "fileAccessRequest": false,                              
+        "termsOfAccess": "Here are the terms...",
+        "dataAccessPlace": "dataAccessPlace",
+        "originalArchive": "originalArchive",
+        "availabilityStatus": "availabilityStatus",
+        "contactForAccess": "contactForAccess",
+        "sizeOfCollection": "sizeOfCollection",
+        "studyCompletion": "studyCompletion",
+        "confidentialityDeclaration": "confidentialityDeclaration"
+    }
+}

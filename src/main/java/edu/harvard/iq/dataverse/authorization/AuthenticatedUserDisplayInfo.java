@@ -1,7 +1,8 @@
 package edu.harvard.iq.dataverse.authorization;
 
 import java.util.Objects;
-import org.hibernate.validator.constraints.NotBlank;
+
+import jakarta.validation.constraints.NotBlank;
 
 /**
  *

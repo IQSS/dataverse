@@ -1,3 +1,4 @@
+# mime.types is a copy of jakarta.mime.types which only used in unit tests (specifically FileUtilTest.testGZipFile)
 # Common document formats
 application/pdf pdf PDF
 application/msword doc DOC
